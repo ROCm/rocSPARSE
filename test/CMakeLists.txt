@@ -1,3 +1,7 @@
+# ########################################################################
+# Copyright 2016 Advanced Micro Devices, Inc.
+# ########################################################################
+
 # Function to add rocsparse tests
 function(add_rocsparse_test TEST_NAME TEST_SOURCE)
   get_filename_component(TEST_TARGET ${TEST_SOURCE} NAME_WE)

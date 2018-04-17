@@ -1,3 +1,7 @@
+/* ************************************************************************
+ * Copyright 2016 Advanced Micro Devices, Inc.
+ * ************************************************************************ */
+
 #ifndef ROCSPARSE_CONTEXT_H_
 #define ROCSPARSE_CONTEXT_H_
 
