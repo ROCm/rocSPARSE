@@ -4,7 +4,29 @@
 
 #include "rocsparse.h"
 #include "context.h"
+#include "utility.h"
 #include "matrix.h"
+#include "csrmv_device.h"
+
+#include <hip/hip_runtime.h>
+
+template <typename T, int SUBWAVE_SIZE, int WG_SIZE>
+__global__
+void csrmvn_kernel_host_pointer(int m, T alpha, const int *ptr, const int *col,
+                                const T *val, const T *x, T beta, T *y)
+{
+    csrmvn_general_device<T, SUBWAVE_SIZE, WG_SIZE>(
+        m, alpha, ptr, col, val, x, beta, y);
+}
+
+template <typename T, int SUBWAVE_SIZE, int WG_SIZE>
+__global__
+void csrmvn_kernel_device_pointer(int m, const T *alpha, const int *ptr, const int *col,
+                                const T *val, const T *x, const T *beta, T *y)
+{
+    csrmvn_general_device<T, SUBWAVE_SIZE, WG_SIZE>(
+        m, *alpha, ptr, col, val, x, *beta, y);
+}
 
 template <typename T>
 rocsparseStatus_t rocsparseTcsrmv(rocsparseHandle_t handle,
@@ -31,10 +53,36 @@ rocsparseStatus_t rocsparseTcsrmv(rocsparseHandle_t handle,
         return ROCSPARSE_STATUS_NOT_INITIALIZED;
     }
 
-    // Logging
+    // Logging TODO bench logging
     if (handle->pointer_mode == ROCSPARSE_POINTER_MODE_HOST)
     {
-        // TODO
+        log_trace(handle,
+                  replaceX<T>("rocsparse_Xcsrmv"),
+                  transA,
+                  m, n, nnz,
+                  *alpha,
+                  (const void*&) descrA,
+                  (const void*&) csrValA,
+                  (const void*&) csrRowPtrA,
+                  (const void*&) csrColIndA,
+                  (const void*&) x,
+                  *beta,
+                  (const void*&) y);
+    }
+    else
+    {
+        log_trace(handle,
+                  replaceX<T>("rocsparse_Xcsrmv"),
+                  transA,
+                  m, n, nnz,
+                  (const void*&) alpha,
+                  (const void*&) descrA,
+                  (const void*&) csrValA,
+                  (const void*&) csrRowPtrA,
+                  (const void*&) csrColIndA,
+                  (const void*&) x,
+                  (const void*&) beta,
+                  (const void*&) y);
     }
 
     // Check matrix type
@@ -106,7 +154,177 @@ rocsparseStatus_t rocsparseTcsrmv(rocsparseHandle_t handle,
     // Run different csrmv kernels
     if (transA == ROCSPARSE_OPERATION_NON_TRANSPOSE)
     {
-        // TODO
+#define CSRMVN_DIM 512
+
+        int nnz_per_row = nnz / m;
+
+        dim3 csrmvn_blocks((m-1)/CSRMVN_DIM+1);
+        dim3 csrmvn_threads(CSRMVN_DIM);
+
+        if (handle->pointer_mode == ROCSPARSE_POINTER_MODE_DEVICE)
+        {
+            if (handle->warp_size == 32)
+            {
+                if (nnz_per_row < 4)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 2, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
+                }
+                else if (nnz_per_row < 8)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 4, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
+                }
+                else if (nnz_per_row < 16)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 8, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
+                }
+                else if (nnz_per_row < 32)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 16, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
+                }
+                else
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 32, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
+                }
+            }
+            else if (handle->warp_size == 64)
+            {
+                if (nnz_per_row < 4)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 2, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
+                }
+                else if (nnz_per_row < 8)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 4, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
+                }
+                else if (nnz_per_row < 16)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 8, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
+                }
+                else if (nnz_per_row < 32)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 16, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
+                }
+                else if (nnz_per_row < 64)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 32, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
+                }
+                else
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 64, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
+                }
+            }
+            else
+            {
+                return ROCSPARSE_STATUS_ARCH_MISMATCH;
+            }
+        }
+        else
+        {
+            if (*alpha == 0.0 && *beta == 1.0)
+            {
+                return ROCSPARSE_STATUS_SUCCESS;
+            }
+
+            if (handle->warp_size == 32)
+            {
+                if (nnz_per_row < 4)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 2, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, *alpha, csrRowPtrA, csrColIndA, csrValA, x, *beta, y);
+                }
+                else if (nnz_per_row < 8)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 4, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, *alpha, csrRowPtrA, csrColIndA, csrValA, x, *beta, y);
+                }
+                else if (nnz_per_row < 16)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 8, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, *alpha, csrRowPtrA, csrColIndA, csrValA, x, *beta, y);
+                }
+                else if (nnz_per_row < 32)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 16, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, *alpha, csrRowPtrA, csrColIndA, csrValA, x, *beta, y);
+                }
+                else
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 32, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, *alpha, csrRowPtrA, csrColIndA, csrValA, x, *beta, y);
+                }
+            }
+            else if (handle->warp_size == 64)
+            {
+                if (nnz_per_row < 4)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 2, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, *alpha, csrRowPtrA, csrColIndA, csrValA, x, *beta, y);
+                }
+                else if (nnz_per_row < 8)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 4, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, *alpha, csrRowPtrA, csrColIndA, csrValA, x, *beta, y);
+                }
+                else if (nnz_per_row < 16)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 8, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, *alpha, csrRowPtrA, csrColIndA, csrValA, x, *beta, y);
+                }
+                else if (nnz_per_row < 32)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 16, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, *alpha, csrRowPtrA, csrColIndA, csrValA, x, *beta, y);
+                }
+                else if (nnz_per_row < 64)
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 32, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, *alpha, csrRowPtrA, csrColIndA, csrValA, x, *beta, y);
+                }
+                else
+                {
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 64, CSRMVN_DIM>),
+                                       csrmvn_blocks, csrmvn_threads, 0, stream,
+                                       m, *alpha, csrRowPtrA, csrColIndA, csrValA, x, *beta, y);
+                }
+            }
+            else
+            {
+                return ROCSPARSE_STATUS_ARCH_MISMATCH;
+            }
+        }
+#undef CSRMVN_DIM
     }
     else
     {
