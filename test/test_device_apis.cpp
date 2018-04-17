@@ -1,3 +1,7 @@
+/* ************************************************************************
+ * Copyright 2016 Advanced Micro Devices, Inc.
+ * ************************************************************************ */
+
 #include <vector>
 #include <gtest/gtest.h>
 #include <hip/hip_runtime.h>

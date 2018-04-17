@@ -1,3 +1,7 @@
+# ########################################################################
+# Copyright 2016 Advanced Micro Devices, Inc.
+# ########################################################################
+
 # Function to add rocsparse examples
 function(add_rocsparse_example EXAMPLE_SOURCE)
   get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SOURCE} NAME_WE)

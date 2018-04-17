@@ -1,3 +1,7 @@
+# ########################################################################
+# Copyright 2016 Advanced Micro Devices, Inc.
+# ########################################################################
+
 # Package that helps me set visibility for function names exported from shared library
 include(GenerateExportHeader)
 
