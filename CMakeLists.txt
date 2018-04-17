@@ -75,9 +75,9 @@ endif()
 
 # Build options
 option(BUILD_SHARED_LIBS "Build rocSPARSE as a shared library" ON)
-option(BUILD_VERBOSE "Output additional build information" ON)
-option(BUILD_TEST "Build tests (requires googletest)" ON)
-option(BUILD_BENCHMARK "Build benchmarks (requires googlebenchmark)" ON)
+option(BUILD_VERBOSE "Output additional build information" OFF)
+option(BUILD_TEST "Build tests (requires googletest)" OFF)
+option(BUILD_BENCHMARK "Build benchmarks (requires googlebenchmark)" OFF)
 option(BUILD_EXAMPLE "Build examples" ON)
 
 # Test dependencies

@@ -27,4 +27,4 @@ function(add_rocsparse_benchmark BENCHMARK_SOURCE)
 endfunction()
 
 # Benchmarks
-#add_rocsparse_benchmark(benchmark_spmv.cpp)
+add_rocsparse_benchmark(benchmark_spmv.cpp)

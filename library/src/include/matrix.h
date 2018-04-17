@@ -2,14 +2,11 @@
  * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include <rocsparse.h>
+#ifndef ROCSPARSE_MATRIX_H_
+#define ROCSPARSE_MATRIX_H_
 
-int main(int argc, char *argv[])
-{
-    rocsparseHandle_t handle;
-    rocsparseCreate(&handle);
+typedef struct rocsparseMatDescr {
+    int todo;
+} rocsparseMatDescr;
 
-    rocsparseDestroy(handle);
-
-    return 0;
-}
+#endif // ROCSPARSE_MATRIX_H_

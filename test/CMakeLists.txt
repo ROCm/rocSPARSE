@@ -35,3 +35,4 @@ endfunction()
 # Tests
 add_rocsparse_test("device_apis" test_device_apis.cpp)
 add_rocsparse_test("rocsparse.handle" test_rocsparse_handle.cpp)
+add_rocsparse_test("rocsparse.csrmv" test_rocsparse_csrmv.cpp)
