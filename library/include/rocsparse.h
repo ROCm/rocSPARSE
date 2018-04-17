@@ -61,12 +61,20 @@ typedef enum {
     ROCSPARSE_INDEX_BASE_ONE  = 1
 } rocsparseIndexBase_t;
 
+/*! \brief Used to specify the matrix type. */
+typedef enum {
+    ROCSPARSE_MATRIX_TYPE_GENERAL   = 0,
+    ROCSPARSE_MATRIX_TYPE_SYMMETRIC = 1,
+    ROCSPARSE_MATRIX_TYPE_HERMITIAN = 2
+} rocsparseMatrixType_t;
+
 /*! \brief Indicates if layer is active with bitmask. */
 typedef enum {
     ROCSPARSE_LAYER_MODE_NONE      = 0b0000000000,
     ROCSPARSE_LAYER_MODE_LOG_TRACE = 0b0000000001,
     ROCSPARSE_LAYER_MODE_LOG_BENCH = 0b0000000010
 } rocsparseLayerMode_t;
+
 
 
 
