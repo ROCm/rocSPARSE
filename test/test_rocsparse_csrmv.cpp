@@ -78,7 +78,8 @@ TEST(Tests, rocsparseScsrmv)
         {
             sum += alpha * Aval[j] * x[Acol[j]];
         }
-        ASSERT_NEAR(result[i], sum, 0.0);
+        float eps = std::max(fabs(sum)*1e-4f, 1e-7);
+        ASSERT_NEAR(result[i], sum, eps);
     }
 
 
@@ -153,7 +154,8 @@ TEST(Tests, rocsparseDcsrmv)
         {
             sum += alpha * Aval[j] * x[Acol[j]];
         }
-        ASSERT_NEAR(result[i], sum, 0.0);
+        double eps = std::max(fabs(sum) * 1e-8, 1e-15);
+        ASSERT_NEAR(result[i], sum, eps);
     }
 
 
