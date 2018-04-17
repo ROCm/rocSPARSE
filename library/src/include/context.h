@@ -23,6 +23,8 @@ struct rocsparseContext
     int device;
     // device properties
     hipDeviceProp_t properties;
+    // device warp size
+    int warp_size;
     // stream
     hipStream_t stream;
     // pointer mode
