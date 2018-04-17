@@ -1,3 +1,6 @@
+# Package that helps me set visibility for function names exported from shared library
+include(GenerateExportHeader)
+
 # Verbose build info
 if(BUILD_VERBOSE)
   message(STATUS "rocsparse_VERSION: ${rocsparse_VERSION}")
@@ -22,6 +25,9 @@ if(BUILD_VERBOSE)
   message(STATUS "\t==>CMAKE_SHARED_LINKER_FLAGS_DEBUG: ${CMAKE_SHARED_LINKER_FLAGS_DEBUG}")
   message(STATUS "\t==>CMAKE_SHARED_LINKER_FLAGS_RELEASE: ${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 endif()
+
+# .so version
+set(rocsparse_SOVERSION 0)
 
 # Configure a header file to pass the rocSPARSE version
 configure_file(
@@ -57,4 +63,51 @@ target_include_directories(rocsparse
   PUBLIC  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/library/include>
 	  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
           $<INSTALL_INTERFACE:include>
+)
+
+# Target properties
+set_target_properties(rocsparse PROPERTIES VERSION ${rocsparse_VERSION} SOVERSION ${rocsparse_SOVERSION} CXX_EXTENSIONS NO)
+set_target_properties(rocsparse PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
+set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")
+set_target_properties(rocsparse PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON)
+generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse_export.h)
+
+# Installation
+rocm_install_targets(
+  TARGETS rocsparse
+  INCLUDE
+    ${CMAKE_SOURCE_DIR}/library/include
+    ${CMAKE_BINARY_DIR}/include
+  PREFIX rocsparse
+)
+
+rocm_export_targets(
+  TARGETS rocsparse-targets
+  PREFIX rocsparse
+  DEPENDS PACKAGE hip
+  NAMESPACE roc::
+)
+
+# Package specific CPACK vars
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip_hcc (>= 1.3)")
+set(CPACK_RPM_PACKAGE_REQUIRES "hip_hcc >= 1.3")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.md")
+
+if(NOT CPACK_PACKAGING_INSTALL_PREFIX)
+  set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+endif()
+
+set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include")
+
+# Package name
+set(package_name rocsparse)
+
+set(ROCSPARSE_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file")
+
+rocm_create_package(
+  NAME ${package_name}
+  DESCRIPTION "Radeon Open Compute SPARSE library"
+  MAINTAINER "Nico Trost <nico.trost@amd.com>"
+  LDCONFIG
+  LDCONFIG_DIR ${ROCSPARSE_CONFIG_DIR}
 )
