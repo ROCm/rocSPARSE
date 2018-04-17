@@ -104,6 +104,22 @@ if(BUILD_TEST)
     )
   endif()
   find_package(GTest REQUIRED)
+  # Download some test matrices
+  set(TEST_MATRICES
+    nos1
+    nos2
+    nos3
+    nos4
+    nos5
+    nos6
+    nos7
+  )
+  foreach(m ${TEST_MATRICES})
+    file(DOWNLOAD ftp://math.nist.gov/pub/MatrixMarket2/Harwell-Boeing/lanpro/${m}.mtx.gz
+       ${CMAKE_CURRENT_BINARY_DIR}/matrices/${m}.mtx.gz)
+    execute_process(COMMAND gzip -d -f ${m}.mtx.gz
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
+  endforeach()
 endif()
 
 # Benchmark dependencies
