@@ -1,14 +1,13 @@
 /* ************************************************************************
- * Copyright 2018 Advanced Micro Devices, Inc.
+ * Copyright 2016 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "context.h"
+#include "matrix.h"
 #include "rocsparse.h"
 
-extern "C" rocsparseStatus_t rocsparseCreate(rocsparseHandle_t *handle)
+extern "C" rocsparseStatus_t rocsparseCreateMatDescr(rocsparseMatDescr_t *descrA)
 {
-    // Check if handle is valid
-    if (handle == nullptr)
+    if (descrA == nullptr)
     {
         return ROCSPARSE_STATUS_INVALID_POINTER;
     }
@@ -18,7 +17,7 @@ extern "C" rocsparseStatus_t rocsparseCreate(rocsparseHandle_t *handle)
     }
 }
 
-extern "C" rocsparseStatus_t rocsparseDestroy(rocsparseHandle_t handle)
+extern "C" rocsparseStatus_t rocsparseDestroyMatDescr(rocsparseMatDescr_t descrA)
 {
     return ROCSPARSE_STATUS_SUCCESS;
 }
