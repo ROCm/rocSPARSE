@@ -124,7 +124,14 @@ ROCSPARSE_EXPORT
 rocsparseStatus_t rocsparseGetPointerMode(rocsparseHandle_t handle,
                                           rocsparsePointerMode_t *mode);
 
-
+/********************************************************************************
+ * \brief Get rocSPARSE version
+ * version % 100        = patch level
+ * version / 100 % 1000 = minor version
+ * version / 100000     = major version
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparseStatus_t rocsparseGetVersion(rocsparseHandle_t handle, int *version);
 
 /*
  * ===========================================================================

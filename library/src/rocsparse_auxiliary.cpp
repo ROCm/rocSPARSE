@@ -87,3 +87,24 @@ extern "C" rocsparseStatus_t rocsparseGetPointerMode(rocsparseHandle_t handle,
     log_trace(handle, "rocsparseGetPointerMode", *mode);
     return ROCSPARSE_STATUS_SUCCESS;
 }
+
+/********************************************************************************
+ * \brief Get rocSPARSE version
+ * version % 100        = patch level
+ * version / 100 % 1000 = minor version
+ * version / 100000     = major version
+ *******************************************************************************/
+extern "C" rocsparseStatus_t rocsparseGetVersion(rocsparseHandle_t handle,
+                                                 int *version)
+{
+    // Check if handle is valid
+    if (handle == nullptr)
+    {
+        return ROCSPARSE_STATUS_INVALID_POINTER;
+    }
+    *version = ROCSPARSE_VERSION_MAJOR * 100000
+             + ROCSPARSE_VERSION_MINOR * 100
+             + ROCSPARSE_VERSION_PATCH;
+    log_trace(handle, "rocsparseGetVersion", *version);
+    return ROCSPARSE_STATUS_SUCCESS;
+}
