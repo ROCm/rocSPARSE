@@ -32,10 +32,10 @@ struct rocsparseContext
     hipDeviceProp_t properties;
     // device warp size
     int warp_size;
-    // stream
-    hipStream_t stream;
-    // pointer mode
-    rocsparsePointerMode_t pointer_mode;
+    // stream ; default stream is system stream NULL
+    hipStream_t stream = 0;
+    // pointer mode ; default mode is host
+    rocsparsePointerMode_t pointer_mode = ROCSPARSE_POINTER_MODE_HOST;
     // logging mode
     rocsparseLayerMode_t layer_mode;
 

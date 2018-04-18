@@ -113,6 +113,32 @@ ROCSPARSE_EXPORT
 rocsparseStatus_t rocsparseDestroyMatDescr(rocsparseMatDescr_t descrA);
 
 /********************************************************************************
+ * \brief Set the index base of the matrix descriptor.
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparseStatus_t rocsparseSetMatIndexBase(rocsparseMatDescr_t descrA,
+                                           rocsparseIndexBase_t base);
+
+/********************************************************************************
+ * \brief Returns the index base of the matrix descriptor.
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparseIndexBase_t rocsparseGetMatIndexBase(const rocsparseMatDescr_t descrA);
+
+/********************************************************************************
+ * \brief Set the matrix type of the matrix descriptor.
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparseStatus_t rocsparseSetMatType(rocsparseMatDescr_t descrA,
+                                      rocsparseMatrixType_t type);
+
+/********************************************************************************
+ * \brief Returns the matrix type of the matrix descriptor.
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparseMatrixType_t rocsparseGetMatType(const rocsparseMatDescr_t descrA);
+
+/********************************************************************************
  * \brief Indicates whether the scalar value pointers are on the host or device.
  * Set pointer mode, can be host or device
  *******************************************************************************/
