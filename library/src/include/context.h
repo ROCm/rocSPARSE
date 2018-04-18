@@ -16,8 +16,15 @@
 ******************************************************************************/
 struct rocsparseContext
 {
+    // Constructor
     rocsparseContext();
+    // Destructor
     ~rocsparseContext();
+
+    // Set stream
+    rocsparseStatus_t setStream(hipStream_t streamId);
+    // Get stream
+    rocsparseStatus_t getStream(hipStream_t *streamId) const;
 
     // device id
     int device;
@@ -32,6 +39,7 @@ struct rocsparseContext
     // logging mode
     rocsparseLayerMode_t layer_mode;
 
+    // logging streams
     std::ofstream log_trace_ofs;
     std::ofstream log_bench_ofs;
     std::ostream *log_trace_os;
