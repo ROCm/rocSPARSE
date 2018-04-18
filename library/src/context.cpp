@@ -7,7 +7,6 @@
 #include "rocsparse.h"
 #include "utility.h"
 
-
 rocsparseContext::rocsparseContext()
 {
     // Default device is active device
@@ -54,45 +53,4 @@ rocsparseContext::~rocsparseContext()
     {
         log_bench_ofs.close();
     }
-}
-
-
-
-extern "C" rocsparseStatus_t rocsparseCreate(rocsparseHandle_t *handle)
-{
-    // Check if handle is valid
-    if (handle == nullptr)
-    {
-        return ROCSPARSE_STATUS_INVALID_POINTER;
-    }
-    else
-    {
-        // Allocate
-        try
-        {
-            *handle = new rocsparseContext;
-            log_trace(*handle, "rocsparseCreate");
-
-        }
-        catch(rocsparseStatus_t status)
-        {
-            return status;
-        }
-        return ROCSPARSE_STATUS_SUCCESS;
-    }
-}
-
-extern "C" rocsparseStatus_t rocsparseDestroy(rocsparseHandle_t handle)
-{
-    log_trace(handle, "rocsparseDestroy");
-    // Destruct
-    try
-    {
-        delete handle;
-    }
-    catch(rocsparseStatus_t status)
-    {
-        return status;
-    }
-    return ROCSPARSE_STATUS_SUCCESS;
 }

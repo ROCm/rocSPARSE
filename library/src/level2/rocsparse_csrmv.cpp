@@ -167,31 +167,31 @@ rocsparseStatus_t rocsparseTcsrmv(rocsparseHandle_t handle,
             {
                 if (nnz_per_row < 4)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 2, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 2, CSRMVN_DIM>),
                                        csrmvn_blocks, csrmvn_threads, 0, stream,
                                        m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
                 }
                 else if (nnz_per_row < 8)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 4, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 4, CSRMVN_DIM>),
                                        csrmvn_blocks, csrmvn_threads, 0, stream,
                                        m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
                 }
                 else if (nnz_per_row < 16)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 8, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 8, CSRMVN_DIM>),
                                        csrmvn_blocks, csrmvn_threads, 0, stream,
                                        m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
                 }
                 else if (nnz_per_row < 32)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 16, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 16, CSRMVN_DIM>),
                                        csrmvn_blocks, csrmvn_threads, 0, stream,
                                        m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
                 }
                 else
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 32, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 32, CSRMVN_DIM>),
                                        csrmvn_blocks, csrmvn_threads, 0, stream,
                                        m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
                 }
@@ -200,37 +200,37 @@ rocsparseStatus_t rocsparseTcsrmv(rocsparseHandle_t handle,
             {
                 if (nnz_per_row < 4)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 2, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 2, CSRMVN_DIM>),
                                        csrmvn_blocks, csrmvn_threads, 0, stream,
                                        m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
                 }
                 else if (nnz_per_row < 8)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 4, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 4, CSRMVN_DIM>),
                                        csrmvn_blocks, csrmvn_threads, 0, stream,
                                        m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
                 }
                 else if (nnz_per_row < 16)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 8, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 8, CSRMVN_DIM>),
                                        csrmvn_blocks, csrmvn_threads, 0, stream,
                                        m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
                 }
                 else if (nnz_per_row < 32)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 16, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 16, CSRMVN_DIM>),
                                        csrmvn_blocks, csrmvn_threads, 0, stream,
                                        m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
                 }
                 else if (nnz_per_row < 64)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 32, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 32, CSRMVN_DIM>),
                                        csrmvn_blocks, csrmvn_threads, 0, stream,
                                        m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
                 }
                 else
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 64, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 64, CSRMVN_DIM>),
                                        csrmvn_blocks, csrmvn_threads, 0, stream,
                                        m, alpha, csrRowPtrA, csrColIndA, csrValA, x, beta, y);
                 }
