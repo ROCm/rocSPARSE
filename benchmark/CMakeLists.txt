@@ -6,6 +6,10 @@
 function(add_rocsparse_benchmark BENCHMARK_SOURCE)
   get_filename_component(BENCHMARK_TARGET ${BENCHMARK_SOURCE} NAME_WE)
   add_executable(${BENCHMARK_TARGET} ${BENCHMARK_SOURCE})
+  target_include_directories(${BENCHMARK_TARGET} SYSTEM
+    PUBLIC
+      ${CMAKE_SOURCE_DIR}/utils
+  )
   if(HIP_PLATFORM STREQUAL "hcc")
     target_link_libraries(${BENCHMARK_TARGET}
       PRIVATE
@@ -28,3 +32,4 @@ endfunction()
 
 # Benchmarks
 add_rocsparse_benchmark(benchmark_spmv.cpp)
+add_rocsparse_benchmark(benchmark_csrmv_mtx.cpp)
