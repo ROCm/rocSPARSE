@@ -9,15 +9,14 @@
 
 struct rocsparseMatDescr
 {
-    // Constructor
-    rocsparseMatDescr();
-    // Destructor
-    ~rocsparseMatDescr();
-
-    // Matrix index base
-    rocsparseIndexBase_t base;
     // Matrix type
-    rocsparseMatrixType_t type;
+    rocsparseMatrixType_t type = ROCSPARSE_MATRIX_TYPE_GENERAL;
+    // Fill mode TODO
+//    rocsparseFillMode_t fill;
+    // Diagonal type
+//    rocsparseDiagType_t diag;
+    // Index base
+    rocsparseIndexBase_t base = ROCSPARSE_INDEX_BASE_ZERO;
 };
 
 #endif // ROCSPARSE_MATRIX_H_

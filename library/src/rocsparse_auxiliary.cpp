@@ -15,7 +15,8 @@
  * to all subsequent library function calls.
  * It should be destroyed at the end using rocsparseDestroy().
  *******************************************************************************/
-extern "C" rocsparseStatus_t rocsparseCreate(rocsparseHandle_t *handle)
+extern "C"
+rocsparseStatus_t rocsparseCreate(rocsparseHandle_t *handle)
 {
     // Check if handle is valid
     if (handle == nullptr)
@@ -42,7 +43,8 @@ extern "C" rocsparseStatus_t rocsparseCreate(rocsparseHandle_t *handle)
 /********************************************************************************
  * \brief destroy handle
  *******************************************************************************/
-extern "C" rocsparseStatus_t rocsparseDestroy(rocsparseHandle_t handle)
+extern "C"
+rocsparseStatus_t rocsparseDestroy(rocsparseHandle_t handle)
 {
     log_trace(handle, "rocsparseDestroy");
     // Destruct
@@ -61,8 +63,9 @@ extern "C" rocsparseStatus_t rocsparseDestroy(rocsparseHandle_t handle)
  * \brief Indicates whether the scalar value pointers are on the host or device.
  * Set pointer mode, can be host or device
  *******************************************************************************/
-extern "C" rocsparseStatus_t rocsparseSetPointerMode(rocsparseHandle_t handle,
-                                                     rocsparsePointerMode_t mode)
+extern "C"
+rocsparseStatus_t rocsparseSetPointerMode(rocsparseHandle_t handle,
+                                          rocsparsePointerMode_t mode)
 {
     // Check if handle is valid
     if (handle == nullptr)
@@ -77,8 +80,9 @@ extern "C" rocsparseStatus_t rocsparseSetPointerMode(rocsparseHandle_t handle,
 /********************************************************************************
  * \brief Get pointer mode, can be host or device.
  *******************************************************************************/
-extern "C" rocsparseStatus_t rocsparseGetPointerMode(rocsparseHandle_t handle,
-                                                     rocsparsePointerMode_t *mode)
+extern "C"
+rocsparseStatus_t rocsparseGetPointerMode(rocsparseHandle_t handle,
+                                          rocsparsePointerMode_t *mode)
 {
     // Check if handle is valid
     if (handle == nullptr)
@@ -94,8 +98,9 @@ extern "C" rocsparseStatus_t rocsparseGetPointerMode(rocsparseHandle_t handle,
  *! \brief Set rocsparse stream used for all subsequent library function calls.
  * If not set, all hip kernels will take the default NULL stream.
  *******************************************************************************/
-extern "C" rocsparseStatus_t rocsparseSetStream(rocsparseHandle_t handle,
-                                                hipStream_t streamId)
+extern "C"
+rocsparseStatus_t rocsparseSetStream(rocsparseHandle_t handle,
+                                     hipStream_t streamId)
 {
     // Check if handle is valid
     if (handle == nullptr)
@@ -109,8 +114,9 @@ extern "C" rocsparseStatus_t rocsparseSetStream(rocsparseHandle_t handle,
 /********************************************************************************
  *! \brief Get rocsparse stream used for all subsequent library function calls.
  *******************************************************************************/
-extern "C" rocsparseStatus_t rocsparseGetStream(rocsparseHandle_t handle,
-                                                hipStream_t *streamId)
+extern "C"
+rocsparseStatus_t rocsparseGetStream(rocsparseHandle_t handle,
+                                     hipStream_t *streamId)
 {
     // Check if handle is valid
     if (handle == nullptr)
@@ -127,8 +133,8 @@ extern "C" rocsparseStatus_t rocsparseGetStream(rocsparseHandle_t handle,
  * version / 100 % 1000 = minor version
  * version / 100000     = major version
  *******************************************************************************/
-extern "C" rocsparseStatus_t rocsparseGetVersion(rocsparseHandle_t handle,
-                                                 int *version)
+extern "C"
+rocsparseStatus_t rocsparseGetVersion(rocsparseHandle_t handle, int *version)
 {
     // Check if handle is valid
     if (handle == nullptr)

@@ -12,10 +12,7 @@ rocsparseContext::rocsparseContext()
     // Default device is active device
     THROW_IF_HIP_ERROR(hipGetDevice(&device));
     THROW_IF_HIP_ERROR(hipGetDeviceProperties(&properties, device));
-    // Default is system stream
-    stream = 0;
-    // Default pointer mode is host
-    pointer_mode = ROCSPARSE_POINTER_MODE_HOST;
+
     // Device warp size
     warp_size = properties.warpSize;
 
