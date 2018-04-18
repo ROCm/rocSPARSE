@@ -54,3 +54,16 @@ rocsparseContext::~rocsparseContext()
         log_bench_ofs.close();
     }
 }
+
+rocsparseStatus_t rocsparseContext::setStream(hipStream_t streamId)
+{
+    // TODO check if stream is valid
+    stream = streamId;
+    return ROCSPARSE_STATUS_SUCCESS;
+}
+
+rocsparseStatus_t rocsparseContext::getStream(hipStream_t *streamId) const
+{
+    *streamId = stream;
+    return ROCSPARSE_STATUS_SUCCESS;
+}

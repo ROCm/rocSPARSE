@@ -14,6 +14,8 @@
 #include "rocsparse_version.h"
 #include "rocsparse_export.h"
 
+#include <hip/hip_runtime_api.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -125,6 +127,21 @@ rocsparseStatus_t rocsparseGetPointerMode(rocsparseHandle_t handle,
                                           rocsparsePointerMode_t *mode);
 
 /********************************************************************************
+ *! \brief Set rocsparse stream used for all subsequent library function calls.
+ * If not set, all hip kernels will take the default NULL stream.
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparseStatus_t rocsparseSetStream(rocsparseHandle_t handle,
+                                     hipStream_t streamId);
+
+/********************************************************************************
+ *! \brief Get rocsparse stream used for all subsequent library function calls.
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparseStatus_t rocsparseGetStream(rocsparseHandle_t handle,
+                                     hipStream_t *streamId);
+
+/********************************************************************************
  * \brief Get rocSPARSE version
  * version % 100        = patch level
  * version / 100 % 1000 = minor version
@@ -132,6 +149,8 @@ rocsparseStatus_t rocsparseGetPointerMode(rocsparseHandle_t handle,
  *******************************************************************************/
 ROCSPARSE_EXPORT
 rocsparseStatus_t rocsparseGetVersion(rocsparseHandle_t handle, int *version);
+
+
 
 /*
  * ===========================================================================

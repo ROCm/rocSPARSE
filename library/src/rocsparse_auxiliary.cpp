@@ -6,6 +6,8 @@
 #include "rocsparse.h"
 #include "utility.h"
 
+#include <hip/hip_runtime_api.h>
+
 /********************************************************************************
  * \brief rocsparseHandle_t is a structure holding the rocsparse library context.
  * It must be initialized using rocsparseCreate()
@@ -86,6 +88,37 @@ extern "C" rocsparseStatus_t rocsparseGetPointerMode(rocsparseHandle_t handle,
     *mode = handle->pointer_mode;
     log_trace(handle, "rocsparseGetPointerMode", *mode);
     return ROCSPARSE_STATUS_SUCCESS;
+}
+
+/********************************************************************************
+ *! \brief Set rocsparse stream used for all subsequent library function calls.
+ * If not set, all hip kernels will take the default NULL stream.
+ *******************************************************************************/
+extern "C" rocsparseStatus_t rocsparseSetStream(rocsparseHandle_t handle,
+                                                hipStream_t streamId)
+{
+    // Check if handle is valid
+    if (handle == nullptr)
+    {
+        return ROCSPARSE_STATUS_INVALID_POINTER;
+    }
+    log_trace(handle, "rocsparseSetStream", streamId);
+    return handle->setStream(streamId);
+}
+
+/********************************************************************************
+ *! \brief Get rocsparse stream used for all subsequent library function calls.
+ *******************************************************************************/
+extern "C" rocsparseStatus_t rocsparseGetStream(rocsparseHandle_t handle,
+                                                hipStream_t *streamId)
+{
+    // Check if handle is valid
+    if (handle == nullptr)
+    {
+        return ROCSPARSE_STATUS_INVALID_POINTER;
+    }
+    log_trace(handle, "rocsparseGetStream", *streamId);
+    return handle->getStream(streamId);
 }
 
 /********************************************************************************
