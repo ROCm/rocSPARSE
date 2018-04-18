@@ -9,5 +9,6 @@ set(rocsparse_source
   src/status.cpp
 
 
+  src/rocsparse_auxiliary.cpp
   src/level2/rocsparse_csrmv.cpp
 )

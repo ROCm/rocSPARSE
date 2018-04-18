@@ -110,6 +110,22 @@ rocsparseStatus_t rocsparseCreateMatDescr(rocsparseMatDescr_t *descrA);
 ROCSPARSE_EXPORT
 rocsparseStatus_t rocsparseDestroyMatDescr(rocsparseMatDescr_t descrA);
 
+/********************************************************************************
+ * \brief Indicates whether the scalar value pointers are on the host or device.
+ * Set pointer mode, can be host or device
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparseStatus_t rocsparseSetPointerMode(rocsparseHandle_t handle,
+                                          rocsparsePointerMode_t mode);
+/********************************************************************************
+ * \brief Get pointer mode, can be host or device.
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparseStatus_t rocsparseGetPointerMode(rocsparseHandle_t handle,
+                                          rocsparsePointerMode_t *mode);
+
+
+
 /*
  * ===========================================================================
  *    level 1 SPARSE
