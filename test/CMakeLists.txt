@@ -9,6 +9,7 @@ function(add_rocsparse_test TEST_NAME TEST_SOURCE)
   target_include_directories(${TEST_TARGET} SYSTEM
     PUBLIC
       ${GTEST_INCLUDE_DIRS}
+      ${CMAKE_SOURCE_DIR}/utils
   )
   if(HIP_PLATFORM STREQUAL "hcc")
     target_link_libraries(${TEST_TARGET}

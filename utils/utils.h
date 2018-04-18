@@ -2,8 +2,8 @@
  * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCSPARSE_TEST_UTILS_H_
-#define ROCSPARSE_TEST_UTILS_H_
+#ifndef ROCSPARSE_UTILS_H_
+#define ROCSPARSE_UTILS_H_
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -261,4 +261,4 @@ inline void coo_to_csr(int nrow, int ncol, int nnz,
     }
 }
 
-#endif // ROCSPARSE_TEST_UTILS_H_
+#endif // ROCSPARSE_UTILS_H_

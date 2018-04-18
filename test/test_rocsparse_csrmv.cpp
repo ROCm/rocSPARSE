@@ -2,7 +2,7 @@
  * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#include "test_utils.h"
+#include "utils.h"
 
 #include <stdlib.h>
 #include <gtest/gtest.h>
@@ -82,7 +82,20 @@ TEST(Tests, rocsparseScsrmv)
         ASSERT_NEAR(result[i], sum, eps);
     }
 
+    free(Aptr);
+    free(Acol);
+    free(Aval);
+    free(x);
+    free(y);
+    free(result);
 
+    HIP_CHECK(hipFree(dAptr));
+    HIP_CHECK(hipFree(dAcol));
+    HIP_CHECK(hipFree(dAval));
+    HIP_CHECK(hipFree(dx));
+    HIP_CHECK(hipFree(dy));
+
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -158,7 +171,20 @@ TEST(Tests, rocsparseDcsrmv)
         ASSERT_NEAR(result[i], sum, eps);
     }
 
+    free(Aptr);
+    free(Acol);
+    free(Aval);
+    free(x);
+    free(y);
+    free(result);
 
+    HIP_CHECK(hipFree(dAptr));
+    HIP_CHECK(hipFree(dAcol));
+    HIP_CHECK(hipFree(dAval));
+    HIP_CHECK(hipFree(dx));
+    HIP_CHECK(hipFree(dy));
+
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -264,6 +290,7 @@ TEST(Tests, rocsparseScsrmv_nos1)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -369,6 +396,7 @@ TEST(Tests, rocsparseScsrmv_nos2)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -474,6 +502,7 @@ TEST(Tests, rocsparseScsrmv_nos3)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -579,6 +608,7 @@ TEST(Tests, rocsparseScsrmv_nos4)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -684,6 +714,7 @@ TEST(Tests, rocsparseScsrmv_nos5)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -789,6 +820,7 @@ TEST(Tests, rocsparseScsrmv_nos6)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -894,6 +926,7 @@ TEST(Tests, rocsparseScsrmv_nos7)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -999,6 +1032,7 @@ TEST(Tests, rocsparseDcsrmv_nos1)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -1104,6 +1138,7 @@ TEST(Tests, rocsparseDcsrmv_nos2)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -1209,6 +1244,7 @@ TEST(Tests, rocsparseDcsrmv_nos3)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -1314,6 +1350,7 @@ TEST(Tests, rocsparseDcsrmv_nos4)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -1419,6 +1456,7 @@ TEST(Tests, rocsparseDcsrmv_nos5)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -1524,6 +1562,7 @@ TEST(Tests, rocsparseDcsrmv_nos6)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 
@@ -1629,6 +1668,7 @@ TEST(Tests, rocsparseDcsrmv_nos7)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
+    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
     ROCSPARSE_CHECK(rocsparseDestroy(handle));
 }
 

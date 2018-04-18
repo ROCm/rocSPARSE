@@ -91,15 +91,16 @@ void run_benchmark(benchmark::State &state, const hipStream_t stream, int batch,
 
 int main(int argc, char *argv[])
 {
-    int ndim = 2000;
+    if (argc < 2)
+    {
+        fprintf(stderr, "%s <matrix.mtx> [<trials> <batch_size>]\n", argv[0]);
+        return -1;
+    }
+
     int trials = 200;
     int batch_size = 1;
 
     // Parse command line
-    if (argc > 1)
-    {
-        ndim = atoi(argv[1]);
-    }
     if (argc > 2)
     {
         trials = atoi(argv[2]);
@@ -123,19 +124,42 @@ int main(int argc, char *argv[])
     HIP_CHECK(hipGetDeviceProperties(&devProp, device_id));
     printf("[HIP] Device name: %s\n", devProp.name);
 
-    // Generate problem
+    // Read matrix from file
+    int nrow;
+    int ncol;
+    int nnz;
+
+    int *coo_row = NULL;
+    int *coo_col = NULL;
+    double *coo_val = NULL;
+
+    if (readMatrixFromMTX(argv[1], nrow, ncol, nnz,
+                          &coo_row, &coo_col, &coo_val) != 0)
+    {
+        fprintf(stderr, "Cannot read MTX file %s\n", argv[1]);
+        return -1;
+    }
+    printf("[MTX] %d x %d matrix with %d nnz\n", nrow, ncol, nnz);
+
+    // Convert to CSR (host) TODO
     int *Aptr = NULL;
     int *Acol = NULL;
     float *Avalf = NULL;
     double *Avald = NULL;
-    int nrow = gen2DLaplacianUS(ndim, &Aptr, &Acol, &Avald);
-    int nnz = Aptr[nrow];
+
+    coo_to_csr(nrow, ncol, nnz, coo_row, coo_col, coo_val,
+               &Aptr, &Acol, &Avald);
 
     Avalf = (float*) malloc(sizeof(float)*nnz);
     for (int i=0; i<nnz; ++i)
     {
         Avalf[i] = (float) Avald[i];
     }
+
+    // Clean up COO structures
+    free(coo_row);
+    free(coo_col);
+    free(coo_val);
 
     // Sample some random data
     srand(12345ULL);
