@@ -1,12 +1,13 @@
 /* ************************************************************************
- * Copyright 2016 Advanced Micro Devices, Inc.
+ * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCSPARSE_UTILITY_H_
-#define ROCSPARSE_UTILITY_H_
+#pragma once
+#ifndef UTILITY_H
+#define UTILITY_H
 
 #include "rocsparse.h"
-#include "context.h"
+#include "handle.h"
 #include "logging.h"
 
 #include <fstream>
@@ -14,16 +15,16 @@
 #include <algorithm>
 
 // if trace logging is turned on with
-// (handle->layer_mode & rocblas_layer_mode_log_trace) == true
+// (handle->layer_mode & rocsparse_layer_mode_log_trace) == true
 // then
 // log_function will call log_arguments to log function
 // arguments with a comma separator
 template <typename H, typename... Ts>
-void log_trace(rocsparseHandle_t handle, H head, Ts&... xs)
+void log_trace(rocsparse_handle handle, H head, Ts&... xs)
 {
     if(nullptr != handle)
     {
-        if(handle->layer_mode & ROCSPARSE_LAYER_MODE_LOG_TRACE)
+        if(handle->layer_mode & rocsparse_layer_mode_log_trace)
         {
             std::string comma_separator = ",";
 
@@ -34,16 +35,16 @@ void log_trace(rocsparseHandle_t handle, H head, Ts&... xs)
 }
 
 // if bench logging is turned on with
-// (handle->layer_mode & rocblas_layer_mode_log_bench) == true
+// (handle->layer_mode & rocsparse_layer_mode_log_bench) == true
 // then
 // log_bench will call log_arguments to log a string that
-// can be input to the executable rocblas-bench.
+// can be input to the executable rocsparse-bench.
 template <typename H, typename... Ts>
-void log_bench(rocsparseHandle_t handle, H head, std::string precision, Ts&... xs)
+void log_bench(rocsparse_handle handle, H head, std::string precision, Ts&... xs)
 {
     if(nullptr != handle)
     {
-        if(handle->layer_mode & ROCSPARSE_LAYER_MODE_LOG_BENCH)
+        if(handle->layer_mode & rocsparse_layer_mode_log_bench)
         {
             std::string space_separator = " ";
 
@@ -66,15 +67,15 @@ std::string replaceX(std::string input_string)
         std::replace(input_string.begin(), input_string.end(), 'X', 'd');
     }
 /*
-    else if(std::is_same<T, rocblas_float_complex>::value)
+    else if(std::is_same<T, rocsparse_float_complex>::value)
     {
         std::replace(input_string.begin(), input_string.end(), 'X', 'c');
     }
-    else if(std::is_same<T, rocblas_double_complex>::value)
+    else if(std::is_same<T, rocsparse_double_complex>::value)
     {
         std::replace(input_string.begin(), input_string.end(), 'X', 'z');
     }
-    else if(std::is_same<T, rocblas_half>::value)
+    else if(std::is_same<T, rocsparse_half>::value)
     {
         std::replace(input_string.begin(), input_string.end(), 'X', 'h');
     }
@@ -82,4 +83,4 @@ std::string replaceX(std::string input_string)
     return input_string;
 }
 
-#endif // ROCSPARSE_UTILITY_H_
+#endif // UTILITY_H
