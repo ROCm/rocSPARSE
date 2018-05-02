@@ -20,40 +20,40 @@
 
 #define ROCSPARSE_CHECK(stat)                                               \
 {                                                                           \
-    rocsparseStatus_t err = stat;                                           \
-    if (err != ROCSPARSE_STATUS_SUCCESS)                                    \
+    rocsparse_status err = stat;                                           \
+    if (err != rocsparse_status_success)                                    \
     {                                                                       \
         fprintf(stderr, "ROCSPARSE error: %d line: %d\n", err, __LINE__);   \
         exit(stat);                                                         \
     }                                                                       \
 }
 
-void csrmv(rocsparseHandle_t handle, rocsparseOperation_t trans,
+void csrmv(rocsparse_handle handle, rocsparse_operation trans,
            int nrow, int ncol, int nnz, const float *alpha,
-           rocsparseMatDescr_t descrA, const float *csrValA,
+           rocsparse_mat_descr descrA, const float *csrValA,
            const int *csrRowPtrA, const int *csrColIndA,
            const float *x, const float *beta, float *y)
 {
-    ROCSPARSE_CHECK(rocsparseScsrmv(handle, trans, nrow, ncol, nnz, alpha,
-                                    descrA, csrValA, csrRowPtrA, csrColIndA,
-                                    x, beta, y));
+    ROCSPARSE_CHECK(rocsparse_scsrmv(handle, trans, nrow, ncol, nnz, alpha,
+                                     descrA, csrValA, csrRowPtrA, csrColIndA,
+                                     x, beta, y));
 }
 
-void csrmv(rocsparseHandle_t handle, rocsparseOperation_t trans,
+void csrmv(rocsparse_handle handle, rocsparse_operation trans,
            int nrow, int ncol, int nnz, const double *alpha,
-           rocsparseMatDescr_t descrA, const double *csrValA,
+           rocsparse_mat_descr descrA, const double *csrValA,
            const int *csrRowPtrA, const int *csrColIndA,
            const double *x, const double *beta, double *y)
 {
-    ROCSPARSE_CHECK(rocsparseDcsrmv(handle, trans, nrow, ncol, nnz, alpha,
-                                    descrA, csrValA, csrRowPtrA, csrColIndA,
-                                    x, beta, y));
+    ROCSPARSE_CHECK(rocsparse_dcsrmv(handle, trans, nrow, ncol, nnz, alpha,
+                                     descrA, csrValA, csrRowPtrA, csrColIndA,
+                                     x, beta, y));
 }
 
 template <typename ValueType>
 void run_benchmark(benchmark::State &state, const hipStream_t stream, int batch,
-                   rocsparseHandle_t handle, rocsparseOperation_t trans,
-                   int nrow, int ncol, int nnz, rocsparseMatDescr_t descr,
+                   rocsparse_handle handle, rocsparse_operation trans,
+                   int nrow, int ncol, int nnz, rocsparse_mat_descr descr,
                    const ValueType *alpha, const ValueType *csrValA,
                    const int *csrRowPtrA, const int *csrColIndA,
                    const ValueType *x, const ValueType *beta, ValueType *y)
@@ -61,7 +61,7 @@ void run_benchmark(benchmark::State &state, const hipStream_t stream, int batch,
     // Warm up
     for (int i=0; i<10; ++i)
     {
-        csrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
+        csrmv(handle, rocsparse_operation_none,
               nrow, ncol, nnz, alpha, descr, csrValA,
               csrRowPtrA, csrColIndA, x, beta, y);
     }
@@ -73,7 +73,7 @@ void run_benchmark(benchmark::State &state, const hipStream_t stream, int batch,
 
         for (size_t i=0; i<batch; ++i)
         {
-            csrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
+            csrmv(handle, rocsparse_operation_none,
                   nrow, ncol, nnz, alpha, descr, csrValA,
                   csrRowPtrA, csrColIndA, x, beta, y);
         }
@@ -110,8 +110,8 @@ int main(int argc, char *argv[])
     }
 
     // rocSPARSE handle
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     benchmark::Initialize(&argc, argv);
 
@@ -154,8 +154,8 @@ int main(int argc, char *argv[])
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -194,14 +194,14 @@ int main(int argc, char *argv[])
     // Add benchmarks
     std::vector<benchmark::internal::Benchmark*> benchmarks =
     {
-        benchmark::RegisterBenchmark("rocsparseScsrmv<float>", run_benchmark<float>,
+        benchmark::RegisterBenchmark("rocsparse_scsrmv", run_benchmark<float>,
                                      stream, batch_size,
-                                     handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
+                                     handle, rocsparse_operation_none,
                                      nrow, nrow, nnz, descrA, &alphaf, dAvalf,
                                      dAptr, dAcol, dxf, &betaf, dyf),
-        benchmark::RegisterBenchmark("rocsparseDcsrmv<double>", run_benchmark<double>,
+        benchmark::RegisterBenchmark("rocsparse_dcsrmv", run_benchmark<double>,
                                      stream, batch_size,
-                                     handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
+                                     handle, rocsparse_operation_none,
                                      nrow, nrow, nnz, descrA, &alphad, dAvald,
                                      dAptr, dAcol, dxd, &betad, dyd)
     };
@@ -225,8 +225,8 @@ int main(int argc, char *argv[])
     HIP_CHECK(hipFree(dyf));
     HIP_CHECK(hipFree(dyd));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 
     return 0;
 }

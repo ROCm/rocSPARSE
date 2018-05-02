@@ -4,11 +4,9 @@
 
 # rocSPARSE source
 set(rocsparse_source
-  src/context.cpp
-  src/matrix.cpp
+  src/handle.cpp
   src/status.cpp
-
-
   src/rocsparse_auxiliary.cpp
+  src/level1/rocsparse_axpyi.cpp
   src/level2/rocsparse_csrmv.cpp
 )

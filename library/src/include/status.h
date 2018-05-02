@@ -1,18 +1,18 @@
 /* ************************************************************************
- * Copyright 2016 Advanced Micro Devices, Inc.
+ * Copyright 2018 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
-#ifndef ROCSPARSE_STATUS_H_
-#define ROCSPARSE_STATUS_H_
+#ifndef STATUS_H
+#define STATUS_H
 
 #include "rocsparse.h"
 
 #include <hip/hip_runtime_api.h>
 
 /*******************************************************************************
- * \brief convert hipError_t to rocblas_status
+ * \brief convert hipError_t to rocsparse_status
  ******************************************************************************/
-rocsparseStatus_t get_rocsparse_status_for_hip_status(hipError_t status);
+rocsparse_status get_rocsparse_status_for_hip_status(hipError_t status);
 
-#endif // ROCSPARSE_STATUS_H_
+#endif // STATUS_H

@@ -1,10 +1,10 @@
 /* ************************************************************************
- * Copyright 2016 Advanced Micro Devices, Inc.
+ * Copyright 2018 Advanced Micro Devices, Inc.
  *
  * ************************************************************************ */
 
-#ifndef ROCSPARSE_DEFINITIONS_H_
-#define ROCSPARSE_DEFINITIONS_H_
+#ifndef DEFINITIONS_H
+#define DEFINITIONS_H
 
 #include "status.h"
 
@@ -44,4 +44,4 @@
         }                                                                       \
     }
 
-#endif // ROCSPARSE_DEFINITIONS_H_
+#endif // DEFINITIONS_H

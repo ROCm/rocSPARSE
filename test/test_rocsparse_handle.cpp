@@ -5,11 +5,11 @@
 #include <rocsparse.h>
 #include <gtest/gtest.h>
 
-#define ROCSPARSE_CHECK(x) ASSERT_EQ(x, ROCSPARSE_STATUS_SUCCESS)
+#define ROCSPARSE_CHECK(x) ASSERT_EQ(x, rocsparse_status_success)
 
 TEST(Tests, handle)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }

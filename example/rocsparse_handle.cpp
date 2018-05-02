@@ -7,18 +7,18 @@
 
 int main(int argc, char *argv[])
 {
-    rocsparseHandle_t handle;
-    rocsparseCreate(&handle);
+    rocsparse_handle handle;
+    rocsparse_create_handle(&handle);
 
     int version;
-    rocsparseGetVersion(handle, &version);
+    rocsparse_get_version(handle, &version);
 
     printf("rocSPARSE version %d.%d.%d\n",
            version / 100000,
            version / 100 % 1000,
            version % 100);
 
-    rocsparseDestroy(handle);
+    rocsparse_destroy_handle(handle);
 
     return 0;
 }

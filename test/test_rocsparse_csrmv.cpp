@@ -10,12 +10,12 @@
 #include <rocsparse.h>
 
 #define HIP_CHECK(x) ASSERT_EQ(x, hipSuccess)
-#define ROCSPARSE_CHECK(x) ASSERT_EQ(x, ROCSPARSE_STATUS_SUCCESS)
+#define ROCSPARSE_CHECK(x) ASSERT_EQ(x, rocsparse_status_success)
 
-TEST(Tests, rocsparseScsrmv)
+TEST(Tests, rocsparse_scsrmv)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     // Generate problem
     int *Aptr = NULL;
@@ -39,8 +39,8 @@ TEST(Tests, rocsparseScsrmv)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -62,9 +62,9 @@ TEST(Tests, rocsparseScsrmv)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(float)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseScsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_scsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     float *result = (float*) malloc(sizeof(float)*nrow);
@@ -95,14 +95,14 @@ TEST(Tests, rocsparseScsrmv)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseDcsrmv)
+TEST(Tests, rocsparse_dcsrmv)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     // Generate problem
     int *Aptr = NULL;
@@ -126,8 +126,8 @@ TEST(Tests, rocsparseDcsrmv)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -151,9 +151,9 @@ TEST(Tests, rocsparseDcsrmv)
 
 //TODO analyse step
 
-    ROCSPARSE_CHECK(rocsparseDcsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_dcsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     double *result = (double*) malloc(sizeof(double)*nrow);
@@ -184,14 +184,14 @@ TEST(Tests, rocsparseDcsrmv)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseScsrmv_nos1)
+TEST(Tests, rocsparse_scsrmv_nos1)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -234,8 +234,8 @@ TEST(Tests, rocsparseScsrmv_nos1)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -257,9 +257,9 @@ TEST(Tests, rocsparseScsrmv_nos1)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(float)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseScsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_scsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     float *result = (float*) malloc(sizeof(float)*nrow);
@@ -290,14 +290,14 @@ TEST(Tests, rocsparseScsrmv_nos1)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseScsrmv_nos2)
+TEST(Tests, rocsparse_scsrmv_nos2)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -340,8 +340,8 @@ TEST(Tests, rocsparseScsrmv_nos2)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -363,9 +363,9 @@ TEST(Tests, rocsparseScsrmv_nos2)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(float)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseScsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_scsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     float *result = (float*) malloc(sizeof(float)*nrow);
@@ -396,14 +396,14 @@ TEST(Tests, rocsparseScsrmv_nos2)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseScsrmv_nos3)
+TEST(Tests, rocsparse_scsrmv_nos3)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -446,8 +446,8 @@ TEST(Tests, rocsparseScsrmv_nos3)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -469,9 +469,9 @@ TEST(Tests, rocsparseScsrmv_nos3)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(float)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseScsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_scsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     float *result = (float*) malloc(sizeof(float)*nrow);
@@ -502,14 +502,14 @@ TEST(Tests, rocsparseScsrmv_nos3)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseScsrmv_nos4)
+TEST(Tests, rocsparse_scsrmv_nos4)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -552,8 +552,8 @@ TEST(Tests, rocsparseScsrmv_nos4)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -575,9 +575,9 @@ TEST(Tests, rocsparseScsrmv_nos4)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(float)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseScsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_scsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     float *result = (float*) malloc(sizeof(float)*nrow);
@@ -608,14 +608,14 @@ TEST(Tests, rocsparseScsrmv_nos4)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseScsrmv_nos5)
+TEST(Tests, rocsparse_scsrmv_nos5)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -658,8 +658,8 @@ TEST(Tests, rocsparseScsrmv_nos5)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -681,9 +681,9 @@ TEST(Tests, rocsparseScsrmv_nos5)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(float)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseScsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_scsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     float *result = (float*) malloc(sizeof(float)*nrow);
@@ -714,14 +714,14 @@ TEST(Tests, rocsparseScsrmv_nos5)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseScsrmv_nos6)
+TEST(Tests, rocsparse_scsrmv_nos6)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -764,8 +764,8 @@ TEST(Tests, rocsparseScsrmv_nos6)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -787,9 +787,9 @@ TEST(Tests, rocsparseScsrmv_nos6)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(float)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseScsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_scsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     float *result = (float*) malloc(sizeof(float)*nrow);
@@ -820,14 +820,14 @@ TEST(Tests, rocsparseScsrmv_nos6)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseScsrmv_nos7)
+TEST(Tests, rocsparse_scsrmv_nos7)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -870,8 +870,8 @@ TEST(Tests, rocsparseScsrmv_nos7)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -893,9 +893,9 @@ TEST(Tests, rocsparseScsrmv_nos7)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(float)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseScsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_scsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     float *result = (float*) malloc(sizeof(float)*nrow);
@@ -926,14 +926,14 @@ TEST(Tests, rocsparseScsrmv_nos7)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseDcsrmv_nos1)
+TEST(Tests, rocsparse_dcsrmv_nos1)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -976,8 +976,8 @@ TEST(Tests, rocsparseDcsrmv_nos1)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -999,9 +999,9 @@ TEST(Tests, rocsparseDcsrmv_nos1)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(double)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseDcsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_dcsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     double *result = (double*) malloc(sizeof(double)*nrow);
@@ -1032,14 +1032,14 @@ TEST(Tests, rocsparseDcsrmv_nos1)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseDcsrmv_nos2)
+TEST(Tests, rocsparse_dcsrmv_nos2)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -1082,8 +1082,8 @@ TEST(Tests, rocsparseDcsrmv_nos2)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -1105,9 +1105,9 @@ TEST(Tests, rocsparseDcsrmv_nos2)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(double)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseDcsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_dcsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     double *result = (double*) malloc(sizeof(double)*nrow);
@@ -1138,14 +1138,14 @@ TEST(Tests, rocsparseDcsrmv_nos2)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseDcsrmv_nos3)
+TEST(Tests, rocsparse_dcsrmv_nos3)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -1188,8 +1188,8 @@ TEST(Tests, rocsparseDcsrmv_nos3)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -1211,9 +1211,9 @@ TEST(Tests, rocsparseDcsrmv_nos3)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(double)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseDcsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_dcsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     double *result = (double*) malloc(sizeof(double)*nrow);
@@ -1244,14 +1244,14 @@ TEST(Tests, rocsparseDcsrmv_nos3)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseDcsrmv_nos4)
+TEST(Tests, rocsparse_dcsrmv_nos4)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -1294,8 +1294,8 @@ TEST(Tests, rocsparseDcsrmv_nos4)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -1317,9 +1317,9 @@ TEST(Tests, rocsparseDcsrmv_nos4)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(double)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseDcsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_dcsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     double *result = (double*) malloc(sizeof(double)*nrow);
@@ -1350,14 +1350,14 @@ TEST(Tests, rocsparseDcsrmv_nos4)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseDcsrmv_nos5)
+TEST(Tests, rocsparse_dcsrmv_nos5)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -1400,8 +1400,8 @@ TEST(Tests, rocsparseDcsrmv_nos5)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -1423,9 +1423,9 @@ TEST(Tests, rocsparseDcsrmv_nos5)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(double)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseDcsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_dcsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     double *result = (double*) malloc(sizeof(double)*nrow);
@@ -1456,14 +1456,14 @@ TEST(Tests, rocsparseDcsrmv_nos5)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseDcsrmv_nos6)
+TEST(Tests, rocsparse_dcsrmv_nos6)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -1506,8 +1506,8 @@ TEST(Tests, rocsparseDcsrmv_nos6)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -1529,9 +1529,9 @@ TEST(Tests, rocsparseDcsrmv_nos6)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(double)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseDcsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_dcsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     double *result = (double*) malloc(sizeof(double)*nrow);
@@ -1562,14 +1562,14 @@ TEST(Tests, rocsparseDcsrmv_nos6)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
-TEST(Tests, rocsparseDcsrmv_nos7)
+TEST(Tests, rocsparse_dcsrmv_nos7)
 {
-    rocsparseHandle_t handle;
-    ROCSPARSE_CHECK(rocsparseCreate(&handle));
+    rocsparse_handle handle;
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int nrow;
     int ncol;
@@ -1612,8 +1612,8 @@ TEST(Tests, rocsparseDcsrmv_nos7)
     }
 
     // Matrix descriptor
-    rocsparseMatDescr_t descrA;
-    ROCSPARSE_CHECK(rocsparseCreateMatDescr(&descrA));
+    rocsparse_mat_descr descrA;
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     int *dAptr = NULL;
@@ -1635,9 +1635,9 @@ TEST(Tests, rocsparseDcsrmv_nos7)
     HIP_CHECK(hipMemcpy(dy, y, sizeof(double)*nrow, hipMemcpyHostToDevice));
 
 //TODO analyse step
-    ROCSPARSE_CHECK(rocsparseDcsrmv(handle, ROCSPARSE_OPERATION_NON_TRANSPOSE,
-                                    nrow, nrow, nnz, &alpha, descrA, dAval,
-                                    dAptr, dAcol, dx, &beta, dy));
+    ROCSPARSE_CHECK(rocsparse_dcsrmv(handle, rocsparse_operation_none,
+                                     nrow, nrow, nnz, &alpha, descrA, dAval,
+                                     dAptr, dAcol, dx, &beta, dy));
 
     // Copy result to host
     double *result = (double*) malloc(sizeof(double)*nrow);
@@ -1668,8 +1668,8 @@ TEST(Tests, rocsparseDcsrmv_nos7)
     HIP_CHECK(hipFree(dx));
     HIP_CHECK(hipFree(dy));
 
-    ROCSPARSE_CHECK(rocsparseDestroyMatDescr(descrA));
-    ROCSPARSE_CHECK(rocsparseDestroy(handle));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 }
 
 
