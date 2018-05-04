@@ -105,11 +105,11 @@ if(BUILD_BENCHMARK)
 endif()
 
 # rocPRIM package
-message(STATUS "Downloading rocPRIM.")
-download_project(PROJ    rocPRIM
-     GIT_REPOSITORY      https://github.com/ROCmSoftwarePlatform/rocPRIM.git
-     GIT_TAG             master
-)
+#message(STATUS "Downloading rocPRIM.")
+#download_project(PROJ    rocPRIM
+#     GIT_REPOSITORY      https://github.com/ROCmSoftwarePlatform/rocPRIM.git
+#     GIT_TAG             master
+#)
 
 # ROCm package
 find_package(ROCM QUIET CONFIG PATHS /opt/rocm)

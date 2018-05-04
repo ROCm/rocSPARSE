@@ -41,9 +41,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Build options
 option(BUILD_SHARED_LIBS "Build rocSPARSE as a shared library" ON)
-option(BUILD_TEST "Build tests (requires googletest)" OFF)
-option(BUILD_BENCHMARK "Build benchmarks (requires googlebenchmark)" OFF)
-option(BUILD_EXAMPLE "Build examples" ON)
+option(BUILD_CLIENTS_TESTS "Build tests (requires googletest)" OFF)
+option(BUILD_CLIENTS_BENCHMARKS "Build benchmarks (requires googlebenchmark)" OFF)
+option(BUILD_CLIENTS_SAMPLES "Build examples" ON)
 option(BUILD_VERBOSE "Output additional build information" OFF)
 
 # Dependencies
@@ -55,18 +55,7 @@ set(AMDGPU_TARGETS gfx803;gfx900 CACHE STRING "List of specific machine types fo
 # rocSPARSE library
 add_subdirectory(library)
 
-# Tests
-if(BUILD_TEST)
+if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   enable_testing()
-  add_subdirectory(test)
-endif()
-
-# Benchmarks
-if(BUILD_BENCHMARK)
-  add_subdirectory(benchmark)
-endif()
-
-# Examples
-if(BUILD_EXAMPLE)
-  add_subdirectory(example)
+  add_subdirectory(clients)
 endif()
