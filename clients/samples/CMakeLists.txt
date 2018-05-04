@@ -2,10 +2,20 @@
 # Copyright 2018 Advanced Micro Devices, Inc.
 # ########################################################################
 
+set(ROCSPARSE_CLIENTS_COMMON
+  ../common/utility.cpp
+)
+
 # Function to add rocsparse examples
 function(add_rocsparse_example EXAMPLE_SOURCE)
   get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SOURCE} NAME_WE)
-  add_executable(${EXAMPLE_TARGET} ${EXAMPLE_SOURCE})
+  add_executable(${EXAMPLE_TARGET} ${EXAMPLE_SOURCE} ${ROCSPARSE_CLIENTS_COMMON})
+
+  target_include_directories(${EXAMPLE_TARGET}
+    PRIVATE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+  )
+
   target_link_libraries(${EXAMPLE_TARGET}
     PRIVATE
       rocsparse
@@ -25,3 +35,4 @@ endfunction()
 
 # Examples
 add_rocsparse_example(example_handle.cpp)
+add_rocsparse_example(example_csrmv.cpp)

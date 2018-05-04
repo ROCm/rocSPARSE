@@ -113,6 +113,69 @@ void rocsparse_init_index(std::vector<I> &x, rocsparse_int nnz,
     std::sort(x.begin(), x.end());
 };
 
+/* ============================================================================================ */
+/*! \brief  Generate 2D laplacian on unit square in CSR format */
+template <typename T>
+rocsparse_int gen_2d_laplacian(rocsparse_int ndim,
+                               std::vector<rocsparse_int> &rowptr,
+                               std::vector<rocsparse_int> &col,
+                               std::vector<T> &val)
+{
+    rocsparse_int n = ndim * ndim;
+    rocsparse_int nnz_mat = n * 5 - ndim * 4;
+
+    rowptr.resize(n+1);
+    col.resize(nnz_mat);
+    val.resize(nnz_mat);
+
+    rocsparse_int nnz = 0;
+
+    // Fill local arrays
+    for (rocsparse_int i=0; i<ndim; ++i)
+    {
+        for (rocsparse_int j=0; j<ndim; ++j)
+        {
+            rocsparse_int idx = i*ndim+j;
+            rowptr[idx] = nnz;
+            // if no upper boundary element, connect with upper neighbor
+            if (i != 0)
+            {
+                col[nnz] = idx - ndim;
+                val[nnz] = static_cast<T>(-1);
+                ++nnz;
+            }
+            // if no left boundary element, connect with left neighbor
+            if (j != 0)
+            {
+                col[nnz] = idx - 1;
+                val[nnz] = static_cast<T>(-1);
+                ++nnz;
+            }
+            // element itself
+            col[nnz] = idx;
+            val[nnz] = static_cast<T>(4);
+            ++nnz;
+            // if no right boundary element, connect with right neighbor
+            if (j != ndim - 1)
+            {
+                col[nnz] = idx + 1;
+                val[nnz] = static_cast<T>(-1);
+                ++nnz;
+            }
+            // if no lower boundary element, connect with lower neighbor
+            if (i != ndim - 1)
+            {
+                col[nnz] = idx + ndim;
+                val[nnz] = static_cast<T>(-1);
+                ++nnz;
+            }
+        }
+    }
+    rowptr[n] = nnz;
+
+    return n;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
