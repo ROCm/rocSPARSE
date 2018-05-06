@@ -9,13 +9,12 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-typedef rocsparse_index_base base;
-typedef std::tuple<int, int, double, base> csrmv_tuple;
+typedef std::tuple<int, int, double, double> csrmv_tuple;
 
-int csr_N_range[] = {12000, 15332, 22031};
-int csr_nnz_range[] = {-1, 0, 5, 10, 500, 1000, 7111, 10000};
-std::vector<double> csr_alpha_range = {1.0, 0.0};
-base csr_idxBase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
+int csr_M_range[] = {-1, 0, 10, 500, 7111, 10000};
+int csr_N_range[] = {-3, 0, 33, 842, 4441, 10000};
+std::vector<double> csr_alpha_range = {2.0, 3.0};
+std::vector<double> csr_beta_range = {0.0, 1.0};
 
 class parameterized_csrmv : public testing::TestWithParam<csrmv_tuple>
 {
@@ -29,10 +28,10 @@ class parameterized_csrmv : public testing::TestWithParam<csrmv_tuple>
 Arguments setup_csrmv_arguments(csrmv_tuple tup)
 {
     Arguments arg;
-    arg.N       = std::get<0>(tup);
-    arg.nnz     = std::get<1>(tup);
+    arg.M       = std::get<0>(tup);
+    arg.N       = std::get<1>(tup);
     arg.alpha   = std::get<2>(tup);
-    arg.idxBase = std::get<3>(tup);
+    arg.beta    = std::get<3>(tup);
     arg.timing  = 0;
     return arg;
 }
@@ -57,7 +56,7 @@ TEST_P(parameterized_csrmv, csrmv_double)
 }
 
 INSTANTIATE_TEST_CASE_P(csrmv, parameterized_csrmv,
-                        testing::Combine(testing::ValuesIn(csr_N_range),
-                                         testing::ValuesIn(csr_nnz_range),
+                        testing::Combine(testing::ValuesIn(csr_M_range),
+                                         testing::ValuesIn(csr_N_range),
                                          testing::ValuesIn(csr_alpha_range),
-                                         testing::ValuesIn(csr_idxBase_range)));
+                                         testing::ValuesIn(csr_beta_range)));
