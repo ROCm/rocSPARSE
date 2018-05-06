@@ -4,6 +4,7 @@
 
 #include "utility.hpp"
 #include "rocsparse.hpp"
+#include "testing_csrmv.hpp"
 #include "testing_axpyi.hpp"
 
 #include <iostream>
@@ -26,21 +27,34 @@ int main(int argc, char *argv[])
 
     po::options_description desc("rocsparse client command line options");
     desc.add_options()("help,h", "produces this help message")
+        ("sizem,m",
+         po::value<rocsparse_int>(&argus.M)->default_value(128),
+         "Specific matrix size testing: sizem is only applicable to SPARSE-2 "
+         "& SPARSE-3: the number of rows.")
+
         ("sizen,n",
          po::value<rocsparse_int>(&argus.N)->default_value(128),
-         "Specific vector size testing, LEVEL-1: the length of the dense vector.")
+         "Specific matrix/vector size testing: SPARSE-1: the length of the "
+         "dense vector. SPARSE-2 & SPARSE-3: the number of columns")
 
         ("sizennz,z",
          po::value<rocsparse_int>(&argus.nnz)->default_value(32),
          "Specific vector size testing, LEVEL-1: the number of non-zero elements "
          "of the sparse vector.")
 
+        ("mtx",
+         po::value<std::string>(&argus.filename)->default_value(""), "read from matrix "
+         "market (.mtx) format. This will override parameters m, n, and z")
+
         ("alpha", 
           po::value<double>(&argus.alpha)->default_value(1.0), "specifies the scalar alpha")
         
+        ("beta", 
+          po::value<double>(&argus.beta)->default_value(0.0), "specifies the scalar beta")
+        
         ("function,f",
          po::value<std::string>(&function)->default_value("axpyi"),
-         "SPARSE function to test. Options: axpyi")
+         "SPARSE function to test. Options: axpyi, csrmv")
         
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d")
@@ -73,12 +87,6 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    if (argus.nnz >= argus.N)
-    {
-        fprintf(stderr, "Number of non-zeros should be less than vector length\n");
-        return -1;
-    }
-
     // Device Query
     rocsparse_int device_count = query_device_property();
 
@@ -94,22 +102,25 @@ int main(int argc, char *argv[])
 
     /* ============================================================================================
      */
-//    if(argus.M < 0 || argus.N < 0 || argus.K < 0)
-//    {
-//        fprintf(stderr, "Invalid matrix dimension\n");
-//    }
-    if (argus.N < 0)
+    if (argus.M < 0 || argus.N < 0)
     {
         fprintf(stderr, "Invalid dimension\n");
         return -1;
     }
 
-    if(function == "axpyi")
+    if (function == "axpyi")
     {
-        if(precision == 's')
+        if (precision == 's')
             testing_axpyi<rocsparse_int, float>(argus);
-        else if(precision == 'd')
+        else if (precision == 'd')
             testing_axpyi<rocsparse_int, double>(argus);
+    }
+    else if (function == "csrmv")
+    {
+        if (precision == 's')
+            testing_csrmv<rocsparse_int, float>(argus);
+        else if (precision == 'd')
+            testing_csrmv<rocsparse_int, double>(argus);
     }
     else
     {

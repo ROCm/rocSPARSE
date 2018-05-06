@@ -136,7 +136,7 @@ rocsparse_status testing_axpyi(Arguments argus)
 
     // Initial Data on CPU
     srand(12345ULL);
-    rocsparse_init_index(hxInd, nnz, 1, N);
+    rocsparse_init_index(hxInd.data(), nnz, 1, N);
     rocsparse_init<T>(hxVal, 1, nnz);
     rocsparse_init<T>(hy_1, 1, N);
 

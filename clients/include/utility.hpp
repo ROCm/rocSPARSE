@@ -7,6 +7,8 @@
 #define TESTING_UTILITY_HPP
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <string>
 #include <vector>
 #include <algorithm>
 #include <rocsparse.h>
@@ -95,7 +97,7 @@ void rocsparse_init(std::vector<T>& A, rocsparse_int M, rocsparse_int N)
 /*! \brief  vector initialization: */
 // initialize sparse index vector with nnz entries ranging from start to end
 template <typename I>
-void rocsparse_init_index(std::vector<I> &x, rocsparse_int nnz,
+void rocsparse_init_index(I *x, rocsparse_int nnz,
                           rocsparse_int start, rocsparse_int end)
 {
     std::vector<bool> check(end-start, false);
@@ -110,8 +112,39 @@ void rocsparse_init_index(std::vector<I> &x, rocsparse_int nnz,
             ++num;
         }
     }
-    std::sort(x.begin(), x.end());
+    std::sort(x, x+nnz);
 };
+
+/* ============================================================================================ */
+/*! \brief  csr matrix initialization */
+template <typename T>
+void rocsparse_init_csr(std::vector<rocsparse_int> &ptr, std::vector<rocsparse_int> &col,
+                        std::vector<T> &val,
+                        rocsparse_int nrow, rocsparse_int ncol, rocsparse_int nnz)
+{
+    // Row offsets
+    ptr[0] = 0;
+    ptr[nrow] = nnz;
+
+    for (rocsparse_int i=1; i<nrow; ++i)
+    {
+        ptr[i] = rand() % (nnz-1) + 1;
+    }
+    std::sort(ptr.begin(), ptr.end());
+
+    // Column indices
+    for (rocsparse_int i=0; i<nrow; ++i)
+    {
+        rocsparse_init_index(&col[ptr[i]], ptr[i+1]-ptr[i], 0, ncol-1);
+        std::sort(&col[ptr[i]], &col[ptr[i+1]]);
+    }
+
+    // Random values
+    for (rocsparse_int i=0; i<nnz; ++i)
+    {
+        val[i] = random_generator<T>();
+    }
+}
 
 /* ============================================================================================ */
 /*! \brief  Generate 2D laplacian on unit square in CSR format */
@@ -121,6 +154,10 @@ rocsparse_int gen_2d_laplacian(rocsparse_int ndim,
                                std::vector<rocsparse_int> &col,
                                std::vector<T> &val)
 {
+    if (ndim == 0) {
+        return 0;
+    }
+
     rocsparse_int n = ndim * ndim;
     rocsparse_int nnz_mat = n * 5 - ndim * 4;
 
@@ -176,6 +213,207 @@ rocsparse_int gen_2d_laplacian(rocsparse_int ndim,
     return n;
 }
 
+/* ============================================================================================ */
+/*! \brief  Read matrix from mtx file in COO format */
+template <typename T>
+rocsparse_int read_mtx_matrix(const char *filename,
+                              rocsparse_int &nrow,
+                              rocsparse_int &ncol,
+                              rocsparse_int &nnz,
+                              std::vector<rocsparse_int> &row,
+                              std::vector<rocsparse_int> &col,
+                              std::vector<T> &val)
+{
+    FILE *f = fopen(filename, "r");
+    if (!f)
+    {
+        return -1;
+    }
+
+    char line[1024];
+
+    // Check for banner
+    if (!fgets(line, 1024, f))
+    {
+        return -1;
+    }
+
+    char banner[16];
+    char array[16];
+    char coord[16];
+    char data[16];
+    char type[16];
+
+    // Extract banner
+    if (sscanf(line, "%s %s %s %s %s", banner, array, coord, data, type) != 5)
+    {
+        return -1;
+    }
+
+    // Convert to lower case
+    for (char *p=array; *p!='\0'; *p=tolower(*p), p++);
+    for (char *p=coord; *p!='\0'; *p=tolower(*p), p++);
+    for (char *p=data; *p!='\0'; *p=tolower(*p), p++);
+    for (char *p=type; *p!='\0'; *p=tolower(*p), p++);
+
+    // Check banner
+    if (strncmp(line, "%%MatrixMarket", 14) != 0)
+    {
+        return -1;
+    }
+
+    // Check array type
+    if (strcmp(array, "matrix") != 0)
+    {
+        return -1;
+    }
+
+    // Check coord
+    if (strcmp(coord, "coordinate") != 0)
+    {
+        return -1;
+    }
+
+    // Check data
+    if (strcmp(data, "real") != 0)
+    {
+        return -1;
+    }
+
+    // Check type
+    if (strcmp(type, "general") != 0 &&
+        strcmp(type, "symmetric") != 0)
+    {
+        return -1;
+    }
+
+    // Symmetric flag
+    rocsparse_int symm = !strcmp(type, "symmetric");
+
+    // Skip comments
+    while(fgets(line, 1024, f))
+    {
+        if (line[0] != '%')
+        {
+            break;
+        }
+    }
+
+    // Read dimensions
+    rocsparse_int snnz;
+
+    sscanf(line, "%d %d %d", &nrow, &ncol, &snnz);
+    nnz = symm ? (snnz - nrow) * 2 + nrow : snnz;
+
+    row.resize(nnz);
+    col.resize(nnz);
+    val.resize(nnz);
+
+    // Read entries
+    rocsparse_int idx = 0;
+    while(fgets(line, 1024, f))
+    {
+        rocsparse_int irow;
+        rocsparse_int icol;
+        double dval;
+
+        sscanf(line, "%d %d %lf", &irow, &icol, &dval);
+
+        --irow;
+        --icol;
+
+        row[idx] = irow;
+        col[idx] = icol;
+        val[idx] = (T) dval;
+
+        ++idx;
+
+        if (symm && irow != icol) {
+
+            row[idx] = icol;
+            col[idx] = irow;
+            val[idx] = (T) dval;
+
+            ++idx;
+
+        }
+
+    }
+    fclose(f);
+
+    return 0;
+}
+
+/* ============================================================================================ */
+/*! \brief  Convert matrix from COO to CSR format */
+template <typename T>
+void coo_to_csr(rocsparse_int nrow, rocsparse_int ncol, rocsparse_int nnz,
+                const std::vector<rocsparse_int> &src_row,
+                const std::vector<rocsparse_int> &src_col,
+                const std::vector<T> &src_val,
+                std::vector<rocsparse_int> &dst_ptr,
+                std::vector<rocsparse_int> &dst_col,
+                std::vector<T> &dst_val)
+{
+    dst_ptr.resize(nrow+1, 0);
+    dst_col.resize(nnz);
+    dst_val.resize(nnz);
+
+    // Compute nnz entries per row
+    for (rocsparse_int i=0; i<nnz; ++i)
+    {
+        ++dst_ptr[src_row[i]];
+    }
+
+    rocsparse_int sum = 0;
+    for (rocsparse_int i=0; i<nrow; ++i)
+    {
+        rocsparse_int tmp = dst_ptr[i];
+        dst_ptr[i] = sum;
+        sum += tmp;
+    }
+    dst_ptr[nrow] = sum;
+
+    // Write column index and values
+    for (rocsparse_int i=0; i<nnz; ++i)
+    {
+        rocsparse_int row = src_row[i];
+        rocsparse_int idx = dst_ptr[row];
+
+        dst_col[idx] = src_col[i];
+        dst_val[idx] = src_val[i];
+
+        ++dst_ptr[row];
+    }
+
+    rocsparse_int last = 0;
+    for (rocsparse_int i=0; i<nrow+1; ++i)
+    {
+        rocsparse_int tmp = dst_ptr[i];
+        dst_ptr[i] = last;
+        last = tmp;
+    }
+
+    for (rocsparse_int i=0; i<nrow; ++i)
+    {
+        for (rocsparse_int j=dst_ptr[i]; j<dst_ptr[i+1]; ++j)
+        {
+            for (rocsparse_int k=dst_ptr[i]; k<dst_ptr[i+1]-1; ++k)
+            {
+                // Swap elements
+                rocsparse_int idx = dst_col[k];
+                T val = dst_val[k];
+
+                dst_col[k] = dst_col[k+1];
+                dst_val[k] = dst_val[k+1];
+
+                dst_col[k+1] = idx;
+                dst_val[k+1] = val;
+            }
+        }
+    }
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -212,11 +450,14 @@ class Arguments
 {
     public:
 
+        rocsparse_int M   = 128;
         rocsparse_int N   = 128;
         rocsparse_int nnz = 32;
 
         double alpha = 1.0;
+        double beta  = 0.0;
 
+        rocsparse_operation trans = rocsparse_operation_none;
         rocsparse_index_base idxBase = rocsparse_index_base_zero;
 
         rocsparse_int norm_check = 0;
@@ -225,18 +466,25 @@ class Arguments
 
         rocsparse_int iters = 10;
 
+        std::string filename = "";
+
         Arguments& operator=(const Arguments& rhs)
         {
+            M = rhs.M;
             N = rhs.N;
             nnz = rhs.nnz;
 
             alpha = rhs.alpha;
+            beta  = rhs.beta;
 
+            trans = rhs.trans;
             idxBase = rhs.idxBase;
 
             norm_check = rhs.norm_check;
             unit_check = rhs.unit_check;
             timing     = rhs.timing;
+
+            filename = rhs.filename;
 
             return *this;
         }

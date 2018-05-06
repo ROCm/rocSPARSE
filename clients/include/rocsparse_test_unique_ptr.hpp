@@ -57,6 +57,22 @@ struct handle_struct
     }
 };
 
+struct descr_struct
+{
+    rocsparse_mat_descr descr;
+    descr_struct()
+    {
+        rocsparse_status status = rocsparse_create_mat_descr(&descr);
+        verify_rocsparse_status_success(status, "ERROR: descr_struct constructor");
+    }
+
+    ~descr_struct()
+    {
+        rocsparse_status status = rocsparse_destroy_mat_descr(descr);
+        verify_rocsparse_status_success(status, "ERROR: descr_struct destructor");
+    }
+};
+
 } // namespace rocsparse_test
 
 using rocsparse_unique_ptr = std::unique_ptr<void, void (*)(void*)>;

@@ -102,7 +102,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
     }
     else if (descrA == nullptr)
     {
-        return rocsparse_status_invalid_handle;
+        return rocsparse_status_invalid_pointer;
     }
 
     // Logging TODO bench logging
