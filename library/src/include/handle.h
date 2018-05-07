@@ -70,4 +70,38 @@ struct _rocsparse_mat_descr
     rocsparse_index_base base = rocsparse_index_base_zero;
 };
 
+/********************************************************************************
+ * \brief rocsparse_hyb_mat is a structure holding the rocsparse HYB matrix.
+ * It must be initialized using rocsparse_create_hyb_mat() and the returned
+ * handle must be passed to all subsequent library function calls that involve
+ * the HYB matrix.
+ * It should be destroyed at the end using rocsparse_destroy_hyb_mat().
+ *******************************************************************************/
+struct _rocsparse_hyb_mat
+{
+    // num rows
+    rocsparse_int m = 0;
+    // num cols
+    rocsparse_int n = 0;
+    // partition type
+    rocsparse_hyb_partition partition = rocsparse_hyb_partition_auto;
+    // ELL matrix part
+    rocsparse_int  ell_nnz     = 0;
+    rocsparse_int  ell_width   = 0;
+    rocsparse_int *ell_col_ind = nullptr;
+    void          *ell_val     = nullptr;
+    // COO matrix part
+    rocsparse_int  coo_nnz     = 0;
+    rocsparse_int *coo_row_ind = nullptr;
+    rocsparse_int *coo_col_ind = nullptr;
+    void          *coo_val     = nullptr;
+};
+
+/********************************************************************************
+ * \brief ELL format indexing
+ *******************************************************************************/
+#define ELL_IND_ROW(i, el, m, width) (el) * (m) + (i)
+#define ELL_IND_EL (i, el, m, width) (el) + (width) * (i)
+#define ELL_IND(i, el, m, width) ELL_IND_ROW(i, el, m, width)
+
 #endif // HANDLE_H

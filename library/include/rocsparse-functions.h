@@ -178,6 +178,55 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
                                   const rocsparse_double_complex *beta,
                                   rocsparse_double_complex *y);
 */
+
+// TODO
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scsr2hyb(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    const rocsparse_mat_descr descr,
+                                    const float *csr_val,
+                                    const rocsparse_int *csr_row_ptr,
+                                    const rocsparse_int *csr_col_ind,
+                                    rocsparse_hyb_mat hyb,
+                                    rocsparse_int user_ell_width,
+                                    rocsparse_hyb_partition partition_type);
+
+// TODO
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    const rocsparse_mat_descr descr,
+                                    const double *csr_val,
+                                    const rocsparse_int *csr_row_ptr,
+                                    const rocsparse_int *csr_col_ind,
+                                    rocsparse_hyb_mat hyb,
+                                    rocsparse_int user_ell_width,
+                                    rocsparse_hyb_partition partition_type);
+
+// TODO
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_shybmv(rocsparse_handle handle,
+                                  rocsparse_operation trans,
+                                  const float *alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const rocsparse_hyb_mat hyb,
+                                  const float *x,
+                                  const float *beta,
+                                  float *y);
+
+// TODO
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
+                                  rocsparse_operation trans,
+                                  const double *alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const rocsparse_hyb_mat hyb,
+                                  const double *x,
+                                  const double *beta,
+                                  double *y);
+
 /*
  * ===========================================================================
  *    level 3 SPARSE

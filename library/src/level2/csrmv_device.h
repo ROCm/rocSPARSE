@@ -14,6 +14,10 @@
 * limitations under the License.
 * ************************************************************************ */
 
+#pragma once
+#ifndef CSRMV_DEVICE_H
+#define CSRMV_DEVICE_H
+
 #include <hip/hip_runtime.h>
 
 // Knuth's Two-Sum algorithm, which allows us to add together two floating
@@ -213,3 +217,5 @@ void csrmvn_general_device(int num_rows,
         }
     }
 }
+
+#endif // CSRMV_DEVICE_H
