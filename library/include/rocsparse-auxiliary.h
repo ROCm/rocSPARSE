@@ -79,39 +79,39 @@ rocsparse_status rocsparse_get_version(rocsparse_handle handle, int *version);
  * It should be destroyed at the end using rocsparse_destroy_mat_descr().
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr *descrA);
+rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr *descr);
 
 /********************************************************************************
  * \brief Destroy the matrix descriptor.
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descrA);
+rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr);
 
 /********************************************************************************
  * \brief Set the index base of the matrix descriptor.
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descrA,
+rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr,
                                               rocsparse_index_base base);
 
 /********************************************************************************
  * \brief Returns the index base of the matrix descriptor.
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_index_base rocsparse_get_mat_index_base(const rocsparse_mat_descr descrA);
+rocsparse_index_base rocsparse_get_mat_index_base(const rocsparse_mat_descr descr);
 
 /********************************************************************************
  * \brief Set the matrix type of the matrix descriptor.
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descrA,
+rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr,
                                         rocsparse_matrix_type type);
 
 /********************************************************************************
  * \brief Returns the matrix type of the matrix descriptor.
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descrA);
+rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr);
 
 /********************************************************************************
  * \brief rocsparse_create_hyb_mat is a structure holding the rocsparse HYB

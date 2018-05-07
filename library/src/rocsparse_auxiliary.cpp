@@ -156,9 +156,9 @@ rocsparse_status rocsparse_get_version(rocsparse_handle handle, int *version)
  * It should be destroyed at the end using rocsparse_destroy_mat_descr().
  *******************************************************************************/
 extern "C"
-rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr *descrA)
+rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr *descr)
 {
-    if (descrA == nullptr)
+    if (descr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -167,7 +167,7 @@ rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr *descrA)
         // Allocate
         try
         {
-            *descrA = new _rocsparse_mat_descr;
+            *descr = new _rocsparse_mat_descr;
         }
         catch(rocsparse_status status)
         {
@@ -181,12 +181,12 @@ rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr *descrA)
  * \brief destroy matrix descriptor
  *******************************************************************************/
 extern "C"
-rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descrA)
+rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr)
 {
     // Destruct
     try
     {
-        delete descrA;
+        delete descr;
     }
     catch(rocsparse_status status)
     {
@@ -199,11 +199,11 @@ rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descrA)
  * \brief Set the index base of the matrix descriptor.
  *******************************************************************************/
 extern "C"
-rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descrA,
+rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr,
                                               rocsparse_index_base base)
 {
     // Check if descriptor is valid
-    if (descrA == nullptr)
+    if (descr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -212,7 +212,7 @@ rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descrA,
     {
         return rocsparse_status_invalid_value;
     }
-    descrA->base = base;
+    descr->base = base;
     return rocsparse_status_success;
 }
 
@@ -220,25 +220,25 @@ rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descrA,
  * \brief Returns the index base of the matrix descriptor.
  *******************************************************************************/
 extern "C"
-rocsparse_index_base rocsparse_get_mat_index_base(const rocsparse_mat_descr descrA)
+rocsparse_index_base rocsparse_get_mat_index_base(const rocsparse_mat_descr descr)
 {
     // If descriptor is invalid, default index base is returned
-    if (descrA == nullptr)
+    if (descr == nullptr)
     {
         return rocsparse_index_base_zero;
     }
-    return descrA->base;
+    return descr->base;
 }
 
 /********************************************************************************
  * \brief Set the matrix type of the matrix descriptor.
  *******************************************************************************/
 extern "C"
-rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descrA,
+rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr,
                                         rocsparse_matrix_type type)
 {
     // Check if descriptor is valid
-    if (descrA == nullptr)
+    if (descr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -248,7 +248,7 @@ rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descrA,
     {
         return rocsparse_status_invalid_value;
     }
-    descrA->type = type;
+    descr->type = type;
     return rocsparse_status_success;
 }
 
@@ -256,14 +256,14 @@ rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descrA,
  * \brief Returns the matrix type of the matrix descriptor.
  *******************************************************************************/
 extern "C"
-rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descrA)
+rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr)
 {
     // If descriptor is invalid, default matrix type is returned
-    if (descrA == nullptr)
+    if (descr == nullptr)
     {
         return rocsparse_matrix_type_general;
     }
-    return descrA->type;
+    return descr->type;
 }
 
 /********************************************************************************

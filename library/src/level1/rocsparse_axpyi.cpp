@@ -12,10 +12,10 @@ template <typename T>
 __device__
 void axpyi_device(rocsparse_int nnz,
                   T alpha,
-                  const T *xVal,
-                  const rocsparse_int *xInd,
+                  const T *x_val,
+                  const rocsparse_int *x_ind,
                   T *y,
-                  rocsparse_index_base idxBase)
+                  rocsparse_index_base idx_base)
 {
     int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -24,31 +24,31 @@ void axpyi_device(rocsparse_int nnz,
         return;
     }
 
-    y[xInd[tid]-idxBase] += alpha * xVal[tid];
+    y[x_ind[tid]-idx_base] += alpha * x_val[tid];
 }
 
 template <typename T>
 __global__
 void axpyi_kernel_host_scalar(rocsparse_int nnz,
                               T alpha,
-                              const T *xVal,
-                              const rocsparse_int *xInd,
+                              const T *x_val,
+                              const rocsparse_int *x_ind,
                               T *y,
-                              rocsparse_index_base idxBase)
+                              rocsparse_index_base idx_base)
 {
-    axpyi_device<T>(nnz, alpha, xVal, xInd, y, idxBase);
+    axpyi_device(nnz, alpha, x_val, x_ind, y, idx_base);
 }
 
 template <typename T>
 __global__
 void axpyi_kernel_device_scalar(rocsparse_int nnz,
                                 const T *alpha,
-                                const T *xVal,
-                                const rocsparse_int *xInd,
+                                const T *x_val,
+                                const rocsparse_int *x_ind,
                                 T *y,
-                                rocsparse_index_base idxBase)
+                                rocsparse_index_base idx_base)
 {
-    axpyi_device<T>(nnz, *alpha, xVal, xInd, y, idxBase);
+    axpyi_device(nnz, *alpha, x_val, x_ind, y, idx_base);
 }
 
 /*! \brief SPARSE Level 1 API
@@ -65,23 +65,23 @@ void axpyi_kernel_device_scalar(rocsparse_int nnz,
     @param[in]
     alpha     scalar alpha.
     @param[in]
-    xVal      pointer storing vector x non-zero values on the GPU.
+    x_val     pointer storing vector x non-zero values on the GPU.
     @param[in]
-    xInd      pointer storing vector x non-zero value indices on the GPU.
+    x_ind     pointer storing vector x non-zero value indices on the GPU.
     @param[inout]
     y         pointer storing y on the GPU.
     @param[in]
-    idxBase   specifies the index base.
+    idx_base  specifies the index base.
 
     ********************************************************************/
 template <typename T>
 rocsparse_status rocsparse_axpyi_template(rocsparse_handle handle,
                                           rocsparse_int nnz,
                                           const T *alpha,
-                                          const T *xVal,
-                                          const rocsparse_int *xInd,
+                                          const T *x_val,
+                                          const rocsparse_int *x_ind,
                                           T *y,
-                                          rocsparse_index_base idxBase)
+                                          rocsparse_index_base idx_base)
 {
     // Check for valid handle
     if (handle == nullptr)
@@ -93,27 +93,27 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle handle,
     if (handle->pointer_mode == rocsparse_pointer_mode_host)
     {
         log_trace(handle,
-                  replaceX<T>("rocsparse_axpyi"),
+                  replaceX<T>("rocsparse_Xaxpyi"),
                   nnz,
                   *alpha,
-                  (const void*&) xVal,
-                  (const void*&) xInd,
+                  (const void*&) x_val,
+                  (const void*&) x_ind,
                   (const void*&) y);
     }
     else
     {
         log_trace(handle,
-                  replaceX<T>("rocsparse_axpyi"),
+                  replaceX<T>("rocsparse_Xaxpyi"),
                   nnz,
                   (const void*&) alpha,
-                  (const void*&) xVal,
-                  (const void*&) xInd,
+                  (const void*&) x_val,
+                  (const void*&) x_ind,
                   (const void*&) y);
     }
 
     // Check index base
-    if (idxBase != rocsparse_index_base_zero &&
-        idxBase != rocsparse_index_base_one)
+    if (idx_base != rocsparse_index_base_zero &&
+        idx_base != rocsparse_index_base_one)
     {
         return rocsparse_status_invalid_value;
     }
@@ -129,11 +129,11 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle handle,
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if (xVal == nullptr)
+    else if (x_val == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if (xInd == nullptr)
+    else if (x_ind == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -159,7 +159,7 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle handle,
     {
         hipLaunchKernelGGL((axpyi_kernel_device_scalar<T>),
                            axpyi_blocks, axpyi_threads, 0, stream,
-                           nnz, alpha, xVal, xInd, y, idxBase);
+                           nnz, alpha, x_val, x_ind, y, idx_base);
     }
     else
     {
@@ -170,7 +170,7 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle handle,
 
         hipLaunchKernelGGL((axpyi_kernel_host_scalar<T>),
                            axpyi_blocks, axpyi_threads, 0, stream,
-                           nnz, *alpha, xVal, xInd, y, idxBase);
+                           nnz, *alpha, x_val, x_ind, y, idx_base);
     }
 #undef AXPYI_DIM
     return rocsparse_status_success;
@@ -186,22 +186,22 @@ extern "C"
 rocsparse_status rocsparse_saxpyi(rocsparse_handle handle,
                                   rocsparse_int nnz,
                                   const float *alpha,
-                                  const float *xVal,
-                                  const rocsparse_int *xInd,
+                                  const float *x_val,
+                                  const rocsparse_int *x_ind,
                                   float *y,
-                                  rocsparse_index_base idxBase)
+                                  rocsparse_index_base idx_base)
 {
-    return rocsparse_axpyi_template<float>(handle, nnz, alpha, xVal, xInd, y, idxBase);
+    return rocsparse_axpyi_template<float>(handle, nnz, alpha, x_val, x_ind, y, idx_base);
 }
 
 extern "C"
 rocsparse_status rocsparse_daxpyi(rocsparse_handle handle,
                                   rocsparse_int nnz,
                                   const double *alpha,
-                                  const double *xVal,
-                                  const rocsparse_int *xInd,
+                                  const double *x_val,
+                                  const rocsparse_int *x_ind,
                                   double *y,
-                                  rocsparse_index_base idxBase)
+                                  rocsparse_index_base idx_base)
 {
-    return rocsparse_axpyi_template<double>(handle, nnz, alpha, xVal, xInd, y, idxBase);
+    return rocsparse_axpyi_template<double>(handle, nnz, alpha, x_val, x_ind, y, idx_base);
 }
