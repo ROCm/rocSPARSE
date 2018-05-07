@@ -22,6 +22,7 @@ typedef int32_t rocsparse_int;
 
 typedef struct _rocsparse_handle *rocsparse_handle;
 typedef struct _rocsparse_mat_descr *rocsparse_mat_descr;
+typedef struct _rocsparse_hyb_mat *rocsparse_hyb_mat;
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,10 +47,18 @@ typedef enum rocsparse_index_base_ {
 
 /*! \brief Used to specify the matrix type. */
 typedef enum rocsparse_matrix_type_ {
-    rocsparse_matrix_type_general   = 0,
-    rocsparse_matrix_type_symmetric = 1,
-    rocsparse_matrix_type_hermitian = 2
+    rocsparse_matrix_type_general    = 0,
+    rocsparse_matrix_type_symmetric  = 1,
+    rocsparse_matrix_type_hermitian  = 2,
+    rocsparse_matrix_type_triangular = 3
 } rocsparse_matrix_type;
+
+/*! \brief HYB matrix partition type. */
+typedef enum rocsparse_hyb_partition_ {
+    rocsparse_hyb_partition_auto = 0,
+    rocsparse_hyb_partition_user = 1,
+    rocsparse_hyb_partition_max  = 2
+} rocsparse_hyb_partition;
 
 /* ============================================================================================ */
 /**

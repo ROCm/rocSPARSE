@@ -21,7 +21,7 @@ rocsparse_status rocsparse_create_handle(rocsparse_handle *handle)
     // Check if handle is valid
     if (handle == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_invalid_handle;
     }
     else
     {
@@ -70,7 +70,7 @@ rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle handle,
     // Check if handle is valid
     if (handle == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_invalid_handle;
     }
     handle->pointer_mode = mode;
     log_trace(handle, "rocsparse_set_pointer_mode", mode);
@@ -87,7 +87,7 @@ rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
     // Check if handle is valid
     if (handle == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_invalid_handle;
     }
     *mode = handle->pointer_mode;
     log_trace(handle, "rocsparse_get_pointer_mode", *mode);
@@ -105,7 +105,7 @@ rocsparse_status rocsparse_set_stream(rocsparse_handle handle,
     // Check if handle is valid
     if (handle == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_invalid_handle;
     }
     log_trace(handle, "rocsparse_set_stream", stream_id);
     return handle->set_stream(stream_id);
@@ -121,7 +121,7 @@ rocsparse_status rocsparse_get_stream(rocsparse_handle handle,
     // Check if handle is valid
     if (handle == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_invalid_handle;
     }
     log_trace(handle, "rocsparse_get_stream", *stream_id);
     return handle->get_stream(stream_id);
@@ -139,7 +139,7 @@ rocsparse_status rocsparse_get_version(rocsparse_handle handle, int *version)
     // Check if handle is valid
     if (handle == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_invalid_handle;
     }
     *version = ROCSPARSE_VERSION_MAJOR * 100000
              + ROCSPARSE_VERSION_MINOR * 100
@@ -264,4 +264,51 @@ rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descrA)
         return rocsparse_matrix_type_general;
     }
     return descrA->type;
+}
+
+/********************************************************************************
+ * \brief rocsparse_create_hyb_mat is a structure holding the rocsparse HYB
+ * matrix. It must be initialized using rocsparse_create_hyb_mat()
+ * and the retured handle must be passed to all subsequent library function
+ * calls that involve the HYB matrix.
+ * It should be destroyed at the end using rocsparse_destroy_hyb_mat().
+ *******************************************************************************/
+extern "C"
+rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat *hyb)
+{
+    if (hyb == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else
+    {
+        // Allocate
+        try
+        {
+            *hyb = new _rocsparse_hyb_mat;
+        }
+        catch(rocsparse_status status)
+        {
+            return status;
+        }
+        return rocsparse_status_success;
+    }
+}
+
+/********************************************************************************
+ * \brief Destroy HYB matrix.
+ *******************************************************************************/
+extern "C"
+rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb)
+{
+    // Destruct
+    try
+    {
+        delete hyb;
+    }
+    catch(rocsparse_status status)
+    {
+        return status;
+    }
+    return rocsparse_status_success;
 }
