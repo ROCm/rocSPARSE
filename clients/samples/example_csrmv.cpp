@@ -46,9 +46,9 @@ int main(int argc, char *argv[])
     std::vector<int> hAptr;
     std::vector<int> hAcol;
     std::vector<double> hAval;
-    int nrow = gen_2d_laplacian(ndim, hAptr, hAcol, hAval);
-    int ncol = nrow;
-    int nnz = hAptr[nrow];
+    int m = gen_2d_laplacian(ndim, hAptr, hAcol, hAval);
+    int n = m;
+    int nnz = hAptr[m];
 
     // Sample some random data
     srand(12345ULL);
@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
     double halpha = (double) rand() / RAND_MAX;
     double hbeta  = 0.0;
 
-    std::vector<double> hx(nrow);
-    rocsparse_init(hx, 1, nrow);
+    std::vector<double> hx(m);
+    rocsparse_init(hx, 1, m);
 
     // Matrix descriptor
     rocsparse_mat_descr descrA;
@@ -70,23 +70,23 @@ int main(int argc, char *argv[])
     double *dx = NULL;
     double *dy = NULL;
 
-    hipMalloc((void**) &dAptr, sizeof(int)*(nrow+1));
+    hipMalloc((void**) &dAptr, sizeof(int)*(m+1));
     hipMalloc((void**) &dAcol, sizeof(int)*nnz);
     hipMalloc((void**) &dAval, sizeof(double)*nnz);
-    hipMalloc((void**) &dx, sizeof(double)*nrow);
-    hipMalloc((void**) &dy, sizeof(double)*nrow);
+    hipMalloc((void**) &dx, sizeof(double)*m);
+    hipMalloc((void**) &dy, sizeof(double)*m);
 
-    hipMemcpy(dAptr, hAptr.data(), sizeof(int)*(nrow+1), hipMemcpyHostToDevice);
+    hipMemcpy(dAptr, hAptr.data(), sizeof(int)*(m+1), hipMemcpyHostToDevice);
     hipMemcpy(dAcol, hAcol.data(), sizeof(int)*nnz, hipMemcpyHostToDevice);
     hipMemcpy(dAval, hAval.data(), sizeof(double)*nnz, hipMemcpyHostToDevice);
-    hipMemcpy(dx, hx.data(), sizeof(double)*nrow, hipMemcpyHostToDevice);
+    hipMemcpy(dx, hx.data(), sizeof(double)*m, hipMemcpyHostToDevice);
 
     // Warm up
     for (int i=0; i<10; ++i)
     {
         // Call rocsparse csrmv
         rocsparse_dcsrmv(handle, rocsparse_operation_none,
-                         nrow, ncol, nnz,
+                         m, n, nnz,
                          &halpha, descrA,
                          dAval, dAptr, dAcol,
                          dx, &hbeta, dy);
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
         {
             // Call rocsparse csrmv
             rocsparse_dcsrmv(handle, rocsparse_operation_none,
-                             nrow, ncol, nnz,
+                             m, n, nnz,
                              &halpha, descrA,
                              dAval, dAptr, dAcol,
                              dx, &hbeta, dy);
@@ -116,12 +116,12 @@ int main(int argc, char *argv[])
     }
 
     time = (get_time_us() - time) / (trials * batch_size * 1e3);
-    double bandwidth = static_cast<double>(sizeof(double)*(2*nrow+nnz)
-                                          +sizeof(rocsparse_int)*(nrow+1+nnz))/time/1e6;
+    double bandwidth = static_cast<double>(sizeof(double)*(2*m+nnz)
+                                          +sizeof(rocsparse_int)*(m+1+nnz))/time/1e6;
     double gflops = static_cast<double>(2*nnz)/time/1e6;
-    printf("nrow\t\tncol\t\tnnz\t\talpha\tbeta\tGFlops\tGB/s\tusec\n");
+    printf("m\t\tn\t\tnnz\t\talpha\tbeta\tGFlops\tGB/s\tusec\n");
     printf("%8d\t%8d\t%9d\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\n",
-           nrow, ncol, nnz, halpha, hbeta, gflops, bandwidth, time);
+           m, n, nnz, halpha, hbeta, gflops, bandwidth, time);
 
 
 
