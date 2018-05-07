@@ -73,6 +73,22 @@ struct descr_struct
     }
 };
 
+struct hyb_struct
+{
+    rocsparse_hyb_mat hyb;
+    hyb_struct()
+    {
+        rocsparse_status status = rocsparse_create_hyb_mat(&hyb);
+        verify_rocsparse_status_success(status, "ERROR: hyb_struct constructor");
+    }
+
+    ~hyb_struct()
+    {
+        rocsparse_status status = rocsparse_destroy_hyb_mat(hyb);
+        verify_rocsparse_status_success(status, "ERROR: hyb_struct destructor");
+    }
+};
+
 } // namespace rocsparse_test
 
 using rocsparse_unique_ptr = std::unique_ptr<void, void (*)(void*)>;
