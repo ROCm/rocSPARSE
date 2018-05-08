@@ -181,32 +181,6 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
 
 // TODO
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_scsr2hyb(rocsparse_handle handle,
-                                    rocsparse_int m,
-                                    rocsparse_int n,
-                                    const rocsparse_mat_descr descr,
-                                    const float *csr_val,
-                                    const rocsparse_int *csr_row_ptr,
-                                    const rocsparse_int *csr_col_ind,
-                                    rocsparse_hyb_mat hyb,
-                                    rocsparse_int user_ell_width,
-                                    rocsparse_hyb_partition partition_type);
-
-// TODO
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle handle,
-                                    rocsparse_int m,
-                                    rocsparse_int n,
-                                    const rocsparse_mat_descr descr,
-                                    const double *csr_val,
-                                    const rocsparse_int *csr_row_ptr,
-                                    const rocsparse_int *csr_col_ind,
-                                    rocsparse_hyb_mat hyb,
-                                    rocsparse_int user_ell_width,
-                                    rocsparse_hyb_partition partition_type);
-
-// TODO
-ROCSPARSE_EXPORT
 rocsparse_status rocsparse_shybmv(rocsparse_handle handle,
                                   rocsparse_operation trans,
                                   const float *alpha,
@@ -232,6 +206,54 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
  *    level 3 SPARSE
  * ===========================================================================
  */
+
+
+
+
+
+
+
+/*
+ * ===========================================================================
+ *    Sparse format conversions
+ * ===========================================================================
+ */
+
+// TODO
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
+                                   const rocsparse_int *coo_row_ind,
+                                   rocsparse_int nnz,
+                                   rocsparse_int m,
+                                   rocsparse_int *csr_row_ptr,
+                                   rocsparse_index_base idx_base);
+
+// TODO
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scsr2hyb(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    const rocsparse_mat_descr descr,
+                                    const float *csr_val,
+                                    const rocsparse_int *csr_row_ptr,
+                                    const rocsparse_int *csr_col_ind,
+                                    rocsparse_hyb_mat hyb,
+                                    rocsparse_int user_ell_width,
+                                    rocsparse_hyb_partition partition_type);
+
+// TODO
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    const rocsparse_mat_descr descr,
+                                    const double *csr_val,
+                                    const rocsparse_int *csr_row_ptr,
+                                    const rocsparse_int *csr_col_ind,
+                                    rocsparse_hyb_mat hyb,
+                                    rocsparse_int user_ell_width,
+                                    rocsparse_hyb_partition partition_type);
+
 
 #ifdef __cplusplus
 }
