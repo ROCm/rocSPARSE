@@ -3,25 +3,12 @@
  * ************************************************************************ */
 
 #include "rocsparse.h"
+#include "definitions.h"
 #include "handle.h"
 #include "utility.h"
 #include "csr2hyb_device.h"
 
 #include <hip/hip_runtime.h>
-
-template <typename T>
-__global__
-void csr2ell_kernel(rocsparse_int m,
-                    const T *csr_val,
-                    const rocsparse_int *csr_row_ptr,
-                    const rocsparse_int *csr_col_ind,
-                    rocsparse_int ell_width,
-                    rocsparse_int *ell_col_ind,
-                    T *ell_val)
-{
-    csr2ell_device(m, csr_val, csr_row_ptr, csr_col_ind,
-                   ell_width, ell_col_ind, ell_val);
-}
 
 template <typename T>
 rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
@@ -121,45 +108,51 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
 
     if (hyb->ell_col_ind)
     {
-        hipFree(hyb->ell_col_ind);
+        RETURN_IF_HIP_ERROR(hipFree(hyb->ell_col_ind));
     }
     if (hyb->ell_val)
     {
-        hipFree(hyb->ell_val);
+        RETURN_IF_HIP_ERROR(hipFree(hyb->ell_val));
     }
     if (hyb->coo_row_ind)
     {
-        hipFree(hyb->coo_row_ind);
+        RETURN_IF_HIP_ERROR(hipFree(hyb->coo_row_ind));
     }
     if (hyb->coo_col_ind)
     {
-        hipFree(hyb->coo_col_ind);
+        RETURN_IF_HIP_ERROR(hipFree(hyb->coo_col_ind));
     }
     if (hyb->coo_val)
     {
-        hipFree(hyb->coo_val);
+        RETURN_IF_HIP_ERROR(hipFree(hyb->coo_val));
     }
 
-#define CSR2ELL_DIM 256
-    dim3 csr2ell_blocks((m-1)/CSR2ELL_DIM+1);
-    dim3 csr2ell_threads(CSR2ELL_DIM);
-
+#define CSR2ELL_DIM 512
     //TODO we take max partition
     if (partition_type == rocsparse_hyb_partition_max)
     {
         // ELL part only, compute maximum non-zeros per row
+        rocsparse_int blocks = handle->warp_size;
 
-        //TODO reduction with rocPRIM to compute maxrow
-        rocsparse_int *hbuf = (rocsparse_int*) malloc(sizeof(rocsparse_int)*(m+1));
-        hipMemcpy(hbuf, csr_row_ptr, sizeof(rocsparse_int)*(m+1), hipMemcpyDeviceToHost);
+        // Allocate workspace
+        rocsparse_int *workspace = NULL;
+        RETURN_IF_HIP_ERROR(hipMalloc((void**) &workspace,
+                                      sizeof(rocsparse_int)*blocks));
 
-        for (rocsparse_int i=0; i<m; ++i)
-        {
-            rocsparse_int rownnz = hbuf[i+1] - hbuf[i];
-            hyb->ell_width = rownnz > hyb->ell_width ? rownnz : hyb->ell_width;
-        }
-        free(hbuf);
-        // END TODO
+        hipLaunchKernelGGL((ell_width_kernel_part1<CSR2ELL_DIM>),
+                           dim3(blocks), dim3(CSR2ELL_DIM), 0, stream,
+                           m, csr_row_ptr, workspace);
+
+        hipLaunchKernelGGL((ell_width_kernel_part2<CSR2ELL_DIM>),
+                           dim3(1), dim3(CSR2ELL_DIM), 0, stream,
+                           blocks, workspace);
+
+        // Copy ell width back to host
+        RETURN_IF_HIP_ERROR(hipMemcpy(&hyb->ell_width,
+                                      workspace,
+                                      sizeof(rocsparse_int),
+                                      hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipFree(workspace));
     }
     else
     {
@@ -171,24 +164,19 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
     hyb->ell_nnz = hyb->ell_width * m;
 
     // Allocate ELL part
-    hipMalloc((void**) &hyb->ell_col_ind, sizeof(rocsparse_int)*hyb->ell_nnz);
-    hipMalloc(&hyb->ell_val, sizeof(T)*hyb->ell_nnz);
+    RETURN_IF_HIP_ERROR(hipMalloc((void**) &hyb->ell_col_ind,
+                                  sizeof(rocsparse_int)*hyb->ell_nnz));
+    RETURN_IF_HIP_ERROR(hipMalloc(&hyb->ell_val, sizeof(T)*hyb->ell_nnz));
 
-
+    dim3 csr2ell_blocks((m-1)/CSR2ELL_DIM+1);
+    dim3 csr2ell_threads(CSR2ELL_DIM);
 
 
     hipLaunchKernelGGL((csr2ell_kernel<T>),
                        csr2ell_blocks, csr2ell_threads, 0, stream,
                        m, csr_val, csr_row_ptr, csr_col_ind,
                        hyb->ell_width, hyb->ell_col_ind, (T*) hyb->ell_val);
-
 #undef CSR2ELL_DIM
-
-
-
-
-
-
     return rocsparse_status_success;
 }
 
