@@ -11,4 +11,6 @@ set(rocsparse_source
   src/level2/rocsparse_csrmv.cpp
   src/level2/rocsparse_hybmv.cpp
   src/conversion/rocsparse_csr2hyb.cpp
+  src/conversion/rocsparse_csr2coo.cpp
+  src/conversion/rocsparse_coo2csr.cpp
 )
