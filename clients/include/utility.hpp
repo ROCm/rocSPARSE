@@ -214,6 +214,86 @@ rocsparse_int gen_2d_laplacian(rocsparse_int ndim,
 }
 
 /* ============================================================================================ */
+/*! \brief  Generate a random sparse matrix in COO format */
+template <typename T>
+rocsparse_int gen_matrix_coo(rocsparse_int m,
+                             rocsparse_int n,
+                             rocsparse_int nnz,
+                             std::vector<rocsparse_int> &row_ind,
+                             std::vector<rocsparse_int> &col_ind,
+                             std::vector<T> &val)
+{
+    if (row_ind.size() != nnz)
+    {
+        row_ind.resize(nnz);
+    }
+    if (col_ind.size() != nnz)
+    {
+        col_ind.resize(nnz);
+    }
+    if (val.size() != nnz)
+    {
+        val.resize(nnz);
+    }
+
+    // Uniform distributed row indices
+    for (rocsparse_int i=0; i<nnz; ++i)
+    {
+        row_ind[i] = rand() % m;
+    }
+
+    // Sort row indices
+    std::sort(row_ind.begin(), row_ind.end());
+
+    // Sample column indices
+    std::vector<bool> check(nnz, false);
+
+    rocsparse_int i=0;
+    while (i < nnz)
+    {
+        rocsparse_int begin = i;
+        while (row_ind[i] == row_ind[begin])
+            ++i;
+
+        // Sample i disjunct column indices
+        rocsparse_int idx = begin;
+        while (idx < i)
+        {
+            // Normal distribution around the diagonal
+            rocsparse_int rng = row_ind[begin] + (i - begin)
+                              * sqrt(-2.0 * log((double) rand() / RAND_MAX))
+                              * cos(2.0 * M_PI * (double) rand() / RAND_MAX);
+
+            // Repeat if running out of bounds
+            if (rng < 0 || rng > n-1)
+                continue;
+
+            // Check for disjunct column index in current row
+            if (!check[rng])
+            {
+                check[rng] = true;
+                col_ind[idx] = rng;
+                ++idx;
+            }
+        }
+
+        // Reset disjunct check array
+        for (rocsparse_int j=begin; j<i; ++j)
+            check[col_ind[j]] = false;
+
+        // Partially sort column indices
+        std::sort(&col_ind[begin], &col_ind[i]);
+    }
+
+    // Sample random values
+    for (rocsparse_int i=0; i<nnz; ++i)
+    {
+        val[i] = (double) rand() / RAND_MAX;
+    }
+
+}
+
+/* ============================================================================================ */
 /*! \brief  Read matrix from mtx file in COO format */
 template <typename T>
 rocsparse_int read_mtx_matrix(const char *filename,
