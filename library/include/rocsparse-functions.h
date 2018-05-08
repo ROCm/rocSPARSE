@@ -221,6 +221,15 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
 
 // TODO
 ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
+                                   const rocsparse_int *csr_row_ptr,
+                                   rocsparse_int nnz,
+                                   rocsparse_int m,
+                                   rocsparse_int *coo_row_ind,
+                                   rocsparse_index_base idx_base);
+
+// TODO
+ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
                                    const rocsparse_int *coo_row_ind,
                                    rocsparse_int nnz,
