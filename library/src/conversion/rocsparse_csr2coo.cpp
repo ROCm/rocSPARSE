@@ -32,13 +32,6 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
               (const void*&) coo_row_ind,
               idx_base);
 
-    // Check matrix parameters
-    if (idx_base != rocsparse_index_base_zero)
-    {
-        //TODO
-        return rocsparse_status_not_implemented;
-    }
-
     // Check sizes
     if (nnz < 0)
     {
@@ -68,10 +61,6 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
     // Stream
     hipStream_t stream = handle->stream;
 
-    // TODO
-
-
-
 #define CSR2COO_DIM 512
     rocsparse_int nnz_per_row = nnz / m;
 
@@ -84,31 +73,31 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
         {
             hipLaunchKernelGGL((csr2coo_kernel<2>),
                                csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind);
+                               m, csr_row_ptr, coo_row_ind, idx_base);
         }
         else if (nnz_per_row < 8)
         {
             hipLaunchKernelGGL((csr2coo_kernel<4>),
                                csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind);
+                               m, csr_row_ptr, coo_row_ind, idx_base);
         }
         else if (nnz_per_row < 16)
         {
             hipLaunchKernelGGL((csr2coo_kernel<8>),
                                csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind);
+                               m, csr_row_ptr, coo_row_ind, idx_base);
         }
         else if (nnz_per_row < 32)
         {
             hipLaunchKernelGGL((csr2coo_kernel<16>),
                                csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind);
+                               m, csr_row_ptr, coo_row_ind, idx_base);
         }
         else
         {
             hipLaunchKernelGGL((csr2coo_kernel<32>),
                                csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind);
+                               m, csr_row_ptr, coo_row_ind, idx_base);
         }
     }
     else if (handle->warp_size == 64)
@@ -117,37 +106,37 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
         {
             hipLaunchKernelGGL((csr2coo_kernel<2>),
                                csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind);
+                               m, csr_row_ptr, coo_row_ind, idx_base);
         }
         else if (nnz_per_row < 8)
         {
             hipLaunchKernelGGL((csr2coo_kernel<4>),
                                csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind);
+                               m, csr_row_ptr, coo_row_ind, idx_base);
         }
         else if (nnz_per_row < 16)
         {
             hipLaunchKernelGGL((csr2coo_kernel<8>),
                                csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind);
+                               m, csr_row_ptr, coo_row_ind, idx_base);
         }
         else if (nnz_per_row < 32)
         {
             hipLaunchKernelGGL((csr2coo_kernel<16>),
                                csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind);
+                               m, csr_row_ptr, coo_row_ind, idx_base);
         }
         else if (nnz_per_row < 64)
         {
             hipLaunchKernelGGL((csr2coo_kernel<32>),
                                csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind);
+                               m, csr_row_ptr, coo_row_ind, idx_base);
         }
         else
         {
             hipLaunchKernelGGL((csr2coo_kernel<64>),
                                csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind);
+                               m, csr_row_ptr, coo_row_ind, idx_base);
         }
     }
     else
@@ -155,6 +144,5 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
         return rocsparse_status_arch_mismatch;
     }
 #undef CSR2COO_DIM
-
     return rocsparse_status_success;
 }
