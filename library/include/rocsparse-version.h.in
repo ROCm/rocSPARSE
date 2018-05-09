@@ -1,13 +1,18 @@
 /* ************************************************************************
- * Copyright 2016 Advanced Micro Devices, Inc.
+ * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCSPARSE_VERSION_H_
-#define ROCSPARSE_VERSION_H_
+/*!\file
+ * \brief rocsparse-version.h provides the configured version and settings
+ */
+
+#pragma once
+#ifndef _ROCSPARSE_VERSION_H_
+#define _ROCSPARSE_VERSION_H_
 
 #define ROCSPARSE_VERSION_MAJOR @rocsparse_VERSION_MAJOR@
 #define ROCSPARSE_VERSION_MINOR @rocsparse_VERSION_MINOR@
 #define ROCSPARSE_VERSION_PATCH @rocsparse_VERSION_PATCH@
 #define ROCSPARSE_VERSION_TWEAK @rocsparse_VERSION_TWEAK@
 
-#endif // ROCSPARSE_VERSION_H_
+#endif // _ROCSPARSE_VERSION_H_
