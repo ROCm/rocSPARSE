@@ -36,7 +36,8 @@ __global__
 void coo2csr_kernel(rocsparse_int m,
                     rocsparse_int nnz,
                     const rocsparse_int *coo_row_ind,
-                    rocsparse_int *csr_row_ptr)
+                    rocsparse_int *csr_row_ptr,
+                    rocsparse_index_base idx_base)
 {
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -47,13 +48,13 @@ void coo2csr_kernel(rocsparse_int m,
 
     if (gid == 0)
     {
-        csr_row_ptr[0] = 0;
-        csr_row_ptr[m] = nnz;
+        csr_row_ptr[0] = idx_base;
+        csr_row_ptr[m] = nnz + idx_base;
         return;
     }
 
     // Binary search
-    csr_row_ptr[gid] = lower_bound(coo_row_ind, gid, 0, nnz-1);
+    csr_row_ptr[gid] = lower_bound(coo_row_ind, gid+idx_base, 0, nnz-1) + idx_base;
 }
 
 #endif // COO2CSR_DEVICE_H

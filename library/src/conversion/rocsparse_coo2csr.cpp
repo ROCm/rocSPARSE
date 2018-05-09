@@ -32,13 +32,6 @@ rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
               (const void*&) csr_row_ptr,
               idx_base);
 
-    // Check matrix parameters
-    if (idx_base != rocsparse_index_base_zero)
-    {
-        //TODO
-        return rocsparse_status_not_implemented;
-    }
-
     // Check sizes
     if (nnz < 0)
     {
@@ -68,22 +61,13 @@ rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
     // Stream
     hipStream_t stream = handle->stream;
 
-    // TODO
-
 #define COO2CSR_DIM 512
     dim3 coo2csr_blocks((m-1)/COO2CSR_DIM+1);
     dim3 coo2csr_threads(COO2CSR_DIM);
 
     hipLaunchKernelGGL((coo2csr_kernel),
                        coo2csr_blocks, coo2csr_threads, 0, stream,
-                       m, nnz, coo_row_ind, csr_row_ptr);
-
-
-
-
+                       m, nnz, coo_row_ind, csr_row_ptr, idx_base);
 #undef COO2CSR_DIM
-
-
-
     return rocsparse_status_success;
 }
