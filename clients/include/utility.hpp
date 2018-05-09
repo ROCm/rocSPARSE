@@ -216,12 +216,13 @@ rocsparse_int gen_2d_laplacian(rocsparse_int ndim,
 /* ============================================================================================ */
 /*! \brief  Generate a random sparse matrix in COO format */
 template <typename T>
-rocsparse_int gen_matrix_coo(rocsparse_int m,
-                             rocsparse_int n,
-                             rocsparse_int nnz,
-                             std::vector<rocsparse_int> &row_ind,
-                             std::vector<rocsparse_int> &col_ind,
-                             std::vector<T> &val)
+void gen_matrix_coo(rocsparse_int m,
+                    rocsparse_int n,
+                    rocsparse_int nnz,
+                    std::vector<rocsparse_int> &row_ind,
+                    std::vector<rocsparse_int> &col_ind,
+                    std::vector<T> &val,
+                    rocsparse_index_base idx_base)
 {
     if (row_ind.size() != nnz)
     {
@@ -260,9 +261,14 @@ rocsparse_int gen_matrix_coo(rocsparse_int m,
         while (idx < i)
         {
             // Normal distribution around the diagonal
-            rocsparse_int rng = row_ind[begin] + (i - begin)
+            rocsparse_int rng = (i - begin)
                               * sqrt(-2.0 * log((double) rand() / RAND_MAX))
                               * cos(2.0 * M_PI * (double) rand() / RAND_MAX);
+
+            if (m <= n)
+            {
+                rng += row_ind[begin];
+            }
 
             // Repeat if running out of bounds
             if (rng < 0 || rng > n-1)
@@ -283,6 +289,16 @@ rocsparse_int gen_matrix_coo(rocsparse_int m,
 
         // Partially sort column indices
         std::sort(&col_ind[begin], &col_ind[i]);
+    }
+
+    // Correct index base accordingly
+    if (idx_base == rocsparse_index_base_one)
+    {
+        for (rocsparse_int i=0; i<nnz; ++i)
+        {
+            ++row_ind[i];
+            ++col_ind[i];
+        }
     }
 
     // Sample random values
@@ -537,8 +553,8 @@ class Arguments
         double alpha = 1.0;
         double beta  = 0.0;
 
-        rocsparse_operation trans = rocsparse_operation_none;
-        rocsparse_index_base idxBase = rocsparse_index_base_zero;
+        rocsparse_operation trans     = rocsparse_operation_none;
+        rocsparse_index_base idx_base = rocsparse_index_base_zero;
 
         rocsparse_int norm_check = 0;
         rocsparse_int unit_check = 1;
@@ -558,7 +574,7 @@ class Arguments
             beta  = rhs.beta;
 
             trans = rhs.trans;
-            idxBase = rhs.idxBase;
+            idx_base = rhs.idx_base;
 
             norm_check = rhs.norm_check;
             unit_check = rhs.unit_check;
