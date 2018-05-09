@@ -8,6 +8,7 @@ set(ROCSPARSE_TEST_SOURCES
   rocsparse_gtest_main.cpp
   test_axpyi.cpp
   test_csrmv.cpp
+  test_coo2csr.cpp
 )
 
 set(ROCSPARSE_CLIENTS_COMMON
@@ -33,19 +34,29 @@ target_include_directories(rocsparse-test
       $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
 )
 
-target_link_libraries(rocsparse-test
-  PRIVATE
-    roc::rocsparse
-    ${GTEST_BOTH_LIBRARIES}
-    hip::hip_hcc
-    hip::hip_device
-)
-
-foreach(amdgpu_target ${AMDGPU_TARGETS})
+if(HIP_PLATFORM STREQUAL "hcc")
   target_link_libraries(rocsparse-test
     PRIVATE
-      --amdgpu-target=${amdgpu_target}
+      roc::rocsparse
+      ${GTEST_BOTH_LIBRARIES}
+      hip::hip_hcc
+      hip::hip_device
   )
-endforeach()
+
+  foreach(amdgpu_target ${AMDGPU_TARGETS})
+    target_link_libraries(rocsparse-test
+      PRIVATE
+        --amdgpu-target=${amdgpu_target}
+    )
+  endforeach()
+endif()
+
+if(HIP_PLATFORM STREQUAL "nvcc")
+  target_link_libraries(rocsparse-test
+    PRIVATE
+      roc::rocsparse
+      ${GTEST_BOTH_LIBRARIES}
+  )
+endif()
 
 add_test(rocsparse-test rocsparse-test)
