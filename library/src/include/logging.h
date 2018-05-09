@@ -1,9 +1,10 @@
 /* ************************************************************************
- * Copyright 2016 Advanced Micro Devices, Inc.
+ * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
-#ifndef ROCSPARSE_LOGGING_H_
-#define ROCSPARSE_LOGGING_H_
+#pragma once
+#ifndef LOGGING_H
+#define LOGGING_H
 
 #include <fstream>
 #include <string>
@@ -207,4 +208,4 @@ void log_argument(std::ostream& os, H head)
     os << "\n" << head;
 }
 
-#endif // ROCSPARSE_LOGGING_H_
+#endif // LOGGING_H
