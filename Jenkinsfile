@@ -300,7 +300,7 @@ hcc_rocm:
     def hcc_docker_args = new docker_data(
         from_image:'rocm/dev-ubuntu-16.04:1.7.1',
         build_docker_file:'dockerfile-build-ubuntu-16.04',
-        install_docker_file:'dockerfile-rocsparse-ubuntu-16.04',
+        install_docker_file:'dockerfile-install-ubuntu-16.04',
         docker_run_args:'--device=/dev/kfd --device=/dev/dri --group-add=video',
         docker_build_args:' --pull' )
 
