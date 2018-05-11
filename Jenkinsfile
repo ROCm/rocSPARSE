@@ -1,11 +1,13 @@
 #!/usr/bin/env groovy
 
 // Generated from snippet generator 'properties; set job properties'
-properties([buildDiscarder(logRotator(
-    artifactDaysToKeepStr: '',
-    artifactNumToKeepStr: '',
-    daysToKeepStr: '',
-    numToKeepStr: '10')),
+properties([
+    pipelineTriggers([cron('0 3 * * *'), [$class: 'PeriodicFolderTrigger', interval: '5m']]),
+    buildDiscarder(logRotator(
+      artifactDaysToKeepStr: '',
+      artifactNumToKeepStr: '',
+      daysToKeepStr: '',
+      numToKeepStr: '10')),
     disableConcurrentBuilds(),
     // parameters([booleanParam( name: 'push_image_to_docker_hub', defaultValue: false, description: 'Push rocsparse image to rocm docker-hub' )]),
     [$class: 'CopyArtifactPermissionProperty', projectNames: '*']
@@ -187,19 +189,19 @@ Boolean docker_build_inside_image( def build_image, compiler_data compiler_args,
         archiveArtifacts artifacts: "${docker_context}/*.deb", fingerprint: true
         // archiveArtifacts artifacts: "${docker_context}/*.rpm", fingerprint: true
 
-        stage('Clang Format')
-        {
-          sh '''
-              find . -iname \'*.h\' \
-                  -o -iname \'*.hpp\' \
-                  -o -iname \'*.cpp\' \
-                  -o -iname \'*.h.in\' \
-                  -o -iname \'*.hpp.in\' \
-                  -o -iname \'*.cpp.in\' \
-              | grep -v 'build/' \
-              | xargs -n 1 -P 1 -I{} -t sh -c \'clang-format-3.8 -style=file {} | diff - {}\'
-          '''
-        }
+//        stage('Clang Format')
+//        {
+//          sh '''
+//              find . -iname \'*.h\' \
+//                  -o -iname \'*.hpp\' \
+//                  -o -iname \'*.cpp\' \
+//                  -o -iname \'*.h.in\' \
+//                  -o -iname \'*.hpp.in\' \
+//                  -o -iname \'*.cpp.in\' \
+//              | grep -v 'build/' \
+//              | xargs -n 1 -P 1 -I{} -t sh -c \'clang-format-3.8 -style=file {} | diff - {}\'
+//          '''
+//        }
 
       }
     }
