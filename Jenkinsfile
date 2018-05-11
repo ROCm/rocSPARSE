@@ -175,7 +175,7 @@ Boolean docker_build_inside_image( def build_image, compiler_data compiler_args,
 //        archiveArtifacts artifacts: "${docker_context}/*.deb", fingerprint: true
 //        // archiveArtifacts artifacts: "${docker_context}/*.rpm", fingerprint: true
 //      }
-    }
+//    }
   }
 
   return true
