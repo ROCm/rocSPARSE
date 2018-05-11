@@ -105,6 +105,114 @@ def docker_build_image( docker_data docker_args, project_paths paths )
   return build_image
 }
 
+////////////////////////////////////////////////////////////////////////
+// This encapsulates the cmake configure, build and package commands
+// Leverages docker containers to encapsulate the build in a fixed environment
+Boolean docker_build_inside_image( def build_image, compiler_data compiler_args, docker_data docker_args, project_paths paths )
+{
+  // Construct a relative path from build directory to src directory; used to invoke cmake
+  String rel_path_to_src = g_relativize( pwd( ), paths.project_src_prefix, paths.project_build_prefix )
+
+  String build_type_postfix = null
+  if( compiler_args.build_config.equalsIgnoreCase( 'release' ) )
+  {
+    build_type_postfix = ""
+  }
+  else
+  {
+    build_type_postfix = "-d"
+  }
+
+  // For the nvidia path, we somewhat arbitrarily choose to use the hcc-ctu rocsparse package
+  String rocsparse_archive_path=compiler_args.compiler_name;
+  if( rocsparse_archive_path.toLowerCase( ).startsWith( 'nvcc-' ) )
+  {
+    rocsparse_archive_path='hcc-ctu'
+  }
+
+  build_image.inside( docker_args.docker_run_args )
+  {
+    withEnv(["CXX=${compiler_args.compiler_path}", 'CLICOLOR_FORCE=1'])
+    {
+      // Build library & clients
+      sh  """#!/usr/bin/env bash
+          set -x
+          cd ${paths.project_build_prefix}
+          ${paths.build_command}
+        """
+    }
+
+//    stage( "Test ${compiler_args.compiler_name} ${compiler_args.build_config}" )
+//    {
+//      // Cap the maximum amount of testing to be a few hours; assume failure if the time limit is hit
+//      timeout(time: 1, unit: 'HOURS')
+//      {
+//        sh """#!/usr/bin/env bash
+//              set -x
+//              cd ${paths.project_build_prefix}/build/release/clients/staging
+//              ./rocsparse-test${build_type_postfix} --gtest_output=xml --gtest_color=yes
+//          """
+//        junit "${paths.project_build_prefix}/build/release/clients/staging/*.xml"
+//      }
+//
+//      String docker_context = "${compiler_args.build_config}/${compiler_args.compiler_name}"
+//      if( compiler_args.compiler_name.toLowerCase( ).startsWith( 'hcc-' ) )
+//      {
+//        sh  """#!/usr/bin/env bash
+//            set -x
+//            cd ${paths.project_build_prefix}/build/release
+//            make package
+//          """
+//
+//        sh  """#!/usr/bin/env bash
+//            set -x
+//            rm -rf ${docker_context} && mkdir -p ${docker_context}
+//            mv ${paths.project_build_prefix}/build/release/*.deb ${docker_context}
+//            # mv ${paths.project_build_prefix}/build/release/*.rpm ${docker_context}
+//            dpkg -c ${docker_context}/*.deb
+//        """
+//
+//        archiveArtifacts artifacts: "${docker_context}/*.deb", fingerprint: true
+//        // archiveArtifacts artifacts: "${docker_context}/*.rpm", fingerprint: true
+//      }
+    }
+  }
+
+  return true
+}
+
+////////////////////////////////////////////////////////////////////////
+// This builds a fresh docker image FROM a clean base image, with no build dependencies included
+// Uploads the new docker image to internal artifactory
+// String docker_test_install( String hcc_ver, String artifactory_org, String from_image, String rocsparse_src_rel, String build_dir_rel )
+String docker_test_install( compiler_data compiler_args, docker_data docker_args, project_paths rocsparse_paths, String job_name )
+{
+  def rocsparse_install_image = null
+  String image_name = "rocsparse-hip-${compiler_args.compiler_name}-ubuntu-16.04"
+  String docker_context = "${compiler_args.build_config}/${compiler_args.compiler_name}"
+
+//  stage( "Artifactory ${compiler_args.compiler_name} ${compiler_args.build_config}" )
+//  {
+//    //  We copy the docker files into the bin directory where the .deb lives so that it's a clean build everytime
+//    sh  """#!/usr/bin/env bash
+//        set -x
+//        mkdir -p ${docker_context}
+//        cp -r ${rocsparse_paths.project_src_prefix}/docker/* ${docker_context}
+//      """
+//
+//    // Docker 17.05 introduced the ability to use ARG values in FROM statements
+//    // Docker inspect failing on FROM statements with ARG https://issues.jenkins-ci.org/browse/JENKINS-44836
+//    // rocsparse_install_image = docker.build( "${job_name}/${image_name}:${env.BUILD_NUMBER}", "--pull -f ${build_dir_rel}/dockerfile-rocsparse-ubuntu-16.04 --build-arg base_image=${from_image} ${build_dir_rel}" )
+//
+//    // JENKINS-44836 workaround by using a bash script instead of docker.build()
+//    sh """docker build -t ${job_name}/${image_name} --pull -f ${docker_context}/${docker_args.install_docker_file} \
+//        --build-arg base_image=${docker_args.from_image} ${docker_context}"""
+//    rocsparse_install_image = docker.image( "${job_name}/${image_name}" )
+//  }
+
+  return image_name
+}
+
 // Docker related variables gathered together to reduce parameter bloat on function calls
 class docker_data implements Serializable
 {
@@ -158,7 +266,7 @@ def build_pipeline( compiler_data compiler_args, docker_data docker_args, projec
       rocsparse_build_image.inside( docker_args.docker_run_args, docker_inside_closure )
 
       // Build rocsparse inside of the build environment
-//      build_succeeded = docker_build_inside_image( rocsparse_build_image, compiler_args, docker_args, rocsparse_paths )
+      build_succeeded = docker_build_inside_image( rocsparse_build_image, compiler_args, docker_args, rocsparse_paths )
     }
 
     // After a successful build, test the installer
@@ -166,9 +274,9 @@ def build_pipeline( compiler_data compiler_args, docker_data docker_args, projec
     if( compiler_args.compiler_name.toLowerCase( ).startsWith( 'hcc-' ) )
     {
       String job_name = env.JOB_NAME.toLowerCase( )
-//      String rocsparse_image_name = docker_test_install( compiler_args, docker_args, rocsparse_paths, job_name )
+      String rocsparse_image_name = docker_test_install( compiler_args, docker_args, rocsparse_paths, job_name )
 
-//      docker_clean_images( job_name, rocsparse_image_name )
+      docker_clean_images( job_name, rocsparse_image_name )
     }
   }
 }
