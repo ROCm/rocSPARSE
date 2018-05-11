@@ -154,40 +154,40 @@ Boolean docker_build_inside_image( def build_image, compiler_data compiler_args,
         """
     }
 
-//    stage( "Test ${compiler_args.compiler_name} ${compiler_args.build_config}" )
-//    {
-//      // Cap the maximum amount of testing to be a few hours; assume failure if the time limit is hit
-//      timeout(time: 1, unit: 'HOURS')
-//      {
-//        sh """#!/usr/bin/env bash
-//              set -x
-//              cd ${paths.project_build_prefix}/build/release/clients/staging
-//              ./rocsparse-test${build_type_postfix} --gtest_output=xml --gtest_color=yes
-//          """
-//        junit "${paths.project_build_prefix}/build/release/clients/staging/*.xml"
-//      }
-//
-//      String docker_context = "${compiler_args.build_config}/${compiler_args.compiler_name}"
-//      if( compiler_args.compiler_name.toLowerCase( ).startsWith( 'hcc-' ) )
-//      {
-//        sh  """#!/usr/bin/env bash
-//            set -x
-//            cd ${paths.project_build_prefix}/build/release
-//            make package
-//          """
-//
-//        sh  """#!/usr/bin/env bash
-//            set -x
-//            rm -rf ${docker_context} && mkdir -p ${docker_context}
-//            mv ${paths.project_build_prefix}/build/release/*.deb ${docker_context}
-//            # mv ${paths.project_build_prefix}/build/release/*.rpm ${docker_context}
-//            dpkg -c ${docker_context}/*.deb
-//        """
-//
-//        archiveArtifacts artifacts: "${docker_context}/*.deb", fingerprint: true
-//        // archiveArtifacts artifacts: "${docker_context}/*.rpm", fingerprint: true
-//      }
-//    }
+    stage( "Test ${compiler_args.compiler_name} ${compiler_args.build_config}" )
+    {
+      // Cap the maximum amount of testing to be a few hours; assume failure if the time limit is hit
+      timeout(time: 1, unit: 'HOURS')
+      {
+        sh """#!/usr/bin/env bash
+              set -x
+              cd ${paths.project_build_prefix}/build/release/clients/tests
+              ./rocsparse-test${build_type_postfix} --gtest_output=xml --gtest_color=yes
+          """
+        junit "${paths.project_build_prefix}/build/release/clients/tests/*.xml"
+      }
+
+      String docker_context = "${compiler_args.build_config}/${compiler_args.compiler_name}"
+      if( compiler_args.compiler_name.toLowerCase( ).startsWith( 'hcc-' ) )
+      {
+        sh  """#!/usr/bin/env bash
+            set -x
+            cd ${paths.project_build_prefix}/build/release
+            make package
+          """
+
+        sh  """#!/usr/bin/env bash
+            set -x
+            rm -rf ${docker_context} && mkdir -p ${docker_context}
+            mv ${paths.project_build_prefix}/build/release/*.deb ${docker_context}
+            # mv ${paths.project_build_prefix}/build/release/*.rpm ${docker_context}
+            dpkg -c ${docker_context}/*.deb
+        """
+
+        archiveArtifacts artifacts: "${docker_context}/*.deb", fingerprint: true
+        // archiveArtifacts artifacts: "${docker_context}/*.rpm", fingerprint: true
+      }
+    }
   }
 
   return true
@@ -203,24 +203,24 @@ String docker_test_install( compiler_data compiler_args, docker_data docker_args
   String image_name = "rocsparse-hip-${compiler_args.compiler_name}-ubuntu-16.04"
   String docker_context = "${compiler_args.build_config}/${compiler_args.compiler_name}"
 
-//  stage( "Artifactory ${compiler_args.compiler_name} ${compiler_args.build_config}" )
-//  {
-//    //  We copy the docker files into the bin directory where the .deb lives so that it's a clean build everytime
-//    sh  """#!/usr/bin/env bash
-//        set -x
-//        mkdir -p ${docker_context}
-//        cp -r ${rocsparse_paths.project_src_prefix}/docker/* ${docker_context}
-//      """
-//
-//    // Docker 17.05 introduced the ability to use ARG values in FROM statements
-//    // Docker inspect failing on FROM statements with ARG https://issues.jenkins-ci.org/browse/JENKINS-44836
-//    // rocsparse_install_image = docker.build( "${job_name}/${image_name}:${env.BUILD_NUMBER}", "--pull -f ${build_dir_rel}/dockerfile-rocsparse-ubuntu-16.04 --build-arg base_image=${from_image} ${build_dir_rel}" )
-//
-//    // JENKINS-44836 workaround by using a bash script instead of docker.build()
-//    sh """docker build -t ${job_name}/${image_name} --pull -f ${docker_context}/${docker_args.install_docker_file} \
-//        --build-arg base_image=${docker_args.from_image} ${docker_context}"""
-//    rocsparse_install_image = docker.image( "${job_name}/${image_name}" )
-//  }
+  stage( "Artifactory ${compiler_args.compiler_name} ${compiler_args.build_config}" )
+  {
+    //  We copy the docker files into the bin directory where the .deb lives so that it's a clean build everytime
+    sh  """#!/usr/bin/env bash
+        set -x
+        mkdir -p ${docker_context}
+        cp -r ${rocsparse_paths.project_src_prefix}/docker/* ${docker_context}
+      """
+
+    // Docker 17.05 introduced the ability to use ARG values in FROM statements
+    // Docker inspect failing on FROM statements with ARG https://issues.jenkins-ci.org/browse/JENKINS-44836
+    // rocsparse_install_image = docker.build( "${job_name}/${image_name}:${env.BUILD_NUMBER}", "--pull -f ${build_dir_rel}/dockerfile-rocsparse-ubuntu-16.04 --build-arg base_image=${from_image} ${build_dir_rel}" )
+
+    // JENKINS-44836 workaround by using a bash script instead of docker.build()
+    sh """docker build -t ${job_name}/${image_name} --pull -f ${docker_context}/${docker_args.install_docker_file} \
+        --build-arg base_image=${docker_args.from_image} ${docker_context}"""
+    rocsparse_install_image = docker.image( "${job_name}/${image_name}" )
+  }
 
   return image_name
 }
