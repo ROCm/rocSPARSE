@@ -17,6 +17,18 @@ properties([buildDiscarder(logRotator(
 import java.nio.file.Path;
 
 ////////////////////////////////////////////////////////////////////////
+// Calculate the relative path between two sub-directories from a common root
+@NonCPS
+String g_relativize( String root_string, String rel_source, String rel_build )
+{
+  Path root_path = new File( root_string ).toPath( )
+  Path path_src = root_path.resolve( rel_source )
+  Path path_build = root_path.resolve( rel_build )
+
+  return path_build.relativize( path_src ).toString( )
+}
+
+////////////////////////////////////////////////////////////////////////
 // Construct the relative path of the build directory
 void build_directory_rel( project_paths paths, compiler_data hcc_args )
 {
