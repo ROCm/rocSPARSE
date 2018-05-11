@@ -24,7 +24,7 @@ void testing_axpyi_bad_arg(void)
     I nnz       = 100;
     I safe_size = 100;
     T alpha     = 0.6;
-    base idxBase = rocsparse_index_base_zero;
+    base idx_base = rocsparse_index_base_zero;
     rocsparse_status status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
@@ -50,31 +50,31 @@ void testing_axpyi_bad_arg(void)
     // testing for (nullptr == dxInd)
     {
         I *dxInd_null = nullptr;
-        status = rocsparse_axpyi(handle, nnz, &alpha, dxVal, dxInd_null, dy, idxBase);
+        status = rocsparse_axpyi(handle, nnz, &alpha, dxVal, dxInd_null, dy, idx_base);
         verify_rocsparse_status_invalid_pointer(status, "Error: xInd is nullptr");
     }
     // testing for (nullptr == dxVal)
     {
         T *dxVal_null = nullptr;
-        status = rocsparse_axpyi(handle, nnz, &alpha, dxVal_null, dxInd, dy, idxBase);
+        status = rocsparse_axpyi(handle, nnz, &alpha, dxVal_null, dxInd, dy, idx_base);
         verify_rocsparse_status_invalid_pointer(status, "Error: xVal is nullptr");
     }
     // testing for (nullptr == dy)
     {
         T *dy_null = nullptr;
-        status = rocsparse_axpyi(handle, nnz, &alpha, dxVal, dxInd, dy_null, idxBase);
+        status = rocsparse_axpyi(handle, nnz, &alpha, dxVal, dxInd, dy_null, idx_base);
         verify_rocsparse_status_invalid_pointer(status, "Error: y is nullptr");
     }
     // testing for (nullptr == d_alpha)
     {
         T *d_alpha_null = nullptr;
-        status = rocsparse_axpyi(handle, nnz, d_alpha_null, dxVal, dxInd, dy, idxBase);
+        status = rocsparse_axpyi(handle, nnz, d_alpha_null, dxVal, dxInd, dy, idx_base);
         verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
     }
     // testing for (nullptr == handle)
     {
         rocsparse_handle handle_null = nullptr;
-        status = rocsparse_axpyi(handle_null, nnz, &alpha, dxVal, dxInd, dy, idxBase);
+        status = rocsparse_axpyi(handle_null, nnz, &alpha, dxVal, dxInd, dy, idx_base);
         verify_rocsparse_status_invalid_handle(status);
     }
 }
@@ -82,11 +82,11 @@ void testing_axpyi_bad_arg(void)
 template <typename I, typename T>
 rocsparse_status testing_axpyi(Arguments argus)
 {
-    I N                          = argus.N;
-    I nnz                        = argus.nnz;
-    I safe_size                  = 100;
-    T h_alpha                    = argus.alpha;
-    rocsparse_index_base idxBase = argus.idxBase;
+    I N                           = argus.N;
+    I nnz                         = argus.nnz;
+    I safe_size                   = 100;
+    T h_alpha                     = argus.alpha;
+    rocsparse_index_base idx_base = argus.idx_base;
     rocsparse_status status;
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
@@ -113,7 +113,7 @@ rocsparse_status testing_axpyi(Arguments argus)
         }
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        status = rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy, idxBase);
+        status = rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy, idx_base);
 
         if (nnz < 0)
         {
@@ -184,11 +184,11 @@ rocsparse_status testing_axpyi(Arguments argus)
 
         // ROCSPARSE pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy_1, idxBase));
+        CHECK_ROCSPARSE_ERROR(rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy_1, idx_base));
 
         // ROCSPARSE pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_axpyi(handle, nnz, d_alpha, dxVal, dxInd, dy_2, idxBase));
+        CHECK_ROCSPARSE_ERROR(rocsparse_axpyi(handle, nnz, d_alpha, dxVal, dxInd, dy_2, idx_base));
 
         // copy output from device to CPU
         CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * N, hipMemcpyDeviceToHost));
@@ -199,7 +199,7 @@ rocsparse_status testing_axpyi(Arguments argus)
 
         for (int i=0; i<nnz; ++i)
         {
-            hy_gold[hxInd[i]-idxBase] += h_alpha * hxVal[i];
+            hy_gold[hxInd[i]-idx_base] += h_alpha * hxVal[i];
         }
 
         cpu_time_used = get_time_us() - cpu_time_used;
@@ -222,14 +222,14 @@ rocsparse_status testing_axpyi(Arguments argus)
 
         for(int iter = 0; iter < number_cold_calls; iter++)
         {
-            rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy_1, idxBase);
+            rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy_1, idx_base);
         }
 
         gpu_time_used = get_time_us(); // in microseconds
 
         for(int iter = 0; iter < number_hot_calls; iter++)
         {
-            rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy_1, idxBase);
+            rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy_1, idx_base);
         }
 
         gpu_time_used     = (get_time_us() - gpu_time_used) / number_hot_calls;
