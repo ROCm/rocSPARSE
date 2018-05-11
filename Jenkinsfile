@@ -186,6 +186,21 @@ Boolean docker_build_inside_image( def build_image, compiler_data compiler_args,
 
         archiveArtifacts artifacts: "${docker_context}/*.deb", fingerprint: true
         // archiveArtifacts artifacts: "${docker_context}/*.rpm", fingerprint: true
+
+        stage('Clang Format')
+        {
+          sh '''
+              find . -iname \'*.h\' \
+                  -o -iname \'*.hpp\' \
+                  -o -iname \'*.cpp\' \
+                  -o -iname \'*.h.in\' \
+                  -o -iname \'*.hpp.in\' \
+                  -o -iname \'*.cpp.in\' \
+              | grep -v 'build/' \
+              | xargs -n 1 -P 1 -I{} -t sh -c \'clang-format-3.8 -style=file {} | diff - {}\'
+          '''
+        }
+
       }
     }
   }
@@ -293,6 +308,40 @@ def build_pipeline( compiler_data compiler_args, docker_data docker_args, projec
   }
 }
 
+// The following launches 3 builds in parallel: hcc-ctu, hcc-1.6 and cuda
+parallel hcc_ctu:
+{
+  node( 'docker && rocm && dkms' )
+  {
+    def docker_args = new docker_data(
+        from_image:'compute-artifactory:5001/rocm-developer-tools/hip/master/hip-hcc-ctu-ubuntu-16.04:latest',
+        build_docker_file:'dockerfile-build-ubuntu-16.04',
+        install_docker_file:'dockerfile-install-ubuntu-16.04',
+        docker_run_args:'--device=/dev/kfd --device=/dev/dri --group-add=video',
+        docker_build_args:' --pull' )
+
+    def compiler_args = new compiler_data(
+        compiler_name:'hcc-ctu',
+        build_config:'Release',
+        compiler_path:'/opt/rocm/bin/hcc' )
+
+    def rocsparse_paths = new project_paths(
+        project_name:'rocsparse-hcc-ctu',
+        src_prefix:'src',
+        build_prefix:'src',
+        build_command: './install.sh -cd' )
+
+    def print_version_closure = {
+      sh  """
+          set -x
+          /opt/rocm/bin/rocm_agent_enumerator -t ALL
+          /opt/rocm/bin/hcc --version
+        """
+    }
+
+    build_pipeline( compiler_args, docker_args, rocsparse_paths, print_version_closure )
+  }
+},
 hcc_rocm:
 {
   node( 'docker && rocm && dkms' )
