@@ -158,7 +158,7 @@ def build_pipeline( compiler_data compiler_args, docker_data docker_args, projec
       rocsparse_build_image.inside( docker_args.docker_run_args, docker_inside_closure )
 
       // Build rocsparse inside of the build environment
-      build_succeeded = docker_build_inside_image( rocsparse_build_image, compiler_args, docker_args, rocsparse_paths )
+//      build_succeeded = docker_build_inside_image( rocsparse_build_image, compiler_args, docker_args, rocsparse_paths )
     }
 
     // After a successful build, test the installer
@@ -166,9 +166,9 @@ def build_pipeline( compiler_data compiler_args, docker_data docker_args, projec
     if( compiler_args.compiler_name.toLowerCase( ).startsWith( 'hcc-' ) )
     {
       String job_name = env.JOB_NAME.toLowerCase( )
-      String rocsparse_image_name = docker_test_install( compiler_args, docker_args, rocsparse_paths, job_name )
+//      String rocsparse_image_name = docker_test_install( compiler_args, docker_args, rocsparse_paths, job_name )
 
-      docker_clean_images( job_name, rocsparse_image_name )
+//      docker_clean_images( job_name, rocsparse_image_name )
     }
   }
 }
