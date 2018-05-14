@@ -247,7 +247,7 @@ def docker_build_inside_image( def build_image, compiler_data compiler_args, doc
 String docker_test_install( compiler_data compiler_args, docker_data docker_args, project_paths rocsparse_paths, String job_name )
 {
   def rocsparse_install_image = null
-  String image_name = "rocsparse-hip-${compiler_args.compiler_name}-ubuntu-16.04"
+  String image_name = "rocsparse-hip-${compiler_args.compiler_name}"
   String docker_context = "${compiler_args.build_config}/${compiler_args.compiler_name}"
 
   stage( "Install ${compiler_args.compiler_name} ${compiler_args.build_config}" )
