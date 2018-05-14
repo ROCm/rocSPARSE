@@ -1,6 +1,8 @@
 #!/usr/bin/env groovy
 
-// Generated from snippet generator 'properties; set job properties'
+////////////////////////////////////////////////////////////////////////
+// Mostly generated from snippet generator 'properties; set job properties'
+// Time-based triggers added to execute nightly tests, eg '30 2 * * *' means 2:30 AM
 properties([
     pipelineTriggers([cron('0 3 * * *'), [$class: 'PeriodicFolderTrigger', interval: '5m']]),
     buildDiscarder(logRotator(
@@ -19,6 +21,32 @@ properties([
 import java.nio.file.Path;
 
 ////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////
+// Return build number of upstream job
+@NonCPS
+int get_upstream_build_num( )
+{
+    def upstream_cause = currentBuild.rawBuild.getCause( hudson.model.Cause$UpstreamCause )
+    if( upstream_cause == null)
+      return 0
+
+    return upstream_cause.getUpstreamBuild()
+}
+
+////////////////////////////////////////////////////////////////////////
+// Return project name of upstream job
+@NonCPS
+String get_upstream_build_project( )
+{
+    def upstream_cause = currentBuild.rawBuild.getCause( hudson.model.Cause$UpstreamCause )
+    if( upstream_cause == null)
+      return null
+
+    return upstream_cause.getUpstreamProject()
+}
+
+////////////////////////////////////////////////////////////////////////
 // Calculate the relative path between two sub-directories from a common root
 @NonCPS
 String g_relativize( String root_string, String rel_source, String rel_build )
@@ -34,16 +62,15 @@ String g_relativize( String root_string, String rel_source, String rel_build )
 // Construct the relative path of the build directory
 void build_directory_rel( project_paths paths, compiler_data hcc_args )
 {
-  // if( hcc_args.build_config.equalsIgnoreCase( 'release' ) )
-  // {
-  //   paths.project_build_prefix = paths.build_prefix + '/' + paths.project_name + '/release';
-  // }
-  // else
-  // {
-  //   paths.project_build_prefix = paths.build_prefix + '/' + paths.project_name + '/debug';
-  // }
+//   if( hcc_args.build_config.equalsIgnoreCase( 'release' ) )
+//   {
+//     paths.project_build_prefix = paths.build_prefix + '/' + paths.project_name + '/release';
+//   }
+//   else
+//   {
+//     paths.project_build_prefix = paths.build_prefix + '/' + paths.project_name + '/debug';
+//   }
   paths.project_build_prefix = paths.build_prefix + '/' + paths.project_name;
-
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -100,7 +127,7 @@ void checkout_and_version( project_paths paths )
 // The docker images contains all dependencies, including OS platform, to build
 def docker_build_image( docker_data docker_args, project_paths paths )
 {
-  String build_image_name = "build"
+  String build_image_name = "build-rocsparse-hip-artifactory"
   def build_image = null
 
   dir( paths.project_src_prefix )
@@ -122,7 +149,7 @@ def docker_build_image( docker_data docker_args, project_paths paths )
 ////////////////////////////////////////////////////////////////////////
 // This encapsulates the cmake configure, build and package commands
 // Leverages docker containers to encapsulate the build in a fixed environment
-Boolean docker_build_inside_image( def build_image, compiler_data compiler_args, docker_data docker_args, project_paths paths )
+def docker_build_inside_image( def build_image, compiler_data compiler_args, docker_data docker_args, project_paths paths )
 {
   // Construct a relative path from build directory to src directory; used to invoke cmake
   String rel_path_to_src = g_relativize( pwd( ), paths.project_src_prefix, paths.project_build_prefix )
@@ -135,13 +162,6 @@ Boolean docker_build_inside_image( def build_image, compiler_data compiler_args,
   else
   {
     build_type_postfix = "-d"
-  }
-
-  // For the nvidia path, we somewhat arbitrarily choose to use the hcc-ctu rocsparse package
-  String rocsparse_archive_path=compiler_args.compiler_name;
-  if( rocsparse_archive_path.toLowerCase( ).startsWith( 'nvcc-' ) )
-  {
-    rocsparse_archive_path='hcc-ctu'
   }
 
   build_image.inside( docker_args.docker_run_args )
@@ -159,12 +179,12 @@ Boolean docker_build_inside_image( def build_image, compiler_data compiler_args,
     stage( "Test ${compiler_args.compiler_name} ${compiler_args.build_config}" )
     {
       // Cap the maximum amount of testing to be a few hours; assume failure if the time limit is hit
-      timeout(time: 1, unit: 'HOURS')
+      timeout(time: 2, unit: 'HOURS')
       {
         sh """#!/usr/bin/env bash
               set -x
               cd ${paths.project_build_prefix}/build/release/clients/tests
-              ./rocsparse-test${build_type_postfix} --gtest_output=xml --gtest_color=yes
+              LD_LIBRARY_PATH=/opt/rocm/hcc/lib ./rocsparse-test${build_type_postfix} --gtest_output=xml --gtest_color=yes
           """
         junit "${paths.project_build_prefix}/build/release/clients/tests/*.xml"
       }
@@ -178,16 +198,15 @@ Boolean docker_build_inside_image( def build_image, compiler_data compiler_args,
             make package
           """
 
-        sh  """#!/usr/bin/env bash
-            set -x
-            rm -rf ${docker_context} && mkdir -p ${docker_context}
-            mv ${paths.project_build_prefix}/build/release/*.deb ${docker_context}
-            # mv ${paths.project_build_prefix}/build/release/*.rpm ${docker_context}
-            dpkg -c ${docker_context}/*.deb
-        """
-
-        archiveArtifacts artifacts: "${docker_context}/*.deb", fingerprint: true
-        // archiveArtifacts artifacts: "${docker_context}/*.rpm", fingerprint: true
+        if( paths.project_name.equalsIgnoreCase( 'rocsparse-ubuntu' ) )
+        {
+          sh  """#!/usr/bin/env bash
+              set -x
+              rm -rf ${docker_context} && mkdir -p ${docker_context}
+              mv ${paths.project_build_prefix}/build/release/*.deb ${docker_context}
+              dpkg -c ${docker_context}/*.deb
+          """
+          archiveArtifacts artifacts: "${docker_context}/*.deb", fingerprint: true
 
 //        stage('Clang Format')
 //        {
@@ -202,12 +221,23 @@ Boolean docker_build_inside_image( def build_image, compiler_data compiler_args,
 //              | xargs -n 1 -P 1 -I{} -t sh -c \'clang-format-3.8 -style=file {} | diff - {}\'
 //          '''
 //        }
-
+        }
+        else if( paths.project_name.equalsIgnoreCase( 'rocsparse-fedora' ) )
+        {
+          sh  """#!/usr/bin/env bash
+              set -x
+              rm -rf ${docker_context} && mkdir -p ${docker_context}
+              mv ${paths.project_build_prefix}/build/release/*.deb ${docker_context}
+              rpm -qlp ${docker_context}/*.rpm
+          """
+          archiveArtifacts artifacts: "${docker_context}/*.rpm", fingerprint: true
+        }
       }
+
     }
   }
 
-  return true
+  return void
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -220,7 +250,7 @@ String docker_test_install( compiler_data compiler_args, docker_data docker_args
   String image_name = "rocsparse-hip-${compiler_args.compiler_name}-ubuntu-16.04"
   String docker_context = "${compiler_args.build_config}/${compiler_args.compiler_name}"
 
-  stage( "Artifactory ${compiler_args.compiler_name} ${compiler_args.build_config}" )
+  stage( "Install ${compiler_args.compiler_name} ${compiler_args.build_config}" )
   {
     //  We copy the docker files into the bin directory where the .deb lives so that it's a clean build everytime
     sh  """#!/usr/bin/env bash
@@ -240,6 +270,62 @@ String docker_test_install( compiler_data compiler_args, docker_data docker_args
   }
 
   return image_name
+}
+
+////////////////////////////////////////////////////////////////////////
+// hip_integration_testing
+// This function sets up compilation and testing of HiP on a compiler downloaded from an upstream build
+// Integration testing is centered around docker and constructing clean test environments every time
+
+// NOTES: I have implemeneted integration testing 3 different ways, and I've come to the conclusion nothing is perfect
+// 1.  I've tried having HCC push the test compiler to artifactory, and having HiP download the test docker image from artifactory
+//     a.  The act of uploading and downloading images from artifactory takes minutes
+//     b.  There is no good way of deleting images from a repository.  You have to use an arcane CURL command and I don't know how
+//        to keep the password secret.  These test integration images are meant to be ephemeral.
+// 2.  I tried 'docker save' to export a docker image into a tarball, and transfering the image through 'copy artifacts plugin'
+//     a.  The HCC docker image uncompressed is over 1GB
+//     b.  Compressing the docker image takes even longer than uploading the image to artifactory
+// 3.  Download the HCC .deb and dockerfile through 'copy artifacts plugin'.  Create a new HCC image on the fly
+//     a.  There is inefficency in building a new ubuntu image and installing HCC twice (once in HCC build, once here)
+//     b.  This solution doesn't scale when we start testing downstream libraries
+
+// I've implemented solution #3 above, probably transitioning to #2 down the line (probably without compression)
+String hip_integration_testing( String inside_args, String job, String build_config )
+{
+  // Attempt to make unique docker image names for each build, to support concurrent builds
+  // Mangle docker org name with upstream build info
+  String testing_org_name = 'hip-test-' + get_upstream_build_project( ).replaceAll('/','-') + '-' + get_upstream_build_num( )
+
+  // Tag image name with this build number
+  String hip_test_image_name = "hip:${env.BUILD_NUMBER}"
+
+  def rocsparse_integration_image = null
+
+  dir( 'integration-testing' )
+  {
+    deleteDir( )
+
+    // This invokes 'copy artifact plugin' to copy archived files from upstream build
+    step([$class: 'CopyArtifact', filter: 'archive/**/*.deb, docker/dockerfile-*',
+      fingerprintArtifacts: true, projectName: get_upstream_build_project( ), flatten: true,
+      selector: [$class: 'TriggeredBuildSelector', allowUpstreamDependencies: false, fallbackToLastSuccessful: false, upstreamFilterStrategy: 'UseGlobalSetting'],
+      target: '.' ])
+
+    docker.build( "${testing_org_name}/${hip_test_image_name}", "-f dockerfile-hip-ubuntu-16.04 ." )
+  }
+
+  // Checkout source code, dependencies and version files
+  String rocsparse_src_rel = checkout_and_version( job )
+
+  // Conctruct a binary directory path based on build config
+  String rocsparse_bin_rel = build_directory_rel( build_config )
+
+  // Build rocsparse inside of the build environment
+  rocsparse_integration_image = docker_build_image( job, testing_org_name, '', rocsparse_src_rel, "${testing_org_name}/${hip_test_image_name}" )
+
+  docker_build_inside_image( rocsparse_integration_image, inside_args, job, '', build_config, rocsparse_src_rel, rocsparse_bin_rel )
+
+  docker_clean_images( testing_org_name, '*' )
 }
 
 // Docker related variables gathered together to reduce parameter bloat on function calls
@@ -271,14 +357,14 @@ class project_paths implements Serializable
   String build_command
 }
 
+////////////////////////////////////////////////////////////////////////
+// -- MAIN
+// Following this line is the start of MAIN of this Jenkinsfile
+
 // This defines a common build pipeline used by most targets
 def build_pipeline( compiler_data compiler_args, docker_data docker_args, project_paths rocsparse_paths, def docker_inside_closure )
 {
   ansiColor( 'vga' )
-  {
-    // NOTE: build_succeeded does not appear to be local to each function invokation.  I couldn't use it where each
-    // node had a different success value.
-    def build_succeeded = false;
 
     stage( "Build ${compiler_args.compiler_name} ${compiler_args.build_config}" )
     {
@@ -295,13 +381,12 @@ def build_pipeline( compiler_data compiler_args, docker_data docker_args, projec
       rocsparse_build_image.inside( docker_args.docker_run_args, docker_inside_closure )
 
       // Build rocsparse inside of the build environment
-      build_succeeded = docker_build_inside_image( rocsparse_build_image, compiler_args, docker_args, rocsparse_paths )
+      docker_build_inside_image( rocsparse_build_image, compiler_args, docker_args, rocsparse_paths )
     }
 
-    // After a successful build, test the installer
-    // Only do this for rocm based builds
-    if( compiler_args.compiler_name.toLowerCase( ).startsWith( 'hcc-' ) )
+    if( !rocsparse_paths.project_name.equalsIgnoreCase( 'rocsparse-hcc-ctu' ) )
     {
+      // After a successful build, upload a docker image of the results
       String job_name = env.JOB_NAME.toLowerCase( )
       String rocsparse_image_name = docker_test_install( compiler_args, docker_args, rocsparse_paths, job_name )
 
@@ -313,38 +398,45 @@ def build_pipeline( compiler_data compiler_args, docker_data docker_args, projec
 // The following launches 3 builds in parallel: hcc-ctu, hcc-1.6 and cuda
 parallel hcc_ctu:
 {
-  node( 'docker && rocm && dkms' )
+  try
   {
-    def docker_args = new docker_data(
-        from_image:'compute-artifactory:5001/rocm-developer-tools/hip/master/hip-hcc-ctu-ubuntu-16.04:latest',
-        build_docker_file:'dockerfile-build-ubuntu-16.04',
-        install_docker_file:'dockerfile-install-ubuntu-16.04',
-        docker_run_args:'--device=/dev/kfd --device=/dev/dri --group-add=video',
-        docker_build_args:' --pull' )
+    node( 'docker && rocm && dkms')
+    {
+      def docker_args = new docker_data(
+          from_image:'compute-artifactory:5001/rocm-developer-tools/hip/master/hip-hcc-ctu-ubuntu-16.04:latest',
+          build_docker_file:'dockerfile-build-ubuntu-16.04',
+          install_docker_file:'dockerfile-install-ubuntu-16.04',
+          docker_run_args:'--device=/dev/kfd --device=/dev/dri --group-add=video',
+          docker_build_args:' --pull' )
 
-    def compiler_args = new compiler_data(
-        compiler_name:'hcc-ctu',
-        build_config:'Release',
-        compiler_path:'/opt/rocm/bin/hcc' )
+      def compiler_args = new compiler_data(
+          compiler_name:'hcc-ctu',
+          build_config:'Release',
+          compiler_path:'/opt/rocm/bin/hcc' )
 
-    def rocsparse_paths = new project_paths(
-        project_name:'rocsparse-hcc-ctu',
-        src_prefix:'src',
-        build_prefix:'src',
-        build_command: './install.sh -cd' )
+      def rocsparse_paths = new project_paths(
+          project_name:'rocsparse-hcc-ctu',
+          src_prefix:'src',
+          build_prefix:'src',
+          build_command: './install.sh -cd' )
 
-    def print_version_closure = {
-      sh  """
-          set -x
-          /opt/rocm/bin/rocm_agent_enumerator -t ALL
-          /opt/rocm/bin/hcc --version
-        """
+      def print_version_closure = {
+        sh  """
+            set -x
+            /opt/rocm/bin/rocm_agent_enumerator -t ALL
+            /opt/rocm/bin/hcc --version
+          """
+      }
+
+      build_pipeline( compiler_args, docker_args, rocsparse_paths, print_version_closure )
     }
-
-    build_pipeline( compiler_args, docker_args, rocsparse_paths, print_version_closure )
+  }
+  catch( err )
+  {
+    currentBuild.result = 'UNSTABLE'
   }
 },
-hcc_rocm:
+rocm_ubuntu:
 {
   node( 'docker && rocm && dkms' )
   {
@@ -356,12 +448,12 @@ hcc_rocm:
         docker_build_args:' --pull' )
 
     def hcc_compiler_args = new compiler_data(
-        compiler_name:'hcc-rocm',
+        compiler_name:'hcc-rocm-ubuntu-16.04',
         build_config:'Release',
         compiler_path:'/opt/rocm/bin/hcc' )
 
     def rocsparse_paths = new project_paths(
-        project_name:'rocsparse-hcc-rocm',
+        project_name:'rocsparse-hcc-rocm-ubuntu-16.04',
         src_prefix:'src',
         build_prefix:'src',
         build_command: './install.sh -cd' )
@@ -377,3 +469,68 @@ hcc_rocm:
     build_pipeline( hcc_compiler_args, hcc_docker_args, rocsparse_paths, print_version_closure )
   }
 }
+//,
+// rocm_fedora:
+// {
+//   node( 'docker && rocm && dkms')
+//   {
+//     def hcc_docker_args = new docker_data(
+//         from_image:'rocm/dev-fedora-24:latest',
+//         build_docker_file:'dockerfile-build-fedora',
+//         install_docker_file:'dockerfile-install-fedora',
+//         docker_run_args:'--device=/dev/kfd',
+//         docker_build_args:' --pull' )
+
+//     def hcc_compiler_args = new compiler_data(
+//         compiler_name:'hcc-rocm-fedora',
+//         build_config:'Release',
+//         compiler_path:'/opt/rocm/bin/hcc' )
+
+//     def rocsparse_paths = new project_paths(
+//         project_name:'rocsparse-fedora',
+//         src_prefix:'src',
+//         build_prefix:'src',
+//         build_command: './install.sh -c' )
+
+//     def print_version_closure = {
+//       sh  """
+//           set -x
+//           /opt/rocm/bin/hcc --version
+//         """
+//     }
+
+//     build_pipeline( hcc_compiler_args, hcc_docker_args, rocsparse_paths, print_version_closure )
+//   }
+// },
+// nvcc:
+// {
+//   node( 'docker && cuda' )
+//   {
+//     def hcc_docker_args = new docker_data(
+//         from_image:'nvidia/cuda:9.0-devel',
+//         build_docker_file:'dockerfile-build-nvidia-cuda',
+//         install_docker_file:'dockerfile-install-nvidia-cuda',
+//         docker_run_args:'--runtime=nvidia',
+//         docker_build_args:' --pull' )
+
+//     def hcc_compiler_args = new compiler_data(
+//         compiler_name:'nvcc-9.0',
+//         build_config:'Release',
+//         compiler_path:'/opt/rocm/bin/hipcc' )
+
+//     def rocsparse_paths = new project_paths(
+//         project_name:'rocsparse-cuda',
+//         src_prefix:'src',
+//         build_prefix:'build' )
+
+//     def print_version_closure = {
+//       sh  """
+//           set -x
+//           nvidia-smi
+//           nvcc --version
+//         """
+//     }
+
+//     build_pipeline( hcc_compiler_args, hcc_docker_args, rocsparse_paths, print_version_closure )
+//   }
+// }
