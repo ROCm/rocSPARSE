@@ -99,8 +99,8 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
     hipStream_t stream = handle->stream;
 
     // Clear HYB structure if already allocated
-    hyb->m = m;
-    hyb->n = n;
+    hyb->m         = m;
+    hyb->n         = n;
     hyb->partition = partition_type;
     hyb->ell_nnz   = 0;
     hyb->ell_width = 0;
@@ -128,7 +128,7 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
     }
 
 #define CSR2ELL_DIM 512
-    //TODO we take max partition
+    // TODO we take max partition
     if (partition_type == rocsparse_hyb_partition_max)
     {
         // ELL part only, compute maximum non-zeros per row
@@ -136,8 +136,8 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
 
         // Allocate workspace
         rocsparse_int *workspace = NULL;
-        RETURN_IF_HIP_ERROR(hipMalloc((void**) &workspace,
-                                      sizeof(rocsparse_int)*blocks));
+        RETURN_IF_HIP_ERROR(
+            hipMalloc((void**) &workspace, sizeof(rocsparse_int)*blocks));
 
         hipLaunchKernelGGL((ell_width_kernel_part1<CSR2ELL_DIM>),
                            dim3(blocks), dim3(CSR2ELL_DIM), 0, stream,
@@ -164,8 +164,8 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
     hyb->ell_nnz = hyb->ell_width * m;
 
     // Allocate ELL part
-    RETURN_IF_HIP_ERROR(hipMalloc((void**) &hyb->ell_col_ind,
-                                  sizeof(rocsparse_int)*hyb->ell_nnz));
+    RETURN_IF_HIP_ERROR(
+        hipMalloc((void**) &hyb->ell_col_ind, sizeof(rocsparse_int)*hyb->ell_nnz));
     RETURN_IF_HIP_ERROR(hipMalloc(&hyb->ell_val, sizeof(T)*hyb->ell_nnz));
 
     dim3 csr2ell_blocks((m-1)/CSR2ELL_DIM+1);

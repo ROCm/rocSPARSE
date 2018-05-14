@@ -83,13 +83,16 @@ struct _rocsparse_hyb_mat
     rocsparse_int m = 0;
     // num cols
     rocsparse_int n = 0;
+
     // partition type
     rocsparse_hyb_partition partition = rocsparse_hyb_partition_auto;
+
     // ELL matrix part
     rocsparse_int  ell_nnz     = 0;
     rocsparse_int  ell_width   = 0;
     rocsparse_int *ell_col_ind = nullptr;
     void          *ell_val     = nullptr;
+
     // COO matrix part
     rocsparse_int  coo_nnz     = 0;
     rocsparse_int *coo_row_ind = nullptr;

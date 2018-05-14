@@ -138,7 +138,7 @@ rocsparse_status rocsparse_zaxpyi(rocsparse_handle handle,
     ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
-                                  rocsparse_operation trans, 
+                                  rocsparse_operation trans,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int nnz,
@@ -153,7 +153,7 @@ rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
-                                  rocsparse_operation trans, 
+                                  rocsparse_operation trans,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int nnz,
@@ -168,7 +168,7 @@ rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
 /*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
-                                  rocsparse_operation trans, 
+                                  rocsparse_operation trans,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int nnz,
@@ -183,7 +183,7 @@ rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
-                                  rocsparse_operation trans, 
+                                  rocsparse_operation trans,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int nnz,
@@ -272,12 +272,6 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
  *    level 3 SPARSE
  * ===========================================================================
  */
-
-
-
-
-
-
 
 /*
  * ===========================================================================
