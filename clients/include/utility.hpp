@@ -304,7 +304,7 @@ void gen_matrix_coo(rocsparse_int m,
     // Sample random values
     for (rocsparse_int i=0; i<nnz; ++i)
     {
-        val[i] = (double) rand() / RAND_MAX;
+        val[i] = random_generator<T>();//(double) rand() / RAND_MAX;
     }
 
 }
