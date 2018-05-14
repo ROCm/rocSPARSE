@@ -32,7 +32,7 @@ rocsparse_status rocsparse_create_handle(rocsparse_handle *handle)
             log_trace(*handle, "rocsparse_create_handle");
 
         }
-        catch(rocsparse_status status)
+        catch(const rocsparse_status &status)
         {
             return status;
         }
@@ -52,7 +52,7 @@ rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle)
     {
         delete handle;
     }
-    catch(rocsparse_status status)
+    catch(const rocsparse_status &status)
     {
         return status;
     }
@@ -169,7 +169,7 @@ rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr *descr)
         {
             *descr = new _rocsparse_mat_descr;
         }
-        catch(rocsparse_status status)
+        catch(const rocsparse_status &status)
         {
             return status;
         }
@@ -188,7 +188,7 @@ rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr)
     {
         delete descr;
     }
-    catch(rocsparse_status status)
+    catch(const rocsparse_status &status)
     {
         return status;
     }
@@ -287,7 +287,7 @@ rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat *hyb)
         {
             *hyb = new _rocsparse_hyb_mat;
         }
-        catch(rocsparse_status status)
+        catch(const rocsparse_status &status)
         {
             return status;
         }
@@ -306,7 +306,7 @@ rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb)
     {
         delete hyb;
     }
-    catch(rocsparse_status status)
+    catch(const rocsparse_status &status)
     {
         return status;
     }
