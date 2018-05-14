@@ -8,6 +8,10 @@
 
 #include <hip/hip_runtime_api.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /********************************************************************************
  * \brief rocsparse_handle is a structure holding the rocsparse library context.
  * It must be initialized using rocsparse_create_handle()
@@ -15,7 +19,6 @@
  * to all subsequent library function calls.
  * It should be destroyed at the end using rocsparse_destroy_handle().
  *******************************************************************************/
-extern "C"
 rocsparse_status rocsparse_create_handle(rocsparse_handle *handle)
 {
     // Check if handle is valid
@@ -30,9 +33,8 @@ rocsparse_status rocsparse_create_handle(rocsparse_handle *handle)
         {
             *handle = new _rocsparse_handle();
             log_trace(*handle, "rocsparse_create_handle");
-
         }
-        catch(const rocsparse_status &status)
+        catch (const rocsparse_status &status)
         {
             return status;
         }
@@ -43,7 +45,6 @@ rocsparse_status rocsparse_create_handle(rocsparse_handle *handle)
 /********************************************************************************
  * \brief destroy handle
  *******************************************************************************/
-extern "C"
 rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle)
 {
     log_trace(handle, "rocsparse_destroy_handle");
@@ -52,7 +53,7 @@ rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle)
     {
         delete handle;
     }
-    catch(const rocsparse_status &status)
+    catch (const rocsparse_status &status)
     {
         return status;
     }
@@ -63,7 +64,6 @@ rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle)
  * \brief Indicates whether the scalar value pointers are on the host or device.
  * Set pointer mode, can be host or device
  *******************************************************************************/
-extern "C"
 rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle handle,
                                             rocsparse_pointer_mode mode)
 {
@@ -80,7 +80,6 @@ rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle handle,
 /********************************************************************************
  * \brief Get pointer mode, can be host or device.
  *******************************************************************************/
-extern "C"
 rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
                                             rocsparse_pointer_mode *mode)
 {
@@ -98,9 +97,7 @@ rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
  *! \brief Set rocsparse stream used for all subsequent library function calls.
  * If not set, all hip kernels will take the default NULL stream.
  *******************************************************************************/
-extern "C"
-rocsparse_status rocsparse_set_stream(rocsparse_handle handle,
-                                      hipStream_t stream_id)
+rocsparse_status rocsparse_set_stream(rocsparse_handle handle, hipStream_t stream_id)
 {
     // Check if handle is valid
     if (handle == nullptr)
@@ -114,9 +111,7 @@ rocsparse_status rocsparse_set_stream(rocsparse_handle handle,
 /********************************************************************************
  *! \brief Get rocsparse stream used for all subsequent library function calls.
  *******************************************************************************/
-extern "C"
-rocsparse_status rocsparse_get_stream(rocsparse_handle handle,
-                                      hipStream_t *stream_id)
+rocsparse_status rocsparse_get_stream(rocsparse_handle handle, hipStream_t *stream_id)
 {
     // Check if handle is valid
     if (handle == nullptr)
@@ -133,7 +128,6 @@ rocsparse_status rocsparse_get_stream(rocsparse_handle handle,
  * version / 100 % 1000 = minor version
  * version / 100000     = major version
  *******************************************************************************/
-extern "C"
 rocsparse_status rocsparse_get_version(rocsparse_handle handle, int *version)
 {
     // Check if handle is valid
@@ -155,7 +149,6 @@ rocsparse_status rocsparse_get_version(rocsparse_handle handle, int *version)
  * calls that involve the matrix.
  * It should be destroyed at the end using rocsparse_destroy_mat_descr().
  *******************************************************************************/
-extern "C"
 rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr *descr)
 {
     if (descr == nullptr)
@@ -169,7 +162,7 @@ rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr *descr)
         {
             *descr = new _rocsparse_mat_descr;
         }
-        catch(const rocsparse_status &status)
+        catch (const rocsparse_status &status)
         {
             return status;
         }
@@ -180,7 +173,6 @@ rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr *descr)
 /********************************************************************************
  * \brief destroy matrix descriptor
  *******************************************************************************/
-extern "C"
 rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr)
 {
     // Destruct
@@ -188,7 +180,7 @@ rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr)
     {
         delete descr;
     }
-    catch(const rocsparse_status &status)
+    catch (const rocsparse_status &status)
     {
         return status;
     }
@@ -198,7 +190,6 @@ rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr)
 /********************************************************************************
  * \brief Set the index base of the matrix descriptor.
  *******************************************************************************/
-extern "C"
 rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr,
                                               rocsparse_index_base base)
 {
@@ -207,8 +198,7 @@ rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr,
     {
         return rocsparse_status_invalid_pointer;
     }
-    if (base != rocsparse_index_base_zero &&
-        base != rocsparse_index_base_one)
+    if (base != rocsparse_index_base_zero && base != rocsparse_index_base_one)
     {
         return rocsparse_status_invalid_value;
     }
@@ -219,7 +209,6 @@ rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr,
 /********************************************************************************
  * \brief Returns the index base of the matrix descriptor.
  *******************************************************************************/
-extern "C"
 rocsparse_index_base rocsparse_get_mat_index_base(const rocsparse_mat_descr descr)
 {
     // If descriptor is invalid, default index base is returned
@@ -233,7 +222,6 @@ rocsparse_index_base rocsparse_get_mat_index_base(const rocsparse_mat_descr desc
 /********************************************************************************
  * \brief Set the matrix type of the matrix descriptor.
  *******************************************************************************/
-extern "C"
 rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr,
                                         rocsparse_matrix_type type)
 {
@@ -255,7 +243,6 @@ rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr,
 /********************************************************************************
  * \brief Returns the matrix type of the matrix descriptor.
  *******************************************************************************/
-extern "C"
 rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr)
 {
     // If descriptor is invalid, default matrix type is returned
@@ -273,7 +260,6 @@ rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr)
  * calls that involve the HYB matrix.
  * It should be destroyed at the end using rocsparse_destroy_hyb_mat().
  *******************************************************************************/
-extern "C"
 rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat *hyb)
 {
     if (hyb == nullptr)
@@ -287,7 +273,7 @@ rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat *hyb)
         {
             *hyb = new _rocsparse_hyb_mat;
         }
-        catch(const rocsparse_status &status)
+        catch (const rocsparse_status &status)
         {
             return status;
         }
@@ -298,7 +284,6 @@ rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat *hyb)
 /********************************************************************************
  * \brief Destroy HYB matrix.
  *******************************************************************************/
-extern "C"
 rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb)
 {
     // Destruct
@@ -306,9 +291,13 @@ rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb)
     {
         delete hyb;
     }
-    catch(const rocsparse_status &status)
+    catch (const rocsparse_status &status)
     {
         return status;
     }
     return rocsparse_status_success;
 }
+
+#ifdef __cplusplus
+}
+#endif

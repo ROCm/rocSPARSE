@@ -28,15 +28,15 @@ typedef struct _rocsparse_hyb_mat *rocsparse_hyb_mat;
 extern "C" {
 #endif
 
-/* ============================================================================================ */
+/* ==================================================================================== */
 
 /*! parameter constants. */
 
 /*! \brief Used to specify whether the matrix is to be transposed or not. */
 typedef enum rocsparse_operation_ {
-    rocsparse_operation_none                = 111, /**< Operate with the matrix. */
-    rocsparse_operation_transpose           = 112, /**< Operate with the transpose of the matrix. */
-    rocsparse_operation_conjugate_transpose = 113  /**< Operate with the conjugate transpose of the matrix. */
+    rocsparse_operation_none                = 111, /**< Operate with matrix. */
+    rocsparse_operation_transpose           = 112, /**< Operate with transpose. */
+    rocsparse_operation_conjugate_transpose = 113  /**< Operate with conj. transpose. */
 } rocsparse_operation;
 
 /*! \brief Used to specify the matrix index base. */
@@ -60,7 +60,7 @@ typedef enum rocsparse_hyb_partition_ {
     rocsparse_hyb_partition_max  = 2
 } rocsparse_hyb_partition;
 
-/* ============================================================================================ */
+/* ==================================================================================== */
 /**
  *   @brief rocsparse status codes definition
  */
@@ -70,7 +70,7 @@ typedef enum rocsparse_status_ {
     rocsparse_status_not_implemented = 2, /**< function is not implemented */
     rocsparse_status_invalid_pointer = 3, /**< invalid pointer parameter */
     rocsparse_status_invalid_size    = 4, /**< invalid size parameter */
-    rocsparse_status_memory_error    = 5, /**< failed internal memory allocation, copy or dealloc */
+    rocsparse_status_memory_error    = 5, /**< failed memory allocation, copy, dealloc */
     rocsparse_status_internal_error  = 6, /**< other internal library failure */
     rocsparse_status_invalid_value   = 7, /**< invalid value parameter */
     rocsparse_status_arch_mismatch   = 8  /**< device arch is not supported */

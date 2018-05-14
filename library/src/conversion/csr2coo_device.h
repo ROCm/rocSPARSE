@@ -20,9 +20,9 @@ void csr2coo_kernel(rocsparse_int m,
     rocsparse_int vid  = gid / THREADS;
     rocsparse_int nvec = hipGridDim_x * hipBlockDim_x / THREADS;
 
-    for(rocsparse_int ai=vid; ai<m; ai+=nvec)
+    for (rocsparse_int ai=vid; ai<m; ai+=nvec)
     {
-        for(rocsparse_int aj=csr_row_ptr[ai]+lid; aj<csr_row_ptr[ai+1]; aj+=THREADS)
+        for (rocsparse_int aj=csr_row_ptr[ai]+lid; aj<csr_row_ptr[ai+1]; aj+=THREADS)
         {
             coo_row_ind[aj-idx_base] = ai + idx_base;
         }
