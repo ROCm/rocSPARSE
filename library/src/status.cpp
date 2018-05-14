@@ -10,11 +10,12 @@
 
 /*******************************************************************************
  * \brief convert hipError_t to rocsparse_status
- * TODO - enumerate library calls to hip runtime, enumerate possible errors from those calls
+ * TODO - enumerate library calls to hip runtime, enumerate possible errors from
+ * those calls
  ******************************************************************************/
 rocsparse_status get_rocsparse_status_for_hip_status(hipError_t status)
 {
-    switch(status)
+    switch (status)
     {
         // success
         case hipSuccess:

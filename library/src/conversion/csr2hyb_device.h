@@ -109,7 +109,7 @@ void csr2ell_kernel(rocsparse_int m,
         return;
     }
 
-    rocsparse_int p = 0;
+    rocsparse_int p  = 0;
     rocsparse_int aj = csr_row_ptr[ai];
 
     // Fill ELL matrix
@@ -121,8 +121,8 @@ void csr2ell_kernel(rocsparse_int m,
         }
 
         rocsparse_int idx = ELL_IND(ai, p++, m, ell_width);
-        ell_col_ind[idx] = csr_col_ind[aj];
-        ell_val[idx] = csr_val[aj];
+        ell_col_ind[idx]  = csr_col_ind[aj];
+        ell_val[idx]      = csr_val[aj];
     }
 
     // TODO store rownnz
@@ -131,8 +131,8 @@ void csr2ell_kernel(rocsparse_int m,
     for (; aj<ell_width; ++aj)
     {
         rocsparse_int idx = ELL_IND(ai, p++, m, ell_width);
-        ell_col_ind[idx] = -1;
-        ell_val[idx] = static_cast<T>(0);
+        ell_col_ind[idx]  = -1;
+        ell_val[idx]      = static_cast<T>(0);
     }
 }
 

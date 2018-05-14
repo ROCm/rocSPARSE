@@ -28,7 +28,7 @@ _rocsparse_handle::_rocsparse_handle()
     }
     else
     {
-        layer_mode = (rocsparse_layer_mode) (atoi(str_layer_mode));
+        layer_mode = (rocsparse_layer_mode)(atoi(str_layer_mode));
     }
 
     // Open log file
@@ -79,7 +79,7 @@ rocsparse_status _rocsparse_handle::set_stream(hipStream_t user_stream)
 /*******************************************************************************
  * get stream
  ******************************************************************************/
-rocsparse_status _rocsparse_handle::get_stream(hipStream_t* user_stream) const
+rocsparse_status _rocsparse_handle::get_stream(hipStream_t *user_stream) const
 {
     *user_stream = stream;
     return rocsparse_status_success;
