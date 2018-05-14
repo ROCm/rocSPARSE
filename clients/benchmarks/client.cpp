@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     argus.timing = 1;
 
     std::string function;
-    char precision;
+    char precision = 's';
 
     rocsparse_int device_id;
 
@@ -46,7 +46,12 @@ int main(int argc, char *argv[])
 
         ("mtx",
          po::value<std::string>(&argus.filename)->default_value(""), "read from matrix "
-         "market (.mtx) format. This will override parameters m, n, and z")
+         "market (.mtx) format. This will override parameters m, n, and z.")
+
+        ("laplacian-dim",
+         po::value<rocsparse_int>(&argus.laplacian)->default_value(0), "assemble "
+         "laplacian matrix for 2D unit square with dimension <dim>. This will override "
+         "parameters m, n, z and mtx.")
 
         ("alpha", 
           po::value<double>(&argus.alpha)->default_value(1.0), "specifies the scalar alpha")
@@ -113,16 +118,16 @@ int main(int argc, char *argv[])
     if (function == "axpyi")
     {
         if (precision == 's')
-            testing_axpyi<rocsparse_int, float>(argus);
+            testing_axpyi<float>(argus);
         else if (precision == 'd')
-            testing_axpyi<rocsparse_int, double>(argus);
+            testing_axpyi<double>(argus);
     }
     else if (function == "csrmv")
     {
         if (precision == 's')
-            testing_csrmv<rocsparse_int, float>(argus);
+            testing_csrmv<float>(argus);
         else if (precision == 'd')
-            testing_csrmv<rocsparse_int, double>(argus);
+            testing_csrmv<double>(argus);
     }
     else if (function == "csr2coo")
     {
