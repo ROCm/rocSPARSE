@@ -365,7 +365,7 @@ class project_paths implements Serializable
 def build_pipeline( compiler_data compiler_args, docker_data docker_args, project_paths rocsparse_paths, def docker_inside_closure )
 {
   ansiColor( 'vga' )
-
+  {
     stage( "Build ${compiler_args.compiler_name} ${compiler_args.build_config}" )
     {
       // Checkout source code, dependencies and version files
@@ -392,7 +392,7 @@ def build_pipeline( compiler_data compiler_args, docker_data docker_args, projec
 
       docker_clean_images( job_name, rocsparse_image_name )
     }
-
+  }
 }
 
 // The following launches 3 builds in parallel: hcc-ctu, hcc-1.6 and cuda
