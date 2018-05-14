@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     argus.timing = 1;
 
     std::string function;
-    char precision;
+    char precision = 's';
 
     rocsparse_int device_id;
 
