@@ -152,7 +152,8 @@ template <typename T>
 rocsparse_int gen_2d_laplacian(rocsparse_int ndim,
                                std::vector<rocsparse_int> &rowptr,
                                std::vector<rocsparse_int> &col,
-                               std::vector<T> &val)
+                               std::vector<T> &val,
+                               rocsparse_index_base idx_base)
 {
     if (ndim == 0) {
         return 0;
@@ -173,42 +174,42 @@ rocsparse_int gen_2d_laplacian(rocsparse_int ndim,
         for (rocsparse_int j=0; j<ndim; ++j)
         {
             rocsparse_int idx = i*ndim+j;
-            rowptr[idx] = nnz;
+            rowptr[idx] = nnz + idx_base;
             // if no upper boundary element, connect with upper neighbor
             if (i != 0)
             {
-                col[nnz] = idx - ndim;
+                col[nnz] = idx - ndim + idx_base;
                 val[nnz] = static_cast<T>(-1);
                 ++nnz;
             }
             // if no left boundary element, connect with left neighbor
             if (j != 0)
             {
-                col[nnz] = idx - 1;
+                col[nnz] = idx - 1 + idx_base;
                 val[nnz] = static_cast<T>(-1);
                 ++nnz;
             }
             // element itself
-            col[nnz] = idx;
+            col[nnz] = idx + idx_base;
             val[nnz] = static_cast<T>(4);
             ++nnz;
             // if no right boundary element, connect with right neighbor
             if (j != ndim - 1)
             {
-                col[nnz] = idx + 1;
+                col[nnz] = idx + 1 + idx_base;
                 val[nnz] = static_cast<T>(-1);
                 ++nnz;
             }
             // if no lower boundary element, connect with lower neighbor
             if (i != ndim - 1)
             {
-                col[nnz] = idx + ndim;
+                col[nnz] = idx + ndim + idx_base;
                 val[nnz] = static_cast<T>(-1);
                 ++nnz;
             }
         }
     }
-    rowptr[n] = nnz;
+    rowptr[n] = nnz + idx_base;
 
     return n;
 }
@@ -304,7 +305,7 @@ void gen_matrix_coo(rocsparse_int m,
     // Sample random values
     for (rocsparse_int i=0; i<nnz; ++i)
     {
-        val[i] = (double) rand() / RAND_MAX;
+        val[i] = random_generator<T>();//(double) rand() / RAND_MAX;
     }
 
 }
@@ -561,6 +562,7 @@ class Arguments
         rocsparse_int timing     = 0;
 
         rocsparse_int iters = 10;
+        rocsparse_int laplacian = 0;
 
         std::string filename = "";
 
@@ -579,6 +581,9 @@ class Arguments
             norm_check = rhs.norm_check;
             unit_check = rhs.unit_check;
             timing     = rhs.timing;
+
+            iters = rhs.iters;
+            laplacian = rhs.laplacian;
 
             filename = rhs.filename;
 
