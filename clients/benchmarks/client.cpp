@@ -120,9 +120,9 @@ int main(int argc, char *argv[])
     else if (function == "csrmv")
     {
         if (precision == 's')
-            testing_csrmv<rocsparse_int, float>(argus);
+            testing_csrmv<float>(argus);
         else if (precision == 'd')
-            testing_csrmv<rocsparse_int, double>(argus);
+            testing_csrmv<double>(argus);
     }
     else if (function == "csr2coo")
     {
