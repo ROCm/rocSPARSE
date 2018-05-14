@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     std::vector<int> hAptr;
     std::vector<int> hAcol;
     std::vector<double> hAval;
-    int m = gen_2d_laplacian(ndim, hAptr, hAcol, hAval);
+    int m = gen_2d_laplacian(ndim, hAptr, hAcol, hAval, rocsparse_index_base_zero);
     int n = m;
     int nnz = hAptr[m];
 

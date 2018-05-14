@@ -40,20 +40,20 @@ Arguments setup_axpyi_arguments(axpyi_tuple tup)
 
 TEST(axpyi_bad_arg, axpyi_float)
 {
-    testing_axpyi_bad_arg<rocsparse_int, float>();
+    testing_axpyi_bad_arg<float>();
 }
 
 TEST_P(parameterized_axpyi, axpyi_float)
 {
     Arguments arg = setup_axpyi_arguments(GetParam());
-    rocsparse_status status = testing_axpyi<rocsparse_int, float>(arg);
+    rocsparse_status status = testing_axpyi<float>(arg);
     EXPECT_EQ(status, rocsparse_status_success);
 }
 
 TEST_P(parameterized_axpyi, axpyi_double)
 {
     Arguments arg = setup_axpyi_arguments(GetParam());
-    rocsparse_status status = testing_axpyi<rocsparse_int, double>(arg);
+    rocsparse_status status = testing_axpyi<double>(arg);
     EXPECT_EQ(status, rocsparse_status_success);
 }
 

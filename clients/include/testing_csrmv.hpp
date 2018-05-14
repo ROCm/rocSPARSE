@@ -205,28 +205,53 @@ rocsparse_status testing_csrmv(Arguments argus)
     }
 
     // Host structures
+    std::vector<rocsparse_int> hcsr_row_ptr;
     std::vector<rocsparse_int> hcoo_row_ind;
-    std::vector<rocsparse_int> hcoo_col_ind;
-    std::vector<T> hcoo_val;
+    std::vector<rocsparse_int> hcol_ind;
+    std::vector<T> hval;
 
     // Initial Data on CPU
     srand(12345ULL);
-    if (argus.filename != "")
+    if (argus.laplacian)
     {
-        if (read_mtx_matrix(argus.filename.c_str(),
-                            m, n, nnz,
-                            hcoo_row_ind, hcoo_col_ind, hcoo_val) != 0)
-        {
-            fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
-            return rocsparse_status_internal_error;
-        }
+        m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr,
+                                 hcol_ind, hval, idx_base);
+        nnz = hcsr_row_ptr[m];
     }
     else
     {
-        gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcoo_col_ind, hcoo_val, idx_base);
+        if (argus.filename != "")
+        {
+            if (read_mtx_matrix(argus.filename.c_str(),
+                                m, n, nnz,
+                                hcoo_row_ind, hcol_ind, hval) != 0)
+            {
+                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                return rocsparse_status_internal_error;
+            }
+        }
+        else
+        {
+            gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcol_ind, hval, idx_base);
+        }
+
+        // Convert COO to CSR
+        if (!argus.laplacian)
+        {
+            hcsr_row_ptr.resize(m+1, 0);
+            for (int i=0; i<nnz; ++i)
+            {
+                ++hcsr_row_ptr[hcoo_row_ind[i]+1-idx_base];
+            }
+
+            hcsr_row_ptr[0] = idx_base;
+            for (int i=0; i<m; ++i)
+            {
+                hcsr_row_ptr[i+1] += hcsr_row_ptr[i];
+            }
+        }
     }
 
-    std::vector<rocsparse_int> hcsr_row_ptr(m+1);
     std::vector<T> hx(n);
     std::vector<T> hy_1(m);
     std::vector<T> hy_2(m);
@@ -242,8 +267,6 @@ rocsparse_status testing_csrmv(Arguments argus)
     // allocate memory on device
     auto dptr_managed = rocsparse_unique_ptr{
         device_malloc(sizeof(rocsparse_int)*(m+1)), device_free};
-    auto drow_managed = rocsparse_unique_ptr{
-        device_malloc(sizeof(rocsparse_int)*nnz), device_free};
     auto dcol_managed = rocsparse_unique_ptr{
         device_malloc(sizeof(rocsparse_int)*nnz), device_free};
     auto dval_managed = rocsparse_unique_ptr{
@@ -260,7 +283,6 @@ rocsparse_status testing_csrmv(Arguments argus)
         device_malloc(sizeof(T)), device_free};
 
     rocsparse_int *dptr = (rocsparse_int*) dptr_managed.get();
-    rocsparse_int *drow = (rocsparse_int*) drow_managed.get();
     rocsparse_int *dcol = (rocsparse_int*) dcol_managed.get();
     T *dval = (T*) dval_managed.get();
     T *dx   = (T*) dx_managed.get();
@@ -269,26 +291,26 @@ rocsparse_status testing_csrmv(Arguments argus)
     T *d_alpha = (T*) d_alpha_managed.get();
     T *d_beta  = (T*) d_beta_managed.get();
 
-    if(!dval || !dptr || !dcol || !drow || !dx ||
+    if(!dval || !dptr || !dcol || !dx ||
        !dy_1 || !dy_2 || !d_alpha || !d_beta)
     {
         verify_rocsparse_status_success(rocsparse_status_memory_error,
-            "!dval || !dptr || !dcol || !drow || !dx || "
+            "!dval || !dptr || !dcol || !dx || "
             "!dy_1 || !dy_2 || !d_alpha || !d_beta");
         return rocsparse_status_memory_error;
     }
 
     // copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(drow,
-                              hcoo_row_ind.data(),
+    CHECK_HIP_ERROR(hipMemcpy(dptr,
+                              hcsr_row_ptr.data(),
                               sizeof(rocsparse_int)*(m+1),
                               hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dcol,
-                              hcoo_col_ind.data(),
+                              hcol_ind.data(),
                               sizeof(rocsparse_int)*nnz,
                               hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dval,
-                              hcoo_val.data(),
+                              hval.data(),
                               sizeof(T)*nnz,
                               hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dx,
@@ -307,13 +329,6 @@ rocsparse_status testing_csrmv(Arguments argus)
                               &h_beta,
                               sizeof(T),
                               hipMemcpyHostToDevice));
-
-    // Convert COO to CSR
-    CHECK_ROCSPARSE_ERROR(rocsparse_coo2csr(handle, drow, nnz, m, dptr, idx_base));
-    CHECK_HIP_ERROR(hipMemcpy(hcsr_row_ptr.data(),
-                              dptr,
-                              sizeof(rocsparse_int)*(m+1),
-                              hipMemcpyDeviceToHost));
 
     if(argus.unit_check)
     {
@@ -341,7 +356,7 @@ rocsparse_status testing_csrmv(Arguments argus)
             hy_gold[i] *= h_beta;
             for (rocsparse_int j=hcsr_row_ptr[i]; j<hcsr_row_ptr[i+1]; ++j)
             {
-                hy_gold[i] += h_alpha * hcoo_val[j] * hx[hcoo_col_ind[j]];
+                hy_gold[i] += h_alpha * hval[j] * hx[hcol_ind[j]];
             }
         }
 
