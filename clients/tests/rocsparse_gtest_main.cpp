@@ -14,7 +14,7 @@
 int main(int argc, char** argv)
 {
     // Device Query
-    int device_id = 0;
+    int device_id    = 0;
     int device_count = query_device_property();
 
     if(device_count <= device_id)
