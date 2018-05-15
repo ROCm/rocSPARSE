@@ -152,14 +152,14 @@ sum2_reduce(T cur_sum, T* err, volatile T* partial, int lid, int thread_lane, in
 // SUBWAVE_SIZE - the length of a "sub-wave", a power of 2, i.e. 1,2,4,...,WAVE_SIZE, assigned to
 // process a single matrix row
 template <typename T, int SUBWAVE_SIZE, int WG_SIZE>
-static __device__ __launch_bounds__(WG_SIZE, 1) void csrmvn_general_device(int num_rows,
-                                                                           T alpha,
-                                                                           const int* row_offset,
-                                                                           const int* col,
-                                                                           const T* val,
-                                                                           const T* x,
-                                                                           T beta,
-                                                                           T* y)
+static __device__ void csrmvn_general_device(int num_rows,
+                                             T alpha,
+                                             const int* row_offset,
+                                             const int* col,
+                                             const T* val,
+                                             const T* x,
+                                             T beta,
+                                             T* y)
 {
     __shared__ volatile T sdata[WG_SIZE + SUBWAVE_SIZE / 2];
 
