@@ -29,7 +29,7 @@ struct _rocsparse_handle
     // Set stream
     rocsparse_status set_stream(hipStream_t user_stream);
     // Get stream
-    rocsparse_status get_stream(hipStream_t *user_stream) const;
+    rocsparse_status get_stream(hipStream_t* user_stream) const;
 
     // device id
     rocsparse_int device;
@@ -47,8 +47,8 @@ struct _rocsparse_handle
     // logging streams
     std::ofstream log_trace_ofs;
     std::ofstream log_bench_ofs;
-    std::ostream *log_trace_os;
-    std::ostream *log_bench_os;
+    std::ostream* log_trace_os;
+    std::ostream* log_bench_os;
 };
 
 /********************************************************************************
@@ -63,9 +63,9 @@ struct _rocsparse_mat_descr
     // Matrix type
     rocsparse_matrix_type type = rocsparse_matrix_type_general;
     // Fill mode TODO
-//    rocsparse_fill_mode fill;
+    // rocsparse_fill_mode fill;
     // Diagonal type
-//    rocsparse_diag_type diag;
+    // rocsparse_diag_type diag;
     // Index base
     rocsparse_index_base base = rocsparse_index_base_zero;
 };
@@ -88,23 +88,23 @@ struct _rocsparse_hyb_mat
     rocsparse_hyb_partition partition = rocsparse_hyb_partition_auto;
 
     // ELL matrix part
-    rocsparse_int  ell_nnz     = 0;
-    rocsparse_int  ell_width   = 0;
-    rocsparse_int *ell_col_ind = nullptr;
-    void          *ell_val     = nullptr;
+    rocsparse_int ell_nnz      = 0;
+    rocsparse_int ell_width    = 0;
+    rocsparse_int* ell_col_ind = nullptr;
+    void* ell_val              = nullptr;
 
     // COO matrix part
-    rocsparse_int  coo_nnz     = 0;
-    rocsparse_int *coo_row_ind = nullptr;
-    rocsparse_int *coo_col_ind = nullptr;
-    void          *coo_val     = nullptr;
+    rocsparse_int coo_nnz      = 0;
+    rocsparse_int* coo_row_ind = nullptr;
+    rocsparse_int* coo_col_ind = nullptr;
+    void* coo_val              = nullptr;
 };
 
 /********************************************************************************
  * \brief ELL format indexing
  *******************************************************************************/
 #define ELL_IND_ROW(i, el, m, width) (el) * (m) + (i)
-#define ELL_IND_EL (i, el, m, width) (el) + (width) * (i)
+#define ELL_IND_EL(i, el, m, width) (el) + (width) * (i)
 #define ELL_IND(i, el, m, width) ELL_IND_ROW(i, el, m, width)
 
 #endif // HANDLE_H

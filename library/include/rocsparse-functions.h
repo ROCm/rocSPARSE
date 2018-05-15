@@ -55,37 +55,37 @@ extern "C" {
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_saxpyi(rocsparse_handle handle,
                                   rocsparse_int nnz,
-                                  const float *alpha,
-                                  const float *x_val,
-                                  const rocsparse_int *x_ind,
-                                  float *y,
+                                  const float* alpha,
+                                  const float* x_val,
+                                  const rocsparse_int* x_ind,
+                                  float* y,
                                   rocsparse_index_base idx_base);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_daxpyi(rocsparse_handle handle,
                                   rocsparse_int nnz,
-                                  const double *alpha,
-                                  const double *x_val,
-                                  const rocsparse_int *x_ind,
-                                  double *y,
+                                  const double* alpha,
+                                  const double* x_val,
+                                  const rocsparse_int* x_ind,
+                                  double* y,
                                   rocsparse_index_base idx_base);
 /*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_caxpyi(rocsparse_handle handle,
                                   rocsparse_int nnz,
-                                  const rocsparse_float_complex *alpha,
-                                  const rocsparse_float_complex *x_val,
-                                  const rocsparse_int *x_ind,
-                                  rocsparse_float_complex *y,
+                                  const rocsparse_float_complex* alpha,
+                                  const rocsparse_float_complex* x_val,
+                                  const rocsparse_int* x_ind,
+                                  rocsparse_float_complex* y,
                                   rocsparse_index_base idx_base);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_zaxpyi(rocsparse_handle handle,
                                   rocsparse_int nnz,
-                                  const rocsparse_double_complex *alpha,
-                                  const rocsparse_double_complex *x_val,
-                                  const rocsparse_int *x_ind,
-                                  rocsparse_double_complex *y,
+                                  const rocsparse_double_complex* alpha,
+                                  const rocsparse_double_complex* x_val,
+                                  const rocsparse_int* x_ind,
+                                  rocsparse_double_complex* y,
                                   rocsparse_index_base idx_base);
 */
 
@@ -142,14 +142,14 @@ rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int nnz,
-                                  const float *alpha,
+                                  const float* alpha,
                                   const rocsparse_mat_descr descr,
-                                  const float *csr_val,
-                                  const rocsparse_int *csr_row_ptr,
-                                  const rocsparse_int *csr_col_ind,
-                                  const float *x,
-                                  const float *beta,
-                                  float *y);
+                                  const float* csr_val,
+                                  const rocsparse_int* csr_row_ptr,
+                                  const rocsparse_int* csr_col_ind,
+                                  const float* x,
+                                  const float* beta,
+                                  float* y);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
@@ -157,14 +157,14 @@ rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int nnz,
-                                  const double *alpha,
+                                  const double* alpha,
                                   const rocsparse_mat_descr descr,
-                                  const double *csr_val,
-                                  const rocsparse_int *csr_row_ptr,
-                                  const rocsparse_int *csr_col_ind,
-                                  const double *x,
-                                  const double *beta,
-                                  double *y);
+                                  const double* csr_val,
+                                  const rocsparse_int* csr_row_ptr,
+                                  const rocsparse_int* csr_col_ind,
+                                  const double* x,
+                                  const double* beta,
+                                  double* y);
 /*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
@@ -172,14 +172,14 @@ rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int nnz,
-                                  const rocsparse_float_complex *alpha,
+                                  const rocsparse_float_complex* alpha,
                                   const rocsparse_mat_descr descr,
-                                  const rocsparse_float_complex *csr_val,
-                                  const rocsparse_int *csr_row_ptr,
-                                  const rocsparse_int *csr_col_ind,
-                                  const rocsparse_float_complex *x,
-                                  const rocsparse_float_complex *beta,
-                                  rocsparse_float_complex *y);
+                                  const rocsparse_float_complex* csr_val,
+                                  const rocsparse_int* csr_row_ptr,
+                                  const rocsparse_int* csr_col_ind,
+                                  const rocsparse_float_complex* x,
+                                  const rocsparse_float_complex* beta,
+                                  rocsparse_float_complex* y);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
@@ -187,14 +187,14 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int nnz,
-                                  const rocsparse_double_complex *alpha,
+                                  const rocsparse_double_complex* alpha,
                                   const rocsparse_mat_descr descr,
-                                  const rocsparse_double_complex *csr_val,
-                                  const rocsparse_int *csr_row_ptr,
-                                  const rocsparse_int *csr_col_ind,
-                                  const rocsparse_double_complex *x,
-                                  const rocsparse_double_complex *beta,
-                                  rocsparse_double_complex *y);
+                                  const rocsparse_double_complex* csr_val,
+                                  const rocsparse_int* csr_row_ptr,
+                                  const rocsparse_int* csr_col_ind,
+                                  const rocsparse_double_complex* x,
+                                  const rocsparse_double_complex* beta,
+                                  rocsparse_double_complex* y);
 */
 
 /*! \brief SPARSE Level 2 API
@@ -230,42 +230,42 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_shybmv(rocsparse_handle handle,
                                   rocsparse_operation trans,
-                                  const float *alpha,
+                                  const float* alpha,
                                   const rocsparse_mat_descr descr,
                                   const rocsparse_hyb_mat hyb,
-                                  const float *x,
-                                  const float *beta,
-                                  float *y);
+                                  const float* x,
+                                  const float* beta,
+                                  float* y);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
                                   rocsparse_operation trans,
-                                  const double *alpha,
+                                  const double* alpha,
                                   const rocsparse_mat_descr descr,
                                   const rocsparse_hyb_mat hyb,
-                                  const double *x,
-                                  const double *beta,
-                                  double *y);
+                                  const double* x,
+                                  const double* beta,
+                                  double* y);
 /*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_shybmv(rocsparse_handle handle,
                                   rocsparse_operation trans,
-                                  const rocsparse_float_complex *alpha,
+                                  const rocsparse_float_complex* alpha,
                                   const rocsparse_mat_descr descr,
                                   const rocsparse_hyb_mat hyb,
-                                  const rocsparse_float_complex *x,
-                                  const rocsparse_float_complex *beta,
-                                  rocsparse_float_complex *y);
+                                  const rocsparse_float_complex* x,
+                                  const rocsparse_float_complex* beta,
+                                  rocsparse_float_complex* y);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
                                   rocsparse_operation trans,
-                                  const rocsparse_double_complex *alpha,
+                                  const rocsparse_double_complex* alpha,
                                   const rocsparse_mat_descr descr,
                                   const rocsparse_hyb_mat hyb,
-                                  const rocsparse_double_complex *x,
-                                  const rocsparse_double_complex *beta,
-                                  rocsparse_double_complex *y);
+                                  const rocsparse_double_complex* x,
+                                  const rocsparse_double_complex* beta,
+                                  rocsparse_double_complex* y);
 */
 /*
  * ===========================================================================
@@ -303,10 +303,10 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
     ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
-                                   const rocsparse_int *csr_row_ptr,
+                                   const rocsparse_int* csr_row_ptr,
                                    rocsparse_int nnz,
                                    rocsparse_int m,
-                                   rocsparse_int *coo_row_ind,
+                                   rocsparse_int* coo_row_ind,
                                    rocsparse_index_base idx_base);
 
 /*! \brief SPARSE Format Conversions API
@@ -333,10 +333,10 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
     ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
-                                   const rocsparse_int *coo_row_ind,
+                                   const rocsparse_int* coo_row_ind,
                                    rocsparse_int nnz,
                                    rocsparse_int m,
-                                   rocsparse_int *csr_row_ptr,
+                                   rocsparse_int* csr_row_ptr,
                                    rocsparse_index_base idx_base);
 
 /*! \brief SPARSE Format Conversions API
@@ -379,9 +379,9 @@ rocsparse_status rocsparse_scsr2hyb(rocsparse_handle handle,
                                     rocsparse_int m,
                                     rocsparse_int n,
                                     const rocsparse_mat_descr descr,
-                                    const float *csr_val,
-                                    const rocsparse_int *csr_row_ptr,
-                                    const rocsparse_int *csr_col_ind,
+                                    const float* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    const rocsparse_int* csr_col_ind,
                                     rocsparse_hyb_mat hyb,
                                     rocsparse_int user_ell_width,
                                     rocsparse_hyb_partition partition_type);
@@ -391,9 +391,9 @@ rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle handle,
                                     rocsparse_int m,
                                     rocsparse_int n,
                                     const rocsparse_mat_descr descr,
-                                    const double *csr_val,
-                                    const rocsparse_int *csr_row_ptr,
-                                    const rocsparse_int *csr_col_ind,
+                                    const double* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    const rocsparse_int* csr_col_ind,
                                     rocsparse_hyb_mat hyb,
                                     rocsparse_int user_ell_width,
                                     rocsparse_hyb_partition partition_type);
@@ -403,9 +403,9 @@ rocsparse_status rocsparse_scsr2hyb(rocsparse_handle handle,
                                     rocsparse_int m,
                                     rocsparse_int n,
                                     const rocsparse_mat_descr descr,
-                                    const rocsparse_float_complex *csr_val,
-                                    const rocsparse_int *csr_row_ptr,
-                                    const rocsparse_int *csr_col_ind,
+                                    const rocsparse_float_complex* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    const rocsparse_int* csr_col_ind,
                                     rocsparse_hyb_mat hyb,
                                     rocsparse_int user_ell_width,
                                     rocsparse_hyb_partition partition_type);
@@ -415,9 +415,9 @@ rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle handle,
                                     rocsparse_int m,
                                     rocsparse_int n,
                                     const rocsparse_mat_descr descr,
-                                    const rocsparse_double_complex *csr_val,
-                                    const rocsparse_int *csr_row_ptr,
-                                    const rocsparse_int *csr_col_ind,
+                                    const rocsparse_double_complex* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    const rocsparse_int* csr_col_ind,
                                     rocsparse_hyb_mat hyb,
                                     rocsparse_int user_ell_width,
                                     rocsparse_hyb_partition partition_type);

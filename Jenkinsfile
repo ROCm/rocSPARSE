@@ -208,19 +208,19 @@ def docker_build_inside_image( def build_image, compiler_data compiler_args, doc
           """
           archiveArtifacts artifacts: "${docker_context}/*.deb", fingerprint: true
 
-//        stage('Clang Format')
-//        {
-//          sh '''
-//              find . -iname \'*.h\' \
-//                  -o -iname \'*.hpp\' \
-//                  -o -iname \'*.cpp\' \
-//                  -o -iname \'*.h.in\' \
-//                  -o -iname \'*.hpp.in\' \
-//                  -o -iname \'*.cpp.in\' \
-//              | grep -v 'build/' \
-//              | xargs -n 1 -P 1 -I{} -t sh -c \'clang-format-3.8 -style=file {} | diff - {}\'
-//          '''
-//        }
+          stage('Clang Format')
+          {
+            sh '''
+                find . -iname \'*.h\' \
+                    -o -iname \'*.hpp\' \
+                    -o -iname \'*.cpp\' \
+                    -o -iname \'*.h.in\' \
+                    -o -iname \'*.hpp.in\' \
+                    -o -iname \'*.cpp.in\' \
+                | grep -v 'build/' \
+                | xargs -n 1 -P 1 -I{} -t sh -c \'clang-format-3.8 -style=file {} | diff - {}\'
+            '''
+          }
         }
         else if( paths.project_name.equalsIgnoreCase( 'rocsparse-fedora' ) )
         {
