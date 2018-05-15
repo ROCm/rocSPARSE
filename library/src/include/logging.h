@@ -112,7 +112,7 @@ struct log_arg
     {
         os_ << separator_ << x;
     }
-/*
+    /*
     /// Overload () operator for rocsparse_float_complex.
     void operator()(const rocsparse_float_complex complex_value) const
     {
@@ -124,7 +124,7 @@ struct log_arg
     {
         os_ << separator_ << complex_value.x << separator_ << complex_value.y;
     }
-*/
+    */
     private:
     std::ostream& os_;       ///< Output stream.
     std::string& separator_; ///< Separator: output preceding argument.

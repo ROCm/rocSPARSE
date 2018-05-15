@@ -66,7 +66,7 @@ std::string replaceX(std::string input_string)
     {
         std::replace(input_string.begin(), input_string.end(), 'X', 'd');
     }
-/*
+    /*
     else if(std::is_same<T, rocsparse_float_complex>::value)
     {
         std::replace(input_string.begin(), input_string.end(), 'X', 'c');
@@ -79,7 +79,7 @@ std::string replaceX(std::string input_string)
     {
         std::replace(input_string.begin(), input_string.end(), 'X', 'h');
     }
-*/
+    */
     return input_string;
 }
 
