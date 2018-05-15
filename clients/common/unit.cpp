@@ -52,8 +52,7 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, double* hCPU, double* 
 }
 
 template <>
-void unit_check_general(
-    rocsparse_int M, rocsparse_int N, rocsparse_int* hCPU, rocsparse_int* hGPU)
+void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int* hCPU, rocsparse_int* hGPU)
 {
 #pragma unroll
     for(rocsparse_int j = 0; j < N; j++)

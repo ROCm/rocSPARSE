@@ -21,8 +21,8 @@ _rocsparse_handle::_rocsparse_handle()
     warp_size = properties.warpSize;
 
     // Layer mode
-    char *str_layer_mode;
-    if ((str_layer_mode = getenv("ROCSPARSE_LAYER")) == NULL)
+    char* str_layer_mode;
+    if((str_layer_mode = getenv("ROCSPARSE_LAYER")) == NULL)
     {
         layer_mode = rocsparse_layer_mode_none;
     }
@@ -32,13 +32,13 @@ _rocsparse_handle::_rocsparse_handle()
     }
 
     // Open log file
-    if (layer_mode & rocsparse_layer_mode_log_trace)
+    if(layer_mode & rocsparse_layer_mode_log_trace)
     {
         open_log_stream(&log_trace_os, &log_trace_ofs, "ROCSPARSE_LOG_TRACE_PATH");
     }
 
     // Open log_bench file
-    if (layer_mode & rocsparse_layer_mode_log_bench)
+    if(layer_mode & rocsparse_layer_mode_log_bench)
     {
         open_log_stream(&log_bench_os, &log_bench_ofs, "ROCSPARSE_LOG_BENCH_PATH");
     }
@@ -50,11 +50,11 @@ _rocsparse_handle::_rocsparse_handle()
 _rocsparse_handle::~_rocsparse_handle()
 {
     // Close log files
-    if (log_trace_ofs.is_open())
+    if(log_trace_ofs.is_open())
     {
         log_trace_ofs.close();
     }
-    if (log_bench_ofs.is_open())
+    if(log_bench_ofs.is_open())
     {
         log_bench_ofs.close();
     }
@@ -79,7 +79,7 @@ rocsparse_status _rocsparse_handle::set_stream(hipStream_t user_stream)
 /*******************************************************************************
  * get stream
  ******************************************************************************/
-rocsparse_status _rocsparse_handle::get_stream(hipStream_t *user_stream) const
+rocsparse_status _rocsparse_handle::get_stream(hipStream_t* user_stream) const
 {
     *user_stream = stream;
     return rocsparse_status_success;

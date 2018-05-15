@@ -28,7 +28,7 @@ extern "C" {
  * It should be destroyed at the end using rocsparse_destroy_handle().
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_create_handle(rocsparse_handle *handle);
+rocsparse_status rocsparse_create_handle(rocsparse_handle* handle);
 
 /********************************************************************************
  * \brief Destroy handle.
@@ -46,7 +46,7 @@ rocsparse_status rocsparse_set_stream(rocsparse_handle handle, hipStream_t strea
  * \brief Get stream [0] from handle.
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_get_stream(rocsparse_handle handle, hipStream_t *stream);
+rocsparse_status rocsparse_get_stream(rocsparse_handle handle, hipStream_t* stream);
 
 /********************************************************************************
  * \brief Set rocsparse_pointer_mode.
@@ -60,7 +60,7 @@ rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle handle,
  *******************************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
-                                            rocsparse_pointer_mode *pointer_mode);
+                                            rocsparse_pointer_mode* pointer_mode);
 
 /********************************************************************************
  * \brief Get rocSPARSE version
@@ -69,7 +69,7 @@ rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
  * version / 100000     = major version
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_get_version(rocsparse_handle handle, int *version);
+rocsparse_status rocsparse_get_version(rocsparse_handle handle, rocsparse_int* version);
 
 /********************************************************************************
  * \brief rocsparse_create_mat_descr_t is a structure holding the rocsparse matrix
@@ -79,7 +79,7 @@ rocsparse_status rocsparse_get_version(rocsparse_handle handle, int *version);
  * It should be destroyed at the end using rocsparse_destroy_mat_descr().
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr *descr);
+rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr* descr);
 
 /********************************************************************************
  * \brief Destroy the matrix descriptor.
@@ -91,8 +91,7 @@ rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr);
  * \brief Set the index base of the matrix descriptor.
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr,
-                                              rocsparse_index_base base);
+rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr, rocsparse_index_base base);
 
 /********************************************************************************
  * \brief Returns the index base of the matrix descriptor.
@@ -104,8 +103,7 @@ rocsparse_index_base rocsparse_get_mat_index_base(const rocsparse_mat_descr desc
  * \brief Set the matrix type of the matrix descriptor.
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr,
-                                        rocsparse_matrix_type type);
+rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr, rocsparse_matrix_type type);
 
 /********************************************************************************
  * \brief Returns the matrix type of the matrix descriptor.
@@ -121,7 +119,7 @@ rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr);
  * It should be destroyed at the end using rocsparse_destroy_hyb_mat().
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat *hyb);
+rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb);
 
 /********************************************************************************
  * \brief Destroy HYB matrix.

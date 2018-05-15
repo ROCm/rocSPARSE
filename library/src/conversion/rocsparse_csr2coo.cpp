@@ -9,16 +9,15 @@
 
 #include <hip/hip_runtime.h>
 
-extern "C"
-rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
-                                   const rocsparse_int *csr_row_ptr,
-                                   rocsparse_int nnz,
-                                   rocsparse_int m,
-                                   rocsparse_int *coo_row_ind,
-                                   rocsparse_index_base idx_base)
+extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
+                                              const rocsparse_int* csr_row_ptr,
+                                              rocsparse_int nnz,
+                                              rocsparse_int m,
+                                              rocsparse_int* coo_row_ind,
+                                              rocsparse_index_base idx_base)
 {
     // Check for valid handle
-    if (handle == nullptr)
+    if(handle == nullptr)
     {
         return rocsparse_status_invalid_handle;
     }
@@ -26,34 +25,34 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
     // Logging TODO bench logging
     log_trace(handle,
               "rocsparse_csr2coo",
-              (const void*&) csr_row_ptr,
+              (const void*&)csr_row_ptr,
               nnz,
               m,
-              (const void*&) coo_row_ind,
+              (const void*&)coo_row_ind,
               idx_base);
 
     // Check sizes
-    if (nnz < 0)
+    if(nnz < 0)
     {
         return rocsparse_status_invalid_size;
     }
-    else if (m < 0)
+    else if(m < 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Check pointer arguments
-    if (csr_row_ptr == nullptr)
+    if(csr_row_ptr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if (coo_row_ind == nullptr)
+    else if(coo_row_ind == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
     // Quick return if possible
-    if (nnz == 0 || m == 0)
+    if(nnz == 0 || m == 0)
     {
         return rocsparse_status_success;
     }
@@ -64,79 +63,145 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
 #define CSR2COO_DIM 512
     rocsparse_int nnz_per_row = nnz / m;
 
-    dim3 csr2coo_blocks((m-1)/CSR2COO_DIM+1);
+    dim3 csr2coo_blocks((m - 1) / CSR2COO_DIM + 1);
     dim3 csr2coo_threads(CSR2COO_DIM);
 
-    if (handle->warp_size == 32)
+    if(handle->warp_size == 32)
     {
-        if (nnz_per_row < 4)
+        if(nnz_per_row < 4)
         {
             hipLaunchKernelGGL((csr2coo_kernel<2>),
-                               csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind, idx_base);
+                               csr2coo_blocks,
+                               csr2coo_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               coo_row_ind,
+                               idx_base);
         }
-        else if (nnz_per_row < 8)
+        else if(nnz_per_row < 8)
         {
             hipLaunchKernelGGL((csr2coo_kernel<4>),
-                               csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind, idx_base);
+                               csr2coo_blocks,
+                               csr2coo_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               coo_row_ind,
+                               idx_base);
         }
-        else if (nnz_per_row < 16)
+        else if(nnz_per_row < 16)
         {
             hipLaunchKernelGGL((csr2coo_kernel<8>),
-                               csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind, idx_base);
+                               csr2coo_blocks,
+                               csr2coo_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               coo_row_ind,
+                               idx_base);
         }
-        else if (nnz_per_row < 32)
+        else if(nnz_per_row < 32)
         {
             hipLaunchKernelGGL((csr2coo_kernel<16>),
-                               csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind, idx_base);
+                               csr2coo_blocks,
+                               csr2coo_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               coo_row_ind,
+                               idx_base);
         }
         else
         {
             hipLaunchKernelGGL((csr2coo_kernel<32>),
-                               csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind, idx_base);
+                               csr2coo_blocks,
+                               csr2coo_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               coo_row_ind,
+                               idx_base);
         }
     }
-    else if (handle->warp_size == 64)
+    else if(handle->warp_size == 64)
     {
-        if (nnz_per_row < 4)
+        if(nnz_per_row < 4)
         {
             hipLaunchKernelGGL((csr2coo_kernel<2>),
-                               csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind, idx_base);
+                               csr2coo_blocks,
+                               csr2coo_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               coo_row_ind,
+                               idx_base);
         }
-        else if (nnz_per_row < 8)
+        else if(nnz_per_row < 8)
         {
             hipLaunchKernelGGL((csr2coo_kernel<4>),
-                               csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind, idx_base);
+                               csr2coo_blocks,
+                               csr2coo_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               coo_row_ind,
+                               idx_base);
         }
-        else if (nnz_per_row < 16)
+        else if(nnz_per_row < 16)
         {
             hipLaunchKernelGGL((csr2coo_kernel<8>),
-                               csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind, idx_base);
+                               csr2coo_blocks,
+                               csr2coo_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               coo_row_ind,
+                               idx_base);
         }
-        else if (nnz_per_row < 32)
+        else if(nnz_per_row < 32)
         {
             hipLaunchKernelGGL((csr2coo_kernel<16>),
-                               csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind, idx_base);
+                               csr2coo_blocks,
+                               csr2coo_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               coo_row_ind,
+                               idx_base);
         }
-        else if (nnz_per_row < 64)
+        else if(nnz_per_row < 64)
         {
             hipLaunchKernelGGL((csr2coo_kernel<32>),
-                               csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind, idx_base);
+                               csr2coo_blocks,
+                               csr2coo_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               coo_row_ind,
+                               idx_base);
         }
         else
         {
             hipLaunchKernelGGL((csr2coo_kernel<64>),
-                               csr2coo_blocks, csr2coo_threads, 0, stream,
-                               m, csr_row_ptr, coo_row_ind, idx_base);
+                               csr2coo_blocks,
+                               csr2coo_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               coo_row_ind,
+                               idx_base);
         }
     }
     else

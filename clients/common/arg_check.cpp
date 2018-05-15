@@ -25,8 +25,7 @@
         }                                                         \
     }
 
-void verify_rocsparse_status_invalid_pointer(rocsparse_status status,
-                                             const char* message)
+void verify_rocsparse_status_invalid_pointer(rocsparse_status status, const char* message)
 {
 #ifdef GOOGLE_TEST
     ASSERT_EQ(status, rocsparse_status_invalid_pointer);
@@ -39,8 +38,7 @@ void verify_rocsparse_status_invalid_pointer(rocsparse_status status,
 #endif
 }
 
-void verify_rocsparse_status_invalid_size(rocsparse_status status,
-                                          const char* message)
+void verify_rocsparse_status_invalid_size(rocsparse_status status, const char* message)
 {
 #ifdef GOOGLE_TEST
     ASSERT_EQ(status, rocsparse_status_invalid_size);

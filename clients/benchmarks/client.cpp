@@ -16,11 +16,11 @@
 
 namespace po = boost::program_options;
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     Arguments argus;
     argus.unit_check = 0;
-    argus.timing = 1;
+    argus.timing     = 1;
 
     std::string function;
     char precision = 's';
@@ -29,6 +29,7 @@ int main(int argc, char *argv[])
 
     po::options_description desc("rocsparse client command line options");
     desc.add_options()("help,h", "produces this help message")
+        // clang-format off
         ("sizem,m",
          po::value<rocsparse_int>(&argus.M)->default_value(128),
          "Specific matrix size testing: sizem is only applicable to SPARSE-2 "
@@ -77,18 +78,19 @@ int main(int argc, char *argv[])
         ("device",
          po::value<rocsparse_int>(&device_id)->default_value(0),
          "Set default device to be used for subsequent program runs");
+    // clang-format on
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
 
-    if (vm.count("help"))
+    if(vm.count("help"))
     {
         std::cout << desc << std::endl;
         return 0;
     }
 
-    if (precision != 's' && precision != 'd')
+    if(precision != 's' && precision != 'd')
     {
         fprintf(stderr, "Invalid value for --precision\n");
         return -1;
@@ -109,31 +111,31 @@ int main(int argc, char *argv[])
 
     /* ============================================================================================
      */
-    if (argus.M < 0 || argus.N < 0)
+    if(argus.M < 0 || argus.N < 0)
     {
         fprintf(stderr, "Invalid dimension\n");
         return -1;
     }
 
-    if (function == "axpyi")
+    if(function == "axpyi")
     {
-        if (precision == 's')
+        if(precision == 's')
             testing_axpyi<float>(argus);
-        else if (precision == 'd')
+        else if(precision == 'd')
             testing_axpyi<double>(argus);
     }
-    else if (function == "csrmv")
+    else if(function == "csrmv")
     {
-        if (precision == 's')
+        if(precision == 's')
             testing_csrmv<float>(argus);
-        else if (precision == 'd')
+        else if(precision == 'd')
             testing_csrmv<double>(argus);
     }
-    else if (function == "csr2coo")
+    else if(function == "csr2coo")
     {
         testing_csr2coo(argus);
     }
-    else if (function == "coo2csr")
+    else if(function == "coo2csr")
     {
         testing_coo2csr(argus);
     }
