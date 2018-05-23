@@ -243,9 +243,11 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
         {
             if(handle->warp_size == 32)
             {
+                return rocsparse_status_not_implemented;
             }
             else if(handle->warp_size == 64)
             {
+                return rocsparse_status_not_implemented;
             }
             else
             {
@@ -268,10 +270,12 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
             {
                 // Scale y by beta
                 // scale y TODO
+                return rocsparse_status_not_implemented;
             }
 
             if(handle->warp_size == 32)
             {
+                return rocsparse_status_not_implemented;
             }
             else if(handle->warp_size == 64)
             {
