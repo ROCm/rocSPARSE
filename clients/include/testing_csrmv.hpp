@@ -147,6 +147,9 @@ rocsparse_status testing_csrmv(Arguments argus)
     std::unique_ptr<descr_struct> test_descr(new descr_struct);
     rocsparse_mat_descr descr = test_descr->descr;
 
+    // Set matrix index base
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, idx_base));
+
     // Determine number of non-zero elements
     double scale = 0.02;
     if(m > 1000 || n > 1000)
@@ -317,9 +320,10 @@ rocsparse_status testing_csrmv(Arguments argus)
         for(rocsparse_int i = 0; i < m; ++i)
         {
             hy_gold[i] *= h_beta;
-            for(rocsparse_int j = hcsr_row_ptr[i]; j < hcsr_row_ptr[i + 1]; ++j)
+            for(rocsparse_int j = hcsr_row_ptr[i] - idx_base; j < hcsr_row_ptr[i + 1] - idx_base;
+                ++j)
             {
-                hy_gold[i] += h_alpha * hval[j] * hx[hcol_ind[j]];
+                hy_gold[i] += h_alpha * hval[j] * hx[hcol_ind[j] - idx_base];
             }
         }
 

@@ -17,10 +17,11 @@ __global__ void csrmvn_kernel_host_pointer(rocsparse_int m,
                                            const T* csr_val,
                                            const T* x,
                                            T beta,
-                                           T* y)
+                                           T* y,
+                                           rocsparse_index_base idx_base)
 {
     csrmvn_general_device<T, SUBWAVE_SIZE, WG_SIZE>(
-        m, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y);
+        m, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y, idx_base);
 }
 
 template <typename T, const rocsparse_int SUBWAVE_SIZE, const rocsparse_int WG_SIZE>
@@ -31,10 +32,11 @@ __global__ void csrmvn_kernel_device_pointer(rocsparse_int m,
                                              const T* csr_val,
                                              const T* x,
                                              const T* beta,
-                                             T* y)
+                                             T* y,
+                                             rocsparse_index_base idx_base)
 {
     csrmvn_general_device<T, SUBWAVE_SIZE, WG_SIZE>(
-        m, *alpha, csr_row_ptr, csr_col_ind, csr_val, x, *beta, y);
+        m, *alpha, csr_row_ptr, csr_col_ind, csr_val, x, *beta, y, idx_base);
 }
 
 /*! \brief SPARSE Level 2 API
@@ -139,11 +141,10 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                   (const void*&)y);
     }
 
-    // Check matrix type
-    if(descr->base != rocsparse_index_base_zero)
+    // Check index base
+    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
     {
-        // TODO
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
     if(descr->type != rocsparse_matrix_type_general)
     {
@@ -231,7 +232,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 8)
                 {
@@ -247,7 +249,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 16)
                 {
@@ -263,7 +266,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 32)
                 {
@@ -279,7 +283,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else
                 {
@@ -295,7 +300,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
             }
             else if(handle->warp_size == 64)
@@ -314,7 +320,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 8)
                 {
@@ -330,7 +337,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 16)
                 {
@@ -346,7 +354,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 32)
                 {
@@ -362,7 +371,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 64)
                 {
@@ -378,7 +388,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else
                 {
@@ -394,7 +405,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
             }
             else
@@ -425,7 +437,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        *beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 8)
                 {
@@ -441,7 +454,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        *beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 16)
                 {
@@ -457,7 +471,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        *beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 32)
                 {
@@ -473,7 +488,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        *beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else
                 {
@@ -489,7 +505,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        *beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
             }
             else if(handle->warp_size == 64)
@@ -508,7 +525,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        *beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 8)
                 {
@@ -524,7 +542,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        *beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 16)
                 {
@@ -540,7 +559,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        *beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 32)
                 {
@@ -556,7 +576,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        *beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else if(nnz_per_row < 64)
                 {
@@ -572,7 +593,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        *beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
                 else
                 {
@@ -588,7 +610,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                        csr_val,
                                        x,
                                        *beta,
-                                       y);
+                                       y,
+                                       descr->base);
                 }
             }
             else
