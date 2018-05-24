@@ -39,7 +39,7 @@ __global__ void coomvn_warp_host_pointer(rocsparse_int nnz,
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WARPSIZE>
 __global__ void coomvn_warp_device_pointer(rocsparse_int nnz,
                                            rocsparse_int loops,
-                                           T* alpha,
+                                           const T* alpha,
                                            const rocsparse_int* coo_row_ind,
                                            const rocsparse_int* coo_col_ind,
                                            const T* coo_val,
