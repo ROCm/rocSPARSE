@@ -20,10 +20,20 @@ __global__ void coomvn_warp_host_pointer(rocsparse_int nnz,
                                          const T* x,
                                          T* y,
                                          rocsparse_int* row_block_red,
-                                         T* val_block_red)
+                                         T* val_block_red,
+                                         rocsparse_index_base idx_base)
 {
-    coomvn_general_warp_reduce<T, BLOCKSIZE, WARPSIZE>(
-        nnz, loops, alpha, coo_row_ind, coo_col_ind, coo_val, x, y, row_block_red, val_block_red);
+    coomvn_general_warp_reduce<T, BLOCKSIZE, WARPSIZE>(nnz,
+                                                       loops,
+                                                       alpha,
+                                                       coo_row_ind,
+                                                       coo_col_ind,
+                                                       coo_val,
+                                                       x,
+                                                       y,
+                                                       row_block_red,
+                                                       val_block_red,
+                                                       idx_base);
 }
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WARPSIZE>
@@ -36,10 +46,20 @@ __global__ void coomvn_warp_device_pointer(rocsparse_int nnz,
                                            const T* x,
                                            T* y,
                                            rocsparse_int* row_block_red,
-                                           T* val_block_red)
+                                           T* val_block_red,
+                                           rocsparse_index_base idx_base)
 {
-    coomvn_general_warp_reduce<T, BLOCKSIZE, WARPSIZE>(
-        nnz, loops, *alpha, coo_row_ind, coo_col_ind, coo_val, x, y, row_block_red, val_block_red);
+    coomvn_general_warp_reduce<T, BLOCKSIZE, WARPSIZE>(nnz,
+                                                       loops,
+                                                       *alpha,
+                                                       coo_row_ind,
+                                                       coo_col_ind,
+                                                       coo_val,
+                                                       x,
+                                                       y,
+                                                       row_block_red,
+                                                       val_block_red,
+                                                       idx_base);
 }
 
 /*! \brief SPARSE Level 2 API
@@ -143,12 +163,12 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                   (const void*&)y);
     }
 
-    // Check matrix type
-    if(descr->base != rocsparse_index_base_zero)
+    // Check index base
+    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
     {
-        // TODO
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
+    // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO
@@ -268,7 +288,8 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                                    x,
                                    y,
                                    row_block_red,
-                                   val_block_red);
+                                   val_block_red,
+                                   descr->base);
             }
             else if(handle->warp_size == 64)
             {
@@ -286,7 +307,8 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                                    x,
                                    y,
                                    row_block_red,
-                                   val_block_red);
+                                   val_block_red,
+                                   descr->base);
             }
             else
             {
@@ -333,7 +355,8 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                                    x,
                                    y,
                                    row_block_red,
-                                   val_block_red);
+                                   val_block_red,
+                                   descr->base);
             }
             else if(handle->warp_size == 64)
             {
@@ -351,7 +374,8 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                                    x,
                                    y,
                                    row_block_red,
-                                   val_block_red);
+                                   val_block_red,
+                                   descr->base);
             }
             else
             {
