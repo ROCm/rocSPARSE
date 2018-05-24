@@ -15,7 +15,8 @@ static __device__ void ellmvn_device(rocsparse_int m,
                                      const T* ell_val,
                                      const T* x,
                                      T beta,
-                                     T* y)
+                                     T* y,
+                                     rocsparse_index_base idx_base)
 {
     rocsparse_int ai = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
 
@@ -28,7 +29,7 @@ static __device__ void ellmvn_device(rocsparse_int m,
     for(rocsparse_int p = 0; p < ell_width; ++p)
     {
         rocsparse_int idx = ELL_IND(ai, p, m, ell_width);
-        rocsparse_int col = ell_col_ind[idx];
+        rocsparse_int col = ell_col_ind[idx] - idx_base;
 
         if(col >= 0 && col < n)
         {
