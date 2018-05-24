@@ -18,9 +18,10 @@ __global__ void ellmvn_kernel_host_pointer(rocsparse_int m,
                                            const T* ell_val,
                                            const T* x,
                                            T beta,
-                                           T* y)
+                                           T* y,
+                                           rocsparse_index_base idx_base)
 {
-    ellmvn_device(m, n, ell_width, alpha, ell_col_ind, ell_val, x, beta, y);
+    ellmvn_device(m, n, ell_width, alpha, ell_col_ind, ell_val, x, beta, y, idx_base);
 }
 
 template <typename T>
@@ -32,9 +33,10 @@ __global__ void ellmvn_kernel_device_pointer(rocsparse_int m,
                                              const T* ell_val,
                                              const T* x,
                                              const T* beta,
-                                             T* y)
+                                             T* y,
+                                             rocsparse_index_base idx_base)
 {
-    ellmvn_device(m, n, ell_width, *alpha, ell_col_ind, ell_val, x, *beta, y);
+    ellmvn_device(m, n, ell_width, *alpha, ell_col_ind, ell_val, x, *beta, y, idx_base);
 }
 
 template <typename T>
@@ -87,12 +89,12 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
                   (const void*&)y);
     }
 
-    // Check matrix type
-    if(descr->base != rocsparse_index_base_zero)
+    // Check index base
+    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
     {
-        // TODO
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
+    // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO
@@ -211,7 +213,8 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
                                    (T*)hyb->ell_val,
                                    x,
                                    *beta,
-                                   y);
+                                   y,
+                                   descr->base);
             }
         }
 #undef ELLMVN_DIM
