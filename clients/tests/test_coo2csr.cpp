@@ -11,10 +11,11 @@
 
 typedef std::tuple<int, int, rocsparse_index_base> coo2csr_tuple;
 
-int coo_M_range[] = {-1, 0, 10, 500, 872, 1000};
-int coo_N_range[] = {-3, 0, 33, 242, 623, 1000};
+int coo2csr_M_range[] = {-1, 0, 10, 500, 872, 1000};
+int coo2csr_N_range[] = {-3, 0, 33, 242, 623, 1000};
 
-rocsparse_index_base coo_idx_base_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
+rocsparse_index_base coo2csr_idx_base_range[] = {rocsparse_index_base_zero,
+                                                 rocsparse_index_base_one};
 
 class parameterized_coo2csr : public testing::TestWithParam<coo2csr_tuple>
 {
@@ -47,6 +48,6 @@ TEST_P(parameterized_coo2csr, coo2csr)
 
 INSTANTIATE_TEST_CASE_P(coo2csr,
                         parameterized_coo2csr,
-                        testing::Combine(testing::ValuesIn(coo_M_range),
-                                         testing::ValuesIn(coo_N_range),
-                                         testing::ValuesIn(coo_idx_base_range)));
+                        testing::Combine(testing::ValuesIn(coo2csr_M_range),
+                                         testing::ValuesIn(coo2csr_N_range),
+                                         testing::ValuesIn(coo2csr_idx_base_range)));
