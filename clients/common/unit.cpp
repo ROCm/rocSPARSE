@@ -22,10 +22,8 @@
 template <>
 void unit_check_general(rocsparse_int M, rocsparse_int N, float* hCPU, float* hGPU)
 {
-#pragma unroll
     for(rocsparse_int j = 0; j < N; j++)
     {
-#pragma unroll
         for(rocsparse_int i = 0; i < M; i++)
         {
 #ifdef GOOGLE_TEST
@@ -38,10 +36,8 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, float* hCPU, float* hG
 template <>
 void unit_check_general(rocsparse_int M, rocsparse_int N, double* hCPU, double* hGPU)
 {
-#pragma unroll
     for(rocsparse_int j = 0; j < N; j++)
     {
-#pragma unroll
         for(rocsparse_int i = 0; i < M; i++)
         {
 #ifdef GOOGLE_TEST
@@ -54,10 +50,8 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, double* hCPU, double* 
 template <>
 void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int* hCPU, rocsparse_int* hGPU)
 {
-#pragma unroll
     for(rocsparse_int j = 0; j < N; j++)
     {
-#pragma unroll
         for(rocsparse_int i = 0; i < M; i++)
         {
 #ifdef GOOGLE_TEST

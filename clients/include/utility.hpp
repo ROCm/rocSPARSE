@@ -229,15 +229,15 @@ void gen_matrix_coo(rocsparse_int m,
                     std::vector<T>& val,
                     rocsparse_index_base idx_base)
 {
-    if(row_ind.size() != nnz)
+    if((rocsparse_int)row_ind.size() != nnz)
     {
         row_ind.resize(nnz);
     }
-    if(col_ind.size() != nnz)
+    if((rocsparse_int)col_ind.size() != nnz)
     {
         col_ind.resize(nnz);
     }
-    if(val.size() != nnz)
+    if((rocsparse_int)val.size() != nnz)
     {
         val.resize(nnz);
     }
