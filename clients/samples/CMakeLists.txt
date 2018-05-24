@@ -44,5 +44,6 @@ endfunction()
 
 # Examples
 add_rocsparse_example(example_handle.cpp)
+add_rocsparse_example(example_coomv.cpp)
 add_rocsparse_example(example_csrmv.cpp)
 add_rocsparse_example(example_ellmv.cpp)

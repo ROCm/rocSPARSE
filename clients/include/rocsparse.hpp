@@ -20,6 +20,20 @@ rocsparse_status rocsparse_axpyi(rocsparse_handle handle,
                                  rocsparse_index_base idx_base);
 
 template <typename T>
+rocsparse_status rocsparse_coomv(rocsparse_handle handle,
+                                 rocsparse_operation trans,
+                                 rocsparse_int m,
+                                 rocsparse_int n,
+                                 rocsparse_int nnz,
+                                 const T* alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const T* coo_val,
+                                 const rocsparse_int* coo_row_ind,
+                                 const rocsparse_int* coo_col_ind,
+                                 const T* x,
+                                 const T* beta,
+                                 T* y);
+template <typename T>
 rocsparse_status rocsparse_csrmv(rocsparse_handle handle,
                                  rocsparse_operation trans,
                                  rocsparse_int m,

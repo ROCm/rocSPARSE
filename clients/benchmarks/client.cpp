@@ -4,6 +4,7 @@
 
 #include "utility.hpp"
 #include "rocsparse.hpp"
+#include "testing_coomv.hpp"
 #include "testing_csrmv.hpp"
 #include "testing_axpyi.hpp"
 #include "testing_csr2coo.hpp"
@@ -62,7 +63,7 @@ int main(int argc, char* argv[])
         
         ("function,f",
          po::value<std::string>(&function)->default_value("axpyi"),
-         "SPARSE function to test. Options: axpyi, csrmv, csr2coo, coo2csr")
+         "SPARSE function to test. Options: axpyi, coomv, csrmv, csr2coo, coo2csr")
         
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d")
@@ -123,6 +124,13 @@ int main(int argc, char* argv[])
             testing_axpyi<float>(argus);
         else if(precision == 'd')
             testing_axpyi<double>(argus);
+    }
+    else if(function == "coomv")
+    {
+        if(precision == 's')
+            testing_coomv<float>(argus);
+        else if(precision == 'd')
+            testing_coomv<double>(argus);
     }
     else if(function == "csrmv")
     {
