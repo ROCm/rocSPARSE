@@ -98,6 +98,107 @@ rocsparse_status rocsparse_zaxpyi(rocsparse_handle handle,
 /*! \brief SPARSE Level 2 API
 
     \details
+    coomv multiplies the dense vector x with scalar alpha and sparse m x n
+    matrix A that is defined in COO storage format and adds the result to the
+    dense vector y that is multiplied by beta
+
+        y := alpha * op(A) * x + beta * y
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    trans       operation type of A.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    n           number of columns of A.
+    @param[in]
+    nnz         number of non-zero entries of A.
+    @param[in]
+    alpha       scalar alpha.
+    @param[in]
+    descr       descriptor of A.
+    @param[in]
+    coo_val     array of nnz elements of A.
+    @param[in]
+    coo_row_ind array of nnz elements containing the row indices of A.
+    @param[in]
+    coo_col_ind array of nnz elements containing the column indices of A.
+    @param[in]
+    x           array of n elements (op(A) = A) or m elements (op(A) = A^T or
+                op(A) = A^H).
+    @param[in]
+    beta        scalar beta.
+    @param[inout]
+    y           array of m elements (op(A) = A) or n elements (op(A) = A^T or
+                op(A) = A^H).
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scoomv(rocsparse_handle handle,
+                                  rocsparse_operation trans,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  rocsparse_int nnz,
+                                  const float* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const float* coo_val,
+                                  const rocsparse_int* coo_row_ind,
+                                  const rocsparse_int* coo_col_ind,
+                                  const float* x,
+                                  const float* beta,
+                                  float* y);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcoomv(rocsparse_handle handle,
+                                  rocsparse_operation trans,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  rocsparse_int nnz,
+                                  const double* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const double* coo_val,
+                                  const rocsparse_int* coo_row_ind,
+                                  const rocsparse_int* coo_col_ind,
+                                  const double* x,
+                                  const double* beta,
+                                  double* y);
+/*
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ccoomv(rocsparse_handle handle,
+                                  rocsparse_operation trans,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  rocsparse_int nnz,
+                                  const rocsparse_float_complex* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const rocsparse_float_complex* coo_val,
+                                  const rocsparse_int* coo_row_ind,
+                                  const rocsparse_int* coo_col_ind,
+                                  const rocsparse_float_complex* x,
+                                  const rocsparse_float_complex* beta,
+                                  rocsparse_float_complex* y);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zcoomv(rocsparse_handle handle,
+                                  rocsparse_operation trans,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  rocsparse_int nnz,
+                                  const rocsparse_double_complex* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const rocsparse_double_complex* coo_val,
+                                  const rocsparse_int* coo_row_ind,
+                                  const rocsparse_int* coo_col_ind,
+                                  const rocsparse_double_complex* x,
+                                  const rocsparse_double_complex* beta,
+                                  rocsparse_double_complex* y);
+*/
+
+/*! \brief SPARSE Level 2 API
+
+    \details
     csrmv multiplies the dense vector x with scalar alpha and sparse m x n
     matrix A that is defined in CSR storage format and adds the result to the
     dense vector y that is multiplied by beta

@@ -33,6 +33,44 @@ rocsparse_status rocsparse_axpyi(rocsparse_handle handle,
 }
 
 template <>
+rocsparse_status rocsparse_coomv(rocsparse_handle handle,
+                                 rocsparse_operation trans,
+                                 rocsparse_int m,
+                                 rocsparse_int n,
+                                 rocsparse_int nnz,
+                                 const float* alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const float* coo_val,
+                                 const rocsparse_int* coo_row_ind,
+                                 const rocsparse_int* coo_col_ind,
+                                 const float* x,
+                                 const float* beta,
+                                 float* y)
+{
+    return rocsparse_scoomv(
+        handle, trans, m, n, nnz, alpha, descr, coo_val, coo_row_ind, coo_col_ind, x, beta, y);
+}
+
+template <>
+rocsparse_status rocsparse_coomv(rocsparse_handle handle,
+                                 rocsparse_operation trans,
+                                 rocsparse_int m,
+                                 rocsparse_int n,
+                                 rocsparse_int nnz,
+                                 const double* alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const double* coo_val,
+                                 const rocsparse_int* coo_row_ind,
+                                 const rocsparse_int* coo_col_ind,
+                                 const double* x,
+                                 const double* beta,
+                                 double* y)
+{
+    return rocsparse_dcoomv(
+        handle, trans, m, n, nnz, alpha, descr, coo_val, coo_row_ind, coo_col_ind, x, beta, y);
+}
+
+template <>
 rocsparse_status rocsparse_csrmv(rocsparse_handle handle,
                                  rocsparse_operation trans,
                                  rocsparse_int m,

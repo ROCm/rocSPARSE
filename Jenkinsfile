@@ -21,6 +21,27 @@ properties([
 import java.nio.file.Path;
 
 ////////////////////////////////////////////////////////////////////////
+// Check whether job was started by a timer
+@NonCPS
+def isJobStartedByTimer() {
+    def startedByTimer = false
+    try {
+        def buildCauses = currentBuild.rawBuild.getCauses()
+        for ( buildCause in buildCauses ) {
+            if (buildCause != null) {
+                def causeDescription = buildCause.getShortDescription()
+                echo "shortDescription: ${causeDescription}"
+                if (causeDescription.contains("Started by timer")) {
+                    startedByTimer = true
+                }
+            }
+        }
+    } catch(theError) {
+        echo "Error getting build cause"
+    }
+
+    return startedByTimer
+}
 
 ////////////////////////////////////////////////////////////////////////
 // Return build number of upstream job
@@ -181,12 +202,24 @@ def docker_build_inside_image( def build_image, compiler_data compiler_args, doc
       // Cap the maximum amount of testing to be a few hours; assume failure if the time limit is hit
       timeout(time: 2, unit: 'HOURS')
       {
-        sh """#!/usr/bin/env bash
-              set -x
-              cd ${paths.project_build_prefix}/build/release/clients/tests
-              LD_LIBRARY_PATH=/opt/rocm/hcc/lib ./rocsparse-test${build_type_postfix} --gtest_output=xml --gtest_color=yes
-          """
-        junit "${paths.project_build_prefix}/build/release/clients/tests/*.xml"
+        if(isJobStartedByTimer())
+        {
+          sh """#!/usr/bin/env bash
+                set -x
+                cd ${paths.project_build_prefix}/build/release/clients/tests
+                LD_LIBRARY_PATH=/opt/rocm/hcc/lib ./rocsparse-test${build_type_postfix} --gtest_output=xml --gtest_color=yes #--gtest_filter=*nightly*
+            """
+          junit "${paths.project_build_prefix}/build/release/clients/tests/*.xml"
+        }
+        else
+        {
+          sh """#!/usr/bin/env bash
+                set -x
+                cd ${paths.project_build_prefix}/build/release/clients/tests
+                LD_LIBRARY_PATH=/opt/rocm/hcc/lib ./rocsparse-test${build_type_postfix} --gtest_output=xml --gtest_color=yes #--gtest_filter=*checkin*
+            """
+          junit "${paths.project_build_prefix}/build/release/clients/tests/*.xml"
+        }
       }
 
       String docker_context = "${compiler_args.build_config}/${compiler_args.compiler_name}"
@@ -247,7 +280,7 @@ def docker_build_inside_image( def build_image, compiler_data compiler_args, doc
 String docker_test_install( compiler_data compiler_args, docker_data docker_args, project_paths rocsparse_paths, String job_name )
 {
   def rocsparse_install_image = null
-  String image_name = "rocsparse-hip-${compiler_args.compiler_name}"
+  String image_name = "rocsparse-hip-${compiler_args.compiler_name}-ubuntu-16.04"
   String docker_context = "${compiler_args.build_config}/${compiler_args.compiler_name}"
 
   stage( "Install ${compiler_args.compiler_name} ${compiler_args.build_config}" )
@@ -423,7 +456,6 @@ parallel hcc_ctu:
       def print_version_closure = {
         sh  """
             set -x
-            /opt/rocm/bin/rocm_agent_enumerator -t ALL
             /opt/rocm/bin/hcc --version
           """
       }
@@ -461,7 +493,6 @@ rocm_ubuntu:
     def print_version_closure = {
       sh  """
           set -x
-          /opt/rocm/bin/rocm_agent_enumerator -t ALL
           /opt/rocm/bin/hcc --version
         """
     }
