@@ -159,7 +159,8 @@ static __device__ void csrmvn_general_device(int num_rows,
                                              const T* val,
                                              const T* x,
                                              T beta,
-                                             T* y)
+                                             T* y,
+                                             rocsparse_index_base idx_base)
 {
     __shared__ volatile T sdata[WG_SIZE + SUBWAVE_SIZE / 2];
 
@@ -173,8 +174,8 @@ static __device__ void csrmvn_general_device(int num_rows,
 
     for(int row = vector_id; row < num_rows; row += num_vectors)
     {
-        const int row_start = row_offset[row];
-        const int row_end   = row_offset[row + 1];
+        const int row_start = row_offset[row] - idx_base;
+        const int row_end   = row_offset[row + 1] - idx_base;
 
         T sum    = 0.;
         T sumk_e = 0.;
@@ -182,7 +183,7 @@ static __device__ void csrmvn_general_device(int num_rows,
         // It is about 5% faster to always multiply by alpha, rather than to
         // check whether alpha is 0, 1, or other and do different code paths.
         for(int j = row_start + thread_lane; j < row_end; j += SUBWAVE_SIZE)
-            sum = two_fma(alpha * val[j], x[col[j]], sum, &sumk_e);
+            sum = two_fma(alpha * val[j], x[col[j] - idx_base], sum, &sumk_e);
 
         T new_error = 0.;
         sum         = two_sum(sum, sumk_e, &new_error);

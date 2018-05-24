@@ -18,7 +18,7 @@ int csr_N_range[] = {-3, 0, 33, 842, 4441, 10000};
 std::vector<double> csr_alpha_range = {2.0, 3.0};
 std::vector<double> csr_beta_range  = {0.0, 1.0};
 
-base csr_idxbase_range[] = {rocsparse_index_base_zero};
+base csr_idxbase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 
 class parameterized_csrmv : public testing::TestWithParam<csrmv_tuple>
 {
