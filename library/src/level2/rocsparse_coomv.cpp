@@ -42,15 +42,6 @@ __global__ void coomvn_warp_device_pointer(rocsparse_int nnz,
         nnz, loops, *alpha, coo_row_ind, coo_col_ind, coo_val, x, y, row_block_red, val_block_red);
 }
 
-template <typename T, rocsparse_int BLOCKSIZE>
-__global__ void coomvn_block_reduce(rocsparse_int nnz,
-                                    const rocsparse_int* row_block_red,
-                                    const T* val_block_red,
-                                    T* y)
-{
-    coomvn_general_block_reduce<T, BLOCKSIZE>(nnz, row_block_red, val_block_red, y);
-}
-
 /*! \brief SPARSE Level 2 API
 
     \details
@@ -241,13 +232,61 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
+            // We need a host copy of beta to avoid unneccessary kernel launch
+            T h_beta;
+            RETURN_IF_HIP_ERROR(hipMemcpy(&h_beta, beta, sizeof(T), hipMemcpyDeviceToHost));
+
+            if(h_beta == static_cast<T>(0))
+            {
+                RETURN_IF_HIP_ERROR(hipMemset(y, 0, sizeof(T) * m));
+            }
+            else if(h_beta != static_cast<T>(1))
+            {
+                hipLaunchKernelGGL((coomv_scale<T>),
+                                   dim3((m - 1) / COOMVN_DIM + 1),
+                                   coomvn_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   h_beta,
+                                   y);
+            }
+
             if(handle->warp_size == 32)
             {
-                return rocsparse_status_not_implemented;
+                hipLaunchKernelGGL((coomvn_warp_device_pointer<T, COOMVN_DIM, 32>),
+                                   coomvn_blocks,
+                                   coomvn_threads,
+                                   0,
+                                   stream,
+                                   nnz,
+                                   nloops,
+                                   alpha,
+                                   coo_row_ind,
+                                   coo_col_ind,
+                                   coo_val,
+                                   x,
+                                   y,
+                                   row_block_red,
+                                   val_block_red);
             }
             else if(handle->warp_size == 64)
             {
-                return rocsparse_status_not_implemented;
+                hipLaunchKernelGGL((coomvn_warp_device_pointer<T, COOMVN_DIM, 64>),
+                                   coomvn_blocks,
+                                   coomvn_threads,
+                                   0,
+                                   stream,
+                                   nnz,
+                                   nloops,
+                                   alpha,
+                                   coo_row_ind,
+                                   coo_col_ind,
+                                   coo_val,
+                                   x,
+                                   y,
+                                   row_block_red,
+                                   val_block_red);
             }
             else
             {
@@ -256,26 +295,45 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
         }
         else
         {
-            if(*alpha == 0.0 && *beta == 1.0)
+            if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
             {
                 return rocsparse_status_success;
             }
 
             // If beta == 0.0 we need to set y to 0
-            if(*beta == 0.0)
+            if(*beta == static_cast<T>(0))
             {
                 RETURN_IF_HIP_ERROR(hipMemset(y, 0, sizeof(T) * m));
             }
-            else if(*beta != 1.0)
+            else if(*beta != static_cast<T>(1))
             {
-                // Scale y by beta
-                // scale y TODO
-                return rocsparse_status_not_implemented;
+                hipLaunchKernelGGL((coomv_scale<T>),
+                                   dim3((m - 1) / COOMVN_DIM + 1),
+                                   coomvn_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   *beta,
+                                   y);
             }
 
             if(handle->warp_size == 32)
             {
-                return rocsparse_status_not_implemented;
+                hipLaunchKernelGGL((coomvn_warp_host_pointer<T, COOMVN_DIM, 32>),
+                                   coomvn_blocks,
+                                   coomvn_threads,
+                                   0,
+                                   stream,
+                                   nnz,
+                                   nloops,
+                                   *alpha,
+                                   coo_row_ind,
+                                   coo_col_ind,
+                                   coo_val,
+                                   x,
+                                   y,
+                                   row_block_red,
+                                   val_block_red);
             }
             else if(handle->warp_size == 64)
             {
@@ -301,7 +359,7 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
             }
         }
 
-        hipLaunchKernelGGL((coomvn_block_reduce<T, COOMVN_DIM>),
+        hipLaunchKernelGGL((coomvn_general_block_reduce<T, COOMVN_DIM>),
                            dim3(1),
                            coomvn_threads,
                            0,
