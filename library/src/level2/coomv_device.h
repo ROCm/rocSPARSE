@@ -8,6 +8,19 @@
 
 #include <hip/hip_runtime.h>
 
+template <typename T>
+__global__ void coomv_scale(rocsparse_int size, T scalar, T* data)
+{
+    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(gid >= size)
+    {
+        return;
+    }
+
+    data[gid] *= scalar;
+}
+
 // Implementation motivated by papers 'Efficient Sparse Matrix-Vector Multiplication on CUDA',
 // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
 // 'Segmented operations for sparse matrix computation on vector multiprocessors'
@@ -30,6 +43,13 @@ static __device__ void coomvn_general_warp_reduce(rocsparse_int nnz,
     rocsparse_int laneid = gid % WARPSIZE;
     // Warp index
     rocsparse_int warpid = gid / WARPSIZE;
+
+    // Initialize block buffers
+    if(laneid == 0)
+    {
+        row_block_red[warpid] = -1;
+        val_block_red[warpid] = static_cast<T>(0);
+    }
 
     // Global COO array index start for current warp
     rocsparse_int offset = warpid * loops * WARPSIZE;
@@ -154,10 +174,10 @@ static __device__ void segmented_blockreduce(const rocsparse_int* rows, T* vals)
 }
 
 template <typename T, rocsparse_int BLOCKSIZE>
-static __device__ void coomvn_general_block_reduce(rocsparse_int nnz,
-                                                   const rocsparse_int* row_block_red,
-                                                   const T* val_block_red,
-                                                   T* y)
+__global__ void coomvn_general_block_reduce(rocsparse_int nnz,
+                                            const rocsparse_int* row_block_red,
+                                            const T* val_block_red,
+                                            T* y)
 {
     rocsparse_int tid = hipThreadIdx_x;
 
