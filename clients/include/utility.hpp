@@ -8,6 +8,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -412,9 +413,9 @@ rocsparse_int read_mtx_matrix(const char* filename,
     sscanf(line, "%d %d %d", &nrow, &ncol, &snnz);
     nnz = symm ? (snnz - nrow) * 2 + nrow : snnz;
 
-    row.resize(nnz);
-    col.resize(nnz);
-    val.resize(nnz);
+    std::vector<rocsparse_int> unsorted_row(nnz);
+    std::vector<rocsparse_int> unsorted_col(nnz);
+    std::vector<T> unsorted_val(nnz);
 
     // Read entries
     rocsparse_int idx = 0;
@@ -429,21 +430,54 @@ rocsparse_int read_mtx_matrix(const char* filename,
         --irow;
         --icol;
 
-        row[idx] = irow;
-        col[idx] = icol;
-        val[idx] = (T)dval;
+        unsorted_row[idx] = irow;
+        unsorted_col[idx] = icol;
+        unsorted_val[idx] = (T)dval;
 
         ++idx;
 
         if(symm && irow != icol)
         {
-            row[idx] = icol;
-            col[idx] = irow;
-            val[idx] = (T)dval;
+            unsorted_row[idx] = icol;
+            unsorted_col[idx] = irow;
+            unsorted_val[idx] = (T)dval;
             ++idx;
         }
     }
     fclose(f);
+
+    row.resize(nnz);
+    col.resize(nnz);
+    val.resize(nnz);
+
+    // Sort by row and column index
+    std::vector<rocsparse_int> perm(nnz);
+    for(rocsparse_int i = 0; i < nnz; ++i)
+    {
+        perm[i] = i;
+    }
+
+    std::sort(perm.begin(), perm.end(), [&](const int& a, const int& b) {
+        if(unsorted_row[a] < unsorted_row[b])
+        {
+            return true;
+        }
+        else if(unsorted_row[a] == unsorted_row[b])
+        {
+            return (unsorted_col[a] < unsorted_col[b]);
+        }
+        else
+        {
+            return false;
+        }
+    });
+
+    for(rocsparse_int i = 0; i < nnz; ++i)
+    {
+        row[i] = unsorted_row[perm[i]];
+        col[i] = unsorted_col[perm[i]];
+        val[i] = unsorted_val[perm[i]];
+    }
 
     return 0;
 }
