@@ -598,6 +598,7 @@ class Arguments
 
     rocsparse_operation trans     = rocsparse_operation_none;
     rocsparse_index_base idx_base = rocsparse_index_base_zero;
+    rocsparse_hyb_partition part  = rocsparse_hyb_partition_auto;
 
     rocsparse_int norm_check = 0;
     rocsparse_int unit_check = 1;
@@ -605,6 +606,7 @@ class Arguments
 
     rocsparse_int iters     = 10;
     rocsparse_int laplacian = 0;
+    rocsparse_int ell_width = 0;
 
     std::string filename = "";
 
@@ -619,6 +621,7 @@ class Arguments
 
         trans    = rhs.trans;
         idx_base = rhs.idx_base;
+        part     = rhs.part;
 
         norm_check = rhs.norm_check;
         unit_check = rhs.unit_check;
@@ -626,6 +629,7 @@ class Arguments
 
         iters     = rhs.iters;
         laplacian = rhs.laplacian;
+        ell_width = rhs.ell_width;
 
         filename = rhs.filename;
 
