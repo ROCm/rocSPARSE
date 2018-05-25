@@ -198,8 +198,11 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
     hyb->ell_nnz = hyb->ell_width * m;
 
     // Allocate ELL part
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&hyb->ell_col_ind, sizeof(rocsparse_int) * hyb->ell_nnz));
-    RETURN_IF_HIP_ERROR(hipMalloc(&hyb->ell_val, sizeof(T) * hyb->ell_nnz));
+    if(hyb->ell_nnz > 0)
+    {
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&hyb->ell_col_ind, sizeof(rocsparse_int) * hyb->ell_nnz));
+        RETURN_IF_HIP_ERROR(hipMalloc(&hyb->ell_val, sizeof(T) * hyb->ell_nnz));
+    }
 
     // Allocate workspace2
     rocsparse_int* workspace2 = NULL;
@@ -259,9 +262,12 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
 
 
     // Allocate COO part
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&hyb->coo_row_ind, sizeof(rocsparse_int) * hyb->coo_nnz));
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&hyb->coo_col_ind, sizeof(rocsparse_int) * hyb->coo_nnz));
-    RETURN_IF_HIP_ERROR(hipMalloc(&hyb->coo_val, sizeof(T) * hyb->coo_nnz));
+    if(hyb->coo_nnz > 0)
+    {
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&hyb->coo_row_ind, sizeof(rocsparse_int) * hyb->coo_nnz));
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&hyb->coo_col_ind, sizeof(rocsparse_int) * hyb->coo_nnz));
+        RETURN_IF_HIP_ERROR(hipMalloc(&hyb->coo_val, sizeof(T) * hyb->coo_nnz));
+    }
 
 
 

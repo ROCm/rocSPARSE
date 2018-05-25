@@ -202,8 +202,8 @@ __global__ void csr2ell_kernel(rocsparse_int m,
 
     rocsparse_int row_begin = csr_row_ptr[ai];
     rocsparse_int row_end   = csr_row_ptr[ai + 1];
-    rocsparse_int coo_idx   = workspace[ai];
-
+    rocsparse_int coo_idx   = coo_row_ind ? workspace[ai] : 0;
+    
     // Fill HYB matrix
     for(rocsparse_int aj = row_begin; aj < row_end; ++aj)
     {
