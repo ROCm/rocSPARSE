@@ -123,6 +123,9 @@ rocsparse_status testing_csr2hyb(Arguments argus)
     std::unique_ptr<descr_struct> unique_ptr_descr(new descr_struct);
     rocsparse_mat_descr descr = unique_ptr_descr->descr;
 
+    // Set matrix index base
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, idx_base));
+
     std::unique_ptr<hyb_struct> unique_ptr_hyb(new hyb_struct);
     rocsparse_hyb_mat hyb = unique_ptr_hyb->hyb;
 
@@ -294,18 +297,18 @@ rocsparse_status testing_csr2hyb(Arguments argus)
     for(rocsparse_int i = 0; i < m; ++i)
     {
         rocsparse_int p = 0;
-        for(rocsparse_int j = hcsr_row_ptr[i]; j < hcsr_row_ptr[i + 1]; ++j)
+        for(rocsparse_int j = hcsr_row_ptr[i] - idx_base; j < hcsr_row_ptr[i + 1] - idx_base; ++j)
         {
             if(p < ell_width)
             {
                 rocsparse_int idx = ELL_IND(i, p++, m, ell_width);
-                hhyb_ell_col_ind_gold[idx] = hcsr_col_ind[j];
+                hhyb_ell_col_ind_gold[idx] = hcsr_col_ind[j] - idx_base;
                 hhyb_ell_val_gold[idx] = hcsr_val[j];
             }
             else
             {
                 hhyb_coo_row_ind_gold[coo_idx] = i;
-                hhyb_coo_col_ind_gold[coo_idx] = hcsr_col_ind[j];
+                hhyb_coo_col_ind_gold[coo_idx] = hcsr_col_ind[j] - idx_base;
                 hhyb_coo_val_gold[coo_idx] = hcsr_val[j];
                 ++coo_idx;
             }
@@ -337,11 +340,11 @@ rocsparse_status testing_csr2hyb(Arguments argus)
         test_hyb *dhyb = (test_hyb*)hyb;
 
         // Check if sizes match
-        unit_check_general(1, 1, &dhyb->m, &m);
-        unit_check_general(1, 1, &dhyb->n, &n);
-        unit_check_general(1, 1, &dhyb->ell_width, &ell_width);
-        unit_check_general(1, 1, &dhyb->ell_nnz, &ell_nnz);
-        unit_check_general(1, 1, &dhyb->coo_nnz, &coo_nnz);
+        unit_check_general(1, 1, &m, &dhyb->m);
+        unit_check_general(1, 1, &n, &dhyb->n);
+        unit_check_general(1, 1, &ell_width, &dhyb->ell_width);
+        unit_check_general(1, 1, &ell_nnz, &dhyb->ell_nnz);
+        unit_check_general(1, 1, &coo_nnz, &dhyb->coo_nnz);
 
         CHECK_HIP_ERROR(hipMemcpy(hhyb_ell_col_ind.data(), dhyb->ell_col_ind, sizeof(rocsparse_int) * ell_nnz, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hhyb_ell_val.data(), dhyb->ell_val, sizeof(T) * ell_nnz, hipMemcpyDeviceToHost));
