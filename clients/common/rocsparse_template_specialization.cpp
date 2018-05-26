@@ -146,7 +146,16 @@ rocsparse_status rocsparse_csr2hyb(rocsparse_handle handle,
                                    rocsparse_int user_ell_width,
                                    rocsparse_hyb_partition partition_type)
 {
-    return rocsparse_scsr2hyb(handle, m, n, descr, csr_val, csr_row_ptr, csr_col_ind, hyb, user_ell_width, partition_type);
+    return rocsparse_scsr2hyb(handle,
+                              m,
+                              n,
+                              descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              hyb,
+                              user_ell_width,
+                              partition_type);
 }
 
 template <>
@@ -161,7 +170,16 @@ rocsparse_status rocsparse_csr2hyb(rocsparse_handle handle,
                                    rocsparse_int user_ell_width,
                                    rocsparse_hyb_partition partition_type)
 {
-    return rocsparse_dcsr2hyb(handle, m, n, descr, csr_val, csr_row_ptr, csr_col_ind, hyb, user_ell_width, partition_type);
+    return rocsparse_dcsr2hyb(handle,
+                              m,
+                              n,
+                              descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              hyb,
+                              user_ell_width,
+                              partition_type);
 }
 
 } // namespace rocsparse

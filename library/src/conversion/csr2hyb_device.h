@@ -27,8 +27,11 @@ __device__ void sum_reduce(rocsparse_int tid, rocsparse_int* data)
 }
 
 template <rocsparse_int NB>
-__global__ void
-hyb_coo_nnz_part1(rocsparse_int m, rocsparse_int ell_width, const rocsparse_int* csr_row_ptr, rocsparse_int* workspace, rocsparse_int* coo_row_nnz)
+__global__ void hyb_coo_nnz_part1(rocsparse_int m,
+                                  rocsparse_int ell_width,
+                                  const rocsparse_int* csr_row_ptr,
+                                  rocsparse_int* workspace,
+                                  rocsparse_int* coo_row_nnz)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -39,7 +42,7 @@ hyb_coo_nnz_part1(rocsparse_int m, rocsparse_int ell_width, const rocsparse_int*
     {
         rocsparse_int row_nnz = csr_row_ptr[gid + 1] - csr_row_ptr[gid];
 
-        if (row_nnz > ell_width)
+        if(row_nnz > ell_width)
         {
             row_nnz          = row_nnz - ell_width;
             sdata[tid]       = row_nnz;
@@ -204,11 +207,11 @@ __global__ void csr2ell_kernel(rocsparse_int m,
     rocsparse_int row_begin = csr_row_ptr[ai] - idx_base;
     rocsparse_int row_end   = csr_row_ptr[ai + 1] - idx_base;
     rocsparse_int coo_idx   = coo_row_ind ? workspace[ai] - idx_base : 0;
-    
+
     // Fill HYB matrix
     for(rocsparse_int aj = row_begin; aj < row_end; ++aj)
     {
-        if (p < ell_width)
+        if(p < ell_width)
         {
             rocsparse_int idx = ELL_IND(ai, p++, m, ell_width);
             ell_col_ind[idx]  = csr_col_ind[aj] - idx_base;
@@ -218,7 +221,7 @@ __global__ void csr2ell_kernel(rocsparse_int m,
         {
             coo_row_ind[coo_idx] = ai;
             coo_col_ind[coo_idx] = csr_col_ind[aj] - idx_base;
-            coo_val[coo_idx] = csr_val[aj];
+            coo_val[coo_idx]     = csr_val[aj];
             ++coo_idx;
         }
     }

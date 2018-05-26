@@ -128,11 +128,11 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
         // TODO
         return rocsparse_status_not_implemented;
     }
-// TODO check partition type
-//    if(hyb->partition != rocsparse_hyb_partition_max)
-//    {
-//        return rocsparse_status_not_implemented;
-//    }
+    // TODO check partition type
+    //    if(hyb->partition != rocsparse_hyb_partition_max)
+    //    {
+    //        return rocsparse_status_not_implemented;
+    //    }
 
     // Check sizes
     if(hyb->m < 0)
@@ -251,23 +251,24 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
             {
 // TODO
 #define COOMVN_DIM 128
-        rocsparse_int maxthreads = handle->properties.maxThreadsPerBlock;
-        rocsparse_int nprocs     = handle->properties.multiProcessorCount;
-        rocsparse_int maxblocks  = (nprocs * maxthreads - 1) / COOMVN_DIM + 1;
-        rocsparse_int minblocks  = (hyb->coo_nnz - 1) / COOMVN_DIM + 1;
+                rocsparse_int maxthreads = handle->properties.maxThreadsPerBlock;
+                rocsparse_int nprocs     = handle->properties.multiProcessorCount;
+                rocsparse_int maxblocks  = (nprocs * maxthreads - 1) / COOMVN_DIM + 1;
+                rocsparse_int minblocks  = (hyb->coo_nnz - 1) / COOMVN_DIM + 1;
 
-        rocsparse_int nblocks = maxblocks < minblocks ? maxblocks : minblocks;
-        rocsparse_int nwarps  = nblocks * (COOMVN_DIM / handle->warp_size);
-        rocsparse_int nloops  = (hyb->coo_nnz / handle->warp_size + 1) / nwarps + 1;
+                rocsparse_int nblocks = maxblocks < minblocks ? maxblocks : minblocks;
+                rocsparse_int nwarps  = nblocks * (COOMVN_DIM / handle->warp_size);
+                rocsparse_int nloops  = (hyb->coo_nnz / handle->warp_size + 1) / nwarps + 1;
 
-        dim3 coomvn_blocks(nblocks);
-        dim3 coomvn_threads(COOMVN_DIM);
+                dim3 coomvn_blocks(nblocks);
+                dim3 coomvn_threads(COOMVN_DIM);
 
-        rocsparse_int* row_block_red = NULL;
-        T* val_block_red             = NULL;
+                rocsparse_int* row_block_red = NULL;
+                T* val_block_red             = NULL;
 
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&row_block_red, sizeof(rocsparse_int) * nwarps));
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&val_block_red, sizeof(T) * nwarps));
+                RETURN_IF_HIP_ERROR(
+                    hipMalloc((void**)&row_block_red, sizeof(rocsparse_int) * nwarps));
+                RETURN_IF_HIP_ERROR(hipMalloc((void**)&val_block_red, sizeof(T) * nwarps));
 
                 hipLaunchKernelGGL((coomvn_warp_host_pointer<T, COOMVN_DIM, 64>),
                                    coomvn_blocks,
@@ -286,27 +287,19 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
                                    val_block_red,
                                    descr->base);
 
-        hipLaunchKernelGGL((coomvn_general_block_reduce<T, COOMVN_DIM>),
-                           dim3(1),
-                           coomvn_threads,
-                           0,
-                           stream,
-                           nwarps,
-                           row_block_red,
-                           val_block_red,
-                           y);
+                hipLaunchKernelGGL((coomvn_general_block_reduce<T, COOMVN_DIM>),
+                                   dim3(1),
+                                   coomvn_threads,
+                                   0,
+                                   stream,
+                                   nwarps,
+                                   row_block_red,
+                                   val_block_red,
+                                   y);
 
-        RETURN_IF_HIP_ERROR(hipFree(row_block_red));
-        RETURN_IF_HIP_ERROR(hipFree(val_block_red));
+                RETURN_IF_HIP_ERROR(hipFree(row_block_red));
+                RETURN_IF_HIP_ERROR(hipFree(val_block_red));
 #undef COOMVN_DIM
-
-
-
-
-
-
-
-
             }
         }
 #undef ELLMVN_DIM
