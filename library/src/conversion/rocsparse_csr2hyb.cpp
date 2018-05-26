@@ -61,7 +61,9 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
         return rocsparse_status_not_implemented;
     }
     // Check partition type
-    if(partition_type != rocsparse_hyb_partition_max && partition_type != rocsparse_hyb_partition_user && partition_type != rocsparse_hyb_partition_auto)
+    if(partition_type != rocsparse_hyb_partition_max &&
+       partition_type != rocsparse_hyb_partition_user &&
+       partition_type != rocsparse_hyb_partition_auto)
     {
         return rocsparse_status_invalid_value;
     }
@@ -98,7 +100,8 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
 
     // Get number of CSR non-zeros
     rocsparse_int csr_nnz;
-    RETURN_IF_HIP_ERROR(hipMemcpy(&csr_nnz, csr_row_ptr+m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    RETURN_IF_HIP_ERROR(
+        hipMemcpy(&csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
     // Correct by index base
     csr_nnz -= descr->base;
@@ -151,7 +154,7 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
         RETURN_IF_HIP_ERROR(hipFree(hyb->coo_val));
     }
 
-    // Determine ELL width
+// Determine ELL width
 
 #define CSR2ELL_DIM 512
     // Workspace size
@@ -200,7 +203,8 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
     // Allocate ELL part
     if(hyb->ell_nnz > 0)
     {
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&hyb->ell_col_ind, sizeof(rocsparse_int) * hyb->ell_nnz));
+        RETURN_IF_HIP_ERROR(
+            hipMalloc((void**)&hyb->ell_col_ind, sizeof(rocsparse_int) * hyb->ell_nnz));
         RETURN_IF_HIP_ERROR(hipMalloc(&hyb->ell_val, sizeof(T) * hyb->ell_nnz));
     }
 
@@ -215,7 +219,8 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
         if(hyb->ell_nnz == 0)
         {
             hyb->coo_nnz = csr_nnz;
-            RETURN_IF_HIP_ERROR(hipMemcpy(workspace2, csr_row_ptr, sizeof(rocsparse_int) * (m + 1), hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpy(
+                workspace2, csr_row_ptr, sizeof(rocsparse_int) * (m + 1), hipMemcpyDeviceToDevice));
         }
         else
         {
@@ -242,35 +247,32 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
                 hipMemcpy(&hyb->coo_nnz, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
             // Perform exclusive scan on workspace TODO use rocPRIM
-            std::vector<rocsparse_int> hbuf(m+1);
-            RETURN_IF_HIP_ERROR(hipMemcpy(hbuf.data() + 1, workspace2, sizeof(rocsparse_int) * m, hipMemcpyDeviceToHost));
+            std::vector<rocsparse_int> hbuf(m + 1);
+            RETURN_IF_HIP_ERROR(hipMemcpy(
+                hbuf.data() + 1, workspace2, sizeof(rocsparse_int) * m, hipMemcpyDeviceToHost));
 
             hbuf[0] = descr->base;
-            for (rocsparse_int i = 0; i < m; ++i)
+            for(rocsparse_int i = 0; i < m; ++i)
             {
-                hbuf[i+1] += hbuf[i];
+                hbuf[i + 1] += hbuf[i];
             }
 
-            RETURN_IF_HIP_ERROR(hipMemcpy(workspace2, hbuf.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpy(
+                workspace2, hbuf.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
         }
-
     }
 
-
     RETURN_IF_HIP_ERROR(hipFree(workspace));
-
-
 
     // Allocate COO part
     if(hyb->coo_nnz > 0)
     {
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&hyb->coo_row_ind, sizeof(rocsparse_int) * hyb->coo_nnz));
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&hyb->coo_col_ind, sizeof(rocsparse_int) * hyb->coo_nnz));
+        RETURN_IF_HIP_ERROR(
+            hipMalloc((void**)&hyb->coo_row_ind, sizeof(rocsparse_int) * hyb->coo_nnz));
+        RETURN_IF_HIP_ERROR(
+            hipMalloc((void**)&hyb->coo_col_ind, sizeof(rocsparse_int) * hyb->coo_nnz));
         RETURN_IF_HIP_ERROR(hipMalloc(&hyb->coo_val, sizeof(T) * hyb->coo_nnz));
     }
-
-
-
 
     dim3 csr2ell_blocks((m - 1) / CSR2ELL_DIM + 1);
     dim3 csr2ell_threads(CSR2ELL_DIM);
@@ -292,8 +294,6 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
                        (T*)hyb->coo_val,
                        workspace2,
                        descr->base);
-
-
 
     RETURN_IF_HIP_ERROR(hipFree(workspace2));
 #undef CSR2ELL_DIM

@@ -61,7 +61,7 @@ void testing_csr2hyb_bad_arg(void)
 
     rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
     rocsparse_int* csr_col_ind = (rocsparse_int*)csr_col_ind_managed.get();
-    T* csr_val = (T*)csr_val_managed.get();
+    T* csr_val                 = (T*)csr_val_managed.get();
 
     if(!csr_row_ptr || !csr_col_ind || !csr_val)
     {
@@ -73,28 +73,64 @@ void testing_csr2hyb_bad_arg(void)
     {
         rocsparse_int* csr_row_ptr_null = nullptr;
 
-        status = rocsparse_csr2hyb(handle, m, n, descr, csr_val, csr_row_ptr_null, csr_col_ind, hyb, 0, rocsparse_hyb_partition_auto);
+        status = rocsparse_csr2hyb(handle,
+                                   m,
+                                   n,
+                                   descr,
+                                   csr_val,
+                                   csr_row_ptr_null,
+                                   csr_col_ind,
+                                   hyb,
+                                   0,
+                                   rocsparse_hyb_partition_auto);
         verify_rocsparse_status_invalid_pointer(status, "Error: csr_row_ptr is nullptr");
     }
     // Testing for(csr_col_ind == nullptr)
     {
         rocsparse_int* csr_col_ind_null = nullptr;
 
-        status = rocsparse_csr2hyb(handle, m, n, descr, csr_val, csr_row_ptr, csr_col_ind_null, hyb, 0, rocsparse_hyb_partition_auto);
+        status = rocsparse_csr2hyb(handle,
+                                   m,
+                                   n,
+                                   descr,
+                                   csr_val,
+                                   csr_row_ptr,
+                                   csr_col_ind_null,
+                                   hyb,
+                                   0,
+                                   rocsparse_hyb_partition_auto);
         verify_rocsparse_status_invalid_pointer(status, "Error: csr_col_ind is nullptr");
     }
     // Testing for(csr_val == nullptr)
     {
         T* csr_val_null = nullptr;
 
-        status = rocsparse_csr2hyb(handle, m, n, descr, csr_val_null, csr_row_ptr, csr_col_ind, hyb, 0, rocsparse_hyb_partition_auto);
+        status = rocsparse_csr2hyb(handle,
+                                   m,
+                                   n,
+                                   descr,
+                                   csr_val_null,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   hyb,
+                                   0,
+                                   rocsparse_hyb_partition_auto);
         verify_rocsparse_status_invalid_pointer(status, "Error: csr_val is nullptr");
     }
     // Testing for(handle == nullptr)
     {
         rocsparse_handle handle_null = nullptr;
 
-        status = rocsparse_csr2hyb(handle_null, m, n, descr, csr_val, csr_row_ptr, csr_col_ind, hyb, 0, rocsparse_hyb_partition_auto);
+        status = rocsparse_csr2hyb(handle_null,
+                                   m,
+                                   n,
+                                   descr,
+                                   csr_val,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   hyb,
+                                   0,
+                                   rocsparse_hyb_partition_auto);
         verify_rocsparse_status_invalid_handle(status);
     }
 }
@@ -136,11 +172,12 @@ rocsparse_status testing_csr2hyb(Arguments argus)
             rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
         auto csr_col_ind_managed =
             rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto csr_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+        auto csr_val_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
 
         rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
         rocsparse_int* csr_col_ind = (rocsparse_int*)csr_col_ind_managed.get();
-        T* csr_val = (T*)csr_val_managed.get();
+        T* csr_val                 = (T*)csr_val_managed.get();
 
         if(!csr_row_ptr || !csr_col_ind || !csr_val)
         {
@@ -149,7 +186,8 @@ rocsparse_status testing_csr2hyb(Arguments argus)
             return rocsparse_status_memory_error;
         }
 
-        status = rocsparse_csr2hyb(handle, m, n, descr, csr_val, csr_row_ptr, csr_col_ind, hyb, user_ell_width, part);
+        status = rocsparse_csr2hyb(
+            handle, m, n, descr, csr_val, csr_row_ptr, csr_col_ind, hyb, user_ell_width, part);
 
         if(m < 0 || n < 0)
         {
@@ -197,7 +235,7 @@ rocsparse_status testing_csr2hyb(Arguments argus)
 
     rocsparse_int* dcsr_row_ptr = (rocsparse_int*)dcsr_row_ptr_managed.get();
     rocsparse_int* dcsr_col_ind = (rocsparse_int*)dcsr_col_ind_managed.get();
-    T* dcsr_val = (T*)dcsr_val_managed.get();
+    T* dcsr_val                 = (T*)dcsr_val_managed.get();
 
     if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
     {
@@ -211,8 +249,7 @@ rocsparse_status testing_csr2hyb(Arguments argus)
         dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(
         dcsr_col_ind, hcsr_col_ind.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_val, hcsr_val.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
 
     // User given ELL width check
     if(part == rocsparse_hyb_partition_user)
@@ -227,9 +264,19 @@ rocsparse_status testing_csr2hyb(Arguments argus)
         rocsparse_int max_allowed_ell_nnz_per_row = (2 * nnz - 1) / m + 1;
         if(user_ell_width < 0 || user_ell_width > max_allowed_ell_nnz_per_row)
         {
-            status = rocsparse_csr2hyb(handle, m, n, descr, dcsr_val, dcsr_row_ptr, dcsr_col_ind, hyb, user_ell_width, part);
+            status = rocsparse_csr2hyb(handle,
+                                       m,
+                                       n,
+                                       descr,
+                                       dcsr_val,
+                                       dcsr_row_ptr,
+                                       dcsr_col_ind,
+                                       hyb,
+                                       user_ell_width,
+                                       part);
 
-            verify_rocsparse_status_invalid_value(status, "Error: user_ell_width < 0 || user_ell_width > max_ell_width");
+            verify_rocsparse_status_invalid_value(
+                status, "Error: user_ell_width < 0 || user_ell_width > max_ell_width");
 
             return rocsparse_status_success;
         }
@@ -244,8 +291,8 @@ rocsparse_status testing_csr2hyb(Arguments argus)
 
     // Host csr2hyb conversion
     rocsparse_int ell_width = 0;
-    rocsparse_int ell_nnz = 0;
-    rocsparse_int coo_nnz = 0;
+    rocsparse_int ell_nnz   = 0;
+    rocsparse_int coo_nnz   = 0;
 
     if(part == rocsparse_hyb_partition_auto || part == rocsparse_hyb_partition_user)
     {
@@ -278,7 +325,7 @@ rocsparse_status testing_csr2hyb(Arguments argus)
         for(rocsparse_int i = 0; i < m; ++i)
         {
             rocsparse_int row_nnz = hcsr_row_ptr[i + 1] - hcsr_row_ptr[i];
-            ell_width = (row_nnz > ell_width) ? row_nnz : ell_width;
+            ell_width             = (row_nnz > ell_width) ? row_nnz : ell_width;
         }
         ell_nnz = ell_width * m;
     }
@@ -301,29 +348,25 @@ rocsparse_status testing_csr2hyb(Arguments argus)
         {
             if(p < ell_width)
             {
-                rocsparse_int idx = ELL_IND(i, p++, m, ell_width);
+                rocsparse_int idx          = ELL_IND(i, p++, m, ell_width);
                 hhyb_ell_col_ind_gold[idx] = hcsr_col_ind[j] - idx_base;
-                hhyb_ell_val_gold[idx] = hcsr_val[j];
+                hhyb_ell_val_gold[idx]     = hcsr_val[j];
             }
             else
             {
                 hhyb_coo_row_ind_gold[coo_idx] = i;
                 hhyb_coo_col_ind_gold[coo_idx] = hcsr_col_ind[j] - idx_base;
-                hhyb_coo_val_gold[coo_idx] = hcsr_val[j];
+                hhyb_coo_val_gold[coo_idx]     = hcsr_val[j];
                 ++coo_idx;
             }
         }
         for(rocsparse_int j = hcsr_row_ptr[i + 1] - hcsr_row_ptr[i]; j < ell_width; ++j)
         {
-            rocsparse_int idx = ELL_IND(i, p++, m, ell_width);
+            rocsparse_int idx          = ELL_IND(i, p++, m, ell_width);
             hhyb_ell_col_ind_gold[idx] = -1;
-            hhyb_ell_val_gold[idx] = static_cast<T>(0);
+            hhyb_ell_val_gold[idx]     = static_cast<T>(0);
         }
     }
-
-
-
-
 
     // Allocate verification structures
     std::vector<rocsparse_int> hhyb_ell_col_ind(ell_nnz);
@@ -334,10 +377,11 @@ rocsparse_status testing_csr2hyb(Arguments argus)
 
     if(argus.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2hyb(handle, m, n, descr, dcsr_val, dcsr_row_ptr, dcsr_col_ind, hyb, user_ell_width, part));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csr2hyb(
+            handle, m, n, descr, dcsr_val, dcsr_row_ptr, dcsr_col_ind, hyb, user_ell_width, part));
 
         // Copy output from device to host
-        test_hyb *dhyb = (test_hyb*)hyb;
+        test_hyb* dhyb = (test_hyb*)hyb;
 
         // Check if sizes match
         unit_check_general(1, 1, &m, &dhyb->m);
@@ -346,11 +390,22 @@ rocsparse_status testing_csr2hyb(Arguments argus)
         unit_check_general(1, 1, &ell_nnz, &dhyb->ell_nnz);
         unit_check_general(1, 1, &coo_nnz, &dhyb->coo_nnz);
 
-        CHECK_HIP_ERROR(hipMemcpy(hhyb_ell_col_ind.data(), dhyb->ell_col_ind, sizeof(rocsparse_int) * ell_nnz, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hhyb_ell_val.data(), dhyb->ell_val, sizeof(T) * ell_nnz, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hhyb_coo_row_ind.data(), dhyb->coo_row_ind, sizeof(rocsparse_int) * coo_nnz, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hhyb_coo_col_ind.data(), dhyb->coo_col_ind, sizeof(rocsparse_int) * coo_nnz, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hhyb_coo_val.data(), dhyb->coo_val, sizeof(T) * coo_nnz, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hhyb_ell_col_ind.data(),
+                                  dhyb->ell_col_ind,
+                                  sizeof(rocsparse_int) * ell_nnz,
+                                  hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(
+            hhyb_ell_val.data(), dhyb->ell_val, sizeof(T) * ell_nnz, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hhyb_coo_row_ind.data(),
+                                  dhyb->coo_row_ind,
+                                  sizeof(rocsparse_int) * coo_nnz,
+                                  hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hhyb_coo_col_ind.data(),
+                                  dhyb->coo_col_ind,
+                                  sizeof(rocsparse_int) * coo_nnz,
+                                  hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(
+            hhyb_coo_val.data(), dhyb->coo_val, sizeof(T) * coo_nnz, hipMemcpyDeviceToHost));
 
         // Unit check
         unit_check_general(1, ell_nnz, hhyb_ell_col_ind_gold.data(), hhyb_ell_col_ind.data());
@@ -360,38 +415,32 @@ rocsparse_status testing_csr2hyb(Arguments argus)
         unit_check_general(1, coo_nnz, hhyb_coo_val_gold.data(), hhyb_coo_val.data());
     }
 
-
-
-
-
-
-
-/*
-    if(argus.timing)
-    {
-        rocsparse_int number_cold_calls = 2;
-        rocsparse_int number_hot_calls  = argus.iters;
-
-        for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
+    /*
+        if(argus.timing)
         {
-            rocsparse_csr2hyb(handle, dcsr_row_ptr, nnz, m, dhyb_row_ind, idx_base);
+            rocsparse_int number_cold_calls = 2;
+            rocsparse_int number_hot_calls  = argus.iters;
+
+            for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
+            {
+                rocsparse_csr2hyb(handle, dcsr_row_ptr, nnz, m, dhyb_row_ind, idx_base);
+            }
+
+            double gpu_time_used = get_time_us();
+
+            for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
+            {
+                rocsparse_csr2hyb(handle, dcsr_row_ptr, nnz, m, dhyb_row_ind, idx_base);
+            }
+
+            gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
+
+            double bandwidth = sizeof(rocsparse_int) * (nnz + m + 1) / gpu_time_used / 1e6;
+
+            printf("m\t\tn\t\tnnz\t\tGB/s\tmsec\n");
+            printf("%8d\t%8d\t%9d\t%0.2lf\t%0.2lf\n", m, n, nnz, bandwidth, gpu_time_used);
         }
-
-        double gpu_time_used = get_time_us();
-
-        for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
-        {
-            rocsparse_csr2hyb(handle, dcsr_row_ptr, nnz, m, dhyb_row_ind, idx_base);
-        }
-
-        gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
-
-        double bandwidth = sizeof(rocsparse_int) * (nnz + m + 1) / gpu_time_used / 1e6;
-
-        printf("m\t\tn\t\tnnz\t\tGB/s\tmsec\n");
-        printf("%8d\t%8d\t%9d\t%0.2lf\t%0.2lf\n", m, n, nnz, bandwidth, gpu_time_used);
-    }
-*/
+    */
     return rocsparse_status_success;
 }
 

@@ -9,7 +9,8 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-typedef std::tuple<int, int, double, double, rocsparse_index_base, rocsparse_hyb_partition, int> hybmv_tuple;
+typedef std::tuple<int, int, double, double, rocsparse_index_base, rocsparse_hyb_partition, int>
+    hybmv_tuple;
 
 int hyb_M_range[] = {-1, 0, 10, 500, 7111, 10000};
 int hyb_N_range[] = {-3, 0, 33, 842, 4441, 10000};
@@ -19,9 +20,8 @@ std::vector<double> hyb_beta_range  = {0.0, 1.0};
 
 rocsparse_index_base hyb_idxbase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 
-rocsparse_hyb_partition hyb_partition[] = {rocsparse_hyb_partition_auto,
-                                           rocsparse_hyb_partition_max,
-                                           rocsparse_hyb_partition_user};
+rocsparse_hyb_partition hyb_partition[] = {
+    rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user};
 
 int hyb_ELL_range[] = {-33, -1, 0, INT32_MAX};
 
@@ -44,7 +44,7 @@ Arguments setup_hybmv_arguments(hybmv_tuple tup)
     arg.idx_base  = std::get<4>(tup);
     arg.part      = std::get<5>(tup);
     arg.ell_width = std::get<6>(tup);
-    arg.timing   = 0;
+    arg.timing    = 0;
     return arg;
 }
 

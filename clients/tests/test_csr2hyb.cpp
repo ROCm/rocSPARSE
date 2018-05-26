@@ -17,9 +17,8 @@ int csr2hyb_N_range[] = {-3, 0, 33, 242, 623, 1000};
 rocsparse_index_base csr2hyb_idx_base_range[] = {rocsparse_index_base_zero,
                                                  rocsparse_index_base_one};
 
-rocsparse_hyb_partition csr2hyb_partition[] = {rocsparse_hyb_partition_auto,
-                                               rocsparse_hyb_partition_max,
-                                               rocsparse_hyb_partition_user};
+rocsparse_hyb_partition csr2hyb_partition[] = {
+    rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user};
 
 int csr2hyb_ELL_range[] = {-33, -1, 0, INT32_MAX};
 
@@ -40,7 +39,7 @@ Arguments setup_csr2hyb_arguments(csr2hyb_tuple tup)
     arg.idx_base  = std::get<2>(tup);
     arg.part      = std::get<3>(tup);
     arg.ell_width = std::get<4>(tup);
-    arg.timing   = 0;
+    arg.timing    = 0;
     return arg;
 }
 
