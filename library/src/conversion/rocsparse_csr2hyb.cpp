@@ -50,10 +50,9 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
               partition_type);
 
     // Check index base
-    if(descr->base != rocsparse_index_base_zero)
+    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
     {
-        // TODO
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
@@ -97,6 +96,13 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
         return rocsparse_status_success;
     }
 
+    // Get number of CSR non-zeros
+    rocsparse_int csr_nnz;
+    RETURN_IF_HIP_ERROR(hipMemcpy(&csr_nnz, csr_row_ptr+m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+    // Correct by index base
+    csr_nnz -= descr->base;
+
     // Check user_ell_width
     if(partition_type == rocsparse_hyb_partition_user)
     {
@@ -105,10 +111,6 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
         {
             return rocsparse_status_invalid_value;
         }
-
-        // Limit ELL allocation to two times the CSR non-zero elements
-        rocsparse_int csr_nnz;
-        RETURN_IF_HIP_ERROR(hipMemcpy(&csr_nnz, csr_row_ptr+m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         rocsparse_int max_row_nnz = (2 * csr_nnz - 1) / m + 1;
         if(user_ell_width > max_row_nnz)
@@ -150,8 +152,6 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
     }
 
     // Determine ELL width
-    rocsparse_int csr_nnz;
-    RETURN_IF_HIP_ERROR(hipMemcpy(&csr_nnz, csr_row_ptr+m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
 #define CSR2ELL_DIM 512
     // Workspace size
@@ -245,7 +245,7 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
             std::vector<rocsparse_int> hbuf(m+1);
             RETURN_IF_HIP_ERROR(hipMemcpy(hbuf.data() + 1, workspace2, sizeof(rocsparse_int) * m, hipMemcpyDeviceToHost));
 
-            hbuf[0] = 0;
+            hbuf[0] = descr->base;
             for (rocsparse_int i = 0; i < m; ++i)
             {
                 hbuf[i+1] += hbuf[i];
@@ -290,7 +290,8 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
                        hyb->coo_row_ind,
                        hyb->coo_col_ind,
                        (T*)hyb->coo_val,
-                       workspace2);
+                       workspace2,
+                       descr->base);
 
 
 

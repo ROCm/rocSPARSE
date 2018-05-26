@@ -14,7 +14,8 @@ typedef std::tuple<int, int, rocsparse_index_base, rocsparse_hyb_partition, int>
 int csr2hyb_M_range[] = {-1, 0, 10, 500, 872, 1000};
 int csr2hyb_N_range[] = {-3, 0, 33, 242, 623, 1000};
 
-rocsparse_index_base csr2hyb_idx_base_range[] = {rocsparse_index_base_zero}; //TODO
+rocsparse_index_base csr2hyb_idx_base_range[] = {rocsparse_index_base_zero,
+                                                 rocsparse_index_base_one};
 
 rocsparse_hyb_partition csr2hyb_partition[] = {rocsparse_hyb_partition_auto,
                                                rocsparse_hyb_partition_max,

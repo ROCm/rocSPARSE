@@ -189,7 +189,8 @@ __global__ void csr2ell_kernel(rocsparse_int m,
                                rocsparse_int* coo_row_ind,
                                rocsparse_int* coo_col_ind,
                                T* coo_val,
-                               rocsparse_int* workspace)
+                               rocsparse_int* workspace,
+                               rocsparse_int idx_base)
 {
     rocsparse_int ai = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -200,9 +201,9 @@ __global__ void csr2ell_kernel(rocsparse_int m,
 
     rocsparse_int p = 0;
 
-    rocsparse_int row_begin = csr_row_ptr[ai];
-    rocsparse_int row_end   = csr_row_ptr[ai + 1];
-    rocsparse_int coo_idx   = coo_row_ind ? workspace[ai] : 0;
+    rocsparse_int row_begin = csr_row_ptr[ai] - idx_base;
+    rocsparse_int row_end   = csr_row_ptr[ai + 1] - idx_base;
+    rocsparse_int coo_idx   = coo_row_ind ? workspace[ai] - idx_base : 0;
     
     // Fill HYB matrix
     for(rocsparse_int aj = row_begin; aj < row_end; ++aj)
@@ -210,13 +211,13 @@ __global__ void csr2ell_kernel(rocsparse_int m,
         if (p < ell_width)
         {
             rocsparse_int idx = ELL_IND(ai, p++, m, ell_width);
-            ell_col_ind[idx]  = csr_col_ind[aj];
+            ell_col_ind[idx]  = csr_col_ind[aj] - idx_base;
             ell_val[idx]      = csr_val[aj];
         }
         else
         {
             coo_row_ind[coo_idx] = ai;
-            coo_col_ind[coo_idx] = csr_col_ind[aj];
+            coo_col_ind[coo_idx] = csr_col_ind[aj] - idx_base;
             coo_val[coo_idx] = csr_val[aj];
             ++coo_idx;
         }
