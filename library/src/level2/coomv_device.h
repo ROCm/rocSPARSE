@@ -34,7 +34,8 @@ static __device__ void coomvn_general_warp_reduce(rocsparse_int nnz,
                                                   const T* x,
                                                   T* y,
                                                   rocsparse_int* row_block_red,
-                                                  T* val_block_red)
+                                                  T* val_block_red,
+                                                  rocsparse_index_base idx_base)
 {
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
     rocsparse_int tid = hipThreadIdx_x;
@@ -78,8 +79,8 @@ static __device__ void coomvn_general_warp_reduce(rocsparse_int nnz,
         // nnz % WARPSIZE != 0
         if(idx < nnz)
         {
-            row = coo_row_ind[idx];
-            val = alpha * coo_val[idx] * x[coo_col_ind[idx]];
+            row = coo_row_ind[idx] - idx_base;
+            val = alpha * coo_val[idx] * x[coo_col_ind[idx] - idx_base];
         }
         else
         {

@@ -57,6 +57,18 @@ rocsparse_status rocsparse_hybmv(rocsparse_handle handle,
                                  const T* x,
                                  const T* beta,
                                  T* y);
+
+template <typename T>
+rocsparse_status rocsparse_csr2hyb(rocsparse_handle handle,
+                                   rocsparse_int m,
+                                   rocsparse_int n,
+                                   const rocsparse_mat_descr descr,
+                                   const T* csr_val,
+                                   const rocsparse_int* csr_row_ptr,
+                                   const rocsparse_int* csr_col_ind,
+                                   rocsparse_hyb_mat hyb,
+                                   rocsparse_int user_ell_width,
+                                   rocsparse_hyb_partition partition_type);
 }
 
 #endif // _ROCSPARSE_HPP_

@@ -51,6 +51,19 @@ void verify_rocsparse_status_invalid_size(rocsparse_status status, const char* m
 #endif
 }
 
+void verify_rocsparse_status_invalid_value(rocsparse_status status, const char* message)
+{
+#ifdef GOOGLE_TEST
+    ASSERT_EQ(status, rocsparse_status_invalid_value);
+#else
+    if(status != rocsparse_status_invalid_value)
+    {
+        std::cerr << "rocSPARSE TEST ERROR: status != rocsparse_status_invalid_value, ";
+        std::cerr << message << std::endl;
+    }
+#endif
+}
+
 void verify_rocsparse_status_invalid_handle(rocsparse_status status)
 {
 #ifdef GOOGLE_TEST
