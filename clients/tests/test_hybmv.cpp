@@ -16,14 +16,14 @@ int hyb_M_range[] = {-1, 0, 10, 500, 7111, 10000};
 int hyb_N_range[] = {-3, 0, 33, 842, 4441, 10000};
 
 std::vector<double> hyb_alpha_range = {2.0, 3.0};
-std::vector<double> hyb_beta_range  = {0.0, 1.0};
+std::vector<double> hyb_beta_range  = {0.0, 0.67, 1.0};
 
 rocsparse_index_base hyb_idxbase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 
 rocsparse_hyb_partition hyb_partition[] = {
     rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user};
 
-int hyb_ELL_range[] = {-33, -1, 0, INT32_MAX};
+int hyb_ELL_range[] = {0, 1, 2};
 
 class parameterized_hybmv : public testing::TestWithParam<hybmv_tuple>
 {

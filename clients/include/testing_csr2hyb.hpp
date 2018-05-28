@@ -204,26 +204,46 @@ rocsparse_status testing_csr2hyb(Arguments argus)
     // For testing, assemble a COO matrix and convert it to CSR first (on host)
 
     // Host structures
-    std::vector<rocsparse_int> hcoo_row_ind(nnz);
-    std::vector<rocsparse_int> hcsr_col_ind(nnz);
-    std::vector<T> hcsr_val(nnz);
+    std::vector<rocsparse_int> hcsr_row_ptr;
+    std::vector<rocsparse_int> hcoo_row_ind;
+    std::vector<rocsparse_int> hcsr_col_ind;
+    std::vector<T> hcsr_val;
 
     // Sample initial COO matrix on CPU
     srand(12345ULL);
-    gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, idx_base);
-
-    // Convert COO to CSR
-    std::vector<rocsparse_int> hcsr_row_ptr(m + 1);
-
-    for(rocsparse_int i = 0; i < nnz; ++i)
+    if(argus.laplacian)
     {
-        ++hcsr_row_ptr[hcoo_row_ind[i] + 1 - idx_base];
+        m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base);
+        nnz   = hcsr_row_ptr[m];
     }
-
-    hcsr_row_ptr[0] = idx_base;
-    for(rocsparse_int i = 0; i < m; ++i)
+    else
     {
-        hcsr_row_ptr[i + 1] += hcsr_row_ptr[i];
+        if(argus.filename != "")
+        {
+            if(read_mtx_matrix(
+                   argus.filename.c_str(), m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val) != 0)
+            {
+                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                return rocsparse_status_internal_error;
+            }
+        }
+        else
+        {
+            gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, idx_base);
+        }
+
+        // Convert COO to CSR
+        hcsr_row_ptr.resize(m + 1, 0);
+        for(rocsparse_int i = 0; i < nnz; ++i)
+        {
+            ++hcsr_row_ptr[hcoo_row_ind[i] + 1 - idx_base];
+        }
+
+        hcsr_row_ptr[0] = idx_base;
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            hcsr_row_ptr[i + 1] += hcsr_row_ptr[i];
+        }
     }
 
     // Allocate memory on the device
@@ -415,32 +435,47 @@ rocsparse_status testing_csr2hyb(Arguments argus)
         unit_check_general(1, coo_nnz, hhyb_coo_val_gold.data(), hhyb_coo_val.data());
     }
 
-    /*
-        if(argus.timing)
+    if(argus.timing)
+    {
+        rocsparse_int number_cold_calls = 2;
+        rocsparse_int number_hot_calls  = argus.iters;
+
+        for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_int number_cold_calls = 2;
-            rocsparse_int number_hot_calls  = argus.iters;
-
-            for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
-            {
-                rocsparse_csr2hyb(handle, dcsr_row_ptr, nnz, m, dhyb_row_ind, idx_base);
-            }
-
-            double gpu_time_used = get_time_us();
-
-            for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
-            {
-                rocsparse_csr2hyb(handle, dcsr_row_ptr, nnz, m, dhyb_row_ind, idx_base);
-            }
-
-            gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
-
-            double bandwidth = sizeof(rocsparse_int) * (nnz + m + 1) / gpu_time_used / 1e6;
-
-            printf("m\t\tn\t\tnnz\t\tGB/s\tmsec\n");
-            printf("%8d\t%8d\t%9d\t%0.2lf\t%0.2lf\n", m, n, nnz, bandwidth, gpu_time_used);
+            rocsparse_csr2hyb(handle,
+                              m,
+                              n,
+                              descr,
+                              dcsr_val,
+                              dcsr_row_ptr,
+                              dcsr_col_ind,
+                              hyb,
+                              user_ell_width,
+                              part);
         }
-    */
+
+        double gpu_time_used = get_time_us();
+
+        for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
+        {
+            rocsparse_csr2hyb(handle,
+                              m,
+                              n,
+                              descr,
+                              dcsr_val,
+                              dcsr_row_ptr,
+                              dcsr_col_ind,
+                              hyb,
+                              user_ell_width,
+                              part);
+        }
+
+        gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
+
+        printf("m\t\tn\t\tnnz\t\tmsec\n");
+        printf("%8d\t%8d\t%9d\t%0.2lf\n", m, n, nnz, gpu_time_used);
+    }
+
     return rocsparse_status_success;
 }
 
