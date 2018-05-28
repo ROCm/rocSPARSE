@@ -214,13 +214,13 @@ __global__ void csr2ell_kernel(rocsparse_int m,
         if(p < ell_width)
         {
             rocsparse_int idx = ELL_IND(ai, p++, m, ell_width);
-            ell_col_ind[idx]  = csr_col_ind[aj] - idx_base;
+            ell_col_ind[idx]  = csr_col_ind[aj];
             ell_val[idx]      = csr_val[aj];
         }
         else
         {
-            coo_row_ind[coo_idx] = ai;
-            coo_col_ind[coo_idx] = csr_col_ind[aj] - idx_base;
+            coo_row_ind[coo_idx] = ai + idx_base;
+            coo_col_ind[coo_idx] = csr_col_ind[aj];
             coo_val[coo_idx]     = csr_val[aj];
             ++coo_idx;
         }

@@ -349,13 +349,13 @@ rocsparse_status testing_csr2hyb(Arguments argus)
             if(p < ell_width)
             {
                 rocsparse_int idx          = ELL_IND(i, p++, m, ell_width);
-                hhyb_ell_col_ind_gold[idx] = hcsr_col_ind[j] - idx_base;
+                hhyb_ell_col_ind_gold[idx] = hcsr_col_ind[j];
                 hhyb_ell_val_gold[idx]     = hcsr_val[j];
             }
             else
             {
-                hhyb_coo_row_ind_gold[coo_idx] = i;
-                hhyb_coo_col_ind_gold[coo_idx] = hcsr_col_ind[j] - idx_base;
+                hhyb_coo_row_ind_gold[coo_idx] = i + idx_base;
+                hhyb_coo_col_ind_gold[coo_idx] = hcsr_col_ind[j];
                 hhyb_coo_val_gold[coo_idx]     = hcsr_val[j];
                 ++coo_idx;
             }
