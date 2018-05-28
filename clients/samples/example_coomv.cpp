@@ -67,8 +67,8 @@ int main(int argc, char* argv[])
     double halpha = static_cast<double>(rand()) / RAND_MAX;
     double hbeta  = 0.0;
 
-    std::vector<double> hx(m);
-    rocsparse_init(hx, 1, m);
+    std::vector<double> hx(n);
+    rocsparse_init(hx, 1, n);
 
     // Matrix descriptor
     rocsparse_mat_descr descrA;
@@ -84,13 +84,13 @@ int main(int argc, char* argv[])
     hipMalloc((void**)&dArow, sizeof(int) * nnz);
     hipMalloc((void**)&dAcol, sizeof(int) * nnz);
     hipMalloc((void**)&dAval, sizeof(double) * nnz);
-    hipMalloc((void**)&dx, sizeof(double) * m);
+    hipMalloc((void**)&dx, sizeof(double) * n);
     hipMalloc((void**)&dy, sizeof(double) * m);
 
     hipMemcpy(dArow, hArow.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
     hipMemcpy(dAcol, hAcol.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
     hipMemcpy(dAval, hAval.data(), sizeof(double) * nnz, hipMemcpyHostToDevice);
-    hipMemcpy(dx, hx.data(), sizeof(double) * m, hipMemcpyHostToDevice);
+    hipMemcpy(dx, hx.data(), sizeof(double) * n, hipMemcpyHostToDevice);
 
     // Warm up
     for(int i = 0; i < 10; ++i)
