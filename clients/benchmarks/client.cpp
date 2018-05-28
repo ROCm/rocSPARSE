@@ -6,8 +6,10 @@
 #include "rocsparse.hpp"
 #include "testing_coomv.hpp"
 #include "testing_csrmv.hpp"
+#include "testing_hybmv.hpp"
 #include "testing_axpyi.hpp"
 #include "testing_csr2coo.hpp"
+#include "testing_csr2hyb.hpp"
 #include "testing_coo2csr.hpp"
 
 #include <iostream>
@@ -63,7 +65,8 @@ int main(int argc, char* argv[])
         
         ("function,f",
          po::value<std::string>(&function)->default_value("axpyi"),
-         "SPARSE function to test. Options: axpyi, coomv, csrmv, csr2coo, coo2csr")
+         "SPARSE function to test. Options: axpyi, coomv, csrmv, hybmv, csr2coo, csr2hyb, "
+         "coo2csr")
         
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d")
@@ -139,9 +142,23 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_csrmv<double>(argus);
     }
+    else if(function == "hybmv")
+    {
+        if(precision == 's')
+            testing_hybmv<float>(argus);
+        else if(precision == 'd')
+            testing_hybmv<double>(argus);
+    }
     else if(function == "csr2coo")
     {
         testing_csr2coo(argus);
+    }
+    else if(function == "csr2hyb")
+    {
+        if(precision == 's')
+            testing_csr2hyb<float>(argus);
+        else if(precision == 'd')
+            testing_csr2hyb<double>(argus);
     }
     else if(function == "coo2csr")
     {

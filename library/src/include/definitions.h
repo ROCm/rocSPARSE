@@ -23,6 +23,15 @@
         }                                                                     \
     }
 
+#define RETURN_IF_ROCSPARSE_ERROR(INPUT_STATUS_FOR_CHECK)               \
+    {                                                                   \
+        rocsparse_status TMP_STATUS_FOR_CHECK = INPUT_STATUS_FOR_CHECK; \
+        if(TMP_STATUS_FOR_CHECK != rocsparse_status_success)            \
+        {                                                               \
+            return TMP_STATUS_FOR_CHECK;                                \
+        }                                                               \
+    }
+
 #define THROW_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                           \
     {                                                                        \
         hipError_t TMP_STATUS_FOR_CHECK = INPUT_STATUS_FOR_CHECK;            \

@@ -18,7 +18,7 @@ int coo_N_range[] = {-3, 0, 33, 842, 4441, 10000};
 std::vector<double> coo_alpha_range = {2.0, 3.0};
 std::vector<double> coo_beta_range  = {0.0, 0.67, 1.0};
 
-base coo_idxbase_range[] = {rocsparse_index_base_zero};
+base coo_idxbase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 
 class parameterized_coomv : public testing::TestWithParam<coomv_tuple>
 {
