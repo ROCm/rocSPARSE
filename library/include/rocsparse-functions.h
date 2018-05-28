@@ -413,6 +413,48 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
 /*! \brief SPARSE Format Conversions API
 
     \details
+    csr2ell converts a CSR matrix into an ELL matrix.
+
+    // TODO
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
+                                         rocsparse_int m,
+                                         const rocsparse_mat_descr csr_descr,
+                                         const rocsparse_int* csr_row_ptr,
+                                         const rocsparse_mat_descr ell_descr,
+                                         rocsparse_int* ell_width);
+
+// TODO descr. text
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    const rocsparse_mat_descr csr_descr,
+                                    const float* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    const rocsparse_int* csr_col_ind,
+                                    const rocsparse_mat_descr ell_descr,
+                                    rocsparse_int ell_width,
+                                    float* ell_val,
+                                    rocsparse_int* ell_col_ind);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcsr2ell(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    const rocsparse_mat_descr csr_descr,
+                                    const double* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    const rocsparse_int* csr_col_ind,
+                                    const rocsparse_mat_descr ell_descr,
+                                    rocsparse_int ell_width,
+                                    double* ell_val,
+                                    rocsparse_int* ell_col_ind);
+
+/*! \brief SPARSE Format Conversions API
+
+    \details
     coo2csr converts the COO array containing the row indices into a
     CSR array of row offset pointers.
 

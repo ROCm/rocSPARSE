@@ -11,6 +11,7 @@
 #include "handle.h"
 #include "utility.h"
 #include "csr2hyb_device.h"
+#include "csr2ell_device.h"
 
 #include <hip/hip_runtime.h>
 
@@ -281,7 +282,7 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
     dim3 csr2ell_blocks((m - 1) / CSR2ELL_DIM + 1);
     dim3 csr2ell_threads(CSR2ELL_DIM);
 
-    hipLaunchKernelGGL((csr2ell_kernel<T>),
+    hipLaunchKernelGGL((csr2hyb_kernel<T>),
                        csr2ell_blocks,
                        csr2ell_threads,
                        0,
