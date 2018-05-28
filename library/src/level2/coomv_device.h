@@ -55,6 +55,16 @@ static __device__ void coomvn_general_warp_reduce(rocsparse_int nnz,
     // Global COO array index start for current warp
     rocsparse_int offset = warpid * loops * WARPSIZE;
 
+    // Shared memory to hold row indices and values for segmented reduction
+    __shared__ rocsparse_int shared_row[BLOCKSIZE];
+    __shared__ T shared_val[BLOCKSIZE];
+
+    // Initialize shared memory
+    shared_row[tid] = -1;
+    shared_val[tid] = static_cast<T>(0);
+
+    __syncthreads();
+
     // Quick return when thread is out of bounds
     if(offset + laneid >= nnz)
     {
@@ -63,10 +73,6 @@ static __device__ void coomvn_general_warp_reduce(rocsparse_int nnz,
 
     rocsparse_int row;
     T val;
-
-    // Shared memory to hold row indices and values for segmented reduction
-    __shared__ rocsparse_int shared_row[BLOCKSIZE];
-    __shared__ T shared_val[BLOCKSIZE];
 
     // Current threads index into COO structure
     rocsparse_int idx = offset + laneid;
