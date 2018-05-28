@@ -261,6 +261,10 @@ void gen_matrix_coo(rocsparse_int m,
         while(row_ind[i] == row_ind[begin])
         {
             ++i;
+            if(i >= nnz)
+            {
+                break;
+            }
         }
 
         // Sample i disjunct column indices
