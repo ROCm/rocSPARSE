@@ -600,9 +600,10 @@ class Arguments
     double alpha = 1.0;
     double beta  = 0.0;
 
-    rocsparse_operation trans     = rocsparse_operation_none;
-    rocsparse_index_base idx_base = rocsparse_index_base_zero;
-    rocsparse_hyb_partition part  = rocsparse_hyb_partition_auto;
+    rocsparse_operation trans      = rocsparse_operation_none;
+    rocsparse_index_base idx_base  = rocsparse_index_base_zero;
+    rocsparse_index_base idx_base2 = rocsparse_index_base_zero;
+    rocsparse_hyb_partition part   = rocsparse_hyb_partition_auto;
 
     rocsparse_int norm_check = 0;
     rocsparse_int unit_check = 1;
@@ -623,9 +624,10 @@ class Arguments
         alpha = rhs.alpha;
         beta  = rhs.beta;
 
-        trans    = rhs.trans;
-        idx_base = rhs.idx_base;
-        part     = rhs.part;
+        trans     = rhs.trans;
+        idx_base  = rhs.idx_base;
+        idx_base2 = rhs.idx_base2;
+        part      = rhs.part;
 
         norm_check = rhs.norm_check;
         unit_check = rhs.unit_check;

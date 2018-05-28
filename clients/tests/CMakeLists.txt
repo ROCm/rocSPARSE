@@ -11,6 +11,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_csrmv.cpp
   test_hybmv.cpp
   test_csr2coo.cpp
+  test_csr2ell.cpp
   test_csr2hyb.cpp
   test_coo2csr.cpp
 )
