@@ -56,8 +56,8 @@ int main(int argc, char* argv[])
     double halpha = static_cast<double>(rand()) / RAND_MAX;
     double hbeta  = 0.0;
 
-    std::vector<double> hx(m);
-    rocsparse_init(hx, 1, m);
+    std::vector<double> hx(n);
+    rocsparse_init(hx, 1, n);
 
     // Matrix descriptor
     rocsparse_mat_descr descrA;
@@ -73,13 +73,13 @@ int main(int argc, char* argv[])
     hipMalloc((void**)&dAptr, sizeof(int) * (m + 1));
     hipMalloc((void**)&dAcol, sizeof(int) * nnz);
     hipMalloc((void**)&dAval, sizeof(double) * nnz);
-    hipMalloc((void**)&dx, sizeof(double) * m);
+    hipMalloc((void**)&dx, sizeof(double) * n);
     hipMalloc((void**)&dy, sizeof(double) * m);
 
     hipMemcpy(dAptr, hAptr.data(), sizeof(int) * (m + 1), hipMemcpyHostToDevice);
     hipMemcpy(dAcol, hAcol.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
     hipMemcpy(dAval, hAval.data(), sizeof(double) * nnz, hipMemcpyHostToDevice);
-    hipMemcpy(dx, hx.data(), sizeof(double) * m, hipMemcpyHostToDevice);
+    hipMemcpy(dx, hx.data(), sizeof(double) * n, hipMemcpyHostToDevice);
 
     // Convert CSR matrix to HYB format, using partition type to be
     // rocsparse_hyb_partition_max. This will result in ELL matrix format,
