@@ -109,6 +109,42 @@ rocsparse_status rocsparse_csrmv(rocsparse_handle handle,
 }
 
 template <>
+rocsparse_status rocsparse_ellmv(rocsparse_handle handle,
+                                 rocsparse_operation trans,
+                                 rocsparse_int m,
+                                 rocsparse_int n,
+                                 const float* alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const float* ell_val,
+                                 const rocsparse_int* ell_col_ind,
+                                 rocsparse_int ell_width,
+                                 const float* x,
+                                 const float* beta,
+                                 float* y)
+{
+    return rocsparse_sellmv(
+        handle, trans, m, n, alpha, descr, ell_val, ell_col_ind, ell_width, x, beta, y);
+}
+
+template <>
+rocsparse_status rocsparse_ellmv(rocsparse_handle handle,
+                                 rocsparse_operation trans,
+                                 rocsparse_int m,
+                                 rocsparse_int n,
+                                 const double* alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const double* ell_val,
+                                 const rocsparse_int* ell_col_ind,
+                                 rocsparse_int ell_width,
+                                 const double* x,
+                                 const double* beta,
+                                 double* y)
+{
+    return rocsparse_dellmv(
+        handle, trans, m, n, alpha, descr, ell_val, ell_col_ind, ell_width, x, beta, y);
+}
+
+template <>
 rocsparse_status rocsparse_hybmv(rocsparse_handle handle,
                                  rocsparse_operation trans,
                                  const float* alpha,
@@ -146,7 +182,16 @@ rocsparse_status rocsparse_csr2ell(rocsparse_handle handle,
                                    float* ell_val,
                                    rocsparse_int* ell_col_ind)
 {
-    return rocsparse_scsr2ell(handle, m, csr_descr, csr_val, csr_row_ptr, csr_col_ind, ell_descr, ell_width, ell_val, ell_col_ind);
+    return rocsparse_scsr2ell(handle,
+                              m,
+                              csr_descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              ell_descr,
+                              ell_width,
+                              ell_val,
+                              ell_col_ind);
 }
 
 template <>
@@ -161,7 +206,16 @@ rocsparse_status rocsparse_csr2ell(rocsparse_handle handle,
                                    double* ell_val,
                                    rocsparse_int* ell_col_ind)
 {
-    return rocsparse_dcsr2ell(handle, m, csr_descr, csr_val, csr_row_ptr, csr_col_ind, ell_descr, ell_width, ell_val, ell_col_ind);
+    return rocsparse_dcsr2ell(handle,
+                              m,
+                              csr_descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              ell_descr,
+                              ell_width,
+                              ell_val,
+                              ell_col_ind);
 }
 
 template <>
