@@ -3,8 +3,8 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef TESTING_HYBMV_HPP
-#define TESTING_HYBMV_HPP
+#ifndef TESTING_ELLMV_HPP
+#define TESTING_ELLMV_HPP
 
 #include "rocsparse_test_unique_ptr.hpp"
 #include "rocsparse.hpp"
@@ -17,25 +17,17 @@
 using namespace rocsparse;
 using namespace rocsparse_test;
 
-struct testhyb
-{
-    rocsparse_int m;
-    rocsparse_int n;
-    rocsparse_hyb_partition partition;
-    rocsparse_int ell_nnz;
-    rocsparse_int ell_width;
-    rocsparse_int* ell_col_ind;
-    void* ell_val;
-    rocsparse_int coo_nnz;
-    rocsparse_int* coo_row_ind;
-    rocsparse_int* coo_col_ind;
-    void* coo_val;
-};
+#define ELL_IND_ROW(i, el, m, width) (el) * (m) + (i)
+#define ELL_IND_EL(i, el, m, width) (el) + (width) * (i)
+#define ELL_IND(i, el, m, width) ELL_IND_ROW(i, el, m, width)
 
 template <typename T>
-void testing_hybmv_bad_arg(void)
+void testing_ellmv_bad_arg(void)
 {
+    rocsparse_int n           = 100;
+    rocsparse_int m           = 100;
     rocsparse_int safe_size   = 100;
+    rocsparse_int ell_width   = 8;
     T alpha                   = 0.6;
     T beta                    = 0.2;
     rocsparse_operation trans = rocsparse_operation_none;
@@ -47,74 +39,91 @@ void testing_hybmv_bad_arg(void)
     std::unique_ptr<descr_struct> unique_ptr_descr(new descr_struct);
     rocsparse_mat_descr descr = unique_ptr_descr->descr;
 
-    std::unique_ptr<hyb_struct> unique_ptr_hyb(new hyb_struct);
-    rocsparse_hyb_mat hyb = unique_ptr_hyb->hyb;
+    auto dcol_managed =
+        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+    auto dx_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+    auto dy_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
 
-    auto dx_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dy_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+    rocsparse_int* dcol = (rocsparse_int*)dcol_managed.get();
+    T* dval             = (T*)dval_managed.get();
+    T* dx               = (T*)dx_managed.get();
+    T* dy               = (T*)dy_managed.get();
 
-    T* dx = (T*)dx_managed.get();
-    T* dy = (T*)dy_managed.get();
-
-    if(!dx || !dy)
+    if(!dval || !dcol || !dx || !dy)
     {
         PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
+    // testing for(nullptr == dcol)
+    {
+        rocsparse_int* dcol_null = nullptr;
+
+        status = rocsparse_ellmv(
+            handle, trans, m, n, &alpha, descr, dval, dcol_null, ell_width, dx, &beta, dy);
+        verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
+    }
+    // testing for(nullptr == dval)
+    {
+        T* dval_null = nullptr;
+
+        status = rocsparse_ellmv(
+            handle, trans, m, n, &alpha, descr, dval_null, dcol, ell_width, dx, &beta, dy);
+        verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
+    }
     // testing for(nullptr == dx)
     {
         T* dx_null = nullptr;
 
-        status = rocsparse_hybmv(handle, trans, &alpha, descr, hyb, dx_null, &beta, dy);
+        status = rocsparse_ellmv(
+            handle, trans, m, n, &alpha, descr, dval, dcol, ell_width, dx_null, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dx is nullptr");
     }
     // testing for(nullptr == dy)
     {
         T* dy_null = nullptr;
 
-        status = rocsparse_hybmv(handle, trans, &alpha, descr, hyb, dx, &beta, dy_null);
+        status = rocsparse_ellmv(
+            handle, trans, m, n, &alpha, descr, dval, dcol, ell_width, dx, &beta, dy_null);
         verify_rocsparse_status_invalid_pointer(status, "Error: dy is nullptr");
     }
     // testing for(nullptr == d_alpha)
     {
         T* d_alpha_null = nullptr;
 
-        status = rocsparse_hybmv(handle, trans, d_alpha_null, descr, hyb, dx, &beta, dy);
+        status = rocsparse_ellmv(
+            handle, trans, m, n, d_alpha_null, descr, dval, dcol, ell_width, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
     }
     // testing for(nullptr == d_beta)
     {
         T* d_beta_null = nullptr;
 
-        status = rocsparse_hybmv(handle, trans, &alpha, descr, hyb, dx, d_beta_null, dy);
+        status = rocsparse_ellmv(
+            handle, trans, m, n, &alpha, descr, dval, dcol, ell_width, dx, d_beta_null, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: beta is nullptr");
-    }
-    // testing for(nullptr == hyb)
-    {
-        rocsparse_hyb_mat hyb_null = nullptr;
-
-        status = rocsparse_hybmv(handle, trans, &alpha, descr, hyb_null, dx, &beta, dy);
-        verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == descr)
     {
         rocsparse_mat_descr descr_null = nullptr;
 
-        status = rocsparse_hybmv(handle, trans, &alpha, descr_null, hyb, dx, &beta, dy);
+        status = rocsparse_ellmv(
+            handle, trans, m, n, &alpha, descr_null, dval, dcol, ell_width, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == handle)
     {
         rocsparse_handle handle_null = nullptr;
 
-        status = rocsparse_hybmv(handle_null, trans, &alpha, descr, hyb, dx, &beta, dy);
+        status = rocsparse_ellmv(
+            handle_null, trans, m, n, &alpha, descr, dval, dcol, ell_width, dx, &beta, dy);
         verify_rocsparse_status_invalid_handle(status);
     }
 }
 
 template <typename T>
-rocsparse_status testing_hybmv(Arguments argus)
+rocsparse_status testing_ellmv(Arguments argus)
 {
     rocsparse_int safe_size       = 100;
     rocsparse_int m               = argus.M;
@@ -123,8 +132,6 @@ rocsparse_status testing_hybmv(Arguments argus)
     T h_beta                      = argus.beta;
     rocsparse_operation trans     = argus.trans;
     rocsparse_index_base idx_base = argus.idx_base;
-    rocsparse_hyb_partition part  = argus.part;
-    rocsparse_int user_ell_width  = argus.ell_width;
     rocsparse_status status;
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
@@ -135,9 +142,6 @@ rocsparse_status testing_hybmv(Arguments argus)
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, idx_base));
-
-    std::unique_ptr<hyb_struct> test_hyb(new hyb_struct);
-    rocsparse_hyb_mat hyb = test_hyb->hyb;
 
     // Determine number of non-zero elements
     double scale = 0.02;
@@ -150,40 +154,36 @@ rocsparse_status testing_hybmv(Arguments argus)
     // Argument sanity check before allocating invalid memory
     if(m <= 0 || n <= 0 || nnz <= 0)
     {
-        auto dptr_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
         auto dcol_managed =
             rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
         auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
         auto dx_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
         auto dy_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
 
-        rocsparse_int* dptr = (rocsparse_int*)dptr_managed.get();
         rocsparse_int* dcol = (rocsparse_int*)dcol_managed.get();
         T* dval             = (T*)dval_managed.get();
         T* dx               = (T*)dx_managed.get();
         T* dy               = (T*)dy_managed.get();
 
-        if(!dval || !dptr || !dcol || !dx || !dy)
+        if(!dval || !dcol || !dx || !dy)
         {
             verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                            "!dptr || !dcol || !dval || !dx || !dy");
+                                            "!dcol || !dval || !dx || !dy");
             return rocsparse_status_memory_error;
         }
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         status =
-            rocsparse_csr2hyb(handle, m, n, descr, dval, dptr, dcol, hyb, user_ell_width, part);
+            rocsparse_ellmv(handle, trans, m, n, &h_alpha, descr, dval, dcol, 0, dx, &h_beta, dy);
 
         if(m < 0 || n < 0 || nnz < 0)
         {
             verify_rocsparse_status_invalid_size(status, "Error: m < 0 || n < 0 || nnz < 0");
         }
-
-        // hybmv should be able to deal with m <= 0 || n <= 0 || nnz <= 0 even if csr2hyb fails
-        // because hyb structures is allocated with n = m = 0 - so nothing should happen
-        status = rocsparse_hybmv(handle, trans, &h_alpha, descr, hyb, dx, &h_beta, dy);
-        verify_rocsparse_status_success(status, "m >= 0 && n >= 0 && nnz >= 0");
+        else
+        {
+            verify_rocsparse_status_success(status, "m >= 0 && n >= 0 && nnz >= 0");
+        }
 
         return rocsparse_status_success;
     }
@@ -218,16 +218,51 @@ rocsparse_status testing_hybmv(Arguments argus)
         }
 
         // Convert COO to CSR
-        hcsr_row_ptr.resize(m + 1, 0);
-        for(rocsparse_int i = 0; i < nnz; ++i)
+        if(!argus.laplacian)
         {
-            ++hcsr_row_ptr[hcoo_row_ind[i] + 1 - idx_base];
-        }
+            hcsr_row_ptr.resize(m + 1, 0);
+            for(rocsparse_int i = 0; i < nnz; ++i)
+            {
+                ++hcsr_row_ptr[hcoo_row_ind[i] + 1 - idx_base];
+            }
 
-        hcsr_row_ptr[0] = idx_base;
-        for(rocsparse_int i = 0; i < m; ++i)
+            hcsr_row_ptr[0] = idx_base;
+            for(rocsparse_int i = 0; i < m; ++i)
+            {
+                hcsr_row_ptr[i + 1] += hcsr_row_ptr[i];
+            }
+        }
+    }
+
+    // Convert CSR to ELL
+    rocsparse_int ell_width = 0;
+    for(rocsparse_int i = 0; i < m; ++i)
+    {
+        rocsparse_int row_nnz = hcsr_row_ptr[i + 1] - hcsr_row_ptr[i];
+        ell_width             = (row_nnz > ell_width) ? row_nnz : ell_width;
+    }
+
+    rocsparse_int ell_nnz = ell_width * m;
+
+    std::vector<rocsparse_int> hell_col_ind(ell_nnz);
+    std::vector<T> hell_val(ell_nnz);
+
+    for(rocsparse_int i = 0; i < m; ++i)
+    {
+        rocsparse_int p = 0;
+        for(rocsparse_int j = hcsr_row_ptr[i] - idx_base; j < hcsr_row_ptr[i + 1] - idx_base; ++j)
         {
-            hcsr_row_ptr[i + 1] += hcsr_row_ptr[i];
+            rocsparse_int idx = ELL_IND(i, p, m, ell_width);
+            hell_val[idx]     = hval[j];
+            hell_col_ind[idx] = hcol_ind[j];
+            ++p;
+        }
+        for(rocsparse_int j = hcsr_row_ptr[i + 1] - hcsr_row_ptr[i]; j < ell_width; ++j)
+        {
+            rocsparse_int idx = ELL_IND(i, p, m, ell_width);
+            hell_val[idx]     = static_cast<T>(0);
+            hell_col_ind[idx] = -1;
+            ++p;
         }
     }
 
@@ -244,18 +279,15 @@ rocsparse_status testing_hybmv(Arguments argus)
     hy_gold = hy_1;
 
     // allocate memory on device
-    auto dptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
     auto dcol_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dval_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
+        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * ell_nnz), device_free};
+    auto dval_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * ell_nnz), device_free};
     auto dx_managed      = rocsparse_unique_ptr{device_malloc(sizeof(T) * n), device_free};
     auto dy_1_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
     auto dy_2_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
     auto d_alpha_managed = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
     auto d_beta_managed  = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
 
-    rocsparse_int* dptr = (rocsparse_int*)dptr_managed.get();
     rocsparse_int* dcol = (rocsparse_int*)dcol_managed.get();
     T* dval             = (T*)dval_managed.get();
     T* dx               = (T*)dx_managed.get();
@@ -264,34 +296,22 @@ rocsparse_status testing_hybmv(Arguments argus)
     T* d_alpha          = (T*)d_alpha_managed.get();
     T* d_beta           = (T*)d_beta_managed.get();
 
-    if(!dval || !dptr || !dcol || !dx || !dy_1 || !dy_2 || !d_alpha || !d_beta)
+    if(!dval || !dcol || !dx || !dy_1 || !dy_2 || !d_alpha || !d_beta)
     {
         verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                        "!dval || !dptr || !dcol || !dx || "
-                                        "!dy_1 || !dy_2 || !d_alpha || !d_beta");
+                                        "!dval || !dcol || !dx || !dy_1 || "
+                                        "!dy_2 || !d_alpha || !d_beta");
         return rocsparse_status_memory_error;
     }
 
     // copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
-        dptr, hcsr_row_ptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(
-        hipMemcpy(dcol, hcol_ind.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dval, hval.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
+        dcol, hell_col_ind.data(), sizeof(rocsparse_int) * ell_nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dval, hell_val.data(), sizeof(T) * ell_nnz, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dx, hx.data(), sizeof(T) * n, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dy_1, hy_1.data(), sizeof(T) * m, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(d_beta, &h_beta, sizeof(T), hipMemcpyHostToDevice));
-
-    // User given ELL width
-    if(part == rocsparse_hyb_partition_user)
-    {
-        user_ell_width = user_ell_width * nnz / m;
-    }
-
-    // Convert CSR to HYB
-    CHECK_ROCSPARSE_ERROR(
-        rocsparse_csr2hyb(handle, m, n, descr, dval, dptr, dcol, hyb, user_ell_width, part));
 
     if(argus.unit_check)
     {
@@ -299,13 +319,13 @@ rocsparse_status testing_hybmv(Arguments argus)
 
         // ROCSPARSE pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(
-            rocsparse_hybmv(handle, trans, &h_alpha, descr, hyb, dx, &h_beta, dy_1));
+        CHECK_ROCSPARSE_ERROR(rocsparse_ellmv(
+            handle, trans, m, n, &h_alpha, descr, dval, dcol, ell_width, dx, &h_beta, dy_1));
 
         // ROCSPARSE pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(
-            rocsparse_hybmv(handle, trans, d_alpha, descr, hyb, dx, d_beta, dy_2));
+        CHECK_ROCSPARSE_ERROR(rocsparse_ellmv(
+            handle, trans, m, n, d_alpha, descr, dval, dcol, ell_width, dx, d_beta, dy_2));
 
         // copy output from device to CPU
         CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * m, hipMemcpyDeviceToHost));
@@ -326,6 +346,8 @@ rocsparse_status testing_hybmv(Arguments argus)
 
         cpu_time_used = get_time_us() - cpu_time_used;
 
+        // enable unit check, notice unit check is not invasive, but norm check is,
+        // unit check and norm check can not be interchanged their order
         unit_check_general(1, m, hy_gold.data(), hy_1.data());
         unit_check_general(1, m, hy_gold.data(), hy_2.data());
     }
@@ -338,34 +360,33 @@ rocsparse_status testing_hybmv(Arguments argus)
 
         for(int iter = 0; iter < number_cold_calls; iter++)
         {
-            rocsparse_hybmv(handle, trans, &h_alpha, descr, hyb, dx, &h_beta, dy_1);
+            rocsparse_ellmv(
+                handle, trans, m, n, &h_alpha, descr, dval, dcol, ell_width, dx, &h_beta, dy_1);
         }
 
         double gpu_time_used = get_time_us(); // in microseconds
 
         for(int iter = 0; iter < number_hot_calls; iter++)
         {
-            rocsparse_hybmv(handle, trans, &h_alpha, descr, hyb, dx, &h_beta, dy_1);
+            rocsparse_ellmv(
+                handle, trans, m, n, &h_alpha, descr, dval, dcol, ell_width, dx, &h_beta, dy_1);
         }
-
-        testhyb* dhyb = (testhyb*)hyb;
 
         // Convert to miliseconds per call
         gpu_time_used     = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
         size_t flops      = (h_alpha != 1.0) ? 3.0 * nnz : 2.0 * nnz;
         flops             = (h_beta != 0.0) ? flops + m : flops;
         double gpu_gflops = flops / gpu_time_used / 1e6;
-        size_t ell_mem    = dhyb->ell_nnz * (sizeof(rocsparse_int) + sizeof(T));
-        size_t coo_mem    = dhyb->coo_nnz * (sizeof(rocsparse_int) * 2 + sizeof(T));
-        size_t memtrans   = (m + n) * sizeof(T) + ell_mem + coo_mem;
-        memtrans          = (h_beta != 0.0) ? memtrans + m : memtrans;
-        double bandwidth  = memtrans / gpu_time_used / 1e6;
+        size_t memtrans   = sizeof(T) * (m + n + ell_nnz);
+        memtrans += sizeof(rocsparse_int) * ell_nnz;
+        memtrans         = (h_beta != 0.0) ? memtrans + sizeof(T) * m : memtrans;
+        double bandwidth = memtrans / gpu_time_used / 1e6;
 
         printf("m\t\tn\t\tnnz\t\talpha\tbeta\tGFlops\tGB/s\tmsec\n");
         printf("%8d\t%8d\t%9d\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\n",
                m,
                n,
-               dhyb->ell_nnz + dhyb->coo_nnz,
+               ell_nnz,
                h_alpha,
                h_beta,
                gpu_gflops,
@@ -376,4 +397,4 @@ rocsparse_status testing_hybmv(Arguments argus)
     return rocsparse_status_success;
 }
 
-#endif // TESTING_HYBMV_HPP
+#endif // TESTING_ELLMV_HPP

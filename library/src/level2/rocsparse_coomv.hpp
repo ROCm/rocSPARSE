@@ -66,46 +66,6 @@ __global__ void coomvn_warp_device_pointer(rocsparse_int nnz,
                                                        idx_base);
 }
 
-/*! \brief SPARSE Level 2 API
-
-    \details
-    coomv  multiplies the dense vector x[i] with scalar alpha and sparse m x n
-    matrix A that is defined in COO storage format and add the result to y[i]
-    that is multiplied by beta, for  i = 1 , … , n
-
-        y := alpha * op(A) * x + beta * y,
-
-    @param[in]
-    handle      rocsparse_handle.
-                handle to the rocsparse library context queue.
-    @param[in]
-    trans       operation type of A.
-    @param[in]
-    m           number of rows of A.
-    @param[in]
-    n           number of columns of A.
-    @param[in]
-    nnz         number of non-zero entries of A.
-    @param[in]
-    alpha       scalar alpha.
-    @param[in]
-    descr       descriptor of A.
-    @param[in]
-    coo_val     array of nnz elements of A.
-    @param[in]
-    coo_row_ind array of nnz elements containing the row indices of A.
-    @param[in]
-    coo_col_ind array of nnz elements containing the column indices of A.
-    @param[in]
-    x           array of n elements (op(A) = A) or m elements (op(A) = A^T or
-                op(A) = A^H).
-    @param[in]
-    beta        scalar beta.
-    @param[inout]
-    y           array of m elements (op(A) = A) or n elements (op(A) = A^T or
-                op(A) = A^H).
-
-    ********************************************************************/
 template <typename T>
 rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                                           rocsparse_operation trans,

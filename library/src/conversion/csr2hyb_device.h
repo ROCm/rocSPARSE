@@ -10,6 +10,7 @@
 
 #include <hip/hip_runtime.h>
 
+// Block reduce kernel computing sum
 template <rocsparse_int NB>
 __device__ void sum_reduce(rocsparse_int tid, rocsparse_int* data)
 {
@@ -26,6 +27,9 @@ __device__ void sum_reduce(rocsparse_int tid, rocsparse_int* data)
     }
 }
 
+// Compute non-zero entries per CSR row and do a block reduction over the sum
+// to obtain the number of COO part non-zero entries and COO nnz per row.
+// Store the result in a workspace for final reduction on part2
 template <rocsparse_int NB>
 __global__ void hyb_coo_nnz_part1(rocsparse_int m,
                                   rocsparse_int ell_width,
@@ -67,6 +71,7 @@ __global__ void hyb_coo_nnz_part1(rocsparse_int m,
     }
 }
 
+// Part2 kernel for final reduction over the sum of COO non-zero entries
 template <rocsparse_int NB>
 __global__ void hyb_coo_nnz_part2(rocsparse_int m, rocsparse_int* workspace)
 {
@@ -103,86 +108,9 @@ __global__ void hyb_coo_nnz_part2(rocsparse_int m, rocsparse_int* workspace)
     }
 }
 
-template <rocsparse_int NB>
-__device__ void ell_width_reduce(rocsparse_int tid, rocsparse_int* data)
-{
-    __syncthreads();
-
-    for(int i = NB >> 1; i > 0; i >>= 1)
-    {
-        if(tid < i)
-        {
-            data[tid] = max(data[tid], data[tid + i]);
-        }
-
-        __syncthreads();
-    }
-}
-
-template <rocsparse_int NB>
-__global__ void
-ell_width_kernel_part1(rocsparse_int m, const rocsparse_int* csr_row_ptr, rocsparse_int* workspace)
-{
-    rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-    __shared__ rocsparse_int sdata[NB];
-
-    if(gid < m)
-    {
-        sdata[tid] = csr_row_ptr[gid + 1] - csr_row_ptr[gid];
-    }
-    else
-    {
-        sdata[tid] = 0;
-    }
-
-    ell_width_reduce<NB>(tid, sdata);
-
-    if(tid == 0)
-    {
-        workspace[hipBlockIdx_x] = sdata[0];
-    }
-}
-
-template <rocsparse_int NB>
-__global__ void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace)
-{
-    rocsparse_int tid = hipThreadIdx_x;
-
-    __shared__ rocsparse_int sdata[NB];
-    sdata[tid] = 0;
-
-    for(rocsparse_int i = tid; i < m; i += NB)
-    {
-        sdata[tid] = (workspace[i] > sdata[tid]) ? workspace[i] : sdata[tid];
-    }
-
-    __syncthreads();
-
-    if(m < 32)
-    {
-        if(tid == 0)
-        {
-            for(rocsparse_int i = 1; i < m; ++i)
-            {
-                sdata[0] = (sdata[i] > sdata[0]) ? sdata[i] : sdata[0];
-            }
-        }
-    }
-    else
-    {
-        ell_width_reduce<NB>(tid, sdata);
-    }
-
-    if(tid == 0)
-    {
-        workspace[0] = sdata[0];
-    }
-}
-
+// CSR to HYB format conversion kernel
 template <typename T>
-__global__ void csr2ell_kernel(rocsparse_int m,
+__global__ void csr2hyb_kernel(rocsparse_int m,
                                const T* csr_val,
                                const rocsparse_int* csr_row_ptr,
                                const rocsparse_int* csr_col_ind,
@@ -193,7 +121,7 @@ __global__ void csr2ell_kernel(rocsparse_int m,
                                rocsparse_int* coo_col_ind,
                                T* coo_val,
                                rocsparse_int* workspace,
-                               rocsparse_int idx_base)
+                               rocsparse_index_base idx_base)
 {
     rocsparse_int ai = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -213,12 +141,14 @@ __global__ void csr2ell_kernel(rocsparse_int m,
     {
         if(p < ell_width)
         {
+            // Fill ELL part
             rocsparse_int idx = ELL_IND(ai, p++, m, ell_width);
             ell_col_ind[idx]  = csr_col_ind[aj];
             ell_val[idx]      = csr_val[aj];
         }
         else
         {
+            // Fill COO part
             coo_row_ind[coo_idx] = ai + idx_base;
             coo_col_ind[coo_idx] = csr_col_ind[aj];
             coo_val[coo_idx]     = csr_val[aj];
