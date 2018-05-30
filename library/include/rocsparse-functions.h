@@ -301,6 +301,72 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
 /*! \brief SPARSE Level 2 API
 
     \details
+    ellmv  multiplies the dense vector x[i] with scalar alpha and sparse m x n
+    matrix A that is defined in ELL storage format and add the result to y[i]
+    that is multiplied by beta, for  i = 1 , … , n
+
+        y := alpha * op(A) * x + beta * y,
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    trans       operation type of A.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    n           number of columns of A.
+    @param[in]
+    alpha       scalar alpha.
+    @param[in]
+    descr       descriptor of A.
+    @param[in]
+    ell_val     array of nnz elements of A.
+    @param[in]
+    ell_col_ind array of nnz elements containing the column indices of A.
+    @param[in]
+    ell_width   ELL width that was pre-computed during format conversion.
+    @param[in]
+    x           array of n elements (op(A) = A) or m elements (op(A) = A^T or
+                op(A) = A^H).
+    @param[in]
+    beta        scalar beta.
+    @param[inout]
+    y           array of m elements (op(A) = A) or n elements (op(A) = A^T or
+                op(A) = A^H).
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sellmv(rocsparse_handle handle,
+                                  rocsparse_operation trans,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  const float* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const float* ell_val,
+                                  const rocsparse_int* ell_col_ind,
+                                  rocsparse_int ell_width,
+                                  const float* x,
+                                  const float* beta,
+                                  float* y);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dellmv(rocsparse_handle handle,
+                                  rocsparse_operation trans,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  const double* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const double* ell_val,
+                                  const rocsparse_int* ell_col_ind,
+                                  rocsparse_int ell_width,
+                                  const double* x,
+                                  const double* beta,
+                                  double* y);
+
+/*! \brief SPARSE Level 2 API
+
+    \details
     hybmv  multiplies the dense vector x[i] with scalar alpha and sparse m x n
     matrix A that is defined in HYB storage format and add the result to y[i]
     that is multiplied by beta, for  i = 1 , … , n
