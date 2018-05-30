@@ -49,6 +49,20 @@ rocsparse_status rocsparse_csrmv(rocsparse_handle handle,
                                  T* y);
 
 template <typename T>
+rocsparse_status rocsparse_ellmv(rocsparse_handle handle,
+                                 rocsparse_operation trans,
+                                 rocsparse_int m,
+                                 rocsparse_int n,
+                                 const T* alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const T* ell_val,
+                                 const rocsparse_int* ell_col_ind,
+                                 rocsparse_int ell_width,
+                                 const T* x,
+                                 const T* beta,
+                                 T* y);
+
+template <typename T>
 rocsparse_status rocsparse_hybmv(rocsparse_handle handle,
                                  rocsparse_operation trans,
                                  const T* alpha,

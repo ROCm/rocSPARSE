@@ -9,6 +9,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_axpyi.cpp
   test_coomv.cpp
   test_csrmv.cpp
+  test_ellmv.cpp
   test_hybmv.cpp
   test_csr2coo.cpp
   test_csr2ell.cpp
