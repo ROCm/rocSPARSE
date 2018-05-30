@@ -35,6 +35,10 @@ static __device__ void ellmvn_device(rocsparse_int m,
         {
             sum += ell_val[idx] * x[col];
         }
+        else
+        {
+            break;
+        }
     }
 
     if(beta != static_cast<T>(0))
