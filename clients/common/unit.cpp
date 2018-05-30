@@ -5,6 +5,7 @@
 #include "unit.hpp"
 
 #include <rocsparse.h>
+#include <assert.h>
 #include <hip/hip_runtime_api.h>
 
 #ifdef GOOGLE_TEST
@@ -28,6 +29,8 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, float* hCPU, float* hG
         {
 #ifdef GOOGLE_TEST
             ASSERT_FLOAT_EQ(hCPU[i + j], hGPU[i + j]);
+#else
+            assert(hCPU[i + j] == hGPU[i + j]);
 #endif
         }
     }
@@ -42,6 +45,8 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, double* hCPU, double* 
         {
 #ifdef GOOGLE_TEST
             ASSERT_DOUBLE_EQ(hCPU[i + j], hGPU[i + j]);
+#else
+            assert(hCPU[i + j] == hGPU[i + j]);
 #endif
         }
     }
@@ -56,6 +61,8 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int* hCPU, r
         {
 #ifdef GOOGLE_TEST
             ASSERT_EQ(hCPU[i + j], hGPU[i + j]);
+#else
+            assert(hCPU[i + j] == hGPU[i + j]);
 #endif
         }
     }
