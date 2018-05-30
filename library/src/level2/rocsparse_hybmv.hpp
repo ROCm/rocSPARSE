@@ -10,40 +10,10 @@
 #include "definitions.h"
 #include "handle.h"
 #include "utility.h"
-#include "ellmv_device.h"
 #include "rocsparse_coomv.hpp"
+#include "rocsparse_ellmv.hpp"
 
-#include <hip/hip_runtime.h>
-
-template <typename T>
-__global__ void ellmvn_kernel_host_pointer(rocsparse_int m,
-                                           rocsparse_int n,
-                                           rocsparse_int ell_width,
-                                           T alpha,
-                                           const rocsparse_int* ell_col_ind,
-                                           const T* ell_val,
-                                           const T* x,
-                                           T beta,
-                                           T* y,
-                                           rocsparse_index_base idx_base)
-{
-    ellmvn_device(m, n, ell_width, alpha, ell_col_ind, ell_val, x, beta, y, idx_base);
-}
-
-template <typename T>
-__global__ void ellmvn_kernel_device_pointer(rocsparse_int m,
-                                             rocsparse_int n,
-                                             rocsparse_int ell_width,
-                                             const T* alpha,
-                                             const rocsparse_int* ell_col_ind,
-                                             const T* ell_val,
-                                             const T* x,
-                                             const T* beta,
-                                             T* y,
-                                             rocsparse_index_base idx_base)
-{
-    ellmvn_device(m, n, ell_width, *alpha, ell_col_ind, ell_val, x, *beta, y, idx_base);
-}
+#include <hip/hip_runtime_api.h>
 
 template <typename T>
 rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
@@ -186,40 +156,30 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
         return rocsparse_status_success;
     }
 
-    // Stream
-    hipStream_t stream = handle->stream;
-
     // Run different hybmv kernels
     if(trans == rocsparse_operation_none)
     {
-#define ELLMVN_DIM 512
-        dim3 ellmvn_blocks((hyb->m - 1) / ELLMVN_DIM + 1);
-        dim3 ellmvn_threads(ELLMVN_DIM);
-
-        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        // ELL part
+        if(hyb->ell_nnz > 0)
         {
-            // ELL part
-            if(hyb->ell_nnz > 0)
-            {
-                hipLaunchKernelGGL((ellmvn_kernel_device_pointer<T>),
-                                   ellmvn_blocks,
-                                   ellmvn_threads,
-                                   0,
-                                   stream,
-                                   hyb->m,
-                                   hyb->n,
-                                   hyb->ell_width,
-                                   alpha,
-                                   hyb->ell_col_ind,
-                                   (T*)hyb->ell_val,
-                                   x,
-                                   beta,
-                                   y,
-                                   descr->base);
-            }
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_ellmv_template(handle,
+                                                               trans,
+                                                               hyb->m,
+                                                               hyb->n,
+                                                               alpha,
+                                                               descr,
+                                                               (T*)hyb->ell_val,
+                                                               hyb->ell_col_ind,
+                                                               hyb->ell_width,
+                                                               x,
+                                                               beta,
+                                                               y));
+        }
 
-            // COO part
-            if(hyb->coo_nnz > 0)
+        // COO part
+        if(hyb->coo_nnz > 0)
+        {
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
                 // Beta is applied by ELL part, IF ell_nnz > 0
                 if(hyb->ell_nnz > 0)
@@ -262,37 +222,13 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
                                                                        y));
                 }
             }
-        }
-        else
-        {
-            if(*alpha == 0.0 && *beta == 1.0)
+            else
             {
-                return rocsparse_status_success;
-            }
+                if(*alpha == 0.0 && *beta == 1.0)
+                {
+                    return rocsparse_status_success;
+                }
 
-            // ELL part
-            if(hyb->ell_nnz > 0)
-            {
-                hipLaunchKernelGGL((ellmvn_kernel_host_pointer<T>),
-                                   ellmvn_blocks,
-                                   ellmvn_threads,
-                                   0,
-                                   stream,
-                                   hyb->m,
-                                   hyb->n,
-                                   hyb->ell_width,
-                                   *alpha,
-                                   hyb->ell_col_ind,
-                                   (T*)hyb->ell_val,
-                                   x,
-                                   *beta,
-                                   y,
-                                   descr->base);
-            }
-
-            // COO part
-            if(hyb->coo_nnz > 0)
-            {
                 // Beta is applied by ELL part, IF ell_nnz > 0
                 T coo_beta = (hyb->ell_nnz > 0) ? 1.0 : *beta;
 
@@ -312,7 +248,6 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
             }
         }
     }
-#undef ELLMVN_DIM
     else
     {
         // TODO

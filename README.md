@@ -28,12 +28,12 @@ cd rocSPARSE; mkdir build; cd build
 
 # Configure rocSPARSE
 # Build options:
-#   BUILD_TEST        - build tests using [GTest][] (OFF)
-#   BUILD_BENCHMARK   - build benchmarks using [Google Benchmark][] (OFF)
-#   BUILD_EXAMPLE     - build examples (ON)
-#   BUILD_VERBOSE     - verbose output (OFF)
-#   BUILD_SHARED_LIBS - build rocSPARSE as a shared library (ON)
-cmake -DBUILD_TEST=ON ..
+#   BUILD_CLIENTS_TESTS      - build tests using [GTest][] (OFF)
+#   BUILD_CLIENTS_BENCHMARKS - build benchmarks (OFF)
+#   BUILD_CLIENTS_SAMPLES    - build examples (ON)
+#   BUILD_VERBOSE            - verbose output (OFF)
+#   BUILD_SHARED_LIBS        - build rocSPARSE as a shared library (ON)
+cmake -DBUILD_CLIENTS_TESTS=ON ..
 
 # Build
 make
@@ -42,24 +42,44 @@ make
 [sudo] make install
 ```
 
+#### Install script
+You can also build rocSPARSE using the *install.sh* script
+```
+# Clone rocSPARSE using git
+git clone https://github.com/ROCmSoftwarePlatform/rocSparse.git
+
+# Go to rocSPARSE directory
+cd rocSPARSE
+
+# Run install.sh script
+# Command line options:
+#   -h|--help         - prints help message
+#   -i|--install      - install after build
+#   -d|--dependencies - install build dependencies
+#   -c|--clients      - build library clients too (combines with -i & -d)
+#   -g|--debug        - build with debug flag
+#   --cuda            - build library for cuda backend
+./install.sh -dci
+```
+
 ## Unit tests
-To run unit tests, rocSPARSE has to be built with option -DBUILD_TEST=ON.
+To run unit tests, rocSPARSE has to be built with option -DBUILD_CLIENTS_TESTS=ON.
 ```
 # Go to rocSPARSE build directory
 cd rocSPARSE; cd build
 
 # Run all tests
-ctest
+./clients/tests/rocsparse-test
 ```
 
 ## Benchmarks
-To run benchmarks, rocSPARSE has to be built with option -DBUILD_BENCHMARK=ON.
+To run benchmarks, rocSPARSE has to be built with option -DBUILD_CLIENTS_BENCHMARKS=ON.
 ```
 # Go to rocSPARSE build directory
 cd rocSPARSE/build
 
-# Run benchmark
-./benchmark/benchmark_csrmv <size> <trials> <batch_size>
+# Run benchmark, e.g.
+./clients/benchmarks/rocsparse-bench -f hybmv --laplacian-dim 2000 -i 200
 ```
 
 ## Support
@@ -73,6 +93,5 @@ The [license file][] can be found in the main repository.
 [ROCm]: https://github.com/RadeonOpenCompute/ROCm
 [HIP]: https://github.com/GPUOpen-ProfessionalCompute-Tools/HIP/
 [GTest]: https://github.com/google/googletest
-[Google Benchmark]: https://github.com/google/benchmark
 [the issue tracker]: https://github.com/ROCmSoftwarePlatform/rocSparse/issues
 [license file]: ./LICENSE.md

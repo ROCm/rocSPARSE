@@ -6,6 +6,7 @@
 
 #include <hip/hip_runtime.h>
 
+// ELL SpMV for general, non-transposed matrices
 template <typename T>
 static __device__ void ellmvn_device(rocsparse_int m,
                                      rocsparse_int n,
@@ -34,6 +35,10 @@ static __device__ void ellmvn_device(rocsparse_int m,
         if(col >= 0 && col < n)
         {
             sum += ell_val[idx] * x[col];
+        }
+        else
+        {
+            break;
         }
     }
 

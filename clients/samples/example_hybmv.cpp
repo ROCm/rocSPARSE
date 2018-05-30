@@ -81,14 +81,12 @@ int main(int argc, char* argv[])
     hipMemcpy(dAval, hAval.data(), sizeof(double) * nnz, hipMemcpyHostToDevice);
     hipMemcpy(dx, hx.data(), sizeof(double) * n, hipMemcpyHostToDevice);
 
-    // Convert CSR matrix to HYB format, using partition type to be
-    // rocsparse_hyb_partition_max. This will result in ELL matrix format,
-    // using maximum ELL width length.
+    // Convert CSR matrix to HYB format
     rocsparse_hyb_mat hybA;
     rocsparse_create_hyb_mat(&hybA);
 
     rocsparse_dcsr2hyb(
-        handle, m, n, descrA, dAval, dAptr, dAcol, hybA, 0, rocsparse_hyb_partition_max);
+        handle, m, n, descrA, dAval, dAptr, dAcol, hybA, 0, rocsparse_hyb_partition_auto);
 
     // Clean up CSR structures
     hipFree(dAptr);

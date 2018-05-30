@@ -6,9 +6,11 @@
 #include "rocsparse.hpp"
 #include "testing_coomv.hpp"
 #include "testing_csrmv.hpp"
+#include "testing_ellmv.hpp"
 #include "testing_hybmv.hpp"
 #include "testing_axpyi.hpp"
 #include "testing_csr2coo.hpp"
+#include "testing_csr2ell.hpp"
 #include "testing_csr2hyb.hpp"
 #include "testing_coo2csr.hpp"
 
@@ -65,14 +67,14 @@ int main(int argc, char* argv[])
         
         ("function,f",
          po::value<std::string>(&function)->default_value("axpyi"),
-         "SPARSE function to test. Options: axpyi, coomv, csrmv, hybmv, csr2coo, csr2hyb, "
-         "coo2csr")
+         "SPARSE function to test. Options: axpyi, coomv, csrmv, ellmv, hybmv, csr2coo, "
+         "csr2ell, csr2hyb, coo2csr")
         
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d")
         
         ("verify,v",
-         po::value<rocsparse_int>(&argus.norm_check)->default_value(0),
+         po::value<rocsparse_int>(&argus.unit_check)->default_value(0),
          "Validate GPU results with CPU? 0 = No, 1 = Yes (default: No)")
 
         ("iters,i",
@@ -142,6 +144,13 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_csrmv<double>(argus);
     }
+    else if(function == "ellmv")
+    {
+        if(precision == 's')
+            testing_ellmv<float>(argus);
+        else if(precision == 'd')
+            testing_ellmv<double>(argus);
+    }
     else if(function == "hybmv")
     {
         if(precision == 's')
@@ -152,6 +161,13 @@ int main(int argc, char* argv[])
     else if(function == "csr2coo")
     {
         testing_csr2coo(argus);
+    }
+    else if(function == "csr2ell")
+    {
+        if(precision == 's')
+            testing_csr2ell<float>(argus);
+        else if(precision == 'd')
+            testing_csr2ell<double>(argus);
     }
     else if(function == "csr2hyb")
     {
