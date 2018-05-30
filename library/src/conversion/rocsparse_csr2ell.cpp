@@ -94,7 +94,7 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
 
     hipStream_t stream = handle->stream;
 
-    // Determine ELL width
+// Determine ELL width
 
 #define CSR2ELL_DIM 512
     // Workspace size
@@ -125,11 +125,13 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
     // Copy ELL width back to host, if handle says so
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        RETURN_IF_HIP_ERROR(hipMemcpy(ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToDevice));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToDevice));
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMemcpy(ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
     }
 
     return rocsparse_status_success;
@@ -146,7 +148,16 @@ extern "C" rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
                                                float* ell_val,
                                                rocsparse_int* ell_col_ind)
 {
-    return rocsparse_csr2ell_template<float>(handle, m, csr_descr, csr_val, csr_row_ptr, csr_col_ind, ell_descr, ell_width, ell_val, ell_col_ind);
+    return rocsparse_csr2ell_template<float>(handle,
+                                             m,
+                                             csr_descr,
+                                             csr_val,
+                                             csr_row_ptr,
+                                             csr_col_ind,
+                                             ell_descr,
+                                             ell_width,
+                                             ell_val,
+                                             ell_col_ind);
 }
 
 extern "C" rocsparse_status rocsparse_dcsr2ell(rocsparse_handle handle,
@@ -160,5 +171,14 @@ extern "C" rocsparse_status rocsparse_dcsr2ell(rocsparse_handle handle,
                                                double* ell_val,
                                                rocsparse_int* ell_col_ind)
 {
-    return rocsparse_csr2ell_template<double>(handle, m, csr_descr, csr_val, csr_row_ptr, csr_col_ind, ell_descr, ell_width, ell_val, ell_col_ind);
+    return rocsparse_csr2ell_template<double>(handle,
+                                              m,
+                                              csr_descr,
+                                              csr_val,
+                                              csr_row_ptr,
+                                              csr_col_ind,
+                                              ell_descr,
+                                              ell_width,
+                                              ell_val,
+                                              ell_col_ind);
 }

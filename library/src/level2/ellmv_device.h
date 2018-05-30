@@ -6,6 +6,7 @@
 
 #include <hip/hip_runtime.h>
 
+// ELL SpMV for general, non-transposed matrices
 template <typename T>
 static __device__ void ellmvn_device(rocsparse_int m,
                                      rocsparse_int n,

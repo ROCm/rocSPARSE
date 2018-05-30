@@ -10,6 +10,7 @@
 
 #include <hip/hip_runtime.h>
 
+// Block reduce kernel computing sum
 template <rocsparse_int NB>
 __device__ void sum_reduce(rocsparse_int tid, rocsparse_int* data)
 {
@@ -26,6 +27,9 @@ __device__ void sum_reduce(rocsparse_int tid, rocsparse_int* data)
     }
 }
 
+// Compute non-zero entries per CSR row and do a block reduction over the sum
+// to obtain the number of COO part non-zero entries and COO nnz per row.
+// Store the result in a workspace for final reduction on part2
 template <rocsparse_int NB>
 __global__ void hyb_coo_nnz_part1(rocsparse_int m,
                                   rocsparse_int ell_width,
@@ -67,6 +71,7 @@ __global__ void hyb_coo_nnz_part1(rocsparse_int m,
     }
 }
 
+// Part2 kernel for final reduction over the sum of COO non-zero entries
 template <rocsparse_int NB>
 __global__ void hyb_coo_nnz_part2(rocsparse_int m, rocsparse_int* workspace)
 {
@@ -103,6 +108,7 @@ __global__ void hyb_coo_nnz_part2(rocsparse_int m, rocsparse_int* workspace)
     }
 }
 
+// CSR to HYB format conversion kernel
 template <typename T>
 __global__ void csr2hyb_kernel(rocsparse_int m,
                                const T* csr_val,
@@ -135,12 +141,14 @@ __global__ void csr2hyb_kernel(rocsparse_int m,
     {
         if(p < ell_width)
         {
+            // Fill ELL part
             rocsparse_int idx = ELL_IND(ai, p++, m, ell_width);
             ell_col_ind[idx]  = csr_col_ind[aj];
             ell_val[idx]      = csr_val[aj];
         }
         else
         {
+            // Fill COO part
             coo_row_ind[coo_idx] = ai + idx_base;
             coo_col_ind[coo_idx] = csr_col_ind[aj];
             coo_val[coo_idx]     = csr_val[aj];

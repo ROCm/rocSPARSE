@@ -6,10 +6,11 @@
 #ifndef CSR2ELL_DEVICE_H
 #define CSR2ELL_DEVICE_H
 
-//#include "handle.h"
+#include "handle.h"
 
 #include <hip/hip_runtime.h>
 
+// Block reduce kernel computing maximum entry in data array
 template <rocsparse_int NB>
 __device__ void ell_width_reduce(rocsparse_int tid, rocsparse_int* data)
 {
@@ -26,6 +27,8 @@ __device__ void ell_width_reduce(rocsparse_int tid, rocsparse_int* data)
     }
 }
 
+// Compute non-zero entries per CSR row and do a block reduction over the maximum
+// Store result in a workspace for final reduction on part2
 template <rocsparse_int NB>
 __global__ void
 ell_width_kernel_part1(rocsparse_int m, const rocsparse_int* csr_row_ptr, rocsparse_int* workspace)
@@ -52,6 +55,7 @@ ell_width_kernel_part1(rocsparse_int m, const rocsparse_int* csr_row_ptr, rocspa
     }
 }
 
+// Part2 kernel for final reduction over the maximum CSR nnz row entries
 template <rocsparse_int NB>
 __global__ void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace)
 {
@@ -88,6 +92,7 @@ __global__ void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace
     }
 }
 
+// CSR to ELL format conversion kernel
 template <typename T>
 __global__ void csr2ell_kernel(rocsparse_int m,
                                const T* csr_val,
@@ -111,7 +116,7 @@ __global__ void csr2ell_kernel(rocsparse_int m,
     rocsparse_int row_begin = csr_row_ptr[ai] - csr_idx_base;
     rocsparse_int row_end   = csr_row_ptr[ai + 1] - csr_idx_base;
 
-    // Fill HYB matrix
+    // Fill ELL matrix
     for(rocsparse_int aj = row_begin; aj < row_end; ++aj)
     {
         if(p >= ell_width)
