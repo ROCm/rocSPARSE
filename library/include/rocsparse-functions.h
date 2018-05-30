@@ -302,7 +302,7 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
 
     \details
     ellmv  multiplies the dense vector x[i] with scalar alpha and sparse m x n
-    matrix A that is defined in ELL storage format and add the result to y[i]
+    matrix A that is defined in ELL storage format and adds the result to y[i]
     that is multiplied by beta, for  i = 1 , … , n
 
         y := alpha * op(A) * x + beta * y,
@@ -322,10 +322,12 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
     descr       descriptor of A.
     @param[in]
     ell_val     array of nnz elements of A.
+                Padded elements should be set to 0.
     @param[in]
     ell_col_ind array of nnz elements containing the column indices of A.
+                Padded column indices should be set to -1.
     @param[in]
-    ell_width   ELL width that was pre-computed during format conversion.
+    ell_width   number of non-zero elements per row in ELL storage format.
     @param[in]
     x           array of n elements (op(A) = A) or m elements (op(A) = A^T or
                 op(A) = A^H).
@@ -364,11 +366,41 @@ rocsparse_status rocsparse_dellmv(rocsparse_handle handle,
                                   const double* beta,
                                   double* y);
 
+/*
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sellmv(rocsparse_handle handle,
+                                  rocsparse_operation trans,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  const rocsparse_float_complex* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const rocsparse_float_complex* ell_val,
+                                  const rocsparse_int* ell_col_ind,
+                                  rocsparse_int ell_width,
+                                  const rocsparse_float_complex* x,
+                                  const rocsparse_float_complex* beta,
+                                  rocsparse_float_complex* y);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sellmv(rocsparse_handle handle,
+                                  rocsparse_operation trans,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  const rocsparse_double_complex* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const rocsparse_double_complex* ell_val,
+                                  const rocsparse_int* ell_col_ind,
+                                  rocsparse_int ell_width,
+                                  const rocsparse_double_complex* x,
+                                  const rocsparse_double_complex* beta,
+                                  rocsparse_double_complex* y);
+*/
+
 /*! \brief SPARSE Level 2 API
 
     \details
     hybmv  multiplies the dense vector x[i] with scalar alpha and sparse m x n
-    matrix A that is defined in HYB storage format and add the result to y[i]
+    matrix A that is defined in HYB storage format and adds the result to y[i]
     that is multiplied by beta, for  i = 1 , … , n
 
         y := alpha * op(A) * x + beta * y,
@@ -434,6 +466,7 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex* y);
 */
+
 /*
  * ===========================================================================
  *    level 3 SPARSE
@@ -479,9 +512,24 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
 /*! \brief SPARSE Format Conversions API
 
     \details
-    csr2ell converts a CSR matrix into an ELL matrix.
+    csr2ell_width computes the maximum of the per row non-zeros over all
+    rows, the ELL width, for a given CSR matrix.
 
-    // TODO
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    csr_descr   descriptor of the CSR matrix.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start of every row
+                of A.
+    @param[in]
+    ell_descr   descriptor of the ELL matrix.
+    @param[out]
+    ell_width   pointer to the number of non-zero elements per row in ELL
+                storage format.
 
     ********************************************************************/
 ROCSPARSE_EXPORT
@@ -492,8 +540,41 @@ rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
                                          const rocsparse_mat_descr ell_descr,
                                          rocsparse_int* ell_width);
 
-// TODO descr. text
+/*! \brief SPARSE Format Conversions API
 
+    \details
+    csr2ell converts a CSR matrix into an ELL matrix. It is assumed, that
+    ell_val and ell_col_ind are allocated. Allocation size is computed by
+    the number of rows times the number of ELL non-zero elements per row.
+    The number of ELL non-zero elements per row can be obtained by calling
+    csr2ell_width routine.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    csr_descr   descriptor of the CSR matrix.
+    @param[in]
+    csr_val     array of nnz elements of A.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start
+                of every row of A.
+    @param[in]
+    csr_col_ind array of nnz elements containing the column indices of A.
+    @param[in]
+    ell_descr   descriptor of the ELL matrix.
+    @param[in]
+    ell_width   number of non-zero elements per row in ELL storage format.
+    @param[out]
+    ell_val     array of nnz elements of A. Padded elements should be set
+                to 0.
+    @param[out]
+    ell_col_ind array of nnz elements containing the column indices of A.
+                Padded column indices should be set to -1.
+
+    ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
                                     rocsparse_int m,
@@ -518,35 +599,31 @@ rocsparse_status rocsparse_dcsr2ell(rocsparse_handle handle,
                                     double* ell_val,
                                     rocsparse_int* ell_col_ind);
 
-/*! \brief SPARSE Format Conversions API
-
-    \details
-    coo2csr converts the COO array containing the row indices into a
-    CSR array of row offset pointers.
-
-    @param[in]
-    handle      rocsparse_handle.
-                handle to the rocsparse library context queue.
-    @param[in]
-    coo_row_ind array of nnz elements containing the row indices of A.
-    @param[in]
-    nnz         number of non-zero entries of the sparse matrix A.
-    @param[in]
-    m           number of rows of the sparse matrix A.
-    @param[out]
-    csr_row_ptr array of m+1 elements that point to the start of every row
-                of A.
-    @param[in]
-    idx_base    rocsparse_index_base_zero or rocsparse_index_base_one.
-
-    ********************************************************************/
+/*
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
-                                   const rocsparse_int* coo_row_ind,
-                                   rocsparse_int nnz,
-                                   rocsparse_int m,
-                                   rocsparse_int* csr_row_ptr,
-                                   rocsparse_index_base idx_base);
+rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    const rocsparse_mat_descr csr_descr,
+                                    const rocsparse_float_complex* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    const rocsparse_int* csr_col_ind,
+                                    const rocsparse_mat_descr ell_descr,
+                                    rocsparse_int ell_width,
+                                    rocsparse_float_complex* ell_val,
+                                    rocsparse_int* ell_col_ind);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    const rocsparse_mat_descr csr_descr,
+                                    const rocsparse_double_complex* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    const rocsparse_int* csr_col_ind,
+                                    const rocsparse_mat_descr ell_descr,
+                                    rocsparse_int ell_width,
+                                    rocsparse_double_complex* ell_val,
+                                    rocsparse_int* ell_col_ind);
+*/
 
 /*! \brief SPARSE Format Conversions API
 
@@ -631,6 +708,37 @@ rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle handle,
                                     rocsparse_int user_ell_width,
                                     rocsparse_hyb_partition partition_type);
 */
+
+/*! \brief SPARSE Format Conversions API
+
+    \details
+    coo2csr converts the COO array containing the row indices into a
+    CSR array of row offset pointers.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    coo_row_ind array of nnz elements containing the row indices of A.
+    @param[in]
+    nnz         number of non-zero entries of the sparse matrix A.
+    @param[in]
+    m           number of rows of the sparse matrix A.
+    @param[out]
+    csr_row_ptr array of m+1 elements that point to the start of every row
+                of A.
+    @param[in]
+    idx_base    rocsparse_index_base_zero or rocsparse_index_base_one.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
+                                   const rocsparse_int* coo_row_ind,
+                                   rocsparse_int nnz,
+                                   rocsparse_int m,
+                                   rocsparse_int* csr_row_ptr,
+                                   rocsparse_index_base idx_base);
+
 #ifdef __cplusplus
 }
 #endif

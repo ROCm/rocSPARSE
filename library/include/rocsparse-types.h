@@ -41,52 +41,52 @@ typedef enum rocsparse_operation_ {
 
 /*! \brief Used to specify the matrix index base. */
 typedef enum rocsparse_index_base_ {
-    rocsparse_index_base_zero = 0,
-    rocsparse_index_base_one  = 1
+    rocsparse_index_base_zero = 0, /**< zero based indexing. */
+    rocsparse_index_base_one  = 1  /**< one based indexing. */
 } rocsparse_index_base;
 
 /*! \brief Used to specify the matrix type. */
 typedef enum rocsparse_matrix_type_ {
-    rocsparse_matrix_type_general    = 0,
-    rocsparse_matrix_type_symmetric  = 1,
-    rocsparse_matrix_type_hermitian  = 2,
-    rocsparse_matrix_type_triangular = 3
+    rocsparse_matrix_type_general    = 0, /**< general matrix type. */
+    rocsparse_matrix_type_symmetric  = 1, /**< symmetric matrix type. */
+    rocsparse_matrix_type_hermitian  = 2, /**< hermitian matrix type. */
+    rocsparse_matrix_type_triangular = 3  /**< triangular matrix type. */
 } rocsparse_matrix_type;
 
 /*! \brief HYB matrix partition type. */
 typedef enum rocsparse_hyb_partition_ {
-    rocsparse_hyb_partition_auto = 0,
-    rocsparse_hyb_partition_user = 1,
-    rocsparse_hyb_partition_max  = 2
+    rocsparse_hyb_partition_auto = 0, /**< automatically decide on ELL nnz per row. */
+    rocsparse_hyb_partition_user = 1, /**< user given ELL nnz per row. */
+    rocsparse_hyb_partition_max  = 2  /**< max ELL nnz per row, no COO part. */
 } rocsparse_hyb_partition;
 
 /* ==================================================================================== */
 /**
- *   @brief rocsparse status codes definition
+ *   @brief rocsparse status codes definition.
  */
 typedef enum rocsparse_status_ {
-    rocsparse_status_success         = 0, /**< success */
-    rocsparse_status_invalid_handle  = 1, /**< handle not initialized, invalid or null */
-    rocsparse_status_not_implemented = 2, /**< function is not implemented */
-    rocsparse_status_invalid_pointer = 3, /**< invalid pointer parameter */
-    rocsparse_status_invalid_size    = 4, /**< invalid size parameter */
-    rocsparse_status_memory_error    = 5, /**< failed memory allocation, copy, dealloc */
-    rocsparse_status_internal_error  = 6, /**< other internal library failure */
-    rocsparse_status_invalid_value   = 7, /**< invalid value parameter */
-    rocsparse_status_arch_mismatch   = 8  /**< device arch is not supported */
+    rocsparse_status_success         = 0, /**< success. */
+    rocsparse_status_invalid_handle  = 1, /**< handle not initialized, invalid or null. */
+    rocsparse_status_not_implemented = 2, /**< function is not implemented. */
+    rocsparse_status_invalid_pointer = 3, /**< invalid pointer parameter. */
+    rocsparse_status_invalid_size    = 4, /**< invalid size parameter. */
+    rocsparse_status_memory_error    = 5, /**< failed memory allocation, copy, dealloc. */
+    rocsparse_status_internal_error  = 6, /**< other internal library failure. */
+    rocsparse_status_invalid_value   = 7, /**< invalid value parameter. */
+    rocsparse_status_arch_mismatch   = 8  /**< device arch is not supported. */
 } rocsparse_status;
 
-/*! \brief Indicates the pointer is device pointer or host pointer */
+/*! \brief Indicates the pointer is device pointer or host pointer. */
 typedef enum rocsparse_pointer_mode_ {
-    rocsparse_pointer_mode_host   = 0,
-    rocsparse_pointer_mode_device = 1
+    rocsparse_pointer_mode_host   = 0, /**< scalar pointers are in host memory. */
+    rocsparse_pointer_mode_device = 1  /**< scalar pointers are in device memory. */
 } rocsparse_pointer_mode;
 
-/*! \brief Indicates if layer is active with bitmask*/
+/*! \brief Indicates if layer is active with bitmask.*/
 typedef enum rocsparse_layer_mode {
-    rocsparse_layer_mode_none      = 0b0000000000,
-    rocsparse_layer_mode_log_trace = 0b0000000001,
-    rocsparse_layer_mode_log_bench = 0b0000000010,
+    rocsparse_layer_mode_none      = 0b0000000000, /**< layer is not active. */
+    rocsparse_layer_mode_log_trace = 0b0000000001, /**< layer is in logging mode. */
+    rocsparse_layer_mode_log_bench = 0b0000000010, /**< layer is in benchmarking mode. */
 } rocsparse_layer_mode;
 
 #ifdef __cplusplus

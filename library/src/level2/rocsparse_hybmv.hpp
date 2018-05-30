@@ -13,7 +13,7 @@
 #include "rocsparse_coomv.hpp"
 #include "rocsparse_ellmv.hpp"
 
-#include <hip/hip_runtime.h>
+#include <hip/hip_runtime_api.h>
 
 template <typename T>
 rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,

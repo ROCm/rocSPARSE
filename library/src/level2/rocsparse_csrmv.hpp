@@ -43,47 +43,6 @@ __global__ void csrmvn_kernel_device_pointer(rocsparse_int m,
         m, *alpha, csr_row_ptr, csr_col_ind, csr_val, x, *beta, y, idx_base);
 }
 
-/*! \brief SPARSE Level 2 API
-
-    \details
-    csrmv  multiplies the dense vector x[i] with scalar alpha and sparse m x n
-    matrix A that is defined in CSR storage format and add the result to y[i]
-    that is multiplied by beta, for  i = 1 , … , n
-
-        y := alpha * op(A) * x + beta * y,
-
-    @param[in]
-    handle      rocsparse_handle.
-                handle to the rocsparse library context queue.
-    @param[in]
-    trans       operation type of A.
-    @param[in]
-    m           number of rows of A.
-    @param[in]
-    n           number of columns of A.
-    @param[in]
-    nnz         number of non-zero entries of A.
-    @param[in]
-    alpha       scalar alpha.
-    @param[in]
-    descr       descriptor of A.
-    @param[in]
-    csr_val     array of nnz elements of A.
-    @param[in]
-    csr_row_ptr array of m+1 elements that point to the start
-                of every row of A.
-    @param[in]
-    csr_col_ind array of nnz elements containing the column indices of A.
-    @param[in]
-    x           array of n elements (op(A) = A) or m elements (op(A) = A^T or
-                op(A) = A^H).
-    @param[in]
-    beta        scalar beta.
-    @param[inout]
-    y           array of m elements (op(A) = A) or n elements (op(A) = A^T or
-                op(A) = A^H).
-
-    ********************************************************************/
 template <typename T>
 rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                           rocsparse_operation trans,

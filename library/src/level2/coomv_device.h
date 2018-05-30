@@ -8,6 +8,7 @@
 
 #include <hip/hip_runtime.h>
 
+// Scale kernel for beta != 1.0
 template <typename T>
 __global__ void coomv_scale(rocsparse_int size, T scalar, T* data)
 {
@@ -158,6 +159,7 @@ static __device__ void coomvn_general_warp_reduce(rocsparse_int nnz,
     }
 }
 
+// Segmented block reduction kernel
 template <typename T, rocsparse_int BLOCKSIZE>
 static __device__ void segmented_blockreduce(const rocsparse_int* rows, T* vals)
 {
@@ -180,6 +182,7 @@ static __device__ void segmented_blockreduce(const rocsparse_int* rows, T* vals)
     }
 }
 
+// Do the final block reduction of the block reduction buffers back into global memory
 template <typename T, rocsparse_int BLOCKSIZE>
 __global__ void coomvn_general_block_reduce(rocsparse_int nnz,
                                             const rocsparse_int* row_block_red,

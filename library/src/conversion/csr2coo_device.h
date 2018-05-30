@@ -8,6 +8,7 @@
 
 #include <hip/hip_runtime.h>
 
+// CSR to COO matrix conversion kernel
 template <rocsparse_int THREADS>
 __global__ void csr2coo_kernel(rocsparse_int m,
                                const rocsparse_int* csr_row_ptr,

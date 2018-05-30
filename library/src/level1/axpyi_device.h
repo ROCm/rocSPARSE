@@ -8,6 +8,7 @@
 
 #include <hip/hip_runtime.h>
 
+// y = a * x + y kernel for sparse x and dense y
 template <typename T>
 __device__ void axpyi_device(rocsparse_int nnz,
                              T alpha,

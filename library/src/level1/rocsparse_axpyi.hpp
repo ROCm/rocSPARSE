@@ -32,32 +32,14 @@ __global__ void axpyi_kernel_device_scalar(rocsparse_int nnz,
                                            T* y,
                                            rocsparse_index_base idx_base)
 {
+    if(*alpha == static_cast<T>(0))
+    {
+        return;
+    }
+
     axpyi_device(nnz, *alpha, x_val, x_ind, y, idx_base);
 }
 
-/*! \brief SPARSE Level 1 API
-
-    \details
-    axpyi  compute y := alpha * x + y
-
-    @param[in]
-    handle    rocsparse_handle.
-              handle to the rocsparse library context queue.
-    @param[in]
-    nnz       number of non-zero entries in x
-              if nnz <= 0 quick return with rocsparse_status_success
-    @param[in]
-    alpha     scalar alpha.
-    @param[in]
-    x_val     pointer storing vector x non-zero values on the GPU.
-    @param[in]
-    x_ind     pointer storing vector x non-zero value indices on the GPU.
-    @param[inout]
-    y         pointer storing y on the GPU.
-    @param[in]
-    idx_base  specifies the index base.
-
-    ********************************************************************/
 template <typename T>
 rocsparse_status rocsparse_axpyi_template(rocsparse_handle handle,
                                           rocsparse_int nnz,
