@@ -17,14 +17,14 @@ __device__ void axpyi_device(rocsparse_int nnz,
                              T* y,
                              rocsparse_index_base idx_base)
 {
-    int tid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
-    if(tid >= nnz)
+    if(idx >= nnz)
     {
         return;
     }
 
-    y[x_ind[tid] - idx_base] += alpha * x_val[tid];
+    y[x_ind[idx] - idx_base] += alpha * x_val[idx];
 }
 
 #endif // AXPYI_DEVICE_H
