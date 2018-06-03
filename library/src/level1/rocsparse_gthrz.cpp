@@ -13,7 +13,7 @@
 
 extern "C" rocsparse_status rocsparse_sgthrz(rocsparse_handle handle,
                                              rocsparse_int nnz,
-                                             const float* y,
+                                             float* y,
                                              float* x_val,
                                              const rocsparse_int* x_ind,
                                              rocsparse_index_base idx_base)
@@ -23,7 +23,7 @@ extern "C" rocsparse_status rocsparse_sgthrz(rocsparse_handle handle,
 
 extern "C" rocsparse_status rocsparse_dgthrz(rocsparse_handle handle,
                                              rocsparse_int nnz,
-                                             const double* y,
+                                             double* y,
                                              double* x_val,
                                              const rocsparse_int* x_ind,
                                              rocsparse_index_base idx_base)
