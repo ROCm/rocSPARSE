@@ -35,7 +35,7 @@ void testing_gthrz_bad_arg(void)
 
     T* dx_val             = (T*)dx_val_managed.get();
     rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
-    T* dy                = (T*)dy_managed.get();
+    T* dy                 = (T*)dy_managed.get();
 
     if(!dx_ind || !dx_val || !dy)
     {
@@ -96,7 +96,7 @@ rocsparse_status testing_gthrz(Arguments argus)
 
         rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
         T* dx_val             = (T*)dx_val_managed.get();
-        T* dy                = (T*)dy_managed.get();
+        T* dy                 = (T*)dy_managed.get();
 
         if(!dx_ind || !dx_val || !dy)
         {
@@ -137,17 +137,16 @@ rocsparse_status testing_gthrz(Arguments argus)
     // allocate memory on device
     auto dx_ind_managed =
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dx_val_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dy_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
+    auto dx_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
+    auto dy_managed     = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
 
     rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
     T* dx_val             = (T*)dx_val_managed.get();
-    T* dy              = (T*)dy_managed.get();
+    T* dy                 = (T*)dy_managed.get();
 
     if(!dx_ind || !dx_val || !dy)
     {
-        verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                        "!dx_ind || !dx_val || !dy");
+        verify_rocsparse_status_success(rocsparse_status_memory_error, "!dx_ind || !dx_val || !dy");
         return rocsparse_status_memory_error;
     }
 
@@ -171,7 +170,7 @@ rocsparse_status testing_gthrz(Arguments argus)
 
         for(rocsparse_int i = 0; i < nnz; ++i)
         {
-            hx_val_gold[i] = hy_gold[hx_ind[i] - idx_base];
+            hx_val_gold[i]                = hy_gold[hx_ind[i] - idx_base];
             hy_gold[hx_ind[i] - idx_base] = static_cast<T>(0);
         }
 
@@ -201,14 +200,12 @@ rocsparse_status testing_gthrz(Arguments argus)
             rocsparse_gthrz(handle, nnz, dy, dx_val, dx_ind, idx_base);
         }
 
-        gpu_time_used     = (get_time_us() - gpu_time_used) / number_hot_calls;
-        double bandwidth  = (sizeof(rocsparse_int) * nnz + sizeof(T) * 2.0 * nnz) / gpu_time_used / 1e3;
+        gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
+        double bandwidth =
+            (sizeof(rocsparse_int) * nnz + sizeof(T) * 2.0 * nnz) / gpu_time_used / 1e3;
 
         printf("nnz\t\tGB/s\tusec\n");
-        printf("%9d\t%0.2lf\t%0.2lf\n",
-               nnz,
-               bandwidth,
-               gpu_time_used);
+        printf("%9d\t%0.2lf\t%0.2lf\n", nnz, bandwidth, gpu_time_used);
     }
     return rocsparse_status_success;
 }

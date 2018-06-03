@@ -57,9 +57,7 @@ __global__ void doti_kernel_part1(rocsparse_int nnz,
 }
 
 template <typename T, rocsparse_int NB, rocsparse_int flag>
-__global__ void doti_kernel_part2(rocsparse_int n,
-                                  T* workspace,
-                                  T* result)
+__global__ void doti_kernel_part2(rocsparse_int n, T* workspace, T* result)
 {
     rocsparse_int tid = hipThreadIdx_x;
 

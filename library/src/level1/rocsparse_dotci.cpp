@@ -19,7 +19,8 @@ extern "C" rocsparse_status rocsparse_cdotci(rocsparse_handle handle,
                                              rocsparse_float_complex* result,
                                              rocsparse_index_base idx_base)
 {
-    return rocsparse_dotci_template<rocsparse_float_complex>(handle, nnz, x_val, x_ind, y, result, idx_base);
+    return rocsparse_dotci_template<rocsparse_float_complex>(handle, nnz, x_val, x_ind, y, result,
+idx_base);
 }
 
 extern "C" rocsparse_status rocsparse_zdotci(rocsparse_handle handle,
@@ -30,6 +31,7 @@ extern "C" rocsparse_status rocsparse_zdotci(rocsparse_handle handle,
                                              rocsparse_double_complex* result,
                                              rocsparse_index_base idx_base)
 {
-    return rocsparse_dotci_template<rocsparse_double_complex>(handle, nnz, x_val, x_ind, y, result, idx_base);
+    return rocsparse_dotci_template<rocsparse_double_complex>(handle, nnz, x_val, x_ind, y, result,
+idx_base);
 }
 */

@@ -35,7 +35,7 @@ void testing_doti_bad_arg(void)
 
     T* dx_val             = (T*)dx_val_managed.get();
     rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
-    T* dy                = (T*)dy_managed.get();
+    T* dy                 = (T*)dy_managed.get();
 
     if(!dx_ind || !dx_val || !dy)
     {
@@ -109,7 +109,7 @@ rocsparse_status testing_doti(Arguments argus)
 
         rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
         T* dx_val             = (T*)dx_val_managed.get();
-        T* dy                = (T*)dy_managed.get();
+        T* dy                 = (T*)dy_managed.get();
 
         if(!dx_ind || !dx_val || !dy)
         {
@@ -153,13 +153,13 @@ rocsparse_status testing_doti(Arguments argus)
     // allocate memory on device
     auto dx_ind_managed =
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dx_val_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dy_managed     = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
+    auto dx_val_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
+    auto dy_managed        = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
     auto dresult_2_managed = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
 
     rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
     T* dx_val             = (T*)dx_val_managed.get();
-    T* dy              = (T*)dy_managed.get();
+    T* dy                 = (T*)dy_managed.get();
     T* dresult_2          = (T*)dresult_2_managed.get();
 
     if(!dx_ind || !dx_val || !dy || !dresult_2)
@@ -179,7 +179,8 @@ rocsparse_status testing_doti(Arguments argus)
     {
         // ROCSPARSE pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_doti(handle, nnz, dx_val, dx_ind, dy, &hresult_1, idx_base));
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_doti(handle, nnz, dx_val, dx_ind, dy, &hresult_1, idx_base));
 
         // ROCSPARSE pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
@@ -225,14 +226,11 @@ rocsparse_status testing_doti(Arguments argus)
 
         gpu_time_used     = (get_time_us() - gpu_time_used) / number_hot_calls;
         double gpu_gflops = (2.0 * nnz) / 1e9 / gpu_time_used * 1e6 * 1;
-        double bandwidth  = (sizeof(rocsparse_int) * nnz + sizeof(T) * nnz * 2.0) / gpu_time_used / 1e3;
+        double bandwidth =
+            (sizeof(rocsparse_int) * nnz + sizeof(T) * nnz * 2.0) / gpu_time_used / 1e3;
 
         printf("nnz\t\tGFlops\tGB/s\tusec\n");
-        printf("%9d\t%0.2lf\t%0.2lf\t%0.2lf\n",
-               nnz,
-               gpu_gflops,
-               bandwidth,
-               gpu_time_used);
+        printf("%9d\t%0.2lf\t%0.2lf\t%0.2lf\n", nnz, gpu_gflops, bandwidth, gpu_time_used);
     }
     return rocsparse_status_success;
 }
