@@ -89,6 +89,338 @@ rocsparse_status rocsparse_zaxpyi(rocsparse_handle handle,
                                   rocsparse_index_base idx_base);
 */
 
+/*! \brief SPARSE Level 1 API
+
+    \details
+    doti computes the dot product of the sparse vector x and the dense vector
+    y
+
+        result := y^T x
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    nnz         number of non-zero entries of x.
+    @param[in]
+    x_val       array of nnz values.
+    @param[in]
+    x_ind       array of nnz elements containing the indices of the non-zero
+                values of x.
+    @param[in]
+    y           array of values in dense format.
+    @param[out]
+    result      pointer to the result, can be host or device memory
+    @param[in]
+    idx_base    rocsparse_index_base_zero or rocsparse_index_base_one.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sdoti(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const float* x_val,
+                                 const rocsparse_int* x_ind,
+                                 const float* y,
+                                 float* result,
+                                 rocsparse_index_base idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ddoti(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const double* x_val,
+                                 const rocsparse_int* x_ind,
+                                 const double* y,
+                                 double* result,
+                                 rocsparse_index_base idx_base);
+/*
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cdoti(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const rocsparse_float_complex* x_val,
+                                 const rocsparse_int* x_ind,
+                                 const rocsparse_float_complex* y,
+                                 rocsparse_float_complex* result,
+                                 rocsparse_index_base idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zdoti(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const rocsparse_double_complex* x_val,
+                                 const rocsparse_int* x_ind,
+                                 const rocsparse_double_complex* y,
+                                 rocsparse_double_complex* result,
+                                 rocsparse_index_base idx_base);
+*/
+
+/*! \brief SPARSE Level 1 API
+
+    \details
+    dotci computes the dot product of the sparse conjugate complex vector x
+    and the dense vector y
+
+        result := x^H y
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    nnz         number of non-zero entries of x.
+    @param[in]
+    x_val       array of nnz values.
+    @param[in]
+    x_ind       array of nnz elements containing the indices of the non-zero
+                values of x.
+    @param[in]
+    y           array of values in dense format.
+    @param[out]
+    result      pointer to the result, can be host or device memory
+    @param[in]
+    idx_base    rocsparse_index_base_zero or rocsparse_index_base_one.
+
+    ********************************************************************/
+/*
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cdotci(rocsparse_handle handle,
+                                  rocsparse_int nnz,
+                                  const rocsparse_float_complex* x_val,
+                                  const rocsparse_int* x_ind,
+                                  const rocsparse_float_complex* y,
+                                  rocsparse_float_complex* result,
+                                  rocsparse_index_base idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zdotci(rocsparse_handle handle,
+                                  rocsparse_int nnz,
+                                  const rocsparse_double_complex* x_val,
+                                  const rocsparse_int* x_ind,
+                                  const rocsparse_double_complex* y,
+                                  rocsparse_double_complex* result,
+                                  rocsparse_index_base idx_base);
+*/
+
+/*! \brief SPARSE Level 1 API
+
+    \details
+    gthr gathers the elements that are listed in x_ind from the dense
+    vector y and stores them in the sparse vector x
+
+        x := y(x_ind)
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    nnz         number of non-zero entries of x.
+    @param[in]
+    y           array of values in dense format.
+    @param[out]
+    x_val       array of nnz values.
+    @param[in]
+    x_ind       array of nnz elements containing the indices of the non-zero
+                values of x.
+    @param[in]
+    idx_base    rocsparse_index_base_zero or rocsparse_index_base_one.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sgthr(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const float* y,
+                                 float* x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_index_base idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dgthr(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const double* y,
+                                 double* x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_index_base idx_base);
+/*
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cgthr(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const rocsparse_float_complex* y,
+                                 rocsparse_float_complex* x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_index_base idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zgthr(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const rocsparse_double_complex* y,
+                                 rocsparse_double_complex* x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_index_base idx_base);
+*/
+
+/*! \brief SPARSE Level 1 API
+
+    \details
+    gthrz gathers the elements that are listed in x_ind from the dense
+    vector y and stores them in the sparse vector x. The gathered elements
+    are replaced by zero in y.
+
+        x := y(x_ind)
+        y(x_ind) := 0
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    nnz         number of non-zero entries of x.
+    @param[inout]
+    y           array of values in dense format.
+    @param[out]
+    x_val       array of nnz values.
+    @param[in]
+    x_ind       array of nnz elements containing the indices of the non-zero
+                values of x.
+    @param[in]
+    idx_base    rocsparse_index_base_zero or rocsparse_index_base_one.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sgthrz(rocsparse_handle handle,
+                                  rocsparse_int nnz,
+                                  float* y,
+                                  float* x_val,
+                                  const rocsparse_int* x_ind,
+                                  rocsparse_index_base idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dgthrz(rocsparse_handle handle,
+                                  rocsparse_int nnz,
+                                  double* y,
+                                  double* x_val,
+                                  const rocsparse_int* x_ind,
+                                  rocsparse_index_base idx_base);
+/*
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cgthrz(rocsparse_handle handle,
+                                  rocsparse_int nnz,
+                                  rocsparse_float_complex* y,
+                                  rocsparse_float_complex* x_val,
+                                  const rocsparse_int* x_ind,
+                                  rocsparse_index_base idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zgthrz(rocsparse_handle handle,
+                                  rocsparse_int nnz,
+                                  rocsparse_double_complex* y,
+                                  rocsparse_double_complex* x_val,
+                                  const rocsparse_int* x_ind,
+                                  rocsparse_index_base idx_base);
+*/
+
+/*! \brief SPARSE Level 1 API
+
+    \details
+    roti applies the Givens rotation matrix G to the sparse vector x and
+    the dense vector y
+
+        G = ( c s)
+            (-s c)
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    nnz         number of non-zero entries of x.
+    @param[inout]
+    x_val       array of nnz values.
+    @param[in]
+    x_ind       array of nnz elements containing the indices of the non-zero
+                values of x.
+    @param[inout]
+    y           array of values in dense format.
+    @param[in]
+    c           pointer to the cosine element of G, can be on host or device
+    @param[in]
+    s           pointer to the sine element of G, can be on host or device
+    @param[in]
+    idx_base    rocsparse_index_base_zero or rocsparse_index_base_one.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sroti(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 float* x_val,
+                                 const rocsparse_int* x_ind,
+                                 float* y,
+                                 const float* c,
+                                 const float* s,
+                                 rocsparse_index_base idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_droti(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 double* x_val,
+                                 const rocsparse_int* x_ind,
+                                 double* y,
+                                 const double* c,
+                                 const double* s,
+                                 rocsparse_index_base idx_base);
+
+/*! \brief SPARSE Level 1 API
+
+    \details
+    sctr scatters the elements that are listed in x_ind from the sparse
+    vector x into the dense vector y. Indices of y that are not listed
+    in x_ind remain unchanged
+
+        y(x_ind) := x
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    nnz         number of non-zero entries of x.
+    @param[in]
+    x_val       array of nnz values.
+    @param[in]
+    x_ind       array of nnz elements containing the indices of the non-zero
+                values of x.
+    @param[out]
+    y           array of values in dense format.
+    @param[in]
+    idx_base    rocsparse_index_base_zero or rocsparse_index_base_one.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ssctr(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const float* x_val,
+                                 const rocsparse_int* x_ind,
+                                 float* y,
+                                 rocsparse_index_base idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dsctr(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const double* x_val,
+                                 const rocsparse_int* x_ind,
+                                 double* y,
+                                 rocsparse_index_base idx_base);
+/*
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csctr(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const rocsparse_float_complex* x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_float_complex* y,
+                                 rocsparse_index_base idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zsctr(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 const rocsparse_double_complex* x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_double_complex* y,
+                                 rocsparse_index_base idx_base);
+*/
+
 /*
  * ===========================================================================
  *    level 2 SPARSE
