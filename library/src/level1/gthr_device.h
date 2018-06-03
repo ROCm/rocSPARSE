@@ -9,7 +9,7 @@
 #include <hip/hip_runtime.h>
 
 template <typename T>
-__global__ void gthr_device(rocsparse_int nnz,
+__global__ void gthr_kernel(rocsparse_int nnz,
                             const T* y,
                             T* x_val,
                             const rocsparse_int* x_ind,

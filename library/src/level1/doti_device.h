@@ -27,7 +27,7 @@ __device__ void rocsparse_sum_reduce(rocsparse_int tid, T* x)
 }
 
 template <typename T, rocsparse_int NB>
-__global__ void doti_device_part1(rocsparse_int nnz,
+__global__ void doti_kernel_part1(rocsparse_int nnz,
                                   const T* x_val,
                                   const rocsparse_int* x_ind,
                                   const T* y,
@@ -57,7 +57,7 @@ __global__ void doti_device_part1(rocsparse_int nnz,
 }
 
 template <typename T, rocsparse_int NB, rocsparse_int flag>
-__global__ void doti_device_part2(rocsparse_int n,
+__global__ void doti_kernel_part2(rocsparse_int n,
                                   T* workspace,
                                   T* result)
 {
