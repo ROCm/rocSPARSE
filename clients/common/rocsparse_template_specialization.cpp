@@ -33,6 +33,122 @@ rocsparse_status rocsparse_axpyi(rocsparse_handle handle,
 }
 
 template <>
+rocsparse_status rocsparse_doti(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                const float* x_val,
+                                const rocsparse_int* x_ind,
+                                const float* y,
+                                float* result,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_sdoti(handle, nnz, x_val, x_ind, y, result, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_doti(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                const double* x_val,
+                                const rocsparse_int* x_ind,
+                                const double* y,
+                                double* result,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_ddoti(handle, nnz, x_val, x_ind, y, result, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_gthr(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                const float* y,
+                                float* x_val,
+                                const rocsparse_int* x_ind,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_sgthr(handle, nnz, y, x_val, x_ind, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_gthr(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                const double* y,
+                                double* x_val,
+                                const rocsparse_int* x_ind,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_dgthr(handle, nnz, y, x_val, x_ind, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_gthrz(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 float* y,
+                                 float* x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_index_base idx_base)
+{
+    return rocsparse_sgthrz(handle, nnz, y, x_val, x_ind, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_gthrz(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 double* y,
+                                 double* x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_index_base idx_base)
+{
+    return rocsparse_dgthrz(handle, nnz, y, x_val, x_ind, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_roti(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                float* x_val,
+                                const rocsparse_int* x_ind,
+                                float* y,
+                                const float* c,
+                                const float* s,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_sroti(handle, nnz, x_val, x_ind, y, c, s, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_roti(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                double* x_val,
+                                const rocsparse_int* x_ind,
+                                double* y,
+                                const double* c,
+                                const double* s,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_droti(handle, nnz, x_val, x_ind, y, c, s, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_sctr(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                const float* x_val,
+                                const rocsparse_int* x_ind,
+                                float* y,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_ssctr(handle, nnz, x_val, x_ind, y, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_sctr(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                const double* x_val,
+                                const rocsparse_int* x_ind,
+                                double* y,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_dsctr(handle, nnz, x_val, x_ind, y, idx_base);
+}
+
+template <>
 rocsparse_status rocsparse_coomv(rocsparse_handle handle,
                                  rocsparse_operation trans,
                                  rocsparse_int m,

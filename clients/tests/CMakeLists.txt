@@ -7,6 +7,9 @@ find_package(GTest REQUIRED)
 set(ROCSPARSE_TEST_SOURCES
   rocsparse_gtest_main.cpp
   test_axpyi.cpp
+  test_doti.cpp
+  test_gthr.cpp
+  test_gthrz.cpp
   test_coomv.cpp
   test_csrmv.cpp
   test_ellmv.cpp

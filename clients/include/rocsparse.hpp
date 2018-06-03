@@ -20,6 +20,49 @@ rocsparse_status rocsparse_axpyi(rocsparse_handle handle,
                                  rocsparse_index_base idx_base);
 
 template <typename T>
+rocsparse_status rocsparse_doti(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                const T* x_val,
+                                const rocsparse_int* x_ind,
+                                const T* y,
+                                T* result,
+                                rocsparse_index_base idx_base);
+
+template <typename T>
+rocsparse_status rocsparse_gthr(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                const T* y,
+                                T* x_val,
+                                const rocsparse_int* x_ind,
+                                rocsparse_index_base idx_base);
+
+template <typename T>
+rocsparse_status rocsparse_gthrz(rocsparse_handle handle,
+                                 rocsparse_int nnz,
+                                 T* y,
+                                 T* x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_index_base idx_base);
+
+template <typename T>
+rocsparse_status rocsparse_roti(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                T* x_val,
+                                const rocsparse_int* x_ind,
+                                T* y,
+                                const T* c,
+                                const T* s,
+                                rocsparse_index_base idx_base);
+
+template <typename T>
+rocsparse_status rocsparse_sctr(rocsparse_handle handle,
+                                rocsparse_int nnz,
+                                const T* x_val,
+                                const rocsparse_int* x_ind,
+                                T* y,
+                                rocsparse_index_base idx_base);
+
+template <typename T>
 rocsparse_status rocsparse_coomv(rocsparse_handle handle,
                                  rocsparse_operation trans,
                                  rocsparse_int m,
