@@ -22,8 +22,10 @@ __global__ void gthrz_device(rocsparse_int nnz,
         return;
     }
 
-    x_val[idx] = y[x_ind[idx] - idx_base];
-    y[x_ind[idx] - idx_base] = static_cast<T>(0);
+    rocsparse_int i = x_ind[idx] - idx_base;
+
+    x_val[idx] = y[i];
+    y[i] = static_cast<T>(0);
 }
 
 #endif // GTHRZ_DEVICE_H
