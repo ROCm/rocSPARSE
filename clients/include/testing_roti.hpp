@@ -21,8 +21,8 @@ void testing_roti_bad_arg(void)
 {
     rocsparse_int nnz       = 100;
     rocsparse_int safe_size = 100;
-    T c = 3.7;
-    T s = 1.2;
+    T c                     = 3.7;
+    T s                     = 1.2;
 
     rocsparse_index_base idx_base = rocsparse_index_base_zero;
     rocsparse_status status;
@@ -37,7 +37,7 @@ void testing_roti_bad_arg(void)
 
     T* dx_val             = (T*)dx_val_managed.get();
     rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
-    T* dy                = (T*)dy_managed.get();
+    T* dy                 = (T*)dy_managed.get();
 
     if(!dx_ind || !dx_val || !dy)
     {
@@ -94,8 +94,8 @@ rocsparse_status testing_roti(Arguments argus)
 {
     rocsparse_int N               = argus.N;
     rocsparse_int nnz             = argus.nnz;
-    T c = argus.alpha;
-    T s = argus.beta;
+    T c                           = argus.alpha;
+    T s                           = argus.beta;
     rocsparse_int safe_size       = 100;
     rocsparse_index_base idx_base = argus.idx_base;
     rocsparse_status status;
@@ -114,7 +114,7 @@ rocsparse_status testing_roti(Arguments argus)
 
         rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
         T* dx_val             = (T*)dx_val_managed.get();
-        T* dy                = (T*)dy_managed.get();
+        T* dy                 = (T*)dy_managed.get();
 
         if(!dx_ind || !dx_val || !dy)
         {
@@ -153,32 +153,34 @@ rocsparse_status testing_roti(Arguments argus)
     rocsparse_init<T>(hx_val_1, 1, nnz);
     rocsparse_init<T>(hy_1, 1, N);
 
-    hx_val_2 = hx_val_1;
+    hx_val_2    = hx_val_1;
     hx_val_gold = hx_val_1;
-    hy_2 = hy_1;
-    hy_gold = hy_1;
+    hy_2        = hy_1;
+    hy_gold     = hy_1;
 
     // allocate memory on device
     auto dx_ind_managed =
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dx_val_1_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dx_val_2_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dy_1_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
-    auto dy_2_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
-    auto dc_managed      = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
-    auto ds_managed      = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
+    auto dx_val_1_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
+    auto dx_val_2_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
+    auto dy_1_managed     = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
+    auto dy_2_managed     = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
+    auto dc_managed       = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
+    auto ds_managed       = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
 
     rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
     T* dx_val_1           = (T*)dx_val_1_managed.get();
     T* dx_val_2           = (T*)dx_val_2_managed.get();
-    T* dy_1            = (T*)dy_1_managed.get();
-    T* dy_2            = (T*)dy_2_managed.get();
-    T* dc = (T*)dc_managed.get();
-    T* ds = (T*)ds_managed.get();
+    T* dy_1               = (T*)dy_1_managed.get();
+    T* dy_2               = (T*)dy_2_managed.get();
+    T* dc                 = (T*)dc_managed.get();
+    T* ds                 = (T*)ds_managed.get();
 
     if(!dx_ind || !dx_val_1 || !dx_val_2 || !dy_1 || !dy_2 || !dc || !ds)
     {
-        verify_rocsparse_status_success(rocsparse_status_memory_error, "!dx_ind || !dx_val_1 || !dx_val_2 || !dy_1 || !dy_2 || !dc || !ds");
+        verify_rocsparse_status_success(
+            rocsparse_status_memory_error,
+            "!dx_ind || !dx_val_1 || !dx_val_2 || !dy_1 || !dy_2 || !dc || !ds");
         return rocsparse_status_memory_error;
     }
 
@@ -190,22 +192,27 @@ rocsparse_status testing_roti(Arguments argus)
 
     if(argus.unit_check)
     {
-        CHECK_HIP_ERROR(hipMemcpy(dx_val_2, hx_val_2.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(
+            hipMemcpy(dx_val_2, hx_val_2.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(dy_2, hy_2.data(), sizeof(T) * N, hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(dc, &c, sizeof(T), hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(ds, &s, sizeof(T), hipMemcpyHostToDevice));
 
         // ROCSPARSE pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_roti(handle, nnz, dx_val_1, dx_ind, dy_1, &c, &s, idx_base));
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_roti(handle, nnz, dx_val_1, dx_ind, dy_1, &c, &s, idx_base));
 
         // ROCSPARSE pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_roti(handle, nnz, dx_val_2, dx_ind, dy_2, dc, ds, idx_base));
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_roti(handle, nnz, dx_val_2, dx_ind, dy_2, dc, ds, idx_base));
 
         // copy output from device to CPU
-        CHECK_HIP_ERROR(hipMemcpy(hx_val_1.data(), dx_val_1, sizeof(T) * nnz, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hx_val_2.data(), dx_val_2, sizeof(T) * nnz, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(
+            hipMemcpy(hx_val_1.data(), dx_val_1, sizeof(T) * nnz, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(
+            hipMemcpy(hx_val_2.data(), dx_val_2, sizeof(T) * nnz, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * N, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hy_2.data(), dy_2, sizeof(T) * N, hipMemcpyDeviceToHost));
 
@@ -251,9 +258,10 @@ rocsparse_status testing_roti(Arguments argus)
             rocsparse_roti(handle, nnz, dx_val_1, dx_ind, dy_1, &c, &s, idx_base);
         }
 
-        gpu_time_used     = (get_time_us() - gpu_time_used) / number_hot_calls;
+        gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
         double gflops = nnz * 6.0 / gpu_time_used / 1e3;
-        double bandwidth  = (sizeof(rocsparse_int) * nnz + sizeof(T) * 2.0 * nnz) / gpu_time_used / 1e3;
+        double bandwidth =
+            (sizeof(rocsparse_int) * nnz + sizeof(T) * 2.0 * nnz) / gpu_time_used / 1e3;
 
         printf("nnz\t\tcosine\tsine\tGFlop/s\tGB/s\tusec\n");
         printf("%9d\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\n",

@@ -27,12 +27,12 @@ __global__ void roti_kernel_host_scalar(rocsparse_int nnz,
 
 template <typename T>
 __global__ void roti_kernel_device_scalar(rocsparse_int nnz,
-                                         T* x_val,
-                                         const rocsparse_int* x_ind,
-                                         T* y,
-                                         const T* c,
-                                         const T* s,
-                                         rocsparse_index_base idx_base)
+                                          T* x_val,
+                                          const rocsparse_int* x_ind,
+                                          T* y,
+                                          const T* c,
+                                          const T* s,
+                                          rocsparse_index_base idx_base)
 {
     if(*c == static_cast<T>(1) && *s == static_cast<T>(0))
     {

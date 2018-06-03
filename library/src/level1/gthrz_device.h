@@ -9,11 +9,8 @@
 #include <hip/hip_runtime.h>
 
 template <typename T>
-__global__ void gthrz_kernel(rocsparse_int nnz,
-                             T* y,
-                             T* x_val,
-                             const rocsparse_int* x_ind,
-                             rocsparse_index_base idx_base)
+__global__ void gthrz_kernel(
+    rocsparse_int nnz, T* y, T* x_val, const rocsparse_int* x_ind, rocsparse_index_base idx_base)
 {
     int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -25,7 +22,7 @@ __global__ void gthrz_kernel(rocsparse_int nnz,
     rocsparse_int i = x_ind[idx] - idx_base;
 
     x_val[idx] = y[i];
-    y[i] = static_cast<T>(0);
+    y[i]       = static_cast<T>(0);
 }
 
 #endif // GTHRZ_DEVICE_H
