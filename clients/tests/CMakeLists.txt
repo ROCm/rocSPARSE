@@ -10,6 +10,8 @@ set(ROCSPARSE_TEST_SOURCES
   test_doti.cpp
   test_gthr.cpp
   test_gthrz.cpp
+  test_roti.cpp
+  test_sctr.cpp
   test_coomv.cpp
   test_csrmv.cpp
   test_ellmv.cpp
