@@ -1071,6 +1071,26 @@ rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
                                    rocsparse_int* csr_row_ptr,
                                    rocsparse_index_base idx_base);
 
+/*! \brief SPARSE Format Conversions API
+
+    \details
+    create_identity_permutation stores the identity map in array p
+
+        p = 0:1:(n-1)
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    n           size of the map p
+    @param[out]
+    p           array of n integers containing the map
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status
+rocsparse_create_identity_permutation(rocsparse_handle handle, rocsparse_int n, rocsparse_int* p);
+
 #ifdef __cplusplus
 }
 #endif
