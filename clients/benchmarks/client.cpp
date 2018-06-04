@@ -4,15 +4,27 @@
 
 #include "utility.hpp"
 #include "rocsparse.hpp"
+
+// Level1
+#include "testing_axpyi.hpp"
+#include "testing_doti.hpp"
+#include "testing_gthr.hpp"
+#include "testing_gthrz.hpp"
+#include "testing_roti.hpp"
+#include "testing_sctr.hpp"
+
+// Level2
 #include "testing_coomv.hpp"
 #include "testing_csrmv.hpp"
 #include "testing_ellmv.hpp"
 #include "testing_hybmv.hpp"
-#include "testing_axpyi.hpp"
+
+// Conversion
 #include "testing_csr2coo.hpp"
 #include "testing_csr2ell.hpp"
 #include "testing_csr2hyb.hpp"
 #include "testing_coo2csr.hpp"
+#include "testing_identity.hpp"
 
 #include <iostream>
 #include <stdio.h>
@@ -67,8 +79,10 @@ int main(int argc, char* argv[])
         
         ("function,f",
          po::value<std::string>(&function)->default_value("axpyi"),
-         "SPARSE function to test. Options: axpyi, coomv, csrmv, ellmv, hybmv, csr2coo, "
-         "csr2ell, csr2hyb, coo2csr")
+         "SPARSE function to test. Options:\n"
+         "  Level1: axpyi, doti, gthr, gthrz, roti, sctr\n"
+         "  Level2: coomv, csrmv, ellmv, hybmv\n"
+         "  Conversion: csr2coo, csr2ell, csr2hyb, coo2csr")
         
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d")
@@ -123,12 +137,48 @@ int main(int argc, char* argv[])
         return -1;
     }
 
+    // Level1
     if(function == "axpyi")
     {
         if(precision == 's')
             testing_axpyi<float>(argus);
         else if(precision == 'd')
             testing_axpyi<double>(argus);
+    }
+    else if(function == "doti")
+    {
+        if(precision == 's')
+            testing_doti<float>(argus);
+        else if(precision == 'd')
+            testing_doti<double>(argus);
+    }
+    else if(function == "gthr")
+    {
+        if(precision == 's')
+            testing_gthr<float>(argus);
+        else if(precision == 'd')
+            testing_gthr<double>(argus);
+    }
+    else if(function == "gthrz")
+    {
+        if(precision == 's')
+            testing_gthrz<float>(argus);
+        else if(precision == 'd')
+            testing_gthrz<double>(argus);
+    }
+    else if(function == "roti")
+    {
+        if(precision == 's')
+            testing_roti<float>(argus);
+        else if(precision == 'd')
+            testing_roti<double>(argus);
+    }
+    else if(function == "sctr")
+    {
+        if(precision == 's')
+            testing_sctr<float>(argus);
+        else if(precision == 'd')
+            testing_sctr<double>(argus);
     }
     else if(function == "coomv")
     {
