@@ -20,6 +20,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_csr2ell.cpp
   test_csr2hyb.cpp
   test_coo2csr.cpp
+  test_identity.cpp
 )
 
 set(ROCSPARSE_CLIENTS_COMMON
