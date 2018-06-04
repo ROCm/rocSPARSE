@@ -16,7 +16,7 @@ __device__ void ell_width_reduce(rocsparse_int tid, rocsparse_int* data)
 {
     __syncthreads();
 
-    for(int i = NB >> 1; i > 0; i >>= 1)
+    for(rocsparse_int i = NB >> 1; i > 0; i >>= 1)
     {
         if(tid < i)
         {
