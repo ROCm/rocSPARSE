@@ -73,6 +73,9 @@ rocm_export_targets(TARGETS rocsparse-targets
                     NAMESPACE roc::
 )
 
+# Symbolic links
+rocm_install_symlink_subdir(rocsparse)
+
 # Package specific CPACK vars
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip_hcc (>= 1.3)")
 set(CPACK_RPM_PACKAGE_REQUIRES "hip_hcc >= 1.3")
@@ -84,8 +87,14 @@ endif()
 
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include")
 
-# Package name
-set(package_name rocsparse)
+# Package name differs for CUDA backend
+if(HIP_PLATFORM STREQUAL "hcc")
+  set(package_name rocsparse)
+endif()
+
+if(HIP_PLATFORM STREQUAL "nvcc")
+  set(package_name rocsparse-alt)
+endif()
 
 set(ROCSPARSE_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file")
 
