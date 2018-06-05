@@ -12,7 +12,7 @@ template <typename T>
 __global__ void gthrz_kernel(
     rocsparse_int nnz, T* y, T* x_val, const rocsparse_int* x_ind, rocsparse_index_base idx_base)
 {
-    int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
     if(idx >= nnz)
     {
