@@ -11,7 +11,7 @@
 // Create identity permutation
 __global__ void identity_kernel(rocsparse_int n, rocsparse_int* p)
 {
-    rocsparse_int gid  = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
     if(gid >= n)
     {
