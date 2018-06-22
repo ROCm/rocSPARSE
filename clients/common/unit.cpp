@@ -67,3 +67,19 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int* hCPU, r
         }
     }
 }
+
+template <>
+void unit_check_general(rocsparse_int M, rocsparse_int N, size_t* hCPU, size_t* hGPU)
+{
+    for(rocsparse_int j = 0; j < N; j++)
+    {
+        for(rocsparse_int i = 0; i < M; i++)
+        {
+#ifdef GOOGLE_TEST
+            ASSERT_EQ(hCPU[i + j], hGPU[i + j]);
+#else
+            assert(hCPU[i + j] == hGPU[i + j]);
+#endif
+        }
+    }
+}

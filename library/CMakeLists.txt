@@ -41,6 +41,8 @@ endif()
 # Target include directories
 target_include_directories(rocsparse
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/include>
+                                   $<BUILD_INTERFACE:${ROCPRIM_INCLUDE_DIRS}>
+                                   $<BUILD_INTERFACE:${HIPCUB_INCLUDE_DIRS}>
                            PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
                                    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
                                    $<INSTALL_INTERFACE:include>
@@ -53,6 +55,11 @@ if(HIP_PLATFORM STREQUAL "hcc")
 endif()
 set_target_properties(rocsparse PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")
+
+# Target definitions
+if(HIP_PLATFORM STREQUAL "hcc")
+  target_compile_definitions(rocsparse PRIVATE ROCPRIM_HIP_API=1)
+endif()
 
 # Generate export header
 include(GenerateExportHeader)
@@ -73,6 +80,9 @@ rocm_export_targets(TARGETS rocsparse-targets
                     NAMESPACE roc::
 )
 
+# Symbolic links
+rocm_install_symlink_subdir(rocsparse)
+
 # Package specific CPACK vars
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip_hcc (>= 1.3)")
 set(CPACK_RPM_PACKAGE_REQUIRES "hip_hcc >= 1.3")
@@ -84,8 +94,14 @@ endif()
 
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include")
 
-# Package name
-set(package_name rocsparse)
+# Package name differs for CUDA backend
+if(HIP_PLATFORM STREQUAL "hcc")
+  set(package_name rocsparse)
+endif()
+
+if(HIP_PLATFORM STREQUAL "nvcc")
+  set(package_name rocsparse-alt)
+endif()
 
 set(ROCSPARSE_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file")
 

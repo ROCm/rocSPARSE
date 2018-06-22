@@ -105,19 +105,43 @@ if(BUILD_BENCHMARK)
 endif()
 
 # rocPRIM package
-#set(ROCPRIM_ROOT ${CMAKE_CURRENT_BINARY_DIR}/rocPRIM CACHE PATH "")
-#message(STATUS "Downloading rocPRIM.")
-#download_project(PROJ    rocPRIM
-#     GIT_REPOSITORY      https://github.com/ROCmSoftwarePlatform/rocPRIM.git
-#     GIT_TAG             master
-#     INSTALL_DIR         ${ROCPRIM_ROOT}
-#     CMAKE_ARGS          -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_TEST=OFF -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-#     LOG_DOWNLOAD        TRUE
-#     LOG_CONFIGURE       TRUE
-#     LOG_INSTALL         TRUE
-#     BUILD_PROJECT       TRUE
-#     UPDATE_DISCONNECT   TRUE
-#)
+if(HIP_PLATFORM STREQUAL "hcc")
+  find_package(ROCPRIM QUIET CONFIG PATHS /opt/rocm)
+  if(NOT ROCPRIM_FOUND)
+    set(ROCPRIM_ROOT ${CMAKE_CURRENT_BINARY_DIR}/rocPRIM CACHE PATH "")
+    message(STATUS "Downloading rocPRIM.")
+    download_project(PROJ    rocPRIM
+         GIT_REPOSITORY      https://github.com/ROCmSoftwarePlatform/rocPRIM.git
+         GIT_TAG             master
+         INSTALL_DIR         ${ROCPRIM_ROOT}
+         CMAKE_ARGS          -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_TEST=OFF -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+         LOG_DOWNLOAD        TRUE
+         LOG_CONFIGURE       TRUE
+         LOG_INSTALL         TRUE
+         BUILD_PROJECT       TRUE
+         UPDATE_DISCONNECT   TRUE
+    )
+  find_package(ROCPRIM REQUIRED CONFIG PATHS ${ROCPRIM_ROOT})
+  endif()
+elseif(HIP_PLATFORM STREQUAL "nvcc")
+  find_package(HIPCUB QUIET CONFIG PATHS /opt/rocm)
+  if(NOT HIPCUB_FOUND)
+    set(ROCPRIM_ROOT ${CMAKE_CURRENT_BINARY_DIR}/rocPRIM CACHE PATH "")
+    message(STATUS "Downloading rocPRIM.")
+    download_project(PROJ    rocPRIM
+         GIT_REPOSITORY      https://github.com/ROCmSoftwarePlatform/rocPRIM.git
+         GIT_TAG             master
+         INSTALL_DIR         ${ROCPRIM_ROOT}
+         CMAKE_ARGS          -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_TEST=OFF -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+         LOG_DOWNLOAD        TRUE
+         LOG_CONFIGURE       TRUE
+         LOG_INSTALL         TRUE
+         BUILD_PROJECT       TRUE
+         UPDATE_DISCONNECT   TRUE
+    )
+  find_package(HIPCUB REQUIRED CONFIG PATHS ${ROCPRIM_ROOT})
+  endif()
+endif()
 
 # ROCm package
 find_package(ROCM QUIET CONFIG PATHS /opt/rocm)
