@@ -42,6 +42,7 @@ endif()
 target_include_directories(rocsparse
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/include>
                                    $<BUILD_INTERFACE:${ROCPRIM_INCLUDE_DIRS}>
+                                   $<BUILD_INTERFACE:${HIPCUB_INCLUDE_DIRS}>
                            PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
                                    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
                                    $<INSTALL_INTERFACE:include>
