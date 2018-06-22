@@ -1082,14 +1082,93 @@ rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
     handle      rocsparse_handle.
                 handle to the rocsparse library context queue.
     @param[in]
-    n           size of the map p
+    n           size of the map p.
     @param[out]
-    p           array of n integers containing the map
+    p           array of n integers containing the map.
 
     ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status
 rocsparse_create_identity_permutation(rocsparse_handle handle, rocsparse_int n, rocsparse_int* p);
+
+/*! \brief SPARSE Format Conversions API
+
+    \details
+    csrsort_buffer_size returns the size of the temporary storage buffer
+    that is required by csrsort. The temporary storage buffer has to be
+    allocated by the user.
+
+    @param[in]
+    handle          rocsparse_handle.
+                    handle to the rocsparse library context queue.
+    @param[in]
+    m               number of rows of A.
+    @param[in]
+    n               number of columns of A.
+    @param[in]
+    nnz             number of non-zero elements of A.
+    @param[in]
+    csr_row_ptr     array of m+1 elements that point to the start
+                    of every row of A.
+    @param[in]
+    csr_col_ind     array of nnz elements containing the column indices
+                    of A.
+    @param[out]
+    buffer_size     number of bytes of the temporary storage buffer.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handle,
+                                               rocsparse_int m,
+                                               rocsparse_int n,
+                                               rocsparse_int nnz,
+                                               const rocsparse_int* csr_row_ptr,
+                                               const rocsparse_int* csr_col_ind,
+                                               size_t* buffer_size);
+
+/*! \brief SPARSE Format Conversions API
+
+    \details
+    csrsort sorts a matrix in CSR format in-place. csrsort requires a
+    temporary storage buffer. The sorted permutation vector perm can be
+    used to obtain sorted csr_val array. In this case, P must be
+    initialized as the identity permutation 0:1:(nnz-1).
+
+    @param[in]
+    handle          rocsparse_handle.
+                    handle to the rocsparse library context queue.
+    @param[in]
+    m               number of rows of A.
+    @param[in]
+    n               number of columns of A.
+    @param[in]
+    nnz             number of non-zero elements of A.
+    @param[in]
+    descr           descriptor of A.
+    @param[in]
+    csr_row_ptr     array of m+1 elements that point to the start
+                    of every row of A.
+    @param[inout]
+    csr_col_ind     array of nnz elements containing the column indices
+                    of A.
+    @param[inout]
+    perm            array of nnz integers containing the unsorted map
+                    indices.
+    @param[in]
+    temp_buffer     temporary storage buffer allocated by the user,
+                    size is returned by csrsort_buffer_size
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
+                                   rocsparse_int m,
+                                   rocsparse_int n,
+                                   rocsparse_int nnz,
+                                   const rocsparse_mat_descr descr,
+                                   const rocsparse_int* csr_row_ptr,
+                                   rocsparse_int* csr_col_ind,
+                                   rocsparse_int* perm,
+                                   void* temp_buffer);
 
 #ifdef __cplusplus
 }
