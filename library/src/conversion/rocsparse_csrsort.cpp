@@ -3,6 +3,7 @@
  * ************************************************************************ */
 
 #include "rocsparse.h"
+#include "definitions.h"
 #include "handle.h"
 #include "utility.h"
 
@@ -29,7 +30,8 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handl
     }
 
     // Logging TODO bench logging
-    log_trace(handle, "rocsparse_csrsort_buffer_size",
+    log_trace(handle,
+              "rocsparse_csrsort_buffer_size",
               m,
               n,
               nnz,
@@ -77,13 +79,34 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handl
 
     rocsparse_int* null_ptr = nullptr;
 
-// TODO config required for buffer??
 #if defined(__HIP_PLATFORM_HCC__)
-    using config = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1> >;
-
-    rocprim::segmented_radix_sort_pairs<config>(nullptr, *buffer_size, null_ptr, null_ptr, null_ptr, null_ptr, nnz, m, null_ptr, null_ptr, 0, 32, stream);
+    RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs(nullptr,
+                                                            *buffer_size,
+                                                            null_ptr,
+                                                            null_ptr,
+                                                            null_ptr,
+                                                            null_ptr,
+                                                            nnz,
+                                                            m,
+                                                            null_ptr,
+                                                            null_ptr,
+                                                            0,
+                                                            32,
+                                                            stream));
 #elif defined(__HIP_PLATFORM_NVCC__)
-    hipcub::DeviceSegmentedRadixSort::SortPairs(nullptr, *buffer_size, null_ptr, null_ptr, null_ptr, null_ptr, nnz, m, null_ptr, null_ptr, 0, 32, stream);
+    RETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortPairs(nullptr,
+                                                                    *buffer_size,
+                                                                    null_ptr,
+                                                                    null_ptr,
+                                                                    null_ptr,
+                                                                    null_ptr,
+                                                                    nnz,
+                                                                    m,
+                                                                    null_ptr,
+                                                                    null_ptr,
+                                                                    0,
+                                                                    32,
+                                                                    stream));
 #endif
 
     // rocPRIM does not support in-place sorting, so we need additional buffer
@@ -118,7 +141,8 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
     }
 
     // Logging TODO bench logging
-    log_trace(handle, "rocsparse_csrsort_buffer_size",
+    log_trace(handle,
+              "rocsparse_csrsort_buffer_size",
               m,
               n,
               nnz,
@@ -170,11 +194,23 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
     hipStream_t stream = handle->stream;
 
     unsigned int startbit = 0;
-    unsigned int endbit = rocsparse_clz(n);
+    unsigned int endbit   = rocsparse_clz(n);
     size_t size;
 
 #if defined(__HIP_PLATFORM_HCC__)
-    rocprim::segmented_radix_sort_pairs(nullptr, size, csr_col_ind, csr_col_ind, perm, perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+    RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs(nullptr,
+                                                            size,
+                                                            csr_col_ind,
+                                                            csr_col_ind,
+                                                            perm,
+                                                            perm,
+                                                            nnz,
+                                                            m,
+                                                            csr_row_ptr,
+                                                            csr_row_ptr + 1,
+                                                            startbit,
+                                                            endbit,
+                                                            stream));
 
     // Temporary buffer entry points
     char* ptr = reinterpret_cast<char*>(temp_buffer);
@@ -194,25 +230,85 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
 
     if(avg_row_nnz < 64)
     {
-        using config = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1> >;
-        rocprim::segmented_radix_sort_pairs<config>(temp_buffer, size, csr_col_ind, tmp_cols, perm, tmp_perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+        using config = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
+        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(temp_buffer,
+                                                                        size,
+                                                                        csr_col_ind,
+                                                                        tmp_cols,
+                                                                        perm,
+                                                                        tmp_perm,
+                                                                        nnz,
+                                                                        m,
+                                                                        csr_row_ptr,
+                                                                        csr_row_ptr + 1,
+                                                                        startbit,
+                                                                        endbit,
+                                                                        stream));
     }
     else if(avg_row_nnz < 128)
     {
-        using config = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2> >;
-        rocprim::segmented_radix_sort_pairs<config>(temp_buffer, size, csr_col_ind, tmp_cols, perm, tmp_perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+        using config = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
+        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(temp_buffer,
+                                                                        size,
+                                                                        csr_col_ind,
+                                                                        tmp_cols,
+                                                                        perm,
+                                                                        tmp_perm,
+                                                                        nnz,
+                                                                        m,
+                                                                        csr_row_ptr,
+                                                                        csr_row_ptr + 1,
+                                                                        startbit,
+                                                                        endbit,
+                                                                        stream));
     }
     else if(avg_row_nnz < 256)
     {
-        using config = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4> >;
-        rocprim::segmented_radix_sort_pairs<config>(temp_buffer, size, csr_col_ind, tmp_cols, perm, tmp_perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+        using config = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
+        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(temp_buffer,
+                                                                        size,
+                                                                        csr_col_ind,
+                                                                        tmp_cols,
+                                                                        perm,
+                                                                        tmp_perm,
+                                                                        nnz,
+                                                                        m,
+                                                                        csr_row_ptr,
+                                                                        csr_row_ptr + 1,
+                                                                        startbit,
+                                                                        endbit,
+                                                                        stream));
     }
     else
     {
-        rocprim::segmented_radix_sort_pairs(temp_buffer, size, csr_col_ind, tmp_cols, perm, tmp_perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+        RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs(temp_buffer,
+                                                                size,
+                                                                csr_col_ind,
+                                                                tmp_cols,
+                                                                perm,
+                                                                tmp_perm,
+                                                                nnz,
+                                                                m,
+                                                                csr_row_ptr,
+                                                                csr_row_ptr + 1,
+                                                                startbit,
+                                                                endbit,
+                                                                stream));
     }
 #elif defined(__HIP_PLATFORM_NVCC__)
-    hipcub::DeviceSegmentedRadixSort::SortPairs(nullptr, size, csr_col_ind, csr_col_ind, perm, perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+    RETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortPairs(nullptr,
+                                                                    size,
+                                                                    csr_col_ind,
+                                                                    csr_col_ind,
+                                                                    perm,
+                                                                    perm,
+                                                                    nnz,
+                                                                    m,
+                                                                    csr_row_ptr,
+                                                                    csr_row_ptr + 1,
+                                                                    startbit,
+                                                                    endbit,
+                                                                    stream));
 
     // Temporary buffer entry points
     char* ptr = reinterpret_cast<char*>(temp_buffer);
@@ -226,12 +322,26 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
     rocsparse_int* tmp_perm = reinterpret_cast<rocsparse_int*>(ptr);
 
     // Sort by columns and obtain permutation vector
-    hipcub::DeviceSegmentedRadixSort::SortPairs(temp_buffer, size, csr_col_ind, tmp_cols, perm, tmp_perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+    RETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortPairs(temp_buffer,
+                                                                    size,
+                                                                    csr_col_ind,
+                                                                    tmp_cols,
+                                                                    perm,
+                                                                    tmp_perm,
+                                                                    nnz,
+                                                                    m,
+                                                                    csr_row_ptr,
+                                                                    csr_row_ptr + 1,
+                                                                    startbit,
+                                                                    endbit,
+                                                                    stream));
 #endif
 
     // Extract results from buffer
-    hipMemcpy(csr_col_ind, tmp_cols, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice);
-    hipMemcpy(perm, tmp_perm, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice);
+    RETURN_IF_HIP_ERROR(
+        hipMemcpy(csr_col_ind, tmp_cols, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+    RETURN_IF_HIP_ERROR(
+        hipMemcpy(perm, tmp_perm, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
 
     return rocsparse_status_success;
 }
