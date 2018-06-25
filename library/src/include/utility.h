@@ -14,6 +14,13 @@
 #include <string>
 #include <algorithm>
 
+// Return the leftmost significant bit position
+#if defined(rocsparse_ILP64)
+static inline rocsparse_int rocsparse_clz(rocsparse_int n) { return 64 - __builtin_clzll(n); }
+#else
+static inline rocsparse_int rocsparse_clz(rocsparse_int n) { return 32 - __builtin_clz(n); }
+#endif
+
 // if trace logging is turned on with
 // (handle->layer_mode & rocsparse_layer_mode_log_trace) == true
 // then

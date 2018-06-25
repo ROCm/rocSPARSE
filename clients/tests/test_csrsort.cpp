@@ -26,9 +26,9 @@ class parameterized_csrsort : public testing::TestWithParam<csrsort_tuple>
 Arguments setup_csrsort_arguments(csrsort_tuple tup)
 {
     Arguments arg;
-    arg.M        = std::get<0>(tup);
-    arg.N        = std::get<1>(tup);
-    arg.timing   = 0;
+    arg.M      = std::get<0>(tup);
+    arg.N      = std::get<1>(tup);
+    arg.timing = 0;
     return arg;
 }
 
