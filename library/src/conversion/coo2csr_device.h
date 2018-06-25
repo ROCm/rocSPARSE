@@ -9,10 +9,10 @@
 #include <hip/hip_runtime.h>
 
 // Compute lower bound by binary search
-__device__ rocsparse_int lower_bound(const rocsparse_int* arr,
-                                     rocsparse_int key,
-                                     rocsparse_int low,
-                                     rocsparse_int high)
+static inline __device__ rocsparse_int lower_bound(const rocsparse_int* arr,
+                                                   rocsparse_int key,
+                                                   rocsparse_int low,
+                                                   rocsparse_int high)
 {
     if(low > high)
     {
