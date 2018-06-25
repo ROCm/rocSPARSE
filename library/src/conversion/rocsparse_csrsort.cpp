@@ -86,6 +86,14 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handl
     hipcub::DeviceSegmentedRadixSort::SortPairs(nullptr, *buffer_size, null_ptr, null_ptr, null_ptr, null_ptr, nnz, m, null_ptr, null_ptr, 0, 32, stream);
 #endif
 
+    // rocPRIM does not support in-place sorting, so we need additional buffer
+    // for all temporary arrays
+
+    // columns buffer
+    *buffer_size += sizeof(rocsparse_int) * nnz;
+    // perm buffer
+    *buffer_size += sizeof(rocsparse_int) * nnz;
+
     return rocsparse_status_success;
 }
 
@@ -162,18 +170,68 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
     hipStream_t stream = handle->stream;
 
     unsigned int startbit = 0;
-    unsigned int endbit = 32 - __builtin_clz(n);
+    unsigned int endbit = rocsparse_clz(n);
     size_t size;
 
 #if defined(__HIP_PLATFORM_HCC__)
-    using config = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1> >;
+    rocprim::segmented_radix_sort_pairs(nullptr, size, csr_col_ind, csr_col_ind, perm, perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
 
-    rocprim::segmented_radix_sort_pairs<config>(nullptr, size, csr_col_ind, csr_col_ind, perm, perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
-    rocprim::segmented_radix_sort_pairs<config>(temp_buffer, size, csr_col_ind, csr_col_ind, perm, perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+    // Temporary buffer entry points
+    char* ptr = reinterpret_cast<char*>(temp_buffer);
+    ptr += size;
+
+    // columns buffer
+    rocsparse_int* tmp_cols = reinterpret_cast<rocsparse_int*>(ptr);
+    ptr += sizeof(rocsparse_int) * nnz;
+
+    // perm buffer
+    rocsparse_int* tmp_perm = reinterpret_cast<rocsparse_int*>(ptr);
+
+    // Sort by columns and obtain permutation vector
+
+    // Determine blocksize and items per thread depending on average nnz per row
+    rocsparse_int avg_row_nnz = nnz / m;
+
+    if(avg_row_nnz < 64)
+    {
+        using config = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1> >;
+        rocprim::segmented_radix_sort_pairs<config>(temp_buffer, size, csr_col_ind, tmp_cols, perm, tmp_perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+    }
+    else if(avg_row_nnz < 128)
+    {
+        using config = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2> >;
+        rocprim::segmented_radix_sort_pairs<config>(temp_buffer, size, csr_col_ind, tmp_cols, perm, tmp_perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+    }
+    else if(avg_row_nnz < 256)
+    {
+        using config = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4> >;
+        rocprim::segmented_radix_sort_pairs<config>(temp_buffer, size, csr_col_ind, tmp_cols, perm, tmp_perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+    }
+    else
+    {
+        rocprim::segmented_radix_sort_pairs(temp_buffer, size, csr_col_ind, tmp_cols, perm, tmp_perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+    }
 #elif defined(__HIP_PLATFORM_NVCC__)
     hipcub::DeviceSegmentedRadixSort::SortPairs(nullptr, size, csr_col_ind, csr_col_ind, perm, perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
-    hipcub::DeviceSegmentedRadixSort::SortPairs(temp_buffer, size, csr_col_ind, csr_col_ind, perm, perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
+
+    // Temporary buffer entry points
+    char* ptr = reinterpret_cast<char*>(temp_buffer);
+    ptr += size;
+
+    // columns buffer
+    rocsparse_int* tmp_cols = reinterpret_cast<rocsparse_int*>(ptr);
+    ptr += sizeof(rocsparse_int) * nnz;
+
+    // perm buffer
+    rocsparse_int* tmp_perm = reinterpret_cast<rocsparse_int*>(ptr);
+
+    // Sort by columns and obtain permutation vector
+    hipcub::DeviceSegmentedRadixSort::SortPairs(temp_buffer, size, csr_col_ind, tmp_cols, perm, tmp_perm, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream);
 #endif
+
+    // Extract results from buffer
+    hipMemcpy(csr_col_ind, tmp_cols, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice);
+    hipMemcpy(perm, tmp_perm, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice);
 
     return rocsparse_status_success;
 }
