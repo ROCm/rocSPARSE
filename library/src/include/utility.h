@@ -16,15 +16,9 @@
 
 // Return the leftmost significant bit position
 #if defined(rocsparse_ILP64)
-static inline rocsparse_int rocsparse_clz(rocsparse_int n)
-{
-    return 64 - __builtin_clzll(n);
-}
+static inline rocsparse_int rocsparse_clz(rocsparse_int n) { return 64 - __builtin_clzll(n); }
 #else
-static inline rocsparse_int rocsparse_clz(rocsparse_int n)
-{
-    return 32 - __builtin_clz(n);
-}
+static inline rocsparse_int rocsparse_clz(rocsparse_int n) { return 32 - __builtin_clz(n); }
 #endif
 
 // if trace logging is turned on with
