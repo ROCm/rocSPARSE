@@ -1129,10 +1129,10 @@ rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handle,
 /*! \brief SPARSE Format Conversions API
 
     \details
-    csrsort sorts a matrix in CSR format in-place. csrsort requires a
-    temporary storage buffer. The sorted permutation vector perm can be
-    used to obtain sorted csr_val array. In this case, P must be
-    initialized as the identity permutation 0:1:(nnz-1).
+    csrsort sorts a matrix in CSR format. csrsort requires a temporary
+    storage buffer. The sorted permutation vector perm can be used to
+    obtain sorted csr_val array. In this case, P must be initialized
+    as the identity permutation 0:1:(nnz-1).
 
     @param[in]
     handle          rocsparse_handle.
