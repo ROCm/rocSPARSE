@@ -5,11 +5,18 @@
 #include "unit.hpp"
 
 #include <rocsparse.h>
-#include <assert.h>
 #include <hip/hip_runtime_api.h>
 
 #ifdef GOOGLE_TEST
 #include <gtest/gtest.h>
+#else
+#ifdef NDEBUG
+#undef NDEBUG
+#include <assert.h>
+#define NDEBUG
+#else
+#include <assert.h>
+#endif
 #endif
 
 /* ========================================Gtest Unit Check
