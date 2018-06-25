@@ -118,15 +118,46 @@ rocsparse_status testing_coo2csr(Arguments argus)
     }
 
     // Host structures
-    std::vector<rocsparse_int> hcoo_row_ind(nnz);
-    std::vector<rocsparse_int> hcoo_col_ind(nnz);
-    std::vector<float> hcoo_val(nnz);
-    std::vector<rocsparse_int> hcsr_row_ptr(m + 1);
-    std::vector<rocsparse_int> hcsr_row_ptr_gold(m + 1, 0);
+    std::vector<rocsparse_int> hcoo_row_ind;
+    std::vector<rocsparse_int> hcoo_col_ind;
+    std::vector<float> hcoo_val;
 
     // Sample initial COO matrix on CPU
     srand(12345ULL);
-    gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcoo_col_ind, hcoo_val, idx_base);
+    if(argus.laplacian)
+    {
+        std::vector<rocsparse_int> hptr(m + 1);
+        m = n = gen_2d_laplacian(argus.laplacian, hptr, hcoo_col_ind, hcoo_val, idx_base);
+        nnz = hptr[m];
+        hcoo_row_ind.resize(nnz);
+
+        // Convert to COO
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            for(rocsparse_int j = hptr[i]; j < hptr[i + 1]; ++j)
+            {
+                hcoo_row_ind[j - idx_base] = i + idx_base;
+            }
+        }
+    }
+    else
+    {
+        if(argus.filename != "")
+        {
+            if(read_mtx_matrix(argus.filename.c_str(), m, n, nnz, hcoo_row_ind, hcoo_col_ind, hcoo_val) != 0)
+            {
+                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                return rocsparse_status_internal_error;
+            }
+        }
+        else
+        {
+            gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcoo_col_ind, hcoo_val, idx_base);
+        }
+    }
+
+    std::vector<rocsparse_int> hcsr_row_ptr(m + 1);
+    std::vector<rocsparse_int> hcsr_row_ptr_gold(m + 1, 0);
 
     // Allocate memory on the device
     auto dcoo_row_ind_managed =
