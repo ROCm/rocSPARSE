@@ -25,6 +25,7 @@
 #include "testing_csr2hyb.hpp"
 #include "testing_coo2csr.hpp"
 #include "testing_identity.hpp"
+#include "testing_csrsort.hpp"
 
 #include <iostream>
 #include <stdio.h>
@@ -82,7 +83,8 @@ int main(int argc, char* argv[])
          "SPARSE function to test. Options:\n"
          "  Level1: axpyi, doti, gthr, gthrz, roti, sctr\n"
          "  Level2: coomv, csrmv, ellmv, hybmv\n"
-         "  Conversion: csr2coo, csr2ell, csr2hyb, coo2csr")
+         "  Conversion: csr2coo, csr2ell, csr2hyb, coo2csr\n"
+         "  Sorting: csrsort")
         
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d")
@@ -229,6 +231,10 @@ int main(int argc, char* argv[])
     else if(function == "coo2csr")
     {
         testing_coo2csr(argus);
+    }
+    else if(function == "csrsort")
+    {
+        testing_csrsort(argus);
     }
     else
     {
