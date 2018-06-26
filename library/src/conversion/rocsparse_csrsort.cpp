@@ -6,6 +6,7 @@
 #include "definitions.h"
 #include "handle.h"
 #include "utility.h"
+#include "csrsort_device.h"
 
 #include <hip/hip_runtime.h>
 
@@ -97,6 +98,8 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handl
     *buffer_size += sizeof(rocsparse_int) * nnz;
     // perm buffer
     *buffer_size += sizeof(rocsparse_int) * nnz;
+    // segm buffer
+    *buffer_size += sizeof(rocsparse_int) * (m + 1);
 
     return rocsparse_status_success;
 }
@@ -218,6 +221,33 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
 
     // perm buffer
     rocsparse_int* tmp_perm = reinterpret_cast<rocsparse_int*>(ptr);
+    ptr += sizeof(rocsparse_int) * nnz;
+
+    // segm buffer
+    rocsparse_int* tmp_segm = nullptr;
+
+    // Index base one requires shift of offset positions
+    if(descr->base == rocsparse_index_base_one)
+    {
+        tmp_segm = reinterpret_cast<rocsparse_int*>(ptr);
+
+#define CSRSORT_DIM 512
+        dim3 csrsort_blocks(m / CSRSORT_DIM + 1);
+        dim3 csrsort_threads(CSRSORT_DIM);
+
+        hipLaunchKernelGGL((csrsort_shift_kernel),
+                           csrsort_blocks,
+                           csrsort_threads,
+                           0,
+                           stream,
+                           m + 1,
+                           csr_row_ptr,
+                           tmp_segm);
+#undef CSRSORT_DIM
+    }
+
+    // Switch between offsets
+    const rocsparse_int* offsets = tmp_segm ? tmp_segm : csr_row_ptr;
 
 // Sort by columns and obtain permutation vector
 
@@ -237,8 +267,8 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
                                                                         vals,
                                                                         nnz,
                                                                         m,
-                                                                        csr_row_ptr,
-                                                                        csr_row_ptr + 1,
+                                                                        offsets,
+                                                                        offsets + 1,
                                                                         startbit,
                                                                         endbit,
                                                                         stream));
@@ -252,8 +282,8 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
                                                                         vals,
                                                                         nnz,
                                                                         m,
-                                                                        csr_row_ptr,
-                                                                        csr_row_ptr + 1,
+                                                                        offsets,
+                                                                        offsets + 1,
                                                                         startbit,
                                                                         endbit,
                                                                         stream));
@@ -267,8 +297,8 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
                                                                         vals,
                                                                         nnz,
                                                                         m,
-                                                                        csr_row_ptr,
-                                                                        csr_row_ptr + 1,
+                                                                        offsets,
+                                                                        offsets + 1,
                                                                         startbit,
                                                                         endbit,
                                                                         stream));
@@ -281,8 +311,8 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
                                                                 vals,
                                                                 nnz,
                                                                 m,
-                                                                csr_row_ptr,
-                                                                csr_row_ptr + 1,
+                                                                offsets,
+                                                                offsets + 1,
                                                                 startbit,
                                                                 endbit,
                                                                 stream));
@@ -307,8 +337,8 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
                                                                     vals,
                                                                     nnz,
                                                                     m,
-                                                                    csr_row_ptr,
-                                                                    csr_row_ptr + 1,
+                                                                    offsets,
+                                                                    offsets + 1,
                                                                     startbit,
                                                                     endbit,
                                                                     stream));

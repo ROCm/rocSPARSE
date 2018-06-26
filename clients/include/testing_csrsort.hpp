@@ -150,9 +150,10 @@ void testing_csrsort_bad_arg(void)
 
 rocsparse_status testing_csrsort(Arguments argus)
 {
-    rocsparse_int m         = argus.M;
-    rocsparse_int n         = argus.N;
-    rocsparse_int safe_size = 100;
+    rocsparse_int m               = argus.M;
+    rocsparse_int n               = argus.N;
+    rocsparse_int safe_size       = 100;
+    rocsparse_index_base idx_base = argus.idx_base;
     rocsparse_status status;
 
     size_t buffer_size = 0;
@@ -169,6 +170,9 @@ rocsparse_status testing_csrsort(Arguments argus)
 
     std::unique_ptr<descr_struct> unique_ptr_descr(new descr_struct);
     rocsparse_mat_descr descr = unique_ptr_descr->descr;
+
+    // Set matrix index base
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, idx_base));
 
     // Argument sanity check before allocating invalid memory
     if(m <= 0 || n <= 0 || nnz <= 0)
@@ -217,14 +221,15 @@ rocsparse_status testing_csrsort(Arguments argus)
 
     // Sample initial COO matrix on CPU
     srand(12345ULL);
-    gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, rocsparse_index_base_zero);
+    gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, idx_base);
 
     // Convert COO to CSR
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
-        ++hcsr_row_ptr[hcoo_row_ind[i] + 1];
+        ++hcsr_row_ptr[hcoo_row_ind[i] + 1 - idx_base];
     }
 
+    hcsr_row_ptr[0] = idx_base;
     for(rocsparse_int i = 0; i < m; ++i)
     {
         hcsr_row_ptr[i + 1] += hcsr_row_ptr[i];
@@ -240,8 +245,8 @@ rocsparse_status testing_csrsort(Arguments argus)
 
     for(rocsparse_int i = 0; i < m; ++i)
     {
-        rocsparse_int row_begin = hcsr_row_ptr[i];
-        rocsparse_int row_end   = hcsr_row_ptr[i + 1];
+        rocsparse_int row_begin = hcsr_row_ptr[i] - idx_base;
+        rocsparse_int row_end   = hcsr_row_ptr[i + 1] - idx_base;
         rocsparse_int row_nnz   = row_end - row_begin;
 
         for(rocsparse_int j = row_begin; j < row_end; ++j)
