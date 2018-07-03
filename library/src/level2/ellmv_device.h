@@ -34,7 +34,7 @@ static __device__ void ellmvn_device(rocsparse_int m,
 
         if(col >= 0 && col < n)
         {
-            sum += ell_val[idx] * x[col];
+            sum += ell_val[idx] * __ldg(x + col);
         }
         else
         {
