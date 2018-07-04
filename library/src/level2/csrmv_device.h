@@ -10,7 +10,14 @@ template <rocsparse_int SUBWAVE_SIZE>
 __device__ float reduction(float sum)
 {
     // clang-format off
-    if(SUBWAVE_SIZE > 32) sum += hc::__amdgcn_readlane(sum, 32);
+//    if(SUBWAVE_SIZE > 32) sum += hc::__amdgcn_readlane(sum, 32);
+    // TODO: readlane is not ported to HC
+    if(SUBWAVE_SIZE > 32)
+    {
+        float val = 0.0f;
+        __asm__ volatile("v_readlane_b32 %0 %1 32" : "=s"(val) : "v"(sum));
+        sum += val;
+    }
     if(SUBWAVE_SIZE > 16) sum += hc::__amdgcn_ds_swizzle(sum, 0x401f);
     if(SUBWAVE_SIZE >  8) sum += hc::__amdgcn_ds_swizzle(sum, 0x201f);
     if(SUBWAVE_SIZE >  4) sum += hc::__amdgcn_ds_swizzle(sum, 0x101f);
@@ -38,8 +45,11 @@ __device__ double reduction(double sum)
 
     if(SUBWAVE_SIZE > 32)
     {
-        upper_sum.b32[0] = hc::__amdgcn_readlane(temp_sum.b32[0], 32);
-        upper_sum.b32[1] = hc::__amdgcn_readlane(temp_sum.b32[1], 32);
+//        upper_sum.b32[0] = hc::__amdgcn_readlane(temp_sum.b32[0], 32);
+//        upper_sum.b32[1] = hc::__amdgcn_readlane(temp_sum.b32[1], 32);
+        // TODO readlane is not ported to HC
+        __asm__ volatile("v_readlane_b32 %0 %1 32" : "=s"(upper_sum.b32[0]) : "v"(temp_sum.b32[0]));
+        __asm__ volatile("v_readlane_b32 %0 %1 32" : "=s"(upper_sum.b32[1]) : "v"(temp_sum.b32[1]));
         temp_sum.val += upper_sum.val;
     }
 
