@@ -612,6 +612,7 @@ class Arguments
     rocsparse_int iters     = 10;
     rocsparse_int laplacian = 0;
     rocsparse_int ell_width = 0;
+    rocsparse_int temp      = 0;
 
     std::string filename = "";
 
@@ -636,6 +637,7 @@ class Arguments
         iters     = rhs.iters;
         laplacian = rhs.laplacian;
         ell_width = rhs.ell_width;
+        temp      = rhs.temp;
 
         filename = rhs.filename;
 

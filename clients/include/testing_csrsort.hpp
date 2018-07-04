@@ -111,15 +111,6 @@ void testing_csrsort_bad_arg(void)
         verify_rocsparse_status_invalid_pointer(status, "Error: csr_col_ind is nullptr");
     }
 
-    // Testing for (perm == nullptr)
-    {
-        rocsparse_int* perm_null = nullptr;
-
-        status = rocsparse_csrsort(
-            handle, m, n, nnz, descr, csr_row_ptr, csr_col_ind, perm_null, buffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: perm is nullptr");
-    }
-
     // Testing for (buffer == nullptr)
     {
         rocsparse_int* buffer_null = nullptr;
@@ -150,9 +141,11 @@ void testing_csrsort_bad_arg(void)
 
 rocsparse_status testing_csrsort(Arguments argus)
 {
-    rocsparse_int m         = argus.M;
-    rocsparse_int n         = argus.N;
-    rocsparse_int safe_size = 100;
+    rocsparse_int m               = argus.M;
+    rocsparse_int n               = argus.N;
+    rocsparse_int safe_size       = 100;
+    rocsparse_int permute         = argus.temp;
+    rocsparse_index_base idx_base = argus.idx_base;
     rocsparse_status status;
 
     size_t buffer_size = 0;
@@ -169,6 +162,9 @@ rocsparse_status testing_csrsort(Arguments argus)
 
     std::unique_ptr<descr_struct> unique_ptr_descr(new descr_struct);
     rocsparse_mat_descr descr = unique_ptr_descr->descr;
+
+    // Set matrix index base
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, idx_base));
 
     // Argument sanity check before allocating invalid memory
     if(m <= 0 || n <= 0 || nnz <= 0)
@@ -210,24 +206,46 @@ rocsparse_status testing_csrsort(Arguments argus)
     // For testing, assemble a COO matrix and convert it to CSR first (on host)
 
     // Host structures
-    std::vector<rocsparse_int> hcsr_row_ptr(m + 1, 0);
-    std::vector<rocsparse_int> hcoo_row_ind(nnz);
-    std::vector<rocsparse_int> hcsr_col_ind(nnz);
-    std::vector<float> hcsr_val(nnz);
+    std::vector<rocsparse_int> hcsr_row_ptr;
+    std::vector<rocsparse_int> hcoo_row_ind;
+    std::vector<rocsparse_int> hcsr_col_ind;
+    std::vector<float> hcsr_val;
 
     // Sample initial COO matrix on CPU
     srand(12345ULL);
-    gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, rocsparse_index_base_zero);
-
-    // Convert COO to CSR
-    for(rocsparse_int i = 0; i < nnz; ++i)
+    if(argus.laplacian)
     {
-        ++hcsr_row_ptr[hcoo_row_ind[i] + 1];
+        m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base);
+        nnz   = hcsr_row_ptr[m];
     }
-
-    for(rocsparse_int i = 0; i < m; ++i)
+    else
     {
-        hcsr_row_ptr[i + 1] += hcsr_row_ptr[i];
+        if(argus.filename != "")
+        {
+            if(read_mtx_matrix(
+                   argus.filename.c_str(), m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val) != 0)
+            {
+                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                return rocsparse_status_internal_error;
+            }
+        }
+        else
+        {
+            gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, idx_base);
+        }
+
+        // Convert COO to CSR
+        hcsr_row_ptr.resize(m + 1, 0);
+        for(rocsparse_int i = 0; i < nnz; ++i)
+        {
+            ++hcsr_row_ptr[hcoo_row_ind[i] + 1 - idx_base];
+        }
+
+        hcsr_row_ptr[0] = idx_base;
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            hcsr_row_ptr[i + 1] += hcsr_row_ptr[i];
+        }
     }
 
     // Unsort CSR columns
@@ -240,8 +258,8 @@ rocsparse_status testing_csrsort(Arguments argus)
 
     for(rocsparse_int i = 0; i < m; ++i)
     {
-        rocsparse_int row_begin = hcsr_row_ptr[i];
-        rocsparse_int row_end   = hcsr_row_ptr[i + 1];
+        rocsparse_int row_begin = hcsr_row_ptr[i] - idx_base;
+        rocsparse_int row_end   = hcsr_row_ptr[i + 1] - idx_base;
         rocsparse_int row_nnz   = row_end - row_begin;
 
         for(rocsparse_int j = row_begin; j < row_end; ++j)
@@ -274,13 +292,15 @@ rocsparse_status testing_csrsort(Arguments argus)
     rocsparse_int* dcsr_col_ind = (rocsparse_int*)dcsr_col_ind_managed.get();
     float* dcsr_val             = (float*)dcsr_val_managed.get();
     float* dcsr_val_sorted      = (float*)dcsr_val_sorted_managed.get();
-    rocsparse_int* dperm        = (rocsparse_int*)dperm_managed.get();
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dcsr_val_sorted || !dperm)
+    // Set permutation vector, if asked for
+    rocsparse_int* dperm = permute ? (rocsparse_int*)dperm_managed.get() : nullptr;
+
+    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dcsr_val_sorted || (permute && !dperm))
     {
         verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                        "!dcsr_row_ptr || !dcsr_col_ind || "
-                                        "!dcsr_val || !dcsr_val_sorted || !dperm");
+                                        "!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || "
+                                        "!dcsr_val_sorted || (permute && !dperm)");
         return rocsparse_status_memory_error;
     }
 
@@ -312,55 +332,76 @@ rocsparse_status testing_csrsort(Arguments argus)
             return rocsparse_status_memory_error;
         }
 
-        // Initialize perm with identity permutation
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, nnz, dperm));
+        if(permute)
+        {
+            // Initialize perm with identity permutation
+            CHECK_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, nnz, dperm));
+        }
 
         // Sort CSR columns
         CHECK_ROCSPARSE_ERROR(rocsparse_csrsort(
             handle, m, n, nnz, descr, dcsr_row_ptr, dcsr_col_ind, dperm, dbuffer));
 
-        // Sort CSR values
-        CHECK_ROCSPARSE_ERROR(rocsparse_sgthr(
-            handle, nnz, dcsr_val, dcsr_val_sorted, dperm, rocsparse_index_base_zero));
+        if(permute)
+        {
+            // Sort CSR values
+            CHECK_ROCSPARSE_ERROR(rocsparse_sgthr(
+                handle, nnz, dcsr_val, dcsr_val_sorted, dperm, rocsparse_index_base_zero));
+        }
 
         // Copy output from device to host
         CHECK_HIP_ERROR(hipMemcpy(hcsr_col_ind_unsorted.data(),
                                   dcsr_col_ind,
                                   sizeof(rocsparse_int) * nnz,
                                   hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(
-            hcsr_val_unsorted.data(), dcsr_val_sorted, sizeof(float) * nnz, hipMemcpyDeviceToHost));
+
+        if(permute)
+        {
+            CHECK_HIP_ERROR(hipMemcpy(hcsr_val_unsorted.data(),
+                                      dcsr_val_sorted,
+                                      sizeof(float) * nnz,
+                                      hipMemcpyDeviceToHost));
+        }
 
         // Unit check
         unit_check_general(1, nnz, hcsr_col_ind.data(), hcsr_col_ind_unsorted.data());
-        unit_check_general(1, nnz, hcsr_val.data(), hcsr_val_unsorted.data());
+
+        if(permute)
+        {
+            unit_check_general(1, nnz, hcsr_val.data(), hcsr_val_unsorted.data());
+        }
     }
 
     if(argus.timing)
     {
-        /* TODO
-                rocsparse_int number_cold_calls = 2;
-                rocsparse_int number_hot_calls  = argus.iters;
+        rocsparse_int number_cold_calls = 2;
+        rocsparse_int number_hot_calls  = argus.iters;
 
-                for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
-                {
-                    rocsparse_csrsort(handle, dcsr_row_ptr, nnz, m, dcoo_row_ind, idx_base);
-                }
+        // Allocate buffer for csrsort
+        rocsparse_csrsort_buffer_size(handle, m, n, nnz, dcsr_row_ptr, dcsr_col_ind, &buffer_size);
 
-                double gpu_time_used = get_time_us();
+        auto dbuffer_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(char) * buffer_size), device_free};
+        void* dbuffer = (void*)dbuffer_managed.get();
 
-                for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
-                {
-                    rocsparse_csrsort(handle, dcsr_row_ptr, nnz, m, dcoo_row_ind, idx_base);
-                }
+        for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
+        {
+            rocsparse_csrsort(
+                handle, m, n, nnz, descr, dcsr_row_ptr, dcsr_col_ind, nullptr, dbuffer);
+        }
 
-                gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
+        double gpu_time_used = get_time_us();
 
-                double bandwidth = sizeof(rocsparse_int) * (nnz + m + 1) / gpu_time_used / 1e6;
+        for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
+        {
+            rocsparse_csrsort(
+                handle, m, n, nnz, descr, dcsr_row_ptr, dcsr_col_ind, nullptr, dbuffer);
+        }
 
-                printf("m\t\tn\t\tnnz\t\tGB/s\tmsec\n");
-                printf("%8d\t%8d\t%9d\t%0.2lf\t%0.2lf\n", m, n, nnz, bandwidth, gpu_time_used);
-        */
+        gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
+
+        printf("m\t\tn\t\tnnz\t\tmsec\n");
+        printf("%8d\t%8d\t%9d\t%0.2lf\n", m, n, nnz, gpu_time_used);
     }
     return rocsparse_status_success;
 }
