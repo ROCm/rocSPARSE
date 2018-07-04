@@ -45,8 +45,8 @@ __device__ double reduction(double sum)
 
     if(SUBWAVE_SIZE > 32)
     {
-//        upper_sum.b32[0] = hc::__amdgcn_readlane(temp_sum.b32[0], 32);
-//        upper_sum.b32[1] = hc::__amdgcn_readlane(temp_sum.b32[1], 32);
+        //        upper_sum.b32[0] = hc::__amdgcn_readlane(temp_sum.b32[0], 32);
+        //        upper_sum.b32[1] = hc::__amdgcn_readlane(temp_sum.b32[1], 32);
         // TODO readlane is not ported to HC
         __asm__ volatile("v_readlane_b32 %0 %1 32" : "=s"(upper_sum.b32[0]) : "v"(temp_sum.b32[0]));
         __asm__ volatile("v_readlane_b32 %0 %1 32" : "=s"(upper_sum.b32[1]) : "v"(temp_sum.b32[1]));
@@ -115,9 +115,9 @@ static __device__ void csrmvn_general_device(rocsparse_int m,
                                              T* y,
                                              rocsparse_index_base idx_base)
 {
-    rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
-    rocsparse_int lid = tid & (SUBWAVE_SIZE - 1);
+    rocsparse_int tid    = hipThreadIdx_x;
+    rocsparse_int gid    = hipBlockIdx_x * hipBlockDim_x + tid;
+    rocsparse_int lid    = tid & (SUBWAVE_SIZE - 1);
     rocsparse_int nwarps = hipGridDim_x * hipBlockDim_x / SUBWAVE_SIZE;
 
     // Loop over rows each subwave processes

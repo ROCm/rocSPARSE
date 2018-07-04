@@ -15,18 +15,18 @@
 #include <hip/hip_runtime.h>
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WARPSIZE>
-__launch_bounds__(128)
-__global__ void coomvn_warp_host_pointer(rocsparse_int nnz,
-                                         rocsparse_int loops,
-                                         T alpha,
-                                         const rocsparse_int* __restrict__ coo_row_ind,
-                                         const rocsparse_int* __restrict__ coo_col_ind,
-                                         const T* __restrict__ coo_val,
-                                         const T* __restrict__ x,
-                                         T* __restrict__ y,
-                                         rocsparse_int* __restrict__ row_block_red,
-                                         T* __restrict__ val_block_red,
-                                         rocsparse_index_base idx_base)
+__launch_bounds__(128) __global__
+    void coomvn_warp_host_pointer(rocsparse_int nnz,
+                                  rocsparse_int loops,
+                                  T alpha,
+                                  const rocsparse_int* __restrict__ coo_row_ind,
+                                  const rocsparse_int* __restrict__ coo_col_ind,
+                                  const T* __restrict__ coo_val,
+                                  const T* __restrict__ x,
+                                  T* __restrict__ y,
+                                  rocsparse_int* __restrict__ row_block_red,
+                                  T* __restrict__ val_block_red,
+                                  rocsparse_index_base idx_base)
 {
     coomvn_general_warp_reduce<T, BLOCKSIZE, WARPSIZE>(nnz,
                                                        loops,
@@ -42,18 +42,18 @@ __global__ void coomvn_warp_host_pointer(rocsparse_int nnz,
 }
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WARPSIZE>
-__launch_bounds__(128)
-__global__ void coomvn_warp_device_pointer(rocsparse_int nnz,
-                                           rocsparse_int loops,
-                                           const T* alpha,
-                                           const rocsparse_int* __restrict__ coo_row_ind,
-                                           const rocsparse_int* __restrict__ coo_col_ind,
-                                           const T* __restrict__ coo_val,
-                                           const T* __restrict__ x,
-                                           T* __restrict__ y,
-                                           rocsparse_int* __restrict__ row_block_red,
-                                           T* __restrict__ val_block_red,
-                                           rocsparse_index_base idx_base)
+__launch_bounds__(128) __global__
+    void coomvn_warp_device_pointer(rocsparse_int nnz,
+                                    rocsparse_int loops,
+                                    const T* alpha,
+                                    const rocsparse_int* __restrict__ coo_row_ind,
+                                    const rocsparse_int* __restrict__ coo_col_ind,
+                                    const T* __restrict__ coo_val,
+                                    const T* __restrict__ x,
+                                    T* __restrict__ y,
+                                    rocsparse_int* __restrict__ row_block_red,
+                                    T* __restrict__ val_block_red,
+                                    rocsparse_index_base idx_base)
 {
     coomvn_general_warp_reduce<T, BLOCKSIZE, WARPSIZE>(nnz,
                                                        loops,
