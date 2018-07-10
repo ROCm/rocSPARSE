@@ -14,22 +14,21 @@ static inline __device__ rocsparse_int lower_bound(const rocsparse_int* arr,
                                                    rocsparse_int low,
                                                    rocsparse_int high)
 {
-    if(low > high)
+    while(low < high)
     {
-        return low;
+        rocsparse_int mid = low + ((high - low) >> 1);
+
+        if(arr[mid] < key)
+        {
+            low = mid + 1;
+        }
+        else
+        {
+            high = mid;
+        }
     }
 
-    rocsparse_int mid = low + ((high - low) >> 1);
-
-    if(arr[mid] >= key)
-    {
-        high = mid - 1;
-    }
-    else
-    {
-        low = mid + 1;
-    }
-    return lower_bound(arr, key, low, high);
+    return low;
 }
 
 // COO to CSR matrix conversion kernel
