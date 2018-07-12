@@ -844,6 +844,115 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
 /*! \brief SPARSE Format Conversions API
 
     \details
+    csr2csc_buffer_size returns the size of the temporary storage buffer
+    that is required by csr2csc. The temporary storage buffer has to be
+    allocated by the user.
+
+    @param[in]
+    handle          rocsparse_handle.
+                    handle to the rocsparse library context queue.
+    @param[in]
+    m               number of rows of A.
+    @param[in]
+    n               number of columns of A.
+    @param[in]
+    nnz             number of non-zero elements of A.
+    @param[in]
+    csr_row_ptr     array of m+1 elements that point to the start
+                    of every row of A.
+    @param[in]
+    csr_col_ind     array of nnz elements containing the column indices
+                    of A.
+    @param[in]
+    copy_values     rocsparse_action_symbolic or rocsparse_action_numeric
+    @param[out]
+    buffer_size     number of bytes of the temporary storage buffer.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handle,
+                                               rocsparse_int m,
+                                               rocsparse_int n,
+                                               rocsparse_int nnz,
+                                               const rocsparse_int* csr_row_ptr,
+                                               const rocsparse_int* csr_col_ind,
+                                               rocsparse_action copy_values,
+                                               size_t* buffer_size);
+
+/*! \brief SPARSE Format Conversions API
+
+    \details
+    csr2csc converts a CSR matrix into a CSC matrix. The resulting matrix
+    can also be seen as the transpose of the original CSR matrix. csr2csc
+    can also be used to convert a CSC matrix into a CSR matrix.
+
+    @param[in]
+    handle          rocsparse_handle.
+                    handle to the rocsparse library context queue.
+    @param[in]
+    m               number of rows of the sparse matrix.
+    @param[in]
+    n               number of columns of the sparse matrix.
+    @param[in]
+    nnz             number of non-zero entries of the sparse matrix.
+    @param[in]
+    csr_val         array of nnz elements of the CSR matrix.
+    @param[in]
+    csr_row_ptr     array of m+1 elements that point to the start of
+                    every row of the CSR matrix.
+    @param[in]
+    csr_col_ind     array of nnz elements containing the column indices
+                    of the CSR matrix.
+    @param[out]
+    csc_val         array of nnz elements of the CSC matrix.
+    @param[out]
+    csc_row_ind     array of nnz elements containing the row indices of
+                    the CSC matrix.
+    @param[out]
+    csc_col_ptr     array of n+1 elements that point to the start of
+                    every column of the CSC matrix.
+    @param[in]
+    copy_values     rocsparse_action_symbolic or rocsparse_action_numeric
+    @param[in]
+    idx_base        rocsparse_index_base_zero or rocsparse_index_base_one.
+    @param[in]
+    temp_buffer     temporary storage buffer allocated by the user,
+                    size is returned by csr2csc_buffer_size
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scsr2csc(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    rocsparse_int nnz,
+                                    const float* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    const rocsparse_int* csr_col_ind,
+                                    float* csc_val,
+                                    rocsparse_int* csc_row_ind,
+                                    rocsparse_int* csc_col_ptr,
+                                    rocsparse_action copy_values,
+                                    rocsparse_index_base idx_base,
+                                    void* temp_buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcsr2csc(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    rocsparse_int nnz,
+                                    const double* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    const rocsparse_int* csr_col_ind,
+                                    double* csc_val,
+                                    rocsparse_int* csc_row_ind,
+                                    rocsparse_int* csc_col_ptr,
+                                    rocsparse_action copy_values,
+                                    rocsparse_index_base idx_base,
+                                    void* temp_buffer);
+
+/*! \brief SPARSE Format Conversions API
+
+    \details
     csr2ell_width computes the maximum of the per row non-zeros over all
     rows, the ELL width, for a given CSR matrix.
 
