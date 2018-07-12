@@ -173,14 +173,19 @@ rocsparse_status testing_csrsort(Arguments argus)
             rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
         auto csr_col_ind_managed =
             rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto perm_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto buffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
 
         rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
         rocsparse_int* csr_col_ind = (rocsparse_int*)csr_col_ind_managed.get();
+        rocsparse_int* perm = (rocsparse_int*)perm_managed.get();
+        void* buffer = (void*)buffer_managed.get();
 
-        if(!csr_row_ptr || !csr_col_ind)
+        if(!csr_row_ptr || !csr_col_ind || !perm || !buffer)
         {
             verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                            "!csr_row_ptr || !csr_col_ind");
+                                            "!csr_row_ptr || !csr_col_ind || !perm || !buffer");
             return rocsparse_status_memory_error;
         }
 
@@ -198,6 +203,25 @@ rocsparse_status testing_csrsort(Arguments argus)
             // Buffer size should be zero
             size_t zero = 0;
             unit_check_general(1, 1, &zero, &buffer_size);
+        }
+
+        status = rocsparse_csrsort(handle,
+                                   m,
+                                   n,
+                                   nnz,
+                                   descr,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   perm,
+                                   buffer);
+
+        if(m < 0 || n < 0 || nnz < 0)
+        {
+            verify_rocsparse_status_invalid_size(status, "Error: m < 0 || n < 0 || nnz < 0");
+        }
+        else
+        {
+            verify_rocsparse_status_success(status, "m >= 0 && n >= 0 && nnz >= 0");
         }
 
         return rocsparse_status_success;
