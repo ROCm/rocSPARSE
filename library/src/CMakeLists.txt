@@ -25,6 +25,7 @@ set(rocsparse_source
 
 # Conversion
   src/conversion/rocsparse_csr2coo.cpp
+  src/conversion/rocsparse_csr2csc.cpp
   src/conversion/rocsparse_csr2ell.cpp
   src/conversion/rocsparse_csr2hyb.cpp
   src/conversion/rocsparse_coo2csr.cpp
