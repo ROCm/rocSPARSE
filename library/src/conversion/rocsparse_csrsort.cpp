@@ -221,7 +221,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
 #elif defined(__HIP_PLATFORM_NVCC__)
         hipcub::DoubleBuffer<rocsparse_int> dummy(csr_col_ind, csr_col_ind);
 
-        ETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortKeys(
+        RETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortKeys(
             nullptr, size, dummy, nnz, m, csr_row_ptr, csr_row_ptr + 1, startbit, endbit, stream));
 #endif
     }
