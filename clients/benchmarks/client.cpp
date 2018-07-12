@@ -21,6 +21,7 @@
 
 // Conversion
 #include "testing_csr2coo.hpp"
+#include "testing_csr2csc.hpp"
 #include "testing_csr2ell.hpp"
 #include "testing_csr2hyb.hpp"
 #include "testing_coo2csr.hpp"
@@ -83,7 +84,8 @@ int main(int argc, char* argv[])
          "SPARSE function to test. Options:\n"
          "  Level1: axpyi, doti, gthr, gthrz, roti, sctr\n"
          "  Level2: coomv, csrmv, ellmv, hybmv\n"
-         "  Conversion: csr2coo, csr2ell, csr2hyb, coo2csr\n"
+         "  Conversion: csr2coo, csr2csc, csr2ell,\n"
+         "              csr2hyb, coo2csr\n"
          "  Sorting: csrsort")
         
         ("precision,r",
@@ -213,6 +215,13 @@ int main(int argc, char* argv[])
     else if(function == "csr2coo")
     {
         testing_csr2coo(argus);
+    }
+    else if(function == "csr2csc")
+    {
+        if(precision == 's')
+            testing_csr2csc<float>(argus);
+        else if(precision == 'd')
+            testing_csr2csc<double>(argus);
     }
     else if(function == "csr2ell")
     {
