@@ -13,33 +13,33 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, const rocsparse_int SUBWAVE_SIZE, const rocsparse_int WG_SIZE>
+template <typename T, rocsparse_int SUBWAVE_SIZE>
 __global__ void csrmvn_kernel_host_pointer(rocsparse_int m,
                                            T alpha,
-                                           const rocsparse_int* csr_row_ptr,
-                                           const rocsparse_int* csr_col_ind,
-                                           const T* csr_val,
-                                           const T* x,
+                                           const rocsparse_int* __restrict__ csr_row_ptr,
+                                           const rocsparse_int* __restrict__ csr_col_ind,
+                                           const T* __restrict__ csr_val,
+                                           const T* __restrict__ x,
                                            T beta,
-                                           T* y,
+                                           T* __restrict__ y,
                                            rocsparse_index_base idx_base)
 {
-    csrmvn_general_device<T, SUBWAVE_SIZE, WG_SIZE>(
+    csrmvn_general_device<T, SUBWAVE_SIZE>(
         m, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y, idx_base);
 }
 
-template <typename T, const rocsparse_int SUBWAVE_SIZE, const rocsparse_int WG_SIZE>
+template <typename T, rocsparse_int SUBWAVE_SIZE>
 __global__ void csrmvn_kernel_device_pointer(rocsparse_int m,
                                              const T* alpha,
-                                             const rocsparse_int* csr_row_ptr,
-                                             const rocsparse_int* csr_col_ind,
-                                             const T* csr_val,
-                                             const T* x,
+                                             const rocsparse_int* __restrict__ csr_row_ptr,
+                                             const rocsparse_int* __restrict__ csr_col_ind,
+                                             const T* __restrict__ csr_val,
+                                             const T* __restrict__ x,
                                              const T* beta,
-                                             T* y,
+                                             T* __restrict__ y,
                                              rocsparse_index_base idx_base)
 {
-    csrmvn_general_device<T, SUBWAVE_SIZE, WG_SIZE>(
+    csrmvn_general_device<T, SUBWAVE_SIZE>(
         m, *alpha, csr_row_ptr, csr_col_ind, csr_val, x, *beta, y, idx_base);
 }
 
@@ -183,7 +183,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
             {
                 if(nnz_per_row < 4)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 2, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 2>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -200,7 +200,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 8)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 4, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 4>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -217,7 +217,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 16)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 8, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 8>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -234,7 +234,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 32)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 16, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 16>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -251,7 +251,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 32, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 32>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -271,7 +271,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
             {
                 if(nnz_per_row < 4)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 2, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 2>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -288,7 +288,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 8)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 4, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 4>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -305,7 +305,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 16)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 8, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 8>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -322,7 +322,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 32)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 16, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 16>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -339,7 +339,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 64)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 32, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 32>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -356,7 +356,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 64, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_device_pointer<T, 64>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -388,7 +388,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
             {
                 if(nnz_per_row < 4)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 2, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 2>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -405,7 +405,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 8)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 4, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 4>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -422,7 +422,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 16)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 8, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 8>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -439,7 +439,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 32)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 16, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 16>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -456,7 +456,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 32, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 32>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -476,7 +476,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
             {
                 if(nnz_per_row < 4)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 2, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 2>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -493,7 +493,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 8)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 4, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 4>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -510,7 +510,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 16)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 8, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 8>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -527,7 +527,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 32)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 16, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 16>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -544,7 +544,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else if(nnz_per_row < 64)
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 32, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 32>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,
@@ -561,7 +561,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                 }
                 else
                 {
-                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 64, CSRMVN_DIM>),
+                    hipLaunchKernelGGL((csrmvn_kernel_host_pointer<T, 64>),
                                        csrmvn_blocks,
                                        csrmvn_threads,
                                        0,

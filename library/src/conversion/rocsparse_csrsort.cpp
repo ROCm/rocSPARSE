@@ -228,7 +228,6 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
 
     // Temporary buffer entry points
     char* ptr = reinterpret_cast<char*>(temp_buffer);
-    ptr += size;
 
     // columns buffer
     rocsparse_int* tmp_cols = reinterpret_cast<rocsparse_int*>(ptr);
@@ -245,6 +244,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
     if(descr->base == rocsparse_index_base_one)
     {
         tmp_segm = reinterpret_cast<rocsparse_int*>(ptr);
+        ptr += sizeof(rocsparse_int) * nnz;
 
 #define CSRSORT_DIM 512
         dim3 csrsort_blocks(m / CSRSORT_DIM + 1);
@@ -260,6 +260,9 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
                            tmp_segm);
 #undef CSRSORT_DIM
     }
+
+    // rocprim buffer
+    void* tmp_rocprim = reinterpret_cast<void*>(ptr);
 
     // Switch between offsets
     const rocsparse_int* offsets = tmp_segm ? tmp_segm : csr_row_ptr;
@@ -280,7 +283,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
         {
             using config =
                 rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
-            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(temp_buffer,
+            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys,
                                                                             vals,
@@ -296,7 +299,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
         {
             using config =
                 rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
-            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(temp_buffer,
+            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys,
                                                                             vals,
@@ -312,7 +315,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
         {
             using config =
                 rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
-            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(temp_buffer,
+            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys,
                                                                             vals,
@@ -326,7 +329,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
         }
         else
         {
-            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs(temp_buffer,
+            RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs(tmp_rocprim,
                                                                     size,
                                                                     keys,
                                                                     vals,
@@ -353,7 +356,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
         hipcub::DoubleBuffer<rocsparse_int> vals(perm, tmp_perm);
 
         RETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortPairs(
-            temp_buffer, size, keys, vals, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
+            tmp_rocprim, size, keys, vals, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
         if(keys.Current() != csr_col_ind)
         {
             RETURN_IF_HIP_ERROR(hipMemcpy(
@@ -380,26 +383,26 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
             using config =
                 rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
-                temp_buffer, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
+                tmp_rocprim, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
         }
         else if(avg_row_nnz < 128)
         {
             using config =
                 rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
-                temp_buffer, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
+                tmp_rocprim, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
         }
         else if(avg_row_nnz < 256)
         {
             using config =
                 rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
-                temp_buffer, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
+                tmp_rocprim, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
         }
         else
         {
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys(
-                temp_buffer, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
+                tmp_rocprim, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
         }
         if(keys.current() != csr_col_ind)
         {
@@ -410,7 +413,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
         hipcub::DoubleBuffer<rocsparse_int> keys(csr_col_ind, tmp_cols);
 
         RETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortKeys(
-            temp_buffer, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
+            tmp_rocprim, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
         if(keys.Current() != csr_col_ind)
         {
             RETURN_IF_HIP_ERROR(hipMemcpy(

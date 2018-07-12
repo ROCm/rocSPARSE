@@ -12,7 +12,7 @@
 __global__ void
 csrsort_shift_kernel(rocsparse_int size, const rocsparse_int* in, rocsparse_int* out)
 {
-    int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
     if(gid >= size)
     {
