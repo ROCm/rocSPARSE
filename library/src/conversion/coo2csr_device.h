@@ -53,7 +53,7 @@ __global__ void coo2csr_kernel(rocsparse_int m,
     }
 
     // Binary search
-    csr_row_ptr[gid] = lower_bound(coo_row_ind, gid + idx_base, 0, nnz - 1) + idx_base;
+    csr_row_ptr[gid] = lower_bound(coo_row_ind, gid + idx_base, 0, nnz) + idx_base;
 }
 
 #endif // COO2CSR_DEVICE_H
