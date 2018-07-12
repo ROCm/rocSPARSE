@@ -333,6 +333,9 @@ rocsparse_int read_mtx_matrix(const char* filename,
                               std::vector<rocsparse_int>& col,
                               std::vector<T>& val)
 {
+    printf("Reading matrix %s...", filename);
+    fflush(stdout);
+
     FILE* f = fopen(filename, "r");
     if(!f)
     {
@@ -483,6 +486,9 @@ rocsparse_int read_mtx_matrix(const char* filename,
         val[i] = unsorted_val[perm[i]];
     }
 
+    printf("done.\n");
+    fflush(stdout);
+
     return 0;
 }
 
@@ -603,6 +609,7 @@ class Arguments
     rocsparse_operation trans      = rocsparse_operation_none;
     rocsparse_index_base idx_base  = rocsparse_index_base_zero;
     rocsparse_index_base idx_base2 = rocsparse_index_base_zero;
+    rocsparse_action action        = rocsparse_action_numeric;
     rocsparse_hyb_partition part   = rocsparse_hyb_partition_auto;
 
     rocsparse_int norm_check = 0;
@@ -628,6 +635,7 @@ class Arguments
         trans     = rhs.trans;
         idx_base  = rhs.idx_base;
         idx_base2 = rhs.idx_base2;
+        action    = rhs.action;
         part      = rhs.part;
 
         norm_check = rhs.norm_check;
