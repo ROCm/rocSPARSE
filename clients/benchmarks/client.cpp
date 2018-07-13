@@ -27,6 +27,7 @@
 #include "testing_coo2csr.hpp"
 #include "testing_identity.hpp"
 #include "testing_csrsort.hpp"
+#include "testing_coosort.hpp"
 
 #include <iostream>
 #include <stdio.h>
@@ -86,7 +87,7 @@ int main(int argc, char* argv[])
          "  Level2: coomv, csrmv, ellmv, hybmv\n"
          "  Conversion: csr2coo, csr2csc, csr2ell,\n"
          "              csr2hyb, coo2csr\n"
-         "  Sorting: csrsort")
+         "  Sorting: csrsort, coosort")
         
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d")
@@ -244,6 +245,10 @@ int main(int argc, char* argv[])
     else if(function == "csrsort")
     {
         testing_csrsort(argus);
+    }
+    else if(function == "coosort")
+    {
+        testing_coosort(argus);
     }
     else
     {
