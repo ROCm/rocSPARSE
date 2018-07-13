@@ -31,11 +31,11 @@ class parameterized_csr2csc : public testing::TestWithParam<csr2csc_tuple>
 Arguments setup_csr2csc_arguments(csr2csc_tuple tup)
 {
     Arguments arg;
-    arg.M         = std::get<0>(tup);
-    arg.N         = std::get<1>(tup);
-    arg.action    = std::get<2>(tup);
-    arg.idx_base  = std::get<3>(tup);
-    arg.timing    = 0;
+    arg.M        = std::get<0>(tup);
+    arg.N        = std::get<1>(tup);
+    arg.action   = std::get<2>(tup);
+    arg.idx_base = std::get<3>(tup);
+    arg.timing   = 0;
     return arg;
 }
 

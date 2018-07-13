@@ -81,11 +81,16 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handl
     rocsparse_int* ptr = reinterpret_cast<rocsparse_int*>(buffer_size);
     hipcub::DoubleBuffer<rocsparse_int> dummy(ptr, ptr);
 
-    RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(nullptr, *buffer_size, dummy, dummy, nnz, 0, 32, stream));
+    RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
+        nullptr, *buffer_size, dummy, dummy, nnz, 0, 32, stream));
+
+    *buffer_size = ((*buffer_size - 1) / 256 + 1) * 256;
 
     // rocPRIM does not support in-place sorting, so we need additional buffer
     // for all temporary arrays
-    *buffer_size += sizeof(rocsparse_int) * nnz * 3;
+    *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+    *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
 
     return rocsparse_status_success;
 }
