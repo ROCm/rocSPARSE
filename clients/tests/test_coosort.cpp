@@ -11,10 +11,10 @@
 
 typedef std::tuple<int, int, rocsparse_operation, int, rocsparse_index_base> coosort_tuple;
 
-int coosort_M_range[] = {-1, 0, 10, 500, 3872, 10000};
-int coosort_N_range[] = {-3, 0, 33, 242, 1623, 10000};
+int coosort_M_range[]               = {-1, 0, 10, 500, 3872, 10000};
+int coosort_N_range[]               = {-3, 0, 33, 242, 1623, 10000};
 rocsparse_operation coosort_trans[] = {rocsparse_operation_none, rocsparse_operation_transpose};
-int coosort_perm[] = {0, 1};
+int coosort_perm[]                  = {0, 1};
 rocsparse_index_base coosort_base[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 
 class parameterized_coosort : public testing::TestWithParam<coosort_tuple>
