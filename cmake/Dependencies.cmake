@@ -107,6 +107,7 @@ endif()
 # rocPRIM package
 if(HIP_PLATFORM STREQUAL "hcc")
   find_package(ROCPRIM QUIET CONFIG PATHS /opt/rocm)
+  find_package(HIPCUB QUIET CONFIG PATHS /opt/rocm)
   if(NOT ROCPRIM_FOUND)
     set(ROCPRIM_ROOT ${CMAKE_CURRENT_BINARY_DIR}/rocPRIM CACHE PATH "")
     message(STATUS "Downloading rocPRIM.")
