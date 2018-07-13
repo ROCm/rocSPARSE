@@ -301,7 +301,19 @@ rocsparse_status rocsparse_csr2csc(rocsparse_handle handle,
                                    rocsparse_index_base idx_base,
                                    void* temp_buffer)
 {
-    return rocsparse_scsr2csc(handle, m, n, nnz, csr_val, csr_row_ptr, csr_col_ind, csc_val, csc_row_ind, csc_col_ptr, copy_values, idx_base, temp_buffer);
+    return rocsparse_scsr2csc(handle,
+                              m,
+                              n,
+                              nnz,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              csc_val,
+                              csc_row_ind,
+                              csc_col_ptr,
+                              copy_values,
+                              idx_base,
+                              temp_buffer);
 }
 
 template <>
@@ -319,7 +331,19 @@ rocsparse_status rocsparse_csr2csc(rocsparse_handle handle,
                                    rocsparse_index_base idx_base,
                                    void* temp_buffer)
 {
-    return rocsparse_dcsr2csc(handle, m, n, nnz, csr_val, csr_row_ptr, csr_col_ind, csc_val, csc_row_ind, csc_col_ptr, copy_values, idx_base, temp_buffer);
+    return rocsparse_dcsr2csc(handle,
+                              m,
+                              n,
+                              nnz,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              csc_val,
+                              csc_row_ind,
+                              csc_col_ptr,
+                              copy_values,
+                              idx_base,
+                              temp_buffer);
 }
 
 template <>
