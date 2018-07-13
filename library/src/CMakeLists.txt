@@ -30,4 +30,5 @@ set(rocsparse_source
   src/conversion/rocsparse_coo2csr.cpp
   src/conversion/rocsparse_identity.cpp
   src/conversion/rocsparse_csrsort.cpp
+  src/conversion/rocsparse_coosort.cpp
 )
