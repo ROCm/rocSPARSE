@@ -196,12 +196,13 @@ rocsparse_status testing_coosort(Arguments argus)
             rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
         auto perm_managed =
             rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto buffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+        auto buffer_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
 
         rocsparse_int* coo_row_ind = (rocsparse_int*)coo_row_ind_managed.get();
         rocsparse_int* coo_col_ind = (rocsparse_int*)coo_col_ind_managed.get();
-        rocsparse_int* perm = (rocsparse_int*)perm_managed.get();
-        void* buffer = (void*)buffer_managed.get();
+        rocsparse_int* perm        = (rocsparse_int*)perm_managed.get();
+        void* buffer               = (void*)buffer_managed.get();
 
         if(!coo_row_ind || !coo_col_ind || !perm || !buffer)
         {
@@ -228,25 +229,13 @@ rocsparse_status testing_coosort(Arguments argus)
 
         if(by_row)
         {
-            status = rocsparse_coosort_by_row(handle,
-                                              m,
-                                              n,
-                                              nnz,
-                                              coo_row_ind,
-                                              coo_col_ind,
-                                              perm,
-                                              buffer);
+            status =
+                rocsparse_coosort_by_row(handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, buffer);
         }
         else
         {
-            status = rocsparse_coosort_by_column(handle,
-                                                 m,
-                                                 n,
-                                                 nnz,
-                                                 coo_row_ind,
-                                                 coo_col_ind,
-                                                 perm,
-                                                 buffer);
+            status = rocsparse_coosort_by_column(
+                handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, buffer);
         }
 
         if(m < 0 || n < 0 || nnz < 0)
@@ -357,7 +346,7 @@ rocsparse_status testing_coosort(Arguments argus)
         {
             hcoo_row_ind[i] = hcoo_row_ind_unsorted[hperm[i]];
             hcoo_col_ind[i] = hcoo_col_ind_unsorted[hperm[i]];
-            hcoo_val[i] = hcoo_val_unsorted[hperm[i]];
+            hcoo_val[i]     = hcoo_val_unsorted[hperm[i]];
         }
     }
 
