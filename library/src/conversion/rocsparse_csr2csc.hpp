@@ -111,15 +111,15 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle handle,
 
     // work1 buffer
     rocsparse_int* tmp_work1 = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * nnz;
+    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
 
     // work2 buffer
     rocsparse_int* tmp_work2 = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * nnz;
+    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
 
     // perm buffer
     rocsparse_int* tmp_perm = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * nnz;
+    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
 
     // hipcub buffer
     void* tmp_hipcub = reinterpret_cast<void*>(ptr);

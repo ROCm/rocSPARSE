@@ -90,16 +90,17 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handl
     RETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortPairs(
         nullptr, *buffer_size, dummy, dummy, nnz, m, buffer_size, buffer_size, 0, 32, stream));
 #endif
+    *buffer_size = ((*buffer_size - 1) / 256 + 1) * 256;
 
     // rocPRIM does not support in-place sorting, so we need additional buffer
     // for all temporary arrays
 
     // columns buffer
-    *buffer_size += sizeof(rocsparse_int) * nnz;
+    *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
     // perm buffer
-    *buffer_size += sizeof(rocsparse_int) * nnz;
+    *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
     // segm buffer
-    *buffer_size += sizeof(rocsparse_int) * (m + 1);
+    *buffer_size += sizeof(rocsparse_int) * (m / 256 + 1) * 256;
 
     return rocsparse_status_success;
 }
@@ -231,21 +232,19 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
 
     // columns buffer
     rocsparse_int* tmp_cols = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * nnz;
+    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
 
     // perm buffer
     rocsparse_int* tmp_perm = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * nnz;
+    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
 
     // segm buffer
-    rocsparse_int* tmp_segm = nullptr;
+    rocsparse_int* tmp_segm = reinterpret_cast<rocsparse_int*>(ptr);
+    ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
 
     // Index base one requires shift of offset positions
     if(descr->base == rocsparse_index_base_one)
     {
-        tmp_segm = reinterpret_cast<rocsparse_int*>(ptr);
-        ptr += sizeof(rocsparse_int) * nnz;
-
 #define CSRSORT_DIM 512
         dim3 csrsort_blocks(m / CSRSORT_DIM + 1);
         dim3 csrsort_threads(CSRSORT_DIM);
@@ -265,7 +264,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
     void* tmp_rocprim = reinterpret_cast<void*>(ptr);
 
     // Switch between offsets
-    const rocsparse_int* offsets = tmp_segm ? tmp_segm : csr_row_ptr;
+    const rocsparse_int* offsets = descr->base == rocsparse_index_base_one ? tmp_segm : csr_row_ptr;
 
     // Sort by columns and obtain permutation vector
 
