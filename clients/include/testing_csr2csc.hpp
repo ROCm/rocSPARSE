@@ -41,7 +41,8 @@ void testing_csr2csc_bad_arg(void)
     auto csc_col_ptr_managed =
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
     auto csc_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto buffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+    auto buffer_managed =
+        rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
 
     rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
     rocsparse_int* csr_col_ind = (rocsparse_int*)csr_col_ind_managed.get();
@@ -51,7 +52,8 @@ void testing_csr2csc_bad_arg(void)
     T* csc_val                 = (T*)csc_val_managed.get();
     void* buffer               = (void*)buffer_managed.get();
 
-    if(!csr_row_ptr || !csr_col_ind || !csr_val || !csc_row_ind || !csc_col_ptr || !csc_val || !buffer)
+    if(!csr_row_ptr || !csr_col_ind || !csr_val || !csc_row_ind || !csc_col_ptr || !csc_val ||
+       !buffer)
     {
         PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -63,14 +65,8 @@ void testing_csr2csc_bad_arg(void)
     {
         rocsparse_int* csr_row_ptr_null = nullptr;
 
-        status = rocsparse_csr2csc_buffer_size(handle,
-                                               m,
-                                               n,
-                                               nnz,
-                                               csr_row_ptr_null,
-                                               csr_col_ind,
-                                               rocsparse_action_numeric,
-                                               &size);
+        status = rocsparse_csr2csc_buffer_size(
+            handle, m, n, nnz, csr_row_ptr_null, csr_col_ind, rocsparse_action_numeric, &size);
         verify_rocsparse_status_invalid_pointer(status, "Error: csr_row_ptr is nullptr");
     }
 
@@ -78,14 +74,8 @@ void testing_csr2csc_bad_arg(void)
     {
         rocsparse_int* csr_col_ind_null = nullptr;
 
-        status = rocsparse_csr2csc_buffer_size(handle,
-                                               m,
-                                               n,
-                                               nnz,
-                                               csr_row_ptr,
-                                               csr_col_ind_null,
-                                               rocsparse_action_numeric,
-                                               &size);
+        status = rocsparse_csr2csc_buffer_size(
+            handle, m, n, nnz, csr_row_ptr, csr_col_ind_null, rocsparse_action_numeric, &size);
         verify_rocsparse_status_invalid_pointer(status, "Error: csr_col_ind is nullptr");
     }
 
@@ -108,14 +98,8 @@ void testing_csr2csc_bad_arg(void)
     {
         rocsparse_handle handle_null = nullptr;
 
-        status = rocsparse_csr2csc_buffer_size(handle_null,
-                                               m,
-                                               n,
-                                               nnz,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               rocsparse_action_numeric,
-                                               &size);
+        status = rocsparse_csr2csc_buffer_size(
+            handle_null, m, n, nnz, csr_row_ptr, csr_col_ind, rocsparse_action_numeric, &size);
         verify_rocsparse_status_invalid_handle(status);
     }
 
@@ -307,13 +291,20 @@ rocsparse_status testing_csr2csc(Arguments argus)
     // Argument sanity check before allocating invalid memory
     if(m <= 0 || n <= 0 || nnz <= 0)
     {
-        auto csr_row_ptr_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto csr_col_ind_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto csr_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto csc_row_ind_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto csc_col_ptr_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto csc_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto buffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+        auto csr_row_ptr_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto csr_col_ind_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto csr_val_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+        auto csc_row_ind_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto csc_col_ptr_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto csc_val_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+        auto buffer_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
 
         rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
         rocsparse_int* csr_col_ind = (rocsparse_int*)csr_col_ind_managed.get();
@@ -321,9 +312,10 @@ rocsparse_status testing_csr2csc(Arguments argus)
         rocsparse_int* csc_row_ind = (rocsparse_int*)csc_row_ind_managed.get();
         rocsparse_int* csc_col_ptr = (rocsparse_int*)csc_col_ptr_managed.get();
         T* csc_val                 = (T*)csc_val_managed.get();
-        void* buffer = (void*)buffer_managed.get();
+        void* buffer               = (void*)buffer_managed.get();
 
-        if(!csr_row_ptr || !csr_col_ind || !csr_val || !csc_row_ind || !csc_col_ptr || !csc_val || !buffer)
+        if(!csr_row_ptr || !csr_col_ind || !csr_val || !csc_row_ind || !csc_col_ptr || !csc_val ||
+           !buffer)
         {
             verify_rocsparse_status_success(rocsparse_status_memory_error,
                                             "!csr_row_ptr || !csr_col_ind || !csr_val || "
@@ -418,11 +410,15 @@ rocsparse_status testing_csr2csc(Arguments argus)
     }
 
     // Allocate memory on the device
-    auto dcsr_row_ptr_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
-    auto dcsr_col_ind_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dcsr_row_ptr_managed =
+        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
+    auto dcsr_col_ind_managed =
+        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
     auto dcsr_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dcsc_row_ind_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dcsc_col_ptr_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (n + 1)), device_free};
+    auto dcsc_row_ind_managed =
+        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dcsc_col_ptr_managed =
+        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (n + 1)), device_free};
     auto dcsc_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
 
     rocsparse_int* dcsr_row_ptr = (rocsparse_int*)dcsr_row_ptr_managed.get();
@@ -446,8 +442,10 @@ rocsparse_status testing_csr2csc(Arguments argus)
     CHECK_HIP_ERROR(hipMemset(dcsc_val, 0, sizeof(T) * nnz));
 
     // Copy data from host to device
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_col_ind, hcsr_col_ind.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(
+        dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(
+        dcsr_col_ind, hcsr_col_ind.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
 
     // Obtain buffer size
@@ -467,16 +465,33 @@ rocsparse_status testing_csr2csc(Arguments argus)
 
     if(argus.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2csc(handle, m, n, nnz, dcsr_val, dcsr_row_ptr, dcsr_col_ind, dcsc_val, dcsc_row_ind, dcsc_col_ptr, action, idx_base, dbuffer));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csr2csc(handle,
+                                                m,
+                                                n,
+                                                nnz,
+                                                dcsr_val,
+                                                dcsr_row_ptr,
+                                                dcsr_col_ind,
+                                                dcsc_val,
+                                                dcsc_row_ind,
+                                                dcsc_col_ptr,
+                                                action,
+                                                idx_base,
+                                                dbuffer));
 
         // Copy output from device to host
         std::vector<rocsparse_int> hcsc_row_ind(nnz);
         std::vector<rocsparse_int> hcsc_col_ptr(n + 1);
         std::vector<T> hcsc_val(nnz);
 
-        CHECK_HIP_ERROR(hipMemcpy(hcsc_row_ind.data(), dcsc_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hcsc_col_ptr.data(), dcsc_col_ptr, sizeof(rocsparse_int) * (n + 1), hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hcsc_val.data(), dcsc_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(
+            hcsc_row_ind.data(), dcsc_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hcsc_col_ptr.data(),
+                                  dcsc_col_ptr,
+                                  sizeof(rocsparse_int) * (n + 1),
+                                  hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(
+            hipMemcpy(hcsc_val.data(), dcsc_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
         // Host csr2csc conversion
         std::vector<rocsparse_int> hcsc_row_ind_gold(nnz);
@@ -504,7 +519,7 @@ rocsparse_status testing_csr2csc(Arguments argus)
                 rocsparse_int idx = hcsc_col_ptr_gold[col];
 
                 hcsc_row_ind_gold[idx] = i + idx_base;
-                hcsc_val_gold[idx] = hcsr_val[j - idx_base];
+                hcsc_val_gold[idx]     = hcsr_val[j - idx_base];
 
                 ++hcsc_col_ptr_gold[col];
             }
@@ -536,14 +551,38 @@ rocsparse_status testing_csr2csc(Arguments argus)
 
         for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_csr2csc(handle, m, n, nnz, dcsr_val, dcsr_row_ptr, dcsr_col_ind, dcsc_val, dcsc_row_ind, dcsc_col_ptr, rocsparse_action_numeric, rocsparse_index_base_zero, dbuffer);
+            rocsparse_csr2csc(handle,
+                              m,
+                              n,
+                              nnz,
+                              dcsr_val,
+                              dcsr_row_ptr,
+                              dcsr_col_ind,
+                              dcsc_val,
+                              dcsc_row_ind,
+                              dcsc_col_ptr,
+                              rocsparse_action_numeric,
+                              rocsparse_index_base_zero,
+                              dbuffer);
         }
 
         double gpu_time_used = get_time_us();
 
         for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_csr2csc(handle, m, n, nnz, dcsr_val, dcsr_row_ptr, dcsr_col_ind, dcsc_val, dcsc_row_ind, dcsc_col_ptr, rocsparse_action_numeric, rocsparse_index_base_zero, dbuffer);
+            rocsparse_csr2csc(handle,
+                              m,
+                              n,
+                              nnz,
+                              dcsr_val,
+                              dcsr_row_ptr,
+                              dcsr_col_ind,
+                              dcsc_val,
+                              dcsc_row_ind,
+                              dcsc_col_ptr,
+                              rocsparse_action_numeric,
+                              rocsparse_index_base_zero,
+                              dbuffer);
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);

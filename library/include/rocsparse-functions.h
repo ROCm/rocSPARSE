@@ -1279,6 +1279,123 @@ rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
                                    rocsparse_int* perm,
                                    void* temp_buffer);
 
+/*! \brief SPARSE Format Conversions API
+
+    \details
+    coosort_buffer_size returns the size of the temporary storage buffer
+    that is required by coosort. The temporary storage buffer has to be
+    allocated by the user.
+
+    @param[in]
+    handle          rocsparse_handle.
+                    handle to the rocsparse library context queue.
+    @param[in]
+    m               number of rows of A.
+    @param[in]
+    n               number of columns of A.
+    @param[in]
+    nnz             number of non-zero elements of A.
+    @param[in]
+    coo_row_ind     array of nnz elements containing the row indices of
+                    A.
+    @param[in]
+    coo_col_ind     array of nnz elements containing the column indices
+                    of A.
+    @param[out]
+    buffer_size     number of bytes of the temporary storage buffer.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handle,
+                                               rocsparse_int m,
+                                               rocsparse_int n,
+                                               rocsparse_int nnz,
+                                               const rocsparse_int* coo_row_ind,
+                                               const rocsparse_int* coo_col_ind,
+                                               size_t* buffer_size);
+
+/*! \brief SPARSE Format Conversions API
+
+    \details
+    coosort_by_row sorts a matrix in COO format by row. coosort requires
+    a temporary storage buffer. The sorted permutation vector perm can
+    be used to obtain sorted coo_val array. In this case, P must be
+    initialized as the identity permutation 0:1:(nnz-1).
+
+    @param[in]
+    handle          rocsparse_handle.
+                    handle to the rocsparse library context queue.
+    @param[in]
+    m               number of rows of A.
+    @param[in]
+    n               number of columns of A.
+    @param[in]
+    nnz             number of non-zero elements of A.
+    @param[in]
+    coo_row_ind     array of nnz elements containing the row indices of
+                    A.
+    @param[inout]
+    coo_col_ind     array of nnz elements containing the column indices
+                    of A.
+    @param[inout]
+    perm            array of nnz integers containing the unsorted map
+                    indices.
+    @param[in]
+    temp_buffer     temporary storage buffer allocated by the user,
+                    size is returned by coosort_buffer_size
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
+                                          rocsparse_int m,
+                                          rocsparse_int n,
+                                          rocsparse_int nnz,
+                                          rocsparse_int* coo_row_ind,
+                                          rocsparse_int* coo_col_ind,
+                                          rocsparse_int* perm,
+                                          void* temp_buffer);
+
+/*! \brief SPARSE Format Conversions API
+
+    \details
+    coosort_by_column sorts a matrix in COO format by column. coosort
+    requires a temporary storage buffer. The sorted permutation vector
+    perm can be used to obtain sorted coo_val array. In this case, P
+    must be initialized as the identity permutation 0:1:(nnz-1).
+
+    @param[in]
+    handle          rocsparse_handle.
+                    handle to the rocsparse library context queue.
+    @param[in]
+    m               number of rows of A.
+    @param[in]
+    n               number of columns of A.
+    @param[in]
+    nnz             number of non-zero elements of A.
+    @param[in]
+    coo_row_ind     array of nnz elements containing the row indices of
+                    A.
+    @param[inout]
+    coo_col_ind     array of nnz elements containing the column indices
+                    of A.
+    @param[inout]
+    perm            array of nnz integers containing the unsorted map
+                    indices.
+    @param[in]
+    temp_buffer     temporary storage buffer allocated by the user,
+                    size is returned by coosort_buffer_size
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,
+                                             rocsparse_int m,
+                                             rocsparse_int n,
+                                             rocsparse_int nnz,
+                                             rocsparse_int* coo_row_ind,
+                                             rocsparse_int* coo_col_ind,
+                                             rocsparse_int* perm,
+                                             void* temp_buffer);
+
 #ifdef __cplusplus
 }
 #endif

@@ -175,12 +175,13 @@ rocsparse_status testing_csrsort(Arguments argus)
             rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
         auto perm_managed =
             rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto buffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+        auto buffer_managed =
+            rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
 
         rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
         rocsparse_int* csr_col_ind = (rocsparse_int*)csr_col_ind_managed.get();
-        rocsparse_int* perm = (rocsparse_int*)perm_managed.get();
-        void* buffer = (void*)buffer_managed.get();
+        rocsparse_int* perm        = (rocsparse_int*)perm_managed.get();
+        void* buffer               = (void*)buffer_managed.get();
 
         if(!csr_row_ptr || !csr_col_ind || !perm || !buffer)
         {
@@ -205,15 +206,8 @@ rocsparse_status testing_csrsort(Arguments argus)
             unit_check_general(1, 1, &zero, &buffer_size);
         }
 
-        status = rocsparse_csrsort(handle,
-                                   m,
-                                   n,
-                                   nnz,
-                                   descr,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   perm,
-                                   buffer);
+        status =
+            rocsparse_csrsort(handle, m, n, nnz, descr, csr_row_ptr, csr_col_ind, perm, buffer);
 
         if(m < 0 || n < 0 || nnz < 0)
         {
