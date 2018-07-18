@@ -10,23 +10,61 @@ __device__ int __llvm_amdgcn_readlane(int index, int offset) __asm("llvm.amdgcn.
 #endif
 
 #if defined(__HIP_PLATFORM_HCC__)
-// Swizzle-based reduction
+// Swizzle-based float reduction
 template <rocsparse_int SUBWAVE_SIZE>
 __device__ float reduction(float sum)
 {
-    // clang-format off
-    if(SUBWAVE_SIZE > 32) sum += __llvm_amdgcn_readlane(sum, 32);
-    if(SUBWAVE_SIZE > 16) sum += __hip_ds_swizzle(sum, 0x401f);
-    if(SUBWAVE_SIZE >  8) sum += __hip_ds_swizzle(sum, 0x201f);
-    if(SUBWAVE_SIZE >  4) sum += __hip_ds_swizzle(sum, 0x101f);
-    if(SUBWAVE_SIZE >  2) sum += __hip_ds_swizzle(sum, 0x081f);
-    if(SUBWAVE_SIZE >  1) sum += __hip_ds_swizzle(sum, 0x041f);
-    // clang-format on
+    typedef union flt_b32
+    {
+        float val;
+        uint32_t b32;
+    } flt_b32_t;
 
+    flt_b32_t upper_sum;
+    flt_b32_t temp_sum;
+    temp_sum.val = sum;
+
+    if(SUBWAVE_SIZE > 1)
+    {
+        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x80b1);
+        temp_sum.val += upper_sum.val;
+    }
+
+    if(SUBWAVE_SIZE > 2)
+    {
+        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x804e);
+        temp_sum.val += upper_sum.val;
+    }
+
+    if(SUBWAVE_SIZE > 4)
+    {
+        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x101f);
+        temp_sum.val += upper_sum.val;
+    }
+
+    if(SUBWAVE_SIZE > 8)
+    {
+        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x201f);
+        temp_sum.val += upper_sum.val;
+    }
+
+    if(SUBWAVE_SIZE > 16)
+    {
+        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x401f);
+        temp_sum.val += upper_sum.val;
+    }
+
+    if(SUBWAVE_SIZE > 32)
+    {
+        upper_sum.b32 = __llvm_amdgcn_readlane(temp_sum.b32, 32);
+        temp_sum.val += upper_sum.val;
+    }
+
+    sum = temp_sum.val;
     return sum;
 }
 
-// Swizzle-based reduction
+// Swizzle-based double reduction
 template <rocsparse_int SUBWAVE_SIZE>
 __device__ double reduction(double sum)
 {
@@ -38,27 +76,19 @@ __device__ double reduction(double sum)
 
     dbl_b32_t upper_sum;
     dbl_b32_t temp_sum;
-
     temp_sum.val = sum;
 
-    if(SUBWAVE_SIZE > 32)
+    if(SUBWAVE_SIZE > 1)
     {
-        upper_sum.b32[0] = __llvm_amdgcn_readlane(temp_sum.b32[0], 32);
-        upper_sum.b32[1] = __llvm_amdgcn_readlane(temp_sum.b32[1], 32);
+        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x80b1);
+        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x80b1);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 16)
+    if(SUBWAVE_SIZE > 2)
     {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x401f);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x401f);
-        temp_sum.val += upper_sum.val;
-    }
-
-    if(SUBWAVE_SIZE > 8)
-    {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x201f);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x201f);
+        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x804e);
+        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x804e);
         temp_sum.val += upper_sum.val;
     }
 
@@ -69,17 +99,24 @@ __device__ double reduction(double sum)
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 2)
+    if(SUBWAVE_SIZE > 8)
     {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x081f);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x081f);
+        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x201f);
+        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x201f);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 1)
+    if(SUBWAVE_SIZE > 16)
     {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x041f);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x041f);
+        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x401f);
+        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x401f);
+        temp_sum.val += upper_sum.val;
+    }
+
+    if(SUBWAVE_SIZE > 32)
+    {
+        upper_sum.b32[0] = __llvm_amdgcn_readlane(temp_sum.b32[0], 32);
+        upper_sum.b32[1] = __llvm_amdgcn_readlane(temp_sum.b32[1], 32);
         temp_sum.val += upper_sum.val;
     }
 
