@@ -11,9 +11,8 @@ Optional:
   * Required for tests.
   * Use GTEST_ROOT to specify GTest location.
   * If [GTest][] is not found, it will be downloaded and built automatically.
-* [Google Benchmark][]
+* [Boost][]
   * Required for benchmarks.
-  * If [Google Benchmark][] is not found, it will be downloaded and built automatically.
 
 ## Quickstart rocSPARSE build and install
 
@@ -21,14 +20,14 @@ Optional:
 All compiler specifications are determined automatically. The compilation process can be performed by
 ```
 # Clone rocSPARSE using git
-git clone https://github.com/ROCmSoftwarePlatform/rocSparse.git
+git clone https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
 
 # Go to rocSPARSE directory, create and go to the build directory
 cd rocSPARSE; mkdir build; cd build
 
 # Configure rocSPARSE
 # Build options:
-#   BUILD_CLIENTS_TESTS      - build tests using [GTest][] (OFF)
+#   BUILD_CLIENTS_TESTS      - build tests (OFF)
 #   BUILD_CLIENTS_BENCHMARKS - build benchmarks (OFF)
 #   BUILD_CLIENTS_SAMPLES    - build examples (ON)
 #   BUILD_VERBOSE            - verbose output (OFF)
@@ -46,7 +45,7 @@ make
 You can also build rocSPARSE using the *install.sh* script
 ```
 # Clone rocSPARSE using git
-git clone https://github.com/ROCmSoftwarePlatform/rocSparse.git
+git clone https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
 
 # Go to rocSPARSE directory
 cd rocSPARSE
@@ -93,5 +92,6 @@ The [license file][] can be found in the main repository.
 [ROCm]: https://github.com/RadeonOpenCompute/ROCm
 [HIP]: https://github.com/GPUOpen-ProfessionalCompute-Tools/HIP/
 [GTest]: https://github.com/google/googletest
+[Boost]: https://www.boost.org/
 [the issue tracker]: https://github.com/ROCmSoftwarePlatform/rocSparse/issues
 [license file]: ./LICENSE.md
