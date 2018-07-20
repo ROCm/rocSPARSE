@@ -225,8 +225,8 @@ rocsparse_status testing_csrmv(Arguments argus)
     {
         if(filename != "")
         {
-            if(read_mtx_matrix(filename.c_str(), m, n, nnz, hcoo_row_ind, hcol_ind, hval, idx_base) !=
-               0)
+            if(read_mtx_matrix(
+                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcol_ind, hval, idx_base) != 0)
             {
                 fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
@@ -336,46 +336,59 @@ rocsparse_status testing_csrmv(Arguments argus)
 
         if(prop.warpSize == 32)
         {
-            if(nnz_per_row < 4) WF_SIZE = 2;
-            else if(nnz_per_row < 8) WF_SIZE = 4;
-            else if(nnz_per_row < 16) WF_SIZE = 8;
-            else if(nnz_per_row < 32) WF_SIZE = 16;
-            else WF_SIZE = 32;
+            if(nnz_per_row < 4)
+                WF_SIZE = 2;
+            else if(nnz_per_row < 8)
+                WF_SIZE = 4;
+            else if(nnz_per_row < 16)
+                WF_SIZE = 8;
+            else if(nnz_per_row < 32)
+                WF_SIZE = 16;
+            else
+                WF_SIZE = 32;
         }
         else if(prop.warpSize == 64)
         {
-            if(nnz_per_row < 4) WF_SIZE = 2;
-            else if(nnz_per_row < 8) WF_SIZE = 4;
-            else if(nnz_per_row < 16) WF_SIZE = 8;
-            else if(nnz_per_row < 32) WF_SIZE = 16;
-            else if(nnz_per_row < 64) WF_SIZE = 32;
-            else WF_SIZE = 64;
+            if(nnz_per_row < 4)
+                WF_SIZE = 2;
+            else if(nnz_per_row < 8)
+                WF_SIZE = 4;
+            else if(nnz_per_row < 16)
+                WF_SIZE = 8;
+            else if(nnz_per_row < 32)
+                WF_SIZE = 16;
+            else if(nnz_per_row < 64)
+                WF_SIZE = 32;
+            else
+                WF_SIZE = 64;
         }
         else
         {
             return rocsparse_status_internal_error;
         }
-    
-        for(rocsparse_int i=0; i<m; ++i)
+
+        for(rocsparse_int i = 0; i < m; ++i)
         {
             std::vector<T> sum(WF_SIZE, 0.0);
-    
-            for(rocsparse_int j=hcsr_row_ptr[i]-idx_base; j<hcsr_row_ptr[i+1]-idx_base; j+=WF_SIZE)
+
+            for(rocsparse_int j = hcsr_row_ptr[i] - idx_base; j < hcsr_row_ptr[i + 1] - idx_base;
+                j += WF_SIZE)
             {
-                for(rocsparse_int k=0; k<WF_SIZE; ++k)
+                for(rocsparse_int k = 0; k < WF_SIZE; ++k)
                 {
-                    if(j+k < hcsr_row_ptr[i+1]-idx_base)
+                    if(j + k < hcsr_row_ptr[i + 1] - idx_base)
                     {
-                        sum[k] = std::fma(h_alpha * hval[j+k], hx[hcol_ind[j+k]-idx_base], sum[k]);
+                        sum[k] =
+                            std::fma(h_alpha * hval[j + k], hx[hcol_ind[j + k] - idx_base], sum[k]);
                     }
                 }
             }
-    
-            for(rocsparse_int j=1; j<WF_SIZE; j <<= 1)
+
+            for(rocsparse_int j = 1; j < WF_SIZE; j <<= 1)
             {
-                for(rocsparse_int k=0; k<WF_SIZE-j; ++k)
+                for(rocsparse_int k = 0; k < WF_SIZE - j; ++k)
                 {
-                    sum[k] += sum[k+j];
+                    sum[k] += sum[k + j];
                 }
             }
 

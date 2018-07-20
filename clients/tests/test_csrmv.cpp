@@ -67,7 +67,7 @@ Arguments setup_csrmv_arguments(csrmv_tuple tup)
     }
     else
     {
-        path_exe[len-14] = '\0';
+        path_exe[len - 14] = '\0';
     }
 
     // Matrices are stored at the same path in matrices directory
