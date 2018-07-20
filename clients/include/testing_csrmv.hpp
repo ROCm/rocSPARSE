@@ -12,6 +12,7 @@
 #include "unit.hpp"
 
 #include <string>
+#include <cmath>
 #include <rocsparse.h>
 
 using namespace rocsparse;
@@ -139,7 +140,16 @@ rocsparse_status testing_csrmv(Arguments argus)
     T h_beta                      = argus.beta;
     rocsparse_operation trans     = argus.trans;
     rocsparse_index_base idx_base = argus.idx_base;
+    std::string filename          = "";
     rocsparse_status status;
+
+    // When in testing mode, M == N == -99 indicates that we are testing with a real
+    // matrix from cise.ufl.edu
+    if((m == -99 && n == -99) || argus.timing == 1)
+    {
+        filename = argus.filename;
+        m = n = safe_size;
+    }
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
     rocsparse_handle handle = test_handle->handle;
@@ -213,12 +223,12 @@ rocsparse_status testing_csrmv(Arguments argus)
     }
     else
     {
-        if(argus.filename != "")
+        if(filename != "")
         {
-            if(read_mtx_matrix(argus.filename.c_str(), m, n, nnz, hcoo_row_ind, hcol_ind, hval) !=
-               0)
+            if(read_mtx_matrix(
+                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcol_ind, hval, idx_base) != 0)
             {
-                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
             }
         }
@@ -314,28 +324,88 @@ rocsparse_status testing_csrmv(Arguments argus)
         CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * m, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hy_2.data(), dy_2, sizeof(T) * m, hipMemcpyDeviceToHost));
 
-        // CPU
+        // CPU - do the csrmv row reduction in the same order as the GPU
         double cpu_time_used = get_time_us();
+
+        // Query for warpSize
+        hipDeviceProp_t prop;
+        hipGetDeviceProperties(&prop, 0);
+
+        rocsparse_int WF_SIZE;
+        rocsparse_int nnz_per_row = nnz / m;
+
+        if(prop.warpSize == 32)
+        {
+            if(nnz_per_row < 4)
+                WF_SIZE = 2;
+            else if(nnz_per_row < 8)
+                WF_SIZE = 4;
+            else if(nnz_per_row < 16)
+                WF_SIZE = 8;
+            else if(nnz_per_row < 32)
+                WF_SIZE = 16;
+            else
+                WF_SIZE = 32;
+        }
+        else if(prop.warpSize == 64)
+        {
+            if(nnz_per_row < 4)
+                WF_SIZE = 2;
+            else if(nnz_per_row < 8)
+                WF_SIZE = 4;
+            else if(nnz_per_row < 16)
+                WF_SIZE = 8;
+            else if(nnz_per_row < 32)
+                WF_SIZE = 16;
+            else if(nnz_per_row < 64)
+                WF_SIZE = 32;
+            else
+                WF_SIZE = 64;
+        }
+        else
+        {
+            return rocsparse_status_internal_error;
+        }
 
         for(rocsparse_int i = 0; i < m; ++i)
         {
-            hy_gold[i] *= h_beta;
+            std::vector<T> sum(WF_SIZE, 0.0);
+
             for(rocsparse_int j = hcsr_row_ptr[i] - idx_base; j < hcsr_row_ptr[i + 1] - idx_base;
-                ++j)
+                j += WF_SIZE)
             {
-                hy_gold[i] += h_alpha * hval[j] * hx[hcol_ind[j] - idx_base];
+                for(rocsparse_int k = 0; k < WF_SIZE; ++k)
+                {
+                    if(j + k < hcsr_row_ptr[i + 1] - idx_base)
+                    {
+                        sum[k] =
+                            std::fma(h_alpha * hval[j + k], hx[hcol_ind[j + k] - idx_base], sum[k]);
+                    }
+                }
+            }
+
+            for(rocsparse_int j = 1; j < WF_SIZE; j <<= 1)
+            {
+                for(rocsparse_int k = 0; k < WF_SIZE - j; ++k)
+                {
+                    sum[k] += sum[k + j];
+                }
+            }
+
+            if(h_beta == 0.0)
+            {
+                hy_gold[i] = sum[0];
+            }
+            else
+            {
+                hy_gold[i] = std::fma(h_beta, hy_gold[i], sum[0]);
             }
         }
 
         cpu_time_used = get_time_us() - cpu_time_used;
 
-        // enable unit check, notice unit check is not invasive, but norm check is,
-        // unit check and norm check can not be interchanged their order
-        if(argus.unit_check)
-        {
-            unit_check_general(1, m, hy_gold.data(), hy_1.data());
-            unit_check_general(1, m, hy_gold.data(), hy_2.data());
-        }
+        unit_check_general(1, m, hy_gold.data(), hy_1.data());
+        unit_check_general(1, m, hy_gold.data(), hy_2.data());
     }
 
     if(argus.timing)

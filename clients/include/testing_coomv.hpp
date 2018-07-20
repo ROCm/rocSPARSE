@@ -225,7 +225,7 @@ rocsparse_status testing_coomv(Arguments argus)
     {
         if(argus.filename != "")
         {
-            if(read_mtx_matrix(argus.filename.c_str(), m, n, nnz, hrow, hcol, hval) != 0)
+            if(read_mtx_matrix(argus.filename.c_str(), m, n, nnz, hrow, hcol, hval, idx_base) != 0)
             {
                 fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
                 return rocsparse_status_internal_error;
