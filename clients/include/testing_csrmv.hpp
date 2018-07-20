@@ -140,15 +140,21 @@ rocsparse_status testing_csrmv(Arguments argus)
     T h_beta                      = argus.beta;
     rocsparse_operation trans     = argus.trans;
     rocsparse_index_base idx_base = argus.idx_base;
+    std::string binfile           = "";
     std::string filename          = "";
     rocsparse_status status;
 
     // When in testing mode, M == N == -99 indicates that we are testing with a real
     // matrix from cise.ufl.edu
-    if((m == -99 && n == -99) || argus.timing == 1)
+    if(m == -99 && n == -99 && argus.timing == 0)
+    {
+        binfile = argus.filename;
+        m = n = safe_size;
+    }
+
+    if(argus.timing == 1)
     {
         filename = argus.filename;
-        m = n = safe_size;
     }
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
@@ -216,7 +222,15 @@ rocsparse_status testing_csrmv(Arguments argus)
 
     // Initial Data on CPU
     srand(12345ULL);
-    if(argus.laplacian)
+    if(binfile != "")
+    {
+        if(read_bin_matrix(binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcol_ind, hval, idx_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
+    }
+    else if(argus.laplacian)
     {
         m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcol_ind, hval, idx_base);
         nnz   = hcsr_row_ptr[m];
@@ -378,8 +392,7 @@ rocsparse_status testing_csrmv(Arguments argus)
                 {
                     if(j + k < hcsr_row_ptr[i + 1] - idx_base)
                     {
-                        sum[k] =
-                            std::fma(h_alpha * hval[j + k], hx[hcol_ind[j + k] - idx_base], sum[k]);
+                        sum[k] = fma(h_alpha * hval[j + k], hx[hcol_ind[j + k] - idx_base], sum[k]);
                     }
                 }
             }

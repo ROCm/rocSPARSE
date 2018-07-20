@@ -22,19 +22,20 @@ std::vector<double> csr_beta_range  = {0.0, 1.0};
 
 base csr_idxbase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 
-std::string csr_mtx[] = {"rma10.mtx",
-                         "mac_econ_fwd500.mtx",
-                         "mc2depi.mtx",
-                         "scircuit.mtx",
-                         "ASIC_320k.mtx",
-                         "bmwcra_1.mtx",
-                         "nos1.mtx",
-                         "nos2.mtx",
-                         "nos3.mtx",
-                         "nos4.mtx",
-                         "nos5.mtx",
-                         "nos6.mtx",
-                         "nos7.mtx"};
+std::string csr_bin[] = {"rma10.bin",
+                         "mac_econ_fwd500.bin",
+                         "bibd_22_8.bin",
+                         "mc2depi.bin",
+                         "scircuit.bin",
+                         "ASIC_320k.bin",
+                         "bmwcra_1.bin",
+                         "nos1.bin",
+                         "nos2.bin",
+                         "nos3.bin",
+                         "nos4.bin",
+                         "nos5.bin",
+                         "nos6.bin",
+                         "nos7.bin"};
 
 class parameterized_csrmv : public testing::TestWithParam<csrmv_tuple>
 {
@@ -56,7 +57,7 @@ Arguments setup_csrmv_arguments(csrmv_tuple tup)
     arg.timing   = 0;
 
     // Determine absolute path of test matrix
-    std::string mtx_file = std::get<5>(tup);
+    std::string bin_file = std::get<5>(tup);
 
     // Get current executables absolute path
     char path_exe[PATH_MAX];
@@ -71,7 +72,7 @@ Arguments setup_csrmv_arguments(csrmv_tuple tup)
     }
 
     // Matrices are stored at the same path in matrices directory
-    arg.filename = std::string(path_exe) + "matrices/" + mtx_file;
+    arg.filename = std::string(path_exe) + "matrices/" + bin_file;
 
     return arg;
 }
@@ -101,4 +102,4 @@ INSTANTIATE_TEST_CASE_P(csrmv,
                                          testing::ValuesIn(csr_alpha_range),
                                          testing::ValuesIn(csr_beta_range),
                                          testing::ValuesIn(csr_idxbase_range),
-                                         testing::ValuesIn(csr_mtx)));
+                                         testing::ValuesIn(csr_bin)));
