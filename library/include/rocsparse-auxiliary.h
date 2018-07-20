@@ -127,6 +127,22 @@ rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb);
 
+/********************************************************************************
+ * \brief rocsparse_create_csrmv_info is a structure holding the rocsparse
+ * csrmv info data gathered during csrmv_analysis. It must be initialized using
+ * rocsparse_create_csrmv_info() and the retured info structure must be passed
+ * to all subsequent csrmv adaptive function calls. It should be destroyed at
+ * the end using rocsparse_destroy_csrmv_info().
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info);
+
+/********************************************************************************
+ * \brief Destroy csrmv info.
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info);
+
 #ifdef __cplusplus
 }
 #endif

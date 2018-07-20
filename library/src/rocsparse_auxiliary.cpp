@@ -283,7 +283,82 @@ rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb)
     // Destruct
     try
     {
+        // Clean up ELL part
+        if(hyb->ell_col_ind != nullptr)
+        {
+            hipFree(hyb->ell_col_ind);
+        }
+        if(hyb->ell_val != nullptr)
+        {
+            hipFree(hyb->ell_val);
+        }
+
+        // Clean up COO part
+        if(hyb->coo_row_ind != nullptr)
+        {
+            hipFree(hyb->coo_row_ind);
+        }
+        if(hyb->coo_col_ind != nullptr)
+        {
+            hipFree(hyb->coo_col_ind);
+        }
+        if(hyb->coo_val != nullptr)
+        {
+            hipFree(hyb->coo_val);
+        }
+
         delete hyb;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief rocsparse_create_csrmv_info is a structure holding the rocsparse
+ * csrmv info data gathered during csrmv_analysis. It must be initialized using
+ * rocsparse_create_csrmv_info() and the retured info structure must be passed
+ * to all subsequent csrmv adaptive function calls. It should be destroyed at
+ * the end using rocsparse_destroy_csrmv_info().
+ *******************************************************************************/
+rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info)
+{
+    if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else
+    {
+        // Allocate
+        try
+        {
+            *info = new _rocsparse_csrmv_info;
+        }
+        catch(const rocsparse_status& status)
+        {
+            return status;
+        }
+        return rocsparse_status_success;
+    }
+}
+
+/********************************************************************************
+ * \brief Destroy csrmv info.
+ *******************************************************************************/
+rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
+{
+    // Destruct
+    try
+    {
+        // Clean up row blocks
+        if(info->row_blocks != nullptr)
+        {
+            hipFree(info->row_blocks);
+        }
+
+        delete info;
     }
     catch(const rocsparse_status& status)
     {

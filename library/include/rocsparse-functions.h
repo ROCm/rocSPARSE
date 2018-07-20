@@ -531,6 +531,47 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle handle,
 /*! \brief SPARSE Level 2 API
 
     \details
+    csrmv_analysis performs the analysis for csrmv adaptive algorithm.
+    It is expected that this function will be executed only once for a
+    given matrix and particular operation type.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    trans       operation type of A.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    n           number of columns of A.
+    @param[in]
+    nnz         number of non-zero entries of A.
+    @param[in]
+    descr       descriptor of A.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start
+                of every row of A.
+    @param[in]
+    csr_col_ind array of nnz elements containing the column indices of A.
+    @param[out]
+    info        structure that holds the information collected during
+                the analysis phase.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
+                                          rocsparse_operation trans,
+                                          rocsparse_int m,
+                                          rocsparse_int n,
+                                          rocsparse_int nnz,
+                                          const rocsparse_mat_descr descr,
+                                          const rocsparse_int* csr_row_ptr,
+                                          const rocsparse_int* csr_col_ind,
+                                          rocsparse_csrmv_info info);
+
+/*! \brief SPARSE Level 2 API
+
+    \details
     csrmv multiplies the dense vector x with scalar alpha and sparse m x n
     matrix A that is defined in CSR storage format and adds the result to the
     dense vector y that is multiplied by beta
@@ -629,6 +670,60 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex* y);
 */
+
+
+
+
+
+
+
+
+
+
+
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scsrmv_adaptive(rocsparse_handle handle,
+                                           rocsparse_operation trans,
+                                           rocsparse_int m,
+                                           rocsparse_int n,
+                                           rocsparse_int nnz,
+                                           const float* alpha,
+                                           const rocsparse_mat_descr descr,
+                                           const float* csr_val,
+                                           const rocsparse_int* csr_row_ptr,
+                                           const rocsparse_int* csr_col_ind,
+                                           const float* x,
+                                           const float* beta,
+                                           float* y,
+                                           const rocsparse_csrmv_info info);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcsrmv_adaptive(rocsparse_handle handle,
+                                           rocsparse_operation trans,
+                                           rocsparse_int m,
+                                           rocsparse_int n,
+                                           rocsparse_int nnz,
+                                           const double* alpha,
+                                           const rocsparse_mat_descr descr,
+                                           const double* csr_val,
+                                           const rocsparse_int* csr_row_ptr,
+                                           const rocsparse_int* csr_col_ind,
+                                           const double* x,
+                                           const double* beta,
+                                           double* y,
+                                           const rocsparse_csrmv_info info);
+
+
+
+
+
+
+
+
+
+
+
 
 /*! \brief SPARSE Level 2 API
 

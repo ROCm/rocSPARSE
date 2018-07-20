@@ -20,6 +20,7 @@ set(rocsparse_source
 # Level2
   src/level2/rocsparse_coomv.cpp
   src/level2/rocsparse_csrmv.cpp
+  src/level2/rocsparse_csrmv_adaptive.cpp
   src/level2/rocsparse_ellmv.cpp
   src/level2/rocsparse_hybmv.cpp
 
