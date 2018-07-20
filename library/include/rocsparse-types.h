@@ -23,6 +23,7 @@ typedef int32_t rocsparse_int;
 typedef struct _rocsparse_handle* rocsparse_handle;
 typedef struct _rocsparse_mat_descr* rocsparse_mat_descr;
 typedef struct _rocsparse_hyb_mat* rocsparse_hyb_mat;
+typedef struct _rocsparse_csrmv_info* rocsparse_csrmv_info;
 
 #ifdef __cplusplus
 extern "C" {

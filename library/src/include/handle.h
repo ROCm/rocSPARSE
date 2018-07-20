@@ -101,6 +101,21 @@ struct _rocsparse_hyb_mat
 };
 
 /********************************************************************************
+ * \brief rocsparse_create_csrmv_info is a structure holding the rocsparse
+ * csrmv info data gathered during csrmv_analysis. It must be initialized using
+ * rocsparse_create_csrmv_info() and the retured info structure must be passed
+ * to all subsequent csrmv adaptive function calls. It should be destroyed at
+ * the end using rocsparse_destroy_csrmv_info().
+ *******************************************************************************/
+ struct _rocsparse_csrmv_info
+ {
+     // num row blocks
+     size_t size = 0;
+     // row blocks
+     unsigned long long* row_blocks = nullptr;
+ };
+
+/********************************************************************************
  * \brief ELL format indexing
  *******************************************************************************/
 #define ELL_IND_ROW(i, el, m, width) (el) * (m) + (i)
