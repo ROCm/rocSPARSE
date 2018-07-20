@@ -5,6 +5,7 @@
 # Download some test matrices
 set(TEST_MATRICES
   Bova/rma10
+  JGD_BIBD/bibd_22_8
   Williams/mac_econ_fwd500
   Williams/mc2depi
   Hamm/scircuit
@@ -25,7 +26,7 @@ foreach(m ${TEST_MATRICES})
   list(GET sep_m 1 mat)
 
   # Download test matrices if not already downloaded
-  if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/matrices/${mat}.mtx")
+  if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/matrices/${mat}.bin")
     message("  Downloading and extracting test matrix ${m}.tar.gz")
     file(DOWNLOAD http://www.cise.ufl.edu/research/sparse/MM/${m}.tar.gz
          ${CMAKE_CURRENT_BINARY_DIR}/matrices/${mat}.tar.gz)
@@ -33,7 +34,9 @@ foreach(m ${TEST_MATRICES})
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
     execute_process(COMMAND mv ${mat}/${mat}.mtx .
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
-    execute_process(COMMAND rm ${mat}.tar.gz ${mat} -rf
+    execute_process(COMMAND ${CMAKE_SOURCE_DIR}/deps/convert ${mat}.mtx ${mat}.bin
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
+    execute_process(COMMAND rm ${mat}.tar.gz ${mat} ${mat}.mtx -rf
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
   endif()
 endforeach()
