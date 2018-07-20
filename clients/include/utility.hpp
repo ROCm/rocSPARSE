@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <sstream>
 #include <rocsparse.h>
 #include <hip/hip_runtime_api.h>
 
@@ -331,7 +332,8 @@ rocsparse_int read_mtx_matrix(const char* filename,
                               rocsparse_int& nnz,
                               std::vector<rocsparse_int>& row,
                               std::vector<rocsparse_int>& col,
-                              std::vector<T>& val)
+                              std::vector<T>& val,
+                              rocsparse_index_base idx_base)
 {
     printf("Reading matrix %s...", filename);
     fflush(stdout);
@@ -391,7 +393,7 @@ rocsparse_int read_mtx_matrix(const char* filename,
     }
 
     // Check data
-    if(strcmp(data, "real") != 0)
+    if(strcmp(data, "real") != 0 && strcmp(data, "integer") != 0 && strcmp(data, "pattern") != 0)
     {
         return -1;
     }
@@ -428,26 +430,49 @@ rocsparse_int read_mtx_matrix(const char* filename,
     rocsparse_int idx = 0;
     while(fgets(line, 1024, f))
     {
+        if(idx >= nnz)
+        {
+            return true;
+        }
+
         rocsparse_int irow;
         rocsparse_int icol;
-        double dval;
+        T ival;
 
-        sscanf(line, "%d %d %lf", &irow, &icol, &dval);
+        std::istringstream ss(line);
 
-        --irow;
-        --icol;
+        if(strcmp(data, "pattern"))
+        {
+            ss >> irow >> icol;
+            ival = static_cast<T>(1);
+        }
+        else
+        {
+            ss >> irow >> icol >> ival;
+        }
+
+        if(idx_base == rocsparse_index_base_zero)
+        {
+            --irow;
+            --icol;
+        }
 
         unsorted_row[idx] = irow;
         unsorted_col[idx] = icol;
-        unsorted_val[idx] = (T)dval;
+        unsorted_val[idx] = ival;
 
         ++idx;
 
         if(symm && irow != icol)
         {
+            if(idx >= nnz)
+            {
+                return true;
+            }
+
             unsorted_row[idx] = icol;
             unsorted_col[idx] = irow;
-            unsorted_val[idx] = (T)dval;
+            unsorted_val[idx] = ival;
             ++idx;
         }
     }
