@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <sstream>
 #include <rocsparse.h>
 #include <hip/hip_runtime_api.h>
 
@@ -331,7 +332,8 @@ rocsparse_int read_mtx_matrix(const char* filename,
                               rocsparse_int& nnz,
                               std::vector<rocsparse_int>& row,
                               std::vector<rocsparse_int>& col,
-                              std::vector<T>& val)
+                              std::vector<T>& val,
+                              rocsparse_index_base idx_base)
 {
     printf("Reading matrix %s...", filename);
     fflush(stdout);
@@ -391,7 +393,7 @@ rocsparse_int read_mtx_matrix(const char* filename,
     }
 
     // Check data
-    if(strcmp(data, "real") != 0)
+    if(strcmp(data, "real") != 0 && strcmp(data, "integer") != 0 && strcmp(data, "pattern") != 0)
     {
         return -1;
     }
@@ -428,26 +430,49 @@ rocsparse_int read_mtx_matrix(const char* filename,
     rocsparse_int idx = 0;
     while(fgets(line, 1024, f))
     {
+        if(idx >= nnz)
+        {
+            return true;
+        }
+
         rocsparse_int irow;
         rocsparse_int icol;
-        double dval;
+        T ival;
 
-        sscanf(line, "%d %d %lf", &irow, &icol, &dval);
+        std::istringstream ss(line);
 
-        --irow;
-        --icol;
+        if(!strcmp(data, "pattern"))
+        {
+            ss >> irow >> icol;
+            ival = static_cast<T>(1);
+        }
+        else
+        {
+            ss >> irow >> icol >> ival;
+        }
+
+        if(idx_base == rocsparse_index_base_zero)
+        {
+            --irow;
+            --icol;
+        }
 
         unsorted_row[idx] = irow;
         unsorted_col[idx] = icol;
-        unsorted_val[idx] = (T)dval;
+        unsorted_val[idx] = ival;
 
         ++idx;
 
         if(symm && irow != icol)
         {
+            if(idx >= nnz)
+            {
+                return true;
+            }
+
             unsorted_row[idx] = icol;
             unsorted_col[idx] = irow;
-            unsorted_val[idx] = (T)dval;
+            unsorted_val[idx] = ival;
             ++idx;
         }
     }
@@ -493,75 +518,64 @@ rocsparse_int read_mtx_matrix(const char* filename,
 }
 
 /* ============================================================================================ */
-/*! \brief  Convert matrix from COO to CSR format */
+/*! \brief  Read matrix from binary file in CSR format */
 template <typename T>
-void coo_to_csr(rocsparse_int nrow,
-                rocsparse_int ncol,
-                rocsparse_int nnz,
-                const std::vector<rocsparse_int>& src_row,
-                const std::vector<rocsparse_int>& src_col,
-                const std::vector<T>& src_val,
-                std::vector<rocsparse_int>& dst_ptr,
-                std::vector<rocsparse_int>& dst_col,
-                std::vector<T>& dst_val)
+rocsparse_int read_bin_matrix(const char* filename,
+                              rocsparse_int& nrow,
+                              rocsparse_int& ncol,
+                              rocsparse_int& nnz,
+                              std::vector<rocsparse_int>& ptr,
+                              std::vector<rocsparse_int>& col,
+                              std::vector<T>& val,
+                              rocsparse_index_base idx_base)
 {
-    dst_ptr.resize(nrow + 1, 0);
-    dst_col.resize(nnz);
-    dst_val.resize(nnz);
+    printf("Reading matrix %s...", filename);
+    fflush(stdout);
 
-    // Compute nnz entries per row
+    FILE* f = fopen(filename, "rb");
+    if(!f)
+    {
+        return -1;
+    }
+
+    int err;
+
+    err = fread(&nrow, sizeof(int), 1, f);
+    err |= fread(&ncol, sizeof(int), 1, f);
+    err |= fread(&nnz, sizeof(int), 1, f);
+
+    // Allocate memory
+    ptr.resize(nrow + 1);
+    col.resize(nnz);
+    val.resize(nnz);
+    std::vector<double> tmp(nnz);
+
+    err |= fread(ptr.data(), sizeof(int), nrow + 1, f);
+    err |= fread(col.data(), sizeof(int), nnz, f);
+    err |= fread(tmp.data(), sizeof(double), nnz, f);
+
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
-        ++dst_ptr[src_row[i]];
+        val[i] = static_cast<T>(tmp[i]);
     }
 
-    rocsparse_int sum = 0;
-    for(rocsparse_int i = 0; i < nrow; ++i)
+    if(idx_base == rocsparse_index_base_one)
     {
-        rocsparse_int tmp = dst_ptr[i];
-        dst_ptr[i]        = sum;
-        sum += tmp;
-    }
-    dst_ptr[nrow] = sum;
-
-    // Write column index and values
-    for(rocsparse_int i = 0; i < nnz; ++i)
-    {
-        rocsparse_int row = src_row[i];
-        rocsparse_int idx = dst_ptr[row];
-
-        dst_col[idx] = src_col[i];
-        dst_val[idx] = src_val[i];
-
-        ++dst_ptr[row];
-    }
-
-    rocsparse_int last = 0;
-    for(rocsparse_int i = 0; i < nrow + 1; ++i)
-    {
-        rocsparse_int tmp = dst_ptr[i];
-        dst_ptr[i]        = last;
-        last              = tmp;
-    }
-
-    for(rocsparse_int i = 0; i < nrow; ++i)
-    {
-        for(rocsparse_int j = dst_ptr[i]; j < dst_ptr[i + 1]; ++j)
+        for(rocsparse_int i = 0; i < nrow + 1; ++i)
         {
-            for(rocsparse_int k = dst_ptr[i]; k < dst_ptr[i + 1] - 1; ++k)
-            {
-                // Swap elements
-                rocsparse_int idx = dst_col[k];
-                T val             = dst_val[k];
+            ++ptr[i];
+        }
 
-                dst_col[k] = dst_col[k + 1];
-                dst_val[k] = dst_val[k + 1];
-
-                dst_col[k + 1] = idx;
-                dst_val[k + 1] = val;
-            }
+        for(rocsparse_int i = 0; i < nnz; ++i)
+        {
+            ++col[i];
         }
     }
+
+    printf("done.\n");
+    fflush(stdout);
+
+    return 0;
 }
 
 #ifdef __cplusplus
