@@ -71,7 +71,8 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handl
     // Quick return if possible
     if(m == 0 || n == 0 || nnz == 0)
     {
-        *buffer_size = 0;
+        // Do not return 0 as buffer size
+        *buffer_size = 4;
         return rocsparse_status_success;
     }
 
@@ -91,6 +92,12 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handl
     *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
     *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
     *buffer_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+
+    // Do not return 0 as size
+    if(*buffer_size == 0)
+    {
+        *buffer_size = 4;
+    }
 
     return rocsparse_status_success;
 }
