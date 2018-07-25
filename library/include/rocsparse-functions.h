@@ -578,6 +578,11 @@ rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
 
         y := alpha * op(A) * x + beta * y
 
+    The info parameter is optional and contains information collected by
+    rocsparse_csrmv_analysis. If present, it will be used to speed up the
+    csrmv computation. If info == nullptr, general csrmv routine will be
+    called instead.
+
     @param[in]
     handle      rocsparse_handle.
                 handle to the rocsparse library context queue.
@@ -608,6 +613,9 @@ rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
     @param[inout]
     y           array of m elements (op(A) = A) or n elements (op(A) = A^T or
                 op(A) = A^H).
+    @param[in]
+    info        [optional] information collected by rocsparse_csrmv_analysis.
+                if nullptr is passed, general csrmv routine will be called.
 
     ********************************************************************/
 ROCSPARSE_EXPORT
@@ -623,7 +631,8 @@ rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
                                   const rocsparse_int* csr_col_ind,
                                   const float* x,
                                   const float* beta,
-                                  float* y);
+                                  float* y,
+                                  const rocsparse_csrmv_info info);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
@@ -638,7 +647,8 @@ rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
                                   const rocsparse_int* csr_col_ind,
                                   const double* x,
                                   const double* beta,
-                                  double* y);
+                                  double* y,
+                                  const rocsparse_csrmv_info info);
 /*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
@@ -653,7 +663,8 @@ rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
                                   const rocsparse_int* csr_col_ind,
                                   const rocsparse_float_complex* x,
                                   const rocsparse_float_complex* beta,
-                                  rocsparse_float_complex* y);
+                                  rocsparse_float_complex* y,
+                                  const rocsparse_csrmv_info info);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
@@ -668,62 +679,9 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
                                   const rocsparse_int* csr_col_ind,
                                   const rocsparse_double_complex* x,
                                   const rocsparse_double_complex* beta,
-                                  rocsparse_double_complex* y);
+                                  rocsparse_double_complex* y,
+                                  const rocsparse_csrmv_info info);
 */
-
-
-
-
-
-
-
-
-
-
-
-
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_scsrmv_adaptive(rocsparse_handle handle,
-                                           rocsparse_operation trans,
-                                           rocsparse_int m,
-                                           rocsparse_int n,
-                                           rocsparse_int nnz,
-                                           const float* alpha,
-                                           const rocsparse_mat_descr descr,
-                                           const float* csr_val,
-                                           const rocsparse_int* csr_row_ptr,
-                                           const rocsparse_int* csr_col_ind,
-                                           const float* x,
-                                           const float* beta,
-                                           float* y,
-                                           const rocsparse_csrmv_info info);
-
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_dcsrmv_adaptive(rocsparse_handle handle,
-                                           rocsparse_operation trans,
-                                           rocsparse_int m,
-                                           rocsparse_int n,
-                                           rocsparse_int nnz,
-                                           const double* alpha,
-                                           const rocsparse_mat_descr descr,
-                                           const double* csr_val,
-                                           const rocsparse_int* csr_row_ptr,
-                                           const rocsparse_int* csr_col_ind,
-                                           const double* x,
-                                           const double* beta,
-                                           double* y,
-                                           const rocsparse_csrmv_info info);
-
-
-
-
-
-
-
-
-
-
-
 
 /*! \brief SPARSE Level 2 API
 

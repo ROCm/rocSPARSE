@@ -97,7 +97,8 @@ int main(int argc, char* argv[])
                          dAcol,
                          dx,
                          &hbeta,
-                         dy);
+                         dy,
+                         nullptr);
     }
 
     // Device synchronization
@@ -124,7 +125,8 @@ int main(int argc, char* argv[])
                              dAcol,
                              dx,
                              &hbeta,
-                             dy);
+                             dy,
+                             nullptr);
         }
 
         // Device synchronization
