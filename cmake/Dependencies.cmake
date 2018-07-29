@@ -49,8 +49,7 @@ if(HIP_PLATFORM STREQUAL "hcc")
          GIT_REPOSITORY      https://github.com/ROCmSoftwarePlatform/rocPRIM.git
          GIT_TAG             master
          INSTALL_DIR         ${ROCPRIM_ROOT}
-         CXX                 HCC
-         CMAKE_ARGS          -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_TEST=OFF -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+         CMAKE_ARGS          -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_TEST=OFF -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc
          LOG_DOWNLOAD        TRUE
          LOG_CONFIGURE       TRUE
          LOG_INSTALL         TRUE
@@ -69,8 +68,7 @@ elseif(HIP_PLATFORM STREQUAL "nvcc")
          GIT_REPOSITORY      https://github.com/ROCmSoftwarePlatform/rocPRIM.git
          GIT_TAG             master
          INSTALL_DIR         ${ROCPRIM_ROOT}
-         CXX                 HIPCC
-         CMAKE_ARGS          -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_TEST=OFF -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+         CMAKE_ARGS          -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_TEST=OFF -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DCMAKE_CXX_COMPILER=${HIP_HIPCC_EXECUTABLE}
          LOG_DOWNLOAD        TRUE
          LOG_CONFIGURE       TRUE
          LOG_INSTALL         TRUE
