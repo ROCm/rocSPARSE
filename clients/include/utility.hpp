@@ -554,6 +554,8 @@ rocsparse_int read_bin_matrix(const char* filename,
     err |= fread(col.data(), sizeof(int), nnz, f);
     err |= fread(tmp.data(), sizeof(double), nnz, f);
 
+    fclose(f);
+
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
         val[i] = static_cast<T>(tmp[i]);
