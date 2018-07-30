@@ -30,7 +30,7 @@ void testing_ellmv_bad_arg(void)
     rocsparse_int ell_width   = 8;
     T alpha                   = 0.6;
     T beta                    = 0.2;
-    rocsparse_operation trans = rocsparse_operation_none;
+    rocsparse_operation transA = rocsparse_operation_none;
     rocsparse_status status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
@@ -61,7 +61,7 @@ void testing_ellmv_bad_arg(void)
         rocsparse_int* dcol_null = nullptr;
 
         status = rocsparse_ellmv(
-            handle, trans, m, n, &alpha, descr, dval, dcol_null, ell_width, dx, &beta, dy);
+            handle, transA, m, n, &alpha, descr, dval, dcol_null, ell_width, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
     }
     // testing for(nullptr == dval)
@@ -69,7 +69,7 @@ void testing_ellmv_bad_arg(void)
         T* dval_null = nullptr;
 
         status = rocsparse_ellmv(
-            handle, trans, m, n, &alpha, descr, dval_null, dcol, ell_width, dx, &beta, dy);
+            handle, transA, m, n, &alpha, descr, dval_null, dcol, ell_width, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
     }
     // testing for(nullptr == dx)
@@ -77,7 +77,7 @@ void testing_ellmv_bad_arg(void)
         T* dx_null = nullptr;
 
         status = rocsparse_ellmv(
-            handle, trans, m, n, &alpha, descr, dval, dcol, ell_width, dx_null, &beta, dy);
+            handle, transA, m, n, &alpha, descr, dval, dcol, ell_width, dx_null, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dx is nullptr");
     }
     // testing for(nullptr == dy)
@@ -85,7 +85,7 @@ void testing_ellmv_bad_arg(void)
         T* dy_null = nullptr;
 
         status = rocsparse_ellmv(
-            handle, trans, m, n, &alpha, descr, dval, dcol, ell_width, dx, &beta, dy_null);
+            handle, transA, m, n, &alpha, descr, dval, dcol, ell_width, dx, &beta, dy_null);
         verify_rocsparse_status_invalid_pointer(status, "Error: dy is nullptr");
     }
     // testing for(nullptr == d_alpha)
@@ -93,7 +93,7 @@ void testing_ellmv_bad_arg(void)
         T* d_alpha_null = nullptr;
 
         status = rocsparse_ellmv(
-            handle, trans, m, n, d_alpha_null, descr, dval, dcol, ell_width, dx, &beta, dy);
+            handle, transA, m, n, d_alpha_null, descr, dval, dcol, ell_width, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
     }
     // testing for(nullptr == d_beta)
@@ -101,7 +101,7 @@ void testing_ellmv_bad_arg(void)
         T* d_beta_null = nullptr;
 
         status = rocsparse_ellmv(
-            handle, trans, m, n, &alpha, descr, dval, dcol, ell_width, dx, d_beta_null, dy);
+            handle, transA, m, n, &alpha, descr, dval, dcol, ell_width, dx, d_beta_null, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: beta is nullptr");
     }
     // testing for(nullptr == descr)
@@ -109,7 +109,7 @@ void testing_ellmv_bad_arg(void)
         rocsparse_mat_descr descr_null = nullptr;
 
         status = rocsparse_ellmv(
-            handle, trans, m, n, &alpha, descr_null, dval, dcol, ell_width, dx, &beta, dy);
+            handle, transA, m, n, &alpha, descr_null, dval, dcol, ell_width, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == handle)
@@ -117,7 +117,7 @@ void testing_ellmv_bad_arg(void)
         rocsparse_handle handle_null = nullptr;
 
         status = rocsparse_ellmv(
-            handle_null, trans, m, n, &alpha, descr, dval, dcol, ell_width, dx, &beta, dy);
+            handle_null, transA, m, n, &alpha, descr, dval, dcol, ell_width, dx, &beta, dy);
         verify_rocsparse_status_invalid_handle(status);
     }
 }
@@ -130,7 +130,7 @@ rocsparse_status testing_ellmv(Arguments argus)
     rocsparse_int n               = argus.N;
     T h_alpha                     = argus.alpha;
     T h_beta                      = argus.beta;
-    rocsparse_operation trans     = argus.trans;
+    rocsparse_operation transA     = argus.transA;
     rocsparse_index_base idx_base = argus.idx_base;
     rocsparse_status status;
 
@@ -174,7 +174,7 @@ rocsparse_status testing_ellmv(Arguments argus)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         status =
-            rocsparse_ellmv(handle, trans, m, n, &h_alpha, descr, dval, dcol, 0, dx, &h_beta, dy);
+            rocsparse_ellmv(handle, transA, m, n, &h_alpha, descr, dval, dcol, 0, dx, &h_beta, dy);
 
         if(m < 0 || n < 0 || nnz < 0)
         {
@@ -320,12 +320,12 @@ rocsparse_status testing_ellmv(Arguments argus)
         // ROCSPARSE pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_ellmv(
-            handle, trans, m, n, &h_alpha, descr, dval, dcol, ell_width, dx, &h_beta, dy_1));
+            handle, transA, m, n, &h_alpha, descr, dval, dcol, ell_width, dx, &h_beta, dy_1));
 
         // ROCSPARSE pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_ellmv(
-            handle, trans, m, n, d_alpha, descr, dval, dcol, ell_width, dx, d_beta, dy_2));
+            handle, transA, m, n, d_alpha, descr, dval, dcol, ell_width, dx, d_beta, dy_2));
 
         // copy output from device to CPU
         CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * m, hipMemcpyDeviceToHost));
@@ -361,7 +361,7 @@ rocsparse_status testing_ellmv(Arguments argus)
         for(int iter = 0; iter < number_cold_calls; iter++)
         {
             rocsparse_ellmv(
-                handle, trans, m, n, &h_alpha, descr, dval, dcol, ell_width, dx, &h_beta, dy_1);
+                handle, transA, m, n, &h_alpha, descr, dval, dcol, ell_width, dx, &h_beta, dy_1);
         }
 
         double gpu_time_used = get_time_us(); // in microseconds
@@ -369,7 +369,7 @@ rocsparse_status testing_ellmv(Arguments argus)
         for(int iter = 0; iter < number_hot_calls; iter++)
         {
             rocsparse_ellmv(
-                handle, trans, m, n, &h_alpha, descr, dval, dcol, ell_width, dx, &h_beta, dy_1);
+                handle, transA, m, n, &h_alpha, descr, dval, dcol, ell_width, dx, &h_beta, dy_1);
         }
 
         // Convert to miliseconds per call
