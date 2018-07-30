@@ -595,12 +595,17 @@ class Arguments
     public:
     rocsparse_int M   = 128;
     rocsparse_int N   = 128;
+    rocsparse_int K   = 128;
     rocsparse_int nnz = 32;
+
+    rocsparse_int ldb;
+    rocsparse_int ldc;
 
     double alpha = 1.0;
     double beta  = 0.0;
 
-    rocsparse_operation trans      = rocsparse_operation_none;
+    rocsparse_operation transA     = rocsparse_operation_none;
+    rocsparse_operation transB     = rocsparse_operation_none;
     rocsparse_index_base idx_base  = rocsparse_index_base_zero;
     rocsparse_index_base idx_base2 = rocsparse_index_base_zero;
     rocsparse_hyb_partition part   = rocsparse_hyb_partition_auto;
@@ -617,27 +622,32 @@ class Arguments
 
     Arguments& operator=(const Arguments& rhs)
     {
-        M   = rhs.M;
-        N   = rhs.N;
-        nnz = rhs.nnz;
+        this->M   = rhs.M;
+        this->N   = rhs.N;
+        this->K   = rhs.K;
+        this->nnz = rhs.nnz;
 
-        alpha = rhs.alpha;
-        beta  = rhs.beta;
+        this->ldb = rhs.ldb;
+        this->ldc = rhs.ldc;
 
-        trans     = rhs.trans;
-        idx_base  = rhs.idx_base;
-        idx_base2 = rhs.idx_base2;
-        part      = rhs.part;
+        this->alpha = rhs.alpha;
+        this->beta  = rhs.beta;
 
-        norm_check = rhs.norm_check;
-        unit_check = rhs.unit_check;
-        timing     = rhs.timing;
+        this->transA    = rhs.transA;
+        this->transB    = rhs.transB;
+        this->idx_base  = rhs.idx_base;
+        this->idx_base2 = rhs.idx_base2;
+        this->part      = rhs.part;
 
-        iters     = rhs.iters;
-        laplacian = rhs.laplacian;
-        ell_width = rhs.ell_width;
+        this->norm_check = rhs.norm_check;
+        this->unit_check = rhs.unit_check;
+        this->timing     = rhs.timing;
 
-        filename = rhs.filename;
+        this->iters     = rhs.iters;
+        this->laplacian = rhs.laplacian;
+        this->ell_width = rhs.ell_width;
+
+        this->filename = rhs.filename;
 
         return *this;
     }
