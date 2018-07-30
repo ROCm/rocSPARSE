@@ -8,11 +8,13 @@
 #include <rocsparse.h>
 #include <gtest/gtest.h>
 #include <vector>
+#include <string>
 
-typedef std::tuple<int, int, rocsparse_index_base, std::string> csr2coo_tuple;
+typedef std::tuple<int, int, rocsparse_index_base> csr2coo_tuple;
+typedef std::tuple<rocsparse_index_base, std::string> csr2coo_bin_tuple;
 
-int csr2coo_M_range[] = {-99, -1, 0, 10, 500, 872, 1000};
-int csr2coo_N_range[] = {-99, 0, 33, 242, 623, 1000};
+int csr2coo_M_range[] = {-1, 0, 10, 500, 872, 1000};
+int csr2coo_N_range[] = {-3, 0, 33, 242, 623, 1000};
 
 rocsparse_index_base csr2coo_idx_base_range[] = {rocsparse_index_base_zero,
                                                  rocsparse_index_base_one};
@@ -41,6 +43,15 @@ class parameterized_csr2coo : public testing::TestWithParam<csr2coo_tuple>
     virtual void TearDown() {}
 };
 
+class parameterized_csr2coo_bin : public testing::TestWithParam<csr2coo_bin_tuple>
+{
+    protected:
+    parameterized_csr2coo_bin() {}
+    virtual ~parameterized_csr2coo_bin() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
+};
+
 Arguments setup_csr2coo_arguments(csr2coo_tuple tup)
 {
     Arguments arg;
@@ -48,9 +59,19 @@ Arguments setup_csr2coo_arguments(csr2coo_tuple tup)
     arg.N        = std::get<1>(tup);
     arg.idx_base = std::get<2>(tup);
     arg.timing   = 0;
+    return arg;
+}
+
+Arguments setup_csr2coo_arguments(csr2coo_bin_tuple tup)
+{
+    Arguments arg;
+    arg.M        = -99;
+    arg.N        = -99;
+    arg.idx_base = std::get<0>(tup);
+    arg.timing   = 0;
 
     // Determine absolute path of test matrix
-    std::string bin_file = std::get<3>(tup);
+    std::string bin_file = std::get<1>(tup);
 
     // Get current executables absolute path
     char path_exe[PATH_MAX];
@@ -80,9 +101,21 @@ TEST_P(parameterized_csr2coo, csr2coo)
     EXPECT_EQ(status, rocsparse_status_success);
 }
 
+TEST_P(parameterized_csr2coo_bin, csr2coo_bin)
+{
+    Arguments arg = setup_csr2coo_arguments(GetParam());
+
+    rocsparse_status status = testing_csr2coo(arg);
+    EXPECT_EQ(status, rocsparse_status_success);
+}
+
 INSTANTIATE_TEST_CASE_P(csr2coo,
                         parameterized_csr2coo,
                         testing::Combine(testing::ValuesIn(csr2coo_M_range),
                                          testing::ValuesIn(csr2coo_N_range),
-                                         testing::ValuesIn(csr2coo_idx_base_range),
+                                         testing::ValuesIn(csr2coo_idx_base_range)));
+
+INSTANTIATE_TEST_CASE_P(csr2coo_bin,
+                        parameterized_csr2coo_bin,
+                        testing::Combine(testing::ValuesIn(csr2coo_idx_base_range),
                                          testing::ValuesIn(csr2coo_bin)));

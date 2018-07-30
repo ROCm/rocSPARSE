@@ -13,6 +13,7 @@
 
 #include <rocsparse.h>
 #include <algorithm>
+#include <string>
 
 using namespace rocsparse;
 using namespace rocsparse_test;
@@ -144,7 +145,22 @@ rocsparse_status testing_csr2hyb(Arguments argus)
     rocsparse_index_base idx_base = argus.idx_base;
     rocsparse_hyb_partition part  = argus.part;
     rocsparse_int user_ell_width  = argus.ell_width;
+    std::string binfile           = "";
+    std::string filename          = "";
     rocsparse_status status;
+
+    // When in testing mode, M == N == -99 indicates that we are testing with a real
+    // matrix from cise.ufl.edu
+    if(m == -99 && n == -99 && argus.timing == 0)
+    {
+        binfile = argus.filename;
+        m = n = safe_size;
+    }
+
+    if(argus.timing == 1)
+    {
+        filename = argus.filename;
+    }
 
     double scale = 0.02;
     if(m > 1000 || n > 1000)
@@ -211,25 +227,29 @@ rocsparse_status testing_csr2hyb(Arguments argus)
 
     // Sample initial COO matrix on CPU
     srand(12345ULL);
-    if(argus.laplacian)
+    if(binfile != "")
+    {
+        if(read_bin_matrix(
+               binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
+    }
+    else if(argus.laplacian)
     {
         m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base);
         nnz   = hcsr_row_ptr[m];
     }
     else
     {
-        if(argus.filename != "")
+        if(filename != "")
         {
-            if(read_mtx_matrix(argus.filename.c_str(),
-                               m,
-                               n,
-                               nnz,
-                               hcoo_row_ind,
-                               hcsr_col_ind,
-                               hcsr_val,
-                               idx_base) != 0)
+            if(read_mtx_matrix(
+                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, idx_base) !=
+               0)
             {
-                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
             }
         }
