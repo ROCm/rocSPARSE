@@ -38,7 +38,7 @@ void testing_hybmv_bad_arg(void)
     rocsparse_int safe_size   = 100;
     T alpha                   = 0.6;
     T beta                    = 0.2;
-    rocsparse_operation trans = rocsparse_operation_none;
+    rocsparse_operation transA = rocsparse_operation_none;
     rocsparse_status status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
@@ -66,49 +66,49 @@ void testing_hybmv_bad_arg(void)
     {
         T* dx_null = nullptr;
 
-        status = rocsparse_hybmv(handle, trans, &alpha, descr, hyb, dx_null, &beta, dy);
+        status = rocsparse_hybmv(handle, transA, &alpha, descr, hyb, dx_null, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dx is nullptr");
     }
     // testing for(nullptr == dy)
     {
         T* dy_null = nullptr;
 
-        status = rocsparse_hybmv(handle, trans, &alpha, descr, hyb, dx, &beta, dy_null);
+        status = rocsparse_hybmv(handle, transA, &alpha, descr, hyb, dx, &beta, dy_null);
         verify_rocsparse_status_invalid_pointer(status, "Error: dy is nullptr");
     }
     // testing for(nullptr == d_alpha)
     {
         T* d_alpha_null = nullptr;
 
-        status = rocsparse_hybmv(handle, trans, d_alpha_null, descr, hyb, dx, &beta, dy);
+        status = rocsparse_hybmv(handle, transA, d_alpha_null, descr, hyb, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
     }
     // testing for(nullptr == d_beta)
     {
         T* d_beta_null = nullptr;
 
-        status = rocsparse_hybmv(handle, trans, &alpha, descr, hyb, dx, d_beta_null, dy);
+        status = rocsparse_hybmv(handle, transA, &alpha, descr, hyb, dx, d_beta_null, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: beta is nullptr");
     }
     // testing for(nullptr == hyb)
     {
         rocsparse_hyb_mat hyb_null = nullptr;
 
-        status = rocsparse_hybmv(handle, trans, &alpha, descr, hyb_null, dx, &beta, dy);
+        status = rocsparse_hybmv(handle, transA, &alpha, descr, hyb_null, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == descr)
     {
         rocsparse_mat_descr descr_null = nullptr;
 
-        status = rocsparse_hybmv(handle, trans, &alpha, descr_null, hyb, dx, &beta, dy);
+        status = rocsparse_hybmv(handle, transA, &alpha, descr_null, hyb, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == handle)
     {
         rocsparse_handle handle_null = nullptr;
 
-        status = rocsparse_hybmv(handle_null, trans, &alpha, descr, hyb, dx, &beta, dy);
+        status = rocsparse_hybmv(handle_null, transA, &alpha, descr, hyb, dx, &beta, dy);
         verify_rocsparse_status_invalid_handle(status);
     }
 }
@@ -121,7 +121,7 @@ rocsparse_status testing_hybmv(Arguments argus)
     rocsparse_int n               = argus.N;
     T h_alpha                     = argus.alpha;
     T h_beta                      = argus.beta;
-    rocsparse_operation trans     = argus.trans;
+    rocsparse_operation transA     = argus.transA;
     rocsparse_index_base idx_base = argus.idx_base;
     rocsparse_hyb_partition part  = argus.part;
     rocsparse_int user_ell_width  = argus.ell_width;
@@ -182,7 +182,7 @@ rocsparse_status testing_hybmv(Arguments argus)
 
         // hybmv should be able to deal with m <= 0 || n <= 0 || nnz <= 0 even if csr2hyb fails
         // because hyb structures is allocated with n = m = 0 - so nothing should happen
-        status = rocsparse_hybmv(handle, trans, &h_alpha, descr, hyb, dx, &h_beta, dy);
+        status = rocsparse_hybmv(handle, transA, &h_alpha, descr, hyb, dx, &h_beta, dy);
         verify_rocsparse_status_success(status, "m >= 0 && n >= 0 && nnz >= 0");
 
         return rocsparse_status_success;
@@ -300,12 +300,12 @@ rocsparse_status testing_hybmv(Arguments argus)
         // ROCSPARSE pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(
-            rocsparse_hybmv(handle, trans, &h_alpha, descr, hyb, dx, &h_beta, dy_1));
+            rocsparse_hybmv(handle, transA, &h_alpha, descr, hyb, dx, &h_beta, dy_1));
 
         // ROCSPARSE pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(
-            rocsparse_hybmv(handle, trans, d_alpha, descr, hyb, dx, d_beta, dy_2));
+            rocsparse_hybmv(handle, transA, d_alpha, descr, hyb, dx, d_beta, dy_2));
 
         // copy output from device to CPU
         CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * m, hipMemcpyDeviceToHost));
@@ -338,14 +338,14 @@ rocsparse_status testing_hybmv(Arguments argus)
 
         for(int iter = 0; iter < number_cold_calls; iter++)
         {
-            rocsparse_hybmv(handle, trans, &h_alpha, descr, hyb, dx, &h_beta, dy_1);
+            rocsparse_hybmv(handle, transA, &h_alpha, descr, hyb, dx, &h_beta, dy_1);
         }
 
         double gpu_time_used = get_time_us(); // in microseconds
 
         for(int iter = 0; iter < number_hot_calls; iter++)
         {
-            rocsparse_hybmv(handle, trans, &h_alpha, descr, hyb, dx, &h_beta, dy_1);
+            rocsparse_hybmv(handle, transA, &h_alpha, descr, hyb, dx, &h_beta, dy_1);
         }
 
         testhyb* dhyb = (testhyb*)hyb;
