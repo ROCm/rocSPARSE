@@ -13,6 +13,7 @@
 
 #include <rocsparse.h>
 #include <algorithm>
+#include <string>
 
 using namespace rocsparse;
 using namespace rocsparse_test;
@@ -73,7 +74,22 @@ rocsparse_status testing_coo2csr(Arguments argus)
     rocsparse_int n               = argus.N;
     rocsparse_int safe_size       = 100;
     rocsparse_index_base idx_base = argus.idx_base;
+    std::string binfile           = "";
+    std::string filename          = "";
     rocsparse_status status;
+
+    // When in testing mode, M == N == -99 indicates that we are testing with a real
+    // matrix from cise.ufl.edu
+    if(m == -99 && n == -99 && argus.timing == 0)
+    {
+        binfile = argus.filename;
+        m = n = safe_size;
+    }
+
+    if(argus.timing == 1)
+    {
+        filename = argus.filename;
+    }
 
     double scale = 0.02;
     if(m > 1000 || n > 1000)
@@ -124,7 +140,27 @@ rocsparse_status testing_coo2csr(Arguments argus)
 
     // Sample initial COO matrix on CPU
     srand(12345ULL);
-    if(argus.laplacian)
+    if(binfile != "")
+    {
+        std::vector<rocsparse_int> hptr(m + 1);
+        if(read_bin_matrix(binfile.c_str(), m, n, nnz, hptr, hcoo_col_ind, hcoo_val, idx_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
+
+        hcoo_row_ind.resize(nnz);
+
+        // Convert to COO
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            for(rocsparse_int j = hptr[i]; j < hptr[i + 1]; ++j)
+            {
+                hcoo_row_ind[j - idx_base] = i + idx_base;
+            }
+        }
+    }
+    else if(argus.laplacian)
     {
         std::vector<rocsparse_int> hptr(m + 1);
         m = n = gen_2d_laplacian(argus.laplacian, hptr, hcoo_col_ind, hcoo_val, idx_base);
@@ -142,18 +178,13 @@ rocsparse_status testing_coo2csr(Arguments argus)
     }
     else
     {
-        if(argus.filename != "")
+        if(filename != "")
         {
-            if(read_mtx_matrix(argus.filename.c_str(),
-                               m,
-                               n,
-                               nnz,
-                               hcoo_row_ind,
-                               hcoo_col_ind,
-                               hcoo_val,
-                               idx_base) != 0)
+            if(read_mtx_matrix(
+                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcoo_col_ind, hcoo_val, idx_base) !=
+               0)
             {
-                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
             }
         }

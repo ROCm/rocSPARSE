@@ -132,7 +132,22 @@ rocsparse_status testing_ellmv(Arguments argus)
     T h_beta                      = argus.beta;
     rocsparse_operation trans     = argus.trans;
     rocsparse_index_base idx_base = argus.idx_base;
+    std::string binfile           = "";
+    std::string filename          = "";
     rocsparse_status status;
+
+    // When in testing mode, M == N == -99 indicates that we are testing with a real
+    // matrix from cise.ufl.edu
+    if(m == -99 && n == -99 && argus.timing == 0)
+    {
+        binfile = argus.filename;
+        m = n = safe_size;
+    }
+
+    if(argus.timing == 1)
+    {
+        filename = argus.filename;
+    }
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
     rocsparse_handle handle = test_handle->handle;
@@ -196,19 +211,27 @@ rocsparse_status testing_ellmv(Arguments argus)
 
     // Initial Data on CPU
     srand(12345ULL);
-    if(argus.laplacian)
+    if(binfile != "")
+    {
+        if(read_bin_matrix(binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcol_ind, hval, idx_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
+    }
+    else if(argus.laplacian)
     {
         m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcol_ind, hval, idx_base);
         nnz   = hcsr_row_ptr[m];
     }
     else
     {
-        if(argus.filename != "")
+        if(filename != "")
         {
             if(read_mtx_matrix(
-                   argus.filename.c_str(), m, n, nnz, hcoo_row_ind, hcol_ind, hval, idx_base) != 0)
+                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcol_ind, hval, idx_base) != 0)
             {
-                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
             }
         }
@@ -336,11 +359,29 @@ rocsparse_status testing_ellmv(Arguments argus)
 
         for(rocsparse_int i = 0; i < m; ++i)
         {
-            hy_gold[i] *= h_beta;
-            for(rocsparse_int j = hcsr_row_ptr[i] - idx_base; j < hcsr_row_ptr[i + 1] - idx_base;
-                ++j)
+            T sum = static_cast<T>(0);
+            for(rocsparse_int p = 0; p < ell_width; ++p)
             {
-                hy_gold[i] += h_alpha * hval[j] * hx[hcol_ind[j] - idx_base];
+                rocsparse_int idx = ELL_IND(i, p, m, ell_width);
+                rocsparse_int col = hell_col_ind[idx] - idx_base;
+
+                if(col >= 0 && col < n)
+                {
+                    sum += hell_val[idx] * hx[col];
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if(h_beta != static_cast<T>(0))
+            {
+                hy_gold[i] = h_beta * hy_gold[i] + h_alpha * sum;
+            }
+            else
+            {
+                hy_gold[i] = h_alpha * sum;
             }
         }
 

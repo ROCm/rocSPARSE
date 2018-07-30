@@ -13,6 +13,7 @@
 
 #include <rocsparse.h>
 #include <algorithm>
+#include <string>
 
 using namespace rocsparse;
 using namespace rocsparse_test;
@@ -173,7 +174,22 @@ rocsparse_status testing_coosort(Arguments argus)
     rocsparse_int by_row          = argus.trans == rocsparse_operation_none;
     rocsparse_int permute         = argus.temp;
     rocsparse_index_base idx_base = argus.idx_base;
+    std::string binfile           = "";
+    std::string filename          = "";
     rocsparse_status status;
+
+    // When in testing mode, M == N == -99 indicates that we are testing with a real
+    // matrix from cise.ufl.edu
+    if(m == -99 && n == -99 && argus.timing == 0)
+    {
+        binfile = argus.filename;
+        m = n = safe_size;
+    }
+
+    if(argus.timing == 1)
+    {
+        filename = argus.filename;
+    }
 
     size_t buffer_size = 0;
 
@@ -259,7 +275,27 @@ rocsparse_status testing_coosort(Arguments argus)
 
     // Sample initial COO matrix on CPU
     srand(12345ULL);
-    if(argus.laplacian)
+    if(binfile != "")
+    {
+        std::vector<rocsparse_int> hcsr_row_ptr;
+        if(read_bin_matrix(
+               binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcoo_col_ind, hcoo_val, idx_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
+
+        // Convert CSR to COO
+        hcoo_row_ind.resize(nnz);
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            for(rocsparse_int j = hcsr_row_ptr[i]; j < hcsr_row_ptr[i + 1]; ++j)
+            {
+                hcoo_row_ind[j - idx_base] = i + idx_base;
+            }
+        }
+    }
+    else if(argus.laplacian)
     {
         std::vector<rocsparse_int> hcsr_row_ptr;
         m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcoo_col_ind, hcoo_val, idx_base);
@@ -271,24 +307,19 @@ rocsparse_status testing_coosort(Arguments argus)
         {
             for(rocsparse_int j = hcsr_row_ptr[i]; j < hcsr_row_ptr[i + 1]; ++j)
             {
-                hcoo_row_ind[j] = i + idx_base;
+                hcoo_row_ind[j - idx_base] = i + idx_base;
             }
         }
     }
     else
     {
-        if(argus.filename != "")
+        if(filename != "")
         {
-            if(read_mtx_matrix(argus.filename.c_str(),
-                               m,
-                               n,
-                               nnz,
-                               hcoo_row_ind,
-                               hcoo_col_ind,
-                               hcoo_val,
-                               idx_base) != 0)
+            if(read_mtx_matrix(
+                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcoo_col_ind, hcoo_val, idx_base) !=
+               0)
             {
-                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
             }
         }

@@ -13,6 +13,7 @@
 
 #include <rocsparse.h>
 #include <algorithm>
+#include <string>
 
 using namespace rocsparse;
 using namespace rocsparse_test;

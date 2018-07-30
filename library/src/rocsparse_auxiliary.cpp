@@ -2,6 +2,7 @@
  * Copyright 2018 Advanced Micro Devices, Inc.
  * ************************************************************************ */
 
+#include "definitions.h"
 #include "handle.h"
 #include "rocsparse.h"
 #include "utility.h"
@@ -283,6 +284,30 @@ rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb)
     // Destruct
     try
     {
+        // Clean up ELL part
+        if(hyb->ell_col_ind != nullptr)
+        {
+            RETURN_IF_HIP_ERROR(hipFree(hyb->ell_col_ind));
+        }
+        if(hyb->ell_val != nullptr)
+        {
+            RETURN_IF_HIP_ERROR(hipFree(hyb->ell_val));
+        }
+
+        // Clean up COO part
+        if(hyb->coo_row_ind != nullptr)
+        {
+            RETURN_IF_HIP_ERROR(hipFree(hyb->coo_row_ind));
+        }
+        if(hyb->coo_col_ind != nullptr)
+        {
+            RETURN_IF_HIP_ERROR(hipFree(hyb->coo_col_ind));
+        }
+        if(hyb->coo_val != nullptr)
+        {
+            RETURN_IF_HIP_ERROR(hipFree(hyb->coo_val));
+        }
+
         delete hyb;
     }
     catch(const rocsparse_status& status)
