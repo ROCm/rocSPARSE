@@ -117,7 +117,8 @@ rocsparse_status rocsparse_hybmv(rocsparse_handle handle,
 
 template <typename T>
 rocsparse_status rocsparse_csrmm(rocsparse_handle handle,
-                                 rocsparse_operation trans,
+                                 rocsparse_operation trans_A,
+                                 rocsparse_operation trans_B,
                                  rocsparse_int m,
                                  rocsparse_int n,
                                  rocsparse_int k,
