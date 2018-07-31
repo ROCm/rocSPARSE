@@ -10,7 +10,7 @@
 
 // Scale kernel for beta != 1.0
 template <typename T>
-__global__ void coomv_scale(rocsparse_int size, T scalar, T* data)
+__global__ void coomv_scale(rocsparse_int size, T scalar, T* __restrict__ data)
 {
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -87,7 +87,7 @@ static __device__ void coomvn_general_warp_reduce(rocsparse_int nnz,
         if(idx < nnz)
         {
             row = coo_row_ind[idx] - idx_base;
-            val = alpha * coo_val[idx] * x[coo_col_ind[idx] - idx_base];
+            val = alpha * coo_val[idx] * __ldg(x + coo_col_ind[idx] - idx_base);
         }
         else
         {
@@ -185,8 +185,8 @@ static __device__ void segmented_blockreduce(const rocsparse_int* rows, T* vals)
 // Do the final block reduction of the block reduction buffers back into global memory
 template <typename T, rocsparse_int BLOCKSIZE>
 __global__ void coomvn_general_block_reduce(rocsparse_int nnz,
-                                            const rocsparse_int* row_block_red,
-                                            const T* val_block_red,
+                                            const rocsparse_int* __restrict__ row_block_red,
+                                            const T* __restrict__ val_block_red,
                                             T* y)
 {
     rocsparse_int tid = hipThreadIdx_x;

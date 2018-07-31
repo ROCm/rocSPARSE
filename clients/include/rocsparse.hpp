@@ -134,6 +134,21 @@ rocsparse_status rocsparse_csrmm(rocsparse_handle handle,
                                  rocsparse_int ldc);
 
 template <typename T>
+rocsparse_status rocsparse_csr2csc(rocsparse_handle handle,
+                                   rocsparse_int m,
+                                   rocsparse_int n,
+                                   rocsparse_int nnz,
+                                   const T* csr_val,
+                                   const rocsparse_int* csr_row_ptr,
+                                   const rocsparse_int* csr_col_ind,
+                                   T* csc_val,
+                                   rocsparse_int* csc_row_ind,
+                                   rocsparse_int* csc_col_ptr,
+                                   rocsparse_action copy_values,
+                                   rocsparse_index_base idx_base,
+                                   void* temp_buffer);
+
+template <typename T>
 rocsparse_status rocsparse_csr2ell(rocsparse_handle handle,
                                    rocsparse_int m,
                                    const rocsparse_mat_descr csr_descr,

@@ -41,6 +41,8 @@ endif()
 # Target include directories
 target_include_directories(rocsparse
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/include>
+                                   $<BUILD_INTERFACE:${ROCPRIM_INCLUDE_DIRS}>
+                                   $<BUILD_INTERFACE:${HIPCUB_INCLUDE_DIRS}>
                            PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
                                    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
                                    $<INSTALL_INTERFACE:include>
@@ -53,6 +55,11 @@ if(HIP_PLATFORM STREQUAL "hcc")
 endif()
 set_target_properties(rocsparse PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")
+
+# Target definitions
+if(HIP_PLATFORM STREQUAL "hcc")
+  target_compile_definitions(rocsparse PRIVATE ROCPRIM_HIP_API=1)
+endif()
 
 # Generate export header
 include(GenerateExportHeader)
