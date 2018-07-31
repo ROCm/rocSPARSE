@@ -139,7 +139,22 @@ rocsparse_status testing_coomv(Arguments argus)
     T h_beta                      = argus.beta;
     rocsparse_operation trans     = argus.trans;
     rocsparse_index_base idx_base = argus.idx_base;
+    std::string binfile           = "";
+    std::string filename          = "";
     rocsparse_status status;
+
+    // When in testing mode, M == N == -99 indicates that we are testing with a real
+    // matrix from cise.ufl.edu
+    if(m == -99 && n == -99 && argus.timing == 0)
+    {
+        binfile = argus.filename;
+        m = n = safe_size;
+    }
+
+    if(argus.timing == 1)
+    {
+        filename = argus.filename;
+    }
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
     rocsparse_handle handle = test_handle->handle;
@@ -206,7 +221,25 @@ rocsparse_status testing_coomv(Arguments argus)
 
     // Initial Data on CPU
     srand(12345ULL);
-    if(argus.laplacian)
+    if(binfile != "")
+    {
+        if(read_bin_matrix(binfile.c_str(), m, n, nnz, hptr, hcol, hval, idx_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
+
+        // Convert CSR to COO
+        hrow.resize(nnz);
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            for(rocsparse_int j = hptr[i]; j < hptr[i + 1]; ++j)
+            {
+                hrow[j - idx_base] = i + idx_base;
+            }
+        }
+    }
+    else if(argus.laplacian)
     {
         m = n = gen_2d_laplacian(argus.laplacian, hptr, hcol, hval, idx_base);
         nnz   = hptr[m];
@@ -223,11 +256,11 @@ rocsparse_status testing_coomv(Arguments argus)
     }
     else
     {
-        if(argus.filename != "")
+        if(filename != "")
         {
-            if(read_mtx_matrix(argus.filename.c_str(), m, n, nnz, hrow, hcol, hval, idx_base) != 0)
+            if(read_mtx_matrix(filename.c_str(), m, n, nnz, hrow, hcol, hval, idx_base) != 0)
             {
-                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
             }
         }
@@ -324,11 +357,8 @@ rocsparse_status testing_coomv(Arguments argus)
 
         // enable unit check, notice unit check is not invasive, but norm check is,
         // unit check and norm check can not be interchanged their order
-        if(argus.unit_check)
-        {
-            unit_check_general(1, m, hy_gold.data(), hy_1.data());
-            unit_check_general(1, m, hy_gold.data(), hy_2.data());
-        }
+        unit_check_near(1, m, 1, hy_gold.data(), hy_1.data());
+        unit_check_near(1, m, 1, hy_gold.data(), hy_2.data());
     }
 
     if(argus.timing)
