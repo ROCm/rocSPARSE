@@ -116,6 +116,25 @@ rocsparse_status rocsparse_hybmv(rocsparse_handle handle,
                                  T* y);
 
 template <typename T>
+rocsparse_status rocsparse_csrmm(rocsparse_handle handle,
+                                 rocsparse_operation trans_A,
+                                 rocsparse_operation trans_B,
+                                 rocsparse_int m,
+                                 rocsparse_int n,
+                                 rocsparse_int k,
+                                 rocsparse_int nnz,
+                                 const T* alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const T* csr_val,
+                                 const rocsparse_int* csr_row_ptr,
+                                 const rocsparse_int* csr_col_ind,
+                                 const T* B,
+                                 rocsparse_int ldb,
+                                 const T* beta,
+                                 T* C,
+                                 rocsparse_int ldc);
+
+template <typename T>
 rocsparse_status rocsparse_csr2csc(rocsparse_handle handle,
                                    rocsparse_int m,
                                    rocsparse_int n,
