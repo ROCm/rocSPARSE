@@ -6,6 +6,7 @@
 
 #include <rocsparse.h>
 #include <hip/hip_runtime_api.h>
+#include <algorithm>
 #include <limits>
 
 #ifdef GOOGLE_TEST
