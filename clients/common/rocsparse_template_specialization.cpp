@@ -305,7 +305,23 @@ rocsparse_status rocsparse_csrmm(rocsparse_handle handle,
                                  float* C,
                                  rocsparse_int ldc)
 {
-    return rocsparse_scsrmm(handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc);
+    return rocsparse_scsrmm(handle,
+                            trans_A,
+                            trans_B,
+                            m,
+                            n,
+                            k,
+                            nnz,
+                            alpha,
+                            descr,
+                            csr_val,
+                            csr_row_ptr,
+                            csr_col_ind,
+                            B,
+                            ldb,
+                            beta,
+                            C,
+                            ldc);
 }
 
 template <>
@@ -327,7 +343,23 @@ rocsparse_status rocsparse_csrmm(rocsparse_handle handle,
                                  double* C,
                                  rocsparse_int ldc)
 {
-    return rocsparse_dcsrmm(handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc);
+    return rocsparse_dcsrmm(handle,
+                            trans_A,
+                            trans_B,
+                            m,
+                            n,
+                            k,
+                            nnz,
+                            alpha,
+                            descr,
+                            csr_val,
+                            csr_row_ptr,
+                            csr_col_ind,
+                            B,
+                            ldb,
+                            beta,
+                            C,
+                            ldc);
 }
 
 template <>

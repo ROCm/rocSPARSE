@@ -64,72 +64,207 @@ void testing_csrmm_bad_arg(void)
     {
         rocsparse_int* dptr_null = nullptr;
 
-        status = rocsparse_csrmm(
-            handle, transA, transB, M, N, K, nnz, &alpha, descr, dval, dptr_null, dcol, dB, ldb, &beta, dC, ldc);
+        status = rocsparse_csrmm(handle,
+                                 transA,
+                                 transB,
+                                 M,
+                                 N,
+                                 K,
+                                 nnz,
+                                 &alpha,
+                                 descr,
+                                 dval,
+                                 dptr_null,
+                                 dcol,
+                                 dB,
+                                 ldb,
+                                 &beta,
+                                 dC,
+                                 ldc);
         verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
     }
     // testing for(nullptr == dcol)
     {
         rocsparse_int* dcol_null = nullptr;
 
-        status = rocsparse_csrmm(
-            handle, transA, transB, M, N, K, nnz, &alpha, descr, dval, dptr, dcol_null, dB, ldb, &beta, dC, ldc);
+        status = rocsparse_csrmm(handle,
+                                 transA,
+                                 transB,
+                                 M,
+                                 N,
+                                 K,
+                                 nnz,
+                                 &alpha,
+                                 descr,
+                                 dval,
+                                 dptr,
+                                 dcol_null,
+                                 dB,
+                                 ldb,
+                                 &beta,
+                                 dC,
+                                 ldc);
         verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
     }
     // testing for(nullptr == dval)
     {
         T* dval_null = nullptr;
 
-        status = rocsparse_csrmm(
-            handle, transA, transB, M, N, K, nnz, &alpha, descr, dval_null, dptr, dcol, dB, ldb, &beta, dC, ldc);
+        status = rocsparse_csrmm(handle,
+                                 transA,
+                                 transB,
+                                 M,
+                                 N,
+                                 K,
+                                 nnz,
+                                 &alpha,
+                                 descr,
+                                 dval_null,
+                                 dptr,
+                                 dcol,
+                                 dB,
+                                 ldb,
+                                 &beta,
+                                 dC,
+                                 ldc);
         verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
     }
     // testing for(nullptr == dB)
     {
         T* dB_null = nullptr;
 
-        status = rocsparse_csrmm(
-            handle, transA, transB, M, N, K, nnz, &alpha, descr, dval, dptr, dcol, dB_null, ldb, &beta, dC, ldc);
+        status = rocsparse_csrmm(handle,
+                                 transA,
+                                 transB,
+                                 M,
+                                 N,
+                                 K,
+                                 nnz,
+                                 &alpha,
+                                 descr,
+                                 dval,
+                                 dptr,
+                                 dcol,
+                                 dB_null,
+                                 ldb,
+                                 &beta,
+                                 dC,
+                                 ldc);
         verify_rocsparse_status_invalid_pointer(status, "Error: dB is nullptr");
     }
     // testing for(nullptr == dC)
     {
         T* dC_null = nullptr;
 
-        status = rocsparse_csrmm(
-            handle, transA, transB, M, N, K, nnz, &alpha, descr, dval, dptr, dcol, dB, ldb, &beta, dC_null, ldc);
+        status = rocsparse_csrmm(handle,
+                                 transA,
+                                 transB,
+                                 M,
+                                 N,
+                                 K,
+                                 nnz,
+                                 &alpha,
+                                 descr,
+                                 dval,
+                                 dptr,
+                                 dcol,
+                                 dB,
+                                 ldb,
+                                 &beta,
+                                 dC_null,
+                                 ldc);
         verify_rocsparse_status_invalid_pointer(status, "Error: dC is nullptr");
     }
     // testing for(nullptr == d_alpha)
     {
         T* d_alpha_null = nullptr;
 
-        status = rocsparse_csrmm(
-            handle, transA, transB, M, N, K, nnz, d_alpha_null, descr, dval, dptr, dcol, dB, ldb, &beta, dC, ldc);
+        status = rocsparse_csrmm(handle,
+                                 transA,
+                                 transB,
+                                 M,
+                                 N,
+                                 K,
+                                 nnz,
+                                 d_alpha_null,
+                                 descr,
+                                 dval,
+                                 dptr,
+                                 dcol,
+                                 dB,
+                                 ldb,
+                                 &beta,
+                                 dC,
+                                 ldc);
         verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
     }
     // testing for(nullptr == d_beta)
     {
         T* d_beta_null = nullptr;
 
-        status = rocsparse_csrmm(
-            handle, transA, transB, M, N, K, nnz, &alpha, descr, dval, dptr, dcol, dB, ldb, d_beta_null, dC, ldc);
+        status = rocsparse_csrmm(handle,
+                                 transA,
+                                 transB,
+                                 M,
+                                 N,
+                                 K,
+                                 nnz,
+                                 &alpha,
+                                 descr,
+                                 dval,
+                                 dptr,
+                                 dcol,
+                                 dB,
+                                 ldb,
+                                 d_beta_null,
+                                 dC,
+                                 ldc);
         verify_rocsparse_status_invalid_pointer(status, "Error: beta is nullptr");
     }
     // testing for(nullptr == descr)
     {
         rocsparse_mat_descr descr_null = nullptr;
 
-        status = rocsparse_csrmm(
-            handle, transA, transB, M, N, K, nnz, &alpha, descr_null, dval, dptr, dcol, dB, ldb, &beta, dC, ldc);
+        status = rocsparse_csrmm(handle,
+                                 transA,
+                                 transB,
+                                 M,
+                                 N,
+                                 K,
+                                 nnz,
+                                 &alpha,
+                                 descr_null,
+                                 dval,
+                                 dptr,
+                                 dcol,
+                                 dB,
+                                 ldb,
+                                 &beta,
+                                 dC,
+                                 ldc);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == handle)
     {
         rocsparse_handle handle_null = nullptr;
 
-        status = rocsparse_csrmm(
-            handle_null, transA, transB, M, N, K, nnz, &alpha, descr, dval, dptr, dcol, dB, ldb, &beta, dC, ldc);
+        status = rocsparse_csrmm(handle_null,
+                                 transA,
+                                 transB,
+                                 M,
+                                 N,
+                                 K,
+                                 nnz,
+                                 &alpha,
+                                 descr,
+                                 dval,
+                                 dptr,
+                                 dcol,
+                                 dB,
+                                 ldb,
+                                 &beta,
+                                 dC,
+                                 ldc);
         verify_rocsparse_status_invalid_handle(status);
     }
 }
@@ -207,11 +342,28 @@ rocsparse_status testing_csrmm(Arguments argus)
         }
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        status = rocsparse_csrmm(handle, transA, transB, M, N, K, nnz, &h_alpha, descr, dval, dptr, dcol, dB, ldb, &h_beta, dC, ldc);
+        status = rocsparse_csrmm(handle,
+                                 transA,
+                                 transB,
+                                 M,
+                                 N,
+                                 K,
+                                 nnz,
+                                 &h_alpha,
+                                 descr,
+                                 dval,
+                                 dptr,
+                                 dcol,
+                                 dB,
+                                 ldb,
+                                 &h_beta,
+                                 dC,
+                                 ldc);
 
         if(M < 0 || N < 0 || K < 0 || nnz < 0)
         {
-            verify_rocsparse_status_invalid_size(status, "Error: M < 0 || N < 0 || K < 0 || nnz < 0");
+            verify_rocsparse_status_invalid_size(status,
+                                                 "Error: M < 0 || N < 0 || K < 0 || nnz < 0");
         }
         else
         {
@@ -232,7 +384,8 @@ rocsparse_status testing_csrmm(Arguments argus)
     // Initial Data on CPU
     if(binfile != "")
     {
-        if(read_bin_matrix(binfile.c_str(), M, K, nnz, hcsr_row_ptrA, hcsr_col_indA, hcsr_valA, idx_base) != 0)
+        if(read_bin_matrix(
+               binfile.c_str(), M, K, nnz, hcsr_row_ptrA, hcsr_col_indA, hcsr_valA, idx_base) != 0)
         {
             fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
             return rocsparse_status_internal_error;
@@ -240,7 +393,8 @@ rocsparse_status testing_csrmm(Arguments argus)
     }
     else if(argus.laplacian)
     {
-        M = K = gen_2d_laplacian(argus.laplacian, hcsr_row_ptrA, hcsr_col_indA, hcsr_valA, idx_base);
+        M = K =
+            gen_2d_laplacian(argus.laplacian, hcsr_row_ptrA, hcsr_col_indA, hcsr_valA, idx_base);
         nnz = hcsr_row_ptrA[M];
     }
     else
@@ -249,7 +403,14 @@ rocsparse_status testing_csrmm(Arguments argus)
 
         if(filename != "")
         {
-            if(read_mtx_matrix(filename.c_str(), M, K, nnz, hcoo_row_indA, hcsr_col_indA, hcsr_valA, idx_base) != 0)
+            if(read_mtx_matrix(filename.c_str(),
+                               M,
+                               K,
+                               nnz,
+                               hcoo_row_indA,
+                               hcsr_col_indA,
+                               hcsr_valA,
+                               idx_base) != 0)
             {
                 fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
@@ -303,21 +464,22 @@ rocsparse_status testing_csrmm(Arguments argus)
     rocsparse_init<T>(hB, Bnrow, Bncol);
     rocsparse_init<T>(hC_1, Cnrow, Cncol);
 
-    // copy vector is easy in STL; hC_gold = hC_1: save a copy in hy_gold which will be output of CPU
+    // copy vector is easy in STL; hC_gold = hC_1: save a copy in hy_gold which will be output of
+    // CPU
     hC_gold = hC_1;
-    hC_2 = hC_1;
+    hC_2    = hC_1;
 
     // allocate memory on device
     auto dcsr_row_ptrA_managed =
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (M + 1)), device_free};
     auto dcsr_col_indA_managed =
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dcsr_valA_managed     = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dB_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * Bnnz), device_free};
-    auto dC_1_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * Cnnz), device_free};
-    auto dC_2_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * Cnnz), device_free};
-    auto d_alpha_managed = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
-    auto d_beta_managed  = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
+    auto dcsr_valA_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
+    auto dB_managed        = rocsparse_unique_ptr{device_malloc(sizeof(T) * Bnnz), device_free};
+    auto dC_1_managed      = rocsparse_unique_ptr{device_malloc(sizeof(T) * Cnnz), device_free};
+    auto dC_2_managed      = rocsparse_unique_ptr{device_malloc(sizeof(T) * Cnnz), device_free};
+    auto d_alpha_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
+    auto d_beta_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
 
     rocsparse_int* dcsr_row_ptrA = (rocsparse_int*)dcsr_row_ptrA_managed.get();
     rocsparse_int* dcsr_col_indA = (rocsparse_int*)dcsr_col_indA_managed.get();
@@ -337,8 +499,12 @@ rocsparse_status testing_csrmm(Arguments argus)
     }
 
     // copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_row_ptrA, hcsr_row_ptrA.data(), sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_col_indA, hcsr_col_indA.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcsr_row_ptrA,
+                              hcsr_row_ptrA.data(),
+                              sizeof(rocsparse_int) * (M + 1),
+                              hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(
+        dcsr_col_indA, hcsr_col_indA.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dcsr_valA, hcsr_valA.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dB, hB.data(), sizeof(T) * Bnnz, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dC_1, hC_1.data(), sizeof(T) * Cnnz, hipMemcpyHostToDevice));
@@ -351,11 +517,43 @@ rocsparse_status testing_csrmm(Arguments argus)
 
         // ROCSPARSE pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrmm(handle, transA, transB, Anrow, Cncol, Ancol, nnz, &h_alpha, descr, dcsr_valA, dcsr_row_ptrA, dcsr_col_indA, dB, ldb, &h_beta, dC_1, ldc));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrmm(handle,
+                                              transA,
+                                              transB,
+                                              Anrow,
+                                              Cncol,
+                                              Ancol,
+                                              nnz,
+                                              &h_alpha,
+                                              descr,
+                                              dcsr_valA,
+                                              dcsr_row_ptrA,
+                                              dcsr_col_indA,
+                                              dB,
+                                              ldb,
+                                              &h_beta,
+                                              dC_1,
+                                              ldc));
 
         // ROCSPARSE pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrmm(handle, transA, transB, Anrow, Cncol, Ancol, nnz, d_alpha, descr, dcsr_valA, dcsr_row_ptrA, dcsr_col_indA, dB, ldb, d_beta, dC_2, ldc));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrmm(handle,
+                                              transA,
+                                              transB,
+                                              Anrow,
+                                              Cncol,
+                                              Ancol,
+                                              nnz,
+                                              d_alpha,
+                                              descr,
+                                              dcsr_valA,
+                                              dcsr_row_ptrA,
+                                              dcsr_col_indA,
+                                              dB,
+                                              ldb,
+                                              d_beta,
+                                              dC_2,
+                                              ldc));
 
         // copy output from device to CPU
         CHECK_HIP_ERROR(hipMemcpy(hC_1.data(), dC_1, sizeof(T) * Cnnz, hipMemcpyDeviceToHost));
@@ -369,11 +567,15 @@ rocsparse_status testing_csrmm(Arguments argus)
             for(rocsparse_int j = 0; j < Cncol; ++j)
             {
                 rocsparse_int Cidx = i + j * ldc;
-                T sum = hC_gold[Cidx] * h_beta;
+                T sum              = hC_gold[Cidx] * h_beta;
 
-                for(rocsparse_int k = hcsr_row_ptrA[i] - idx_base; k < hcsr_row_ptrA[i + 1] - idx_base; ++k)
+                for(rocsparse_int k = hcsr_row_ptrA[i] - idx_base;
+                    k < hcsr_row_ptrA[i + 1] - idx_base;
+                    ++k)
                 {
-                    rocsparse_int Bidx = (transB == rocsparse_operation_none) ? (hcsr_col_indA[k] - idx_base + j * ldb) : (j + (hcsr_col_indA[k] - idx_base) * ldb);
+                    rocsparse_int Bidx = (transB == rocsparse_operation_none)
+                                             ? (hcsr_col_indA[k] - idx_base + j * ldb)
+                                             : (j + (hcsr_col_indA[k] - idx_base) * ldb);
                     sum += h_alpha * hcsr_valA[k] * hB[Bidx];
                 }
 
@@ -395,14 +597,46 @@ rocsparse_status testing_csrmm(Arguments argus)
 
         for(int iter = 0; iter < number_cold_calls; iter++)
         {
-            rocsparse_csrmm(handle, transA, transB, Anrow, Cncol, Ancol, nnz, &h_alpha, descr, dcsr_valA, dcsr_row_ptrA, dcsr_col_indA, dB, ldb, &h_beta, dC_1, ldc);
+            rocsparse_csrmm(handle,
+                            transA,
+                            transB,
+                            Anrow,
+                            Cncol,
+                            Ancol,
+                            nnz,
+                            &h_alpha,
+                            descr,
+                            dcsr_valA,
+                            dcsr_row_ptrA,
+                            dcsr_col_indA,
+                            dB,
+                            ldb,
+                            &h_beta,
+                            dC_1,
+                            ldc);
         }
 
         double gpu_time_used = get_time_us(); // in microseconds
 
         for(int iter = 0; iter < number_hot_calls; iter++)
         {
-            rocsparse_csrmm(handle, transA, transB, Anrow, Cncol, Ancol, nnz, &h_alpha, descr, dcsr_valA, dcsr_row_ptrA, dcsr_col_indA, dB, ldb, &h_beta, dC_1, ldc);
+            rocsparse_csrmm(handle,
+                            transA,
+                            transB,
+                            Anrow,
+                            Cncol,
+                            Ancol,
+                            nnz,
+                            &h_alpha,
+                            descr,
+                            dcsr_valA,
+                            dcsr_row_ptrA,
+                            dcsr_col_indA,
+                            dB,
+                            ldb,
+                            &h_beta,
+                            dC_1,
+                            ldc);
         }
 
         // Convert to miliseconds per call

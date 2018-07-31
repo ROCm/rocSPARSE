@@ -30,8 +30,8 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
     rocsparse_int colB   = col * ldb;
     rocsparse_int colC   = col * ldc;
 
-    __shared__ rocsparse_int shared_col[BLOCKSIZE/SUBWAVE_SIZE][SUBWAVE_SIZE];
-    __shared__ T shared_val[BLOCKSIZE/SUBWAVE_SIZE][SUBWAVE_SIZE];
+    __shared__ rocsparse_int shared_col[BLOCKSIZE / SUBWAVE_SIZE][SUBWAVE_SIZE];
+    __shared__ T shared_val[BLOCKSIZE / SUBWAVE_SIZE][SUBWAVE_SIZE];
 
     for(rocsparse_int row = warpid; row < M; row += nwarps)
     {
@@ -47,7 +47,8 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
             __syncthreads();
 
             shared_col[subid][laneid] = (k < row_end) ? __ldg(csr_col_ind + k) - idx_base : 0;
-            shared_val[subid][laneid] = (k < row_end) ? alpha * __ldg(csr_val + k) : static_cast<T>(0);
+            shared_val[subid][laneid] =
+                (k < row_end) ? alpha * __ldg(csr_val + k) : static_cast<T>(0);
 
             __syncthreads();
 
@@ -100,8 +101,8 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
         return;
     }
 
-    __shared__ rocsparse_int shared_col[BLOCKSIZE/SUBWAVE_SIZE][SUBWAVE_SIZE];
-    __shared__ T shared_val[BLOCKSIZE/SUBWAVE_SIZE][SUBWAVE_SIZE];
+    __shared__ rocsparse_int shared_col[BLOCKSIZE / SUBWAVE_SIZE][SUBWAVE_SIZE];
+    __shared__ T shared_val[BLOCKSIZE / SUBWAVE_SIZE][SUBWAVE_SIZE];
 
     rocsparse_int row_start = __ldg(csr_row_ptr + row) - idx_base;
     rocsparse_int row_end   = __ldg(csr_row_ptr + row + 1) - idx_base;
@@ -109,7 +110,7 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
     for(rocsparse_int l = offset; l < ncol; l += SUBWAVE_SIZE)
     {
         rocsparse_int col = l + laneid;
-        T sum = static_cast<T>(0);
+        T sum             = static_cast<T>(0);
 
         for(rocsparse_int j = row_start; j < row_end; j += SUBWAVE_SIZE)
         {
@@ -118,7 +119,8 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
             __syncthreads();
 
             shared_col[subid][laneid] = (k < row_end) ? N * (__ldg(csr_col_ind + k) - idx_base) : 0;
-            shared_val[subid][laneid] = (k < row_end) ? alpha * __ldg(csr_val + k) : static_cast<T>(0);
+            shared_val[subid][laneid] =
+                (k < row_end) ? alpha * __ldg(csr_val + k) : static_cast<T>(0);
 
             __syncthreads();
 

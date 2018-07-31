@@ -29,8 +29,23 @@ extern "C" rocsparse_status rocsparse_scsrmm(rocsparse_handle handle,
                                              float* C,
                                              rocsparse_int ldc)
 {
-    return rocsparse_csrmm_template<float>(
-        handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc);
+    return rocsparse_csrmm_template<float>(handle,
+                                           trans_A,
+                                           trans_B,
+                                           m,
+                                           n,
+                                           k,
+                                           nnz,
+                                           alpha,
+                                           descr,
+                                           csr_val,
+                                           csr_row_ptr,
+                                           csr_col_ind,
+                                           B,
+                                           ldb,
+                                           beta,
+                                           C,
+                                           ldc);
 }
 
 extern "C" rocsparse_status rocsparse_dcsrmm(rocsparse_handle handle,
@@ -51,6 +66,21 @@ extern "C" rocsparse_status rocsparse_dcsrmm(rocsparse_handle handle,
                                              double* C,
                                              rocsparse_int ldc)
 {
-    return rocsparse_csrmm_template<double>(
-        handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc);
+    return rocsparse_csrmm_template<double>(handle,
+                                            trans_A,
+                                            trans_B,
+                                            m,
+                                            n,
+                                            k,
+                                            nnz,
+                                            alpha,
+                                            descr,
+                                            csr_val,
+                                            csr_row_ptr,
+                                            csr_col_ind,
+                                            B,
+                                            ldb,
+                                            beta,
+                                            C,
+                                            ldc);
 }
