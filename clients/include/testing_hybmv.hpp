@@ -355,15 +355,26 @@ rocsparse_status testing_hybmv(Arguments argus)
 
         if(ell_nnz > 0)
         {
-            CHECK_HIP_ERROR(hipMemcpy(hell_col.data(), dhyb->ell_col_ind, sizeof(rocsparse_int) * ell_nnz, hipMemcpyDeviceToHost));
-            CHECK_HIP_ERROR(hipMemcpy(hell_val.data(), dhyb->ell_val, sizeof(T) * ell_nnz, hipMemcpyDeviceToHost));
+            CHECK_HIP_ERROR(hipMemcpy(hell_col.data(),
+                                      dhyb->ell_col_ind,
+                                      sizeof(rocsparse_int) * ell_nnz,
+                                      hipMemcpyDeviceToHost));
+            CHECK_HIP_ERROR(hipMemcpy(
+                hell_val.data(), dhyb->ell_val, sizeof(T) * ell_nnz, hipMemcpyDeviceToHost));
         }
 
         if(coo_nnz > 0)
         {
-            CHECK_HIP_ERROR(hipMemcpy(hcoo_row.data(), dhyb->coo_row_ind, sizeof(rocsparse_int) * coo_nnz, hipMemcpyDeviceToHost));
-            CHECK_HIP_ERROR(hipMemcpy(hcoo_col.data(), dhyb->coo_col_ind, sizeof(rocsparse_int) * coo_nnz, hipMemcpyDeviceToHost));
-            CHECK_HIP_ERROR(hipMemcpy(hcoo_val.data(), dhyb->coo_val, sizeof(T) * coo_nnz, hipMemcpyDeviceToHost));
+            CHECK_HIP_ERROR(hipMemcpy(hcoo_row.data(),
+                                      dhyb->coo_row_ind,
+                                      sizeof(rocsparse_int) * coo_nnz,
+                                      hipMemcpyDeviceToHost));
+            CHECK_HIP_ERROR(hipMemcpy(hcoo_col.data(),
+                                      dhyb->coo_col_ind,
+                                      sizeof(rocsparse_int) * coo_nnz,
+                                      hipMemcpyDeviceToHost));
+            CHECK_HIP_ERROR(hipMemcpy(
+                hcoo_val.data(), dhyb->coo_val, sizeof(T) * coo_nnz, hipMemcpyDeviceToHost));
         }
 
         CHECK_HIP_ERROR(hipMemcpy(dy_2, hy_2.data(), sizeof(T) * m, hipMemcpyHostToDevice));
@@ -421,12 +432,12 @@ rocsparse_status testing_hybmv(Arguments argus)
         if(coo_nnz > 0)
         {
             T coo_beta = (ell_nnz > 0) ? static_cast<T>(1) : h_beta;
-    
+
             for(rocsparse_int i = 0; i < m; ++i)
             {
                 hy_gold[i] *= coo_beta;
             }
-    
+
             for(rocsparse_int i = 0; i < coo_nnz; ++i)
             {
                 rocsparse_int row = hcoo_row[i] - idx_base;
