@@ -17,6 +17,10 @@
 using namespace rocsparse;
 using namespace rocsparse_test;
 
+#define ELL_IND_ROW(i, el, m, width) (el) * (m) + (i)
+#define ELL_IND_EL(i, el, m, width) (el) + (width) * (i)
+#define ELL_IND(i, el, m, width) ELL_IND_ROW(i, el, m, width)
+
 struct testhyb
 {
     rocsparse_int m;
@@ -125,7 +129,22 @@ rocsparse_status testing_hybmv(Arguments argus)
     rocsparse_index_base idx_base = argus.idx_base;
     rocsparse_hyb_partition part  = argus.part;
     rocsparse_int user_ell_width  = argus.ell_width;
+    std::string binfile           = "";
+    std::string filename          = "";
     rocsparse_status status;
+
+    // When in testing mode, M == N == -99 indicates that we are testing with a real
+    // matrix from cise.ufl.edu
+    if(m == -99 && n == -99 && argus.timing == 0)
+    {
+        binfile = argus.filename;
+        m = n = safe_size;
+    }
+
+    if(argus.timing == 1)
+    {
+        filename = argus.filename;
+    }
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
     rocsparse_handle handle = test_handle->handle;
@@ -196,19 +215,27 @@ rocsparse_status testing_hybmv(Arguments argus)
 
     // Initial Data on CPU
     srand(12345ULL);
-    if(argus.laplacian)
+    if(binfile != "")
+    {
+        if(read_bin_matrix(binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcol_ind, hval, idx_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
+    }
+    else if(argus.laplacian)
     {
         m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcol_ind, hval, idx_base);
         nnz   = hcsr_row_ptr[m];
     }
     else
     {
-        if(argus.filename != "")
+        if(filename != "")
         {
             if(read_mtx_matrix(
-                   argus.filename.c_str(), m, n, nnz, hcoo_row_ind, hcol_ind, hval, idx_base) != 0)
+                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcol_ind, hval, idx_base) != 0)
             {
-                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
             }
         }
@@ -283,18 +310,73 @@ rocsparse_status testing_hybmv(Arguments argus)
     CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(d_beta, &h_beta, sizeof(T), hipMemcpyHostToDevice));
 
-    // User given ELL width
+    // ELL width limit
+    rocsparse_int width_limit = (2 * nnz - 1) / m + 1;
+
+    // Limit ELL user width
     if(part == rocsparse_hyb_partition_user)
     {
         user_ell_width = user_ell_width * nnz / m;
+        user_ell_width = std::min(width_limit, user_ell_width);
     }
 
     // Convert CSR to HYB
-    CHECK_ROCSPARSE_ERROR(
-        rocsparse_csr2hyb(handle, m, n, descr, dval, dptr, dcol, hyb, user_ell_width, part));
+    status = rocsparse_csr2hyb(handle, m, n, descr, dval, dptr, dcol, hyb, user_ell_width, part);
+
+    if(part == rocsparse_hyb_partition_max)
+    {
+        // Compute max ELL width
+        rocsparse_int ell_max_width = 0;
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            ell_max_width = std::max(hcsr_row_ptr[i + 1] - hcsr_row_ptr[i], ell_max_width);
+        }
+
+        if(ell_max_width > width_limit)
+        {
+            verify_rocsparse_status_invalid_value(status, "ell_max_width > width_limit");
+            return rocsparse_status_success;
+        }
+    }
 
     if(argus.unit_check)
     {
+        // Copy HYB structure to CPU
+        testhyb* dhyb = (testhyb*)hyb;
+
+        rocsparse_int ell_nnz = dhyb->ell_nnz;
+        rocsparse_int coo_nnz = dhyb->coo_nnz;
+
+        std::vector<rocsparse_int> hell_col(ell_nnz);
+        std::vector<T> hell_val(ell_nnz);
+        std::vector<rocsparse_int> hcoo_row(coo_nnz);
+        std::vector<rocsparse_int> hcoo_col(coo_nnz);
+        std::vector<T> hcoo_val(coo_nnz);
+
+        if(ell_nnz > 0)
+        {
+            CHECK_HIP_ERROR(hipMemcpy(hell_col.data(),
+                                      dhyb->ell_col_ind,
+                                      sizeof(rocsparse_int) * ell_nnz,
+                                      hipMemcpyDeviceToHost));
+            CHECK_HIP_ERROR(hipMemcpy(
+                hell_val.data(), dhyb->ell_val, sizeof(T) * ell_nnz, hipMemcpyDeviceToHost));
+        }
+
+        if(coo_nnz > 0)
+        {
+            CHECK_HIP_ERROR(hipMemcpy(hcoo_row.data(),
+                                      dhyb->coo_row_ind,
+                                      sizeof(rocsparse_int) * coo_nnz,
+                                      hipMemcpyDeviceToHost));
+            CHECK_HIP_ERROR(hipMemcpy(hcoo_col.data(),
+                                      dhyb->coo_col_ind,
+                                      sizeof(rocsparse_int) * coo_nnz,
+                                      hipMemcpyDeviceToHost));
+            CHECK_HIP_ERROR(hipMemcpy(
+                hcoo_val.data(), dhyb->coo_val, sizeof(T) * coo_nnz, hipMemcpyDeviceToHost));
+        }
+
         CHECK_HIP_ERROR(hipMemcpy(dy_2, hy_2.data(), sizeof(T) * m, hipMemcpyHostToDevice));
 
         // ROCSPARSE pointer mode host
@@ -314,20 +396,61 @@ rocsparse_status testing_hybmv(Arguments argus)
         // CPU
         double cpu_time_used = get_time_us();
 
-        for(rocsparse_int i = 0; i < m; ++i)
+        // ELL part
+        if(ell_nnz > 0)
         {
-            hy_gold[i] *= h_beta;
-            for(rocsparse_int j = hcsr_row_ptr[i] - idx_base; j < hcsr_row_ptr[i + 1] - idx_base;
-                ++j)
+            for(rocsparse_int i = 0; i < m; ++i)
             {
-                hy_gold[i] += h_alpha * hval[j] * hx[hcol_ind[j] - idx_base];
+                T sum = static_cast<T>(0);
+                for(rocsparse_int p = 0; p < dhyb->ell_width; ++p)
+                {
+                    rocsparse_int idx = ELL_IND(i, p, m, dhyb->ell_width);
+                    rocsparse_int col = hell_col[idx] - idx_base;
+
+                    if(col >= 0 && col < n)
+                    {
+                        sum += hell_val[idx] * hx[col];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if(h_beta != static_cast<T>(0))
+                {
+                    hy_gold[i] = h_beta * hy_gold[i] + h_alpha * sum;
+                }
+                else
+                {
+                    hy_gold[i] = h_alpha * sum;
+                }
+            }
+        }
+
+        // COO part
+        if(coo_nnz > 0)
+        {
+            T coo_beta = (ell_nnz > 0) ? static_cast<T>(1) : h_beta;
+
+            for(rocsparse_int i = 0; i < m; ++i)
+            {
+                hy_gold[i] *= coo_beta;
+            }
+
+            for(rocsparse_int i = 0; i < coo_nnz; ++i)
+            {
+                rocsparse_int row = hcoo_row[i] - idx_base;
+                rocsparse_int col = hcoo_col[i] - idx_base;
+
+                hy_gold[row] += h_alpha * hcoo_val[i] * hx[col];
             }
         }
 
         cpu_time_used = get_time_us() - cpu_time_used;
 
-        unit_check_general(1, m, hy_gold.data(), hy_1.data());
-        unit_check_general(1, m, hy_gold.data(), hy_2.data());
+        unit_check_near(1, m, 1, hy_gold.data(), hy_1.data());
+        unit_check_near(1, m, 1, hy_gold.data(), hy_2.data());
     }
 
     if(argus.timing)

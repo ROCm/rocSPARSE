@@ -204,8 +204,8 @@ rocsparse_status testing_axpyi(Arguments argus)
         // unit check and norm check can not be interchanged their order
         if(argus.unit_check)
         {
-            unit_check_general(1, N, hy_gold.data(), hy_1.data());
-            unit_check_general(1, N, hy_gold.data(), hy_2.data());
+            unit_check_general(1, N, 1, hy_gold.data(), hy_1.data());
+            unit_check_general(1, N, 1, hy_gold.data(), hy_2.data());
         }
     }
 
