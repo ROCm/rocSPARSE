@@ -253,17 +253,19 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
                                descr->base);
 
             // Inclusive sum on workspace
-            void* d_temp_storage = nullptr;
+            void* d_temp_storage      = nullptr;
             size_t temp_storage_bytes = 0;
 
             // Obtain hipcub buffer size
-            RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(d_temp_storage, temp_storage_bytes, workspace, workspace, m + 1));
+            RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(
+                d_temp_storage, temp_storage_bytes, workspace, workspace, m + 1));
 
             // Allocate hipcub buffer
             RETURN_IF_HIP_ERROR(hipMalloc(&d_temp_storage, temp_storage_bytes));
 
             // Do inclusive sum
-            RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(d_temp_storage, temp_storage_bytes, workspace, workspace, m + 1));
+            RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(
+                d_temp_storage, temp_storage_bytes, workspace, workspace, m + 1));
 
             // Clear hipcub buffer
             RETURN_IF_HIP_ERROR(hipFree(d_temp_storage));

@@ -30,7 +30,8 @@
 // a wrapper will cause the loop keep going
 
 template <>
-void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, float* hCPU, float* hGPU)
+void unit_check_general(
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, float* hCPU, float* hGPU)
 {
     for(rocsparse_int j = 0; j < N; j++)
     {
@@ -46,7 +47,8 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, flo
 }
 
 template <>
-void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, double* hCPU, double* hGPU)
+void unit_check_general(
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, double* hCPU, double* hGPU)
 {
     for(rocsparse_int j = 0; j < N; j++)
     {
@@ -62,7 +64,8 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, dou
 }
 
 template <>
-void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, rocsparse_int* hCPU, rocsparse_int* hGPU)
+void unit_check_general(
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, rocsparse_int* hCPU, rocsparse_int* hGPU)
 {
     for(rocsparse_int j = 0; j < N; j++)
     {
@@ -78,7 +81,8 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, roc
 }
 
 template <>
-void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, size_t* hCPU, size_t* hGPU)
+void unit_check_general(
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, size_t* hCPU, size_t* hGPU)
 {
     for(rocsparse_int j = 0; j < N; j++)
     {
@@ -105,7 +109,8 @@ void unit_check_near(rocsparse_int M, rocsparse_int N, rocsparse_int lda, float*
     {
         for(rocsparse_int i = 0; i < M; i++)
         {
-            float compare_val = std::max(std::abs(hCPU[i + j * lda] * 1e-3f), 10 * std::numeric_limits<float>::epsilon());
+            float compare_val = std::max(std::abs(hCPU[i + j * lda] * 1e-3f),
+                                         10 * std::numeric_limits<float>::epsilon());
 #ifdef GOOGLE_TEST
             ASSERT_NEAR(hCPU[i + j * lda], hGPU[i + j * lda], compare_val);
 #else
@@ -116,13 +121,15 @@ void unit_check_near(rocsparse_int M, rocsparse_int N, rocsparse_int lda, float*
 }
 
 template <>
-void unit_check_near(rocsparse_int M, rocsparse_int N, rocsparse_int lda, double* hCPU, double* hGPU)
+void unit_check_near(
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, double* hCPU, double* hGPU)
 {
     for(rocsparse_int j = 0; j < N; j++)
     {
         for(rocsparse_int i = 0; i < M; i++)
         {
-            double compare_val = std::max(std::abs(hCPU[i + j * lda] * 1e-12), 10 * std::numeric_limits<double>::epsilon());
+            double compare_val = std::max(std::abs(hCPU[i + j * lda] * 1e-12),
+                                          10 * std::numeric_limits<double>::epsilon());
 #ifdef GOOGLE_TEST
             ASSERT_NEAR(hCPU[i + j * lda], hGPU[i + j * lda], compare_val);
 #else
