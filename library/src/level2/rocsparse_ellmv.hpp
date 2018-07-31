@@ -19,11 +19,11 @@ __global__ void ellmvn_kernel_host_pointer(rocsparse_int m,
                                            rocsparse_int n,
                                            rocsparse_int ell_width,
                                            T alpha,
-                                           const rocsparse_int* ell_col_ind,
-                                           const T* ell_val,
-                                           const T* x,
+                                           const rocsparse_int* __restrict__ ell_col_ind,
+                                           const T* __restrict__ ell_val,
+                                           const T* __restrict__ x,
                                            T beta,
-                                           T* y,
+                                           T* __restrict__ y,
                                            rocsparse_index_base idx_base)
 {
     ellmvn_device(m, n, ell_width, alpha, ell_col_ind, ell_val, x, beta, y, idx_base);
@@ -34,11 +34,11 @@ __global__ void ellmvn_kernel_device_pointer(rocsparse_int m,
                                              rocsparse_int n,
                                              rocsparse_int ell_width,
                                              const T* alpha,
-                                             const rocsparse_int* ell_col_ind,
-                                             const T* ell_val,
-                                             const T* x,
+                                             const rocsparse_int* __restrict__ ell_col_ind,
+                                             const T* __restrict__ ell_val,
+                                             const T* __restrict__ x,
                                              const T* beta,
-                                             T* y,
+                                             T* __restrict__ y,
                                              rocsparse_index_base idx_base)
 {
     ellmvn_device(m, n, ell_width, *alpha, ell_col_ind, ell_val, x, *beta, y, idx_base);

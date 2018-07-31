@@ -53,6 +53,12 @@ typedef enum rocsparse_matrix_type_ {
     rocsparse_matrix_type_triangular = 3  /**< triangular matrix type. */
 } rocsparse_matrix_type;
 
+/*! \brief Used to specify where the operation is performed on. */
+typedef enum rocsparse_action_ {
+    rocsparse_action_symbolic = 0, /**< Operate only on indices. */
+    rocsparse_action_numeric  = 1  /**< Operate on data and indices. */
+} rocsparse_action;
+
 /*! \brief HYB matrix partition type. */
 typedef enum rocsparse_hyb_partition_ {
     rocsparse_hyb_partition_auto = 0, /**< automatically decide on ELL nnz per row. */

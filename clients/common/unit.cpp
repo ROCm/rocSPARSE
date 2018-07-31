@@ -5,11 +5,18 @@
 #include "unit.hpp"
 
 #include <rocsparse.h>
-#include <assert.h>
 #include <hip/hip_runtime_api.h>
 
 #ifdef GOOGLE_TEST
 #include <gtest/gtest.h>
+#else
+#ifdef NDEBUG
+#undef NDEBUG
+#include <assert.h>
+#define NDEBUG
+#else
+#include <assert.h>
+#endif
 #endif
 
 /* ========================================Gtest Unit Check
@@ -54,6 +61,22 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, double* hCPU, double* 
 
 template <>
 void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int* hCPU, rocsparse_int* hGPU)
+{
+    for(rocsparse_int j = 0; j < N; j++)
+    {
+        for(rocsparse_int i = 0; i < M; i++)
+        {
+#ifdef GOOGLE_TEST
+            ASSERT_EQ(hCPU[i + j], hGPU[i + j]);
+#else
+            assert(hCPU[i + j] == hGPU[i + j]);
+#endif
+        }
+    }
+}
+
+template <>
+void unit_check_general(rocsparse_int M, rocsparse_int N, size_t* hCPU, size_t* hGPU)
 {
     for(rocsparse_int j = 0; j < N; j++)
     {

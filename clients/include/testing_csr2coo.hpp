@@ -13,6 +13,7 @@
 
 #include <rocsparse.h>
 #include <algorithm>
+#include <string>
 
 using namespace rocsparse;
 using namespace rocsparse_test;
@@ -73,7 +74,22 @@ rocsparse_status testing_csr2coo(Arguments argus)
     rocsparse_int n               = argus.N;
     rocsparse_int safe_size       = 100;
     rocsparse_index_base idx_base = argus.idx_base;
+    std::string binfile           = "";
+    std::string filename          = "";
     rocsparse_status status;
+
+    // When in testing mode, M == N == -99 indicates that we are testing with a real
+    // matrix from cise.ufl.edu
+    if(m == -99 && n == -99 && argus.timing == 0)
+    {
+        binfile = argus.filename;
+        m = n = safe_size;
+    }
+
+    if(argus.timing == 1)
+    {
+        filename = argus.filename;
+    }
 
     double scale = 0.02;
     if(m > 1000 || n > 1000)
@@ -117,31 +133,55 @@ rocsparse_status testing_csr2coo(Arguments argus)
         return rocsparse_status_success;
     }
 
-    // For testing, assemble a COO matrix and convert it to CSR first (on host)
-
     // Host structures
-    std::vector<rocsparse_int> hcoo_row_ind(nnz);
-    std::vector<rocsparse_int> hcoo_row_ind_gold(nnz);
-    std::vector<rocsparse_int> hcoo_col_ind(nnz);
-    std::vector<float> hcoo_val(nnz);
+    std::vector<rocsparse_int> hcsr_row_ptr;
+    std::vector<rocsparse_int> hcoo_row_ind;
+    std::vector<rocsparse_int> hcol_ind;
+    std::vector<float> hval(nnz);
 
-    // Sample initial COO matrix on CPU
+    // Initial data on CPU
     srand(12345ULL);
-    gen_matrix_coo(m, n, nnz, hcoo_row_ind_gold, hcoo_col_ind, hcoo_val, idx_base);
-
-    // Convert COO to CSR
-    std::vector<rocsparse_int> hcsr_row_ptr(m + 1);
-
-    // csr2coo on host
-    for(rocsparse_int i = 0; i < nnz; ++i)
+    if(binfile != "")
     {
-        ++hcsr_row_ptr[hcoo_row_ind_gold[i] + 1 - idx_base];
+        if(read_bin_matrix(binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcol_ind, hval, idx_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
     }
-
-    hcsr_row_ptr[0] = idx_base;
-    for(rocsparse_int i = 0; i < m; ++i)
+    else if(argus.laplacian)
     {
-        hcsr_row_ptr[i + 1] += hcsr_row_ptr[i];
+        m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcol_ind, hval, idx_base);
+        nnz   = hcsr_row_ptr[m];
+    }
+    else
+    {
+        if(filename != "")
+        {
+            if(read_mtx_matrix(
+                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcol_ind, hval, idx_base) != 0)
+            {
+                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
+                return rocsparse_status_internal_error;
+            }
+        }
+        else
+        {
+            gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcol_ind, hval, idx_base);
+        }
+
+        // Convert COO to CSR
+        hcsr_row_ptr.resize(m + 1, 0);
+        for(rocsparse_int i = 0; i < nnz; ++i)
+        {
+            ++hcsr_row_ptr[hcoo_row_ind[i] + 1 - idx_base];
+        }
+
+        hcsr_row_ptr[0] = idx_base;
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            hcsr_row_ptr[i + 1] += hcsr_row_ptr[i];
+        }
     }
 
     // Allocate memory on the device
@@ -170,8 +210,22 @@ rocsparse_status testing_csr2coo(Arguments argus)
             rocsparse_csr2coo(handle, dcsr_row_ptr, nnz, m, dcoo_row_ind, idx_base));
 
         // Copy output from device to host
+        hcoo_row_ind.resize(nnz);
         CHECK_HIP_ERROR(hipMemcpy(
             hcoo_row_ind.data(), dcoo_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
+
+        // CPU conversion to COO
+        std::vector<rocsparse_int> hcoo_row_ind_gold(nnz);
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            rocsparse_int row_begin = hcsr_row_ptr[i] - idx_base;
+            rocsparse_int row_end   = hcsr_row_ptr[i + 1] - idx_base;
+
+            for(rocsparse_int j = row_begin; j < row_end; ++j)
+            {
+                hcoo_row_ind_gold[j] = i + idx_base;
+            }
+        }
 
         // Unit check
         unit_check_general(1, nnz, hcoo_row_ind_gold.data(), hcoo_row_ind.data());

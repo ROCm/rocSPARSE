@@ -9,27 +9,26 @@
 #include <hip/hip_runtime.h>
 
 // Compute lower bound by binary search
-__device__ rocsparse_int lower_bound(const rocsparse_int* arr,
-                                     rocsparse_int key,
-                                     rocsparse_int low,
-                                     rocsparse_int high)
+static inline __device__ rocsparse_int lower_bound(const rocsparse_int* arr,
+                                                   rocsparse_int key,
+                                                   rocsparse_int low,
+                                                   rocsparse_int high)
 {
-    if(low > high)
+    while(low < high)
     {
-        return low;
+        rocsparse_int mid = low + ((high - low) >> 1);
+
+        if(arr[mid] < key)
+        {
+            low = mid + 1;
+        }
+        else
+        {
+            high = mid;
+        }
     }
 
-    rocsparse_int mid = low + ((high - low) >> 1);
-
-    if(arr[mid] >= key)
-    {
-        high = mid - 1;
-    }
-    else
-    {
-        low = mid + 1;
-    }
-    return lower_bound(arr, key, low, high);
+    return low;
 }
 
 // COO to CSR matrix conversion kernel
@@ -54,7 +53,7 @@ __global__ void coo2csr_kernel(rocsparse_int m,
     }
 
     // Binary search
-    csr_row_ptr[gid] = lower_bound(coo_row_ind, gid + idx_base, 0, nnz - 1) + idx_base;
+    csr_row_ptr[gid] = lower_bound(coo_row_ind, gid + idx_base, 0, nnz) + idx_base;
 }
 
 #endif // COO2CSR_DEVICE_H

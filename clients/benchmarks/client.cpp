@@ -21,10 +21,13 @@
 
 // Conversion
 #include "testing_csr2coo.hpp"
+#include "testing_csr2csc.hpp"
 #include "testing_csr2ell.hpp"
 #include "testing_csr2hyb.hpp"
 #include "testing_coo2csr.hpp"
 #include "testing_identity.hpp"
+#include "testing_csrsort.hpp"
+#include "testing_coosort.hpp"
 
 #include <iostream>
 #include <stdio.h>
@@ -82,7 +85,9 @@ int main(int argc, char* argv[])
          "SPARSE function to test. Options:\n"
          "  Level1: axpyi, doti, gthr, gthrz, roti, sctr\n"
          "  Level2: coomv, csrmv, ellmv, hybmv\n"
-         "  Conversion: csr2coo, csr2ell, csr2hyb, coo2csr")
+         "  Conversion: csr2coo, csr2csc, csr2ell,\n"
+         "              csr2hyb, coo2csr\n"
+         "  Sorting: csrsort, coosort")
         
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d")
@@ -212,6 +217,13 @@ int main(int argc, char* argv[])
     {
         testing_csr2coo(argus);
     }
+    else if(function == "csr2csc")
+    {
+        if(precision == 's')
+            testing_csr2csc<float>(argus);
+        else if(precision == 'd')
+            testing_csr2csc<double>(argus);
+    }
     else if(function == "csr2ell")
     {
         if(precision == 's')
@@ -229,6 +241,14 @@ int main(int argc, char* argv[])
     else if(function == "coo2csr")
     {
         testing_coo2csr(argus);
+    }
+    else if(function == "csrsort")
+    {
+        testing_csrsort(argus);
+    }
+    else if(function == "coosort")
+    {
+        testing_coosort(argus);
     }
     else
     {
