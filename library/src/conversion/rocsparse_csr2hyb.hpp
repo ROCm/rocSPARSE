@@ -111,6 +111,9 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
     // Correct by index base
     csr_nnz -= descr->base;
 
+    // Maximum ELL row width allowed
+    rocsparse_int max_row_nnz = (2 * csr_nnz - 1) / m + 1;
+
     // Check user_ell_width
     if(partition_type == rocsparse_hyb_partition_user)
     {
@@ -120,7 +123,6 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
             return rocsparse_status_invalid_value;
         }
 
-        rocsparse_int max_row_nnz = (2 * csr_nnz - 1) / m + 1;
         if(user_ell_width > max_row_nnz)
         {
             return rocsparse_status_invalid_value;
@@ -200,6 +202,13 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
         // Copy ell width back to host
         RETURN_IF_HIP_ERROR(
             hipMemcpy(&hyb->ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    }
+
+    // Re-check ELL width
+    if(hyb->ell_width > max_row_nnz)
+    {
+        RETURN_IF_HIP_ERROR(hipFree(workspace));
+        return rocsparse_status_invalid_value;
     }
 
     // Compute ELL non-zeros
