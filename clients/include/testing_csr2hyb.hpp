@@ -328,6 +328,35 @@ rocsparse_status testing_csr2hyb(Arguments argus)
         }
     }
 
+    // Max width check
+    if(part == rocsparse_hyb_partition_max)
+    {
+        // Compute max ELL width
+        rocsparse_int ell_max_width = 0;
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            ell_max_width = std::max(hcsr_row_ptr[i + 1] - hcsr_row_ptr[i], ell_max_width);
+        }
+
+        rocsparse_int width_limit = (2 * nnz - 1) / m + 1;
+        if(ell_max_width > width_limit)
+        {
+            status = rocsparse_csr2hyb(handle,
+                                       m,
+                                       n,
+                                       descr,
+                                       dcsr_val,
+                                       dcsr_row_ptr,
+                                       dcsr_col_ind,
+                                       hyb,
+                                       user_ell_width,
+                                       part);
+
+            verify_rocsparse_status_invalid_value(status, "ell_max_width > width_limit");
+            return rocsparse_status_success;
+        }
+    }
+
     // Host structures for verification
     std::vector<rocsparse_int> hhyb_ell_col_ind_gold;
     std::vector<T> hhyb_ell_val_gold;
@@ -430,11 +459,11 @@ rocsparse_status testing_csr2hyb(Arguments argus)
         test_hyb* dhyb = (test_hyb*)hyb;
 
         // Check if sizes match
-        unit_check_general(1, 1, &m, &dhyb->m);
-        unit_check_general(1, 1, &n, &dhyb->n);
-        unit_check_general(1, 1, &ell_width, &dhyb->ell_width);
-        unit_check_general(1, 1, &ell_nnz, &dhyb->ell_nnz);
-        unit_check_general(1, 1, &coo_nnz, &dhyb->coo_nnz);
+        unit_check_general(1, 1, 1, &m, &dhyb->m);
+        unit_check_general(1, 1, 1, &n, &dhyb->n);
+        unit_check_general(1, 1, 1, &ell_width, &dhyb->ell_width);
+        unit_check_general(1, 1, 1, &ell_nnz, &dhyb->ell_nnz);
+        unit_check_general(1, 1, 1, &coo_nnz, &dhyb->coo_nnz);
 
         CHECK_HIP_ERROR(hipMemcpy(hhyb_ell_col_ind.data(),
                                   dhyb->ell_col_ind,
@@ -454,11 +483,11 @@ rocsparse_status testing_csr2hyb(Arguments argus)
             hhyb_coo_val.data(), dhyb->coo_val, sizeof(T) * coo_nnz, hipMemcpyDeviceToHost));
 
         // Unit check
-        unit_check_general(1, ell_nnz, hhyb_ell_col_ind_gold.data(), hhyb_ell_col_ind.data());
-        unit_check_general(1, ell_nnz, hhyb_ell_val_gold.data(), hhyb_ell_val.data());
-        unit_check_general(1, coo_nnz, hhyb_coo_row_ind_gold.data(), hhyb_coo_row_ind.data());
-        unit_check_general(1, coo_nnz, hhyb_coo_col_ind_gold.data(), hhyb_coo_col_ind.data());
-        unit_check_general(1, coo_nnz, hhyb_coo_val_gold.data(), hhyb_coo_val.data());
+        unit_check_general(1, ell_nnz, 1, hhyb_ell_col_ind_gold.data(), hhyb_ell_col_ind.data());
+        unit_check_general(1, ell_nnz, 1, hhyb_ell_val_gold.data(), hhyb_ell_val.data());
+        unit_check_general(1, coo_nnz, 1, hhyb_coo_row_ind_gold.data(), hhyb_coo_row_ind.data());
+        unit_check_general(1, coo_nnz, 1, hhyb_coo_col_ind_gold.data(), hhyb_coo_col_ind.data());
+        unit_check_general(1, coo_nnz, 1, hhyb_coo_val_gold.data(), hhyb_coo_val.data());
     }
 
     if(argus.timing)

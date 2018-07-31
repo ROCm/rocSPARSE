@@ -219,7 +219,7 @@ rocsparse_status testing_csrsort(Arguments argus)
 
             // Buffer size should be zero
             size_t zero = 0;
-            unit_check_general(1, 1, &zero, &buffer_size);
+            unit_check_general(1, 1, 1, &zero, &buffer_size);
         }
 
         status =
@@ -408,11 +408,11 @@ rocsparse_status testing_csrsort(Arguments argus)
         }
 
         // Unit check
-        unit_check_general(1, nnz, hcsr_col_ind.data(), hcsr_col_ind_unsorted.data());
+        unit_check_general(1, nnz, 1, hcsr_col_ind.data(), hcsr_col_ind_unsorted.data());
 
         if(permute)
         {
-            unit_check_general(1, nnz, hcsr_val.data(), hcsr_val_unsorted.data());
+            unit_check_general(1, nnz, 1, hcsr_val.data(), hcsr_val_unsorted.data());
         }
     }
 
