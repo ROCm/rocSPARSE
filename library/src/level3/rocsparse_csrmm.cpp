@@ -12,7 +12,8 @@
  */
 
 extern "C" rocsparse_status rocsparse_scsrmm(rocsparse_handle handle,
-                                             rocsparse_operation trans,
+                                             rocsparse_operation trans_A,
+                                             rocsparse_operation trans_B,
                                              rocsparse_int m,
                                              rocsparse_int n,
                                              rocsparse_int k,
@@ -29,11 +30,12 @@ extern "C" rocsparse_status rocsparse_scsrmm(rocsparse_handle handle,
                                              rocsparse_int ldc)
 {
     return rocsparse_csrmm_template<float>(
-        handle, trans, m, n, k, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc);
+        handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc);
 }
 
 extern "C" rocsparse_status rocsparse_dcsrmm(rocsparse_handle handle,
-                                             rocsparse_operation trans,
+                                             rocsparse_operation trans_A,
+                                             rocsparse_operation trans_B,
                                              rocsparse_int m,
                                              rocsparse_int n,
                                              rocsparse_int k,
@@ -50,5 +52,5 @@ extern "C" rocsparse_status rocsparse_dcsrmm(rocsparse_handle handle,
                                              rocsparse_int ldc)
 {
     return rocsparse_csrmm_template<double>(
-        handle, trans, m, n, k, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc);
+        handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc);
 }

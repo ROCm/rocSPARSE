@@ -817,7 +817,9 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
     handle      rocsparse_handle.
                 handle to the rocsparse library context queue.
     @param[in]
-    trans       operation type of A.
+    trans_A     operation type of A.
+    @param[in]
+    trans_B     operation type of B.
     @param[in]
     m           number of rows of A.
     @param[in]
@@ -853,7 +855,8 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
     ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsrmm(rocsparse_handle handle,
-                                  rocsparse_operation trans,
+                                  rocsparse_operation trans_A,
+                                  rocsparse_operation trans_B,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int k,
@@ -871,7 +874,8 @@ rocsparse_status rocsparse_scsrmm(rocsparse_handle handle,
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dcsrmm(rocsparse_handle handle,
-                                  rocsparse_operation trans,
+                                  rocsparse_operation trans_A,
+                                  rocsparse_operation trans_B,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int k,
@@ -889,7 +893,8 @@ rocsparse_status rocsparse_dcsrmm(rocsparse_handle handle,
 /*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrmm(rocsparse_handle handle,
-                                  rocsparse_operation trans,
+                                  rocsparse_operation trans_A,
+                                  rocsparse_operation trans_B,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int k,
@@ -907,7 +912,8 @@ rocsparse_status rocsparse_ccsrmm(rocsparse_handle handle,
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_zcsrmm(rocsparse_handle handle,
-                                  rocsparse_operation trans,
+                                  rocsparse_operation trans_A,
+                                  rocsparse_operation trans_B,
                                   rocsparse_int m,
                                   rocsparse_int n,
                                   rocsparse_int k,
