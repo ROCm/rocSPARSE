@@ -417,8 +417,8 @@ rocsparse_status testing_csrmv(Arguments argus)
 
         cpu_time_used = get_time_us() - cpu_time_used;
 
-        unit_check_general(1, m, hy_gold.data(), hy_1.data());
-        unit_check_general(1, m, hy_gold.data(), hy_2.data());
+        unit_check_general(1, m, 1, hy_gold.data(), hy_1.data());
+        unit_check_general(1, m, 1, hy_gold.data(), hy_2.data());
     }
 
     if(argus.timing)
