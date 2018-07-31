@@ -14,97 +14,129 @@
 #include <hip/hip_runtime.h>
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int SUBWAVE_SIZE>
-__launch_bounds__(256)
-__global__ void csrmmnn_kernel_host_pointer(rocsparse_int m,
-                                            rocsparse_int n,
-                                            rocsparse_int k,
-                                            rocsparse_int nnz,
-                                            T alpha,
-                                            const rocsparse_int* __restrict__ csr_row_ptr,
-                                            const rocsparse_int* __restrict__ csr_col_ind,
-                                            const T* __restrict__ csr_val,
-                                            const T* __restrict__ B,
-                                            rocsparse_int ldb,
-                                            T beta,
-                                            T* __restrict__ C,
-                                            rocsparse_int ldc,
-                                            rocsparse_index_base idx_base)
+__launch_bounds__(256) __global__
+    void csrmmnn_kernel_host_pointer(rocsparse_int m,
+                                     rocsparse_int n,
+                                     rocsparse_int k,
+                                     rocsparse_int nnz,
+                                     T alpha,
+                                     const rocsparse_int* __restrict__ csr_row_ptr,
+                                     const rocsparse_int* __restrict__ csr_col_ind,
+                                     const T* __restrict__ csr_val,
+                                     const T* __restrict__ B,
+                                     rocsparse_int ldb,
+                                     T beta,
+                                     T* __restrict__ C,
+                                     rocsparse_int ldc,
+                                     rocsparse_index_base idx_base)
 {
-    csrmmnn_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(m, n, k, nnz, alpha, csr_row_ptr, csr_col_ind, csr_val, B, ldb, beta, C, ldc, idx_base);
+    csrmmnn_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(
+        m, n, k, nnz, alpha, csr_row_ptr, csr_col_ind, csr_val, B, ldb, beta, C, ldc, idx_base);
 }
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int SUBWAVE_SIZE>
-__launch_bounds__(256)
-__global__ void csrmmnn_kernel_device_pointer(rocsparse_int m,
-                                              rocsparse_int n,
-                                              rocsparse_int k,
-                                              rocsparse_int nnz,
-                                              const T* alpha,
-                                              const rocsparse_int* __restrict__ csr_row_ptr,
-                                              const rocsparse_int* __restrict__ csr_col_ind,
-                                              const T* __restrict__ csr_val,
-                                              const T* __restrict__ B,
-                                              rocsparse_int ldb,
-                                              const T* beta,
-                                              T* __restrict__ C,
-                                              rocsparse_int ldc,
-                                              rocsparse_index_base idx_base)
+__launch_bounds__(256) __global__
+    void csrmmnn_kernel_device_pointer(rocsparse_int m,
+                                       rocsparse_int n,
+                                       rocsparse_int k,
+                                       rocsparse_int nnz,
+                                       const T* alpha,
+                                       const rocsparse_int* __restrict__ csr_row_ptr,
+                                       const rocsparse_int* __restrict__ csr_col_ind,
+                                       const T* __restrict__ csr_val,
+                                       const T* __restrict__ B,
+                                       rocsparse_int ldb,
+                                       const T* beta,
+                                       T* __restrict__ C,
+                                       rocsparse_int ldc,
+                                       rocsparse_index_base idx_base)
 {
     if(*alpha == 0.0 && *beta == 1.0)
     {
         return;
     }
 
-    csrmmnn_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(m, n, k, nnz, *alpha, csr_row_ptr, csr_col_ind, csr_val, B, ldb, *beta, C, ldc, idx_base);
+    csrmmnn_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(
+        m, n, k, nnz, *alpha, csr_row_ptr, csr_col_ind, csr_val, B, ldb, *beta, C, ldc, idx_base);
 }
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int SUBWAVE_SIZE>
-__launch_bounds__(256)
-__global__ void csrmmnt_kernel_host_pointer(rocsparse_int offset,
-                                            rocsparse_int ncol,
-                                            rocsparse_int m,
-                                            rocsparse_int n,
-                                            rocsparse_int k,
-                                            rocsparse_int nnz,
-                                            T alpha,
-                                            const rocsparse_int* __restrict__ csr_row_ptr,
-                                            const rocsparse_int* __restrict__ csr_col_ind,
-                                            const T* __restrict__ csr_val,
-                                            const T* __restrict__ B,
-                                            rocsparse_int ldb,
-                                            T beta,
-                                            T* __restrict__ C,
-                                            rocsparse_int ldc,
-                                            rocsparse_index_base idx_base)
+__launch_bounds__(256) __global__
+    void csrmmnt_kernel_host_pointer(rocsparse_int offset,
+                                     rocsparse_int ncol,
+                                     rocsparse_int m,
+                                     rocsparse_int n,
+                                     rocsparse_int k,
+                                     rocsparse_int nnz,
+                                     T alpha,
+                                     const rocsparse_int* __restrict__ csr_row_ptr,
+                                     const rocsparse_int* __restrict__ csr_col_ind,
+                                     const T* __restrict__ csr_val,
+                                     const T* __restrict__ B,
+                                     rocsparse_int ldb,
+                                     T beta,
+                                     T* __restrict__ C,
+                                     rocsparse_int ldc,
+                                     rocsparse_index_base idx_base)
 {
-    csrmmnt_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(offset, ncol, m, n, k, nnz, alpha, csr_row_ptr, csr_col_ind, csr_val, B, ldb, beta, C, ldc, idx_base);
+    csrmmnt_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(offset,
+                                                       ncol,
+                                                       m,
+                                                       n,
+                                                       k,
+                                                       nnz,
+                                                       alpha,
+                                                       csr_row_ptr,
+                                                       csr_col_ind,
+                                                       csr_val,
+                                                       B,
+                                                       ldb,
+                                                       beta,
+                                                       C,
+                                                       ldc,
+                                                       idx_base);
 }
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int SUBWAVE_SIZE>
-__launch_bounds__(256)
-__global__ void csrmmnt_kernel_device_pointer(rocsparse_int offset,
-                                              rocsparse_int ncol,
-                                              rocsparse_int m,
-                                              rocsparse_int n,
-                                              rocsparse_int k,
-                                              rocsparse_int nnz,
-                                              const T* alpha,
-                                              const rocsparse_int* __restrict__ csr_row_ptr,
-                                              const rocsparse_int* __restrict__ csr_col_ind,
-                                              const T* __restrict__ csr_val,
-                                              const T* __restrict__ B,
-                                              rocsparse_int ldb,
-                                              const T* beta,
-                                              T* __restrict__ C,
-                                              rocsparse_int ldc,
-                                              rocsparse_index_base idx_base)
+__launch_bounds__(256) __global__
+    void csrmmnt_kernel_device_pointer(rocsparse_int offset,
+                                       rocsparse_int ncol,
+                                       rocsparse_int m,
+                                       rocsparse_int n,
+                                       rocsparse_int k,
+                                       rocsparse_int nnz,
+                                       const T* alpha,
+                                       const rocsparse_int* __restrict__ csr_row_ptr,
+                                       const rocsparse_int* __restrict__ csr_col_ind,
+                                       const T* __restrict__ csr_val,
+                                       const T* __restrict__ B,
+                                       rocsparse_int ldb,
+                                       const T* beta,
+                                       T* __restrict__ C,
+                                       rocsparse_int ldc,
+                                       rocsparse_index_base idx_base)
 {
     if(*alpha == 0.0 && *beta == 1.0)
     {
         return;
     }
 
-    csrmmnt_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(offset, ncol, m, n, k, nnz, *alpha, csr_row_ptr, csr_col_ind, csr_val, B, ldb, *beta, C, ldc, idx_base);
+    csrmmnt_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(offset,
+                                                       ncol,
+                                                       m,
+                                                       n,
+                                                       k,
+                                                       nnz,
+                                                       *alpha,
+                                                       csr_row_ptr,
+                                                       csr_col_ind,
+                                                       csr_val,
+                                                       B,
+                                                       ldb,
+                                                       *beta,
+                                                       C,
+                                                       ldc,
+                                                       idx_base);
 }
 
 template <typename T>
@@ -299,7 +331,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
 #define SUB_WF_SIZE 8
             dim3 csrmmnn_blocks((SUB_WF_SIZE * m - 1) / CSRMMNN_DIM + 1, (n - 1) / SUB_WF_SIZE + 1);
             dim3 csrmmnn_threads(CSRMMNN_DIM);
-    
+
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
             {
                 hipLaunchKernelGGL((csrmmnn_kernel_device_pointer<T, CSRMMNN_DIM, SUB_WF_SIZE>),
@@ -328,7 +360,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                 {
                     return rocsparse_status_success;
                 }
-    
+
                 hipLaunchKernelGGL((csrmmnn_kernel_host_pointer<T, CSRMMNN_DIM, SUB_WF_SIZE>),
                                    csrmmnn_blocks,
                                    csrmmnn_threads,
@@ -366,15 +398,15 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                 //             power of two of the average row nnz of A.
                 // Second step: Compute remainder, which is the remaining
                 //              columns of B.
-                rocsparse_int main = 0;
+                rocsparse_int main      = 0;
                 rocsparse_int remainder = 0;
 
                 // Launch appropriate kernel depending on row nnz of A
                 if(avg_row_nnz < 16)
                 {
                     remainder = n % 8;
-                    main = n - remainder;
-    
+                    main      = n - remainder;
+
                     // Launch main kernel if enough columns of B
                     if(main > 0)
                     {
@@ -404,8 +436,8 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                 else if(avg_row_nnz < 32)
                 {
                     remainder = n % 16;
-                    main = n - remainder;
-    
+                    main      = n - remainder;
+
                     // Launch main kernel if enough columns of B
                     if(main > 0)
                     {
@@ -435,8 +467,8 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                 else if(avg_row_nnz < 64 || handle->warp_size == 32)
                 {
                     remainder = n % 32;
-                    main = n - remainder;
-    
+                    main      = n - remainder;
+
                     // Launch main kernel if enough columns of B
                     if(main > 0)
                     {
@@ -466,8 +498,8 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                 else if(handle->warp_size == 64)
                 {
                     remainder = n % 64;
-                    main = n - remainder;
-    
+                    main      = n - remainder;
+
                     // Launch main kernel if enough columns of B
                     if(main > 0)
                     {
@@ -612,15 +644,15 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                     return rocsparse_status_success;
                 }
 
-                rocsparse_int main = 0;
+                rocsparse_int main      = 0;
                 rocsparse_int remainder = 0;
 
                 // Launch appropriate kernel
                 if(avg_row_nnz < 16)
                 {
                     remainder = n % 8;
-                    main = n - remainder;
-    
+                    main      = n - remainder;
+
                     // Launch main kernel if enough columns of B
                     if(main > 0)
                     {
@@ -650,8 +682,8 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                 else if(avg_row_nnz < 32)
                 {
                     remainder = n % 16;
-                    main = n - remainder;
-    
+                    main      = n - remainder;
+
                     // Launch main kernel if enough columns of B
                     if(main > 0)
                     {
@@ -681,8 +713,8 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                 else if(avg_row_nnz < 64 || handle->warp_size == 32)
                 {
                     remainder = n % 32;
-                    main = n - remainder;
-    
+                    main      = n - remainder;
+
                     // Launch main kernel if enough columns of B
                     if(main > 0)
                     {
@@ -712,8 +744,8 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                 else if(handle->warp_size == 64)
                 {
                     remainder = n % 64;
-                    main = n - remainder;
-    
+                    main      = n - remainder;
+
                     // Launch main kernel if enough columns of B
                     if(main > 0)
                     {
