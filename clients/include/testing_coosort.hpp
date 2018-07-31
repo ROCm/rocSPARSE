@@ -171,7 +171,7 @@ rocsparse_status testing_coosort(Arguments argus)
     rocsparse_int m               = argus.M;
     rocsparse_int n               = argus.N;
     rocsparse_int safe_size       = 100;
-    rocsparse_int by_row          = argus.trans == rocsparse_operation_none;
+    rocsparse_int by_row          = argus.transA == rocsparse_operation_none;
     rocsparse_int permute         = argus.temp;
     rocsparse_index_base idx_base = argus.idx_base;
     std::string binfile           = "";
