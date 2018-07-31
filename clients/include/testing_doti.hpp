@@ -202,8 +202,8 @@ rocsparse_status testing_doti(Arguments argus)
 
         // enable unit check, notice unit check is not invasive, but norm check is,
         // unit check and norm check can not be interchanged their order
-        unit_check_general(1, 1, &hresult_gold, &hresult_1);
-        unit_check_general(1, 1, &hresult_gold, &hresult_2);
+        unit_check_general(1, 1, 1, &hresult_gold, &hresult_1);
+        unit_check_general(1, 1, 1, &hresult_gold, &hresult_2);
     }
 
     if(argus.timing)

@@ -246,7 +246,7 @@ rocsparse_status testing_coo2csr(Arguments argus)
         cpu_time_used = get_time_us() - cpu_time_used;
 
         // Unit check
-        unit_check_general(1, m + 1, hcsr_row_ptr_gold.data(), hcsr_row_ptr.data());
+        unit_check_general(1, m + 1, 1, hcsr_row_ptr_gold.data(), hcsr_row_ptr.data());
     }
 
     if(argus.timing)

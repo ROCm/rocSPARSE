@@ -389,8 +389,8 @@ rocsparse_status testing_ellmv(Arguments argus)
 
         // enable unit check, notice unit check is not invasive, but norm check is,
         // unit check and norm check can not be interchanged their order
-        unit_check_general(1, m, hy_gold.data(), hy_1.data());
-        unit_check_general(1, m, hy_gold.data(), hy_2.data());
+        unit_check_general(1, m, 1, hy_gold.data(), hy_1.data());
+        unit_check_general(1, m, 1, hy_gold.data(), hy_2.data());
     }
 
     if(argus.timing)

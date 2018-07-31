@@ -234,10 +234,10 @@ rocsparse_status testing_roti(Arguments argus)
 
         // enable unit check, notice unit check is not invasive, but norm check is,
         // unit check and norm check can not be interchanged their order
-        unit_check_general(1, nnz, hx_val_gold.data(), hx_val_1.data());
-        unit_check_general(1, nnz, hx_val_gold.data(), hx_val_2.data());
-        unit_check_general(1, N, hy_gold.data(), hy_1.data());
-        unit_check_general(1, N, hy_gold.data(), hy_2.data());
+        unit_check_general(1, nnz, 1, hx_val_gold.data(), hx_val_1.data());
+        unit_check_general(1, nnz, 1, hx_val_gold.data(), hx_val_2.data());
+        unit_check_general(1, N, 1, hy_gold.data(), hy_1.data());
+        unit_check_general(1, N, 1, hy_gold.data(), hy_2.data());
     }
 
     if(argus.timing)

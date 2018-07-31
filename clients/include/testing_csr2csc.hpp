@@ -352,7 +352,7 @@ rocsparse_status testing_csr2csc(Arguments argus)
 
             // Buffer size should be zero
             size_t four = 4;
-            unit_check_general(1, 1, &four, &size);
+            unit_check_general(1, 1, 1, &four, &size);
         }
 
         status = rocsparse_csr2csc(handle,
@@ -560,13 +560,13 @@ rocsparse_status testing_csr2csc(Arguments argus)
         hcsc_col_ptr_gold[0] = idx_base;
 
         // Unit check
-        unit_check_general(1, nnz, hcsc_row_ind_gold.data(), hcsc_row_ind.data());
-        unit_check_general(1, n + 1, hcsc_col_ptr_gold.data(), hcsc_col_ptr.data());
+        unit_check_general(1, nnz, 1, hcsc_row_ind_gold.data(), hcsc_row_ind.data());
+        unit_check_general(1, n + 1, 1, hcsc_col_ptr_gold.data(), hcsc_col_ptr.data());
 
         // If action == rocsparse_action_numeric also check values
         if(action == rocsparse_action_numeric)
         {
-            unit_check_general(1, nnz, hcsc_val_gold.data(), hcsc_val.data());
+            unit_check_general(1, nnz, 1, hcsc_val_gold.data(), hcsc_val.data());
         }
     }
 
