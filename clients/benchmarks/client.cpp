@@ -25,6 +25,7 @@
 #include "testing_csr2ell.hpp"
 #include "testing_csr2hyb.hpp"
 #include "testing_coo2csr.hpp"
+#include "testing_ell2csr.hpp"
 #include "testing_identity.hpp"
 #include "testing_csrsort.hpp"
 #include "testing_coosort.hpp"
@@ -86,7 +87,7 @@ int main(int argc, char* argv[])
          "  Level1: axpyi, doti, gthr, gthrz, roti, sctr\n"
          "  Level2: coomv, csrmv, ellmv, hybmv\n"
          "  Conversion: csr2coo, csr2csc, csr2ell,\n"
-         "              csr2hyb, coo2csr\n"
+         "              csr2hyb, coo2csr, ell2csr\n"
          "  Sorting: csrsort, coosort")
         
         ("precision,r",
@@ -241,6 +242,13 @@ int main(int argc, char* argv[])
     else if(function == "coo2csr")
     {
         testing_coo2csr(argus);
+    }
+    else if(function == "ell2csr")
+    {
+        if(precision == 's')
+            testing_ell2csr<float>(argus);
+        else if(precision == 'd')
+            testing_ell2csr<double>(argus);
     }
     else if(function == "csrsort")
     {
