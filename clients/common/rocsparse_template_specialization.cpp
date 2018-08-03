@@ -518,4 +518,56 @@ rocsparse_status rocsparse_csr2hyb(rocsparse_handle handle,
                               partition_type);
 }
 
+template <>
+rocsparse_status rocsparse_ell2csr(rocsparse_handle handle,
+                                   rocsparse_int m,
+                                   rocsparse_int n,
+                                   const rocsparse_mat_descr ell_descr,
+                                   rocsparse_int ell_width,
+                                   const float* ell_val,
+                                   const rocsparse_int* ell_col_ind,
+                                   const rocsparse_mat_descr csr_descr,
+                                   float* csr_val,
+                                   const rocsparse_int* csr_row_ptr,
+                                   rocsparse_int* csr_col_ind)
+{
+    return rocsparse_sell2csr(handle,
+                              m,
+                              n,
+                              ell_descr,
+                              ell_width,
+                              ell_val,
+                              ell_col_ind,
+                              csr_descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind);
+}
+
+template <>
+rocsparse_status rocsparse_ell2csr(rocsparse_handle handle,
+                                   rocsparse_int m,
+                                   rocsparse_int n,
+                                   const rocsparse_mat_descr ell_descr,
+                                   rocsparse_int ell_width,
+                                   const double* ell_val,
+                                   const rocsparse_int* ell_col_ind,
+                                   const rocsparse_mat_descr csr_descr,
+                                   double* csr_val,
+                                   const rocsparse_int* csr_row_ptr,
+                                   rocsparse_int* csr_col_ind)
+{
+    return rocsparse_dell2csr(handle,
+                              m,
+                              n,
+                              ell_descr,
+                              ell_width,
+                              ell_val,
+                              ell_col_ind,
+                              csr_descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind);
+}
+
 } // namespace rocsparse
