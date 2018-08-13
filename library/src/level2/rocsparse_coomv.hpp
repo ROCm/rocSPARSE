@@ -213,6 +213,7 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
         rocsparse_int* row_block_red = NULL;
         T* val_block_red             = NULL;
 
+        // Allocating a maximum of 8 kByte
         RETURN_IF_HIP_ERROR(hipMalloc((void**)&row_block_red, sizeof(rocsparse_int) * nwarps));
         RETURN_IF_HIP_ERROR(hipMalloc((void**)&val_block_red, sizeof(T) * nwarps));
 
