@@ -29,7 +29,7 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handl
         return rocsparse_status_invalid_handle;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
               "rocsparse_csr2csc_buffer_size",
               m,

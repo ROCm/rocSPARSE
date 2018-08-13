@@ -22,7 +22,7 @@ extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
         return rocsparse_status_invalid_handle;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
               "rocsparse_coo2csr",
               (const void*&)coo_row_ind,
@@ -30,6 +30,10 @@ extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
               m,
               (const void*&)csr_row_ptr,
               idx_base);
+
+    log_bench(handle,
+              "./rocsparse-bench -f coo2csr",
+              "--mtx <matrix.mtx>");
 
     // Check sizes
     if(nnz < 0)

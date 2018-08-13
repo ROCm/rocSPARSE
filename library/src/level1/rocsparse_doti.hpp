@@ -29,7 +29,7 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle handle,
         return rocsparse_status_invalid_handle;
     }
 
-    // Logging // TODO bench logging
+    // Logging
     if(handle->pointer_mode == rocsparse_pointer_mode_host)
     {
         log_trace(handle,
@@ -40,6 +40,11 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle handle,
                   (const void*&)y,
                   *result,
                   idx_base);
+
+        log_bench(handle,
+                  "./rocsparse-bench -f doti -r",
+                  replaceX<T>("X"),
+                  "--mtx <vector.mtx> ");
     }
     else
     {
