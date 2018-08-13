@@ -93,7 +93,7 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Logging TODO bench logging
+    // Logging
     if(handle->pointer_mode == rocsparse_pointer_mode_host)
     {
         log_trace(handle,
@@ -110,6 +110,15 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                   (const void*&)x,
                   *beta,
                   (const void*&)y);
+
+        log_bench(handle,
+                  "./rocsparse-bench -f coomv -r",
+                  replaceX<T>("X"),
+                  "--mtx <matrix.mtx> ",
+                  "--alpha",
+                  *alpha,
+                  "--beta",
+                  *beta);
     }
     else
     {

@@ -27,7 +27,7 @@ rocsparse_status rocsparse_sctr_template(rocsparse_handle handle,
         return rocsparse_status_invalid_handle;
     }
 
-    // Logging // TODO bench logging
+    // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xsctr"),
               nnz,
@@ -35,6 +35,11 @@ rocsparse_status rocsparse_sctr_template(rocsparse_handle handle,
               (const void*&)x_ind,
               (const void*&)y,
               idx_base);
+
+    log_bench(handle,
+              "./rocsparse-bench -f sctr -r",
+              replaceX<T>("X"),
+              "--mtx <vector.mtx> ");
 
     // Check index base
     if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)

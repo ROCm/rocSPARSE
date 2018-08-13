@@ -41,7 +41,7 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
               "rocsparse_ell2csr_nnz",
               m,

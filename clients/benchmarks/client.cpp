@@ -88,7 +88,8 @@ int main(int argc, char* argv[])
          "  Level2: coomv, csrmv, ellmv, hybmv\n"
          "  Conversion: csr2coo, csr2csc, csr2ell,\n"
          "              csr2hyb, coo2csr, ell2csr\n"
-         "  Sorting: csrsort, coosort")
+         "  Sorting: csrsort, coosort\n"
+         "  Misc: identity")
         
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d")
@@ -257,6 +258,10 @@ int main(int argc, char* argv[])
     else if(function == "coosort")
     {
         testing_coosort(argus);
+    }
+    else if(function == "identity")
+    {
+        testing_identity(argus);
     }
     else
     {
