@@ -32,7 +32,7 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
               "rocsparse_csr2ell_width",
               m,

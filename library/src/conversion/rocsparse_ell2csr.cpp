@@ -41,7 +41,7 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
               "rocsparse_ell2csr_nnz",
               m,
@@ -76,7 +76,7 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
     }
 
     // Check sizes
-    if(m < 0 || n < 0)
+    if(m < 0 || n < 0 || ell_width < 0)
     {
         return rocsparse_status_invalid_size;
     }
@@ -96,7 +96,7 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
     }
 
     // Quick return if possible
-    if(m == 0 || n == 0)
+    if(m == 0 || n == 0 || ell_width == 0)
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {

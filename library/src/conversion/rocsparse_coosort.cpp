@@ -29,7 +29,7 @@ extern "C" rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handl
         return rocsparse_status_invalid_handle;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
               "rocsparse_coosort_buffer_size",
               m,
@@ -135,7 +135,7 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         return rocsparse_status_invalid_handle;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
               "rocsparse_coosort_by_row",
               m,
@@ -145,6 +145,10 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
               (const void*&)coo_col_ind,
               (const void*&)perm,
               (const void*&)temp_buffer);
+
+    log_bench(handle,
+              "./rocsparse-bench -f coosort",
+              "--mtx <matrix.mtx>");
 
     // Check sizes
     if(m < 0)

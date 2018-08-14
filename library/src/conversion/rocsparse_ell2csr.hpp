@@ -41,7 +41,7 @@ rocsparse_status rocsparse_ell2csr_template(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xell2csr"),
               m,
@@ -54,6 +54,11 @@ rocsparse_status rocsparse_ell2csr_template(rocsparse_handle handle,
               (const void*&)csr_val,
               (const void*&)csr_row_ptr,
               (const void*&)csr_col_ind);
+
+    log_bench(handle,
+              "./rocsparse-bench -f ell2csr -r",
+              replaceX<T>("X"),
+              "--mtx <matrix.mtx>");
 
     // Check index base
     if(ell_descr->base != rocsparse_index_base_zero && ell_descr->base != rocsparse_index_base_one)
