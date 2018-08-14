@@ -1587,7 +1587,7 @@ rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handle,
     n               number of columns of A.
     @param[in]
     nnz             number of non-zero elements of A.
-    @param[in]
+    @param[inout]
     coo_row_ind     array of nnz elements containing the row indices of
                     A.
     @param[inout]
