@@ -858,6 +858,131 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
  * ===========================================================================
  */
 
+/*! \brief SPARSE Level 3 API
+
+    \details
+    csrmm multiplies the sparse m x k CSR matrix A with dense matrix B and
+    stores the result in dense matrix C such that
+
+        C := alpha * op(A) * B + beta * C
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    trans_A     operation type of A.
+    @param[in]
+    trans_B     operation type of B.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    n           number of columns of B and C.
+    @param[in]
+    k           number of columns of A.
+    @param[in]
+    nnz         number of non-zero entries of A.
+    @param[in]
+    alpha       scalar alpha.
+    @param[in]
+    descr       descriptor of A.
+    @param[in]
+    csr_val     array of nnz elements of A.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start of every row
+                of A.
+    @param[in]
+    csr_col_ind array of nnz elements containing the column indices of A.
+    @param[in]
+    B           array of dimension (ldb, n) containing the elements of B.
+    @param[in]
+    ldb         leading dimension of B, must be at least max(1, k) if
+                op(A) == A or max(1, m) otherwise.
+    @param[in]
+    beta        scalar beta.
+    @param[inout]
+    C           array of dimension (ldc, n) containing the elements of C.
+    @param[in]
+    ldc         leading dimension of C, must be at least max(1, m) if
+                op(A) == A or max(1, k) otherwise.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scsrmm(rocsparse_handle handle,
+                                  rocsparse_operation trans_A,
+                                  rocsparse_operation trans_B,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  rocsparse_int k,
+                                  rocsparse_int nnz,
+                                  const float* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const float* csr_val,
+                                  const rocsparse_int* csr_row_ptr,
+                                  const rocsparse_int* csr_col_ind,
+                                  const float* B,
+                                  rocsparse_int ldb,
+                                  const float* beta,
+                                  float* C,
+                                  rocsparse_int ldc);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcsrmm(rocsparse_handle handle,
+                                  rocsparse_operation trans_A,
+                                  rocsparse_operation trans_B,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  rocsparse_int k,
+                                  rocsparse_int nnz,
+                                  const double* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const double* csr_val,
+                                  const rocsparse_int* csr_row_ptr,
+                                  const rocsparse_int* csr_col_ind,
+                                  const double* B,
+                                  rocsparse_int ldb,
+                                  const double* beta,
+                                  double* C,
+                                  rocsparse_int ldc);
+/*
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ccsrmm(rocsparse_handle handle,
+                                  rocsparse_operation trans_A,
+                                  rocsparse_operation trans_B,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  rocsparse_int k,
+                                  rocsparse_int nnz,
+                                  const rocsparse_float_complex* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const rocsparse_float_complex* csr_val,
+                                  const rocsparse_int* csr_row_ptr,
+                                  const rocsparse_int* csr_col_ind,
+                                  const rocsparse_float_complex* B,
+                                  rocsparse_int ldb,
+                                  const rocsparse_float_complex* beta,
+                                  rocsparse_float_complex* C,
+                                  rocsparse_int ldc);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zcsrmm(rocsparse_handle handle,
+                                  rocsparse_operation trans_A,
+                                  rocsparse_operation trans_B,
+                                  rocsparse_int m,
+                                  rocsparse_int n,
+                                  rocsparse_int k,
+                                  rocsparse_int nnz,
+                                  const rocsparse_double_complex* alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const rocsparse_double_complex* csr_val,
+                                  const rocsparse_int* csr_row_ptr,
+                                  const rocsparse_int* csr_col_ind,
+                                  const rocsparse_double_complex* B,
+                                  rocsparse_int ldb,
+                                  const rocsparse_double_complex* beta,
+                                  rocsparse_double_complex* C,
+                                  rocsparse_int ldc);
+*/
+
 /*
  * ===========================================================================
  *    Sparse Format Conversions
@@ -1236,6 +1361,137 @@ rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
 /*! \brief SPARSE Format Conversions API
 
     \details
+    ell2csr_nnz computes the total CSR non-zero elements and the CSR
+    pointer to the start of every row for a given ELL matrix. It is
+    assumed, csr_row_ptr has been allocated with size m + 1.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    n           number of columns of A.
+    @param[in]
+    ell_descr   descriptor of the ELL matrix.
+    @param[in]
+    ell_width   number of non-zero elements per row in ELL storage format.
+    @param[in]
+    ell_col_ind array of nnz elements containing the column indices of A.
+                Padded column indices should be set to -1.
+    @param[in]
+    csr_descr   descriptor of the CSR matrix.
+    @param[out]
+    csr_row_ptr array of m+1 elements that point to the start of every
+                row of A.
+    @param[out]
+    csr_nnz     pointer to the total number of non-zero elements in CSR
+                storage format.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
+                                       rocsparse_int m,
+                                       rocsparse_int n,
+                                       const rocsparse_mat_descr ell_descr,
+                                       rocsparse_int ell_width,
+                                       const rocsparse_int* ell_col_ind,
+                                       const rocsparse_mat_descr csr_descr,
+                                       rocsparse_int* csr_row_ptr,
+                                       rocsparse_int* csr_nnz);
+
+/*! \brief SPARSE Format Conversions API
+
+    \details
+    ell2csr converts an ELL matrix into a CSR matrix. It is assumed, that
+    csr_val and csr_col_ind are allocated. Allocation size is defined by
+    the number of total CSR non-zero elements and can be obtained by
+    calling ell2csr_nnz routine.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    n           number of colums of A.
+    @param[in]
+    ell_descr   descriptor of the ELL matrix.
+    @param[in]
+    ell_width   number of non-zero elements per row in ELL storage format.
+    @param[in]
+    ell_val     array of nnz elements of A. Padded elements should be set
+                to 0.
+    @param[in]
+    ell_col_ind array of nnz elements containing the column indices of A.
+                Padded column indices should be set to -1.
+    @param[in]
+    csr_descr   descriptor of the CSR matrix.
+    @param[out]
+    csr_val     array of nnz elements of A.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start
+                of every row of A.
+    @param[out]
+    csr_col_ind array of nnz elements containing the column indices of A.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sell2csr(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    const rocsparse_mat_descr ell_descr,
+                                    rocsparse_int ell_width,
+                                    const float* ell_val,
+                                    const rocsparse_int* ell_col_ind,
+                                    const rocsparse_mat_descr csr_descr,
+                                    float* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    rocsparse_int* csr_col_ind);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dell2csr(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    const rocsparse_mat_descr ell_descr,
+                                    rocsparse_int ell_width,
+                                    const double* ell_val,
+                                    const rocsparse_int* ell_col_ind,
+                                    const rocsparse_mat_descr csr_descr,
+                                    double* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    rocsparse_int* csr_col_ind);
+/*
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cell2csr(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    const rocsparse_mat_descr ell_descr,
+                                    rocsparse_int ell_width,
+                                    const rocsparse_float_complex* ell_val,
+                                    const rocsparse_int* ell_col_ind,
+                                    const rocsparse_mat_descr csr_descr,
+                                    rocsparse_float_complex* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    rocsparse_int* csr_col_ind);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zell2csr(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    const rocsparse_mat_descr ell_descr,
+                                    rocsparse_int ell_width,
+                                    const rocsparse_double_complex* ell_val,
+                                    const rocsparse_int* ell_col_ind,
+                                    const rocsparse_mat_descr csr_descr,
+                                    rocsparse_double_complex* csr_val,
+                                    const rocsparse_int* csr_row_ptr,
+                                    rocsparse_int* csr_col_ind);
+*/
+
+/*! \brief SPARSE Format Conversions API
+
+    \details
     create_identity_permutation stores the identity map in array p
 
         p = 0:1:(n-1)
@@ -1384,7 +1640,7 @@ rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handle,
     n               number of columns of A.
     @param[in]
     nnz             number of non-zero elements of A.
-    @param[in]
+    @param[inout]
     coo_row_ind     array of nnz elements containing the row indices of
                     A.
     @param[inout]

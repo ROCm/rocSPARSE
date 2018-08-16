@@ -23,12 +23,16 @@ set(rocsparse_source
   src/level2/rocsparse_ellmv.cpp
   src/level2/rocsparse_hybmv.cpp
 
+# Level3
+  src/level3/rocsparse_csrmm.cpp
+
 # Conversion
   src/conversion/rocsparse_csr2coo.cpp
   src/conversion/rocsparse_csr2csc.cpp
   src/conversion/rocsparse_csr2ell.cpp
   src/conversion/rocsparse_csr2hyb.cpp
   src/conversion/rocsparse_coo2csr.cpp
+  src/conversion/rocsparse_ell2csr.cpp
   src/conversion/rocsparse_identity.cpp
   src/conversion/rocsparse_csrsort.cpp
   src/conversion/rocsparse_coosort.cpp

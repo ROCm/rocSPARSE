@@ -10,37 +10,15 @@
 
 #include <hip/hip_runtime.h>
 
-// Block reduce kernel computing sum
+// Compute non-zero entries per CSR row to obtain the COO nnz per row.
 template <rocsparse_int NB>
-__device__ void sum_reduce(rocsparse_int tid, rocsparse_int* data)
+__global__ void hyb_coo_nnz(rocsparse_int m,
+                            rocsparse_int ell_width,
+                            const rocsparse_int* csr_row_ptr,
+                            rocsparse_int* coo_row_nnz,
+                            rocsparse_index_base idx_base)
 {
-    __syncthreads();
-
-    for(rocsparse_int i = NB >> 1; i > 0; i >>= 1)
-    {
-        if(tid < i)
-        {
-            data[tid] += data[tid + i];
-        }
-
-        __syncthreads();
-    }
-}
-
-// Compute non-zero entries per CSR row and do a block reduction over the sum
-// to obtain the number of COO part non-zero entries and COO nnz per row.
-// Store the result in a workspace for final reduction on part2
-template <rocsparse_int NB>
-__global__ void hyb_coo_nnz_part1(rocsparse_int m,
-                                  rocsparse_int ell_width,
-                                  const rocsparse_int* csr_row_ptr,
-                                  rocsparse_int* workspace,
-                                  rocsparse_int* coo_row_nnz)
-{
-    rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-
-    __shared__ rocsparse_int sdata[NB];
 
     if(gid < m)
     {
@@ -48,63 +26,18 @@ __global__ void hyb_coo_nnz_part1(rocsparse_int m,
 
         if(row_nnz > ell_width)
         {
-            row_nnz          = row_nnz - ell_width;
-            sdata[tid]       = row_nnz;
-            coo_row_nnz[gid] = row_nnz;
+            row_nnz              = row_nnz - ell_width;
+            coo_row_nnz[gid + 1] = row_nnz;
         }
         else
         {
-            sdata[tid]       = 0;
-            coo_row_nnz[gid] = 0;
+            coo_row_nnz[gid + 1] = 0;
         }
     }
-    else
+
+    if(gid == 0)
     {
-        sdata[tid] = 0;
-    }
-
-    sum_reduce<NB>(tid, sdata);
-
-    if(tid == 0)
-    {
-        workspace[hipBlockIdx_x] = sdata[0];
-    }
-}
-
-// Part2 kernel for final reduction over the sum of COO non-zero entries
-template <rocsparse_int NB>
-__global__ void hyb_coo_nnz_part2(rocsparse_int m, rocsparse_int* workspace)
-{
-    rocsparse_int tid = hipThreadIdx_x;
-
-    __shared__ rocsparse_int sdata[NB];
-    sdata[tid] = 0;
-
-    for(rocsparse_int i = tid; i < m; i += NB)
-    {
-        sdata[tid] += workspace[i];
-    }
-
-    __syncthreads();
-
-    if(m < 32)
-    {
-        if(tid == 0)
-        {
-            for(rocsparse_int i = 1; i < m; ++i)
-            {
-                sdata[0] += sdata[i];
-            }
-        }
-    }
-    else
-    {
-        sum_reduce<NB>(tid, sdata);
-    }
-
-    if(tid == 0)
-    {
-        workspace[0] = sdata[0];
+        coo_row_nnz[0] = idx_base;
     }
 }
 

@@ -18,8 +18,13 @@ rocsparse_create_identity_permutation(rocsparse_handle handle, rocsparse_int n, 
         return rocsparse_status_invalid_handle;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle, "rocsparse_create_identity_permutation", n, (const void*&)p);
+
+    log_bench(handle,
+              "./rocsparse-bench -f identity",
+              "-n",
+              n);
 
     // Check sizes
     if(n < 0)

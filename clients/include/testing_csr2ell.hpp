@@ -13,6 +13,7 @@
 
 #include <rocsparse.h>
 #include <algorithm>
+#include <string>
 
 using namespace rocsparse;
 using namespace rocsparse_test;
@@ -267,7 +268,22 @@ rocsparse_status testing_csr2ell(Arguments argus)
     rocsparse_int safe_size       = 100;
     rocsparse_index_base csr_base = argus.idx_base;
     rocsparse_index_base ell_base = argus.idx_base2;
+    std::string binfile           = "";
+    std::string filename          = "";
     rocsparse_status status;
+
+    // When in testing mode, M == N == -99 indicates that we are testing with a real
+    // matrix from cise.ufl.edu
+    if(m == -99 && n == -99 && argus.timing == 0)
+    {
+        binfile = argus.filename;
+        m = n = safe_size;
+    }
+
+    if(argus.timing == 1)
+    {
+        filename = argus.filename;
+    }
 
     double scale = 0.02;
     if(m > 1000 || n > 1000)
@@ -380,25 +396,29 @@ rocsparse_status testing_csr2ell(Arguments argus)
 
     // Sample initial COO matrix on CPU
     srand(12345ULL);
-    if(argus.laplacian)
+    if(binfile != "")
+    {
+        if(read_bin_matrix(
+               binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, csr_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
+    }
+    else if(argus.laplacian)
     {
         m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcsr_col_ind, hcsr_val, csr_base);
         nnz   = hcsr_row_ptr[m];
     }
     else
     {
-        if(argus.filename != "")
+        if(filename != "")
         {
-            if(read_mtx_matrix(argus.filename.c_str(),
-                               m,
-                               n,
-                               nnz,
-                               hcoo_row_ind,
-                               hcsr_col_ind,
-                               hcsr_val,
-                               csr_base) != 0)
+            if(read_mtx_matrix(
+                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, csr_base) !=
+               0)
             {
-                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
             }
         }
@@ -498,8 +518,8 @@ rocsparse_status testing_csr2ell(Arguments argus)
         rocsparse_int ell_nnz = ell_width * m;
 
         // Check if ELL width does match
-        unit_check_general(1, 1, &ell_width_gold, &ell_width);
-        unit_check_general(1, 1, &ell_nnz_gold, &ell_nnz);
+        unit_check_general(1, 1, 1, &ell_width_gold, &ell_width);
+        unit_check_general(1, 1, 1, &ell_nnz_gold, &ell_nnz);
 
         // Allocate ELL device memory
         auto dell_col_ind_managed =
@@ -530,8 +550,8 @@ rocsparse_status testing_csr2ell(Arguments argus)
             hipMemcpy(hell_val.data(), dell_val, sizeof(T) * ell_nnz, hipMemcpyDeviceToHost));
 
         // Unit check
-        unit_check_general(1, ell_nnz, hell_col_ind_gold.data(), hell_col_ind.data());
-        unit_check_general(1, ell_nnz, hell_val_gold.data(), hell_val.data());
+        unit_check_general(1, ell_nnz, 1, hell_col_ind_gold.data(), hell_col_ind.data());
+        unit_check_general(1, ell_nnz, 1, hell_val_gold.data(), hell_val.data());
     }
 
     if(argus.timing)

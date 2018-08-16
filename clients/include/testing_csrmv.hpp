@@ -27,7 +27,7 @@ void testing_csrmv_bad_arg(void)
     rocsparse_int safe_size   = 100;
     T alpha                   = 0.6;
     T beta                    = 0.2;
-    rocsparse_operation trans = rocsparse_operation_none;
+    rocsparse_operation transA = rocsparse_operation_none;
     rocsparse_status status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
@@ -66,7 +66,7 @@ void testing_csrmv_bad_arg(void)
         rocsparse_int* dptr_null = nullptr;
 
         status = rocsparse_csrmv_analysis(
-            handle, trans, m, n, nnz, descr, dptr_null, dcol, info);
+            handle, transA, m, n, nnz, descr, dptr_null, dcol, info);
         verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
     }
     // testing for(nullptr == dcol)
@@ -74,7 +74,7 @@ void testing_csrmv_bad_arg(void)
         rocsparse_int* dcol_null = nullptr;
 
         status = rocsparse_csrmv_analysis(
-            handle, trans, m, n, nnz, descr, dptr, dcol_null, info);
+            handle, transA, m, n, nnz, descr, dptr, dcol_null, info);
         verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
     }
     // testing for(nullptr == descr)
@@ -82,7 +82,7 @@ void testing_csrmv_bad_arg(void)
         rocsparse_mat_descr descr_null = nullptr;
 
         status = rocsparse_csrmv_analysis(
-            handle, trans, m, n, nnz, descr_null, dptr, dcol, info);
+            handle, transA, m, n, nnz, descr_null, dptr, dcol, info);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == info)
@@ -90,7 +90,7 @@ void testing_csrmv_bad_arg(void)
         rocsparse_csrmv_info info_null = nullptr;
 
         status = rocsparse_csrmv_analysis(
-            handle, trans, m, n, nnz, descr, dptr, dcol, info_null);
+            handle, transA, m, n, nnz, descr, dptr, dcol, info_null);
         verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
     }
     // testing for(nullptr == handle)
@@ -98,7 +98,7 @@ void testing_csrmv_bad_arg(void)
         rocsparse_handle handle_null = nullptr;
 
         status = rocsparse_csrmv_analysis(
-            handle_null, trans, m, n, nnz, descr, dptr, dcol, info);
+            handle_null, transA, m, n, nnz, descr, dptr, dcol, info);
         verify_rocsparse_status_invalid_handle(status);
     }
 
@@ -109,7 +109,7 @@ void testing_csrmv_bad_arg(void)
         rocsparse_int* dptr_null = nullptr;
 
         status = rocsparse_csrmv(
-            handle, trans, m, n, nnz, &alpha, descr, dval, dptr_null, dcol, dx, &beta, dy, nullptr);
+            handle, transA, m, n, nnz, &alpha, descr, dval, dptr_null, dcol, dx, &beta, dy, nullptr);
         verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
     }
     // testing for(nullptr == dcol)
@@ -117,7 +117,7 @@ void testing_csrmv_bad_arg(void)
         rocsparse_int* dcol_null = nullptr;
 
         status = rocsparse_csrmv(
-            handle, trans, m, n, nnz, &alpha, descr, dval, dptr, dcol_null, dx, &beta, dy, nullptr);
+            handle, transA, m, n, nnz, &alpha, descr, dval, dptr, dcol_null, dx, &beta, dy, nullptr);
         verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
     }
     // testing for(nullptr == dval)
@@ -125,7 +125,7 @@ void testing_csrmv_bad_arg(void)
         T* dval_null = nullptr;
 
         status = rocsparse_csrmv(
-            handle, trans, m, n, nnz, &alpha, descr, dval_null, dptr, dcol, dx, &beta, dy, nullptr);
+            handle, transA, m, n, nnz, &alpha, descr, dval_null, dptr, dcol, dx, &beta, dy, nullptr);
         verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
     }
     // testing for(nullptr == dx)
@@ -133,7 +133,7 @@ void testing_csrmv_bad_arg(void)
         T* dx_null = nullptr;
 
         status = rocsparse_csrmv(
-            handle, trans, m, n, nnz, &alpha, descr, dval, dptr, dcol, dx_null, &beta, dy, nullptr);
+            handle, transA, m, n, nnz, &alpha, descr, dval, dptr, dcol, dx_null, &beta, dy, nullptr);
         verify_rocsparse_status_invalid_pointer(status, "Error: dx is nullptr");
     }
     // testing for(nullptr == dy)
@@ -141,7 +141,7 @@ void testing_csrmv_bad_arg(void)
         T* dy_null = nullptr;
 
         status = rocsparse_csrmv(
-            handle, trans, m, n, nnz, &alpha, descr, dval, dptr, dcol, dx, &beta, dy_null, nullptr);
+            handle, transA, m, n, nnz, &alpha, descr, dval, dptr, dcol, dx, &beta, dy_null, nullptr);
         verify_rocsparse_status_invalid_pointer(status, "Error: dy is nullptr");
     }
     // testing for(nullptr == d_alpha)
@@ -149,7 +149,7 @@ void testing_csrmv_bad_arg(void)
         T* d_alpha_null = nullptr;
 
         status = rocsparse_csrmv(
-            handle, trans, m, n, nnz, d_alpha_null, descr, dval, dptr, dcol, dx, &beta, dy, nullptr);
+            handle, transA, m, n, nnz, d_alpha_null, descr, dval, dptr, dcol, dx, &beta, dy, nullptr);
         verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
     }
     // testing for(nullptr == d_beta)
@@ -157,7 +157,7 @@ void testing_csrmv_bad_arg(void)
         T* d_beta_null = nullptr;
 
         status = rocsparse_csrmv(
-            handle, trans, m, n, nnz, &alpha, descr, dval, dptr, dcol, dx, d_beta_null, dy, nullptr);
+            handle, transA, m, n, nnz, &alpha, descr, dval, dptr, dcol, dx, d_beta_null, dy, nullptr);
         verify_rocsparse_status_invalid_pointer(status, "Error: beta is nullptr");
     }
     // testing for(nullptr == descr)
@@ -165,7 +165,7 @@ void testing_csrmv_bad_arg(void)
         rocsparse_mat_descr descr_null = nullptr;
 
         status = rocsparse_csrmv(
-            handle, trans, m, n, nnz, &alpha, descr_null, dval, dptr, dcol, dx, &beta, dy, nullptr);
+            handle, transA, m, n, nnz, &alpha, descr_null, dval, dptr, dcol, dx, &beta, dy, nullptr);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == handle)
@@ -173,7 +173,7 @@ void testing_csrmv_bad_arg(void)
         rocsparse_handle handle_null = nullptr;
 
         status = rocsparse_csrmv(
-            handle_null, trans, m, n, nnz, &alpha, descr, dval, dptr, dcol, dx, &beta, dy, nullptr);
+            handle_null, transA, m, n, nnz, &alpha, descr, dval, dptr, dcol, dx, &beta, dy, nullptr);
         verify_rocsparse_status_invalid_handle(status);
     }
 }
@@ -195,7 +195,7 @@ rocsparse_status testing_csrmv(Arguments argus)
     rocsparse_int n               = argus.N;
     T h_alpha                     = argus.alpha;
     T h_beta                      = argus.beta;
-    rocsparse_operation trans     = argus.trans;
+    rocsparse_operation transA     = argus.transA;
     rocsparse_index_base idx_base = argus.idx_base;
     bool adaptive                 = argus.bswitch;
     std::string binfile           = "";
@@ -267,7 +267,7 @@ rocsparse_status testing_csrmv(Arguments argus)
         if(adaptive)
         {
             // Test rocsparse_csrmv_analysis
-            status = rocsparse_csrmv_analysis(handle, trans, m, n, nnz, descr, dptr, dcol, info);
+            status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dptr, dcol, info);
 
             if(m < 0 || n < 0 || nnz < 0)
             {
@@ -281,7 +281,7 @@ rocsparse_status testing_csrmv(Arguments argus)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         status = rocsparse_csrmv(
-            handle, trans, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, dx, &h_beta, dy, info);
+            handle, transA, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, dx, &h_beta, dy, info);
 
         if(m < 0 || n < 0 || nnz < 0)
         {
@@ -404,7 +404,7 @@ rocsparse_status testing_csrmv(Arguments argus)
     if(adaptive)
     {
         // csrmv analysis
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_analysis(handle, trans, m, n, nnz, descr, dptr, dcol, info));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dptr, dcol, info));
     }
 
     if(argus.unit_check)
@@ -414,12 +414,12 @@ rocsparse_status testing_csrmv(Arguments argus)
         // ROCSPARSE pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv(
-            handle, trans, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, dx, &h_beta, dy_1, info));
+            handle, transA, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, dx, &h_beta, dy_1, info));
 
         // ROCSPARSE pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv(
-            handle, trans, m, n, nnz, d_alpha, descr, dval, dptr, dcol, dx, d_beta, dy_2, info));
+            handle, transA, m, n, nnz, d_alpha, descr, dval, dptr, dcol, dx, d_beta, dy_2, info));
 
         // copy output from device to CPU
         CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * m, hipMemcpyDeviceToHost));
@@ -531,8 +531,8 @@ rocsparse_status testing_csrmv(Arguments argus)
         }
         else
         {
-            unit_check_general(1, m, hy_gold.data(), hy_1.data());
-            unit_check_general(1, m, hy_gold.data(), hy_2.data());
+            unit_check_general(1, m, 1, hy_gold.data(), hy_1.data());
+            unit_check_general(1, m, 1, hy_gold.data(), hy_2.data());
         }
     }
 
@@ -545,7 +545,7 @@ rocsparse_status testing_csrmv(Arguments argus)
         for(int iter = 0; iter < number_cold_calls; iter++)
         {
             rocsparse_csrmv(
-                handle, trans, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, dx, &h_beta, dy_1, info);
+                handle, transA, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, dx, &h_beta, dy_1, info);
         }
 
         double gpu_time_used = get_time_us(); // in microseconds
@@ -553,7 +553,7 @@ rocsparse_status testing_csrmv(Arguments argus)
         for(int iter = 0; iter < number_hot_calls; iter++)
         {
             rocsparse_csrmv(
-                handle, trans, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, dx, &h_beta, dy_1, info);
+                handle, transA, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, dx, &h_beta, dy_1, info);
         }
 
         // Convert to miliseconds per call

@@ -30,7 +30,7 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handl
         return rocsparse_status_invalid_handle;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
               "rocsparse_csrsort_buffer_size",
               m,
@@ -125,9 +125,9 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
-              "rocsparse_csrsort_buffer_size",
+              "rocsparse_csrsort",
               m,
               n,
               nnz,
@@ -136,6 +136,10 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
               (const void*&)csr_col_ind,
               (const void*&)perm,
               (const void*&)temp_buffer);
+
+    log_bench(handle,
+              "./rocsparse-bench -f csrsort",
+              "--mtx <matrix.mtx>");
 
     // Check sizes
     if(m < 0)

@@ -289,6 +289,82 @@ rocsparse_status rocsparse_hybmv(rocsparse_handle handle,
 }
 
 template <>
+rocsparse_status rocsparse_csrmm(rocsparse_handle handle,
+                                 rocsparse_operation trans_A,
+                                 rocsparse_operation trans_B,
+                                 rocsparse_int m,
+                                 rocsparse_int n,
+                                 rocsparse_int k,
+                                 rocsparse_int nnz,
+                                 const float* alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const float* csr_val,
+                                 const rocsparse_int* csr_row_ptr,
+                                 const rocsparse_int* csr_col_ind,
+                                 const float* B,
+                                 rocsparse_int ldb,
+                                 const float* beta,
+                                 float* C,
+                                 rocsparse_int ldc)
+{
+    return rocsparse_scsrmm(handle,
+                            trans_A,
+                            trans_B,
+                            m,
+                            n,
+                            k,
+                            nnz,
+                            alpha,
+                            descr,
+                            csr_val,
+                            csr_row_ptr,
+                            csr_col_ind,
+                            B,
+                            ldb,
+                            beta,
+                            C,
+                            ldc);
+}
+
+template <>
+rocsparse_status rocsparse_csrmm(rocsparse_handle handle,
+                                 rocsparse_operation trans_A,
+                                 rocsparse_operation trans_B,
+                                 rocsparse_int m,
+                                 rocsparse_int n,
+                                 rocsparse_int k,
+                                 rocsparse_int nnz,
+                                 const double* alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const double* csr_val,
+                                 const rocsparse_int* csr_row_ptr,
+                                 const rocsparse_int* csr_col_ind,
+                                 const double* B,
+                                 rocsparse_int ldb,
+                                 const double* beta,
+                                 double* C,
+                                 rocsparse_int ldc)
+{
+    return rocsparse_dcsrmm(handle,
+                            trans_A,
+                            trans_B,
+                            m,
+                            n,
+                            k,
+                            nnz,
+                            alpha,
+                            descr,
+                            csr_val,
+                            csr_row_ptr,
+                            csr_col_ind,
+                            B,
+                            ldb,
+                            beta,
+                            C,
+                            ldc);
+}
+
+template <>
 rocsparse_status rocsparse_csr2csc(rocsparse_handle handle,
                                    rocsparse_int m,
                                    rocsparse_int n,
@@ -442,6 +518,58 @@ rocsparse_status rocsparse_csr2hyb(rocsparse_handle handle,
                               hyb,
                               user_ell_width,
                               partition_type);
+}
+
+template <>
+rocsparse_status rocsparse_ell2csr(rocsparse_handle handle,
+                                   rocsparse_int m,
+                                   rocsparse_int n,
+                                   const rocsparse_mat_descr ell_descr,
+                                   rocsparse_int ell_width,
+                                   const float* ell_val,
+                                   const rocsparse_int* ell_col_ind,
+                                   const rocsparse_mat_descr csr_descr,
+                                   float* csr_val,
+                                   const rocsparse_int* csr_row_ptr,
+                                   rocsparse_int* csr_col_ind)
+{
+    return rocsparse_sell2csr(handle,
+                              m,
+                              n,
+                              ell_descr,
+                              ell_width,
+                              ell_val,
+                              ell_col_ind,
+                              csr_descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind);
+}
+
+template <>
+rocsparse_status rocsparse_ell2csr(rocsparse_handle handle,
+                                   rocsparse_int m,
+                                   rocsparse_int n,
+                                   const rocsparse_mat_descr ell_descr,
+                                   rocsparse_int ell_width,
+                                   const double* ell_val,
+                                   const rocsparse_int* ell_col_ind,
+                                   const rocsparse_mat_descr csr_descr,
+                                   double* csr_val,
+                                   const rocsparse_int* csr_row_ptr,
+                                   rocsparse_int* csr_col_ind)
+{
+    return rocsparse_dell2csr(handle,
+                              m,
+                              n,
+                              ell_descr,
+                              ell_width,
+                              ell_val,
+                              ell_col_ind,
+                              csr_descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind);
 }
 
 } // namespace rocsparse
