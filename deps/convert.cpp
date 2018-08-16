@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 #include <vector>
 #include <sstream>
 #include <algorithm>
@@ -126,6 +127,9 @@ int read_mtx_matrix(const char* filename,
 
         --irow;
         --icol;
+
+        // Take absolute matrix value to avoid rounding issues when testing
+        ival = std::abs(ival);
 
         unsorted_row[idx] = irow;
         unsorted_col[idx] = icol;

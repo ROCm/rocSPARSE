@@ -26,7 +26,7 @@ void testing_coomv_bad_arg(void)
     rocsparse_int safe_size   = 100;
     T alpha                   = 0.6;
     T beta                    = 0.2;
-    rocsparse_operation trans = rocsparse_operation_none;
+    rocsparse_operation transA = rocsparse_operation_none;
     rocsparse_status status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
@@ -60,7 +60,7 @@ void testing_coomv_bad_arg(void)
         rocsparse_int* drow_null = nullptr;
 
         status = rocsparse_coomv(
-            handle, trans, m, n, nnz, &alpha, descr, dval, drow_null, dcol, dx, &beta, dy);
+            handle, transA, m, n, nnz, &alpha, descr, dval, drow_null, dcol, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: drow is nullptr");
     }
     // testing for(nullptr == dcol)
@@ -68,7 +68,7 @@ void testing_coomv_bad_arg(void)
         rocsparse_int* dcol_null = nullptr;
 
         status = rocsparse_coomv(
-            handle, trans, m, n, nnz, &alpha, descr, dval, drow, dcol_null, dx, &beta, dy);
+            handle, transA, m, n, nnz, &alpha, descr, dval, drow, dcol_null, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
     }
     // testing for(nullptr == dval)
@@ -76,7 +76,7 @@ void testing_coomv_bad_arg(void)
         T* dval_null = nullptr;
 
         status = rocsparse_coomv(
-            handle, trans, m, n, nnz, &alpha, descr, dval_null, drow, dcol, dx, &beta, dy);
+            handle, transA, m, n, nnz, &alpha, descr, dval_null, drow, dcol, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
     }
     // testing for(nullptr == dx)
@@ -84,7 +84,7 @@ void testing_coomv_bad_arg(void)
         T* dx_null = nullptr;
 
         status = rocsparse_coomv(
-            handle, trans, m, n, nnz, &alpha, descr, dval, drow, dcol, dx_null, &beta, dy);
+            handle, transA, m, n, nnz, &alpha, descr, dval, drow, dcol, dx_null, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dx is nullptr");
     }
     // testing for(nullptr == dy)
@@ -92,7 +92,7 @@ void testing_coomv_bad_arg(void)
         T* dy_null = nullptr;
 
         status = rocsparse_coomv(
-            handle, trans, m, n, nnz, &alpha, descr, dval, drow, dcol, dx, &beta, dy_null);
+            handle, transA, m, n, nnz, &alpha, descr, dval, drow, dcol, dx, &beta, dy_null);
         verify_rocsparse_status_invalid_pointer(status, "Error: dy is nullptr");
     }
     // testing for(nullptr == d_alpha)
@@ -100,7 +100,7 @@ void testing_coomv_bad_arg(void)
         T* d_alpha_null = nullptr;
 
         status = rocsparse_coomv(
-            handle, trans, m, n, nnz, d_alpha_null, descr, dval, drow, dcol, dx, &beta, dy);
+            handle, transA, m, n, nnz, d_alpha_null, descr, dval, drow, dcol, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
     }
     // testing for(nullptr == d_beta)
@@ -108,7 +108,7 @@ void testing_coomv_bad_arg(void)
         T* d_beta_null = nullptr;
 
         status = rocsparse_coomv(
-            handle, trans, m, n, nnz, &alpha, descr, dval, drow, dcol, dx, d_beta_null, dy);
+            handle, transA, m, n, nnz, &alpha, descr, dval, drow, dcol, dx, d_beta_null, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: beta is nullptr");
     }
     // testing for(nullptr == descr)
@@ -116,7 +116,7 @@ void testing_coomv_bad_arg(void)
         rocsparse_mat_descr descr_null = nullptr;
 
         status = rocsparse_coomv(
-            handle, trans, m, n, nnz, &alpha, descr_null, dval, drow, dcol, dx, &beta, dy);
+            handle, transA, m, n, nnz, &alpha, descr_null, dval, drow, dcol, dx, &beta, dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == handle)
@@ -124,7 +124,7 @@ void testing_coomv_bad_arg(void)
         rocsparse_handle handle_null = nullptr;
 
         status = rocsparse_coomv(
-            handle_null, trans, m, n, nnz, &alpha, descr, dval, drow, dcol, dx, &beta, dy);
+            handle_null, transA, m, n, nnz, &alpha, descr, dval, drow, dcol, dx, &beta, dy);
         verify_rocsparse_status_invalid_handle(status);
     }
 }
@@ -137,9 +137,24 @@ rocsparse_status testing_coomv(Arguments argus)
     rocsparse_int n               = argus.N;
     T h_alpha                     = argus.alpha;
     T h_beta                      = argus.beta;
-    rocsparse_operation trans     = argus.trans;
+    rocsparse_operation transA     = argus.transA;
     rocsparse_index_base idx_base = argus.idx_base;
+    std::string binfile           = "";
+    std::string filename          = "";
     rocsparse_status status;
+
+    // When in testing mode, M == N == -99 indicates that we are testing with a real
+    // matrix from cise.ufl.edu
+    if(m == -99 && n == -99 && argus.timing == 0)
+    {
+        binfile = argus.filename;
+        m = n = safe_size;
+    }
+
+    if(argus.timing == 1)
+    {
+        filename = argus.filename;
+    }
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
     rocsparse_handle handle = test_handle->handle;
@@ -184,7 +199,7 @@ rocsparse_status testing_coomv(Arguments argus)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         status = rocsparse_coomv(
-            handle, trans, m, n, nnz, &h_alpha, descr, dval, drow, dcol, dx, &h_beta, dy);
+            handle, transA, m, n, nnz, &h_alpha, descr, dval, drow, dcol, dx, &h_beta, dy);
 
         if(m < 0 || n < 0 || nnz < 0)
         {
@@ -206,7 +221,25 @@ rocsparse_status testing_coomv(Arguments argus)
 
     // Initial Data on CPU
     srand(12345ULL);
-    if(argus.laplacian)
+    if(binfile != "")
+    {
+        if(read_bin_matrix(binfile.c_str(), m, n, nnz, hptr, hcol, hval, idx_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
+
+        // Convert CSR to COO
+        hrow.resize(nnz);
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            for(rocsparse_int j = hptr[i]; j < hptr[i + 1]; ++j)
+            {
+                hrow[j - idx_base] = i + idx_base;
+            }
+        }
+    }
+    else if(argus.laplacian)
     {
         m = n = gen_2d_laplacian(argus.laplacian, hptr, hcol, hval, idx_base);
         nnz   = hptr[m];
@@ -223,11 +256,11 @@ rocsparse_status testing_coomv(Arguments argus)
     }
     else
     {
-        if(argus.filename != "")
+        if(filename != "")
         {
-            if(read_mtx_matrix(argus.filename.c_str(), m, n, nnz, hrow, hcol, hval, idx_base) != 0)
+            if(read_mtx_matrix(filename.c_str(), m, n, nnz, hrow, hcol, hval, idx_base) != 0)
             {
-                fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
+                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
             }
         }
@@ -296,12 +329,12 @@ rocsparse_status testing_coomv(Arguments argus)
         // ROCSPARSE pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_coomv(
-            handle, trans, m, n, nnz, &h_alpha, descr, dval, drow, dcol, dx, &h_beta, dy_1));
+            handle, transA, m, n, nnz, &h_alpha, descr, dval, drow, dcol, dx, &h_beta, dy_1));
 
         // ROCSPARSE pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_coomv(
-            handle, trans, m, n, nnz, d_alpha, descr, dval, drow, dcol, dx, d_beta, dy_2));
+            handle, transA, m, n, nnz, d_alpha, descr, dval, drow, dcol, dx, d_beta, dy_2));
 
         // copy output from device to CPU
         CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * m, hipMemcpyDeviceToHost));
@@ -324,11 +357,8 @@ rocsparse_status testing_coomv(Arguments argus)
 
         // enable unit check, notice unit check is not invasive, but norm check is,
         // unit check and norm check can not be interchanged their order
-        if(argus.unit_check)
-        {
-            unit_check_general(1, m, hy_gold.data(), hy_1.data());
-            unit_check_general(1, m, hy_gold.data(), hy_2.data());
-        }
+        unit_check_near(1, m, 1, hy_gold.data(), hy_1.data());
+        unit_check_near(1, m, 1, hy_gold.data(), hy_2.data());
     }
 
     if(argus.timing)
@@ -340,7 +370,7 @@ rocsparse_status testing_coomv(Arguments argus)
         for(int iter = 0; iter < number_cold_calls; iter++)
         {
             rocsparse_coomv(
-                handle, trans, m, n, nnz, &h_alpha, descr, dval, drow, dcol, dx, &h_beta, dy_1);
+                handle, transA, m, n, nnz, &h_alpha, descr, dval, drow, dcol, dx, &h_beta, dy_1);
         }
 
         double gpu_time_used = get_time_us(); // in microseconds
@@ -348,7 +378,7 @@ rocsparse_status testing_coomv(Arguments argus)
         for(int iter = 0; iter < number_hot_calls; iter++)
         {
             rocsparse_coomv(
-                handle, trans, m, n, nnz, &h_alpha, descr, dval, drow, dcol, dx, &h_beta, dy_1);
+                handle, transA, m, n, nnz, &h_alpha, descr, dval, drow, dcol, dx, &h_beta, dy_1);
         }
 
         // Convert to miliseconds per call
