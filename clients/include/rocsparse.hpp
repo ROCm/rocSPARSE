@@ -89,7 +89,8 @@ rocsparse_status rocsparse_csrmv(rocsparse_handle handle,
                                  const rocsparse_int* csr_col_ind,
                                  const T* x,
                                  const T* beta,
-                                 T* y);
+                                 T* y,
+                                 const rocsparse_csrmv_info info);
 
 template <typename T>
 rocsparse_status rocsparse_ellmv(rocsparse_handle handle,

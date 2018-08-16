@@ -199,10 +199,11 @@ rocsparse_status rocsparse_csrmv(rocsparse_handle handle,
                                  const rocsparse_int* csr_col_ind,
                                  const float* x,
                                  const float* beta,
-                                 float* y)
+                                 float* y,
+                                 const rocsparse_csrmv_info info)
 {
     return rocsparse_scsrmv(
-        handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y);
+        handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y, info);
 }
 
 template <>
@@ -218,10 +219,11 @@ rocsparse_status rocsparse_csrmv(rocsparse_handle handle,
                                  const rocsparse_int* csr_col_ind,
                                  const double* x,
                                  const double* beta,
-                                 double* y)
+                                 double* y,
+                                 const rocsparse_csrmv_info info)
 {
     return rocsparse_dcsrmv(
-        handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y);
+        handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y, info);
 }
 
 template <>
