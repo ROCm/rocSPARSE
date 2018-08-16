@@ -49,33 +49,37 @@ static unsigned long long numThreadsForReduction(unsigned long long num_rows)
 
 static void ComputeRowBlocks(unsigned long long* rowBlocks,
                              size_t& rowBlockSize,
-                             const int* rowDelimiters,
-                             int nRows,
+                             const rocsparse_int* rowDelimiters,
+                             rocsparse_int nRows,
                              bool allocate_row_blocks = true)
 {
     unsigned long long* rowBlocksBase;
-    int total_row_blocks = 1; // Start at one because of rowBlock[0]
+
+    // Start at one because of rowBlock[0]
+    rocsparse_int total_row_blocks = 1;
 
     if(allocate_row_blocks)
     {
         rowBlocksBase = rowBlocks;
         *rowBlocks    = 0;
-        rowBlocks++;
+        ++rowBlocks;
     }
+
     unsigned long long sum = 0;
-    unsigned long long i, last_i = 0;
+    unsigned long long i;
+    unsigned long long last_i = 0;
 
     // Check to ensure nRows can fit in 32 bits
-    if((unsigned long long)nRows > (unsigned long long)std::pow(2, ROW_BITS))
+    if(static_cast<unsigned long long>(nRows) > static_cast<unsigned long long>(std::pow(2, ROW_BITS)))
     {
         fprintf(stderr, "nrow does not fit in 32 bits\n");
         exit(1);
     }
 
-    int consecutive_long_rows = 0;
-    for(i = 1; i <= (unsigned long long)nRows; i++)
+    rocsparse_int consecutive_long_rows = 0;
+    for(i = 1; i <= static_cast<unsigned long long>(nRows); ++i)
     {
-        int row_length = (rowDelimiters[i] - rowDelimiters[i - 1]);
+        rocsparse_int row_length = (rowDelimiters[i] - rowDelimiters[i - 1]);
         sum += row_length;
 
         // The following section of code calculates whether you're moving between
@@ -84,14 +88,20 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
         // roughly the same length. Long rows can be reduced horizontally.
         // Short rows can be reduced one-thread-per-row. Try not to mix them.
         if(row_length > 128)
-            consecutive_long_rows++;
+        {
+            ++consecutive_long_rows;
+        }
         else if(consecutive_long_rows > 0)
         {
             // If it turns out we WERE in a long-row region, cut if off now.
             if(row_length < 32) // Now we're in a short-row region
+            {
                 consecutive_long_rows = -1;
+            }
             else
+            {
                 consecutive_long_rows++;
+            }
         }
 
         // If you just entered into a "long" row from a series of short rows,
@@ -105,14 +115,19 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
                 if(allocate_row_blocks)
                 {
                     *rowBlocks = ((i - 1) << (64 - ROW_BITS));
+
                     // If this row fits into CSR-Stream, calculate how many rows
                     // can be used to do a parallel reduction.
                     // Fill in the low-order bits with the numThreadsForRed
-                    if(((i - 1) - last_i) > (unsigned long long)ROWS_FOR_VECTOR)
+                    if(((i - 1) - last_i) > static_cast<unsigned long long>(ROWS_FOR_VECTOR))
+                    {
                         *(rowBlocks - 1) |= numThreadsForReduction((i - 1) - last_i);
-                    rowBlocks++;
+                    }
+
+                    ++rowBlocks;
                 }
-                total_row_blocks++;
+
+                ++total_row_blocks;
                 last_i = i - 1;
                 sum    = row_length;
             }
@@ -124,11 +139,15 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
             if(allocate_row_blocks)
             {
                 *rowBlocks = ((i - 1) << (64 - ROW_BITS));
-                if(((i - 1) - last_i) > (unsigned long long)ROWS_FOR_VECTOR)
+                if(((i - 1) - last_i) > static_cast<unsigned long long>(ROWS_FOR_VECTOR))
+                {
                     *(rowBlocks - 1) |= numThreadsForReduction((i - 1) - last_i);
-                rowBlocks++;
+                }
+
+                ++rowBlocks;
             }
-            total_row_blocks++;
+
+            ++total_row_blocks;
             last_i                = i - 1;
             sum                   = row_length;
             consecutive_long_rows = 0;
@@ -138,26 +157,27 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
 
         // exactly one row results in non-zero elements to be greater than blockSize
         // This is csr-vector case; bottom WGBITS == workgroup ID
-        if((i - last_i == 1) && sum > (unsigned long long)BLOCKSIZE)
+        if((i - last_i == 1) && sum > static_cast<unsigned long long>(BLOCKSIZE))
         {
-            int numWGReq =
-                static_cast<int>(std::ceil((double)row_length / (BLOCK_MULTIPLIER * BLOCKSIZE)));
+            rocsparse_int numWGReq = static_cast<rocsparse_int>(std::ceil(static_cast<double>(row_length) / (BLOCK_MULTIPLIER * BLOCKSIZE)));
 
             // Check to ensure #workgroups can fit in WGBITS bits, if not
             // then the last workgroup will do all the remaining work
-            numWGReq = (numWGReq < (int)std::pow(2, WG_BITS)) ? numWGReq : (int)std::pow(2, WG_BITS);
+            numWGReq = (numWGReq < static_cast<rocsparse_int>(std::pow(2, WG_BITS))) ? numWGReq : static_cast<rocsparse_int>(std::pow(2, WG_BITS));
 
             if(allocate_row_blocks)
             {
-                for(int w = 1; w < numWGReq; w++)
+                for(rocsparse_int w = 1; w < numWGReq; ++w)
                 {
                     *rowBlocks = ((i - 1) << (64 - ROW_BITS));
                     *rowBlocks |= static_cast<unsigned long long>(w);
-                    rowBlocks++;
+                    ++rowBlocks;
                 }
+
                 *rowBlocks = (i << (64 - ROW_BITS));
-                rowBlocks++;
+                ++rowBlocks;
             }
+
             total_row_blocks += numWGReq;
             last_i                = i;
             sum                   = 0;
@@ -165,32 +185,42 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
         }
         // more than one row results in non-zero elements to be greater than blockSize
         // This is csr-stream case; bottom WGBITS = number of parallel reduction threads
-        else if((i - last_i > 1) && sum > (unsigned long long)BLOCKSIZE)
+        else if((i - last_i > 1) && sum > static_cast<unsigned long long>(BLOCKSIZE))
         {
-            i--; // This row won't fit, so back off one.
+            // This row won't fit, so back off one.
+            --i;
+
             if(allocate_row_blocks)
             {
                 *rowBlocks = (i << (64 - ROW_BITS));
-                if((i - last_i) > (unsigned long long)ROWS_FOR_VECTOR)
+                if((i - last_i) > static_cast<unsigned long long>(ROWS_FOR_VECTOR))
+                {
                     *(rowBlocks - 1) |= numThreadsForReduction(i - last_i);
-                rowBlocks++;
+                }
+
+                ++rowBlocks;
             }
-            total_row_blocks++;
+
+            ++total_row_blocks;
             last_i                = i;
             sum                   = 0;
             consecutive_long_rows = 0;
         }
         // This is csr-stream case; bottom WGBITS = number of parallel reduction threads
-        else if(sum == (unsigned long long)BLOCKSIZE)
+        else if(sum == static_cast<unsigned long long>(BLOCKSIZE))
         {
             if(allocate_row_blocks)
             {
                 *rowBlocks = (i << (64 - ROW_BITS));
-                if((i - last_i) > (unsigned long long)ROWS_FOR_VECTOR)
+                if((i - last_i) > static_cast<unsigned long long>(ROWS_FOR_VECTOR))
+                {
                     *(rowBlocks - 1) |= numThreadsForReduction(i - last_i);
-                rowBlocks++;
+                }
+
+                ++rowBlocks;
             }
-            total_row_blocks++;
+
+            ++total_row_blocks;
             last_i                = i;
             sum                   = 0;
             consecutive_long_rows = 0;
@@ -201,11 +231,15 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
     if(allocate_row_blocks && (*(rowBlocks - 1) >> (64 - ROW_BITS)) != static_cast<unsigned long long>(nRows))
     {
         *rowBlocks = (static_cast<unsigned long long>(nRows) << (64 - ROW_BITS));
-        if((nRows - last_i) > (unsigned long long)ROWS_FOR_VECTOR)
+        if((nRows - last_i) > static_cast<unsigned long long>(ROWS_FOR_VECTOR))
+        {
             *(rowBlocks - 1) |= numThreadsForReduction(i - last_i);
-        rowBlocks++;
+        }
+
+        ++rowBlocks;
     }
-    total_row_blocks++;
+
+    ++total_row_blocks;
 
     if(allocate_row_blocks)
     {
@@ -217,7 +251,9 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
         rowBlockSize = 2 * dist;
     }
     else
+    {
         rowBlockSize = 2 * total_row_blocks;
+    }
 }
 
 /*
@@ -250,7 +286,7 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
               "rocsparse_csrmv_analysis",
               trans,
@@ -328,11 +364,14 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
                      m,
                      true);
 
-    // Allocate memory on device to hold csrmv info
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->csrmv_info->row_blocks, sizeof(unsigned long long) * info->csrmv_info->size));
+    // Allocate memory on device to hold csrmv info, if required
+    if(info->csrmv_info->size > 0)
+    {
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->csrmv_info->row_blocks, sizeof(unsigned long long) * info->csrmv_info->size));
 
-    // Copy row blocks information to device
-    RETURN_IF_HIP_ERROR(hipMemcpy(info->csrmv_info->row_blocks, row_blocks.data(), sizeof(unsigned long long) * info->csrmv_info->size, hipMemcpyHostToDevice));
+        // Copy row blocks information to device
+        RETURN_IF_HIP_ERROR(hipMemcpy(info->csrmv_info->row_blocks, row_blocks.data(), sizeof(unsigned long long) * info->csrmv_info->size, hipMemcpyHostToDevice));
+    }
 
     // Store some pointers to verify correct execution
     info->csrmv_info->trans = trans;
@@ -344,7 +383,7 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
     info->csrmv_info->csr_col_ind = csr_col_ind;
 
     // Set built flag
-    info->csrmv_info->built = true;
+    info->csrmv_built = true;
 
     return rocsparse_status_success;
 }
@@ -362,12 +401,16 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle hand
         return rocsparse_status_invalid_pointer;
     }
 
-    // Logging TODO bench logging
+    // Logging
     log_trace(handle,
               "rocsparse_csrmv_analysis_clear",
               (const void*&)info);
 
-    return rocsparse_destroy_csrmv_info(info->csrmv_info);
+    // Destroy csrmv info struct
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
+    info->csrmv_built = false;
+
+    return rocsparse_status_success;
 }
 
 extern "C" rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
