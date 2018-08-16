@@ -39,9 +39,9 @@ struct testhyb
 template <typename T>
 void testing_hybmv_bad_arg(void)
 {
-    rocsparse_int safe_size   = 100;
-    T alpha                   = 0.6;
-    T beta                    = 0.2;
+    rocsparse_int safe_size    = 100;
+    T alpha                    = 0.6;
+    T beta                     = 0.2;
     rocsparse_operation transA = rocsparse_operation_none;
     rocsparse_status status;
 
@@ -125,7 +125,7 @@ rocsparse_status testing_hybmv(Arguments argus)
     rocsparse_int n               = argus.N;
     T h_alpha                     = argus.alpha;
     T h_beta                      = argus.beta;
-    rocsparse_operation transA     = argus.transA;
+    rocsparse_operation transA    = argus.transA;
     rocsparse_index_base idx_base = argus.idx_base;
     rocsparse_hyb_partition part  = argus.part;
     rocsparse_int user_ell_width  = argus.ell_width;

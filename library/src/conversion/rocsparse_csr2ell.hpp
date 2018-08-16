@@ -53,10 +53,7 @@ rocsparse_status rocsparse_csr2ell_template(rocsparse_handle handle,
               (const void*&)ell_val,
               (const void*&)ell_col_ind);
 
-    log_bench(handle,
-              "./rocsparse-bench -f csr2ell -r",
-              replaceX<T>("X"),
-              "--mtx <matrix.mtx>");
+    log_bench(handle, "./rocsparse-bench -f csr2ell -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
     // Check index base
     if(csr_descr->base != rocsparse_index_base_zero && csr_descr->base != rocsparse_index_base_one)

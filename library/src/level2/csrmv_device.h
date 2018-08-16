@@ -185,7 +185,7 @@ static __device__ void csrmvn_general_device(rocsparse_int m,
     }
 }
 
-__device__ static __inline__ void atomic_add(float *address, float val)
+__device__ static __inline__ void atomic_add(float* address, float val)
 {
     unsigned int newVal;
     unsigned int prevVal;
@@ -194,11 +194,10 @@ __device__ static __inline__ void atomic_add(float *address, float val)
     {
         prevVal = __float_as_uint(*address);
         newVal  = __float_as_uint(val + *address);
-    }
-    while(atomicCAS((unsigned int*)address, prevVal, newVal) != prevVal);
+    } while(atomicCAS((unsigned int*)address, prevVal, newVal) != prevVal);
 }
 
-__device__ static __inline__ void atomic_add(double *address, double val)
+__device__ static __inline__ void atomic_add(double* address, double val)
 {
     unsigned long long newVal;
     unsigned long long prevVal;
@@ -207,8 +206,7 @@ __device__ static __inline__ void atomic_add(double *address, double val)
     {
         prevVal = __double_as_longlong(*address);
         newVal  = __double_as_longlong(val + *address);
-    }
-    while(atomicCAS((unsigned long long*)address, prevVal, newVal) != prevVal);
+    } while(atomicCAS((unsigned long long*)address, prevVal, newVal) != prevVal);
 }
 
 // rocsparse_int == int32_t
@@ -229,8 +227,8 @@ __device__ static __inline__ rocsparse_int mad24(rocsparse_int x, rocsparse_int 
 }
 
 template <typename T>
-static inline __device__ T
-sum2_reduce(T cur_sum, T* partial, rocsparse_int lid, rocsparse_int max_size, rocsparse_int reduc_size)
+static inline __device__ T sum2_reduce(
+    T cur_sum, T* partial, rocsparse_int lid, rocsparse_int max_size, rocsparse_int reduc_size)
 {
     if(max_size > reduc_size)
     {
@@ -294,11 +292,12 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
     // Any workgroup only calculates, at most, BLOCK_MULTIPLIER*BLOCKSIZE items in a row.
     // If there are more items in this row, we assign more workgroups.
     rocsparse_int vecStart = mad24(wg, BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
-    rocsparse_int vecEnd = ((csr_row_ptr[row + 1] - idx_base) > vecStart + BLOCK_MULTIPLIER * BLOCKSIZE)
-                         ? vecStart + BLOCK_MULTIPLIER * BLOCKSIZE
-                         : (csr_row_ptr[row + 1] - idx_base);
+    rocsparse_int vecEnd =
+        ((csr_row_ptr[row + 1] - idx_base) > vecStart + BLOCK_MULTIPLIER * BLOCKSIZE)
+            ? vecStart + BLOCK_MULTIPLIER * BLOCKSIZE
+            : (csr_row_ptr[row + 1] - idx_base);
 
-    T temp_sum  = 0.;
+    T temp_sum = 0.;
 
     // If the next row block starts more than 2 rows away, then we choose CSR-Stream.
     // If this is zero (long rows) or one (final workgroup in a long row, or a single
@@ -339,7 +338,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
         {
             for(rocsparse_int i = 0; i < BLOCKSIZE; i += WG_SIZE)
             {
-                partialSums[lid + i] = alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
+                partialSums[lid + i] =
+                    alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
             }
         }
         else
@@ -353,7 +353,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             // to be launched, and this loop can't be unrolled.
             for(rocsparse_int i = 0; col + i < csr_row_ptr[stop_row] - idx_base; i += WG_SIZE)
             {
-                partialSums[lid + i] = alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
+                partialSums[lid + i] =
+                    alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
             }
         }
         __syncthreads();
@@ -428,7 +429,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             {
                 rocsparse_int local_first_val = (csr_row_ptr[local_row] - csr_row_ptr[row]);
                 rocsparse_int local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
-                temp_sum            = 0.;
+                temp_sum                      = 0.;
                 for(rocsparse_int local_cur_val = local_first_val; local_cur_val < local_last_val;
                     local_cur_val++)
                 {
@@ -462,9 +463,9 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
         {
             // Any workgroup only calculates, at most, BLOCKSIZE items in this row.
             // If there are more items in this row, we use CSR-LongRows.
-            temp_sum  = 0.;
-            vecStart  = csr_row_ptr[row] - idx_base;
-            vecEnd    = csr_row_ptr[row + 1] - idx_base;
+            temp_sum = 0.;
+            vecStart = csr_row_ptr[row] - idx_base;
+            vecEnd   = csr_row_ptr[row + 1] - idx_base;
 
             // Load in a bunch of partial results into your register space, rather than LDS (no
             // contention)
@@ -521,7 +522,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
         {
             // The first workgroup handles the output initialization.
             T out_val = y[row];
-            temp_sum           = (beta - 1.) * out_val;
+            temp_sum  = (beta - 1.) * out_val;
             atomicXor(&row_blocks[first_wg_in_row], (1ULL << WG_BITS)); // Release other workgroups.
         }
         // For every other workgroup, bit 24 holds the value they wait on.

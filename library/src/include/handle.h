@@ -119,8 +119,6 @@ struct _rocsparse_mat_info
     rocsparse_csrmv_info csrmv_info = nullptr;
 };
 
-
-
 /********************************************************************************
  * \brief rocsparse_csrmv_info is a structure holding the rocsparse csrmv info
  * data gathered during csrmv_analysis. It must be initialized using the

@@ -41,10 +41,7 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle handle,
                   *result,
                   idx_base);
 
-        log_bench(handle,
-                  "./rocsparse-bench -f doti -r",
-                  replaceX<T>("X"),
-                  "--mtx <vector.mtx> ");
+        log_bench(handle, "./rocsparse-bench -f doti -r", replaceX<T>("X"), "--mtx <vector.mtx> ");
     }
     else
     {
