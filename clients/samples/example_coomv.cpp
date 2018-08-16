@@ -18,9 +18,9 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    int ndim       = atoi(argv[1]);
-    int trials     = 200;
-    int batch_size = 1;
+    rocsparse_int ndim = atoi(argv[1]);
+    int trials         = 200;
+    int batch_size     = 1;
 
     if(argc > 2)
     {
@@ -43,19 +43,19 @@ int main(int argc, char* argv[])
     printf("Device: %s\n", devProp.name);
 
     // Generate problem
-    std::vector<int> hAptr;
-    std::vector<int> hAcol;
+    std::vector<rocsparse_int> hAptr;
+    std::vector<rocsparse_int> hAcol;
     std::vector<double> hAval;
-    int m   = gen_2d_laplacian(ndim, hAptr, hAcol, hAval, rocsparse_index_base_zero);
-    int n   = m;
-    int nnz = hAptr[m];
+    rocsparse_int m   = gen_2d_laplacian(ndim, hAptr, hAcol, hAval, rocsparse_index_base_zero);
+    rocsparse_int n   = m;
+    rocsparse_int nnz = hAptr[m];
 
     // Convert to COO matrix
-    std::vector<int> hArow(nnz);
+    std::vector<rocsparse_int> hArow(nnz);
 
-    for(int i = 0; i < m; ++i)
+    for(rocsparse_int i = 0; i < m; ++i)
     {
-        for(int j = hAptr[i]; j < hAptr[i + 1]; ++j)
+        for(rocsparse_int j = hAptr[i]; j < hAptr[i + 1]; ++j)
         {
             hArow[j] = i;
         }
@@ -75,20 +75,20 @@ int main(int argc, char* argv[])
     rocsparse_create_mat_descr(&descrA);
 
     // Offload data to device
-    int* dArow    = NULL;
-    int* dAcol    = NULL;
+    rocsparse_int* dArow    = NULL;
+    rocsparse_int* dAcol    = NULL;
     double* dAval = NULL;
     double* dx    = NULL;
     double* dy    = NULL;
 
-    hipMalloc((void**)&dArow, sizeof(int) * nnz);
-    hipMalloc((void**)&dAcol, sizeof(int) * nnz);
+    hipMalloc((void**)&dArow, sizeof(rocsparse_int) * nnz);
+    hipMalloc((void**)&dAcol, sizeof(rocsparse_int) * nnz);
     hipMalloc((void**)&dAval, sizeof(double) * nnz);
     hipMalloc((void**)&dx, sizeof(double) * n);
     hipMalloc((void**)&dy, sizeof(double) * m);
 
-    hipMemcpy(dArow, hArow.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
-    hipMemcpy(dAcol, hAcol.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
+    hipMemcpy(dArow, hArow.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice);
+    hipMemcpy(dAcol, hAcol.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice);
     hipMemcpy(dAval, hAval.data(), sizeof(double) * nnz, hipMemcpyHostToDevice);
     hipMemcpy(dx, hx.data(), sizeof(double) * n, hipMemcpyHostToDevice);
 
