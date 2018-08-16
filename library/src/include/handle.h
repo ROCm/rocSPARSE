@@ -35,11 +35,11 @@ struct _rocsparse_handle
     rocsparse_status get_stream(hipStream_t* user_stream) const;
 
     // device id
-    rocsparse_int device;
+    int device;
     // device properties
     hipDeviceProp_t properties;
     // device warp size
-    rocsparse_int warp_size;
+    int warp_size;
     // stream ; default stream is system stream NULL
     hipStream_t stream = 0;
     // pointer mode ; default mode is host

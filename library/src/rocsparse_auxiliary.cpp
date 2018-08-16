@@ -128,7 +128,7 @@ rocsparse_status rocsparse_get_stream(rocsparse_handle handle, hipStream_t* stre
  * version / 100 % 1000 = minor version
  * version / 100000     = major version
  *******************************************************************************/
-rocsparse_status rocsparse_get_version(rocsparse_handle handle, rocsparse_int* version)
+rocsparse_status rocsparse_get_version(rocsparse_handle handle, int* version)
 {
     // Check if handle is valid
     if(handle == nullptr)
@@ -137,7 +137,9 @@ rocsparse_status rocsparse_get_version(rocsparse_handle handle, rocsparse_int* v
     }
     *version =
         ROCSPARSE_VERSION_MAJOR * 100000 + ROCSPARSE_VERSION_MINOR * 100 + ROCSPARSE_VERSION_PATCH;
+
     log_trace(handle, "rocsparse_get_version", *version);
+
     return rocsparse_status_success;
 }
 
@@ -351,14 +353,20 @@ rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info)
  *******************************************************************************/
 rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
 {
+    if(info == nullptr)
+    {
+        return rocsparse_status_success;
+    }
+
+    // Clear csrmv info struct
+    if(info->csrmv_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
+    }
+
     // Destruct
     try
     {
-        if(info->csrmv_info != nullptr)
-        {
-            RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
-        }
-
         delete info;
     }
     catch(const rocsparse_status& status)

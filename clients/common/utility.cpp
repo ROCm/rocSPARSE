@@ -29,7 +29,7 @@ rocsparse_int query_device_property()
         printf("Query device success: there are %d devices\n", device_count);
     }
 
-    for(rocsparse_int i = 0; i < device_count; i++)
+    for(int i = 0; i < device_count; i++)
     {
         hipDeviceProp_t props;
         rocsparse_status status = (rocsparse_status)hipGetDeviceProperties(&props, i);
