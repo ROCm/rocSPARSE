@@ -187,7 +187,15 @@ static __device__ void csrmvn_general_device(rocsparse_int m,
 
 __device__ static __inline__ void atomic_add(float *address, float val)
 {
-    atomicAdd(address, val);
+    unsigned int newVal;
+    unsigned int prevVal;
+
+    do
+    {
+        prevVal = __float_as_uint(*address);
+        newVal  = __float_as_uint(val + *address);
+    }
+    while(atomicCAS((unsigned int*)address, prevVal, newVal) != prevVal);
 }
 
 __device__ static __inline__ void atomic_add(double *address, double val)
@@ -268,10 +276,10 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
 
     // Any workgroup only calculates, at most, BLOCK_MULTIPLIER*BLOCKSIZE items in a row.
     // If there are more items in this row, we assign more workgroups.
-    unsigned int vecStart = hc::__mad24(wg, (unsigned int)(BLOCK_MULTIPLIER * BLOCKSIZE), (unsigned int)csr_row_ptr[row]);
-    unsigned int vecEnd = (csr_row_ptr[row + 1] > vecStart + BLOCK_MULTIPLIER * BLOCKSIZE)
+    unsigned int vecStart = hc::__mad24(wg, (unsigned int)(BLOCK_MULTIPLIER * BLOCKSIZE), (unsigned int)(csr_row_ptr[row] - idx_base));
+    unsigned int vecEnd = ((csr_row_ptr[row + 1] - idx_base) > vecStart + BLOCK_MULTIPLIER * BLOCKSIZE)
                               ? vecStart + BLOCK_MULTIPLIER * BLOCKSIZE
-                              : csr_row_ptr[row + 1];
+                              : (csr_row_ptr[row + 1] - idx_base);
 
     T temp_sum  = 0.;
 
@@ -309,11 +317,11 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
 
         // Stream all of this row block's matrix values into local memory.
         // Perform the matvec in parallel with this work.
-        unsigned int col = csr_row_ptr[row] + lid;
+        unsigned int col = csr_row_ptr[row] + lid - idx_base;
         if(gid != (gridDim.x - 1))
         {
             for(int i                = 0; i < BLOCKSIZE; i += WG_SIZE)
-                partialSums[lid + i] = alpha * csr_val[col + i] * x[csr_col_ind[col + i]];
+                partialSums[lid + i] = alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
         }
         else
         {
@@ -324,8 +332,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             // However, this may change in the future (e.g. with shared virtual memory.)
             // This causes a minor performance loss because this is the last workgroup
             // to be launched, and this loop can't be unrolled.
-            for(int i                = 0; col + i < csr_row_ptr[stop_row]; i += WG_SIZE)
-                partialSums[lid + i] = alpha * csr_val[col + i] * x[csr_col_ind[col + i]];
+            for(int i                = 0; col + i < csr_row_ptr[stop_row] - idx_base; i += WG_SIZE)
+                partialSums[lid + i] = alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
         }
         __syncthreads();
 
@@ -427,8 +435,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             // Any workgroup only calculates, at most, BLOCKSIZE items in this row.
             // If there are more items in this row, we use CSR-LongRows.
             temp_sum  = 0.;
-            vecStart  = csr_row_ptr[row];
-            vecEnd    = csr_row_ptr[row + 1];
+            vecStart  = csr_row_ptr[row] - idx_base;
+            vecEnd    = csr_row_ptr[row + 1] - idx_base;
 
             // Load in a bunch of partial results into your register space, rather than LDS (no
             // contention)
@@ -437,7 +445,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             // things.
             for(unsigned long long j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
-                unsigned int col = csr_col_ind[(unsigned int)j];
+                unsigned int col = csr_col_ind[(unsigned int)j] - idx_base;
                 temp_sum += alpha * csr_val[(unsigned int)j] * x[col];
             }
 
@@ -513,18 +521,18 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             // That increases register pressure and reduces occupancy.
             for(int j = 0; j < (int)(vecEnd - col); j += WG_SIZE)
             {
-                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j]];
+                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
 #if 2 * WG_SIZE <= BLOCK_MULTIPLIER * BLOCKSIZE
                 // If you can, unroll this loop once. It somewhat helps performance.
                 j += WG_SIZE;
-                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j]];
+                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
 #endif
             }
         }
         else
         {
             for(int j = 0; j < (int)(vecEnd - col); j += WG_SIZE)
-                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j]];
+                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
         }
 
         partialSums[lid] = temp_sum;
