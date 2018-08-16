@@ -112,6 +112,10 @@ struct _rocsparse_hyb_mat
  *******************************************************************************/
 struct _rocsparse_mat_info
 {
+    // built flags
+    bool csrmv_built = false;
+
+    // info structs
     rocsparse_csrmv_info csrmv_info = nullptr;
 };
 
@@ -125,8 +129,6 @@ struct _rocsparse_mat_info
  *******************************************************************************/
 struct _rocsparse_csrmv_info
 {
-    // built flag
-    bool built = false;
     // num row blocks
     size_t size = 0;
     // row blocks

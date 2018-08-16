@@ -220,7 +220,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
         // If csrmv info is not available, call csrmv general
         return rocsparse_csrmv_general_template(handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y);
     }
-    else if(info->csrmv_info == nullptr)
+    else if(info->csrmv_built == false)
     {
         // If csrmv info is not available, call csrmv general
         return rocsparse_csrmv_general_template(handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y);
@@ -691,11 +691,7 @@ rocsparse_status rocsparse_csrmv_adaptive_template(rocsparse_handle handle,
                                                    const rocsparse_csrmv_info info)
 {
     // Check if info matches current matrix and options
-    if(info->built == false)
-    {
-        return rocsparse_status_invalid_value;
-    }
-    else if(info->trans != trans)
+    if(info->trans != trans)
     {
         return rocsparse_status_invalid_value;
     }
