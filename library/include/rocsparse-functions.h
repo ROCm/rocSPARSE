@@ -569,7 +569,6 @@ rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
                                           const rocsparse_int* csr_col_ind,
                                           rocsparse_mat_info info);
 
-
 /*! \brief SPARSE Level 2 API
 
     \details
@@ -588,8 +587,7 @@ rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
 
     ********************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle handle,
-                                                rocsparse_mat_info info);
+rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle handle, rocsparse_mat_info info);
 
 /*! \brief SPARSE Level 2 API
 

@@ -64,11 +64,11 @@ int main(int argc, char* argv[])
     rocsparse_create_mat_descr(&descrA);
 
     // Offload data to device
-    rocsparse_int* dAptr    = NULL;
-    rocsparse_int* dAcol    = NULL;
-    double* dAval = NULL;
-    double* dx    = NULL;
-    double* dy    = NULL;
+    rocsparse_int* dAptr = NULL;
+    rocsparse_int* dAcol = NULL;
+    double* dAval        = NULL;
+    double* dx           = NULL;
+    double* dy           = NULL;
 
     hipMalloc((void**)&dAptr, sizeof(rocsparse_int) * (m + 1));
     hipMalloc((void**)&dAcol, sizeof(rocsparse_int) * nnz);

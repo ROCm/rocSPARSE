@@ -52,10 +52,7 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle handle,
               idx_base,
               (const void*&)temp_buffer);
 
-    log_bench(handle,
-              "./rocsparse-bench -f csr2csc -r",
-              replaceX<T>("X"),
-              "--mtx <matrix.mtx>");
+    log_bench(handle, "./rocsparse-bench -f csr2csc -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
     // Check index base
     if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)

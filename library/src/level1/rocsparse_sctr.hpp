@@ -36,10 +36,7 @@ rocsparse_status rocsparse_sctr_template(rocsparse_handle handle,
               (const void*&)y,
               idx_base);
 
-    log_bench(handle,
-              "./rocsparse-bench -f sctr -r",
-              replaceX<T>("X"),
-              "--mtx <vector.mtx> ");
+    log_bench(handle, "./rocsparse-bench -f sctr -r", replaceX<T>("X"), "--mtx <vector.mtx> ");
 
     // Check index base
     if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)

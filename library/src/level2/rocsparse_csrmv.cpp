@@ -6,8 +6,7 @@
 #include "rocsparse.h"
 #include "rocsparse_csrmv.hpp"
 
-__attribute__((unused))
-static unsigned int flp2(unsigned int x)
+__attribute__((unused)) static unsigned int flp2(unsigned int x)
 {
     x |= (x >> 1);
     x |= (x >> 2);
@@ -70,7 +69,8 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
     unsigned long long last_i = 0;
 
     // Check to ensure nRows can fit in 32 bits
-    if(static_cast<unsigned long long>(nRows) > static_cast<unsigned long long>(std::pow(2, ROW_BITS)))
+    if(static_cast<unsigned long long>(nRows) >
+       static_cast<unsigned long long>(std::pow(2, ROW_BITS)))
     {
         fprintf(stderr, "nrow does not fit in 32 bits\n");
         exit(1);
@@ -159,11 +159,14 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
         // This is csr-vector case; bottom WGBITS == workgroup ID
         if((i - last_i == 1) && sum > static_cast<unsigned long long>(BLOCKSIZE))
         {
-            rocsparse_int numWGReq = static_cast<rocsparse_int>(std::ceil(static_cast<double>(row_length) / (BLOCK_MULTIPLIER * BLOCKSIZE)));
+            rocsparse_int numWGReq = static_cast<rocsparse_int>(
+                std::ceil(static_cast<double>(row_length) / (BLOCK_MULTIPLIER * BLOCKSIZE)));
 
             // Check to ensure #workgroups can fit in WGBITS bits, if not
             // then the last workgroup will do all the remaining work
-            numWGReq = (numWGReq < static_cast<rocsparse_int>(std::pow(2, WG_BITS))) ? numWGReq : static_cast<rocsparse_int>(std::pow(2, WG_BITS));
+            numWGReq = (numWGReq < static_cast<rocsparse_int>(std::pow(2, WG_BITS)))
+                           ? numWGReq
+                           : static_cast<rocsparse_int>(std::pow(2, WG_BITS));
 
             if(allocate_row_blocks)
             {
@@ -228,7 +231,8 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
     }
 
     // If we didn't fill a row block with the last row, make sure we don't lose it.
-    if(allocate_row_blocks && (*(rowBlocks - 1) >> (64 - ROW_BITS)) != static_cast<unsigned long long>(nRows))
+    if(allocate_row_blocks &&
+       (*(rowBlocks - 1) >> (64 - ROW_BITS)) != static_cast<unsigned long long>(nRows))
     {
         *rowBlocks = (static_cast<unsigned long long>(nRows) << (64 - ROW_BITS));
         if((nRows - last_i) > static_cast<unsigned long long>(ROWS_FOR_VECTOR))
@@ -350,7 +354,8 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
 
     // Temporary arrays to hold device data
     std::vector<rocsparse_int> hptr(m + 1);
-    RETURN_IF_HIP_ERROR(hipMemcpy(hptr.data(), csr_row_ptr, sizeof(rocsparse_int) * (m + 1), hipMemcpyDeviceToHost));
+    RETURN_IF_HIP_ERROR(hipMemcpy(
+        hptr.data(), csr_row_ptr, sizeof(rocsparse_int) * (m + 1), hipMemcpyDeviceToHost));
 
     // Determine row blocks array size
     ComputeRowBlocks((unsigned long long*)NULL, info->csrmv_info->size, hptr.data(), m, false);
@@ -358,27 +363,27 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
     // Create row blocks structure
     std::vector<unsigned long long> row_blocks(info->csrmv_info->size, 0);
 
-    ComputeRowBlocks(row_blocks.data(),
-                     info->csrmv_info->size,
-                     hptr.data(),
-                     m,
-                     true);
+    ComputeRowBlocks(row_blocks.data(), info->csrmv_info->size, hptr.data(), m, true);
 
     // Allocate memory on device to hold csrmv info, if required
     if(info->csrmv_info->size > 0)
     {
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->csrmv_info->row_blocks, sizeof(unsigned long long) * info->csrmv_info->size));
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->csrmv_info->row_blocks,
+                                      sizeof(unsigned long long) * info->csrmv_info->size));
 
         // Copy row blocks information to device
-        RETURN_IF_HIP_ERROR(hipMemcpy(info->csrmv_info->row_blocks, row_blocks.data(), sizeof(unsigned long long) * info->csrmv_info->size, hipMemcpyHostToDevice));
+        RETURN_IF_HIP_ERROR(hipMemcpy(info->csrmv_info->row_blocks,
+                                      row_blocks.data(),
+                                      sizeof(unsigned long long) * info->csrmv_info->size,
+                                      hipMemcpyHostToDevice));
     }
 
     // Store some pointers to verify correct execution
-    info->csrmv_info->trans = trans;
-    info->csrmv_info->m = m;
-    info->csrmv_info->n = n;
-    info->csrmv_info->nnz = nnz;
-    info->csrmv_info->descr = descr;
+    info->csrmv_info->trans       = trans;
+    info->csrmv_info->m           = m;
+    info->csrmv_info->n           = n;
+    info->csrmv_info->nnz         = nnz;
+    info->csrmv_info->descr       = descr;
     info->csrmv_info->csr_row_ptr = csr_row_ptr;
     info->csrmv_info->csr_col_ind = csr_col_ind;
 
@@ -402,9 +407,7 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle hand
     }
 
     // Logging
-    log_trace(handle,
-              "rocsparse_csrmv_analysis_clear",
-              (const void*&)info);
+    log_trace(handle, "rocsparse_csrmv_analysis_clear", (const void*&)info);
 
     // Destroy csrmv info struct
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
@@ -428,8 +431,20 @@ extern "C" rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
                                              float* y,
                                              const rocsparse_mat_info info)
 {
-    return rocsparse_csrmv_template<float>(
-        handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y, info);
+    return rocsparse_csrmv_template<float>(handle,
+                                           trans,
+                                           m,
+                                           n,
+                                           nnz,
+                                           alpha,
+                                           descr,
+                                           csr_val,
+                                           csr_row_ptr,
+                                           csr_col_ind,
+                                           x,
+                                           beta,
+                                           y,
+                                           info);
 }
 
 extern "C" rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
@@ -447,6 +462,18 @@ extern "C" rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
                                              double* y,
                                              const rocsparse_mat_info info)
 {
-    return rocsparse_csrmv_template<double>(
-        handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y, info);
+    return rocsparse_csrmv_template<double>(handle,
+                                            trans,
+                                            m,
+                                            n,
+                                            nnz,
+                                            alpha,
+                                            descr,
+                                            csr_val,
+                                            csr_row_ptr,
+                                            csr_col_ind,
+                                            x,
+                                            beta,
+                                            y,
+                                            info);
 }

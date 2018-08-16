@@ -51,34 +51,46 @@ __global__ void csrmvn_general_kernel_device_pointer(rocsparse_int m,
 }
 
 template <typename T>
-__launch_bounds__(WG_SIZE)
-__global__ void csrmvn_adaptive_kernel_host_pointer(unsigned long long* __restrict__ row_blocks,
-                                                    T alpha,
-                                                    const rocsparse_int* __restrict__ csr_row_ptr,
-                                                    const rocsparse_int* __restrict__ csr_col_ind,
-                                                    const T* __restrict__ csr_val,
-                                                    const T* __restrict__ x,
-                                                    T beta,
-                                                    T* __restrict__ y,
-                                                    rocsparse_index_base idx_base)
+__launch_bounds__(WG_SIZE) __global__
+    void csrmvn_adaptive_kernel_host_pointer(unsigned long long* __restrict__ row_blocks,
+                                             T alpha,
+                                             const rocsparse_int* __restrict__ csr_row_ptr,
+                                             const rocsparse_int* __restrict__ csr_col_ind,
+                                             const T* __restrict__ csr_val,
+                                             const T* __restrict__ x,
+                                             T beta,
+                                             T* __restrict__ y,
+                                             rocsparse_index_base idx_base)
 {
-    csrmvn_adaptive_device<T, BLOCKSIZE, BLOCK_MULTIPLIER, ROWS_FOR_VECTOR, WG_BITS, ROW_BITS, WG_SIZE>(
+    csrmvn_adaptive_device<T,
+                           BLOCKSIZE,
+                           BLOCK_MULTIPLIER,
+                           ROWS_FOR_VECTOR,
+                           WG_BITS,
+                           ROW_BITS,
+                           WG_SIZE>(
         row_blocks, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y, idx_base);
 }
 
 template <typename T>
-__launch_bounds__(WG_SIZE)
-__global__ void csrmvn_adaptive_kernel_device_pointer(unsigned long long* __restrict__ row_blocks,
-                                                      const T* alpha,
-                                                      const rocsparse_int* __restrict__ csr_row_ptr,
-                                                      const rocsparse_int* __restrict__ csr_col_ind,
-                                                      const T* __restrict__ csr_val,
-                                                      const T* __restrict__ x,
-                                                      const T* beta,
-                                                      T* __restrict__ y,
-                                                      rocsparse_index_base idx_base)
+__launch_bounds__(WG_SIZE) __global__
+    void csrmvn_adaptive_kernel_device_pointer(unsigned long long* __restrict__ row_blocks,
+                                               const T* alpha,
+                                               const rocsparse_int* __restrict__ csr_row_ptr,
+                                               const rocsparse_int* __restrict__ csr_col_ind,
+                                               const T* __restrict__ csr_val,
+                                               const T* __restrict__ x,
+                                               const T* beta,
+                                               T* __restrict__ y,
+                                               rocsparse_index_base idx_base)
 {
-    csrmvn_adaptive_device<T, BLOCKSIZE, BLOCK_MULTIPLIER, ROWS_FOR_VECTOR, WG_BITS, ROW_BITS, WG_SIZE>(
+    csrmvn_adaptive_device<T,
+                           BLOCKSIZE,
+                           BLOCK_MULTIPLIER,
+                           ROWS_FOR_VECTOR,
+                           WG_BITS,
+                           ROW_BITS,
+                           WG_SIZE>(
         row_blocks, *alpha, csr_row_ptr, csr_col_ind, csr_val, x, *beta, y, idx_base);
 }
 
@@ -218,17 +230,32 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
     if(info == nullptr)
     {
         // If csrmv info is not available, call csrmv general
-        return rocsparse_csrmv_general_template(handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y);
+        return rocsparse_csrmv_general_template(
+            handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y);
     }
     else if(info->csrmv_built == false)
     {
         // If csrmv info is not available, call csrmv general
-        return rocsparse_csrmv_general_template(handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y);
+        return rocsparse_csrmv_general_template(
+            handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y);
     }
     else
     {
         // If csrmv info is available, call csrmv adaptive
-        return rocsparse_csrmv_adaptive_template(handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y, info->csrmv_info);
+        return rocsparse_csrmv_adaptive_template(handle,
+                                                 trans,
+                                                 m,
+                                                 n,
+                                                 nnz,
+                                                 alpha,
+                                                 descr,
+                                                 csr_val,
+                                                 csr_row_ptr,
+                                                 csr_col_ind,
+                                                 x,
+                                                 beta,
+                                                 y,
+                                                 info->csrmv_info);
     }
 }
 

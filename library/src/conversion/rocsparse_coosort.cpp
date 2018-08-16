@@ -146,9 +146,7 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
               (const void*&)perm,
               (const void*&)temp_buffer);
 
-    log_bench(handle,
-              "./rocsparse-bench -f coosort",
-              "--mtx <matrix.mtx>");
+    log_bench(handle, "./rocsparse-bench -f coosort", "--mtx <matrix.mtx>");
 
     // Check sizes
     if(m < 0)
