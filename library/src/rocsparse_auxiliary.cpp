@@ -359,7 +359,7 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
     }
 
     // Clear csrmv info struct
-    if(info->csrmv_info != nullptr)
+    if(info->csrmv_built == true)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
     }
