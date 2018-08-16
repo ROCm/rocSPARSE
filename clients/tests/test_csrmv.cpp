@@ -12,7 +12,7 @@
 #include <string>
 
 typedef rocsparse_index_base base;
-typedef std::tuple<int, int, double, double, base, std::string> csrmv_tuple;
+typedef std::tuple<int, int, double, double, base, std::string, bool> csrmv_tuple;
 
 int csr_M_range[] = {-99, -1, 0, 500, 7111};
 int csr_N_range[] = {-99, 0, 842, 4441};
@@ -37,6 +37,8 @@ std::string csr_bin[] = {"rma10.bin",
                          "nos6.bin",
                          "nos7.bin"};
 
+bool csr_adaptive[] = {false, true};
+
 class parameterized_csrmv : public testing::TestWithParam<csrmv_tuple>
 {
     protected:
@@ -54,6 +56,7 @@ Arguments setup_csrmv_arguments(csrmv_tuple tup)
     arg.alpha    = std::get<2>(tup);
     arg.beta     = std::get<3>(tup);
     arg.idx_base = std::get<4>(tup);
+    arg.bswitch  = std::get<6>(tup);
     arg.timing   = 0;
 
     // Determine absolute path of test matrix
@@ -102,4 +105,5 @@ INSTANTIATE_TEST_CASE_P(csrmv,
                                          testing::ValuesIn(csr_alpha_range),
                                          testing::ValuesIn(csr_beta_range),
                                          testing::ValuesIn(csr_idxbase_range),
-                                         testing::ValuesIn(csr_bin)));
+                                         testing::ValuesIn(csr_bin),
+                                         testing::ValuesIn(csr_adaptive)));
