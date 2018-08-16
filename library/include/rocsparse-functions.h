@@ -569,6 +569,28 @@ rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
                                           const rocsparse_int* csr_col_ind,
                                           rocsparse_mat_info info);
 
+
+/*! \brief SPARSE Level 2 API
+
+    \details
+    csrmv_analysis_clear frees all memory that was allocated by csrmv_analysis. This is
+    especially useful, if memory is an issue and the analysis data is not required for
+    further computation, e.g. when switching to another sparse matrix format.
+    Calling csrmv_analysis_clear is optional. All allocated resources will be cleared,
+    when rocsparse_destroy_mat_info is called.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[inout]
+    info        structure that holds the information collected during
+                the analysis phase.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle handle,
+                                                rocsparse_mat_info info);
+
 /*! \brief SPARSE Level 2 API
 
     \details

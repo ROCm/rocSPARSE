@@ -36,8 +36,8 @@ void testing_csrmv_bad_arg(void)
     std::unique_ptr<descr_struct> unique_ptr_descr(new descr_struct);
     rocsparse_mat_descr descr = unique_ptr_descr->descr;
 
-    std::unique_ptr<csrmv_info_struct> unique_ptr_csrmv_info(new csrmv_info_struct);
-    rocsparse_csrmv_info info = unique_ptr_csrmv_info->info;
+    std::unique_ptr<mat_info_struct> unique_ptr_mat_info(new mat_info_struct);
+    rocsparse_mat_info info = unique_ptr_mat_info->info;
 
     auto dptr_managed =
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
@@ -87,7 +87,7 @@ void testing_csrmv_bad_arg(void)
     }
     // testing for(nullptr == info)
     {
-        rocsparse_csrmv_info info_null = nullptr;
+        rocsparse_mat_info info_null = nullptr;
 
         status = rocsparse_csrmv_analysis(
             handle, transA, m, n, nnz, descr, dptr, dcol, info_null);
@@ -176,6 +176,23 @@ void testing_csrmv_bad_arg(void)
             handle_null, transA, m, n, nnz, &alpha, descr, dval, dptr, dcol, dx, &beta, dy, nullptr);
         verify_rocsparse_status_invalid_handle(status);
     }
+
+    // testing rocsparse_csrmv_analysis_clear
+
+    // testing for(nullptr == info)
+    {
+        rocsparse_mat_info info_null = nullptr;
+
+        status = rocsparse_csrmv_analysis_clear(handle, info_null);
+        verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
+    }
+    // testing for(nullptr == handle)
+    {
+        rocsparse_handle handle_null = nullptr;
+
+        status = rocsparse_csrmv_analysis_clear(handle_null, info);
+        verify_rocsparse_status_invalid_handle(status);
+    }
 }
 
 template <typename T>
@@ -221,12 +238,12 @@ rocsparse_status testing_csrmv(Arguments argus)
     std::unique_ptr<descr_struct> test_descr(new descr_struct);
     rocsparse_mat_descr descr = test_descr->descr;
 
-    std::unique_ptr<csrmv_info_struct> unique_ptr_csrmv_info(new csrmv_info_struct);
-    rocsparse_csrmv_info info = nullptr;
+    std::unique_ptr<mat_info_struct> unique_ptr_mat_info(new mat_info_struct);
+    rocsparse_mat_info info = nullptr;
 
     if(adaptive)
     {
-        info = unique_ptr_csrmv_info->info;
+        info = unique_ptr_mat_info->info;
     }
 
     // Set matrix index base
@@ -290,6 +307,11 @@ rocsparse_status testing_csrmv(Arguments argus)
         else
         {
             verify_rocsparse_status_success(status, "m >= 0 && n >= 0 && nnz >= 0");
+        }
+
+        if(adaptive)
+        {
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_clear(handle, info));
         }
 
         return rocsparse_status_success;
@@ -577,6 +599,12 @@ rocsparse_status testing_csrmv(Arguments argus)
                bandwidth,
                gpu_time_used);
     }
+
+    if(adaptive)
+    {
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_clear(handle, info));
+    }
+
     return rocsparse_status_success;
 }
 

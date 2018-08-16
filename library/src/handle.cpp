@@ -122,15 +122,15 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
         return rocsparse_status_success;
     }
 
+    // Clean up row blocks
+    if(info->size > 0)
+    {
+        RETURN_IF_HIP_ERROR(hipFree(info->row_blocks));
+    }
+
     // Destruct
     try
     {
-        // Clean up row blocks
-        if(info->row_blocks != nullptr)
-        {
-            hipFree(info->row_blocks);
-        }
-
         delete info;
     }
     catch(const rocsparse_status& status)
