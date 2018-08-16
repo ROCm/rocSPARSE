@@ -69,7 +69,7 @@ rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
  * version / 100000     = major version
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_get_version(rocsparse_handle handle, rocsparse_int* version);
+rocsparse_status rocsparse_get_version(rocsparse_handle handle, int* version);
 
 /********************************************************************************
  * \brief rocsparse_mat_descr is a structure holding the rocsparse matrix
