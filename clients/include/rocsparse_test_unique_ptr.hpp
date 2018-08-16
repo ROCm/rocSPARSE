@@ -87,19 +87,19 @@ struct hyb_struct
     }
 };
 
-struct csrmv_info_struct
+struct mat_info_struct
 {
-    rocsparse_csrmv_info info;
-    csrmv_info_struct()
+    rocsparse_mat_info info;
+    mat_info_struct()
     {
-        rocsparse_status status = rocsparse_create_csrmv_info(&info);
-        verify_rocsparse_status_success(status, "ERROR: csrmv_info_struct constructor");
+        rocsparse_status status = rocsparse_create_mat_info(&info);
+        verify_rocsparse_status_success(status, "ERROR: mat_info_struct constructor");
     }
 
-    ~csrmv_info_struct()
+    ~mat_info_struct()
     {
-        rocsparse_status status = rocsparse_destroy_csrmv_info(info);
-        verify_rocsparse_status_success(status, "ERROR: csrmv_info_struct destructor");
+        rocsparse_status status = rocsparse_destroy_mat_info(info);
+        verify_rocsparse_status_success(status, "ERROR: mat_info_struct destructor");
     }
 };
 

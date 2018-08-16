@@ -66,7 +66,7 @@ Arguments setup_csrmv_arguments(csrmv_tuple tup)
     arg.alpha    = std::get<2>(tup);
     arg.beta     = std::get<3>(tup);
     arg.idx_base = std::get<4>(tup);
-    arg.bswitch  = std::get<6>(tup);
+    arg.bswitch  = std::get<5>(tup);
     arg.timing   = 0;
     return arg;
 }
