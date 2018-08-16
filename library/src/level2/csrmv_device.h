@@ -210,20 +210,20 @@ __device__ static __inline__ void atomic_add(double* address, double val)
 }
 
 // rocsparse_int == int32_t
-__device__ static __inline__ int32_t mul24(int32_t x, int32_t y)
+__device__ static __inline__ int32_t rocsparse_mul24(int32_t x, int32_t y)
 {
     return ((x << 8) >> 8) * ((y << 8) >> 8);
 }
 
 // rocsparse_int == int64_t
-__device__ static __inline__ int64_t mul24(int64_t x, int64_t y)
+__device__ static __inline__ int64_t rocsparse_mul24(int64_t x, int64_t y)
 {
     return ((x << 40) >> 40) * ((y << 40) >> 40);
 }
 
-__device__ static __inline__ rocsparse_int mad24(rocsparse_int x, rocsparse_int y, rocsparse_int z)
+__device__ static __inline__ rocsparse_int rocsparse_mad24(rocsparse_int x, rocsparse_int y, rocsparse_int z)
 {
-    return mul24(x, y) + z;
+    return rocsparse_mul24(x, y) + z;
 }
 
 template <typename T>
@@ -291,7 +291,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
 
     // Any workgroup only calculates, at most, BLOCK_MULTIPLIER*BLOCKSIZE items in a row.
     // If there are more items in this row, we assign more workgroups.
-    rocsparse_int vecStart = mad24(wg, BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
+    rocsparse_int vecStart = rocsparse_mad24(wg, BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
     rocsparse_int vecEnd =
         ((csr_row_ptr[row + 1] - idx_base) > vecStart + BLOCK_MULTIPLIER * BLOCKSIZE)
             ? vecStart + BLOCK_MULTIPLIER * BLOCKSIZE
