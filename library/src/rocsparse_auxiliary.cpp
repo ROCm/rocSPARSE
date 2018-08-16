@@ -3,6 +3,7 @@
  * ************************************************************************ */
 
 #include "handle.h"
+#include "definitions.h"
 #include "rocsparse.h"
 #include "utility.h"
 
@@ -317,13 +318,13 @@ rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb)
 }
 
 /********************************************************************************
- * \brief rocsparse_create_csrmv_info is a structure holding the rocsparse
- * csrmv info data gathered during csrmv_analysis. It must be initialized using
- * rocsparse_create_csrmv_info() and the retured info structure must be passed
- * to all subsequent csrmv adaptive function calls. It should be destroyed at
- * the end using rocsparse_destroy_csrmv_info().
+ * \brief rocsparse_mat_info is a structure holding the matrix info data that is
+ * gathered during the analysis routines. It must be initialized by calling
+ * rocsparse_create_mat_info() and the returned info structure must be passed
+ * to all subsequent function calls that require additional information. It
+ * should be destroyed at the end using rocsparse_destroy_mat_info().
  *******************************************************************************/
-rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info)
+rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info)
 {
     if(info == nullptr)
     {
@@ -334,7 +335,7 @@ rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info)
         // Allocate
         try
         {
-            *info = new _rocsparse_csrmv_info;
+            *info = new _rocsparse_mat_info;
         }
         catch(const rocsparse_status& status)
         {
@@ -345,17 +346,16 @@ rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info)
 }
 
 /********************************************************************************
- * \brief Destroy csrmv info.
+ * \brief Destroy mat info.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
+rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
 {
     // Destruct
     try
     {
-        // Clean up row blocks
-        if(info->row_blocks != nullptr)
+        if(info->csrmv_info != nullptr)
         {
-            hipFree(info->row_blocks);
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
         }
 
         delete info;

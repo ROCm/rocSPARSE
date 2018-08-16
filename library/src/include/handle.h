@@ -12,6 +12,9 @@
 #include <fstream>
 #include <hip/hip_runtime_api.h>
 
+/*! \brief typedefs to opaque info structs */
+typedef struct _rocsparse_csrmv_info* rocsparse_csrmv_info;
+
 /********************************************************************************
  * \brief rocsparse_handle is a structure holding the rocsparse library context.
  * It must be initialized using rocsparse_create_handle()
@@ -101,19 +104,56 @@ struct _rocsparse_hyb_mat
 };
 
 /********************************************************************************
- * \brief rocsparse_create_csrmv_info is a structure holding the rocsparse
- * csrmv info data gathered during csrmv_analysis. It must be initialized using
- * rocsparse_create_csrmv_info() and the retured info structure must be passed
- * to all subsequent csrmv adaptive function calls. It should be destroyed at
- * the end using rocsparse_destroy_csrmv_info().
+ * \brief rocsparse_mat_info is a structure holding the matrix info data that is
+ * gathered during the analysis routines. It must be initialized by calling
+ * rocsparse_create_mat_info() and the returned info structure must be passed
+ * to all subsequent function calls that require additional information. It
+ * should be destroyed at the end using rocsparse_destroy_mat_info().
  *******************************************************************************/
- struct _rocsparse_csrmv_info
- {
-     // num row blocks
-     size_t size = 0;
-     // row blocks
-     unsigned long long* row_blocks = nullptr;
- };
+struct _rocsparse_mat_info
+{
+    rocsparse_csrmv_info csrmv_info = nullptr;
+};
+
+
+
+/********************************************************************************
+ * \brief rocsparse_csrmv_info is a structure holding the rocsparse csrmv info
+ * data gathered during csrmv_analysis. It must be initialized using the
+ * rocsparse_create_csrmv_info() routine. It should be destroyed at the end
+ * rocsparse_destroy_csrmv_info().
+ *******************************************************************************/
+struct _rocsparse_csrmv_info
+{
+    // built flag
+    bool built = false;
+    // num row blocks
+    size_t size = 0;
+    // row blocks
+    unsigned long long* row_blocks = nullptr;
+
+    // some data to verify correct execution
+    rocsparse_operation trans;
+    rocsparse_int m;
+    rocsparse_int n;
+    rocsparse_int nnz;
+    const _rocsparse_mat_descr* descr;
+    const rocsparse_int* csr_row_ptr;
+    const rocsparse_int* csr_col_ind;
+};
+
+/********************************************************************************
+ * \brief rocsparse_csrmv_info is a structure holding the rocsparse csrmv info
+ * data gathered during csrmv_analysis. It must be initialized using the
+ * rocsparse_create_csrmv_info() routine. It should be destroyed at the end
+ * rocsparse_destroy_csrmv_info().
+ *******************************************************************************/
+rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info);
+
+/********************************************************************************
+ * \brief Destroy csrmv info.
+ *******************************************************************************/
+rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info);
 
 /********************************************************************************
  * \brief ELL format indexing

@@ -96,7 +96,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                           const T* x,
                                           const T* beta,
                                           T* y,
-                                          const rocsparse_csrmv_info info)
+                                          const rocsparse_mat_info info)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -124,7 +124,8 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                   (const void*&)csr_col_ind,
                   (const void*&)x,
                   *beta,
-                  (const void*&)y);
+                  (const void*&)y,
+                  (const void*&)info);
     }
     else
     {
@@ -210,10 +211,15 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
         // If csrmv info is not available, call csrmv general
         return rocsparse_csrmv_general_template(handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y);
     }
+    else if(info->csrmv_info == nullptr)
+    {
+        // If csrmv info is not available, call csrmv general
+        return rocsparse_csrmv_general_template(handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y);
+    }
     else
     {
         // If csrmv info is available, call csrmv adaptive
-        return rocsparse_csrmv_adaptive_template(handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y, info);
+        return rocsparse_csrmv_adaptive_template(handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y, info->csrmv_info);
     }
 }
 
@@ -675,6 +681,40 @@ rocsparse_status rocsparse_csrmv_adaptive_template(rocsparse_handle handle,
                                                    T* y,
                                                    const rocsparse_csrmv_info info)
 {
+    // Check if info matches current matrix and options
+    if(info->built == false)
+    {
+        return rocsparse_status_invalid_value;
+    }
+    else if(info->trans != trans)
+    {
+        return rocsparse_status_invalid_value;
+    }
+    else if(info->m != m)
+    {
+        return rocsparse_status_invalid_size;
+    }
+    else if(info->n != n)
+    {
+        return rocsparse_status_invalid_size;
+    }
+    else if(info->nnz != nnz)
+    {
+        return rocsparse_status_invalid_size;
+    }
+    else if(info->descr != descr)
+    {
+        return rocsparse_status_invalid_value;
+    }
+    else if(info->csr_row_ptr != csr_row_ptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(info->csr_col_ind != csr_col_ind)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Stream
     hipStream_t stream = handle->stream;
 

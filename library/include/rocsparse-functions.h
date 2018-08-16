@@ -567,7 +567,7 @@ rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
                                           const rocsparse_mat_descr descr,
                                           const rocsparse_int* csr_row_ptr,
                                           const rocsparse_int* csr_col_ind,
-                                          rocsparse_csrmv_info info);
+                                          rocsparse_mat_info info);
 
 /*! \brief SPARSE Level 2 API
 
@@ -632,7 +632,7 @@ rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
                                   const float* x,
                                   const float* beta,
                                   float* y,
-                                  const rocsparse_csrmv_info info);
+                                  const rocsparse_mat_info info);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
@@ -648,7 +648,7 @@ rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
                                   const double* x,
                                   const double* beta,
                                   double* y,
-                                  const rocsparse_csrmv_info info);
+                                  const rocsparse_mat_info info);
 /*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
@@ -664,7 +664,7 @@ rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
                                   const rocsparse_float_complex* x,
                                   const rocsparse_float_complex* beta,
                                   rocsparse_float_complex* y,
-                                  const rocsparse_csrmv_info info);
+                                  const rocsparse_mat_info info);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
@@ -680,7 +680,7 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
                                   const rocsparse_double_complex* x,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex* y,
-                                  const rocsparse_csrmv_info info);
+                                  const rocsparse_mat_info info);
 */
 
 /*! \brief SPARSE Level 2 API

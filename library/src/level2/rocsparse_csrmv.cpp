@@ -234,36 +234,140 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
                                                      const rocsparse_mat_descr descr,
                                                      const rocsparse_int* csr_row_ptr,
                                                      const rocsparse_int* csr_col_ind,
-                                                     rocsparse_csrmv_info info)
+                                                     rocsparse_mat_info info)
 {
+    // Check for valid handle and matrix descriptor
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+    else if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging TODO bench logging
+    log_trace(handle,
+              "rocsparse_csrmv_analysis",
+              trans,
+              m,
+              n,
+              nnz,
+              (const void*&)descr,
+              (const void*&)csr_row_ptr,
+              (const void*&)csr_col_ind,
+              (const void*&)info);
+
+    // Check index base
+    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
+    {
+        return rocsparse_status_invalid_value;
+    }
+    if(descr->type != rocsparse_matrix_type_general)
+    {
+        // TODO
+        return rocsparse_status_not_implemented;
+    }
+
+    // Check sizes
+    if(m < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+    else if(n < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+    else if(nnz < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check pointer arguments
+    if(csr_row_ptr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(csr_col_ind == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Quick return if possible
+    if(m == 0 || n == 0 || nnz == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    // Clear csrmv info
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
+
+    // Create csrmv info
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrmv_info(&info->csrmv_info));
+
     // row blocks size
-    info->size = 0;
+    info->csrmv_info->size = 0;
 
     // Temporary arrays to hold device data
     std::vector<rocsparse_int> hptr(m + 1);
     RETURN_IF_HIP_ERROR(hipMemcpy(hptr.data(), csr_row_ptr, sizeof(rocsparse_int) * (m + 1), hipMemcpyDeviceToHost));
 
     // Determine row blocks array size
-    ComputeRowBlocks((unsigned long long*)NULL, info->size, hptr.data(), m, false);
+    ComputeRowBlocks((unsigned long long*)NULL, info->csrmv_info->size, hptr.data(), m, false);
 
     // Create row blocks structure
-    std::vector<unsigned long long> row_blocks(info->size, 0);
+    std::vector<unsigned long long> row_blocks(info->csrmv_info->size, 0);
 
     ComputeRowBlocks(row_blocks.data(),
-                     info->size,
+                     info->csrmv_info->size,
                      hptr.data(),
                      m,
                      true);
 
-printf("Required buffer size: %lu kByte\n", info->size * sizeof(unsigned long long) >> 10);
-
     // Allocate memory on device to hold csrmv info
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->row_blocks, sizeof(unsigned long long) * info->size));
+    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->csrmv_info->row_blocks, sizeof(unsigned long long) * info->csrmv_info->size));
 
     // Copy row blocks information to device
-    RETURN_IF_HIP_ERROR(hipMemcpy(info->row_blocks, row_blocks.data(), sizeof(unsigned long long) * info->size, hipMemcpyHostToDevice));
+    RETURN_IF_HIP_ERROR(hipMemcpy(info->csrmv_info->row_blocks, row_blocks.data(), sizeof(unsigned long long) * info->csrmv_info->size, hipMemcpyHostToDevice));
+
+    // Store some pointers to verify correct execution
+    info->csrmv_info->trans = trans;
+    info->csrmv_info->m = m;
+    info->csrmv_info->n = n;
+    info->csrmv_info->nnz = nnz;
+    info->csrmv_info->descr = descr;
+    info->csrmv_info->csr_row_ptr = csr_row_ptr;
+    info->csrmv_info->csr_col_ind = csr_col_ind;
+
+    // Set built flag
+    info->csrmv_info->built = true;
 
     return rocsparse_status_success;
+}
+
+extern "C" rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle handle,
+                                                           rocsparse_mat_info info)
+{
+    // Check for valid handle and matrix descriptor
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+    else if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging TODO bench logging
+    log_trace(handle,
+              "rocsparse_csrmv_analysis_clear",
+              (const void*&)info);
+
+    return rocsparse_destroy_csrmv_info(info->csrmv_info);
 }
 
 extern "C" rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
@@ -279,7 +383,7 @@ extern "C" rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
                                              const float* x,
                                              const float* beta,
                                              float* y,
-                                             const rocsparse_csrmv_info info)
+                                             const rocsparse_mat_info info)
 {
     return rocsparse_csrmv_template<float>(
         handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y, info);
@@ -298,7 +402,7 @@ extern "C" rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
                                              const double* x,
                                              const double* beta,
                                              double* y,
-                                             const rocsparse_csrmv_info info)
+                                             const rocsparse_mat_info info)
 {
     return rocsparse_csrmv_template<double>(
         handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y, info);
