@@ -18,9 +18,9 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    int ndim       = atoi(argv[1]);
-    int trials     = 200;
-    int batch_size = 1;
+    rocsparse_int ndim = atoi(argv[1]);
+    int trials         = 200;
+    int batch_size     = 1;
 
     if(argc > 2)
     {
@@ -43,12 +43,12 @@ int main(int argc, char* argv[])
     printf("Device: %s\n", devProp.name);
 
     // Generate problem
-    std::vector<int> hAptr;
-    std::vector<int> hAcol;
+    std::vector<rocsparse_int> hAptr;
+    std::vector<rocsparse_int> hAcol;
     std::vector<double> hAval;
-    int m   = gen_2d_laplacian(ndim, hAptr, hAcol, hAval, rocsparse_index_base_zero);
-    int n   = m;
-    int nnz = hAptr[m];
+    rocsparse_int m   = gen_2d_laplacian(ndim, hAptr, hAcol, hAval, rocsparse_index_base_zero);
+    rocsparse_int n   = m;
+    rocsparse_int nnz = hAptr[m];
 
     // Sample some random data
     srand(12345ULL);
@@ -64,20 +64,20 @@ int main(int argc, char* argv[])
     rocsparse_create_mat_descr(&descrA);
 
     // Offload data to device
-    int* dAptr    = NULL;
-    int* dAcol    = NULL;
-    double* dAval = NULL;
-    double* dx    = NULL;
-    double* dy    = NULL;
+    rocsparse_int* dAptr = NULL;
+    rocsparse_int* dAcol = NULL;
+    double* dAval        = NULL;
+    double* dx           = NULL;
+    double* dy           = NULL;
 
-    hipMalloc((void**)&dAptr, sizeof(int) * (m + 1));
-    hipMalloc((void**)&dAcol, sizeof(int) * nnz);
+    hipMalloc((void**)&dAptr, sizeof(rocsparse_int) * (m + 1));
+    hipMalloc((void**)&dAcol, sizeof(rocsparse_int) * nnz);
     hipMalloc((void**)&dAval, sizeof(double) * nnz);
     hipMalloc((void**)&dx, sizeof(double) * n);
     hipMalloc((void**)&dy, sizeof(double) * m);
 
-    hipMemcpy(dAptr, hAptr.data(), sizeof(int) * (m + 1), hipMemcpyHostToDevice);
-    hipMemcpy(dAcol, hAcol.data(), sizeof(int) * nnz, hipMemcpyHostToDevice);
+    hipMemcpy(dAptr, hAptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice);
+    hipMemcpy(dAcol, hAcol.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice);
     hipMemcpy(dAval, hAval.data(), sizeof(double) * nnz, hipMemcpyHostToDevice);
     hipMemcpy(dx, hx.data(), sizeof(double) * n, hipMemcpyHostToDevice);
 
@@ -97,7 +97,8 @@ int main(int argc, char* argv[])
                          dAcol,
                          dx,
                          &hbeta,
-                         dy);
+                         dy,
+                         nullptr);
     }
 
     // Device synchronization
@@ -124,7 +125,8 @@ int main(int argc, char* argv[])
                              dAcol,
                              dx,
                              &hbeta,
-                             dy);
+                             dy,
+                             nullptr);
         }
 
         // Device synchronization

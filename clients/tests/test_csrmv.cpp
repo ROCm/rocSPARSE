@@ -12,8 +12,8 @@
 #include <string>
 
 typedef rocsparse_index_base base;
-typedef std::tuple<int, int, double, double, base> csrmv_tuple;
-typedef std::tuple<double, double, base, std::string> csrmv_bin_tuple;
+typedef std::tuple<int, int, double, double, base, bool> csrmv_tuple;
+typedef std::tuple<double, double, base, std::string, bool> csrmv_bin_tuple;
 
 int csr_M_range[] = {-1, 0, 500, 7111};
 int csr_N_range[] = {-3, 0, 842, 4441};
@@ -37,6 +37,8 @@ std::string csr_bin[] = {"rma10.bin",
                          "nos5.bin",
                          "nos6.bin",
                          "nos7.bin"};
+
+bool csr_adaptive[] = {false, true};
 
 class parameterized_csrmv : public testing::TestWithParam<csrmv_tuple>
 {
@@ -64,6 +66,7 @@ Arguments setup_csrmv_arguments(csrmv_tuple tup)
     arg.alpha    = std::get<2>(tup);
     arg.beta     = std::get<3>(tup);
     arg.idx_base = std::get<4>(tup);
+    arg.bswitch  = std::get<5>(tup);
     arg.timing   = 0;
     return arg;
 }
@@ -76,6 +79,7 @@ Arguments setup_csrmv_arguments(csrmv_bin_tuple tup)
     arg.alpha    = std::get<0>(tup);
     arg.beta     = std::get<1>(tup);
     arg.idx_base = std::get<2>(tup);
+    arg.bswitch  = std::get<4>(tup);
     arg.timing   = 0;
 
     // Determine absolute path of test matrix
@@ -139,11 +143,13 @@ INSTANTIATE_TEST_CASE_P(csrmv,
                                          testing::ValuesIn(csr_N_range),
                                          testing::ValuesIn(csr_alpha_range),
                                          testing::ValuesIn(csr_beta_range),
-                                         testing::ValuesIn(csr_idxbase_range)));
+                                         testing::ValuesIn(csr_idxbase_range),
+                                         testing::ValuesIn(csr_adaptive)));
 
 INSTANTIATE_TEST_CASE_P(csrmv_bin,
                         parameterized_csrmv_bin,
                         testing::Combine(testing::ValuesIn(csr_alpha_range),
                                          testing::ValuesIn(csr_beta_range),
                                          testing::ValuesIn(csr_idxbase_range),
-                                         testing::ValuesIn(csr_bin)));
+                                         testing::ValuesIn(csr_bin),
+                                         testing::ValuesIn(csr_adaptive)));

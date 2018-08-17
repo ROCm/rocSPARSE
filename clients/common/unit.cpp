@@ -138,3 +138,44 @@ void unit_check_near(
         }
     }
 }
+
+/*! \brief Template: gtest unit compare two matrices float/double/complex */
+// Do not put a wrapper over ASSERT_FLOAT_EQ, since assert exit the current function NOT the test
+// case
+// a wrapper will cause the loop keep going
+
+template <>
+void unit_check_near(rocsparse_int M, rocsparse_int N, float* hCPU, float* hGPU)
+{
+    for(rocsparse_int j = 0; j < N; j++)
+    {
+        for(rocsparse_int i = 0; i < M; i++)
+        {
+            float compare_val =
+                std::max(std::abs(hCPU[i + j] * 1e-6f), 10 * std::numeric_limits<float>::epsilon());
+#ifdef GOOGLE_TEST
+            ASSERT_NEAR(hCPU[i + j], hGPU[i + j], compare_val);
+#else
+            assert(std::abs(hCPU[i + j] - hGPU[i + j]) < compare_val);
+#endif
+        }
+    }
+}
+
+template <>
+void unit_check_near(rocsparse_int M, rocsparse_int N, double* hCPU, double* hGPU)
+{
+    for(rocsparse_int j = 0; j < N; j++)
+    {
+        for(rocsparse_int i = 0; i < M; i++)
+        {
+            double compare_val = std::max(std::abs(hCPU[i + j] * 1e-14),
+                                          10 * std::numeric_limits<double>::epsilon());
+#ifdef GOOGLE_TEST
+            ASSERT_NEAR(hCPU[i + j], hGPU[i + j], compare_val);
+#else
+            assert(std::abs(hCPU[i + j] - hGPU[i + j]) < compare_val);
+#endif
+        }
+    }
+}
