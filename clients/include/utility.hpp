@@ -643,6 +643,7 @@ class Arguments
     rocsparse_int temp      = 0;
 
     std::string filename = "";
+    bool bswitch         = false;
 
     Arguments& operator=(const Arguments& rhs)
     {
@@ -674,6 +675,7 @@ class Arguments
         this->temp      = rhs.temp;
 
         this->filename = rhs.filename;
+        this->bswitch  = rhs.bswitch;
 
         return *this;
     }

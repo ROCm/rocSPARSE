@@ -31,9 +31,7 @@ extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
               (const void*&)csr_row_ptr,
               idx_base);
 
-    log_bench(handle,
-              "./rocsparse-bench -f coo2csr",
-              "--mtx <matrix.mtx>");
+    log_bench(handle, "./rocsparse-bench -f coo2csr", "--mtx <matrix.mtx>");
 
     // Check sizes
     if(nnz < 0)

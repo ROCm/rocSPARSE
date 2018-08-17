@@ -69,10 +69,10 @@ rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
  * version / 100000     = major version
  *******************************************************************************/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_get_version(rocsparse_handle handle, rocsparse_int* version);
+rocsparse_status rocsparse_get_version(rocsparse_handle handle, int* version);
 
 /********************************************************************************
- * \brief rocsparse_create_mat_descr_t is a structure holding the rocsparse matrix
+ * \brief rocsparse_mat_descr is a structure holding the rocsparse matrix
  * descriptor. It must be initialized using rocsparse_create_mat_descr()
  * and the retured handle must be passed to all subsequent library function
  * calls that involve the matrix.
@@ -112,11 +112,10 @@ ROCSPARSE_EXPORT
 rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr);
 
 /********************************************************************************
- * \brief rocsparse_create_hyb_mat is a structure holding the rocsparse HYB
- * matrix. It must be initialized using rocsparse_create_hyb_mat()
- * and the retured handle must be passed to all subsequent library function
- * calls that involve the HYB matrix.
- * It should be destroyed at the end using rocsparse_destroy_hyb_mat().
+ * \brief rocsparse_hyb_mat is a structure holding the rocsparse HYB matrix. It
+ * must be initialized using rocsparse_create_hyb_mat() and the returned handle
+ * must be passed to all subsequent library function calls that involve the HYB
+ * matrix. It should be destroyed at the end using rocsparse_destroy_hyb_mat().
  *******************************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb);
@@ -126,6 +125,22 @@ rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb);
  *******************************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb);
+
+/********************************************************************************
+ * \brief rocsparse_mat_info is a structure holding the matrix info data that is
+ * gathered during the analysis routines. It must be initialized by calling
+ * rocsparse_create_mat_info() and the returned info structure must be passed
+ * to all subsequent function calls that require additional information. It
+ * should be destroyed at the end using rocsparse_destroy_mat_info().
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info);
+
+/********************************************************************************
+ * \brief Destroy mat info.
+ *******************************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info);
 
 #ifdef __cplusplus
 }

@@ -36,10 +36,7 @@ rocsparse_status rocsparse_gthrz_template(rocsparse_handle handle,
               (const void*&)x_ind,
               idx_base);
 
-    log_bench(handle,
-              "./rocsparse-bench -f gthrz -r",
-              replaceX<T>("X"),
-              "--mtx <vector.mtx> ");
+    log_bench(handle, "./rocsparse-bench -f gthrz -r", replaceX<T>("X"), "--mtx <vector.mtx> ");
 
     // Check index base
     if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)

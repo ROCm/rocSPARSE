@@ -278,18 +278,19 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
     }
 
     // Check leading dimension of B
+    rocsparse_int one = 1;
     if(trans_B == rocsparse_operation_none)
     {
         if(trans_A == rocsparse_operation_none)
         {
-            if(ldb < std::max(1, k))
+            if(ldb < std::max(one, k))
             {
                 return rocsparse_status_invalid_size;
             }
         }
         else
         {
-            if(ldb < std::max(1, m))
+            if(ldb < std::max(one, m))
             {
                 return rocsparse_status_invalid_size;
             }
@@ -297,7 +298,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
     }
     else
     {
-        if(ldb < std::max(1, n))
+        if(ldb < std::max(one, n))
         {
             return rocsparse_status_invalid_size;
         }
@@ -306,14 +307,14 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
     // Check leading dimension of C
     if(trans_A == rocsparse_operation_none)
     {
-        if(ldc < std::max(1, m))
+        if(ldc < std::max(one, m))
         {
             return rocsparse_status_invalid_size;
         }
     }
     else
     {
-        if(ldc < std::max(1, k))
+        if(ldc < std::max(one, k))
         {
             return rocsparse_status_invalid_size;
         }

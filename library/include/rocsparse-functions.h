@@ -531,11 +531,77 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle handle,
 /*! \brief SPARSE Level 2 API
 
     \details
+    csrmv_analysis performs the analysis for csrmv adaptive algorithm.
+    It is expected that this function will be executed only once for a
+    given matrix and particular operation type.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    trans       operation type of A.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    n           number of columns of A.
+    @param[in]
+    nnz         number of non-zero entries of A.
+    @param[in]
+    descr       descriptor of A.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start
+                of every row of A.
+    @param[in]
+    csr_col_ind array of nnz elements containing the column indices of A.
+    @param[out]
+    info        structure that holds the information collected during
+                the analysis phase.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
+                                          rocsparse_operation trans,
+                                          rocsparse_int m,
+                                          rocsparse_int n,
+                                          rocsparse_int nnz,
+                                          const rocsparse_mat_descr descr,
+                                          const rocsparse_int* csr_row_ptr,
+                                          const rocsparse_int* csr_col_ind,
+                                          rocsparse_mat_info info);
+
+/*! \brief SPARSE Level 2 API
+
+    \details
+    csrmv_analysis_clear frees all memory that was allocated by csrmv_analysis. This is
+    especially useful, if memory is an issue and the analysis data is not required for
+    further computation, e.g. when switching to another sparse matrix format.
+    Calling csrmv_analysis_clear is optional. All allocated resources will be cleared,
+    when rocsparse_destroy_mat_info is called.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[inout]
+    info        structure that holds the information collected during
+                the analysis phase.
+
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle handle, rocsparse_mat_info info);
+
+/*! \brief SPARSE Level 2 API
+
+    \details
     csrmv multiplies the dense vector x with scalar alpha and sparse m x n
     matrix A that is defined in CSR storage format and adds the result to the
     dense vector y that is multiplied by beta
 
         y := alpha * op(A) * x + beta * y
+
+    The info parameter is optional and contains information collected by
+    rocsparse_csrmv_analysis. If present, it will be used to speed up the
+    csrmv computation. If info == nullptr, general csrmv routine will be
+    called instead.
 
     @param[in]
     handle      rocsparse_handle.
@@ -567,6 +633,9 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle handle,
     @param[inout]
     y           array of m elements (op(A) = A) or n elements (op(A) = A^T or
                 op(A) = A^H).
+    @param[in]
+    info        [optional] information collected by rocsparse_csrmv_analysis.
+                if nullptr is passed, general csrmv routine will be called.
 
     ********************************************************************/
 ROCSPARSE_EXPORT
@@ -582,7 +651,8 @@ rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
                                   const rocsparse_int* csr_col_ind,
                                   const float* x,
                                   const float* beta,
-                                  float* y);
+                                  float* y,
+                                  const rocsparse_mat_info info);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
@@ -597,7 +667,8 @@ rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
                                   const rocsparse_int* csr_col_ind,
                                   const double* x,
                                   const double* beta,
-                                  double* y);
+                                  double* y,
+                                  const rocsparse_mat_info info);
 /*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
@@ -612,7 +683,8 @@ rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
                                   const rocsparse_int* csr_col_ind,
                                   const rocsparse_float_complex* x,
                                   const rocsparse_float_complex* beta,
-                                  rocsparse_float_complex* y);
+                                  rocsparse_float_complex* y,
+                                  const rocsparse_mat_info info);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
@@ -627,7 +699,8 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
                                   const rocsparse_int* csr_col_ind,
                                   const rocsparse_double_complex* x,
                                   const rocsparse_double_complex* beta,
-                                  rocsparse_double_complex* y);
+                                  rocsparse_double_complex* y,
+                                  const rocsparse_mat_info info);
 */
 
 /*! \brief SPARSE Level 2 API

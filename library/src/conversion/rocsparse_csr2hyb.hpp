@@ -55,10 +55,7 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle handle,
               user_ell_width,
               partition_type);
 
-    log_bench(handle,
-              "./rocsparse-bench -f csr2hyb -r",
-              replaceX<T>("X"),
-              "--mtx <matrix.mtx>");
+    log_bench(handle, "./rocsparse-bench -f csr2hyb -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
     // Check index base
     if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
