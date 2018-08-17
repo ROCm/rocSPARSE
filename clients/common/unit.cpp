@@ -151,7 +151,8 @@ void unit_check_near(rocsparse_int M, rocsparse_int N, float* hCPU, float* hGPU)
     {
         for(rocsparse_int i = 0; i < M; i++)
         {
-            float compare_val = std::max(std::abs(hCPU[i + j] * 1e-6f), 10 * FLT_EPSILON);
+            float compare_val =
+                std::max(std::abs(hCPU[i + j] * 1e-6f), 10 * std::numeric_limits<float>::epsilon());
 #ifdef GOOGLE_TEST
             ASSERT_NEAR(hCPU[i + j], hGPU[i + j], compare_val);
 #else
@@ -168,7 +169,8 @@ void unit_check_near(rocsparse_int M, rocsparse_int N, double* hCPU, double* hGP
     {
         for(rocsparse_int i = 0; i < M; i++)
         {
-            double compare_val = std::max(std::abs(hCPU[i + j] * 1e-14), 10 * DBL_EPSILON);
+            double compare_val = std::max(std::abs(hCPU[i + j] * 1e-14),
+                                          10 * std::numeric_limits<double>::epsilon());
 #ifdef GOOGLE_TEST
             ASSERT_NEAR(hCPU[i + j], hGPU[i + j], compare_val);
 #else
