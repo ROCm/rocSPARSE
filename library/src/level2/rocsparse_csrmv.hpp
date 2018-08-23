@@ -105,10 +105,10 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                           const T* csr_val,
                                           const rocsparse_int* csr_row_ptr,
                                           const rocsparse_int* csr_col_ind,
+                                          rocsparse_mat_info info,
                                           const T* x,
                                           const T* beta,
-                                          T* y,
-                                          const rocsparse_mat_info info)
+                                          T* y)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -252,10 +252,10 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                                  csr_val,
                                                  csr_row_ptr,
                                                  csr_col_ind,
+                                                 info->csrmv_info,
                                                  x,
                                                  beta,
-                                                 y,
-                                                 info->csrmv_info);
+                                                 y);
     }
 }
 
@@ -712,10 +712,10 @@ rocsparse_status rocsparse_csrmv_adaptive_template(rocsparse_handle handle,
                                                    const T* csr_val,
                                                    const rocsparse_int* csr_row_ptr,
                                                    const rocsparse_int* csr_col_ind,
+                                                   rocsparse_csrmv_info info,
                                                    const T* x,
                                                    const T* beta,
-                                                   T* y,
-                                                   const rocsparse_csrmv_info info)
+                                                   T* y)
 {
     // Check if info matches current matrix and options
     if(info->trans != trans)
