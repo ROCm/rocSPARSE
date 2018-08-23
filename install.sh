@@ -40,6 +40,7 @@ function display_help()
   echo "    [-c|--clients] build library clients too (combines with -i & -d)"
   echo "    [-g|--debug] -DCMAKE_BUILD_TYPE=Debug (default is =Release)"
   echo "    [--cuda] build library for cuda backend"
+  echo "    [--hip-clang] build library with hip-clang"
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
@@ -61,6 +62,7 @@ install_package=false
 install_dependencies=false
 build_clients=false
 build_cuda=false
+build_hip_clang=false
 build_release=true
 
 # #################################################
@@ -70,7 +72,7 @@ build_release=true
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,cuda --options hicgd -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,cuda,hip-clang --options hicgd -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -103,6 +105,9 @@ while true; do
         shift ;;
     --cuda)
         build_cuda=true
+        shift ;;
+    --hip-clang)
+        build_hip_clang=true
         shift ;;
     --) shift ; break ;;
     *)  echo "Unexpected command line parameter received; aborting";
@@ -196,7 +201,14 @@ pushd .
 
   # On ROCm platforms, hcc compiler can build everything
   if [[ "${build_cuda}" == false ]]; then
-    CXX=hcc cmake ${cmake_common_options} ${cmake_client_options} -DCMAKE_PREFIX_PATH="$(pwd)/../deps/deps-install" ../..
+    if [[ "${build_hip_clang}" == true ]]; then
+       CXX=hipcc
+       HIP_COMPILER=clang
+    else
+       CXX=hcc
+       HIP_COMPILER=hcc
+    fi
+    CXX=$CXX cmake -DHIP_COMPILER=$HIP_COMPILER ${cmake_common_options} ${cmake_client_options} -DCMAKE_PREFIX_PATH="$(pwd)/../deps/deps-install" ../..
     make -j$(nproc)
   else
     # The nvidia compile is a little more complicated, in that we split compiling the library from the clients
