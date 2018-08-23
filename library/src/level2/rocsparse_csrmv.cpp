@@ -426,10 +426,10 @@ extern "C" rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
                                              const float* csr_val,
                                              const rocsparse_int* csr_row_ptr,
                                              const rocsparse_int* csr_col_ind,
+                                             rocsparse_mat_info info,
                                              const float* x,
                                              const float* beta,
-                                             float* y,
-                                             const rocsparse_mat_info info)
+                                             float* y)
 {
     return rocsparse_csrmv_template<float>(handle,
                                            trans,
@@ -441,10 +441,10 @@ extern "C" rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
                                            csr_val,
                                            csr_row_ptr,
                                            csr_col_ind,
+                                           info,
                                            x,
                                            beta,
-                                           y,
-                                           info);
+                                           y);
 }
 
 extern "C" rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
@@ -457,10 +457,10 @@ extern "C" rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
                                              const double* csr_val,
                                              const rocsparse_int* csr_row_ptr,
                                              const rocsparse_int* csr_col_ind,
+                                             rocsparse_mat_info info,
                                              const double* x,
                                              const double* beta,
-                                             double* y,
-                                             const rocsparse_mat_info info)
+                                             double* y)
 {
     return rocsparse_csrmv_template<double>(handle,
                                             trans,
@@ -472,8 +472,8 @@ extern "C" rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
                                             csr_val,
                                             csr_row_ptr,
                                             csr_col_ind,
+                                            info,
                                             x,
                                             beta,
-                                            y,
-                                            info);
+                                            y);
 }

@@ -113,10 +113,10 @@ void testing_csrmv_bad_arg(void)
                                  dval,
                                  dptr_null,
                                  dcol,
+                                 nullptr,
                                  dx,
                                  &beta,
-                                 dy,
-                                 nullptr);
+                                 dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
     }
     // testing for(nullptr == dcol)
@@ -133,10 +133,10 @@ void testing_csrmv_bad_arg(void)
                                  dval,
                                  dptr,
                                  dcol_null,
+                                 nullptr,
                                  dx,
                                  &beta,
-                                 dy,
-                                 nullptr);
+                                 dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
     }
     // testing for(nullptr == dval)
@@ -153,10 +153,10 @@ void testing_csrmv_bad_arg(void)
                                  dval_null,
                                  dptr,
                                  dcol,
+                                 nullptr,
                                  dx,
                                  &beta,
-                                 dy,
-                                 nullptr);
+                                 dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
     }
     // testing for(nullptr == dx)
@@ -173,10 +173,10 @@ void testing_csrmv_bad_arg(void)
                                  dval,
                                  dptr,
                                  dcol,
+                                 nullptr,
                                  dx_null,
                                  &beta,
-                                 dy,
-                                 nullptr);
+                                 dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: dx is nullptr");
     }
     // testing for(nullptr == dy)
@@ -193,10 +193,10 @@ void testing_csrmv_bad_arg(void)
                                  dval,
                                  dptr,
                                  dcol,
+                                 nullptr,
                                  dx,
                                  &beta,
-                                 dy_null,
-                                 nullptr);
+                                 dy_null);
         verify_rocsparse_status_invalid_pointer(status, "Error: dy is nullptr");
     }
     // testing for(nullptr == d_alpha)
@@ -213,10 +213,10 @@ void testing_csrmv_bad_arg(void)
                                  dval,
                                  dptr,
                                  dcol,
+                                 nullptr,
                                  dx,
                                  &beta,
-                                 dy,
-                                 nullptr);
+                                 dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
     }
     // testing for(nullptr == d_beta)
@@ -233,10 +233,10 @@ void testing_csrmv_bad_arg(void)
                                  dval,
                                  dptr,
                                  dcol,
+                                 nullptr,
                                  dx,
                                  d_beta_null,
-                                 dy,
-                                 nullptr);
+                                 dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: beta is nullptr");
     }
     // testing for(nullptr == descr)
@@ -253,10 +253,10 @@ void testing_csrmv_bad_arg(void)
                                  dval,
                                  dptr,
                                  dcol,
+                                 nullptr,
                                  dx,
                                  &beta,
-                                 dy,
-                                 nullptr);
+                                 dy);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == handle)
@@ -273,10 +273,10 @@ void testing_csrmv_bad_arg(void)
                                  dval,
                                  dptr,
                                  dcol,
+                                 nullptr,
                                  dx,
                                  &beta,
-                                 dy,
-                                 nullptr);
+                                 dy);
         verify_rocsparse_status_invalid_handle(status);
     }
 
@@ -401,7 +401,7 @@ rocsparse_status testing_csrmv(Arguments argus)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         status = rocsparse_csrmv(
-            handle, transA, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, dx, &h_beta, dy, info);
+            handle, transA, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, info, dx, &h_beta, dy);
 
         if(m < 0 || n < 0 || nnz < 0)
         {
@@ -540,12 +540,12 @@ rocsparse_status testing_csrmv(Arguments argus)
         // ROCSPARSE pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv(
-            handle, transA, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, dx, &h_beta, dy_1, info));
+            handle, transA, m, n, nnz, &h_alpha, descr, dval, dptr, dcol, info, dx, &h_beta, dy_1));
 
         // ROCSPARSE pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv(
-            handle, transA, m, n, nnz, d_alpha, descr, dval, dptr, dcol, dx, d_beta, dy_2, info));
+            handle, transA, m, n, nnz, d_alpha, descr, dval, dptr, dcol, info, dx, d_beta, dy_2));
 
         // copy output from device to CPU
         CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * m, hipMemcpyDeviceToHost));
@@ -684,10 +684,10 @@ rocsparse_status testing_csrmv(Arguments argus)
                             dval,
                             dptr,
                             dcol,
+                            info,
                             dx,
                             &h_beta,
-                            dy_1,
-                            info);
+                            dy_1);
         }
 
         double gpu_time_used = get_time_us(); // in microseconds
@@ -704,10 +704,10 @@ rocsparse_status testing_csrmv(Arguments argus)
                             dval,
                             dptr,
                             dcol,
+                            info,
                             dx,
                             &h_beta,
-                            dy_1,
-                            info);
+                            dy_1);
         }
 
         // Convert to miliseconds per call
