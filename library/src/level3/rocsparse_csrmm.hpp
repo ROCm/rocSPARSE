@@ -13,7 +13,7 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int SUBWAVE_SIZE>
+template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 __launch_bounds__(256) __global__
     void csrmmnn_kernel_host_pointer(rocsparse_int m,
                                      rocsparse_int n,
@@ -30,11 +30,11 @@ __launch_bounds__(256) __global__
                                      rocsparse_int ldc,
                                      rocsparse_index_base idx_base)
 {
-    csrmmnn_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(
+    csrmmnn_general_device<T, BLOCKSIZE, WF_SIZE>(
         m, n, k, nnz, alpha, csr_row_ptr, csr_col_ind, csr_val, B, ldb, beta, C, ldc, idx_base);
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int SUBWAVE_SIZE>
+template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 __launch_bounds__(256) __global__
     void csrmmnn_kernel_device_pointer(rocsparse_int m,
                                        rocsparse_int n,
@@ -56,11 +56,11 @@ __launch_bounds__(256) __global__
         return;
     }
 
-    csrmmnn_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(
+    csrmmnn_general_device<T, BLOCKSIZE, WF_SIZE>(
         m, n, k, nnz, *alpha, csr_row_ptr, csr_col_ind, csr_val, B, ldb, *beta, C, ldc, idx_base);
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int SUBWAVE_SIZE>
+template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 __launch_bounds__(256) __global__
     void csrmmnt_kernel_host_pointer(rocsparse_int offset,
                                      rocsparse_int ncol,
@@ -79,7 +79,7 @@ __launch_bounds__(256) __global__
                                      rocsparse_int ldc,
                                      rocsparse_index_base idx_base)
 {
-    csrmmnt_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(offset,
+    csrmmnt_general_device<T, BLOCKSIZE, WF_SIZE>(offset,
                                                        ncol,
                                                        m,
                                                        n,
@@ -97,7 +97,7 @@ __launch_bounds__(256) __global__
                                                        idx_base);
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int SUBWAVE_SIZE>
+template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 __launch_bounds__(256) __global__
     void csrmmnt_kernel_device_pointer(rocsparse_int offset,
                                        rocsparse_int ncol,
@@ -121,7 +121,7 @@ __launch_bounds__(256) __global__
         return;
     }
 
-    csrmmnt_general_device<T, BLOCKSIZE, SUBWAVE_SIZE>(offset,
+    csrmmnt_general_device<T, BLOCKSIZE, WF_SIZE>(offset,
                                                        ncol,
                                                        m,
                                                        n,
@@ -465,7 +465,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                                            descr->base);
                     }
                 }
-                else if(avg_row_nnz < 64 || handle->warp_size == 32)
+                else if(avg_row_nnz < 64 || handle->wavefront_size == 32)
                 {
                     remainder = n % 32;
                     main      = n - remainder;
@@ -496,7 +496,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                                            descr->base);
                     }
                 }
-                else if(handle->warp_size == 64)
+                else if(handle->wavefront_size == 64)
                 {
                     remainder = n % 64;
                     main      = n - remainder;
@@ -583,7 +583,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                                            ldc,
                                            descr->base);
                     }
-                    else if(remainder <= 32 || handle->warp_size == 32)
+                    else if(remainder <= 32 || handle->wavefront_size == 32)
                     {
                         hipLaunchKernelGGL((csrmmnt_kernel_device_pointer<T, CSRMMNT_DIM, 32>),
                                            dim3((32 * m - 1) / CSRMMNT_DIM + 1),
@@ -711,7 +711,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                                            descr->base);
                     }
                 }
-                else if(avg_row_nnz < 64 || handle->warp_size == 32)
+                else if(avg_row_nnz < 64 || handle->wavefront_size == 32)
                 {
                     remainder = n % 32;
                     main      = n - remainder;
@@ -742,7 +742,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                                            descr->base);
                     }
                 }
-                else if(handle->warp_size == 64)
+                else if(handle->wavefront_size == 64)
                 {
                     remainder = n % 64;
                     main      = n - remainder;
@@ -829,7 +829,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
                                            ldc,
                                            descr->base);
                     }
-                    else if(remainder <= 32 || handle->warp_size == 32)
+                    else if(remainder <= 32 || handle->wavefront_size == 32)
                     {
                         hipLaunchKernelGGL((csrmmnt_kernel_host_pointer<T, CSRMMNT_DIM, 32>),
                                            dim3((32 * m - 1) / CSRMMNT_DIM + 1),

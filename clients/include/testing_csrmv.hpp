@@ -575,7 +575,7 @@ rocsparse_status testing_csrmv(Arguments argus)
         }
         else
         {
-            // Query for warpSize
+            // Query for wavefrontSize
             hipDeviceProp_t prop;
             hipGetDeviceProperties(&prop, 0);
 
