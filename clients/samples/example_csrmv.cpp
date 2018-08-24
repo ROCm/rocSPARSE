@@ -95,10 +95,10 @@ int main(int argc, char* argv[])
                          dAval,
                          dAptr,
                          dAcol,
+                         nullptr,
                          dx,
                          &hbeta,
-                         dy,
-                         nullptr);
+                         dy);
     }
 
     // Device synchronization
@@ -123,10 +123,10 @@ int main(int argc, char* argv[])
                              dAval,
                              dAptr,
                              dAcol,
+                             nullptr,
                              dx,
                              &hbeta,
-                             dy,
-                             nullptr);
+                             dy);
         }
 
         // Device synchronization

@@ -14,9 +14,9 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WARPSIZE>
+template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 __launch_bounds__(128) __global__
-    void coomvn_warp_host_pointer(rocsparse_int nnz,
+    void coomvn_wf_host_pointer(rocsparse_int nnz,
                                   rocsparse_int loops,
                                   T alpha,
                                   const rocsparse_int* __restrict__ coo_row_ind,
@@ -28,22 +28,22 @@ __launch_bounds__(128) __global__
                                   T* __restrict__ val_block_red,
                                   rocsparse_index_base idx_base)
 {
-    coomvn_general_warp_reduce<T, BLOCKSIZE, WARPSIZE>(nnz,
-                                                       loops,
-                                                       alpha,
-                                                       coo_row_ind,
-                                                       coo_col_ind,
-                                                       coo_val,
-                                                       x,
-                                                       y,
-                                                       row_block_red,
-                                                       val_block_red,
-                                                       idx_base);
+    coomvn_general_wf_reduce<T, BLOCKSIZE, WF_SIZE>(nnz,
+                                                      loops,
+                                                      alpha,
+                                                      coo_row_ind,
+                                                      coo_col_ind,
+                                                      coo_val,
+                                                      x,
+                                                      y,
+                                                      row_block_red,
+                                                      val_block_red,
+                                                      idx_base);
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WARPSIZE>
+template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 __launch_bounds__(128) __global__
-    void coomvn_warp_device_pointer(rocsparse_int nnz,
+    void coomvn_wf_device_pointer(rocsparse_int nnz,
                                     rocsparse_int loops,
                                     const T* alpha,
                                     const rocsparse_int* __restrict__ coo_row_ind,
@@ -55,17 +55,17 @@ __launch_bounds__(128) __global__
                                     T* __restrict__ val_block_red,
                                     rocsparse_index_base idx_base)
 {
-    coomvn_general_warp_reduce<T, BLOCKSIZE, WARPSIZE>(nnz,
-                                                       loops,
-                                                       *alpha,
-                                                       coo_row_ind,
-                                                       coo_col_ind,
-                                                       coo_val,
-                                                       x,
-                                                       y,
-                                                       row_block_red,
-                                                       val_block_red,
-                                                       idx_base);
+    coomvn_general_wf_reduce<T, BLOCKSIZE, WF_SIZE>(nnz,
+                                                      loops,
+                                                      *alpha,
+                                                      coo_row_ind,
+                                                      coo_col_ind,
+                                                      coo_val,
+                                                      x,
+                                                      y,
+                                                      row_block_red,
+                                                      val_block_red,
+                                                      idx_base);
 }
 
 template <typename T>
@@ -213,8 +213,8 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
         rocsparse_int minblocks  = (nnz - 1) / COOMVN_DIM + 1;
 
         rocsparse_int nblocks = maxblocks < minblocks ? maxblocks : minblocks;
-        rocsparse_int nwarps  = nblocks * (COOMVN_DIM / handle->warp_size);
-        rocsparse_int nloops  = (nnz / handle->warp_size + 1) / nwarps + 1;
+        rocsparse_int nwfs    = nblocks * (COOMVN_DIM / handle->wavefront_size);
+        rocsparse_int nloops  = (nnz / handle->wavefront_size + 1) / nwfs + 1;
 
         dim3 coomvn_blocks(nblocks);
         dim3 coomvn_threads(COOMVN_DIM);
@@ -223,8 +223,8 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
         T* val_block_red             = NULL;
 
         // Allocating a maximum of 8 kByte
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&row_block_red, sizeof(rocsparse_int) * nwarps));
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&val_block_red, sizeof(T) * nwarps));
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&row_block_red, sizeof(rocsparse_int) * nwfs));
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&val_block_red, sizeof(T) * nwfs));
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
@@ -248,9 +248,9 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                                    y);
             }
 
-            if(handle->warp_size == 32)
+            if(handle->wavefront_size == 32)
             {
-                hipLaunchKernelGGL((coomvn_warp_device_pointer<T, COOMVN_DIM, 32>),
+                hipLaunchKernelGGL((coomvn_wf_device_pointer<T, COOMVN_DIM, 32>),
                                    coomvn_blocks,
                                    coomvn_threads,
                                    0,
@@ -267,9 +267,9 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                                    val_block_red,
                                    descr->base);
             }
-            else if(handle->warp_size == 64)
+            else if(handle->wavefront_size == 64)
             {
-                hipLaunchKernelGGL((coomvn_warp_device_pointer<T, COOMVN_DIM, 64>),
+                hipLaunchKernelGGL((coomvn_wf_device_pointer<T, COOMVN_DIM, 64>),
                                    coomvn_blocks,
                                    coomvn_threads,
                                    0,
@@ -315,9 +315,9 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                                    y);
             }
 
-            if(handle->warp_size == 32)
+            if(handle->wavefront_size == 32)
             {
-                hipLaunchKernelGGL((coomvn_warp_host_pointer<T, COOMVN_DIM, 32>),
+                hipLaunchKernelGGL((coomvn_wf_host_pointer<T, COOMVN_DIM, 32>),
                                    coomvn_blocks,
                                    coomvn_threads,
                                    0,
@@ -334,9 +334,9 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                                    val_block_red,
                                    descr->base);
             }
-            else if(handle->warp_size == 64)
+            else if(handle->wavefront_size == 64)
             {
-                hipLaunchKernelGGL((coomvn_warp_host_pointer<T, COOMVN_DIM, 64>),
+                hipLaunchKernelGGL((coomvn_wf_host_pointer<T, COOMVN_DIM, 64>),
                                    coomvn_blocks,
                                    coomvn_threads,
                                    0,
@@ -364,7 +364,7 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                            coomvn_threads,
                            0,
                            stream,
-                           nwarps,
+                           nwfs,
                            row_block_red,
                            val_block_red,
                            y);

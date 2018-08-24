@@ -4,7 +4,7 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int SUBWAVE_SIZE>
+template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 static __device__ void csrmmnn_general_device(rocsparse_int M,
                                               rocsparse_int N,
                                               rocsparse_int K,
@@ -20,41 +20,41 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
                                               rocsparse_int ldc,
                                               rocsparse_index_base idx_base)
 {
-    rocsparse_int tid    = hipThreadIdx_x;
-    rocsparse_int gid    = hipBlockIdx_x * hipBlockDim_x + tid;
-    rocsparse_int warpid = gid / SUBWAVE_SIZE;
-    rocsparse_int laneid = gid & (SUBWAVE_SIZE - 1);
-    rocsparse_int subid  = tid / SUBWAVE_SIZE;
-    rocsparse_int nwarps = hipGridDim_x * hipBlockDim_x / SUBWAVE_SIZE;
-    rocsparse_int col    = laneid + hipBlockIdx_y * SUBWAVE_SIZE;
-    rocsparse_int colB   = col * ldb;
-    rocsparse_int colC   = col * ldc;
+    rocsparse_int tid = hipThreadIdx_x;
+    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
+    rocsparse_int lid = gid & (WF_SIZE - 1);
+    rocsparse_int wid = tid / WF_SIZE;
+    rocsparse_int nwf = hipGridDim_x * hipBlockDim_x / WF_SIZE;
+    rocsparse_int col = lid + hipBlockIdx_y * WF_SIZE;
 
-    __shared__ rocsparse_int shared_col[BLOCKSIZE / SUBWAVE_SIZE][SUBWAVE_SIZE];
-    __shared__ T shared_val[BLOCKSIZE / SUBWAVE_SIZE][SUBWAVE_SIZE];
+    rocsparse_int colB = col * ldb;
+    rocsparse_int colC = col * ldc;
 
-    for(rocsparse_int row = warpid; row < M; row += nwarps)
+    __shared__ rocsparse_int shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
+    __shared__ T shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
+
+    for(rocsparse_int row = gid / WF_SIZE; row < M; row += nwf)
     {
         rocsparse_int row_start = __ldg(csr_row_ptr + row) - idx_base;
         rocsparse_int row_end   = __ldg(csr_row_ptr + row + 1) - idx_base;
 
         T sum = static_cast<T>(0);
 
-        for(rocsparse_int j = row_start; j < row_end; j += SUBWAVE_SIZE)
+        for(rocsparse_int j = row_start; j < row_end; j += WF_SIZE)
         {
-            rocsparse_int k = j + laneid;
+            rocsparse_int k = j + lid;
 
             __syncthreads();
 
-            shared_col[subid][laneid] = (k < row_end) ? __ldg(csr_col_ind + k) - idx_base : 0;
-            shared_val[subid][laneid] =
+            shared_col[wid][lid] = (k < row_end) ? __ldg(csr_col_ind + k) - idx_base : 0;
+            shared_val[wid][lid] =
                 (k < row_end) ? alpha * __ldg(csr_val + k) : static_cast<T>(0);
 
             __syncthreads();
 
-            for(rocsparse_int i = 0; i < SUBWAVE_SIZE && col < N; ++i)
+            for(rocsparse_int i = 0; i < WF_SIZE && col < N; ++i)
             {
-                sum += shared_val[subid][i] * __ldg(&B[shared_col[subid][i] + colB]);
+                sum += shared_val[wid][i] * __ldg(&B[shared_col[wid][i] + colB]);
             }
         }
 
@@ -72,7 +72,7 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
     }
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int SUBWAVE_SIZE>
+template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 static __device__ void csrmmnt_general_device(rocsparse_int offset,
                                               rocsparse_int ncol,
                                               rocsparse_int M,
@@ -90,44 +90,44 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
                                               rocsparse_int ldc,
                                               rocsparse_index_base idx_base)
 {
-    rocsparse_int tid    = hipThreadIdx_x;
-    rocsparse_int gid    = hipBlockIdx_x * hipBlockDim_x + tid;
-    rocsparse_int row    = gid / SUBWAVE_SIZE;
-    rocsparse_int laneid = tid & (SUBWAVE_SIZE - 1);
-    rocsparse_int subid  = hipThreadIdx_x / SUBWAVE_SIZE;
+    rocsparse_int tid = hipThreadIdx_x;
+    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
+    rocsparse_int row = gid / WF_SIZE;
+    rocsparse_int lid = tid & (WF_SIZE - 1);
+    rocsparse_int wid = tid / WF_SIZE;
 
     if(row >= M)
     {
         return;
     }
 
-    __shared__ rocsparse_int shared_col[BLOCKSIZE / SUBWAVE_SIZE][SUBWAVE_SIZE];
-    __shared__ T shared_val[BLOCKSIZE / SUBWAVE_SIZE][SUBWAVE_SIZE];
+    __shared__ rocsparse_int shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
+    __shared__ T shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
     rocsparse_int row_start = __ldg(csr_row_ptr + row) - idx_base;
     rocsparse_int row_end   = __ldg(csr_row_ptr + row + 1) - idx_base;
 
-    for(rocsparse_int l = offset; l < ncol; l += SUBWAVE_SIZE)
+    for(rocsparse_int l = offset; l < ncol; l += WF_SIZE)
     {
-        rocsparse_int col = l + laneid;
+        rocsparse_int col = l + lid;
         T sum             = static_cast<T>(0);
 
-        for(rocsparse_int j = row_start; j < row_end; j += SUBWAVE_SIZE)
+        for(rocsparse_int j = row_start; j < row_end; j += WF_SIZE)
         {
-            rocsparse_int k = j + laneid;
+            rocsparse_int k = j + lid;
 
             __syncthreads();
 
-            shared_col[subid][laneid] = (k < row_end) ? N * (__ldg(csr_col_ind + k) - idx_base) : 0;
-            shared_val[subid][laneid] =
+            shared_col[wid][lid] = (k < row_end) ? N * (__ldg(csr_col_ind + k) - idx_base) : 0;
+            shared_val[wid][lid] =
                 (k < row_end) ? alpha * __ldg(csr_val + k) : static_cast<T>(0);
 
             __syncthreads();
 
-            for(rocsparse_int i = 0; i < SUBWAVE_SIZE; ++i)
+            for(rocsparse_int i = 0; i < WF_SIZE; ++i)
             {
-                T val_B = (col < ncol) ? __ldg(B + col + shared_col[subid][i]) : static_cast<T>(0);
-                sum += shared_val[subid][i] * val_B;
+                T val_B = (col < ncol) ? __ldg(B + col + shared_col[wid][i]) : static_cast<T>(0);
+                sum += shared_val[wid][i] * val_B;
             }
         }
 

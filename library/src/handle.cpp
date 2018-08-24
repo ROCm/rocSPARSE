@@ -17,8 +17,8 @@ _rocsparse_handle::_rocsparse_handle()
     THROW_IF_HIP_ERROR(hipGetDevice(&device));
     THROW_IF_HIP_ERROR(hipGetDeviceProperties(&properties, device));
 
-    // Device warp size
-    warp_size = properties.warpSize;
+    // Device wavefront size
+    wavefront_size = properties.warpSize;
 
     // Layer mode
     char* str_layer_mode;
