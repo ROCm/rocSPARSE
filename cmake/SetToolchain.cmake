@@ -2,7 +2,7 @@
 find_package(HIP REQUIRED)
 
 # Select toolchain
-if(HIP_PLATFORM STREQUAL "nvcc")
+if(HIP_PLATFORM STREQUAL "nvcc" OR HIP_COMPILER STREQUAL "clang")
   # Find HIPCC executable
   find_program(
       HIP_HIPCC_EXECUTABLE
