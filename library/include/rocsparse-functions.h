@@ -626,6 +626,9 @@ rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle handle, rocspar
     @param[in]
     csr_col_ind array of nnz elements containing the column indices of A.
     @param[in]
+    info        [optional] information collected by rocsparse_csrmv_analysis.
+                if nullptr is passed, general csrmv routine will be called.
+    @param[in]
     x           array of n elements (op(A) = A) or m elements (op(A) = A^T or
                 op(A) = A^H).
     @param[in]
@@ -633,9 +636,6 @@ rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle handle, rocspar
     @param[inout]
     y           array of m elements (op(A) = A) or n elements (op(A) = A^T or
                 op(A) = A^H).
-    @param[in]
-    info        [optional] information collected by rocsparse_csrmv_analysis.
-                if nullptr is passed, general csrmv routine will be called.
 
     ********************************************************************/
 ROCSPARSE_EXPORT
@@ -649,10 +649,10 @@ rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
                                   const float* csr_val,
                                   const rocsparse_int* csr_row_ptr,
                                   const rocsparse_int* csr_col_ind,
+                                  rocsparse_mat_info info,
                                   const float* x,
                                   const float* beta,
-                                  float* y,
-                                  const rocsparse_mat_info info);
+                                  float* y);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
@@ -665,10 +665,10 @@ rocsparse_status rocsparse_dcsrmv(rocsparse_handle handle,
                                   const double* csr_val,
                                   const rocsparse_int* csr_row_ptr,
                                   const rocsparse_int* csr_col_ind,
+                                  rocsparse_mat_info info,
                                   const double* x,
                                   const double* beta,
-                                  double* y,
-                                  const rocsparse_mat_info info);
+                                  double* y);
 /*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
@@ -681,10 +681,10 @@ rocsparse_status rocsparse_ccsrmv(rocsparse_handle handle,
                                   const rocsparse_float_complex* csr_val,
                                   const rocsparse_int* csr_row_ptr,
                                   const rocsparse_int* csr_col_ind,
+                                  rocsparse_mat_info info,
                                   const rocsparse_float_complex* x,
                                   const rocsparse_float_complex* beta,
-                                  rocsparse_float_complex* y,
-                                  const rocsparse_mat_info info);
+                                  rocsparse_float_complex* y);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
@@ -697,10 +697,10 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
                                   const rocsparse_double_complex* csr_val,
                                   const rocsparse_int* csr_row_ptr,
                                   const rocsparse_int* csr_col_ind,
+                                  rocsparse_mat_info info,
                                   const rocsparse_double_complex* x,
                                   const rocsparse_double_complex* beta,
-                                  rocsparse_double_complex* y,
-                                  const rocsparse_mat_info info);
+                                  rocsparse_double_complex* y);
 */
 
 /*! \brief SPARSE Level 2 API

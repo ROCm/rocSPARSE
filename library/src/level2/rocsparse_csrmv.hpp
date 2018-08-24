@@ -20,7 +20,7 @@
 #define ROW_BITS 32
 #define WG_SIZE 256
 
-template <typename T, rocsparse_int SUBWAVE_SIZE>
+template <typename T, rocsparse_int WF_SIZE>
 __global__ void csrmvn_general_kernel_host_pointer(rocsparse_int m,
                                                    T alpha,
                                                    const rocsparse_int* __restrict__ csr_row_ptr,
@@ -31,11 +31,11 @@ __global__ void csrmvn_general_kernel_host_pointer(rocsparse_int m,
                                                    T* __restrict__ y,
                                                    rocsparse_index_base idx_base)
 {
-    csrmvn_general_device<T, SUBWAVE_SIZE>(
+    csrmvn_general_device<T, WF_SIZE>(
         m, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y, idx_base);
 }
 
-template <typename T, rocsparse_int SUBWAVE_SIZE>
+template <typename T, rocsparse_int WF_SIZE>
 __global__ void csrmvn_general_kernel_device_pointer(rocsparse_int m,
                                                      const T* alpha,
                                                      const rocsparse_int* __restrict__ csr_row_ptr,
@@ -46,7 +46,7 @@ __global__ void csrmvn_general_kernel_device_pointer(rocsparse_int m,
                                                      T* __restrict__ y,
                                                      rocsparse_index_base idx_base)
 {
-    csrmvn_general_device<T, SUBWAVE_SIZE>(
+    csrmvn_general_device<T, WF_SIZE>(
         m, *alpha, csr_row_ptr, csr_col_ind, csr_val, x, *beta, y, idx_base);
 }
 
@@ -105,10 +105,10 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                           const T* csr_val,
                                           const rocsparse_int* csr_row_ptr,
                                           const rocsparse_int* csr_col_ind,
+                                          rocsparse_mat_info info,
                                           const T* x,
                                           const T* beta,
-                                          T* y,
-                                          const rocsparse_mat_info info)
+                                          T* y)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -252,10 +252,10 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
                                                  csr_val,
                                                  csr_row_ptr,
                                                  csr_col_ind,
+                                                 info->csrmv_info,
                                                  x,
                                                  beta,
-                                                 y,
-                                                 info->csrmv_info);
+                                                 y);
     }
 }
 
@@ -288,7 +288,7 @@ rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle handle,
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            if(handle->warp_size == 32)
+            if(handle->wavefront_size == 32)
             {
                 if(nnz_per_row < 4)
                 {
@@ -376,7 +376,7 @@ rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle handle,
                                        descr->base);
                 }
             }
-            else if(handle->warp_size == 64)
+            else if(handle->wavefront_size == 64)
             {
                 if(nnz_per_row < 4)
                 {
@@ -493,7 +493,7 @@ rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle handle,
                 return rocsparse_status_success;
             }
 
-            if(handle->warp_size == 32)
+            if(handle->wavefront_size == 32)
             {
                 if(nnz_per_row < 4)
                 {
@@ -581,7 +581,7 @@ rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle handle,
                                        descr->base);
                 }
             }
-            else if(handle->warp_size == 64)
+            else if(handle->wavefront_size == 64)
             {
                 if(nnz_per_row < 4)
                 {
@@ -712,10 +712,10 @@ rocsparse_status rocsparse_csrmv_adaptive_template(rocsparse_handle handle,
                                                    const T* csr_val,
                                                    const rocsparse_int* csr_row_ptr,
                                                    const rocsparse_int* csr_col_ind,
+                                                   rocsparse_csrmv_info info,
                                                    const T* x,
                                                    const T* beta,
-                                                   T* y,
-                                                   const rocsparse_csrmv_info info)
+                                                   T* y)
 {
     // Check if info matches current matrix and options
     if(info->trans != trans)

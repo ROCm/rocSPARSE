@@ -11,7 +11,7 @@ __device__ int __llvm_amdgcn_readlane(int index, int offset) __asm("llvm.amdgcn.
 
 #if defined(__HIP_PLATFORM_HCC__)
 // Swizzle-based float wavefront reduction
-template <rocsparse_int SUBWAVE_SIZE>
+template <rocsparse_int WF_SIZE>
 __device__ float wf_reduce(float sum)
 {
     typedef union flt_b32
@@ -24,37 +24,37 @@ __device__ float wf_reduce(float sum)
     flt_b32_t temp_sum;
     temp_sum.val = sum;
 
-    if(SUBWAVE_SIZE > 1)
+    if(WF_SIZE > 1)
     {
         upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x80b1);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 2)
+    if(WF_SIZE > 2)
     {
         upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x804e);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 4)
+    if(WF_SIZE > 4)
     {
         upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x101f);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 8)
+    if(WF_SIZE > 8)
     {
         upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x201f);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 16)
+    if(WF_SIZE > 16)
     {
         upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x401f);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 32)
+    if(WF_SIZE > 32)
     {
         upper_sum.b32 = __llvm_amdgcn_readlane(temp_sum.b32, 32);
         temp_sum.val += upper_sum.val;
@@ -65,7 +65,7 @@ __device__ float wf_reduce(float sum)
 }
 
 // Swizzle-based double wavefront reduction
-template <rocsparse_int SUBWAVE_SIZE>
+template <rocsparse_int WF_SIZE>
 __device__ double wf_reduce(double sum)
 {
     typedef union dbl_b32
@@ -78,42 +78,42 @@ __device__ double wf_reduce(double sum)
     dbl_b32_t temp_sum;
     temp_sum.val = sum;
 
-    if(SUBWAVE_SIZE > 1)
+    if(WF_SIZE > 1)
     {
         upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x80b1);
         upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x80b1);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 2)
+    if(WF_SIZE > 2)
     {
         upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x804e);
         upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x804e);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 4)
+    if(WF_SIZE > 4)
     {
         upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x101f);
         upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x101f);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 8)
+    if(WF_SIZE > 8)
     {
         upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x201f);
         upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x201f);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 16)
+    if(WF_SIZE > 16)
     {
         upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x401f);
         upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x401f);
         temp_sum.val += upper_sum.val;
     }
 
-    if(SUBWAVE_SIZE > 32)
+    if(WF_SIZE > 32)
     {
         upper_sum.b32[0] = __llvm_amdgcn_readlane(temp_sum.b32[0], 32);
         upper_sum.b32[1] = __llvm_amdgcn_readlane(temp_sum.b32[1], 32);
@@ -124,10 +124,10 @@ __device__ double wf_reduce(double sum)
     return sum;
 }
 #elif defined(__HIP_PLATFORM_NVCC__)
-template <rocsparse_int SUBWAVE_SIZE, typename T>
+template <rocsparse_int WF_SIZE, typename T>
 __device__ T wf_reduce(T sum)
 {
-    for(rocsparse_int i = SUBWAVE_SIZE >> 1; i > 0; i >>= 1)
+    for(rocsparse_int i = WF_SIZE >> 1; i > 0; i >>= 1)
     {
         sum += __shfl_down_sync(0xffffffff, sum, i);
     }
@@ -136,7 +136,7 @@ __device__ T wf_reduce(T sum)
 }
 #endif
 
-template <typename T, rocsparse_int SUBWAVE_SIZE>
+template <typename T, rocsparse_int WF_SIZE>
 static __device__ void csrmvn_general_device(rocsparse_int m,
                                              T alpha,
                                              const rocsparse_int* row_offset,
@@ -147,33 +147,33 @@ static __device__ void csrmvn_general_device(rocsparse_int m,
                                              T* y,
                                              rocsparse_index_base idx_base)
 {
-    rocsparse_int tid    = hipThreadIdx_x;
-    rocsparse_int gid    = hipBlockIdx_x * hipBlockDim_x + tid;
-    rocsparse_int lid    = tid & (SUBWAVE_SIZE - 1);
-    rocsparse_int nwarps = hipGridDim_x * hipBlockDim_x / SUBWAVE_SIZE;
+    rocsparse_int tid = hipThreadIdx_x;
+    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
+    rocsparse_int lid = tid & (WF_SIZE - 1);
+    rocsparse_int nwf = hipGridDim_x * hipBlockDim_x / WF_SIZE;
 
-    // Loop over rows each subwave processes
-    for(rocsparse_int row = gid / SUBWAVE_SIZE; row < m; row += nwarps)
+    // Loop over rows
+    for(rocsparse_int row = gid / WF_SIZE; row < m; row += nwf)
     {
-        // Each subwave processes one row
+        // Each wavefront processes one row
         rocsparse_int row_start = row_offset[row] - idx_base;
         rocsparse_int row_end   = row_offset[row + 1] - idx_base;
 
-        T sum = 0.0;
+        T sum = static_cast<T>(0);
 
-        // Loop over non-zero elements of subwave row
-        for(rocsparse_int j = row_start + lid; j < row_end; j += SUBWAVE_SIZE)
+        // Loop over non-zero elements
+        for(rocsparse_int j = row_start + lid; j < row_end; j += WF_SIZE)
         {
             sum = fma(alpha * csr_val[j], __ldg(x + csr_col_ind[j] - idx_base), sum);
         }
 
         // Obtain row sum using parallel reduction
-        sum = wf_reduce<SUBWAVE_SIZE>(sum);
+        sum = wf_reduce<WF_SIZE>(sum);
 
-        // First thread of each subwave writes result into global memory
+        // First thread of each wavefront writes result into global memory
         if(lid == 0)
         {
-            if(beta == 0)
+            if(beta == static_cast<T>(0))
             {
                 y[row] = sum;
             }
