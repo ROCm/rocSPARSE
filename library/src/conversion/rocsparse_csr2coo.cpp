@@ -68,7 +68,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
     dim3 csr2coo_blocks((m - 1) / CSR2COO_DIM + 1);
     dim3 csr2coo_threads(CSR2COO_DIM);
 
-    if(handle->warp_size == 32)
+    if(handle->wavefront_size == 32)
     {
         if(nnz_per_row < 4)
         {
@@ -131,7 +131,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
                                idx_base);
         }
     }
-    else if(handle->warp_size == 64)
+    else if(handle->wavefront_size == 64)
     {
         if(nnz_per_row < 4)
         {

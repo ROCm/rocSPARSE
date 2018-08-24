@@ -38,8 +38,8 @@ struct _rocsparse_handle
     int device;
     // device properties
     hipDeviceProp_t properties;
-    // device warp size
-    int warp_size;
+    // device wavefront size
+    int wavefront_size;
     // stream ; default stream is system stream NULL
     hipStream_t stream = 0;
     // pointer mode ; default mode is host
