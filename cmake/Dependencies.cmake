@@ -8,7 +8,7 @@
 find_package(Git REQUIRED)
 
 # DownloadProject package
-include(cmake/DownloadProject.cmake)
+include(cmake/DownloadProject/DownloadProject.cmake)
 
 # HIP configuration
 if(HIP_PLATFORM STREQUAL "hcc")
