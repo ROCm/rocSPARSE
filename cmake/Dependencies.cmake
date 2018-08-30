@@ -8,7 +8,7 @@
 find_package(Git REQUIRED)
 
 # DownloadProject package
-include(cmake/DownloadProject.cmake)
+include(cmake/DownloadProject/DownloadProject.cmake)
 
 # HIP configuration
 if(HIP_PLATFORM STREQUAL "hcc")
@@ -47,7 +47,7 @@ if(HIP_PLATFORM STREQUAL "hcc")
     message(STATUS "Downloading rocPRIM.")
     download_project(PROJ    rocPRIM
          GIT_REPOSITORY      https://github.com/ROCmSoftwarePlatform/rocPRIM.git
-         GIT_TAG             master
+         GIT_TAG             0702a4a797f021bf7098d6b8cca046c85f4cb22d # TODO change back to master once rocm docker image is updated
          INSTALL_DIR         ${ROCPRIM_ROOT}
          CMAKE_ARGS          -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_TEST=OFF -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hcc
          LOG_DOWNLOAD        TRUE
