@@ -21,11 +21,15 @@ set(rocsparse_source
 # Level2
   src/level2/rocsparse_coomv.cpp
   src/level2/rocsparse_csrmv.cpp
+  src/level2/rocsparse_csrsv.cpp
   src/level2/rocsparse_ellmv.cpp
   src/level2/rocsparse_hybmv.cpp
 
 # Level3
   src/level3/rocsparse_csrmm.cpp
+
+# Preconditioner
+  src/precond/rocsparse_csrilu0.cpp
 
 # Conversion
   src/conversion/rocsparse_csr2coo.cpp
