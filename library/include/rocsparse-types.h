@@ -55,6 +55,18 @@ typedef enum rocsparse_matrix_type_ {
     rocsparse_matrix_type_triangular = 3  /**< triangular matrix type. */
 } rocsparse_matrix_type;
 
+/*! \brief Used to indicate if the diagonal entries are unity. */
+typedef enum rocsparse_diag_type_ {
+    rocsparse_diag_type_non_unit = 0, /**< diagonal entries are non-unity. */
+    rocsparse_diag_type_unit     = 1  /**< diagonal entries are unity */
+} rocsparse_diag_type;
+
+/*! \brief Used to specify the matrix fill mode. */
+typedef enum rocsparse_fill_mode_ {
+    rocsparse_fill_mode_lower = 0, /**< lower triangular part is stored. */
+    rocsparse_fill_mode_upper = 1  /**< upper triangular part is stored. */
+} rocsparse_fill_mode;
+
 /*! \brief Used to specify where the operation is performed on. */
 typedef enum rocsparse_action_ {
     rocsparse_action_symbolic = 0, /**< Operate only on indices. */
@@ -67,6 +79,17 @@ typedef enum rocsparse_hyb_partition_ {
     rocsparse_hyb_partition_user = 1, /**< user given ELL nnz per row. */
     rocsparse_hyb_partition_max  = 2  /**< max ELL nnz per row, no COO part. */
 } rocsparse_hyb_partition;
+
+/*! \brief Used to specify policy in triangular solvers and factorizations. */
+typedef enum rocsparse_solve_policy_ {
+    rocsparse_solve_policy_auto = 0 /**< automatically decide on level information. */
+} rocsparse_solve_policy;
+
+/*! \brief Used to specify policy in analysis functions. */
+typedef enum rocsparse_analysis_policy_ {
+    rocsparse_analysis_policy_reuse = 0,
+    rocsparse_analysis_policy_force = 1
+} rocsparse_analysis_policy;
 
 /* ==================================================================================== */
 /**
