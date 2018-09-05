@@ -111,6 +111,29 @@ rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr, rocsparse_mat
 ROCSPARSE_EXPORT
 rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr);
 
+
+
+
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr, rocsparse_fill_mode fill_mode);
+
+ROCSPARSE_EXPORT
+rocsparse_fill_mode rocsparse_get_mat_fill_mode(const rocsparse_mat_descr descr);
+
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr, rocsparse_diag_type diag_type);
+
+ROCSPARSE_EXPORT
+rocsparse_diag_type rocsparse_get_mat_diag_type(const rocsparse_mat_descr descr);
+
+
+
+
+
+
+
 /********************************************************************************
  * \brief rocsparse_hyb_mat is a structure holding the rocsparse HYB matrix. It
  * must be initialized using rocsparse_create_hyb_mat() and the returned handle

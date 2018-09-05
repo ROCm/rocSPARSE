@@ -252,6 +252,81 @@ rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr)
     return descr->type;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr, rocsparse_fill_mode fill_mode)
+{
+    // Check if descriptor is valid
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    if(fill_mode != rocsparse_fill_mode_lower && fill_mode != rocsparse_fill_mode_upper)
+    {
+        return rocsparse_status_invalid_value;
+    }
+    descr->fill_mode = fill_mode;
+    return rocsparse_status_success;
+}
+
+rocsparse_fill_mode rocsparse_get_mat_fill_mode(const rocsparse_mat_descr descr)
+{
+    // If descriptor is invalid, default fill mode is returned
+    if(descr == nullptr)
+    {
+        return rocsparse_fill_mode_lower;
+    }
+    return descr->fill_mode;
+}
+
+
+rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr, rocsparse_diag_type diag_type)
+{
+    // Check if descriptor is valid
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    if(diag_type != rocsparse_diag_type_unit && diag_type != rocsparse_diag_type_non_unit)
+    {
+        return rocsparse_status_invalid_value;
+    }
+    descr->diag_type = diag_type;
+    return rocsparse_status_success;
+}
+
+rocsparse_diag_type rocsparse_get_mat_diag_type(const rocsparse_mat_descr descr)
+{
+    // If descriptor is invalid, default diagonal type is returned
+    if(descr == nullptr)
+    {
+        return rocsparse_diag_type_non_unit;
+    }
+    return descr->diag_type;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /********************************************************************************
  * \brief rocsparse_create_hyb_mat is a structure holding the rocsparse HYB
  * matrix. It must be initialized using rocsparse_create_hyb_mat()
@@ -359,10 +434,35 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
         return rocsparse_status_success;
     }
 
+    // Uncouple shared meta data
+    // TODO add more crossover data here
+    if(info->csrsv_lower_info == info->csrilu0_info)
+    {
+        info->csrsv_lower_info = nullptr;
+    }
+
     // Clear csrmv info struct
-    if(info->csrmv_built == true)
+    if(info->csrmv_info != nullptr)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
+    }
+
+    // Clear csrilu0 info struct
+    if(info->csrilu0_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrilu0_info));
+    }
+
+    // Clear csrsv upper info struct
+    if(info->csrsv_upper_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsv_upper_info));
+    }
+
+    // Clear csrsv lower info struct
+    if(info->csrsv_lower_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsv_lower_info));
     }
 
     // Destruct
