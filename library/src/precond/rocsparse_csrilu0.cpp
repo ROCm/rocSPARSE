@@ -126,13 +126,52 @@ extern "C" rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
         return rocsparse_status_success;
     }
 
+    // Differentiate the analysis policies
+    if(analysis == rocsparse_analysis_policy_reuse)
+    {
+        // We try to re-use already analyzed lower part, if available.
+        // It is the user's responsibility that this data is still valid,
+        // since he passed the 'reuse' flag.
+
+        // If csrilu0 meta data is already available, do nothing
+        if(info->csrilu0_info != nullptr)
+        {
+            return rocsparse_status_success;
+        }
+
+        // Check for other lower analysis meta data
+        rocsparse_csrtr_info reuse = nullptr;
+
+        // csrsv_lower meta data
+        if(info->csrsv_lower_info != nullptr)
+        {
+            reuse = info->csrsv_lower_info;
+        }
+
+        // TODO add more crossover data here
+
+
+
+
+        // If data has been found, use it
+        if(reuse != nullptr)
+        {
+            info->csrilu0_info = reuse;
+
+            return rocsparse_status_success;
+        }
+    }
+
+    // User is explicitly asking to force a re-analysis, or no valid data has been
+    // found to be re-used.
+
     // Clear csrilu0 info
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrilu0_info));
 
     // Create csrilu0 info
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrtr_info(&info->csrilu0_info));
 
-    // Call analysis routine (shared with csrsv and csric0)
+    // Perform analysis
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrtr_analysis(handle,
                                                        rocsparse_operation_none,
                                                        m,
@@ -141,8 +180,6 @@ extern "C" rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
                                                        csr_row_ptr,
                                                        csr_col_ind,
                                                        info->csrilu0_info,
-                                                       solve,
-                                                       analysis,
                                                        temp_buffer));
 
     return rocsparse_status_success;

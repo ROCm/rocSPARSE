@@ -232,8 +232,6 @@ extern "C" rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
                                                            csr_row_ptr,
                                                            csr_col_ind,
                                                            info->csrsv_upper_info,
-                                                           solve,
-                                                           analysis,
                                                            temp_buffer));
     }
     else
@@ -254,11 +252,12 @@ extern "C" rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
             // Check for other lower analysis meta data
             rocsparse_csrtr_info reuse = nullptr;
 
-            // ILU0 meta data
+            // csrilu0 meta data
             if(info->csrilu0_info != nullptr)
             {
                 reuse = info->csrilu0_info;
             }
+
             // TODO add more crossover data here
 
 
@@ -290,8 +289,6 @@ extern "C" rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
                                                            csr_row_ptr,
                                                            csr_col_ind,
                                                            info->csrsv_lower_info,
-                                                           solve,
-                                                           analysis,
                                                            temp_buffer));
     }
 
@@ -301,6 +298,27 @@ extern "C" rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
 extern "C" rocsparse_status rocsparse_csrsv_clear(const rocsparse_mat_descr descr,
                                                   rocsparse_mat_info info)
 {
+    // Determine which info meta data should be deleted
+    if(descr->fill_mode == rocsparse_fill_mode_lower)
+    {
+        // If meta data is shared, do not delete anything
+        if(info->csrilu0_info == info->csrsv_lower_info)
+        {
+            info->csrsv_lower_info = nullptr;
+
+            return rocsparse_status_success;
+        }
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsv_lower_info));
+        info->csrsv_lower_info = nullptr;
+    }
+    else if(descr->fill_mode == rocsparse_fill_mode_upper)
+    {
+        // Upper info has no shares (yet)
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsv_upper_info));
+        info->csrsv_upper_info = nullptr;
+    }
+
     return rocsparse_status_success;
 }
 

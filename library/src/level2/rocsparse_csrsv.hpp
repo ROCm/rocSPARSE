@@ -23,8 +23,6 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                                  const rocsparse_int* csr_row_ptr,
                                                  const rocsparse_int* csr_col_ind,
                                                  rocsparse_csrtr_info info,
-                                                 rocsparse_solve_policy solve,
-                                                 rocsparse_analysis_policy analysis,
                                                  void* temp_buffer)
 {
     // Stream
