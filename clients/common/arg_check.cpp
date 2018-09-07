@@ -64,6 +64,19 @@ void verify_rocsparse_status_invalid_value(rocsparse_status status, const char* 
 #endif
 }
 
+void verify_rocsparse_status_zero_pivot(rocsparse_status status, const char* message)
+{
+#ifdef GOOGLE_TEST
+    ASSERT_EQ(status, rocsparse_status_zero_pivot);
+#else
+    if(status != rocsparse_status_zero_pivot)
+    {
+        std::cerr << "rocSPARSE TEST ERROR: status != rocsparse_status_zero_pivot, ";
+        std::cerr << message << std::endl;
+    }
+#endif
+}
+
 void verify_rocsparse_status_invalid_handle(rocsparse_status status)
 {
 #ifdef GOOGLE_TEST

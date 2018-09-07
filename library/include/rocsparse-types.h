@@ -104,7 +104,8 @@ typedef enum rocsparse_status_ {
     rocsparse_status_memory_error    = 5, /**< failed memory allocation, copy, dealloc. */
     rocsparse_status_internal_error  = 6, /**< other internal library failure. */
     rocsparse_status_invalid_value   = 7, /**< invalid value parameter. */
-    rocsparse_status_arch_mismatch   = 8  /**< device arch is not supported. */
+    rocsparse_status_arch_mismatch   = 8, /**< device arch is not supported. */
+    rocsparse_status_zero_pivot      = 9  /**< encountered zero pivot. */
 } rocsparse_status;
 
 /*! \brief Indicates the pointer is device pointer or host pointer. */
