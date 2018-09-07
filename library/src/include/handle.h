@@ -175,6 +175,7 @@ struct _rocsparse_csrtr_info
     std::vector<rocsparse_int> rows_per_level;
     rocsparse_int* row_map = nullptr;
     rocsparse_int* csr_diag_ind = nullptr;
+    rocsparse_int* zero_pivot = nullptr;
 
     // some data to verify correct execution
     rocsparse_int m;

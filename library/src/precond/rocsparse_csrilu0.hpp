@@ -109,15 +109,14 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
     // Buffer
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
-    // zero pivot
-    rocsparse_int* d_zero_pivot = reinterpret_cast<rocsparse_int*>(ptr);
+    ptr += 256;
+    ptr += 256;
     ptr += 256;
 
     // done array
     rocsparse_int* d_done_array = reinterpret_cast<rocsparse_int*>(ptr);
 
     // Initialize buffers
-    RETURN_IF_HIP_ERROR(hipMemcpy(d_zero_pivot, &m, sizeof(rocsparse_int), hipMemcpyHostToDevice));
     RETURN_IF_HIP_ERROR(hipMemset(d_done_array, 0, sizeof(rocsparse_int) * m));
 
 #define CSRILU0_DIM 256
@@ -138,7 +137,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                            info->csrilu0_info->csr_diag_ind,
                            d_done_array,
                            info->csrilu0_info->row_map,
-                           d_zero_pivot,
+                           info->csrilu0_info->zero_pivot,
                            descr->base);
     }
     else if(handle->wavefront_size == 64)
@@ -157,7 +156,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               d_zero_pivot,
+                               info->csrilu0_info->zero_pivot,
                                descr->base);
         }
         else if(info->csrilu0_info->max_nnz <= 128)
@@ -174,7 +173,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               d_zero_pivot,
+                               info->csrilu0_info->zero_pivot,
                                descr->base);
         }
         else if(info->csrilu0_info->max_nnz <= 256)
@@ -191,7 +190,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               d_zero_pivot,
+                               info->csrilu0_info->zero_pivot,
                                descr->base);
         }
         else if(info->csrilu0_info->max_nnz <= 512)
@@ -208,7 +207,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               d_zero_pivot,
+                               info->csrilu0_info->zero_pivot,
                                descr->base);
         }
         else if(info->csrilu0_info->max_nnz <= 1024)
@@ -225,7 +224,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               d_zero_pivot,
+                               info->csrilu0_info->zero_pivot,
                                descr->base);
         }
         else
@@ -243,7 +242,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               d_zero_pivot,
+                               info->csrilu0_info->zero_pivot,
                                descr->base);
         }
     }
@@ -252,14 +251,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
         return rocsparse_status_arch_mismatch;
     }
 #undef CSRILU0_DIM
-/*
-// TODO this is blocking somehow
-    int zero;
-    hipMemcpyAsync(&zero, d_zero_pivot, sizeof(int), hipMemcpyDeviceToHost, stream);
 
-    if(zero != m)
-        printf("Zero pivot: %d\n", zero);
-*/
     return rocsparse_status_success;
 }
 
