@@ -1123,7 +1123,8 @@ rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
 
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_csrilu0_clear(rocsparse_mat_info info);
+rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle handle,
+                                         rocsparse_mat_info info);
 
 
 

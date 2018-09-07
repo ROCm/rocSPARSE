@@ -185,8 +185,24 @@ extern "C" rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
     return rocsparse_status_success;
 }
 
-extern "C" rocsparse_status rocsparse_csrilu0_clear(rocsparse_mat_info info)
+extern "C" rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle handle,
+                                                    rocsparse_mat_info info)
 {
+    // Check for valid handle and matrix descriptor
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+    else if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging
+    log_trace(handle,
+              "rocsparse_csrilu0_clear",
+              (const void*&)info);
+
     // If meta data is shared, do not delete anything
     if(info->csrilu0_info == info->csrsv_lower_info)
     {
@@ -251,6 +267,28 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle
                                                          rocsparse_mat_info info,
                                                          rocsparse_int* position)
 {
+    // Check for valid handle and matrix descriptor
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+    else if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging
+    log_trace(handle,
+              "rocsparse_csrilu0_zero_pivot",
+              (const void*&)info,
+              (const void*&)position);
+
+    // Check pointer arguments
+    if(position == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // TODO
     return rocsparse_status_success;
 }
