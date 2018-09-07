@@ -425,6 +425,23 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
                                  info->csrsv_lower_info :
                                  info->csrsv_upper_info;
 
+    // If m == 0 || nnz == 0 it can happen, that info structure is not created.
+    // In this case, always return -1.
+    if(csrsv == nullptr)
+    {
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_HIP_ERROR(hipMemset(position, -1, sizeof(rocsparse_int)));
+        }
+        else
+        {
+            *position = -1;
+        }
+
+        return rocsparse_status_success;
+    }
+
+    // Differentiate between pointer modes
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
         // rocsparse_pointer_mode_device

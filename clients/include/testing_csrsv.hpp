@@ -666,6 +666,7 @@ rocsparse_status testing_csrsv(Arguments argus)
             verify_rocsparse_status_success(status, "m >= 0 && nnz >= 0");
         }
 
+        // Test rocsparse_csrsv_solve
         status = rocsparse_csrsv_solve(handle, trans, m, nnz, &h_alpha, descr, dval, dptr, dcol, info, dx, dy, rocsparse_solve_policy_auto, buffer);
 
         if(m < 0 || nnz < 0)
@@ -676,6 +677,14 @@ rocsparse_status testing_csrsv(Arguments argus)
         {
             verify_rocsparse_status_success(status, "m >= 0 && nnz >= 0");
         }
+
+        // Test rocsparse_csrsv_zero_pivot
+        rocsparse_int zero_pivot;
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_zero_pivot(handle, descr, info, &zero_pivot));
+
+        // Zero pivot should be -1
+        rocsparse_int res = -1;
+        unit_check_general(1, 1, 1, &res, &zero_pivot);
 
         CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_clear(handle, descr, info));
 
