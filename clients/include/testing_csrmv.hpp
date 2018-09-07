@@ -280,20 +280,20 @@ void testing_csrmv_bad_arg(void)
         verify_rocsparse_status_invalid_handle(status);
     }
 
-    // testing rocsparse_csrmv_analysis_clear
+    // testing rocsparse_csrmv_clear
 
     // testing for(nullptr == info)
     {
         rocsparse_mat_info info_null = nullptr;
 
-        status = rocsparse_csrmv_analysis_clear(handle, info_null);
+        status = rocsparse_csrmv_clear(handle, info_null);
         verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
     }
     // testing for(nullptr == handle)
     {
         rocsparse_handle handle_null = nullptr;
 
-        status = rocsparse_csrmv_analysis_clear(handle_null, info);
+        status = rocsparse_csrmv_clear(handle_null, info);
         verify_rocsparse_status_invalid_handle(status);
     }
 }
@@ -414,7 +414,7 @@ rocsparse_status testing_csrmv(Arguments argus)
 
         if(adaptive)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_clear(handle, info));
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_clear(handle, info));
         }
 
         return rocsparse_status_success;
@@ -656,8 +656,8 @@ rocsparse_status testing_csrmv(Arguments argus)
 
         if(adaptive)
         {
-            unit_check_near(1, m, hy_gold.data(), hy_1.data());
-            unit_check_near(1, m, hy_gold.data(), hy_2.data());
+            unit_check_near(1, m, 1, hy_gold.data(), hy_1.data());
+            unit_check_near(1, m, 1, hy_gold.data(), hy_2.data());
         }
         else
         {
@@ -734,7 +734,7 @@ rocsparse_status testing_csrmv(Arguments argus)
 
     if(adaptive)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_analysis_clear(handle, info));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_clear(handle, info));
     }
 
     return rocsparse_status_success;
