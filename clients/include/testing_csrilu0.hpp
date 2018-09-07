@@ -483,6 +483,7 @@ rocsparse_status testing_csrilu0(Arguments argus)
             verify_rocsparse_status_success(status, "m >= 0 && nnz >= 0");
         }
 
+        // Test rocsparse_csrilu0
         status = rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr, dcol, info, rocsparse_solve_policy_auto, buffer);
 
         if(m < 0 || nnz < 0)
@@ -494,6 +495,15 @@ rocsparse_status testing_csrilu0(Arguments argus)
             verify_rocsparse_status_success(status, "m >= 0 && nnz >= 0");
         }
 
+        // Test rocsparse_csrilu0_zero_pivot
+        rocsparse_int zero_pivot;
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_zero_pivot(handle, info, &zero_pivot));
+
+        // Zero pivot should be -1
+        rocsparse_int res = -1;
+        unit_check_general(1, 1, 1, &res, &zero_pivot);
+
+        // Test rocsparse_csrilu0_clear
         CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_clear(handle, info));
 
         return rocsparse_status_success;
@@ -557,15 +567,17 @@ rocsparse_status testing_csrilu0(Arguments argus)
     auto dcol_managed =
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
     auto dval_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
+    auto d_position_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int)), device_free};
 
     rocsparse_int* dptr = (rocsparse_int*)dptr_managed.get();
     rocsparse_int* dcol = (rocsparse_int*)dcol_managed.get();
     T* dval             = (T*)dval_managed.get();
+    rocsparse_int* d_position = (rocsparse_int*)d_position_managed.get();
 
-    if(!dval || !dptr || !dcol)
+    if(!dval || !dptr || !dcol || !d_position)
     {
         verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                        "!dval || !dptr || !dcol");
+                                        "!dval || !dptr || !dcol || !d_position");
         return rocsparse_status_memory_error;
     }
 
@@ -597,23 +609,48 @@ rocsparse_status testing_csrilu0(Arguments argus)
     {
         CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr, dcol, info, rocsparse_solve_policy_auto, dbuffer));
 
+        // Pointer mode host
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
+        rocsparse_int hposition_1;
+        rocsparse_status pivot_status_1;
+        pivot_status_1 = rocsparse_csrilu0_zero_pivot(handle, info, &hposition_1);
+
+        // Pointer mode device
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+
+        rocsparse_status pivot_status_2;
+        pivot_status_2 = rocsparse_csrilu0_zero_pivot(handle, info, d_position);
+
         // Copy output from device to CPU
+        rocsparse_int hposition_2;
         std::vector<T> result(nnz);
         CHECK_HIP_ERROR(hipMemcpy(result.data(), dval, sizeof(T) * nnz, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(&hposition_2, d_position, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         // Host csrilu0
         double cpu_time_used = get_time_us();
 
-        rocsparse_int zero_piv = ILU0(m, hcsr_row_ptr.data(), hcsr_col_ind.data(), hcsr_val.data(), idx_base);
+        rocsparse_int position_gold = ILU0(m, hcsr_row_ptr.data(), hcsr_col_ind.data(), hcsr_val.data(), idx_base);
 
         cpu_time_used = get_time_us() - cpu_time_used;
 
-        // TODO compare zero pivot
-        if(zero_piv == -1)
+        unit_check_general(1, 1, 1, &position_gold, &hposition_1);
+        unit_check_general(1, 1, 1, &position_gold, &hposition_2);
+
+        if(hposition_1 != -1)
         {
-//            unit_check_near(1, m, 1, hy_gold.data(), hy_1.data());
-            unit_check_general(1, nnz, 1, hcsr_val.data(), result.data());
+            verify_rocsparse_status_zero_pivot(pivot_status_1, "expected rocsparse_status_zero_pivot");
+            return rocsparse_status_success;
         }
+
+        if(hposition_2 != -1)
+        {
+            verify_rocsparse_status_zero_pivot(pivot_status_2, "expected rocsparse_status_zero_pivot");
+            return rocsparse_status_success;
+        }
+
+        unit_check_general(1, nnz, 1, hcsr_val.data(), result.data());
     }
 /*
     if(argus.timing)

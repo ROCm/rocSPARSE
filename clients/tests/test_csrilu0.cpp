@@ -20,10 +20,10 @@ int csrilu0_M_range[] = {-1, 0, 50, 647};
 base csrilu0_idxbase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 
 std::string csrilu0_bin[] = {"rma10.bin",
-                             //"mac_econ_fwd500.bin",
+                             "mac_econ_fwd500.bin",
                              "mc2depi.bin",
-                             //"scircuit.bin",
-                             //"ASIC_320k.bin",
+                             "scircuit.bin",
+                             "ASIC_320k.bin",
                              "bmwcra_1.bin",
                              "nos1.bin",
                              "nos2.bin",

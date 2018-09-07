@@ -686,6 +686,7 @@ rocsparse_status testing_csrsv(Arguments argus)
         rocsparse_int res = -1;
         unit_check_general(1, 1, 1, &res, &zero_pivot);
 
+        // Test rocsparse_csrsv_clear
         CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_clear(handle, descr, info));
 
         return rocsparse_status_success;
