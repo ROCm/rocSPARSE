@@ -388,14 +388,11 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
     info->csrmv_info->csr_row_ptr = csr_row_ptr;
     info->csrmv_info->csr_col_ind = csr_col_ind;
 
-    // Set built flag
-    info->csrmv_built = true;
-
     return rocsparse_status_success;
 }
 
-extern "C" rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle handle,
-                                                           rocsparse_mat_info info)
+extern "C" rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle,
+                                                  rocsparse_mat_info info)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -408,11 +405,11 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle hand
     }
 
     // Logging
-    log_trace(handle, "rocsparse_csrmv_analysis_clear", (const void*&)info);
+    log_trace(handle, "rocsparse_csrmv_clear", (const void*&)info);
 
     // Destroy csrmv info struct
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
-    info->csrmv_built = false;
+    info->csrmv_info = nullptr;
 
     return rocsparse_status_success;
 }
