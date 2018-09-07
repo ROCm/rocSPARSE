@@ -13,15 +13,20 @@
 
 typedef rocsparse_index_base base;
 typedef rocsparse_operation op;
-typedef std::tuple<int, double, base, op> csrsv_tuple;
-typedef std::tuple<double, base, op, std::string> csrsv_bin_tuple;
+typedef rocsparse_diag_type diag;
+typedef rocsparse_fill_mode fill;
+
+typedef std::tuple<int, double, base, op, diag, fill> csrsv_tuple;
+typedef std::tuple<double, base, op, diag, fill, std::string> csrsv_bin_tuple;
 
 int csrsv_M_range[] = {-1, 0, 50, 647};
 
-double csrsv_alpha_range[] = {1.0, 2.0, 3.0};
+double csrsv_alpha_range[] = {1.0, 2.3, -3.7};
 
 base csrsv_idxbase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 op csrsv_op_range[] = {rocsparse_operation_none};
+diag csrsv_diag_range[] = {rocsparse_diag_type_non_unit};
+fill csrsv_fill_range[] = {rocsparse_fill_mode_lower, rocsparse_fill_mode_upper};
 
 std::string csrsv_bin[] = {"rma10.bin",
                            "mac_econ_fwd500.bin",
@@ -34,8 +39,7 @@ std::string csrsv_bin[] = {"rma10.bin",
                            "nos3.bin",
                            "nos4.bin",
                            "nos5.bin",
-                           "nos6.bin",
-                           "nos7.bin"};
+                           "nos6.bin"};
 
 class parameterized_csrsv : public testing::TestWithParam<csrsv_tuple>
 {
@@ -58,10 +62,12 @@ class parameterized_csrsv_bin : public testing::TestWithParam<csrsv_bin_tuple>
 Arguments setup_csrsv_arguments(csrsv_tuple tup)
 {
     Arguments arg;
-    arg.M        = std::get<0>(tup);
-    arg.alpha    = std::get<1>(tup);
-    arg.idx_base = std::get<2>(tup);
-    arg.transA   = std::get<3>(tup);
+    arg.M         = std::get<0>(tup);
+    arg.alpha     = std::get<1>(tup);
+    arg.idx_base  = std::get<2>(tup);
+    arg.transA    = std::get<3>(tup);
+    arg.diag_type = std::get<4>(tup);
+    arg.fill_mode = std::get<5>(tup);
     arg.timing   = 0;
     return arg;
 }
@@ -69,14 +75,16 @@ Arguments setup_csrsv_arguments(csrsv_tuple tup)
 Arguments setup_csrsv_arguments(csrsv_bin_tuple tup)
 {
     Arguments arg;
-    arg.M        = -99;
-    arg.alpha    = std::get<0>(tup);
-    arg.idx_base = std::get<1>(tup);
-    arg.transA   = std::get<2>(tup);
+    arg.M         = -99;
+    arg.alpha     = std::get<0>(tup);
+    arg.idx_base  = std::get<1>(tup);
+    arg.transA    = std::get<2>(tup);
+    arg.diag_type = std::get<3>(tup);
+    arg.fill_mode = std::get<4>(tup);
     arg.timing   = 0;
 
     // Determine absolute path of test matrix
-    std::string bin_file = std::get<3>(tup);
+    std::string bin_file = std::get<5>(tup);
 
     // Get current executables absolute path
     char path_exe[PATH_MAX];
@@ -135,11 +143,15 @@ INSTANTIATE_TEST_CASE_P(csrsv,
                         testing::Combine(testing::ValuesIn(csrsv_M_range),
                                          testing::ValuesIn(csrsv_alpha_range),
                                          testing::ValuesIn(csrsv_idxbase_range),
-                                         testing::ValuesIn(csrsv_op_range)));
+                                         testing::ValuesIn(csrsv_op_range),
+                                         testing::ValuesIn(csrsv_diag_range),
+                                         testing::ValuesIn(csrsv_fill_range)));
 
 INSTANTIATE_TEST_CASE_P(csrsv_bin,
                         parameterized_csrsv_bin,
                         testing::Combine(testing::ValuesIn(csrsv_alpha_range),
                                          testing::ValuesIn(csrsv_idxbase_range),
                                          testing::ValuesIn(csrsv_op_range),
+                                         testing::ValuesIn(csrsv_diag_range),
+                                         testing::ValuesIn(csrsv_fill_range),
                                          testing::ValuesIn(csrsv_bin)));
