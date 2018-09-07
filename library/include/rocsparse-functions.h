@@ -732,8 +732,8 @@ rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
                                           const rocsparse_int* csr_row_ptr,
                                           const rocsparse_int* csr_col_ind,
                                           rocsparse_mat_info info,
-                                          rocsparse_solve_policy solve,
                                           rocsparse_analysis_policy analysis,
+                                          rocsparse_solve_policy solve,
                                           void* temp_buffer);
 
 ROCSPARSE_EXPORT
@@ -771,6 +771,12 @@ rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle handle,
                                         double* y,
                                         rocsparse_solve_policy policy,
                                         void* temp_buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
+                                            const rocsparse_mat_descr descr,
+                                            rocsparse_mat_info info,
+                                            rocsparse_int* position);
 
 
 
@@ -1110,8 +1116,8 @@ rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
                                             const rocsparse_int* csr_row_ptr,
                                             const rocsparse_int* csr_col_ind,
                                             rocsparse_mat_info info,
-                                            rocsparse_solve_policy solve,
                                             rocsparse_analysis_policy analysis,
+                                            rocsparse_solve_policy solve,
                                             void* temp_buffer);
 
 
@@ -1145,6 +1151,10 @@ rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
                                     rocsparse_solve_policy policy,
                                     void* temp_buffer);
 
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle,
+                                              rocsparse_mat_info info,
+                                              rocsparse_int* position);
 
 
 

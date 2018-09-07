@@ -5,6 +5,8 @@
 #include "rocsparse.h"
 #include "rocsparse_csrsv.hpp"
 
+#include <limits>
+
 /*
  * ===========================================================================
  *    C wrapper
@@ -123,8 +125,8 @@ extern "C" rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
                                                      const rocsparse_int* csr_row_ptr,
                                                      const rocsparse_int* csr_col_ind,
                                                      rocsparse_mat_info info,
-                                                     rocsparse_solve_policy solve,
                                                      rocsparse_analysis_policy analysis,
+                                                     rocsparse_solve_policy solve,
                                                      void* temp_buffer)
 {
     // Check for valid handle and matrix descriptor
@@ -358,4 +360,77 @@ extern "C" rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle handle,
 {
     return rocsparse_csrsv_solve_template<double>(
         handle, trans, m, nnz, alpha, descr, csr_val, csr_row_ind, csr_col_ind, info, x, y, policy, temp_buffer);
+}
+
+extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
+                                                       const rocsparse_mat_descr descr,
+                                                       rocsparse_mat_info info,
+                                                       rocsparse_int* position)
+{
+    // Check for valid handle and matrix descriptor
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+    else if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging
+    log_trace(handle,
+              "rocsparse_csrsv_zero_pivot",
+              (const void*&)info,
+              (const void*&)position);
+
+    // Check pointer arguments
+    if(position == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Stream
+//    hipStream_t stream = handle->stream;
+
+    // Synchronize stream TODO should not be required...
+//    hipStreamSynchronize(stream);
+
+    // Switch between upper and lower triangular
+    rocsparse_csrtr_info csrsv = (descr->fill_mode == rocsparse_fill_mode_lower) ?
+                                 info->csrsv_lower_info :
+                                 info->csrsv_upper_info;
+
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        // rocsparse_pointer_mode_device
+        rocsparse_int pivot;
+
+        RETURN_IF_HIP_ERROR(hipMemcpy(&pivot, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        if(pivot == std::numeric_limits<rocsparse_int>::max())
+        {
+            RETURN_IF_HIP_ERROR(hipMemset(position, -1, sizeof(rocsparse_int)));
+        }
+        else
+        {
+            RETURN_IF_HIP_ERROR(hipMemcpy(position, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToDevice));
+
+            return rocsparse_status_zero_pivot;
+        }
+    }
+    else
+    {
+        // rocsparse_pointer_mode_host
+        RETURN_IF_HIP_ERROR(hipMemcpy(position, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        // If no zero pivot is found, set -1
+        *position = (*position == std::numeric_limits<rocsparse_int>::max()) ? -1 : *position;
+
+        if(*position != -1)
+        {
+            return rocsparse_status_zero_pivot;
+        }
+    }
+
+    return rocsparse_status_success;
 }

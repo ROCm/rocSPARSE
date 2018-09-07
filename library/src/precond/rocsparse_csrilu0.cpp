@@ -43,8 +43,8 @@ extern "C" rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
                                                        const rocsparse_int* csr_row_ptr,
                                                        const rocsparse_int* csr_col_ind,
                                                        rocsparse_mat_info info,
-                                                       rocsparse_solve_policy solve,
                                                        rocsparse_analysis_policy analysis,
+                                                       rocsparse_solve_policy solve,
                                                        void* temp_buffer)
 {
     // Check for valid handle
@@ -245,4 +245,12 @@ extern "C" rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
                                               info,
                                               policy,
                                               temp_buffer);
+}
+
+extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle,
+                                                         rocsparse_mat_info info,
+                                                         rocsparse_int* position)
+{
+    // TODO
+    return rocsparse_status_success;
 }

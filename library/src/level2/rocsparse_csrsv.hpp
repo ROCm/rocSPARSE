@@ -12,6 +12,7 @@
 #include "utility.h"
 #include "csrsv_device.h"
 
+#include <limits>
 #include <hip/hip_runtime.h>
 #include <hipcub/hipcub.hpp>
 
@@ -66,8 +67,12 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     // Allocate buffer to hold diagonal entry point
     RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->csr_diag_ind, sizeof(rocsparse_int) * m));
 
+    // Allocate buffer to hold zero pivot
+    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->zero_pivot, sizeof(rocsparse_int)));
 
-
+    // Initialize zero pivot
+    rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
+    RETURN_IF_HIP_ERROR(hipMemcpy(info->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice));
 
     // Run analysis
 #define CSRILU0_DIM 1024
@@ -93,6 +98,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                d_max_depth,
                                d_total_spin,
                                d_max_nnz,
+                               info->zero_pivot,
                                descr->base);
         }
         else if(descr->fill_mode == rocsparse_fill_mode_lower)
@@ -111,6 +117,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                d_max_depth,
                                d_total_spin,
                                d_max_nnz,
+                               info->zero_pivot,
                                descr->base);
         }
     }
@@ -132,6 +139,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                d_max_depth,
                                d_total_spin,
                                d_max_nnz,
+                               info->zero_pivot,
                                descr->base);
         }
         else if(descr->fill_mode == rocsparse_fill_mode_lower)
@@ -150,6 +158,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                d_max_depth,
                                d_total_spin,
                                d_max_nnz,
+                               info->zero_pivot,
                                descr->base);
         }
     }
@@ -227,6 +236,7 @@ __global__ void csrsv_host_pointer(rocsparse_int m,
                                    rocsparse_int* __restrict__ done_array,
                                    rocsparse_int* __restrict__ map,
                                    rocsparse_int offset,
+                                   rocsparse_int* __restrict__ zero_pivot,
                                    rocsparse_index_base idx_base,
                                    rocsparse_fill_mode fill_mode,
                                    rocsparse_diag_type diag_type)
@@ -241,6 +251,7 @@ __global__ void csrsv_host_pointer(rocsparse_int m,
                                         done_array,
                                         map,
                                         offset,
+                                        zero_pivot,
                                         idx_base,
                                         fill_mode,
                                         diag_type);
@@ -258,15 +269,11 @@ __global__ void csrsv_device_pointer(rocsparse_int m,
                                      rocsparse_int* __restrict__ done_array,
                                      rocsparse_int* __restrict__ map,
                                      rocsparse_int offset,
+                                     rocsparse_int* __restrict__ zero_pivot,
                                      rocsparse_index_base idx_base,
                                      rocsparse_fill_mode fill_mode,
                                      rocsparse_diag_type diag_type)
 {
-    if(*alpha == static_cast<T>(0))
-    {
-        return;
-    }
-
     csrsv_device<T, BLOCKSIZE, WF_SIZE>(m,
                                         *alpha,
                                         csr_row_ptr,
@@ -277,6 +284,7 @@ __global__ void csrsv_device_pointer(rocsparse_int m,
                                         done_array,
                                         map,
                                         offset,
+                                        zero_pivot,
                                         idx_base,
                                         fill_mode,
                                         diag_type);
@@ -426,6 +434,10 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle handle,
     // Buffer
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
+    ptr += 256;
+    ptr += 256;
+    ptr += 256;
+
     // done array
     rocsparse_int* d_done_array = reinterpret_cast<rocsparse_int*>(ptr);
 
@@ -435,11 +447,17 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle handle,
 
 
 
-
     rocsparse_csrtr_info csrsv = (descr->fill_mode == rocsparse_fill_mode_upper) ?
                                  info->csrsv_upper_info :
                                  info->csrsv_lower_info;
 
+
+    // If diag type is unit, re-initialize zero pivot to remove structural zeros
+    if(descr->diag_type == rocsparse_diag_type_unit)
+    {
+        rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
+        RETURN_IF_HIP_ERROR(hipMemcpy(csrsv->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice));
+    }
 
 
 
@@ -448,52 +466,112 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle handle,
     dim3 csrsv_blocks((handle->wavefront_size * m - 1) / CSRSV_DIM + 1);
     dim3 csrsv_threads(CSRSV_DIM);
 
-// TODO host dev ptr
-    if(handle->wavefront_size == 32)
+
+
+
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((csrsv_host_pointer<T, CSRSV_DIM, 32>),
-                           csrsv_blocks,
-                           csrsv_threads,
-                           0,
-                           stream,
-                           m,
-                           *alpha,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           csr_val,
-                           x,
-                           y,
-                           d_done_array,
-                           csrsv->row_map,
-                           0,
-                           descr->base,
-                           descr->fill_mode,
-                           descr->diag_type);
-    }
-    else if(handle->wavefront_size == 64)
-    {
-        hipLaunchKernelGGL((csrsv_host_pointer<T, CSRSV_DIM, 64>),
-                           csrsv_blocks,
-                           csrsv_threads,
-                           0,
-                           stream,
-                           m,
-                           *alpha,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           csr_val,
-                           x,
-                           y,
-                           d_done_array,
-                           csrsv->row_map,
-                           0,
-                           descr->base,
-                           descr->fill_mode,
-                           descr->diag_type);
+        // rocsparse_pointer_mode_device
+        if(handle->wavefront_size == 32)
+        {
+            hipLaunchKernelGGL((csrsv_device_pointer<T, CSRSV_DIM, 32>),
+                               csrsv_blocks,
+                               csrsv_threads,
+                               0,
+                               stream,
+                               m,
+                               alpha,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               x,
+                               y,
+                               d_done_array,
+                               csrsv->row_map,
+                               0,
+                               csrsv->zero_pivot,
+                               descr->base,
+                               descr->fill_mode,
+                               descr->diag_type);
+        }
+        else if(handle->wavefront_size == 64)
+        {
+            hipLaunchKernelGGL((csrsv_device_pointer<T, CSRSV_DIM, 64>),
+                               csrsv_blocks,
+                               csrsv_threads,
+                               0,
+                               stream,
+                               m,
+                               alpha,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               x,
+                               y,
+                               d_done_array,
+                               csrsv->row_map,
+                               0,
+                               csrsv->zero_pivot,
+                               descr->base,
+                               descr->fill_mode,
+                               descr->diag_type);
+        }
+        else
+        {
+            return rocsparse_status_arch_mismatch;
+        }
     }
     else
     {
-        return rocsparse_status_arch_mismatch;
+        // rocsparse_pointer_mode_host
+        if(handle->wavefront_size == 32)
+        {
+            hipLaunchKernelGGL((csrsv_host_pointer<T, CSRSV_DIM, 32>),
+                               csrsv_blocks,
+                               csrsv_threads,
+                               0,
+                               stream,
+                               m,
+                               *alpha,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               x,
+                               y,
+                               d_done_array,
+                               csrsv->row_map,
+                               0,
+                               csrsv->zero_pivot,
+                               descr->base,
+                               descr->fill_mode,
+                               descr->diag_type);
+        }
+        else if(handle->wavefront_size == 64)
+        {
+            hipLaunchKernelGGL((csrsv_host_pointer<T, CSRSV_DIM, 64>),
+                               csrsv_blocks,
+                               csrsv_threads,
+                               0,
+                               stream,
+                               m,
+                               *alpha,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               x,
+                               y,
+                               d_done_array,
+                               csrsv->row_map,
+                               0,
+                               csrsv->zero_pivot,
+                               descr->base,
+                               descr->fill_mode,
+                               descr->diag_type);
+        }
+        else
+        {
+            return rocsparse_status_arch_mismatch;
+        }
     }
 #undef CSRSV_DIM
 

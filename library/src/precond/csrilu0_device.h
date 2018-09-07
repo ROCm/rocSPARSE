@@ -41,23 +41,6 @@ int wid = tid / WF_SIZE;
 
     rocsparse_int row = map[idx];
     rocsparse_int row_diag  = csr_diag_ind[row];
-
-    // Row has structural zero diagonal, skip
-    if(row_diag == -1)
-    {
-        if(lid == 0)
-        {
-            atomicMin(zero_pivot, row);
-#if defined(__HIP_PLATFORM_HCC__)
-            __atomic_store_n(&done[row], 1, __ATOMIC_RELAXED);
-#elif defined(__HIP_PLATFORM_NVCC__)
-            atomicOr(&done[row], 1);
-#endif
-        }
-
-        return;
-    }
-
     rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
     rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
 
@@ -98,15 +81,9 @@ int wid = tid / WF_SIZE;
         rocsparse_int local_end  = csr_row_ptr[local_col + 1] - idx_base;
         rocsparse_int local_diag = csr_diag_ind[local_col];
 
-        // Row depends on structural zero diagonal
         if(local_diag == -1)
         {
-            if(lid == 0)
-            {
-                atomicMin(zero_pivot, local_col);
-            }
-
-            break;
+            local_diag = local_end - 1;
         }
 
         rocsparse_int local_done = 0;
@@ -115,7 +92,7 @@ int wid = tid / WF_SIZE;
 #if defined(__HIP_PLATFORM_HCC__)
             local_done = __atomic_load_n(&done[local_col], __ATOMIC_RELAXED);
 #elif defined(__HIP_PLATFORM_NVCC__)
-            local_done = atomicOr(&done[local_col], 0x0);
+            local_done = atomicOr(&done[local_col], 0);
 #endif
         }
 
@@ -127,7 +104,7 @@ int wid = tid / WF_SIZE;
 #endif
 
         // Row has numerical zero diagonal
-        if(diag_val == 0.0)
+        if(diag_val == static_cast<T>(0))
         {
             if(lid == 0)
             {
@@ -203,23 +180,6 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
 
     rocsparse_int row = map[idx];
     rocsparse_int row_diag  = csr_diag_ind[row];
-
-    // Row has structural zero diagonal, skip
-    if(row_diag == -1)
-    {
-        if(lid == 0)
-        {
-            atomicMin(zero_pivot, row);
-#if defined(__HIP_PLATFORM_HCC__)
-            __atomic_store_n(&done[row], 1, __ATOMIC_RELAXED);
-#elif defined(__HIP_PLATFORM_NVCC__)
-            atomicOr(&done[row], 1);
-#endif
-        }
-
-        return;
-    }
-
     rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
     rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
 
@@ -233,12 +193,7 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
         // Row depends on structural zero diagonal
         if(local_diag == -1)
         {
-            if(lid == 0)
-            {
-                atomicMin(zero_pivot, local_col);
-            }
-
-            break;
+            local_diag = local_end - 1;
         }
 
         rocsparse_int local_done = 0;
@@ -247,7 +202,7 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
 #if defined(__HIP_PLATFORM_HCC__)
             local_done = __atomic_load_n(&done[local_col], __ATOMIC_RELAXED);
 #elif defined(__HIP_PLATFORM_NVCC__)
-            local_done = atomicOr(&done[local_col], 0x0);
+            local_done = atomicOr(&done[local_col], 0);
 #endif
         }
 
@@ -260,7 +215,7 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
 #endif
 
         // Row has numerical zero diagonal
-        if(diag_val == 0.0)
+        if(diag_val == static_cast<T>(0))
         {
             if(lid == 0)
             {
