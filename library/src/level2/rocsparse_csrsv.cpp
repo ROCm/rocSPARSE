@@ -431,7 +431,7 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIP_ERROR(hipMemset(position, -1, sizeof(rocsparse_int)));
+            RETURN_IF_HIP_ERROR(hipMemset(position, 255, sizeof(rocsparse_int)));
         }
         else
         {
@@ -451,7 +451,7 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
 
         if(pivot == std::numeric_limits<rocsparse_int>::max())
         {
-            RETURN_IF_HIP_ERROR(hipMemset(position, -1, sizeof(rocsparse_int)));
+            RETURN_IF_HIP_ERROR(hipMemset(position, 255, sizeof(rocsparse_int)));
         }
         else
         {
