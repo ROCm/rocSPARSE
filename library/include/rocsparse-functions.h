@@ -737,7 +737,8 @@ rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
                                           void* temp_buffer);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_csrsv_clear(const rocsparse_mat_descr descr,
+rocsparse_status rocsparse_csrsv_clear(rocsparse_handle handle,
+                                       const rocsparse_mat_descr descr,
                                        rocsparse_mat_info info);
 
 ROCSPARSE_EXPORT

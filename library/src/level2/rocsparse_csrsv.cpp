@@ -297,9 +297,30 @@ extern "C" rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
     return rocsparse_status_success;
 }
 
-extern "C" rocsparse_status rocsparse_csrsv_clear(const rocsparse_mat_descr descr,
+extern "C" rocsparse_status rocsparse_csrsv_clear(rocsparse_handle handle,
+                                                  const rocsparse_mat_descr descr,
                                                   rocsparse_mat_info info)
 {
+    // Check for valid handle and matrix descriptor
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+    else if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging
+    log_trace(handle,
+              "rocsparse_csrsv_clear",
+              (const void*&)descr,
+              (const void*&)info);
+
     // Determine which info meta data should be deleted
     if(descr->fill_mode == rocsparse_fill_mode_lower)
     {
@@ -371,6 +392,10 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
     if(handle == nullptr)
     {
         return rocsparse_status_invalid_handle;
+    }
+    else if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
     }
     else if(info == nullptr)
     {
