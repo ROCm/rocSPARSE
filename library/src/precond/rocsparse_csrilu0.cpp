@@ -289,6 +289,60 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle
         return rocsparse_status_invalid_pointer;
     }
 
-    // TODO
+    // Stream
+//    hipStream_t stream = handle->stream;
+
+    // Synchronize stream TODO should not be required...
+//    hipStreamSynchronize(stream);
+
+    // If m == 0 || nnz == 0 it can happen, that info structure is not created.
+    // In this case, always return -1.
+    if(info->csrilu0_info == nullptr)
+    {
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_HIP_ERROR(hipMemset(position, -1, sizeof(rocsparse_int)));
+        }
+        else
+        {
+            *position = -1;
+        }
+
+        return rocsparse_status_success;
+    }
+
+    // Differentiate between pointer modes
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        // rocsparse_pointer_mode_device
+        rocsparse_int pivot;
+
+        RETURN_IF_HIP_ERROR(hipMemcpy(&pivot, info->csrilu0_info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        if(pivot == std::numeric_limits<rocsparse_int>::max())
+        {
+            RETURN_IF_HIP_ERROR(hipMemset(position, -1, sizeof(rocsparse_int)));
+        }
+        else
+        {
+            RETURN_IF_HIP_ERROR(hipMemcpy(position, info->csrilu0_info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToDevice));
+
+            return rocsparse_status_zero_pivot;
+        }
+    }
+    else
+    {
+        // rocsparse_pointer_mode_host
+        RETURN_IF_HIP_ERROR(hipMemcpy(position, info->csrilu0_info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        // If no zero pivot is found, set -1
+        *position = (*position == std::numeric_limits<rocsparse_int>::max()) ? -1 : *position;
+
+        if(*position != -1)
+        {
+            return rocsparse_status_zero_pivot;
+        }
+    }
+
     return rocsparse_status_success;
 }
