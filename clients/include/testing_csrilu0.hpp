@@ -21,14 +21,11 @@ using namespace rocsparse_test;
 template <typename T>
 void testing_csrilu0_bad_arg(void)
 {
-/*
-    rocsparse_int n            = 100;
     rocsparse_int m            = 100;
     rocsparse_int nnz          = 100;
     rocsparse_int safe_size    = 100;
-    T alpha                    = 0.6;
-    T beta                     = 0.2;
-    rocsparse_operation transA = rocsparse_operation_none;
+    rocsparse_analysis_policy analysis = rocsparse_analysis_policy_reuse;
+    rocsparse_solve_policy solve = rocsparse_solve_policy_auto;
     rocsparse_status status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
@@ -45,19 +42,63 @@ void testing_csrilu0_bad_arg(void)
     auto dcol_managed =
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
     auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dx_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dy_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+    auto dbuffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
 
     rocsparse_int* dptr = (rocsparse_int*)dptr_managed.get();
     rocsparse_int* dcol = (rocsparse_int*)dcol_managed.get();
     T* dval             = (T*)dval_managed.get();
-    T* dx               = (T*)dx_managed.get();
-    T* dy               = (T*)dy_managed.get();
+    void* dbuffer       = (void*)dbuffer_managed.get();
 
-    if(!dval || !dptr || !dcol || !dx || !dy)
+    if(!dval || !dptr || !dcol || !dbuffer)
     {
         PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
         return;
+    }
+
+    // testing rocsparse_csrilu0_buffer_size
+    size_t size;
+
+    // testing for(nullptr == dptr)
+    {
+        rocsparse_int* dptr_null = nullptr;
+
+        status = rocsparse_csrilu0_buffer_size(handle, m, nnz, descr, dptr_null, dcol, info, &size);
+        verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
+    }
+    // testing for(nullptr == dcol)
+    {
+        rocsparse_int* dcol_null = nullptr;
+
+        status = rocsparse_csrilu0_buffer_size(handle, m, nnz, descr, dptr, dcol_null, info, &size);
+        verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
+    }
+    // testing for(nullptr == buffer_size)
+    {
+        size_t* size_null = nullptr;
+
+        status = rocsparse_csrilu0_buffer_size(handle, m, nnz, descr, dptr, dcol, info, size_null);
+        verify_rocsparse_status_invalid_pointer(status, "Error: size is nullptr");
+    }
+    // testing for(nullptr == descr)
+    {
+        rocsparse_mat_descr descr_null = nullptr;
+
+        status = rocsparse_csrilu0_buffer_size(handle, m, nnz, descr_null, dptr, dcol, info, &size);
+        verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
+    }
+    // testing for(nullptr == info)
+    {
+        rocsparse_mat_info info_null = nullptr;
+
+        status = rocsparse_csrilu0_buffer_size(handle, m, nnz, descr, dptr, dcol, info_null, &size);
+        verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
+    }
+    // testing for(nullptr == handle)
+    {
+        rocsparse_handle handle_null = nullptr;
+
+        status = rocsparse_csrilu0_buffer_size(handle_null, m, nnz, descr, dptr, dcol, info, &size);
+        verify_rocsparse_status_invalid_handle(status);
     }
 
     // testing rocsparse_csrilu0_analysis
@@ -66,35 +107,42 @@ void testing_csrilu0_bad_arg(void)
     {
         rocsparse_int* dptr_null = nullptr;
 
-        status = rocsparse_csrilu0_analysis(handle, transA, m, n, nnz, descr, dptr_null, dcol, info);
+        status = rocsparse_csrilu0_analysis(handle, m, nnz, descr, dptr_null, dcol, info, analysis, solve, dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
     }
     // testing for(nullptr == dcol)
     {
         rocsparse_int* dcol_null = nullptr;
 
-        status = rocsparse_csrilu0_analysis(handle, transA, m, n, nnz, descr, dptr, dcol_null, info);
+        status = rocsparse_csrilu0_analysis(handle, m, nnz, descr, dptr, dcol_null, info, analysis, solve, dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
+    }
+    // testing for(nullptr == dbuffer)
+    {
+        void* dbuffer_null = nullptr;
+
+        status = rocsparse_csrilu0_analysis(handle, m, nnz, descr, dptr, dcol, info, analysis, solve, dbuffer_null);
+        verify_rocsparse_status_invalid_pointer(status, "Error: dbuffer is nullptr");
     }
     // testing for(nullptr == descr)
     {
         rocsparse_mat_descr descr_null = nullptr;
 
-        status = rocsparse_csrilu0_analysis(handle, transA, m, n, nnz, descr_null, dptr, dcol, info);
+        status = rocsparse_csrilu0_analysis(handle, m, nnz, descr_null, dptr, dcol, info, analysis, solve, dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == info)
     {
         rocsparse_mat_info info_null = nullptr;
 
-        status = rocsparse_csrilu0_analysis(handle, transA, m, n, nnz, descr, dptr, dcol, info_null);
+        status = rocsparse_csrilu0_analysis(handle, m, nnz, descr, dptr, dcol, info_null, analysis, solve, dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
     }
     // testing for(nullptr == handle)
     {
         rocsparse_handle handle_null = nullptr;
 
-        status = rocsparse_csrilu0_analysis(handle_null, transA, m, n, nnz, descr, dptr, dcol, info);
+        status = rocsparse_csrilu0_analysis(handle_null, m, nnz, descr, dptr, dcol, info, analysis, solve, dbuffer);
         verify_rocsparse_status_invalid_handle(status);
     }
 
@@ -105,19 +153,15 @@ void testing_csrilu0_bad_arg(void)
         rocsparse_int* dptr_null = nullptr;
 
         status = rocsparse_csrilu0(handle,
-                                 transA,
-                                 m,
-                                 n,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr_null,
-                                 dcol,
-                                 nullptr,
-                                 dx,
-                                 &beta,
-                                 dy);
+                                       m,
+                                       nnz,
+                                       descr,
+                                       dval,
+                                       dptr_null,
+                                       dcol,
+                                       info,
+                                       solve,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
     }
     // testing for(nullptr == dcol)
@@ -125,19 +169,15 @@ void testing_csrilu0_bad_arg(void)
         rocsparse_int* dcol_null = nullptr;
 
         status = rocsparse_csrilu0(handle,
-                                 transA,
-                                 m,
-                                 n,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol_null,
-                                 nullptr,
-                                 dx,
-                                 &beta,
-                                 dy);
+                                       m,
+                                       nnz,
+                                       descr,
+                                       dval,
+                                       dptr,
+                                       dcol_null,
+                                       info,
+                                       solve,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
     }
     // testing for(nullptr == dval)
@@ -145,175 +185,145 @@ void testing_csrilu0_bad_arg(void)
         T* dval_null = nullptr;
 
         status = rocsparse_csrilu0(handle,
-                                 transA,
-                                 m,
-                                 n,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval_null,
-                                 dptr,
-                                 dcol,
-                                 nullptr,
-                                 dx,
-                                 &beta,
-                                 dy);
+                                       m,
+                                       nnz,
+                                       descr,
+                                       dval_null,
+                                       dptr,
+                                       dcol,
+                                       info,
+                                       solve,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
     }
-    // testing for(nullptr == dx)
+    // testing for(nullptr == dbuffer)
     {
-        T* dx_null = nullptr;
+        void* dbuffer_null = nullptr;
 
         status = rocsparse_csrilu0(handle,
-                                 transA,
-                                 m,
-                                 n,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 nullptr,
-                                 dx_null,
-                                 &beta,
-                                 dy);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dx is nullptr");
-    }
-    // testing for(nullptr == dy)
-    {
-        T* dy_null = nullptr;
-
-        status = rocsparse_csrilu0(handle,
-                                 transA,
-                                 m,
-                                 n,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 nullptr,
-                                 dx,
-                                 &beta,
-                                 dy_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dy is nullptr");
-    }
-    // testing for(nullptr == d_alpha)
-    {
-        T* d_alpha_null = nullptr;
-
-        status = rocsparse_csrilu0(handle,
-                                 transA,
-                                 m,
-                                 n,
-                                 nnz,
-                                 d_alpha_null,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 nullptr,
-                                 dx,
-                                 &beta,
-                                 dy);
-        verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
-    }
-    // testing for(nullptr == d_beta)
-    {
-        T* d_beta_null = nullptr;
-
-        status = rocsparse_csrilu0(handle,
-                                 transA,
-                                 m,
-                                 n,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 nullptr,
-                                 dx,
-                                 d_beta_null,
-                                 dy);
-        verify_rocsparse_status_invalid_pointer(status, "Error: beta is nullptr");
+                                       m,
+                                       nnz,
+                                       descr,
+                                       dval,
+                                       dptr,
+                                       dcol,
+                                       info,
+                                       solve,
+                                       dbuffer_null);
+        verify_rocsparse_status_invalid_pointer(status, "Error: dbuffer is nullptr");
     }
     // testing for(nullptr == descr)
     {
         rocsparse_mat_descr descr_null = nullptr;
 
         status = rocsparse_csrilu0(handle,
-                                 transA,
-                                 m,
-                                 n,
-                                 nnz,
-                                 &alpha,
-                                 descr_null,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 nullptr,
-                                 dx,
-                                 &beta,
-                                 dy);
+                                       m,
+                                       nnz,
+                                       descr_null,
+                                       dval,
+                                       dptr,
+                                       dcol,
+                                       info,
+                                       solve,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
-    // testing for(nullptr == handle)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_csrilu0(handle_null,
-                                 transA,
-                                 m,
-                                 n,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 nullptr,
-                                 dx,
-                                 &beta,
-                                 dy);
-        verify_rocsparse_status_invalid_handle(status);
-    }
-
-    // testing rocsparse_csrilu0_analysis_clear
-
     // testing for(nullptr == info)
     {
         rocsparse_mat_info info_null = nullptr;
 
-        status = rocsparse_csrilu0_analysis_clear(handle, info_null);
+        status = rocsparse_csrilu0(handle,
+                                       m,
+                                       nnz,
+                                       descr,
+                                       dval,
+                                       dptr,
+                                       dcol,
+                                       info_null,
+                                       solve,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
     }
     // testing for(nullptr == handle)
     {
         rocsparse_handle handle_null = nullptr;
 
-        status = rocsparse_csrilu0_analysis_clear(handle_null, info);
+        status = rocsparse_csrilu0(handle_null,
+                                       m,
+                                       nnz,
+                                       descr,
+                                       dval,
+                                       dptr,
+                                       dcol,
+                                       info,
+                                       solve,
+                                       dbuffer);
         verify_rocsparse_status_invalid_handle(status);
     }
-*/
+
+    // testing rocsparse_csrilu0_zero_pivot
+    rocsparse_int position;
+
+    // testing for(nullptr == position)
+    {
+        rocsparse_int* position_null = nullptr;
+
+        status = rocsparse_csrilu0_zero_pivot(handle,
+                                            info,
+                                            position_null);
+        verify_rocsparse_status_invalid_pointer(status, "Error: position is nullptr");
+    }
+    // testing for(nullptr == info)
+    {
+        rocsparse_mat_info info_null = nullptr;
+
+        status = rocsparse_csrilu0_zero_pivot(handle,
+                                            info_null,
+                                            &position);
+        verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
+    }
+    // testing for(nullptr == handle)
+    {
+        rocsparse_handle handle_null = nullptr;
+
+        status = rocsparse_csrilu0_zero_pivot(handle_null,
+                                            info,
+                                            &position);
+        verify_rocsparse_status_invalid_handle(status);
+    }
+
+    // testing rocsparse_csrilu0_clear
+
+    // testing for(nullptr == info)
+    {
+        rocsparse_mat_info info_null = nullptr;
+
+        status = rocsparse_csrilu0_clear(handle, info_null);
+        verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
+    }
+    // testing for(nullptr == handle)
+    {
+        rocsparse_handle handle_null = nullptr;
+
+        status = rocsparse_csrilu0_clear(handle_null, info);
+        verify_rocsparse_status_invalid_handle(status);
+    }
 }
 
 template <typename T>
-static int ILU0(int m, const int* ptr, const int* col, T* val, rocsparse_index_base idx_base)
+static rocsparse_int ILU0(rocsparse_int m, const rocsparse_int* ptr, const rocsparse_int* col, T* val, rocsparse_index_base idx_base)
 {
     // pointer of upper part of each row
-    std::vector<int> diag_offset(m);
-    std::vector<int> nnz_entries(m, 0);
+    std::vector<rocsparse_int> diag_offset(m);
+    std::vector<rocsparse_int> nnz_entries(m, 0);
 
     // ai = 0 to N loop over all rows
-    for(int ai = 0; ai < m; ++ai)
+    for(rocsparse_int ai = 0; ai < m; ++ai)
     {
         // ai-th row entries
-        int row_start = ptr[ai] - idx_base;
-        int row_end   = ptr[ai + 1] - idx_base;
-        int j;
+        rocsparse_int row_start = ptr[ai] - idx_base;
+        rocsparse_int row_end   = ptr[ai + 1] - idx_base;
+        rocsparse_int j;
 
         // nnz position of ai-th row in val array
         for (j = row_start; j < row_end; ++j)
@@ -329,16 +339,16 @@ static int ILU0(int m, const int* ptr, const int* col, T* val, rocsparse_index_b
             // if nnz entry is in lower matrix
             if (col[j] - idx_base < ai) {
 
-                int col_j  = col[j] - idx_base;
-                int diag_j = diag_offset[col_j];
+                rocsparse_int col_j  = col[j] - idx_base;
+                rocsparse_int diag_j = diag_offset[col_j];
 
-                if (val[diag_j] != 0.0)
+                if (val[diag_j] != static_cast<T>(0))
                 {
                     // multiplication factor
                     val[j] = val[j] / val[diag_j];
 
                     // loop over upper offset pointer and do linear combination for nnz entry
-                    for(int k = diag_j + 1; k < ptr[col_j + 1] - idx_base; ++k)
+                    for(rocsparse_int k = diag_j + 1; k < ptr[col_j + 1] - idx_base; ++k)
                     {
                         // if nnz at this position do linear combination
                         if (nnz_entries[col[k] - idx_base] != 0)
@@ -350,7 +360,7 @@ static int ILU0(int m, const int* ptr, const int* col, T* val, rocsparse_index_b
                 else
                 {
                     // Numerical zero diagonal
-                    return col_j;
+                    return col_j + idx_base;
                 }
             }
             else if(col[j] - idx_base == ai)
@@ -367,7 +377,7 @@ static int ILU0(int m, const int* ptr, const int* col, T* val, rocsparse_index_b
         if(!has_diag)
         {
             // Structural zero digonal
-            return ai;
+            return ai + idx_base;
         }
 
         // set diagonal pointer to diagonal element
@@ -484,7 +494,7 @@ rocsparse_status testing_csrilu0(Arguments argus)
             verify_rocsparse_status_success(status, "m >= 0 && nnz >= 0");
         }
 
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_clear(info));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_clear(handle, info));
 
         return rocsparse_status_success;
     }
@@ -594,7 +604,7 @@ rocsparse_status testing_csrilu0(Arguments argus)
         // Host csrilu0
         double cpu_time_used = get_time_us();
 
-        int zero_piv = ILU0(m, hcsr_row_ptr.data(), hcsr_col_ind.data(), hcsr_val.data(), idx_base);
+        rocsparse_int zero_piv = ILU0(m, hcsr_row_ptr.data(), hcsr_col_ind.data(), hcsr_val.data(), idx_base);
 
         cpu_time_used = get_time_us() - cpu_time_used;
 
