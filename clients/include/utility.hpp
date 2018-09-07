@@ -632,6 +632,8 @@ class Arguments
     rocsparse_index_base idx_base2 = rocsparse_index_base_zero;
     rocsparse_action action        = rocsparse_action_numeric;
     rocsparse_hyb_partition part   = rocsparse_hyb_partition_auto;
+    rocsparse_diag_type diag_type  = rocsparse_diag_type_non_unit;
+    rocsparse_fill_mode fill_mode  = rocsparse_fill_mode_lower;
 
     rocsparse_int norm_check = 0;
     rocsparse_int unit_check = 1;
@@ -664,6 +666,8 @@ class Arguments
         this->idx_base2 = rhs.idx_base2;
         this->action    = rhs.action;
         this->part      = rhs.part;
+        this->diag_type = rhs.diag_type;
+        this->fill_mode = rhs.fill_mode;
 
         this->norm_check = rhs.norm_check;
         this->unit_check = rhs.unit_check;
