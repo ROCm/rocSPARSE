@@ -703,15 +703,62 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
                                   rocsparse_double_complex* y);
 */
 
+/*! \brief SPARSE Level 2 API
 
+    \details
+    csrsv_zero_pivot returns rocsparse_status_zero_pivot, if either a structural
+    or numerical zero has been found during csrsv computation. The first zero
+    pivot A(j,j) is stored in position, using same index base as the matrix.
+    Position can be in host or device memory. If no zero pivot has been found,
+    position is set to -1 and rocsparse_status_success is returned.
 
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    descr       descriptor of A.
+    @param[in]
+    info        meta information collected by rocsparse_csrsv_analysis.
+    @param[inout]
+    position    pointer to zero pivot, can be in host or device memory.
 
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
+                                            const rocsparse_mat_descr descr,
+                                            rocsparse_mat_info info,
+                                            rocsparse_int* position);
 
+/*! \brief SPARSE Level 2 API
 
+    \details
+    csrsv_buffer_size returns the size of the temporary storage buffer that is required
+    by csrsv_analysis and csrsv_solve. The temporary storage buffer has to be allocated
+    by the user.
 
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    trans       operation type of A.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    nnz         number of non-zero entries of A.
+    @param[in]
+    descr       descriptor of A.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start
+                of every row of A.
+    @param[in]
+    csr_col_ind array of nnz elements containing the column indices of A.
+    @param[out]
+    info        structure that holds the information collected during
+                the analysis phase.
+    @param[in]
+    buffer_size number of bytes of the temporary storage buffer.
 
-
-
+    ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrsv_buffer_size(rocsparse_handle handle,
                                              rocsparse_operation trans,
@@ -723,6 +770,41 @@ rocsparse_status rocsparse_csrsv_buffer_size(rocsparse_handle handle,
                                              rocsparse_mat_info info,
                                              size_t* buffer_size);
 
+/*! \brief SPARSE Level 2 API
+
+    \details
+    csrsv_analysis performs the analysis for csrsv_solve. It is expected that this
+    function will be executed only once for a given matrix and particular operation
+    type.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    trans       operation type of A.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    nnz         number of non-zero entries of A.
+    @param[in]
+    descr       descriptor of A.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start
+                of every row of A.
+    @param[in]
+    csr_col_ind array of nnz elements containing the column indices of A.
+    @param[out]
+    info        structure that holds the information collected during
+                the analysis phase.
+    @param[in]
+    analysis    analysis policy, can be rocsparse_analysis_policy_reuse or
+                rocsparse_analysis_policy_force.
+    @param[in]
+    solve       solve policy, can be rocsparse_solve_policy_auto.
+    @param[in]
+    temp_buffer temporary storage buffer allocated by the user,
+
+    ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
                                           rocsparse_operation trans,
@@ -736,11 +818,71 @@ rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
                                           rocsparse_solve_policy solve,
                                           void* temp_buffer);
 
+/*! \brief SPARSE Level 2 API
+
+    \details
+    csrsv_clear frees all memory that was allocated by csrsv_analysis. This is
+    especially useful, if memory is an issue and the analysis data is not required for
+    further computation. Calling csrsv_clear is optional. All allocated resources will
+    be cleared, when rocsparse_destroy_mat_info is called.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    descr       descriptor of A.
+    @param[inout]
+    info        structure that holds the information collected during
+                the analysis phase.
+
+    ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrsv_clear(rocsparse_handle handle,
                                        const rocsparse_mat_descr descr,
                                        rocsparse_mat_info info);
 
+/*! \brief SPARSE Level 2 API
+
+    \details
+    csrsv_solve computes the solution of a sparse triangular linear system of an m x m
+    sparse matrix A that is defined in CSR storage format, dense solution vector y and
+    rhs x that is multiplied by alpha, such that
+
+        op(A) * y = alpha * x
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    trans       operation type of A.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    nnz         number of non-zero entries of A.
+    @param[in]
+    alpha       scalar alpha.
+    @param[in]
+    descr       descriptor of A.
+    @param[in]
+    csr_val     array of nnz elements of A.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start
+                of every row of A.
+    @param[in]
+    csr_col_ind array of nnz elements containing the column indices of A.
+    @param[in]
+    info        structure that holds the information collected during
+                the analysis phase.
+    @param[in]
+    x           array of m elements.
+    @param[out]
+    y           array of m elements.
+    @param[in]
+    solve       solve policy, can be rocsparse_solve_policy_auto.
+    @param[in]
+    temp_buffer temporary storage buffer allocated by the user,
+
+    ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsrsv_solve(rocsparse_handle handle,
                                         rocsparse_operation trans,
@@ -772,24 +914,6 @@ rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle handle,
                                         double* y,
                                         rocsparse_solve_policy policy,
                                         void* temp_buffer);
-
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
-                                            const rocsparse_mat_descr descr,
-                                            rocsparse_mat_info info,
-                                            rocsparse_int* position);
-
-
-
-
-
-
-
-
-
-
-
-
 
 /*! \brief SPARSE Level 2 API
 
@@ -1091,14 +1215,63 @@ rocsparse_status rocsparse_zcsrmm(rocsparse_handle handle,
                                   rocsparse_int ldc);
 */
 
+/*
+ * ===========================================================================
+ *    preconditioner SPARSE
+ * ===========================================================================
+ */
 
+/*! \brief SPARSE Preconditioner API
 
+    \details
+    csrilu0_zero_pivot returns rocsparse_status_zero_pivot, if either a structural
+    or numerical zero has been found during csrilu0 computation. The first zero
+    pivot A(j,j) is stored in position, using same index base as the matrix.
+    Position can be in host or device memory. If no zero pivot has been found,
+    position is set to -1 and rocsparse_status_success is returned.
 
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    info        meta information collected by rocsparse_csrilu0_analysis.
+    @param[inout]
+    position    pointer to zero pivot, can be in host or device memory.
 
+    ********************************************************************/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle,
+                                              rocsparse_mat_info info,
+                                              rocsparse_int* position);
 
+/*! \brief SPARSE Preconditioner API
 
+    \details
+    csrilu0_buffer_size returns the size of the temporary storage buffer that is required
+    by csrilu0_analysis and csrilu0. The temporary storage buffer has to be allocated by
+    the user.
 
-//TODO
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    nnz         number of non-zero entries of A.
+    @param[in]
+    descr       descriptor of A.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start
+                of every row of A.
+    @param[in]
+    csr_col_ind array of nnz elements containing the column indices of A.
+    @param[out]
+    info        structure that holds the information collected during
+                the analysis phase.
+    @param[in]
+    buffer_size number of bytes of the temporary storage buffer.
+
+    ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrilu0_buffer_size(rocsparse_handle handle,
                                                rocsparse_int m,
@@ -1109,6 +1282,39 @@ rocsparse_status rocsparse_csrilu0_buffer_size(rocsparse_handle handle,
                                                rocsparse_mat_info info,
                                                size_t* buffer_size);
 
+/*! \brief SPARSE Preconditioner API
+
+    \details
+    csrilu0_analysis performs the analysis for csrilu0. It is expected that this
+    function will be executed only once for a given matrix and particular operation
+    type.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    nnz         number of non-zero entries of A.
+    @param[in]
+    descr       descriptor of A.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start
+                of every row of A.
+    @param[in]
+    csr_col_ind array of nnz elements containing the column indices of A.
+    @param[out]
+    info        structure that holds the information collected during
+                the analysis phase.
+    @param[in]
+    analysis    analysis policy, can be rocsparse_analysis_policy_reuse or
+                rocsparse_analysis_policy_force.
+    @param[in]
+    solve       solve policy, can be rocsparse_solve_policy_auto.
+    @param[in]
+    temp_buffer temporary storage buffer allocated by the user,
+
+    ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
                                             rocsparse_int m,
@@ -1121,13 +1327,61 @@ rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
                                             rocsparse_solve_policy solve,
                                             void* temp_buffer);
 
+/*! \brief SPARSE Preconditioner API
 
+    \details
+    csrilu0_clear frees all memory that was allocated by csrilu0_analysis. This is
+    especially useful, if memory is an issue and the analysis data is not required for
+    further computation. Calling csrilu0_clear is optional. All allocated resources will
+    be cleared, when rocsparse_destroy_mat_info is called.
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    descr       descriptor of A.
+    @param[inout]
+    info        structure that holds the information collected during
+                the analysis phase.
+
+    ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle handle,
                                          rocsparse_mat_info info);
 
+/*! \brief SPARSE Preconditioner API
 
+    \details
+    csrilu0 computes the incomplete LU factorization with 0 fill-ins and no pivoting of
+    an m x m sparse matrix A that is defined in CSR storage format, such that
 
+        A = LU
+
+    @param[in]
+    handle      rocsparse_handle.
+                handle to the rocsparse library context queue.
+    @param[in]
+    m           number of rows of A.
+    @param[in]
+    nnz         number of non-zero entries of A.
+    @param[in]
+    descr       descriptor of A.
+    @param[inout]
+    csr_val     array of nnz elements of A.
+    @param[in]
+    csr_row_ptr array of m+1 elements that point to the start
+                of every row of A.
+    @param[in]
+    csr_col_ind array of nnz elements containing the column indices of A.
+    @param[in]
+    info        structure that holds the information collected during
+                the analysis phase.
+    @param[in]
+    solve       solve policy, can be rocsparse_solve_policy_auto.
+    @param[in]
+    temp_buffer temporary storage buffer allocated by the user,
+
+    ********************************************************************/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsrilu0(rocsparse_handle handle,
                                     rocsparse_int m,
@@ -1140,7 +1394,6 @@ rocsparse_status rocsparse_scsrilu0(rocsparse_handle handle,
                                     rocsparse_solve_policy policy,
                                     void* temp_buffer);
 
-
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
                                     rocsparse_int m,
@@ -1152,22 +1405,6 @@ rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
                                     rocsparse_mat_info info,
                                     rocsparse_solve_policy policy,
                                     void* temp_buffer);
-
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle,
-                                              rocsparse_mat_info info,
-                                              rocsparse_int* position);
-
-
-
-
-
-
-
-
-
-
-
 
 /*
  * ===========================================================================
