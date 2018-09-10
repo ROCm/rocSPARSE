@@ -393,10 +393,6 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
     {
         return rocsparse_status_invalid_handle;
     }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
     else if(info == nullptr)
     {
         return rocsparse_status_invalid_pointer;
@@ -420,10 +416,35 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
     // Synchronize stream TODO should not be required...
 //    hipStreamSynchronize(stream);
 
-    // Switch between upper and lower triangular
-    rocsparse_csrtr_info csrsv = (descr->fill_mode == rocsparse_fill_mode_lower) ?
-                                 info->csrsv_lower_info :
-                                 info->csrsv_upper_info;
+    // Determine the info meta data place
+    rocsparse_csrtr_info csrsv = nullptr;
+
+    // For hipSPARSE compatibility mode, we allow descr == nullptr
+    // In this case, only lower OR upper is populated and we can use the right
+    // info meta data
+    if(descr == nullptr)
+    {
+        if(info->csrsv_lower_info != nullptr)
+        {
+            csrsv = info->csrsv_lower_info;
+        }
+        else
+        {
+            csrsv = info->csrsv_upper_info;
+        }
+    }
+    else
+    {
+        // Switch between upper and lower triangular
+        if(descr->fill_mode == rocsparse_fill_mode_lower)
+        {
+            csrsv = info->csrsv_lower_info;
+        }
+        else
+        {
+            csrsv = info->csrsv_upper_info;
+        }
+    }
 
     // If m == 0 || nnz == 0 it can happen, that info structure is not created.
     // In this case, always return -1.

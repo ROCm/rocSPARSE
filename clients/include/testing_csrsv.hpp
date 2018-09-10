@@ -370,16 +370,6 @@ void testing_csrsv_bad_arg(void)
                                             position_null);
         verify_rocsparse_status_invalid_pointer(status, "Error: position is nullptr");
     }
-    // testing for(nullptr == descr)
-    {
-        rocsparse_mat_descr descr_null = nullptr;
-
-        status = rocsparse_csrsv_zero_pivot(handle,
-                                            descr_null,
-                                            info,
-                                            &position);
-        verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
-    }
     // testing for(nullptr == info)
     {
         rocsparse_mat_info info_null = nullptr;
