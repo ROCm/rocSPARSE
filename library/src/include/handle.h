@@ -11,10 +11,12 @@
 
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include <hip/hip_runtime_api.h>
 
 /*! \brief typedefs to opaque info structs */
 typedef struct _rocsparse_csrmv_info* rocsparse_csrmv_info;
+typedef struct _rocsparse_csrtr_info* rocsparse_csrtr_info;
 
 /********************************************************************************
  * \brief rocsparse_handle is a structure holding the rocsparse library context.
@@ -66,10 +68,10 @@ struct _rocsparse_mat_descr
 {
     // Matrix type
     rocsparse_matrix_type type = rocsparse_matrix_type_general;
-    // Fill mode TODO
-    // rocsparse_fill_mode fill;
+    // Fill mode
+    rocsparse_fill_mode fill_mode = rocsparse_fill_mode_lower;
     // Diagonal type
-    // rocsparse_diag_type diag;
+    rocsparse_diag_type diag_type = rocsparse_diag_type_non_unit;
     // Index base
     rocsparse_index_base base = rocsparse_index_base_zero;
 };
@@ -114,10 +116,13 @@ struct _rocsparse_hyb_mat
 struct _rocsparse_mat_info
 {
     // built flags
-    bool csrmv_built = false;
+    bool csrmv_built       = false;
 
     // info structs
-    rocsparse_csrmv_info csrmv_info = nullptr;
+    rocsparse_csrmv_info csrmv_info       = nullptr;
+    rocsparse_csrtr_info csrilu0_info     = nullptr;
+    rocsparse_csrtr_info csrsv_upper_info = nullptr;
+    rocsparse_csrtr_info csrsv_lower_info = nullptr;
 };
 
 /********************************************************************************
@@ -155,6 +160,37 @@ rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info);
  * \brief Destroy csrmv info.
  *******************************************************************************/
 rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info);
+
+
+
+
+
+
+struct _rocsparse_csrtr_info
+{
+    rocsparse_int max_depth;
+    unsigned long long total_spin;
+    rocsparse_int max_nnz;
+
+    std::vector<rocsparse_int> rows_per_level;
+    rocsparse_int* row_map = nullptr;
+    rocsparse_int* csr_diag_ind = nullptr;
+
+    // some data to verify correct execution
+    rocsparse_int m;
+    rocsparse_int nnz;
+    const _rocsparse_mat_descr* descr;
+    const rocsparse_int* csr_row_ptr;
+    const rocsparse_int* csr_col_ind;
+};
+
+rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info);
+
+rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info);
+
+
+
+
 
 /********************************************************************************
  * \brief ELL format indexing

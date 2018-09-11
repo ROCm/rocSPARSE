@@ -140,3 +140,69 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
     }
     return rocsparse_status_success;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info)
+{
+    if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else
+    {
+        // Allocate
+        try
+        {
+            *info = new _rocsparse_csrtr_info;
+        }
+        catch(const rocsparse_status& status)
+        {
+            return status;
+        }
+        return rocsparse_status_success;
+    }
+}
+
+rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
+{
+    if(info == nullptr)
+    {
+        return rocsparse_status_success;
+    }
+
+    // Clean up
+    if(info->row_map != nullptr)
+    {
+        RETURN_IF_HIP_ERROR(hipFree(info->row_map));
+        info->row_map = nullptr;
+    }
+
+    if(info->csr_diag_ind != nullptr)
+    {
+        RETURN_IF_HIP_ERROR(hipFree(info->csr_diag_ind));
+        info->csr_diag_ind = nullptr;
+    }
+
+    // Destruct
+    try
+    {
+        delete info;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+    return rocsparse_status_success;
+}
