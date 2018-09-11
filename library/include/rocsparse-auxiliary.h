@@ -263,7 +263,8 @@ rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr);
  *              \ref rocsparse_status_invalid_value \p fill_mode is invalid.
  */
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr, rocsparse_fill_mode fill_mode);
+rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr,
+                                             rocsparse_fill_mode fill_mode);
 
 /*! \brief Get the matrix fill mode of a matrix descriptor
  *
@@ -295,7 +296,8 @@ rocsparse_fill_mode rocsparse_get_mat_fill_mode(const rocsparse_mat_descr descr)
  *              \ref rocsparse_status_invalid_value \p diag_type is invalid.
  */
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr, rocsparse_diag_type diag_type);
+rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr,
+                                             rocsparse_diag_type diag_type);
 
 /*! \brief Get the matrix diagonal type of a matrix descriptor
  *

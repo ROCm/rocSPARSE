@@ -480,7 +480,7 @@ rocsparse_status rocsparse_zsctr(rocsparse_handle handle,
  *  matrix, defined in \p COO storage format, and the dense vector \f$x\f$ and adds the
  *  result to the dense vector \f$y\f$ that is multiplied by the scalar \f$\beta\f$,
  *  such that
- *  
+ *
  *      \f$y := \alpha \cdot op(A) \cdot x + \beta \cdot y\f$, with
  *
  *      \f$
@@ -509,7 +509,7 @@ rocsparse_status rocsparse_zsctr(rocsparse_handle handle,
  *          y[coo_row_ind[i]] += alpha * coo_val[i] * x[coo_col_ind[i]];
  *      }
  *  \endcode
- *  
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -704,9 +704,9 @@ rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle, rocsparse_mat_in
  *  matrix, defined in \p CSR storage format, and the dense vector \f$x\f$ and adds the
  *  result to the dense vector \f$y\f$ that is multiplied by the scalar \f$\beta\f$,
  *  such that
- *  
+ *
  *      \f$y := \alpha \cdot op(A) \cdot x + \beta \cdot y\f$, with
- *  
+ *
  *      \f$
  *          op(A) = \left\{
  *          \begin{array}{ll}
@@ -1223,9 +1223,9 @@ rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle handle,
  *  matrix, defined in \p ELL storage format, and the dense vector \f$x\f$ and adds the
  *  result to the dense vector \f$y\f$ that is multiplied by the scalar \f$\beta\f$,
  *  such that
- *  
+ *
  *      \f$y := \alpha \cdot op(A) \cdot x + \beta \cdot y\f$, with
- *  
+ *
  *      \f$
  *          op(A) = \left\{
  *          \begin{array}{ll}
@@ -1363,9 +1363,9 @@ rocsparse_status rocsparse_sellmv(rocsparse_handle handle,
  *  matrix, defined in \p HYB storage format, and the dense vector \f$x\f$ and adds the
  *  result to the dense vector \f$y\f$ that is multiplied by the scalar \f$\beta\f$,
  *  such that
- *  
+ *
  *      \f$y := \alpha \cdot op(A) \cdot x + \beta \cdot y\f$, with
- *  
+ *
  *      \f$
  *          op(A) = \left\{
  *          \begin{array}{ll}
@@ -1471,9 +1471,9 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
  *  matrix \f$A\f$, defined in \p CSR storage format, and the dense \f$k \times n\f$
  *  matrix \f$B\f$ and adds the result to the dense \f$m \times n\f$ matrix \f$C\f$ that
  *  is multiplied by the scalar \f$\beta\f$, such that
- *  
+ *
  *      \f$C := \alpha \cdot op(A) \cdot op(B) + \beta \cdot C\f$, with
- *  
+ *
  *      \f$
  *          op(A) = \left\{
  *          \begin{array}{ll}
@@ -1504,7 +1504,7 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
  *          for(j = 0; j < n; ++j)
  *          {
  *              C[i][j] = beta * C[i][j];
- *              
+ *
  *              for(k = csr_row_ptr[i]; k < csr_row_ptr[i + 1]; ++k)
  *              {
  *                  C[i][j] += alpha * csr_val[k] * B[csr_col_ind[k]][j];
@@ -1828,8 +1828,7 @@ rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
  *              \ref rocsparse_status_internal_error an internal error occurred. <br>
  */
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle handle,
-                                         rocsparse_mat_info info);
+rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle handle, rocsparse_mat_info info);
 
 /*! \brief Incomplete LU factorization with 0 fill-ins and no pivoting using \p CSR
  *  storage format
@@ -2816,30 +2815,30 @@ rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handle,
  *      rocsparse_int m   = 3;
  *      rocsparse_int n   = 3;
  *      rocsparse_int nnz = 9;
- *      
+ *
  *      csr_row_ptr[m + 1] = {0, 3, 6, 9};                // device memory
  *      csr_col_ind[nnz]   = {2, 0, 1, 0, 1, 2, 0, 2, 1}; // device memory
  *      csr_val[nnz]       = {3, 1, 2, 4, 5, 6, 7, 9, 8}; // device memory
- *      
+ *
  *      // Allocate temporary buffer
  *      size_t buffer_size = 0;
  *      void* temp_buffer  = NULL;
  *      rocsparse_csrsort_buffer_size(handle, m, n, nnz, csr_row_ptr, csr_col_ind, &buffer_size);
  *      hipMalloc(&temp_buffer, sizeof(char) * buffer_size);
- *      
+ *
  *      // Create permutation vector perm as the identity map
  *      rocsparse_int* perm = NULL;
  *      hipMalloc((void**)&perm, sizeof(rocsparse_int) * nnz);
  *      rocsparse_create_identity_permutation(handle, nnz, perm);
- *      
+ *
  *      // Sort the CSR matrix
  *      rocsparse_csrsort(handle, m, n, nnz, descr, csr_row_ptr, csr_col_ind, perm, temp_buffer);
- *      
+ *
  *      // Gather sorted csr_val array
  *      float* csr_val_sorted = NULL;
  *      hipMalloc((void**)&csr_val_sorted, sizeof(float) * nnz);
  *      rocsparse_sgthr(handle, nnz, csr_val, csr_val_sorted, perm, rocsparse_index_base_zero);
- *      
+ *
  *      // Clean up
  *      hipFree(temp_buffer);
  *      hipFree(perm);
