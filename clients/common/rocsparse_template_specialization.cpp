@@ -464,16 +464,8 @@ rocsparse_status rocsparse_csrilu0(rocsparse_handle handle,
                                    rocsparse_solve_policy policy,
                                    void* temp_buffer)
 {
-    return rocsparse_scsrilu0(handle,
-                              m,
-                              nnz,
-                              descr,
-                              csr_val,
-                              csr_row_ptr,
-                              csr_col_ind,
-                              info,
-                              policy,
-                              temp_buffer);
+    return rocsparse_scsrilu0(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
 }
 
 template <>
@@ -488,16 +480,8 @@ rocsparse_status rocsparse_csrilu0(rocsparse_handle handle,
                                    rocsparse_solve_policy policy,
                                    void* temp_buffer)
 {
-    return rocsparse_dcsrilu0(handle,
-                              m,
-                              nnz,
-                              descr,
-                              csr_val,
-                              csr_row_ptr,
-                              csr_col_ind,
-                              info,
-                              policy,
-                              temp_buffer);
+    return rocsparse_dcsrilu0(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
 }
 
 template <>

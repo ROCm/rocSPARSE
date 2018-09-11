@@ -24,9 +24,9 @@ int csrsv_M_range[] = {-1, 0, 50, 647};
 double csrsv_alpha_range[] = {1.0, 2.3, -3.7};
 
 base csrsv_idxbase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
-op csrsv_op_range[] = {rocsparse_operation_none};
-diag csrsv_diag_range[] = {rocsparse_diag_type_non_unit};
-fill csrsv_fill_range[] = {rocsparse_fill_mode_lower, rocsparse_fill_mode_upper};
+op csrsv_op_range[]        = {rocsparse_operation_none};
+diag csrsv_diag_range[]    = {rocsparse_diag_type_non_unit};
+fill csrsv_fill_range[]    = {rocsparse_fill_mode_lower, rocsparse_fill_mode_upper};
 
 std::string csrsv_bin[] = {"rma10.bin",
                            "mac_econ_fwd500.bin",
@@ -68,7 +68,7 @@ Arguments setup_csrsv_arguments(csrsv_tuple tup)
     arg.transA    = std::get<3>(tup);
     arg.diag_type = std::get<4>(tup);
     arg.fill_mode = std::get<5>(tup);
-    arg.timing   = 0;
+    arg.timing    = 0;
     return arg;
 }
 
@@ -81,7 +81,7 @@ Arguments setup_csrsv_arguments(csrsv_bin_tuple tup)
     arg.transA    = std::get<2>(tup);
     arg.diag_type = std::get<3>(tup);
     arg.fill_mode = std::get<4>(tup);
-    arg.timing   = 0;
+    arg.timing    = 0;
 
     // Determine absolute path of test matrix
     std::string bin_file = std::get<5>(tup);
