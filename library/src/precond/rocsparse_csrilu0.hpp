@@ -229,7 +229,6 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
         }
         else
         {
-            printf("standard kernel\n");
             hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 64>),
                                csrilu0_blocks,
                                csrilu0_threads,

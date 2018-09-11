@@ -93,5 +93,5 @@ The [license file][] can be found in the main repository.
 [HIP]: https://github.com/GPUOpen-ProfessionalCompute-Tools/HIP/
 [GTest]: https://github.com/google/googletest
 [Boost]: https://www.boost.org/
-[the issue tracker]: https://github.com/ROCmSoftwarePlatform/rocSparse/issues
-[license file]: ./LICENSE.md
+[the issue tracker]: https://github.com/ROCmSoftwarePlatform/rocSPARSE/issues
+[license file]: https://github.com/ROCmSoftwarePlatform/rocSPARSE
