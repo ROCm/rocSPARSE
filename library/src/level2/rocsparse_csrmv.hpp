@@ -234,7 +234,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
         return rocsparse_csrmv_general_template(
             handle, trans, m, n, nnz, alpha, descr, csr_val, csr_row_ptr, csr_col_ind, x, beta, y);
     }
-    else if(info->csrmv_built == false)
+    else if(info->csrmv_info == nullptr)
     {
         // If csrmv info is not available, call csrmv general
         return rocsparse_csrmv_general_template(
