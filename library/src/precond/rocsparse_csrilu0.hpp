@@ -1,5 +1,6 @@
 /* ************************************************************************
  * Copyright 2018 Advanced Micro Devices, Inc.
+ *
  * ************************************************************************ */
 
 #pragma once
@@ -51,10 +52,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
               policy,
               (const void*&)temp_buffer);
 
-    log_bench(handle,
-              "./rocsparse-bench -f csrilu0 -r",
-              replaceX<T>("X"),
-              "--mtx <matrix.mtx> ");
+    log_bench(handle, "./rocsparse-bench -f csrilu0 -r", replaceX<T>("X"), "--mtx <matrix.mtx> ");
 
     // Check index base
     if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
@@ -104,8 +102,6 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
     // Stream
     hipStream_t stream = handle->stream;
 
-
-
     // Buffer
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
@@ -125,20 +121,108 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
 
     if(handle->wavefront_size == 32)
     {
-        hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 32>),
-                           csrilu0_blocks,
-                           csrilu0_threads,
-                           0,
-                           stream,
-                           m,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           csr_val,
-                           info->csrilu0_info->csr_diag_ind,
-                           d_done_array,
-                           info->csrilu0_info->row_map,
-                           info->csrilu0_info->zero_pivot,
-                           descr->base);
+        if(info->csrilu0_info->max_nnz <= 32)
+        {
+            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 1>),
+                               csrilu0_blocks,
+                               csrilu0_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               info->csrilu0_info->csr_diag_ind,
+                               d_done_array,
+                               info->csrilu0_info->row_map,
+                               info->csrilu0_info->zero_pivot,
+                               descr->base);
+        }
+        else if(info->csrilu0_info->max_nnz <= 64)
+        {
+            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 2>),
+                               csrilu0_blocks,
+                               csrilu0_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               info->csrilu0_info->csr_diag_ind,
+                               d_done_array,
+                               info->csrilu0_info->row_map,
+                               info->csrilu0_info->zero_pivot,
+                               descr->base);
+        }
+        else if(info->csrilu0_info->max_nnz <= 128)
+        {
+            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 4>),
+                               csrilu0_blocks,
+                               csrilu0_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               info->csrilu0_info->csr_diag_ind,
+                               d_done_array,
+                               info->csrilu0_info->row_map,
+                               info->csrilu0_info->zero_pivot,
+                               descr->base);
+        }
+        else if(info->csrilu0_info->max_nnz <= 256)
+        {
+            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 8>),
+                               csrilu0_blocks,
+                               csrilu0_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               info->csrilu0_info->csr_diag_ind,
+                               d_done_array,
+                               info->csrilu0_info->row_map,
+                               info->csrilu0_info->zero_pivot,
+                               descr->base);
+        }
+        else if(info->csrilu0_info->max_nnz <= 512)
+        {
+            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 16>),
+                               csrilu0_blocks,
+                               csrilu0_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               info->csrilu0_info->csr_diag_ind,
+                               d_done_array,
+                               info->csrilu0_info->row_map,
+                               info->csrilu0_info->zero_pivot,
+                               descr->base);
+        }
+        else
+        {
+            hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 32>),
+                               csrilu0_blocks,
+                               csrilu0_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               info->csrilu0_info->csr_diag_ind,
+                               d_done_array,
+                               info->csrilu0_info->row_map,
+                               info->csrilu0_info->zero_pivot,
+                               descr->base);
+        }
     }
     else if(handle->wavefront_size == 64)
     {

@@ -1,5 +1,6 @@
 /* ************************************************************************
  * Copyright 2018 Advanced Micro Devices, Inc.
+ *
  * ************************************************************************ */
 
 #pragma once
@@ -8,8 +9,9 @@
 
 #include <hip/hip_runtime.h>
 
+// Compute intra wavefront maximum and spin summation
 template <rocsparse_int WF_SIZE>
-static __device__ __inline__ void two_reduce(int* local_max, int *local_spin)
+static __device__ __inline__ void two_reduce(int* local_max, int* local_spin)
 {
 #if defined(__HIP_PLATFORM_HCC__)
     int max_depth = *local_max;
@@ -88,11 +90,13 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
     rocsparse_int lid = tid & (WF_SIZE - 1);
     rocsparse_int row = gid / WF_SIZE;
 
+    // Do not run out of bounds
     if(row >= m)
     {
         return;
     }
 
+    // If we process upper triangular, we need to access with reverse index
     if(FILL_MODE == rocsparse_fill_mode_upper)
     {
         // Processing upper triangular matrix
@@ -105,7 +109,8 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         csr_diag_ind[row] = -1;
     }
 
-    rocsparse_int local_max = 0;
+    // Local depth and spin
+    rocsparse_int local_max  = 0;
     rocsparse_int local_spin = 0;
 
     int row_begin = csr_row_ptr[row] - idx_base;
@@ -127,8 +132,11 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
             csr_diag_ind[row] = j;
         }
 
+        // Differentiate fill mode
         if(FILL_MODE == rocsparse_fill_mode_upper)
         {
+            // If upper triangular, skip all entries that are not in the upper part
+            // of the matrix
             if(local_col <= row)
             {
                 continue;
@@ -137,7 +145,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         else if(FILL_MODE == rocsparse_fill_mode_lower)
         {
             // Diagonal and above, skip this.
-            if (local_col >= row)
+            if(local_col >= row)
             {
                 break;
             }
@@ -147,7 +155,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
 
         // While there are threads in this workgroup that have been unable to
         // get their input, loop and wait for the flag to exist.
-        while (!local_done)
+        while(!local_done)
         {
 #if defined(__HIP_PLATFORM_HCC__)
             local_done = __atomic_load_n(&done_array[local_col], __ATOMIC_RELAXED);
@@ -157,15 +165,17 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
             ++local_spin;
         }
 
+        // Local maximum
         local_max = max(local_done, local_max);
     }
 
-    // Determine maximum local depth and local spin loops
+    // Determine maximum local depth and local spin loops within the wavefront
     two_reduce<WF_SIZE>(&local_max, &local_spin);
     ++local_max;
 
-    if (lid == WF_SIZE - 1)
+    if(lid == WF_SIZE - 1)
     {
+        // Lane 0 writes the "row is done" flag
 #if defined(__HIP_PLATFORM_HCC__)
         __atomic_store_n(&done_array[row], local_max, __ATOMIC_RELAXED);
 #elif defined(__HIP_PLATFORM_NVCC__)
@@ -176,31 +186,29 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         // We're sending out "local_max - 1" because of 0-based indexing.
         // However, we needed to put a non-zero value into the done_array up above
         // when we crammed local_depth in, so these two will be off by one.
-        atomicAdd(&rows_per_level[local_max-1], 1);
+        atomicAdd(&rows_per_level[local_max - 1], 1);
         atomicMax(max_depth, local_max);
         atomicAdd(total_spin, local_spin);
         atomicMax(max_nnz, row_end - row_begin);
 
         if(csr_diag_ind[row] == -1)
         {
+            // We are looking for the first zero pivot
             atomicMin(zero_pivot, row + idx_base);
         }
     }
 }
 
-
-
-
-
-
 #if defined(__HIP_PLATFORM_HCC__)
 // While HIP does not contain llvm intrinsics
 __device__ int __llvm_amdgcn_readlane(int index, int offset) __asm("llvm.amdgcn.readlane");
 
+// Swizzle based intra wavefront reduction sum
 template <rocsparse_int WF_SIZE>
 static __device__ __inline__ float wf_reduce(float temp_sum)
 {
-    typedef union flt_b32 {
+    typedef union flt_b32
+    {
         float val;
         int b32;
     } flt_b32_t;
@@ -249,10 +257,12 @@ static __device__ __inline__ float wf_reduce(float temp_sum)
     return temp_sum;
 }
 
+// Swizzle based intra wavefront reduction sum
 template <rocsparse_int WF_SIZE>
 static __device__ __inline__ double wf_reduce(double temp_sum)
 {
-    typedef union dbl_b32 {
+    typedef union dbl_b32
+    {
         double val;
         int b32[2];
     } dbl_b32_t;
@@ -307,7 +317,7 @@ static __device__ __inline__ double wf_reduce(double temp_sum)
     return temp_sum;
 }
 #elif defined(__HIP_PLATFORM_NVCC__)
-template <typename T, rocsparse_int WF_SIZE>
+template <rocsparse_int WF_SIZE, typename T>
 static __device__ __inline__ T wf_reduce(T temp_sum)
 {
     // Perform wavefront reduction sum
@@ -336,32 +346,25 @@ __device__ void csrsv_device(rocsparse_int m,
                              rocsparse_fill_mode fill_mode,
                              rocsparse_diag_type diag_type)
 {
-    // Thread id
     rocsparse_int tid = hipThreadIdx_x;
-
-    // Global id
     rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + tid;
-
-    // Lane id
     rocsparse_int lid = tid & (WF_SIZE - 1);
-
-    // Wavefront id
     rocsparse_int wid = tid / WF_SIZE;
 
     // Index into the row map
     rocsparse_int idx = gid / WF_SIZE;
 
-    // LDS to hold diagonal entry.
+    // LDS to hold diagonal entry
     __shared__ T diagonal[BLOCKSIZE / WF_SIZE];
 
-    // Do not run out of bounds.
+    // Do not run out of bounds
     if(idx >= m)
     {
         return;
     }
 
-    // Get the row this warp will operate on.
-    rocsparse_int row       = map[idx + offset];
+    // Get the row this warp will operate on
+    rocsparse_int row = map[idx + offset];
 
     // Current row entry point and exit point
     rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
@@ -378,10 +381,10 @@ __device__ void csrsv_device(rocsparse_int m,
 
     for(rocsparse_int j = row_begin + lid; j < row_end; j += WF_SIZE)
     {
-        // Current column this lane operates on.
+        // Current column this lane operates on
         rocsparse_int local_col = csr_col_ind[j] - idx_base;
 
-        // Local value this lane operates with.
+        // Local value this lane operates with
         T local_val = csr_val[j];
 
         // Check for numerical zero
@@ -407,13 +410,13 @@ __device__ void csrsv_device(rocsparse_int m,
             // Diagonal entry
             if(local_col == row)
             {
-                // If diagonal type is non unit, do division by diagonal entry.
-                // This is not required for unit diagonal for obvious reasons.
+                // If diagonal type is non unit, do division by diagonal entry
+                // This is not required for unit diagonal for obvious reasons
                 if(diag_type == rocsparse_diag_type_non_unit)
                 {
                     diagonal[wid] = static_cast<T>(1) / local_val;
                 }
-                
+
                 continue;
             }
         }
@@ -430,8 +433,8 @@ __device__ void csrsv_device(rocsparse_int m,
             // Diagonal entry
             if(local_col == row)
             {
-                // If diagonal type is non unit, do division by diagonal entry.
-                // This is not required for unit diagonal for obvious reasons.
+                // If diagonal type is non unit, do division by diagonal entry
+                // This is not required for unit diagonal for obvious reasons
                 if(diag_type == rocsparse_diag_type_non_unit)
                 {
                     diagonal[wid] = static_cast<T>(1) / local_val;
@@ -441,14 +444,16 @@ __device__ void csrsv_device(rocsparse_int m,
             }
         }
 
-        // Spin loop until dependency has been resolved.
+// Spin loop until dependency has been resolved
 #if defined(__HIP_PLATFORM_HCC__)
-        while(!__atomic_load_n(&done_array[local_col], __ATOMIC_RELAXED));
+        while(!__atomic_load_n(&done_array[local_col], __ATOMIC_RELAXED))
+            ;
 #elif defined(__HIP_PLATFORM_NVCC__)
-        while(!atomicOr(&done_array[local_col], 0));
+        while(!atomicOr(&done_array[local_col], 0))
+            ;
 #endif
 
-        // Load y value bypassing caches.
+// Load y value bypassing caches
 #if defined(__HIP_PLATFORM_HCC__)
         T out_val;
         __atomic_load(&y[local_col], &out_val, __ATOMIC_RELAXED);
@@ -456,28 +461,28 @@ __device__ void csrsv_device(rocsparse_int m,
         T out_val = y[local_col];
 #endif
 
-        // Local sum computation for each lane.
+        // Local sum computation for each lane
         local_sum -= local_val * out_val;
     }
 
-    // Gather all local sums for each lane.
+    // Gather all local sums for each lane
     local_sum = wf_reduce<WF_SIZE>(local_sum);
 
-    // If we have non unit diagonal, take the diagonal into account.
-    // For unit diagonal, this would be multiplication with one.
+    // If we have non unit diagonal, take the diagonal into account
+    // For unit diagonal, this would be multiplication with one
     if(diag_type == rocsparse_diag_type_non_unit)
     {
         local_sum *= diagonal[wid];
     }
 
-    if (lid == 0)
+    if(lid == 0)
     {
-        // Lane 0 triggers the "done" signal and stores this rows result in y.
+// Lane 0 writes the "row is done" flag and stores the rows result in y
 #if defined(__HIP_PLATFORM_HCC__)
         __atomic_store(&y[row], &local_sum, __ATOMIC_RELAXED);
         __atomic_store_n(&done_array[row], 1, __ATOMIC_RELAXED);
 #elif defined(__HIP_PLATFORM_NVCC__)
-        y[row] = local_sum;
+        y[row]    = local_sum;
         atomicOr(&done_array[row], 1);
 #endif
     }

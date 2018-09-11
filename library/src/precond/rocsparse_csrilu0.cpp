@@ -1,11 +1,11 @@
 /* ************************************************************************
  * Copyright 2018 Advanced Micro Devices, Inc.
+ *
  * ************************************************************************ */
 
 #include "definitions.h"
 #include "rocsparse.h"
 #include "rocsparse_csrilu0.hpp"
-
 #include "../level2/rocsparse_csrsv.hpp"
 
 #include <hipcub/hipcub.hpp>
@@ -150,9 +150,6 @@ extern "C" rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
 
         // TODO add more crossover data here
 
-
-
-
         // If data has been found, use it
         if(reuse != nullptr)
         {
@@ -199,12 +196,10 @@ extern "C" rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle handle,
     }
 
     // Logging
-    log_trace(handle,
-              "rocsparse_csrilu0_clear",
-              (const void*&)info);
+    log_trace(handle, "rocsparse_csrilu0_clear", (const void*&)info);
 
     // If meta data is shared, do not delete anything
-    if(info->csrilu0_info == info->csrsv_lower_info)
+    if(info->csrilu0_info == info->csrsv_lower_info || info->csrilu0_info == info->csrsv_upper_info)
     {
         info->csrilu0_info = nullptr;
 
@@ -228,16 +223,8 @@ extern "C" rocsparse_status rocsparse_scsrilu0(rocsparse_handle handle,
                                                rocsparse_solve_policy policy,
                                                void* temp_buffer)
 {
-    return rocsparse_csrilu0_template<float>(handle,
-                                             m,
-                                             nnz,
-                                             descr,
-                                             csr_val,
-                                             csr_row_ptr,
-                                             csr_col_ind,
-                                             info,
-                                             policy,
-                                             temp_buffer);
+    return rocsparse_csrilu0_template<float>(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
 }
 
 extern "C" rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
@@ -251,16 +238,8 @@ extern "C" rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
                                                rocsparse_solve_policy policy,
                                                void* temp_buffer)
 {
-    return rocsparse_csrilu0_template<double>(handle,
-                                              m,
-                                              nnz,
-                                              descr,
-                                              csr_val,
-                                              csr_row_ptr,
-                                              csr_col_ind,
-                                              info,
-                                              policy,
-                                              temp_buffer);
+    return rocsparse_csrilu0_template<double>(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
 }
 
 extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle,
@@ -278,10 +257,7 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle
     }
 
     // Logging
-    log_trace(handle,
-              "rocsparse_csrilu0_zero_pivot",
-              (const void*&)info,
-              (const void*&)position);
+    log_trace(handle, "rocsparse_csrilu0_zero_pivot", (const void*&)info, (const void*&)position);
 
     // Check pointer arguments
     if(position == nullptr)
@@ -290,10 +266,10 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle
     }
 
     // Stream
-//    hipStream_t stream = handle->stream;
+    //    hipStream_t stream = handle->stream;
 
     // Synchronize stream TODO should not be required...
-//    hipStreamSynchronize(stream);
+    //    hipStreamSynchronize(stream);
 
     // If m == 0 || nnz == 0 it can happen, that info structure is not created.
     // In this case, always return -1.
@@ -317,7 +293,8 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle
         // rocsparse_pointer_mode_device
         rocsparse_int pivot;
 
-        RETURN_IF_HIP_ERROR(hipMemcpy(&pivot, info->csrilu0_info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpy(
+            &pivot, info->csrilu0_info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         if(pivot == std::numeric_limits<rocsparse_int>::max())
         {
@@ -325,7 +302,10 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle
         }
         else
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(position, info->csrilu0_info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpy(position,
+                                          info->csrilu0_info->zero_pivot,
+                                          sizeof(rocsparse_int),
+                                          hipMemcpyDeviceToDevice));
 
             return rocsparse_status_zero_pivot;
         }
@@ -333,12 +313,17 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle
     else
     {
         // rocsparse_pointer_mode_host
-        RETURN_IF_HIP_ERROR(hipMemcpy(position, info->csrilu0_info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpy(position,
+                                      info->csrilu0_info->zero_pivot,
+                                      sizeof(rocsparse_int),
+                                      hipMemcpyDeviceToHost));
 
         // If no zero pivot is found, set -1
-        *position = (*position == std::numeric_limits<rocsparse_int>::max()) ? -1 : *position;
-
-        if(*position != -1)
+        if(*position == std::numeric_limits<rocsparse_int>::max())
+        {
+            *position = -1;
+        }
+        else
         {
             return rocsparse_status_zero_pivot;
         }

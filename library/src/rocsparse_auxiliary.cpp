@@ -252,18 +252,8 @@ rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr)
     return descr->type;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr, rocsparse_fill_mode fill_mode)
+rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr,
+                                             rocsparse_fill_mode fill_mode)
 {
     // Check if descriptor is valid
     if(descr == nullptr)
@@ -288,8 +278,8 @@ rocsparse_fill_mode rocsparse_get_mat_fill_mode(const rocsparse_mat_descr descr)
     return descr->fill_mode;
 }
 
-
-rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr, rocsparse_diag_type diag_type)
+rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr,
+                                             rocsparse_diag_type diag_type)
 {
     // Check if descriptor is valid
     if(descr == nullptr)
@@ -313,19 +303,6 @@ rocsparse_diag_type rocsparse_get_mat_diag_type(const rocsparse_mat_descr descr)
     }
     return descr->diag_type;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /********************************************************************************
  * \brief rocsparse_create_hyb_mat is a structure holding the rocsparse HYB
