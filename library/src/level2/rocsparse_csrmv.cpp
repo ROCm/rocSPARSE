@@ -394,7 +394,7 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
     return rocsparse_status_success;
 }
 
-extern "C" rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle handle,
+extern "C" rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle,
                                                            rocsparse_mat_info info)
 {
     // Check for valid handle and matrix descriptor
@@ -408,7 +408,7 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis_clear(rocsparse_handle hand
     }
 
     // Logging
-    log_trace(handle, "rocsparse_csrmv_analysis_clear", (const void*&)info);
+    log_trace(handle, "rocsparse_csrmv_clear", (const void*&)info);
 
     // Destroy csrmv info struct
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
