@@ -16,8 +16,15 @@
 // Level2
 #include "testing_coomv.hpp"
 #include "testing_csrmv.hpp"
+#include "testing_csrsv.hpp"
 #include "testing_ellmv.hpp"
 #include "testing_hybmv.hpp"
+
+// Level3
+#include "testing_csrmm.hpp"
+
+// Preconditioner
+#include "testing_csrilu0.hpp"
 
 // Conversion
 #include "testing_csr2coo.hpp"
@@ -85,7 +92,9 @@ int main(int argc, char* argv[])
          po::value<std::string>(&function)->default_value("axpyi"),
          "SPARSE function to test. Options:\n"
          "  Level1: axpyi, doti, gthr, gthrz, roti, sctr\n"
-         "  Level2: coomv, csrmv, ellmv, hybmv\n"
+         "  Level2: coomv, csrmv, csrsv, ellmv, hybmv\n"
+         "  Level3: csrmm\n"
+         "  Preconditioner: csrilu0\n"
          "  Conversion: csr2coo, csr2csc, csr2ell,\n"
          "              csr2hyb, coo2csr, ell2csr\n"
          "  Sorting: csrsort, coosort\n"
@@ -201,6 +210,13 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_csrmv<double>(argus);
     }
+    else if(function == "csrsv")
+    {
+        if(precision == 's')
+            testing_csrsv<float>(argus);
+        else if(precision == 'd')
+            testing_csrsv<double>(argus);
+    }
     else if(function == "ellmv")
     {
         if(precision == 's')
@@ -214,6 +230,20 @@ int main(int argc, char* argv[])
             testing_hybmv<float>(argus);
         else if(precision == 'd')
             testing_hybmv<double>(argus);
+    }
+    else if(function == "csrmm")
+    {
+        if(precision == 's')
+            testing_csrmm<float>(argus);
+        else if(precision == 'd')
+            testing_csrmm<double>(argus);
+    }
+    else if(function == "csrilu0")
+    {
+        if(precision == 's')
+            testing_csrilu0<float>(argus);
+        else if(precision == 'd')
+            testing_csrilu0<double>(argus);
     }
     else if(function == "csr2coo")
     {

@@ -652,7 +652,7 @@ rocsparse_status testing_csrilu0(Arguments argus)
 
         unit_check_general(1, nnz, 1, hcsr_val.data(), result.data());
     }
-/*
+
     if(argus.timing)
     {
         int number_cold_calls = 2;
@@ -661,69 +661,34 @@ rocsparse_status testing_csrilu0(Arguments argus)
 
         for(int iter = 0; iter < number_cold_calls; iter++)
         {
-            rocsparse_csrilu0(handle,
-                            transA,
-                            m,
-                            n,
-                            nnz,
-                            &h_alpha,
-                            descr,
-                            dval,
-                            dptr,
-                            dcol,
-                            info,
-                            dx,
-                            &h_beta,
-                            dy_1);
+            rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr, dcol, info, rocsparse_solve_policy_auto, dbuffer);
         }
 
         double gpu_time_used = get_time_us(); // in microseconds
 
         for(int iter = 0; iter < number_hot_calls; iter++)
         {
-            rocsparse_csrilu0(handle,
-                            transA,
-                            m,
-                            n,
-                            nnz,
-                            &h_alpha,
-                            descr,
-                            dval,
-                            dptr,
-                            dcol,
-                            info,
-                            dx,
-                            &h_beta,
-                            dy_1);
+            rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr, dcol, info, rocsparse_solve_policy_auto, dbuffer);
         }
 
         // Convert to miliseconds per call
         gpu_time_used     = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
-        size_t flops      = (h_alpha != 1.0) ? 3.0 * nnz : 2.0 * nnz;
-        flops             = (h_beta != 0.0) ? flops + m : flops;
-        double gpu_gflops = flops / gpu_time_used / 1e6;
-        size_t memtrans   = 2.0 * m + nnz;
-        memtrans          = (h_beta != 0.0) ? memtrans + m : memtrans;
-        double bandwidth =
-            (memtrans * sizeof(T) + (m + 1 + nnz) * sizeof(rocsparse_int)) / gpu_time_used / 1e6;
 
-        printf("m\t\tn\t\tnnz\t\talpha\tbeta\tGFlops\tGB/s\tmsec\n");
-        printf("%8d\t%8d\t%9d\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\n",
+        // Bandwidth
+        size_t int_data = (m + 1 + nnz) * sizeof(rocsparse_int);
+        size_t flt_data = (nnz + nnz) * sizeof(T);
+        double bandwidth = (int_data + flt_data) / gpu_time_used / 1e6;
+
+        printf("m\t\tnnz\t\tGB/s\tmsec\n");
+        printf("%8d\t%9d\t%0.2lf\t%0.2lf\n",
                m,
-               n,
                nnz,
-               h_alpha,
-               h_beta,
-               gpu_gflops,
                bandwidth,
                gpu_time_used);
     }
 
-    if(adaptive)
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_clear(info));
-    }
-*/
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_clear(handle, info));
+
     return rocsparse_status_success;
 }
 
