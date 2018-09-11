@@ -52,8 +52,7 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
             __syncthreads();
 
             shared_col[wid][lid] = (k < row_end) ? __ldg(csr_col_ind + k) - idx_base : 0;
-            shared_val[wid][lid] =
-                (k < row_end) ? alpha * __ldg(csr_val + k) : static_cast<T>(0);
+            shared_val[wid][lid] = (k < row_end) ? alpha * __ldg(csr_val + k) : static_cast<T>(0);
 
             __syncthreads();
 
@@ -124,8 +123,7 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
             __syncthreads();
 
             shared_col[wid][lid] = (k < row_end) ? N * (__ldg(csr_col_ind + k) - idx_base) : 0;
-            shared_val[wid][lid] =
-                (k < row_end) ? alpha * __ldg(csr_val + k) : static_cast<T>(0);
+            shared_val[wid][lid] = (k < row_end) ? alpha * __ldg(csr_val + k) : static_cast<T>(0);
 
             __syncthreads();
 

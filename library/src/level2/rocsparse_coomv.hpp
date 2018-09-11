@@ -18,8 +18,35 @@
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 __launch_bounds__(128) __global__
     void coomvn_wf_host_pointer(rocsparse_int nnz,
+                                rocsparse_int loops,
+                                T alpha,
+                                const rocsparse_int* __restrict__ coo_row_ind,
+                                const rocsparse_int* __restrict__ coo_col_ind,
+                                const T* __restrict__ coo_val,
+                                const T* __restrict__ x,
+                                T* __restrict__ y,
+                                rocsparse_int* __restrict__ row_block_red,
+                                T* __restrict__ val_block_red,
+                                rocsparse_index_base idx_base)
+{
+    coomvn_general_wf_reduce<T, BLOCKSIZE, WF_SIZE>(nnz,
+                                                    loops,
+                                                    alpha,
+                                                    coo_row_ind,
+                                                    coo_col_ind,
+                                                    coo_val,
+                                                    x,
+                                                    y,
+                                                    row_block_red,
+                                                    val_block_red,
+                                                    idx_base);
+}
+
+template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+__launch_bounds__(128) __global__
+    void coomvn_wf_device_pointer(rocsparse_int nnz,
                                   rocsparse_int loops,
-                                  T alpha,
+                                  const T* alpha,
                                   const rocsparse_int* __restrict__ coo_row_ind,
                                   const rocsparse_int* __restrict__ coo_col_ind,
                                   const T* __restrict__ coo_val,
@@ -30,43 +57,16 @@ __launch_bounds__(128) __global__
                                   rocsparse_index_base idx_base)
 {
     coomvn_general_wf_reduce<T, BLOCKSIZE, WF_SIZE>(nnz,
-                                                      loops,
-                                                      alpha,
-                                                      coo_row_ind,
-                                                      coo_col_ind,
-                                                      coo_val,
-                                                      x,
-                                                      y,
-                                                      row_block_red,
-                                                      val_block_red,
-                                                      idx_base);
-}
-
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
-__launch_bounds__(128) __global__
-    void coomvn_wf_device_pointer(rocsparse_int nnz,
-                                    rocsparse_int loops,
-                                    const T* alpha,
-                                    const rocsparse_int* __restrict__ coo_row_ind,
-                                    const rocsparse_int* __restrict__ coo_col_ind,
-                                    const T* __restrict__ coo_val,
-                                    const T* __restrict__ x,
-                                    T* __restrict__ y,
-                                    rocsparse_int* __restrict__ row_block_red,
-                                    T* __restrict__ val_block_red,
-                                    rocsparse_index_base idx_base)
-{
-    coomvn_general_wf_reduce<T, BLOCKSIZE, WF_SIZE>(nnz,
-                                                      loops,
-                                                      *alpha,
-                                                      coo_row_ind,
-                                                      coo_col_ind,
-                                                      coo_val,
-                                                      x,
-                                                      y,
-                                                      row_block_red,
-                                                      val_block_red,
-                                                      idx_base);
+                                                    loops,
+                                                    *alpha,
+                                                    coo_row_ind,
+                                                    coo_col_ind,
+                                                    coo_val,
+                                                    x,
+                                                    y,
+                                                    row_block_red,
+                                                    val_block_red,
+                                                    idx_base);
 }
 
 template <typename T>

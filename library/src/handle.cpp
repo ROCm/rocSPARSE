@@ -90,7 +90,7 @@ rocsparse_status _rocsparse_handle::get_stream(hipStream_t* user_stream) const
  * \brief rocsparse_csrmv_info is a structure holding the rocsparse csrmv info
  * data gathered during csrmv_analysis. It must be initialized using the
  * rocsparse_create_csrmv_info() routine. It should be destroyed at the end
- * rocsparse_destroy_csrmv_info().
+ * using rocsparse_destroy_csrmv_info().
  *******************************************************************************/
 rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info)
 {
@@ -141,19 +141,12 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
     return rocsparse_status_success;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+/********************************************************************************
+ * \brief rocsparse_csrtr_info is a structure holding the rocsparse csrsv and
+ * csrilu0 data gathered during csrsv_analysis and csrilu0_analysis. It must be
+ * initialized using the rocsparse_create_csrtr_info() routine. It should be
+ * destroyed at the end using rocsparse_destroy_csrtr_info().
+ *******************************************************************************/
 rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info)
 {
     if(info == nullptr)
@@ -175,6 +168,9 @@ rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info)
     }
 }
 
+/********************************************************************************
+ * \brief Destroy csrmv info.
+ *******************************************************************************/
 rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
 {
     if(info == nullptr)

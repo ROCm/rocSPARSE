@@ -93,7 +93,7 @@ extern "C" rocsparse_status rocsparse_csrsv_buffer_size(rocsparse_handle handle,
     }
 
     // rocsparse_int max depth
-    *buffer_size  = 256;
+    *buffer_size = 256;
 
     // unsigned long long total_spin
     *buffer_size += 256;
@@ -212,7 +212,6 @@ extern "C" rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
         return rocsparse_status_success;
     }
 
-
     // Switch between lower and upper triangular analysis
     if(descr->fill_mode == rocsparse_fill_mode_upper)
     {
@@ -261,8 +260,6 @@ extern "C" rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
             }
 
             // TODO add more crossover data here
-
-
 
             // If data has been found, use it
             if(reuse != nullptr)
@@ -316,10 +313,7 @@ extern "C" rocsparse_status rocsparse_csrsv_clear(rocsparse_handle handle,
     }
 
     // Logging
-    log_trace(handle,
-              "rocsparse_csrsv_clear",
-              (const void*&)descr,
-              (const void*&)info);
+    log_trace(handle, "rocsparse_csrsv_clear", (const void*&)descr, (const void*&)info);
 
     // Determine which info meta data should be deleted
     if(descr->fill_mode == rocsparse_fill_mode_lower)
@@ -360,8 +354,20 @@ extern "C" rocsparse_status rocsparse_scsrsv_solve(rocsparse_handle handle,
                                                    rocsparse_solve_policy policy,
                                                    void* temp_buffer)
 {
-    return rocsparse_csrsv_solve_template<float>(
-        handle, trans, m, nnz, alpha, descr, csr_val, csr_row_ind, csr_col_ind, info, x, y, policy, temp_buffer);
+    return rocsparse_csrsv_solve_template<float>(handle,
+                                                 trans,
+                                                 m,
+                                                 nnz,
+                                                 alpha,
+                                                 descr,
+                                                 csr_val,
+                                                 csr_row_ind,
+                                                 csr_col_ind,
+                                                 info,
+                                                 x,
+                                                 y,
+                                                 policy,
+                                                 temp_buffer);
 }
 
 extern "C" rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle handle,
@@ -379,8 +385,20 @@ extern "C" rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle handle,
                                                    rocsparse_solve_policy policy,
                                                    void* temp_buffer)
 {
-    return rocsparse_csrsv_solve_template<double>(
-        handle, trans, m, nnz, alpha, descr, csr_val, csr_row_ind, csr_col_ind, info, x, y, policy, temp_buffer);
+    return rocsparse_csrsv_solve_template<double>(handle,
+                                                  trans,
+                                                  m,
+                                                  nnz,
+                                                  alpha,
+                                                  descr,
+                                                  csr_val,
+                                                  csr_row_ind,
+                                                  csr_col_ind,
+                                                  info,
+                                                  x,
+                                                  y,
+                                                  policy,
+                                                  temp_buffer);
 }
 
 extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
@@ -399,10 +417,7 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
     }
 
     // Logging
-    log_trace(handle,
-              "rocsparse_csrsv_zero_pivot",
-              (const void*&)info,
-              (const void*&)position);
+    log_trace(handle, "rocsparse_csrsv_zero_pivot", (const void*&)info, (const void*&)position);
 
     // Check pointer arguments
     if(position == nullptr)
@@ -411,10 +426,10 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
     }
 
     // Stream
-//    hipStream_t stream = handle->stream;
+    //    hipStream_t stream = handle->stream;
 
     // Synchronize stream TODO should not be required...
-//    hipStreamSynchronize(stream);
+    //    hipStreamSynchronize(stream);
 
     // Determine the info meta data place
     rocsparse_csrtr_info csrsv = nullptr;
@@ -468,7 +483,8 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
         // rocsparse_pointer_mode_device
         rocsparse_int pivot;
 
-        RETURN_IF_HIP_ERROR(hipMemcpy(&pivot, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&pivot, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         if(pivot == std::numeric_limits<rocsparse_int>::max())
         {
@@ -476,7 +492,8 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
         }
         else
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(position, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpy(
+                position, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToDevice));
 
             return rocsparse_status_zero_pivot;
         }
@@ -484,12 +501,15 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
     else
     {
         // rocsparse_pointer_mode_host
-        RETURN_IF_HIP_ERROR(hipMemcpy(position, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(position, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         // If no zero pivot is found, set -1
-        *position = (*position == std::numeric_limits<rocsparse_int>::max()) ? -1 : *position;
-
-        if(*position != -1)
+        if(*position == std::numeric_limits<rocsparse_int>::max())
+        {
+            *position = -1;
+        }
+        else
         {
             return rocsparse_status_zero_pivot;
         }

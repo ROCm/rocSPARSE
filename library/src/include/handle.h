@@ -27,14 +27,14 @@ typedef struct _rocsparse_csrtr_info* rocsparse_csrtr_info;
  *******************************************************************************/
 struct _rocsparse_handle
 {
-    // Constructor
+    // constructor
     _rocsparse_handle();
-    // Destructor
+    // destructor
     ~_rocsparse_handle();
 
-    // Set stream
+    // set stream
     rocsparse_status set_stream(hipStream_t user_stream);
-    // Get stream
+    // get stream
     rocsparse_status get_stream(hipStream_t* user_stream) const;
 
     // device id
@@ -66,13 +66,13 @@ struct _rocsparse_handle
  *******************************************************************************/
 struct _rocsparse_mat_descr
 {
-    // Matrix type
+    // matrix type
     rocsparse_matrix_type type = rocsparse_matrix_type_general;
-    // Fill mode
+    // fill mode
     rocsparse_fill_mode fill_mode = rocsparse_fill_mode_lower;
-    // Diagonal type
+    // diagonal type
     rocsparse_diag_type diag_type = rocsparse_diag_type_non_unit;
-    // Index base
+    // index base
     rocsparse_index_base base = rocsparse_index_base_zero;
 };
 
@@ -149,7 +149,7 @@ struct _rocsparse_csrmv_info
  * \brief rocsparse_csrmv_info is a structure holding the rocsparse csrmv info
  * data gathered during csrmv_analysis. It must be initialized using the
  * rocsparse_create_csrmv_info() routine. It should be destroyed at the end
- * rocsparse_destroy_csrmv_info().
+ * using rocsparse_destroy_csrmv_info().
  *******************************************************************************/
 rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info);
 
@@ -158,20 +158,22 @@ rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info);
  *******************************************************************************/
 rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info);
 
-
-
-
-
-
 struct _rocsparse_csrtr_info
 {
+    // maximum depth
     rocsparse_int max_depth;
+    // total number of spin loops
     unsigned long long total_spin;
+    // maximum non-zero entries of a single row
     rocsparse_int max_nnz;
 
+    // host array to hold number of rows per level
     std::vector<rocsparse_int> rows_per_level;
+    // device array to hold row permutation
     rocsparse_int* row_map = nullptr;
+    // device array to hold pointer to diagonal entry
     rocsparse_int* csr_diag_ind = nullptr;
+    // device pointer to hold zero pivot
     rocsparse_int* zero_pivot = nullptr;
 
     // some data to verify correct execution
@@ -182,13 +184,18 @@ struct _rocsparse_csrtr_info
     const rocsparse_int* csr_col_ind;
 };
 
+/********************************************************************************
+ * \brief rocsparse_csrtr_info is a structure holding the rocsparse csrsv and
+ * csrilu0 data gathered during csrsv_analysis and csrilu0_analysis. It must be
+ * initialized using the rocsparse_create_csrtr_info() routine. It should be
+ * destroyed at the end using rocsparse_destroy_csrtr_info().
+ *******************************************************************************/
 rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info);
 
+/********************************************************************************
+ * \brief Destroy csrmv info.
+ *******************************************************************************/
 rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info);
-
-
-
-
 
 /********************************************************************************
  * \brief ELL format indexing

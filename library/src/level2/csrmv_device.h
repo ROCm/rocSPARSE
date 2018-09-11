@@ -226,7 +226,8 @@ __device__ static __inline__ int64_t rocsparse_mul24(int64_t x, int64_t y)
     return ((x << 40) >> 40) * ((y << 40) >> 40);
 }
 
-__device__ static __inline__ rocsparse_int rocsparse_mad24(rocsparse_int x, rocsparse_int y, rocsparse_int z)
+__device__ static __inline__ rocsparse_int
+rocsparse_mad24(rocsparse_int x, rocsparse_int y, rocsparse_int z)
 {
     return rocsparse_mul24(x, y) + z;
 }
@@ -296,7 +297,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
 
     // Any workgroup only calculates, at most, BLOCK_MULTIPLIER*BLOCKSIZE items in a row.
     // If there are more items in this row, we assign more workgroups.
-    rocsparse_int vecStart = rocsparse_mad24(wg, BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
+    rocsparse_int vecStart =
+        rocsparse_mad24(wg, BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
     rocsparse_int vecEnd =
         ((csr_row_ptr[row + 1] - idx_base) > vecStart + BLOCK_MULTIPLIER * BLOCKSIZE)
             ? vecStart + BLOCK_MULTIPLIER * BLOCKSIZE
