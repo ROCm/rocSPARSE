@@ -20,8 +20,6 @@ typedef int64_t rocsparse_int;
 typedef int32_t rocsparse_int;
 #endif
 
-
-
 /*! \brief Handle to the rocSPARSE library context queue. */
 typedef struct _rocsparse_handle* rocsparse_handle;
 /*! \brief Descriptor of the matrix. */
@@ -81,16 +79,16 @@ typedef enum rocsparse_hyb_partition_ {
     rocsparse_hyb_partition_max  = 2  /**< max ELL nnz per row, no COO part. */
 } rocsparse_hyb_partition;
 
-/*! \brief Specify policy in triangular solvers and factorizations. */
-typedef enum rocsparse_solve_policy_ {
-    rocsparse_solve_policy_auto = 0 /**< automatically decide on level information. */
-} rocsparse_solve_policy;
-
 /*! \brief Specify policy in analysis functions. */
 typedef enum rocsparse_analysis_policy_ {
     rocsparse_analysis_policy_reuse = 0, /**< try to re-use meta data. */
     rocsparse_analysis_policy_force = 1  /**< force to re-build meta data. */
 } rocsparse_analysis_policy;
+
+/*! \brief Specify policy in triangular solvers and factorizations. */
+typedef enum rocsparse_solve_policy_ {
+    rocsparse_solve_policy_auto = 0 /**< automatically decide on level information. */
+} rocsparse_solve_policy;
 
 /*! \brief Indicates if the pointer is device pointer or host pointer. */
 typedef enum rocsparse_pointer_mode_ {
