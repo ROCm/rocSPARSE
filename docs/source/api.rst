@@ -98,7 +98,7 @@ Sparse Level 2 Functions
 
 .. doxygenfunction:: rocsparse_csrmv_analysis
 
-.. doxygenfunction:: rocsparse_csrmv_analysis_clear
+.. doxygenfunction:: rocsparse_csrmv_clear
 
 .. doxygenfunction:: rocsparse_scsrmv
 

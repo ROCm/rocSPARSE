@@ -58,12 +58,12 @@ extern "C" {
  *  @param[in]
  *  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was not
- *              initialized.
- *  \returns    \ref rocsparse_status_invalid_value \p idx_base is invalid.
- *  \returns    \ref rocsparse_status_invalid_size \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p alpha, \p x_val, \p x_ind or
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was not
+ *              initialized. <br>
+ *              \ref rocsparse_status_invalid_value \p idx_base is invalid. <br>
+ *              \ref rocsparse_status_invalid_size \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p alpha, \p x_val, \p x_ind or
  *              \p y pointer is invalid.
  */
 ///@{
@@ -136,16 +136,16 @@ rocsparse_status rocsparse_zaxpyi(rocsparse_handle handle,
  *  @param[in]
  *  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was not
- *              initialized.
- *  \returns    \ref rocsparse_status_invalid_value \p idx_base is invalid.
- *  \returns    \ref rocsparse_status_invalid_size \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p x_val, \p x_ind, \p y or
- *              \p result pointer is invalid.
- *  \returns    \ref rocsparse_status_memory_error the buffer for the dot product
- *              reduction could not be allocated.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was not
+ *              initialized. <br>
+ *              \ref rocsparse_status_invalid_value \p idx_base is invalid. <br>
+ *              \ref rocsparse_status_invalid_size \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p x_val, \p x_ind, \p y or
+ *              \p result pointer is invalid. <br>
+ *              \ref rocsparse_status_memory_error the buffer for the dot product
+ *              reduction could not be allocated. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred.
  */
 ///@{
 ROCSPARSE_EXPORT
@@ -213,12 +213,12 @@ rocsparse_status rocsparse_zdoti(rocsparse_handle handle,
  *  @param[in]
  *  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was not
- *              initialized.
- *  \returns    \ref rocsparse_status_invalid_value \p idx_base is invalid.
- *  \returns    \ref rocsparse_status_invalid_size \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p y, \p x_val or \p x_ind pointer
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was not
+ *              initialized. <br>
+ *              \ref rocsparse_status_invalid_value \p idx_base is invalid. <br>
+ *              \ref rocsparse_status_invalid_size \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p y, \p x_val or \p x_ind pointer
  *              is invalid.
  */
 ///@{
@@ -286,12 +286,12 @@ rocsparse_status rocsparse_zgthr(rocsparse_handle handle,
  *  @param[in]
  *  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was not
- *              initialized.
- *  \returns    \ref rocsparse_status_invalid_value \p idx_base is invalid.
- *  \returns    \ref rocsparse_status_invalid_size \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p y, \p x_val or \p x_ind pointer
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was not
+ *              initialized. <br>
+ *              \ref rocsparse_status_invalid_value \p idx_base is invalid. <br>
+ *              \ref rocsparse_status_invalid_size \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p y, \p x_val or \p x_ind pointer
  *              is invalid.
  */
 ///@{
@@ -366,12 +366,12 @@ rocsparse_status rocsparse_zgthrz(rocsparse_handle handle,
  *  @param[in]
  *  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was not
- *              initialized.
- *  \returns    \ref rocsparse_status_invalid_value \p idx_base is invalid.
- *  \returns    \ref rocsparse_status_invalid_size \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p c, \p s, \p x_val, \p x_ind or
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was not
+ *              initialized. <br>
+ *              \ref rocsparse_status_invalid_value \p idx_base is invalid. <br>
+ *              \ref rocsparse_status_invalid_size \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p c, \p s, \p x_val, \p x_ind or
  *              \p y pointer is invalid.
  */
 ///@{
@@ -424,12 +424,12 @@ rocsparse_status rocsparse_droti(rocsparse_handle handle,
  *  @param[in]
  *  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was not
- *              initialized.
- *  \returns    \ref rocsparse_status_invalid_value \p idx_base is invalid.
- *  \returns    \ref rocsparse_status_invalid_size \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p x_val, \p x_ind or \p y pointer
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was not
+ *              initialized. <br>
+ *              \ref rocsparse_status_invalid_value \p idx_base is invalid. <br>
+ *              \ref rocsparse_status_invalid_size \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p x_val, \p x_ind or \p y pointer
  *              is invalid.
  */
 ///@{
@@ -542,14 +542,15 @@ rocsparse_status rocsparse_zsctr(rocsparse_handle handle,
  *  y           array of \p m elements (\f$op(A) = A\f$) or \p n elements
  *              (\f$op(A) = A^T\f$ or \f$op(A) = A^H\f$).
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p descr, \p alpha, \p coo_val,
- *              \p coo_row_ind, \p coo_col_ind, \p x, \p beta or \p y pointer is invalid.
- *  \returns    \ref rocsparse_status_arch_mismatch the device is not supported.
- *  \returns    \ref rocsparse_status_not_implemented
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p descr, \p alpha, \p coo_val,
+ *              \p coo_row_ind, \p coo_col_ind, \p x, \p beta or \p y pointer is
+ *              invalid. <br>
+ *              \ref rocsparse_status_arch_mismatch the device is not supported. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \p trans != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
@@ -647,16 +648,16 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle handle,
  *  info        structure that holds the information collected during
  *              the analysis step.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p descr, \p csr_row_ptr,
- *              \p csr_col_ind or \p info pointer is invalid.
- *  \returns    \ref rocsparse_status_memory_error the buffer for the gathered
- *              information could not be allocated.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
- *  \returns    \ref rocsparse_status_not_implemented
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p descr, \p csr_row_ptr,
+ *              \p csr_col_ind or \p info pointer is invalid. <br>
+ *              \ref rocsparse_status_memory_error the buffer for the gathered
+ *              information could not be allocated. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \p trans != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
@@ -686,13 +687,13 @@ rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
  *  @param[inout]
  *  info        structure that holds the information collected during analysis step.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_pointer \p info pointer is invalid.
- *  \returns    \ref rocsparse_status_memory_error the buffer for the gathered
- *              information could not be deallocated.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_pointer \p info pointer is invalid. <br>
+ *              \ref rocsparse_status_memory_error the buffer for the gathered
+ *              information could not be deallocated. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred.
  * */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle, rocsparse_mat_info info);
@@ -771,14 +772,15 @@ rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle, rocsparse_mat_in
  *  y           array of \p m elements (\f$op(A) == A\f$) or \p n elements
  *              (\f$op(A) == A^T\f$ or \f$op(A) == A^H\f$).
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p descr, \p alpha, \p csr_val,
- *              \p csr_row_ptr, \p csr_col_ind, \p x, \p beta or \p y pointer is invalid.
- *  \returns    \ref rocsparse_status_arch_mismatch the device is not supported.
- *  \returns    \ref rocsparse_status_not_implemented
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p descr, \p alpha, \p csr_val,
+ *              \p csr_row_ptr, \p csr_col_ind, \p x, \p beta or \p y pointer is
+ *              invalid. <br>
+ *              \ref rocsparse_status_arch_mismatch the device is not supported. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \p trans != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
@@ -998,13 +1000,14 @@ rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle handle,
  *  y           array of \p m elements (\f$op(A) == A\f$) or \p n elements
  *              (\f$op(A) == A^T\f$ or \f$op(A) == A^H\f$).
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p ell_width is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p descr, \p alpha, \p ell_val,
- *              \p ell_col_ind, \p x, \p beta or \p y pointer is invalid.
- *  \returns    \ref rocsparse_status_not_implemented
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p ell_width is
+ *              invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p descr, \p alpha, \p ell_val,
+ *              \p ell_col_ind, \p x, \p beta or \p y pointer is invalid. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \p trans != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
@@ -1110,19 +1113,20 @@ rocsparse_status rocsparse_sellmv(rocsparse_handle handle,
  *  y           array of \p m elements (\f$op(A) == A\f$) or \p n elements
  *              (\f$op(A) == A^T\f$ or \f$op(A) == A^H\f$).
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p hyb structure was not initialized
- *              with valid matrix sizes.
- *  \returns    \ref rocsparse_status_invalid_pointer \p descr, \p alpha, \p hyb, \p x,
- *              \p beta or \p y pointer is invalid.
- *  \returns    \ref rocsparse_status_invalid_value \p hyb structure was not initialized
- *              with a valid partitioning type.
- *  \returns    \ref rocsparse_status_arch_mismatch the device is not supported.
- *  \returns    \ref rocsparse_status_memory_error the buffer could not be allocated.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
- *  \returns    \ref rocsparse_status_not_implemented
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p hyb structure was not initialized
+ *              with valid matrix sizes. <br>
+ *              \ref rocsparse_status_invalid_pointer \p descr, \p alpha, \p hyb, \p x,
+ *              \p beta or \p y pointer is invalid. <br>
+ *              \ref rocsparse_status_invalid_value \p hyb structure was not initialized
+ *              with a valid partitioning type. <br>
+ *              \ref rocsparse_status_arch_mismatch the device is not supported. <br>
+ *              \ref rocsparse_status_memory_error the buffer could not be
+ *              allocated. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \p trans != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
@@ -1267,16 +1271,16 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
  *              (\f$op(A) == A\f$) or \f$\max{(1, k)}\f$ (\f$op(A) == A^T\f$ or
  *              \f$op(A) == A^H\f$).
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n, \p k, \p nnz, \p ldb or
- *              \p ldc is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p descr, \p alpha, \p csr_val,
- *              \p csr_row_ptr, \p csr_col_ind, \p B, \p beta or \p C pointer is invalid.
- *              \p beta or \p y pointer is invalid.
- *  \returns    \ref rocsparse_status_arch_mismatch the device is not supported.
- *  \returns    \ref rocsparse_status_not_implemented
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n, \p k, \p nnz, \p ldb or
+ *              \p ldc is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p descr, \p alpha, \p csr_val,
+ *              \p csr_row_ptr, \p csr_col_ind, \p B, \p beta or \p C pointer is
+ *              invalid. <br>
+ *              \ref rocsparse_status_arch_mismatch the device is not supported. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \p trans_A != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
@@ -1460,13 +1464,13 @@ rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
  *  @param[in]
  *  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p csr_row_ptr or \p coo_row_ind
- *              pointer is invalid.
- *  \returns    \ref rocsparse_status_arch_mismatch the device is not supported.
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p csr_row_ptr or \p coo_row_ind
+ *              pointer is invalid. <br>
+ *              \ref rocsparse_status_arch_mismatch the device is not supported.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
@@ -1503,13 +1507,13 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
  *  buffer_size number of bytes of the temporary storage buffer required by
  *              sparse_csr2csc().
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p csr_row_ptr, \p csr_col_ind or
- *              \p buffer_size pointer is invalid.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p csr_row_ptr, \p csr_col_ind or
+ *              \p buffer_size pointer is invalid. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handle,
@@ -1566,15 +1570,15 @@ rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handle,
  *  temp_buffer temporary storage buffer allocated by the user, size is returned by
  *              rocsparse_csr2csc_buffer_size().
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p csr_val, \p csr_row_ptr,
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p csr_val, \p csr_row_ptr,
  *              \p csr_col_ind, \p csc_val, \p csc_row_ind, \p csc_col_ptr or
- *              \p temp_buffer pointer is invalid.
- *  \returns    \ref rocsparse_status_arch_mismatch the device is not supported.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
+ *              \p temp_buffer pointer is invalid. <br>
+ *              \ref rocsparse_status_arch_mismatch the device is not supported. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred.
  */
 ///@{
 ROCSPARSE_EXPORT
@@ -1631,14 +1635,14 @@ rocsparse_status rocsparse_dcsr2csc(rocsparse_handle handle,
  *  ell_width   pointer to the number of non-zero elements per row in \p ELL storage
  *              format.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p csr_descr, \p csr_row_ptr, or
- *              \p ell_width pointer is invalid.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
- *  \returns    \ref rocsparse_status_not_implemented
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p csr_descr, \p csr_row_ptr, or
+ *              \p ell_width pointer is invalid. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
 ROCSPARSE_EXPORT
@@ -1683,14 +1687,14 @@ rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
  *  ell_col_ind array of \p m times \p ell_width elements containing the column indices
  *              of the sparse \p ELL matrix.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m or \p ell_width is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p csr_descr, \p csr_val,
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m or \p ell_width is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p csr_descr, \p csr_val,
  *              \p csr_row_ptr, \p csr_col_ind, \p ell_descr, \p ell_val or
- *              \p ell_col_ind pointer is invalid.
- *  \returns    \ref rocsparse_status_not_implemented
+ *              \p ell_col_ind pointer is invalid. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
 ///@{
@@ -1780,18 +1784,18 @@ rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
  *                  \ref rocsparse_hyb_partition_user or
  *                  \ref rocsparse_hyb_partition_max.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p user_ell_width is
- *              invalid.
- *  \returns    \ref rocsparse_status_invalid_value \p partition_type is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p descr, \p hyb, \p csr_val,
- *              \p csr_row_ptr or \p csr_col_ind pointer is invalid.
- *  \returns    \ref rocsparse_status_memory_error the buffer for the \p HYB matrix
- *              could not be allocated.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
- *  \returns    \ref rocsparse_status_not_implemented
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p user_ell_width is
+ *              invalid. <br>
+ *              \ref rocsparse_status_invalid_value \p partition_type is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p descr, \p hyb, \p csr_val,
+ *              \p csr_row_ptr or \p csr_col_ind pointer is invalid. <br>
+ *              \ref rocsparse_status_memory_error the buffer for the \p HYB matrix
+ *              could not be allocated. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
 ///@{
@@ -1870,11 +1874,11 @@ rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle handle,
  *  @param[in]
  *  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p coo_row_ind or \p csr_row_ptr
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p coo_row_ind or \p csr_row_ptr
  *              pointer is invalid.
  */
 ROCSPARSE_EXPORT
@@ -1917,13 +1921,14 @@ rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
  *  csr_nnz     pointer to the total number of non-zero elements in \p CSR storage
  *              format.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p ell_width is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p ell_descr, \p ell_col_ind,
- *              \p csr_descr, \p csr_row_ptr or \p csr_nnz pointer is invalid.
- *  \returns    \ref rocsparse_status_not_implemented
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p ell_width is
+ *              invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p ell_descr, \p ell_col_ind,
+ *              \p csr_descr, \p csr_row_ptr or \p csr_nnz pointer is invalid. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
 ROCSPARSE_EXPORT
@@ -1973,14 +1978,15 @@ rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
  *  @param[out]
  *  csr_col_ind array containing the column indices of the sparse \p CSR matrix.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p ell_width is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p csr_descr, \p csr_val,
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p ell_width is
+ *              invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p csr_descr, \p csr_val,
  *              \p csr_row_ptr, \p csr_col_ind, \p ell_descr, \p ell_val or
- *              \p ell_col_ind pointer is invalid.
- *  \returns    \ref rocsparse_status_not_implemented
+ *              \p ell_col_ind pointer is invalid. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
 ///@{
@@ -2058,11 +2064,11 @@ rocsparse_status rocsparse_zell2csr(rocsparse_handle handle,
  *  @param[out]
  *  p           array of \p n integers containing the map.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p n is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p p pointer is invalid.
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p n is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p p pointer is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status
@@ -2093,11 +2099,11 @@ rocsparse_create_identity_permutation(rocsparse_handle handle, rocsparse_int n, 
  *  buffer_size     number of bytes of the temporary storage buffer required by
  *                  rocsparse_csrsort().
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p csr_row_ptr, \p csr_col_ind or
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p csr_row_ptr, \p csr_col_ind or
  *              \p buffer_size pointer is invalid.
  */
 ROCSPARSE_EXPORT
@@ -2143,14 +2149,14 @@ rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handle,
  *  temp_buffer     temporary storage buffer allocated by the user, size is returned by
  *                  rocsparse_csrsort_buffer_size().
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p descr, \p csr_row_ptr,
- *              \p csr_col_ind or \p temp_buffer pointer is invalid.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
- *  \returns    \ref rocsparse_status_not_implemented
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p descr, \p csr_row_ptr,
+ *              \p csr_col_ind or \p temp_buffer pointer is invalid. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred. <br>
+ *              \ref rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  *
  *  \par Example
@@ -2227,13 +2233,13 @@ rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
  *  buffer_size     number of bytes of the temporary storage buffer required by
  *                  rocsparse_coosort_by_row() and rocsparse_coosort_by_column().
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p coo_row_ind, \p coo_col_ind or
- *              \p buffer_size pointer is invalid.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p coo_row_ind, \p coo_col_ind or
+ *              \p buffer_size pointer is invalid. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handle,
@@ -2277,13 +2283,13 @@ rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handle,
  *  temp_buffer     temporary storage buffer allocated by the user, size is returned by
  *                  rocsparse_coosort_buffer_size().
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p coo_row_ind, \p coo_col_ind or
- *              \p temp_buffer pointer is invalid.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p coo_row_ind, \p coo_col_ind or
+ *              \p temp_buffer pointer is invalid. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
@@ -2328,13 +2334,13 @@ rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
  *  temp_buffer     temporary storage buffer allocated by the user, size is returned by
  *                  rocsparse_coosort_buffer_size().
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully.
- *  \returns    \ref rocsparse_status_invalid_handle the library context was
- *              not initialized.
- *  \returns    \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid.
- *  \returns    \ref rocsparse_status_invalid_pointer \p coo_row_ind, \p coo_col_ind or
- *              \p temp_buffer pointer is invalid.
- *  \returns    \ref rocsparse_status_internal_error an internal error occurred.
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_handle the library context was
+ *              not initialized. <br>
+ *              \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p coo_row_ind, \p coo_col_ind or
+ *              \p temp_buffer pointer is invalid. <br>
+ *              \ref rocsparse_status_internal_error an internal error occurred.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,
