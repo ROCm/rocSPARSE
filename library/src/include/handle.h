@@ -115,9 +115,6 @@ struct _rocsparse_hyb_mat
  *******************************************************************************/
 struct _rocsparse_mat_info
 {
-    // built flags
-    bool csrmv_built       = false;
-
     // info structs
     rocsparse_csrmv_info csrmv_info       = nullptr;
     rocsparse_csrtr_info csrilu0_info     = nullptr;
