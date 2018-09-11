@@ -175,7 +175,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
 
     if(lid == WF_SIZE - 1)
     {
-        // Lane 0 writes the "row is done" flag
+// Lane 0 writes the "row is done" flag
 #if defined(__HIP_PLATFORM_HCC__)
         __atomic_store_n(&done_array[row], local_max, __ATOMIC_RELAXED);
 #elif defined(__HIP_PLATFORM_NVCC__)
