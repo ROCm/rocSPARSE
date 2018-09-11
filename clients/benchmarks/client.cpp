@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
          po::value<rocsparse_int>(&argus.iters)->default_value(10),
          "Iterations to run inside timing loop")
         
-        ("device",
+        ("device,d",
          po::value<rocsparse_int>(&device_id)->default_value(0),
          "Set default device to be used for subsequent program runs");
     // clang-format on
