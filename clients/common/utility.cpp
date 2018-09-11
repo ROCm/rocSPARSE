@@ -46,7 +46,8 @@ rocsparse_int query_device_property()
                    (int)(props.clockRate / 1000),
                    props.major,
                    props.minor);
-            printf("maxGridDimX %d, sharedMemPerBlock %ldKB, maxThreadsPerBlock %d, wavefrontSize %d\n",
+            printf("maxGridDimX %d, sharedMemPerBlock %ldKB, maxThreadsPerBlock %d, wavefrontSize "
+                   "%d\n",
                    props.maxGridSize[0],
                    props.sharedMemPerBlock >> 10,
                    props.maxThreadsPerBlock,
