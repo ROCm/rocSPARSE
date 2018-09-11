@@ -467,7 +467,8 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle handle,
 
         if(running_total >= cutoff)
         {
-            dim3 csrsv_blocks(((running_total + (running_total % wf_per_wg)) * wf_size - 1) / CSRSV_DIM + 1);
+            dim3 csrsv_blocks(((running_total + (running_total % wf_per_wg)) * wf_size - 1) /
+CSRSV_DIM + 1);
             dim3 csrsv_threads(CSRSV_DIM);
 
             if(handle->pointer_mode == rocsparse_pointer_mode_device)
@@ -581,7 +582,8 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle handle,
 
     if(running_total)
     {
-        dim3 csrsv_blocks(((running_total + (running_total % wf_per_wg)) * wf_size - 1) / CSRSV_DIM + 1);
+        dim3 csrsv_blocks(((running_total + (running_total % wf_per_wg)) * wf_size - 1) / CSRSV_DIM
++ 1);
         dim3 csrsv_threads(CSRSV_DIM);
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
