@@ -482,7 +482,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             for(unsigned long long j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
                 rocsparse_int col = csr_col_ind[(unsigned int)j] - idx_base;
-                temp_sum += alpha * csr_val[(unsigned int)j] * x[col];
+//                temp_sum += alpha * csr_val[(unsigned int)j] * x[col];
+                temp_sum = fma(alpha, csr_val[(unsigned int)j] * x[col], temp_sum);
             }
 
             partialSums[lid] = temp_sum;
@@ -560,11 +561,13 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             // That increases register pressure and reduces occupancy.
             for(rocsparse_int j = 0; j < vecEnd - col; j += WG_SIZE)
             {
-                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
+//                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
+                temp_sum = fma(alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
 #if 2 * WG_SIZE <= BLOCK_MULTIPLIER * BLOCKSIZE
                 // If you can, unroll this loop once. It somewhat helps performance.
                 j += WG_SIZE;
-                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
+//                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
+                temp_sum = fma(alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
 #endif
             }
         }
@@ -572,7 +575,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
         {
             for(rocsparse_int j = 0; j < vecEnd - col; j += WG_SIZE)
             {
-                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
+//                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
+                temp_sum = fma(alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
             }
         }
 
