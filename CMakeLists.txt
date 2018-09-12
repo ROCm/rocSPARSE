@@ -22,7 +22,7 @@ list(APPEND CMAKE_MODULE_PATH
 include(cmake/SetToolchain.cmake)
 
 # rocSPARSE project
-project(rocsparse VERSION 0.1.2.0 LANGUAGES CXX)
+project(rocsparse VERSION 0.1.3.0 LANGUAGES CXX)
 set(rocsparse_SOVERSION 0)
 
 # Set a default build type if none was specified
