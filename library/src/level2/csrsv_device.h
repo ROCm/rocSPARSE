@@ -388,7 +388,8 @@ __device__ void csrsv_device(rocsparse_int m,
         T local_val = csr_val[j];
 
         // Check for numerical zero
-        if(local_val == static_cast<T>(0) && local_col == row && diag_type == rocsparse_diag_type_non_unit)
+        if(local_val == static_cast<T>(0) && local_col == row &&
+           diag_type == rocsparse_diag_type_non_unit)
         {
             // Numerical zero pivot found, avoid division by 0
             // and store index for later use.

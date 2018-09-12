@@ -694,9 +694,9 @@ rocsparse_int lsolve(rocsparse_int m,
         temp.assign(wf_size, static_cast<T>(0));
         temp[0] = alpha * x[i];
 
-        rocsparse_int diag = -1;
+        rocsparse_int diag      = -1;
         rocsparse_int row_begin = ptr[i] - idx_base;
-        rocsparse_int row_end = ptr[i + 1] - idx_base;
+        rocsparse_int row_end   = ptr[i + 1] - idx_base;
 
         T diag_val;
 
@@ -713,7 +713,7 @@ rocsparse_int lsolve(rocsparse_int m,
                 }
 
                 rocsparse_int col_j = col[j] - idx_base;
-                T val_j = val[j];
+                T val_j             = val[j];
 
                 if(col_j < i)
                 {
@@ -732,7 +732,7 @@ rocsparse_int lsolve(rocsparse_int m,
                             val_j = static_cast<T>(1);
                         }
 
-                        diag = j;
+                        diag     = j;
                         diag_val = static_cast<T>(1) / val_j;
                     }
 
@@ -799,9 +799,9 @@ rocsparse_int usolve(rocsparse_int m,
         temp.assign(wf_size, static_cast<T>(0));
         temp[0] = alpha * x[i];
 
-        rocsparse_int diag = -1;
+        rocsparse_int diag      = -1;
         rocsparse_int row_begin = ptr[i] - idx_base;
-        rocsparse_int row_end = ptr[i + 1] - idx_base;
+        rocsparse_int row_end   = ptr[i + 1] - idx_base;
 
         T diag_val;
 
@@ -818,7 +818,7 @@ rocsparse_int usolve(rocsparse_int m,
                 }
 
                 rocsparse_int col_j = col[j] - idx_base;
-                T val_j = val[j];
+                T val_j             = val[j];
 
                 if(col_j < i)
                 {
@@ -837,7 +837,7 @@ rocsparse_int usolve(rocsparse_int m,
                             val_j = static_cast<T>(1);
                         }
 
-                        diag = j;
+                        diag     = j;
                         diag_val = static_cast<T>(1) / val_j;
                     }
 
@@ -928,14 +928,14 @@ class Arguments
     double alpha = 1.0;
     double beta  = 0.0;
 
-    rocsparse_operation transA     = rocsparse_operation_none;
-    rocsparse_operation transB     = rocsparse_operation_none;
-    rocsparse_index_base idx_base  = rocsparse_index_base_zero;
-    rocsparse_index_base idx_base2 = rocsparse_index_base_zero;
-    rocsparse_action action        = rocsparse_action_numeric;
-    rocsparse_hyb_partition part   = rocsparse_hyb_partition_auto;
-    rocsparse_diag_type diag_type  = rocsparse_diag_type_non_unit;
-    rocsparse_fill_mode fill_mode  = rocsparse_fill_mode_lower;
+    rocsparse_operation transA         = rocsparse_operation_none;
+    rocsparse_operation transB         = rocsparse_operation_none;
+    rocsparse_index_base idx_base      = rocsparse_index_base_zero;
+    rocsparse_index_base idx_base2     = rocsparse_index_base_zero;
+    rocsparse_action action            = rocsparse_action_numeric;
+    rocsparse_hyb_partition part       = rocsparse_hyb_partition_auto;
+    rocsparse_diag_type diag_type      = rocsparse_diag_type_non_unit;
+    rocsparse_fill_mode fill_mode      = rocsparse_fill_mode_lower;
     rocsparse_analysis_policy analysis = rocsparse_analysis_policy_reuse;
 
     rocsparse_int norm_check = 0;
