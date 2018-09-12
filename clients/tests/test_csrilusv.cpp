@@ -16,8 +16,9 @@ typedef rocsparse_analysis_policy analysis;
 
 typedef std::tuple<base, analysis, std::string> csrilusv_bin_tuple;
 
-base csrilusv_idxbase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
-analysis csrilusv_analysis_range[] = {rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force};
+base csrilusv_idxbase_range[]      = {rocsparse_index_base_zero, rocsparse_index_base_one};
+analysis csrilusv_analysis_range[] = {rocsparse_analysis_policy_reuse,
+                                      rocsparse_analysis_policy_force};
 
 std::string csrilusv_bin[] = {"mac_econ_fwd500.bin",
                               "mc2depi.bin",
@@ -42,9 +43,9 @@ class parameterized_csrilusv_bin : public testing::TestWithParam<csrilusv_bin_tu
 Arguments setup_csrilusv_arguments(csrilusv_bin_tuple tup)
 {
     Arguments arg;
-    arg.idx_base  = std::get<0>(tup);
-    arg.analysis  = std::get<1>(tup);
-    arg.timing    = 0;
+    arg.idx_base = std::get<0>(tup);
+    arg.analysis = std::get<1>(tup);
+    arg.timing   = 0;
 
     // Determine absolute path of test matrix
     std::string bin_file = std::get<2>(tup);

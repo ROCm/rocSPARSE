@@ -130,7 +130,7 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
             for(rocsparse_int i = 0; i < WF_SIZE; ++i)
             {
                 T val_B = (col < ncol) ? __ldg(B + col + shared_col[wid][i]) : static_cast<T>(0);
-                sum = fma(shared_val[wid][i], val_B, sum);
+                sum     = fma(shared_val[wid][i], val_B, sum);
             }
         }
 

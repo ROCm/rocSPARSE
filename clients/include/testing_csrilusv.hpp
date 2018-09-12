@@ -23,7 +23,7 @@ using namespace rocsparse_test;
 template <typename T>
 rocsparse_status testing_csrilusv(Arguments argus)
 {
-    rocsparse_index_base idx_base = argus.idx_base;
+    rocsparse_index_base idx_base      = argus.idx_base;
     rocsparse_analysis_policy analysis = argus.analysis;
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
@@ -49,7 +49,7 @@ rocsparse_status testing_csrilusv(Arguments argus)
     rocsparse_int nnz;
 
     if(read_bin_matrix(
-            argus.filename.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base) != 0)
+           argus.filename.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base) != 0)
     {
         fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
         return rocsparse_status_internal_error;
@@ -60,7 +60,7 @@ rocsparse_status testing_csrilusv(Arguments argus)
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
     auto dcol_managed =
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dval_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
+    auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
     auto d_position_managed =
         rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int)), device_free};
 
@@ -85,7 +85,8 @@ rocsparse_status testing_csrilusv(Arguments argus)
 
     // Obtain csrilu0 buffer size
     size_t size;
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_buffer_size(handle, m, nnz, descr_M, dptr, dcol, info, &size));
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_csrilu0_buffer_size(handle, m, nnz, descr_M, dptr, dcol, info, &size));
 
     // Allocate buffer on the device
     auto dbuffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * size), device_free};
@@ -99,28 +100,12 @@ rocsparse_status testing_csrilusv(Arguments argus)
     }
 
     // csrilu0 analysis
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis(handle,
-                                                     m,
-                                                     nnz,
-                                                     descr_M,
-                                                     dptr,
-                                                     dcol,
-                                                     info,
-                                                     analysis,
-                                                     rocsparse_solve_policy_auto,
-                                                     dbuffer));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis(
+        handle, m, nnz, descr_M, dptr, dcol, info, analysis, rocsparse_solve_policy_auto, dbuffer));
 
     // Compute incomplete LU factorization
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0(handle,
-                                            m,
-                                            nnz,
-                                            descr_M,
-                                            dval,
-                                            dptr,
-                                            dcol,
-                                            info,
-                                            rocsparse_solve_policy_auto,
-                                            dbuffer));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0(
+        handle, m, nnz, descr_M, dval, dptr, dcol, info, rocsparse_solve_policy_auto, dbuffer));
 
     // Check for zero pivot
     rocsparse_int hposition_1, hposition_2;
@@ -137,14 +122,12 @@ rocsparse_status testing_csrilusv(Arguments argus)
     // Copy output to CPU
     std::vector<T> iluresult(nnz);
     CHECK_HIP_ERROR(hipMemcpy(iluresult.data(), dval, sizeof(T) * nnz, hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(&hposition_2, d_position, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(
+        hipMemcpy(&hposition_2, d_position, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
     // Compute host reference csrilu0
-    rocsparse_int position_gold = csrilu0(m,
-                                          hcsr_row_ptr.data(),
-                                          hcsr_col_ind.data(),
-                                          hcsr_val.data(),
-                                          idx_base);
+    rocsparse_int position_gold =
+        csrilu0(m, hcsr_row_ptr.data(), hcsr_col_ind.data(), hcsr_val.data(), idx_base);
 
     // Check zero pivot results
     unit_check_general(1, 1, 1, &position_gold, &hposition_1);
@@ -153,15 +136,13 @@ rocsparse_status testing_csrilusv(Arguments argus)
     // If zero pivot was found, do not go further
     if(hposition_1 != -1)
     {
-        verify_rocsparse_status_zero_pivot(pivot_status_1,
-                                           "expected rocsparse_status_zero_pivot");
+        verify_rocsparse_status_zero_pivot(pivot_status_1, "expected rocsparse_status_zero_pivot");
         return rocsparse_status_success;
     }
 
     if(hposition_2 != -1)
     {
-        verify_rocsparse_status_zero_pivot(pivot_status_2,
-                                           "expected rocsparse_status_zero_pivot");
+        verify_rocsparse_status_zero_pivot(pivot_status_2, "expected rocsparse_status_zero_pivot");
         return rocsparse_status_success;
     }
 
@@ -185,8 +166,10 @@ rocsparse_status testing_csrilusv(Arguments argus)
 
     // Obtain csrsv buffer sizes
     size_t size_lower, size_upper;
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size(handle, rocsparse_operation_none, m, nnz, descr_L, dptr, dcol, info, &size_lower));
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size(handle, rocsparse_operation_none, m, nnz, descr_U, dptr, dcol, info, &size_upper));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size(
+        handle, rocsparse_operation_none, m, nnz, descr_L, dptr, dcol, info, &size_lower));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size(
+        handle, rocsparse_operation_none, m, nnz, descr_U, dptr, dcol, info, &size_upper));
 
     // Sizes should match with csrilu0
     unit_check_general(1, 1, 1, &size, &size_lower);
@@ -232,12 +215,12 @@ rocsparse_status testing_csrilusv(Arguments argus)
     auto dz_2_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
     auto d_alpha_managed = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
 
-    T* dx                     = (T*)dx_managed.get();
-    T* dy_1                   = (T*)dy_1_managed.get();
-    T* dy_2                   = (T*)dy_2_managed.get();
-    T* dz_1                   = (T*)dz_1_managed.get();
-    T* dz_2                   = (T*)dz_2_managed.get();
-    T* d_alpha                = (T*)d_alpha_managed.get();
+    T* dx      = (T*)dx_managed.get();
+    T* dy_1    = (T*)dy_1_managed.get();
+    T* dy_2    = (T*)dy_2_managed.get();
+    T* dz_1    = (T*)dz_1_managed.get();
+    T* dz_2    = (T*)dz_2_managed.get();
+    T* d_alpha = (T*)d_alpha_managed.get();
 
     if(!dx || !dy_1 || !dy_2 || !dz_1 || !dz_2 || !d_alpha)
     {
@@ -315,15 +298,13 @@ rocsparse_status testing_csrilusv(Arguments argus)
     // If zero pivot was found, do not go further
     if(hposition_1 != -1)
     {
-        verify_rocsparse_status_zero_pivot(pivot_status_1,
-                                           "expected rocsparse_status_zero_pivot");
+        verify_rocsparse_status_zero_pivot(pivot_status_1, "expected rocsparse_status_zero_pivot");
         return rocsparse_status_success;
     }
 
     if(hposition_2 != -1)
     {
-        verify_rocsparse_status_zero_pivot(pivot_status_2,
-                                           "expected rocsparse_status_zero_pivot");
+        verify_rocsparse_status_zero_pivot(pivot_status_2, "expected rocsparse_status_zero_pivot");
         return rocsparse_status_success;
     }
 
@@ -399,15 +380,13 @@ rocsparse_status testing_csrilusv(Arguments argus)
     // If zero pivot was found, do not go further
     if(hposition_1 != -1)
     {
-        verify_rocsparse_status_zero_pivot(pivot_status_1,
-                                           "expected rocsparse_status_zero_pivot");
+        verify_rocsparse_status_zero_pivot(pivot_status_1, "expected rocsparse_status_zero_pivot");
         return rocsparse_status_success;
     }
 
     if(hposition_2 != -1)
     {
-        verify_rocsparse_status_zero_pivot(pivot_status_2,
-                                           "expected rocsparse_status_zero_pivot");
+        verify_rocsparse_status_zero_pivot(pivot_status_2, "expected rocsparse_status_zero_pivot");
         return rocsparse_status_success;
     }
 
