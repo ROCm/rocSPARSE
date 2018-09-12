@@ -421,140 +421,6 @@ void testing_csrsv_bad_arg(void)
 }
 
 template <typename T>
-static rocsparse_int SpTS(rocsparse_int m,
-                          const rocsparse_int* ptr,
-                          const rocsparse_int* col,
-                          const T* val,
-                          T alpha,
-                          const T* x,
-                          T* y,
-                          rocsparse_index_base idx_base,
-                          rocsparse_fill_mode fill_mode,
-                          rocsparse_diag_type diag_type,
-                          unsigned int wf_size)
-{
-    std::vector<T> temp(wf_size);
-    rocsparse_int pivot = std::numeric_limits<rocsparse_int>::max();
-
-    for(rocsparse_int k = 0; k < m; ++k)
-    {
-        rocsparse_int i;
-
-        if(fill_mode == rocsparse_fill_mode_lower)
-        {
-            i = k;
-        }
-        else
-        {
-            i = m - 1 - k;
-        }
-
-        temp.assign(wf_size, static_cast<T>(0));
-        temp[0] = alpha * x[i];
-
-        rocsparse_int diag      = -1;
-        rocsparse_int row_start = ptr[i] - idx_base;
-        rocsparse_int row_end   = ptr[i + 1] - idx_base;
-
-        T diag_val;
-
-        for(rocsparse_int l = row_start; l < row_end; l += wf_size)
-        {
-            for(rocsparse_int k = 0; k < wf_size; ++k)
-            {
-                rocsparse_int j     = l + k;
-                rocsparse_int col_j = col[j] - idx_base;
-                T val_j             = val[j];
-
-                // Do not exceed array
-                if(j >= row_end)
-                {
-                    break;
-                }
-
-                // Diag type
-                if(diag_type == rocsparse_diag_type_unit)
-                {
-                    val_j = static_cast<T>(1);
-                }
-                else
-                {
-                    // Check for numerical zero
-                    if(val_j == static_cast<T>(0) && col_j == i)
-                    {
-                        // Numerical zero found
-                        pivot = std::min(pivot, i + idx_base);
-                        val_j = static_cast<T>(1);
-                    }
-                }
-
-                // Fill mode
-                if(fill_mode == rocsparse_fill_mode_lower)
-                {
-                    // Processing lower triangular
-                    if(col_j > i)
-                    {
-                        break;
-                    }
-
-                    if(col_j == i)
-                    {
-                        diag_val = static_cast<T>(1) / val_j;
-                        diag     = j;
-
-                        break;
-                    }
-                }
-                else
-                {
-                    // Processing upper triangular
-                    if(col_j < i)
-                    {
-                        continue;
-                    }
-
-                    if(col_j == i)
-                    {
-                        diag_val = static_cast<T>(1) / val_j;
-                        diag     = j;
-
-                        continue;
-                    }
-                }
-
-                temp[k] -= val_j * y[col_j];
-            }
-        }
-
-        for(rocsparse_int j = 1; j < wf_size; j <<= 1)
-        {
-            for(rocsparse_int k = 0; k < wf_size - j; ++k)
-            {
-                temp[k] += temp[k + j];
-            }
-        }
-
-        if(diag_type == rocsparse_diag_type_unit)
-        {
-            y[i] = temp[0];
-        }
-        else
-        {
-            if(diag == -1)
-            {
-                // Structural zero
-                pivot = std::min(pivot, i + idx_base);
-            }
-
-            temp[0] *= diag_val;
-            y[i] = temp[0];
-        }
-    }
-
-    return (pivot != std::numeric_limits<rocsparse_int>::max()) ? pivot : -1;
-}
-
-template <typename T>
 rocsparse_status testing_csrsv(Arguments argus)
 {
     rocsparse_int safe_size       = 100;
@@ -897,17 +763,33 @@ rocsparse_status testing_csrsv(Arguments argus)
 
         double cpu_time_used = get_time_us();
 
-        rocsparse_int position_gold = SpTS(m,
-                                           hcsr_row_ptr.data(),
-                                           hcsr_col_ind.data(),
-                                           hcsr_val.data(),
-                                           h_alpha,
-                                           hx.data(),
-                                           hy_gold.data(),
-                                           idx_base,
-                                           fill_mode,
-                                           diag_type,
-                                           prop.warpSize);
+        rocsparse_int position_gold;
+        if(fill_mode == rocsparse_fill_mode_lower)
+        {
+            position_gold = lsolve(m,
+                                   hcsr_row_ptr.data(),
+                                   hcsr_col_ind.data(),
+                                   hcsr_val.data(),
+                                   h_alpha,
+                                   hx.data(),
+                                   hy_gold.data(),
+                                   idx_base,
+                                   diag_type,
+                                   prop.warpSize);
+        }
+        else
+        {
+            position_gold = usolve(m,
+                                   hcsr_row_ptr.data(),
+                                   hcsr_col_ind.data(),
+                                   hcsr_val.data(),
+                                   h_alpha,
+                                   hx.data(),
+                                   hy_gold.data(),
+                                   idx_base,
+                                   diag_type,
+                                   prop.warpSize);
+        }
 
         cpu_time_used = get_time_us() - cpu_time_used;
 
