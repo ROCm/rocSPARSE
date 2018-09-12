@@ -42,7 +42,6 @@ class parameterized_csrilusv_bin : public testing::TestWithParam<csrilusv_bin_tu
 Arguments setup_csrilusv_arguments(csrilusv_bin_tuple tup)
 {
     Arguments arg;
-    arg.M         = -99;
     arg.idx_base  = std::get<0>(tup);
     arg.analysis  = std::get<1>(tup);
     arg.timing    = 0;
