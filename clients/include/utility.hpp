@@ -580,6 +580,308 @@ rocsparse_int read_bin_matrix(const char* filename,
     return 0;
 }
 
+/* ============================================================================================ */
+/*! \brief  Compute incomplete LU factorization without fill-ins and no pivoting using CSR
+ *  matrix storage format.
+ */
+template <typename T>
+rocsparse_int csrilu0(rocsparse_int m,
+                      const rocsparse_int* ptr,
+                      const rocsparse_int* col,
+                      T* val,
+                      rocsparse_index_base idx_base)
+{
+    // pointer of upper part of each row
+    std::vector<rocsparse_int> diag_offset(m);
+    std::vector<rocsparse_int> nnz_entries(m, 0);
+
+    // ai = 0 to N loop over all rows
+    for(rocsparse_int ai = 0; ai < m; ++ai)
+    {
+        // ai-th row entries
+        rocsparse_int row_start = ptr[ai] - idx_base;
+        rocsparse_int row_end   = ptr[ai + 1] - idx_base;
+        rocsparse_int j;
+
+        // nnz position of ai-th row in val array
+        for(j = row_start; j < row_end; ++j)
+        {
+            nnz_entries[col[j] - idx_base] = j;
+        }
+
+        bool has_diag = false;
+
+        // loop over ai-th row nnz entries
+        for(j = row_start; j < row_end; ++j)
+        {
+            // if nnz entry is in lower matrix
+            if(col[j] - idx_base < ai)
+            {
+
+                rocsparse_int col_j  = col[j] - idx_base;
+                rocsparse_int diag_j = diag_offset[col_j];
+
+                if(val[diag_j] != static_cast<T>(0))
+                {
+                    // multiplication factor
+                    val[j] = val[j] / val[diag_j];
+
+                    // loop over upper offset pointer and do linear combination for nnz entry
+                    for(rocsparse_int k = diag_j + 1; k < ptr[col_j + 1] - idx_base; ++k)
+                    {
+                        // if nnz at this position do linear combination
+                        if(nnz_entries[col[k] - idx_base] != 0)
+                        {
+                            val[nnz_entries[col[k] - idx_base]] -= val[j] * val[k];
+                        }
+                    }
+                }
+                else
+                {
+                    // Numerical zero diagonal
+                    return col_j + idx_base;
+                }
+            }
+            else if(col[j] - idx_base == ai)
+            {
+                has_diag = true;
+                break;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if(!has_diag)
+        {
+            // Structural zero digonal
+            return ai + idx_base;
+        }
+
+        // set diagonal pointer to diagonal element
+        diag_offset[ai] = j;
+
+        // clear nnz entries
+        for(j = row_start; j < row_end; ++j)
+        {
+            nnz_entries[col[j] - idx_base] = 0;
+        }
+    }
+
+    return -1;
+}
+
+/* ============================================================================================ */
+/*! \brief  Sparse triangular lower solve using CSR storage format. */
+template <typename T>
+rocsparse_int lsolve(rocsparse_int m,
+                     const rocsparse_int* ptr,
+                     const rocsparse_int* col,
+                     const T* val,
+                     T alpha,
+                     const T* x,
+                     T* y,
+                     rocsparse_index_base idx_base,
+                     rocsparse_diag_type diag_type,
+                     unsigned int wf_size)
+{
+    rocsparse_int pivot = std::numeric_limits<rocsparse_int>::max();
+    std::vector<T> temp(wf_size);
+
+    for(rocsparse_int i = 0; i < m; ++i)
+    {
+        temp.assign(wf_size, static_cast<T>(0));
+        temp[0] = alpha * x[i];
+
+        rocsparse_int diag = -1;
+        rocsparse_int row_begin = ptr[i] - idx_base;
+        rocsparse_int row_end = ptr[i + 1] - idx_base;
+
+        T diag_val;
+
+        for(rocsparse_int l = row_begin; l < row_end; l += wf_size)
+        {
+            for(rocsparse_int k = 0; k < wf_size; ++k)
+            {
+                rocsparse_int j = l + k;
+
+                // Do not run out of bounds
+                if(j >= row_end)
+                {
+                    break;
+                }
+
+                rocsparse_int col_j = col[j] - idx_base;
+                T val_j = val[j];
+
+                if(col_j < i)
+                {
+                    // Lower part
+                    temp[k] -= val[j] * y[col_j];
+                }
+                else if(col_j == i)
+                {
+                    // Diagonal
+                    if(diag_type == rocsparse_diag_type_non_unit)
+                    {
+                        // Check for numerical zero
+                        if(val_j == static_cast<T>(0))
+                        {
+                            pivot = std::min(pivot, i + idx_base);
+                            val_j = static_cast<T>(1);
+                        }
+
+                        diag = j;
+                        diag_val = static_cast<T>(1) / val_j;
+                    }
+
+                    break;
+                }
+                else
+                {
+                    // Upper part
+                    break;
+                }
+            }
+        }
+
+        for(rocsparse_int j = 1; j < wf_size; j <<= 1)
+        {
+            for(rocsparse_int k = 0; k < wf_size - j; ++k)
+            {
+                temp[k] += temp[k + j];
+            }
+        }
+
+        if(diag_type == rocsparse_diag_type_non_unit)
+        {
+            if(diag == -1)
+            {
+                pivot = std::min(pivot, i + idx_base);
+            }
+
+            y[i] = temp[0] * diag_val;
+        }
+        else
+        {
+            y[i] = temp[0];
+        }
+    }
+
+    if(pivot != std::numeric_limits<rocsparse_int>::max())
+    {
+        return pivot;
+    }
+
+    return -1;
+}
+
+/* ============================================================================================ */
+/*! \brief  Sparse triangular upper solve using CSR storage format. */
+template <typename T>
+rocsparse_int usolve(rocsparse_int m,
+                     const rocsparse_int* ptr,
+                     const rocsparse_int* col,
+                     const T* val,
+                     T alpha,
+                     const T* x,
+                     T* y,
+                     rocsparse_index_base idx_base,
+                     rocsparse_diag_type diag_type,
+                     unsigned int wf_size)
+{
+    rocsparse_int pivot = std::numeric_limits<rocsparse_int>::max();
+    std::vector<T> temp(wf_size);
+
+    for(rocsparse_int i = m - 1; i >= 0; --i)
+    {
+        temp.assign(wf_size, static_cast<T>(0));
+        temp[0] = alpha * x[i];
+
+        rocsparse_int diag = -1;
+        rocsparse_int row_begin = ptr[i] - idx_base;
+        rocsparse_int row_end = ptr[i + 1] - idx_base;
+
+        T diag_val;
+
+        for(rocsparse_int l = row_begin; l < row_end; l += wf_size)
+        {
+            for(rocsparse_int k = 0; k < wf_size; ++k)
+            {
+                rocsparse_int j = l + k;
+
+                // Do not run out of bounds
+                if(j >= row_end)
+                {
+                    break;
+                }
+
+                rocsparse_int col_j = col[j] - idx_base;
+                T val_j = val[j];
+
+                if(col_j < i)
+                {
+                    // Lower part
+                    continue;
+                }
+                else if(col_j == i)
+                {
+                    // Diagonal
+                    if(diag_type == rocsparse_diag_type_non_unit)
+                    {
+                        // Check for numerical zero
+                        if(val_j == static_cast<T>(0))
+                        {
+                            pivot = std::min(pivot, i + idx_base);
+                            val_j = static_cast<T>(1);
+                        }
+
+                        diag = j;
+                        diag_val = static_cast<T>(1) / val_j;
+                    }
+
+                    continue;
+                }
+                else
+                {
+                    // Upper part
+                    temp[k] -= val[j] * y[col_j];
+                }
+            }
+        }
+
+        for(rocsparse_int j = 1; j < wf_size; j <<= 1)
+        {
+            for(rocsparse_int k = 0; k < wf_size - j; ++k)
+            {
+                temp[k] += temp[k + j];
+            }
+        }
+
+        if(diag_type == rocsparse_diag_type_non_unit)
+        {
+            if(diag == -1)
+            {
+                pivot = std::min(pivot, i + idx_base);
+            }
+
+            y[i] = temp[0] * diag_val;
+        }
+        else
+        {
+            y[i] = temp[0];
+        }
+    }
+
+    if(pivot != std::numeric_limits<rocsparse_int>::max())
+    {
+        return pivot;
+    }
+
+    return -1;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -634,6 +936,7 @@ class Arguments
     rocsparse_hyb_partition part   = rocsparse_hyb_partition_auto;
     rocsparse_diag_type diag_type  = rocsparse_diag_type_non_unit;
     rocsparse_fill_mode fill_mode  = rocsparse_fill_mode_lower;
+    rocsparse_analysis_policy analysis = rocsparse_analysis_policy_reuse;
 
     rocsparse_int norm_check = 0;
     rocsparse_int unit_check = 1;
@@ -668,6 +971,7 @@ class Arguments
         this->part      = rhs.part;
         this->diag_type = rhs.diag_type;
         this->fill_mode = rhs.fill_mode;
+        this->analysis  = rhs.analysis;
 
         this->norm_check = rhs.norm_check;
         this->unit_check = rhs.unit_check;

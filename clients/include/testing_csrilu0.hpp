@@ -256,94 +256,6 @@ void testing_csrilu0_bad_arg(void)
 }
 
 template <typename T>
-static rocsparse_int ILU0(rocsparse_int m,
-                          const rocsparse_int* ptr,
-                          const rocsparse_int* col,
-                          T* val,
-                          rocsparse_index_base idx_base)
-{
-    // pointer of upper part of each row
-    std::vector<rocsparse_int> diag_offset(m);
-    std::vector<rocsparse_int> nnz_entries(m, 0);
-
-    // ai = 0 to N loop over all rows
-    for(rocsparse_int ai = 0; ai < m; ++ai)
-    {
-        // ai-th row entries
-        rocsparse_int row_start = ptr[ai] - idx_base;
-        rocsparse_int row_end   = ptr[ai + 1] - idx_base;
-        rocsparse_int j;
-
-        // nnz position of ai-th row in val array
-        for(j = row_start; j < row_end; ++j)
-        {
-            nnz_entries[col[j] - idx_base] = j;
-        }
-
-        bool has_diag = false;
-
-        // loop over ai-th row nnz entries
-        for(j = row_start; j < row_end; ++j)
-        {
-            // if nnz entry is in lower matrix
-            if(col[j] - idx_base < ai)
-            {
-
-                rocsparse_int col_j  = col[j] - idx_base;
-                rocsparse_int diag_j = diag_offset[col_j];
-
-                if(val[diag_j] != static_cast<T>(0))
-                {
-                    // multiplication factor
-                    val[j] = val[j] / val[diag_j];
-
-                    // loop over upper offset pointer and do linear combination for nnz entry
-                    for(rocsparse_int k = diag_j + 1; k < ptr[col_j + 1] - idx_base; ++k)
-                    {
-                        // if nnz at this position do linear combination
-                        if(nnz_entries[col[k] - idx_base] != 0)
-                        {
-                            val[nnz_entries[col[k] - idx_base]] -= val[j] * val[k];
-                        }
-                    }
-                }
-                else
-                {
-                    // Numerical zero diagonal
-                    return col_j + idx_base;
-                }
-            }
-            else if(col[j] - idx_base == ai)
-            {
-                has_diag = true;
-                break;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        if(!has_diag)
-        {
-            // Structural zero digonal
-            return ai + idx_base;
-        }
-
-        // set diagonal pointer to diagonal element
-        diag_offset[ai] = j;
-
-        // clear nnz entries
-        for(j = row_start; j < row_end; ++j)
-        {
-            nnz_entries[col[j] - idx_base] = 0;
-        }
-    }
-
-    return -1;
-}
-
-template <typename T>
 rocsparse_status testing_csrilu0(Arguments argus)
 {
     rocsparse_int safe_size       = 100;
@@ -608,7 +520,7 @@ rocsparse_status testing_csrilu0(Arguments argus)
         double cpu_time_used = get_time_us();
 
         rocsparse_int position_gold =
-            ILU0(m, hcsr_row_ptr.data(), hcsr_col_ind.data(), hcsr_val.data(), idx_base);
+            csrilu0(m, hcsr_row_ptr.data(), hcsr_col_ind.data(), hcsr_val.data(), idx_base);
 
         cpu_time_used = get_time_us() - cpu_time_used;
 
