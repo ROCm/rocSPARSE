@@ -1,0 +1,36 @@
+/* ************************************************************************
+ * Copyright 2018 Advanced Micro Devices, Inc.
+ *
+ * ************************************************************************ */
+
+/*! \file
+ *  \brief doxygen group definitions
+ */
+
+/*! \defgroup aux_module SPARSE Auxiliary functions
+ *  \brief This module holds all sparse auxiliary functions.
+ */
+
+/*! \defgroup types_module SPARSE Types
+ *  \brief This module holds all sparse types.
+ */
+
+/*! \defgroup level1_module SPARSE Level 1 routines
+ *  \brief This module holds all sparse level 1 routines.
+ */
+
+/*! \defgroup level2_module SPARSE Level 2 routines
+ *  \brief This module holds all sparse level 2 routines.
+ */
+
+/*! \defgroup level3_module SPARSE Level 3 routines
+ *  \brief This module holds all sparse level 3 routines.
+ */
+
+/*! \defgroup precond_module SPARSE Preconditioners
+ *  \brief This module holds all sparse preconditioners.
+ */
+
+/*! \defgroup conv_module SPARSE Conversion routines
+ *  \brief This module holds all sparse conversion routines.
+ */

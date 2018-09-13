@@ -3,8 +3,8 @@
  *
  * ************************************************************************ */
 
-/*!\file
- * \brief rocsparse-functions.h provides Sparse Linear Algebra Subprograms
+/*! \file
+ *  \brief rocsparse-functions.h provides Sparse Linear Algebra Subprograms
  *  of Level 1, 2 and 3, using HIP optimized for AMD HCC-based GPU hardware.
  */
 
@@ -25,7 +25,8 @@ extern "C" {
  * ===========================================================================
  */
 
-/*! \brief Scale a sparse vector and add it to a dense vector.
+/*! \ingroup level1_module
+ *  \brief Scale a sparse vector and add it to a dense vector.
  *
  *  \details
  *  \p rocsparse_axpyi multiplies the sparse vector \f$x\f$ with scalar \f$\alpha\f$ and
@@ -66,7 +67,7 @@ extern "C" {
  *              \ref rocsparse_status_invalid_pointer \p alpha, \p x_val, \p x_ind or
  *              \p y pointer is invalid.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_saxpyi(rocsparse_handle handle,
                                   rocsparse_int nnz,
@@ -103,9 +104,10 @@ rocsparse_status rocsparse_zaxpyi(rocsparse_handle handle,
                                   rocsparse_double_complex* y,
                                   rocsparse_index_base idx_base);
 */
-///@}
+/**@}*/
 
-/*! \brief Compute the dot product of a sparse vector with a dense vector.
+/*! \ingroup level1_module
+ *  \brief Compute the dot product of a sparse vector with a dense vector.
  *
  *  \details
  *  \p rocsparse_doti computes the dot product of the sparse vector \f$x\f$ with the
@@ -147,7 +149,7 @@ rocsparse_status rocsparse_zaxpyi(rocsparse_handle handle,
  *              reduction could not be allocated. <br>
  *              \ref rocsparse_status_internal_error an internal error occurred.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_sdoti(rocsparse_handle handle,
                                  rocsparse_int nnz,
@@ -184,9 +186,10 @@ rocsparse_status rocsparse_zdoti(rocsparse_handle handle,
                                  rocsparse_double_complex* result,
                                  rocsparse_index_base idx_base);
 */
-///@}
+/**@}*/
 
-/*! \brief Gather elements from a dense vector and store them into a sparse vector.
+/*! \ingroup level1_module
+ *  \brief Gather elements from a dense vector and store them into a sparse vector.
  *
  *  \details
  *  \p rocsparse_gthr gathers the elements that are listed in \p x_ind from the dense
@@ -221,7 +224,7 @@ rocsparse_status rocsparse_zdoti(rocsparse_handle handle,
  *              \ref rocsparse_status_invalid_pointer \p y, \p x_val or \p x_ind pointer
  *              is invalid.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_sgthr(rocsparse_handle handle,
                                  rocsparse_int nnz,
@@ -254,9 +257,10 @@ rocsparse_status rocsparse_zgthr(rocsparse_handle handle,
                                  const rocsparse_int* x_ind,
                                  rocsparse_index_base idx_base);
 */
-///@}
+/**@}*/
 
-/*! \brief Gather and zero out elements from a dense vector and store them into a sparse
+/*! \ingroup level1_module
+ *  \brief Gather and zero out elements from a dense vector and store them into a sparse
  *  vector.
  *
  *  \details
@@ -294,7 +298,7 @@ rocsparse_status rocsparse_zgthr(rocsparse_handle handle,
  *              \ref rocsparse_status_invalid_pointer \p y, \p x_val or \p x_ind pointer
  *              is invalid.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_sgthrz(rocsparse_handle handle,
                                   rocsparse_int nnz,
@@ -327,9 +331,10 @@ rocsparse_status rocsparse_zgthrz(rocsparse_handle handle,
                                   const rocsparse_int* x_ind,
                                   rocsparse_index_base idx_base);
 */
-///@}
+/**@}*/
 
-/*! \brief Apply Givens rotation to a dense and a sparse vector.
+/*! \ingroup level1_module
+ *  \brief Apply Givens rotation to a dense and a sparse vector.
  *
  *  \details
  *  \p rocsparse_roti applies the Givens rotation matrix \f$G\f$ to the sparse vector
@@ -374,7 +379,7 @@ rocsparse_status rocsparse_zgthrz(rocsparse_handle handle,
  *              \ref rocsparse_status_invalid_pointer \p c, \p s, \p x_val, \p x_ind or
  *              \p y pointer is invalid.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_sroti(rocsparse_handle handle,
                                  rocsparse_int nnz,
@@ -394,9 +399,10 @@ rocsparse_status rocsparse_droti(rocsparse_handle handle,
                                  const double* c,
                                  const double* s,
                                  rocsparse_index_base idx_base);
-///@}
+/**@}*/
 
-/*! \brief Scatter elements from a dense vector across a sparse vector.
+/*! \ingroup level1_module
+ *  \brief Scatter elements from a dense vector across a sparse vector.
  *
  *  \details
  *  \p rocsparse_sctr scatters the elements that are listed in \p x_ind from the sparse
@@ -432,7 +438,7 @@ rocsparse_status rocsparse_droti(rocsparse_handle handle,
  *              \ref rocsparse_status_invalid_pointer \p x_val, \p x_ind or \p y pointer
  *              is invalid.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ssctr(rocsparse_handle handle,
                                  rocsparse_int nnz,
@@ -465,7 +471,7 @@ rocsparse_status rocsparse_zsctr(rocsparse_handle handle,
                                  rocsparse_double_complex* y,
                                  rocsparse_index_base idx_base);
 */
-///@}
+/**@}*/
 
 /*
  * ===========================================================================
@@ -473,7 +479,8 @@ rocsparse_status rocsparse_zsctr(rocsparse_handle handle,
  * ===========================================================================
  */
 
-/*! \brief Sparse matrix vector multiplication using \p COO storage format
+/*! \ingroup level2_module
+ *  \brief Sparse matrix vector multiplication using \p COO storage format
  *
  *  \details
  *  \p rocsparse_coomv multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times n\f$
@@ -554,7 +561,7 @@ rocsparse_status rocsparse_zsctr(rocsparse_handle handle,
  *              \p trans != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scoomv(rocsparse_handle handle,
                                   rocsparse_operation trans,
@@ -615,9 +622,10 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle handle,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex* y);
 */
-///@}
+/**@}*/
 
-/*! \brief Sparse matrix vector multiplication using \p CSR storage format
+/*! \ingroup level2_module
+ *  \brief Sparse matrix vector multiplication using \p CSR storage format
  *
  *  \details
  *  \p rocsparse_csrmv_analysis performs the analysis step for rocsparse_scsrmv() and
@@ -671,7 +679,8 @@ rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
                                           const rocsparse_int* csr_col_ind,
                                           rocsparse_mat_info info);
 
-/*! \brief Sparse matrix vector multiplication using \p CSR storage format
+/*! \ingroup level2_module
+ *  \brief Sparse matrix vector multiplication using \p CSR storage format
  *
  *  \details
  *  \p rocsparse_csrmv_clear deallocates all memory that was allocated by
@@ -697,7 +706,8 @@ rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle, rocsparse_mat_info info);
 
-/*! \brief Sparse matrix vector multiplication using \p CSR storage format
+/*! \ingroup level2_module
+ *  \brief Sparse matrix vector multiplication using \p CSR storage format
  *
  *  \details
  *  \p rocsparse_csrmv multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times n\f$
@@ -783,7 +793,7 @@ rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle, rocsparse_mat_in
  *              \p trans != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsrmv(rocsparse_handle handle,
                                   rocsparse_operation trans,
@@ -848,9 +858,10 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex* y);
 */
-///@}
+/**@}*/
 
-/*! \brief Sparse triangular solve using \p CSR storage format
+/*! \ingroup level2_module
+ *  \brief Sparse triangular solve using \p CSR storage format
  *
  *  \details
  *  \p rocsparse_csrsv_zero_pivot returns \ref rocsparse_status_zero_pivot, if either a
@@ -884,7 +895,8 @@ rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
                                             rocsparse_mat_info info,
                                             rocsparse_int* position);
 
-/*! \brief Sparse triangular solve using \p CSR storage format
+/*! \ingroup level2_module
+ *  \brief Sparse triangular solve using \p CSR storage format
  *
  *  \details
  *  \p rocsparse_csrsv_buffer_size returns the size of the temporary storage buffer that
@@ -939,7 +951,8 @@ rocsparse_status rocsparse_csrsv_buffer_size(rocsparse_handle handle,
                                              rocsparse_mat_info info,
                                              size_t* buffer_size);
 
-/*! \brief Sparse triangular solve using \p CSR storage format
+/*! \ingroup level2_module
+ *  \brief Sparse triangular solve using \p CSR storage format
  *
  *  \details
  *  \p rocsparse_csrsv_analysis performs the analysis step for rocsparse_scsrsv_solve()
@@ -1005,7 +1018,8 @@ rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle handle,
                                           rocsparse_solve_policy solve,
                                           void* temp_buffer);
 
-/*! \brief Sparse triangular solve using \p CSR storage format
+/*! \ingroup level2_module
+ *  \brief Sparse triangular solve using \p CSR storage format
  *
  *  \details
  *  \p rocsparse_csrsv_clear deallocates all memory that was allocated by
@@ -1035,7 +1049,8 @@ rocsparse_status rocsparse_csrsv_clear(rocsparse_handle handle,
                                        const rocsparse_mat_descr descr,
                                        rocsparse_mat_info info);
 
-/*! \brief Sparse triangular solve using \p CSR storage format
+/*! \ingroup level2_module
+ *  \brief Sparse triangular solve using \p CSR storage format
  *
  *  \details
  *  \p rocsparse_csrsv_solve solves a sparse triangular linear system of a sparse
@@ -1182,7 +1197,7 @@ rocsparse_status rocsparse_csrsv_clear(rocsparse_handle handle,
  *      rocsparse_destroy_handle(handle);
  *  \endcode
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsrsv_solve(rocsparse_handle handle,
                                         rocsparse_operation trans,
@@ -1214,9 +1229,10 @@ rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle handle,
                                         double* y,
                                         rocsparse_solve_policy policy,
                                         void* temp_buffer);
-///@}
+/**@}*/
 
-/*! \brief Sparse matrix vector multiplication using \p ELL storage format
+/*! \ingroup level2_module
+ *  \brief Sparse matrix vector multiplication using \p ELL storage format
  *
  *  \details
  *  \p rocsparse_ellmv multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times n\f$
@@ -1296,7 +1312,7 @@ rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle handle,
  *              \p trans != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_sellmv(rocsparse_handle handle,
                                   rocsparse_operation trans,
@@ -1354,9 +1370,10 @@ rocsparse_status rocsparse_sellmv(rocsparse_handle handle,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex* y);
 */
-///@}
+/**@}*/
 
-/*! \brief Sparse matrix vector multiplication using \p HYB storage format
+/*! \ingroup level2_module
+ *  \brief Sparse matrix vector multiplication using \p HYB storage format
  *
  *  \details
  *  \p rocsparse_hybmv multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times n\f$
@@ -1415,7 +1432,7 @@ rocsparse_status rocsparse_sellmv(rocsparse_handle handle,
  *              \p trans != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_shybmv(rocsparse_handle handle,
                                   rocsparse_operation trans,
@@ -1456,7 +1473,7 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex* y);
 */
-///@}
+/**@}*/
 
 /*
  * ===========================================================================
@@ -1464,7 +1481,8 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
  * ===========================================================================
  */
 
-/*! \brief Sparse matrix dense matrix multiplication using \p CSR storage format
+/*! \ingroup level3_module
+ *  \brief Sparse matrix dense matrix multiplication using \p CSR storage format
  *
  *  \details
  *  \p rocsparse_csrmm multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times k\f$
@@ -1569,7 +1587,7 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
  *              \p trans_A != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsrmm(rocsparse_handle handle,
                                   rocsparse_operation trans_A,
@@ -1646,7 +1664,7 @@ rocsparse_status rocsparse_zcsrmm(rocsparse_handle handle,
                                   rocsparse_double_complex* C,
                                   rocsparse_int ldc);
 */
-///@}
+/**@}*/
 
 /*
  * ===========================================================================
@@ -1654,7 +1672,8 @@ rocsparse_status rocsparse_zcsrmm(rocsparse_handle handle,
  * ===========================================================================
  */
 
-/*! \brief Incomplete LU factorization with 0 fill-ins and no pivoting using \p CSR
+/*! \ingroup precond_module
+ *  \brief Incomplete LU factorization with 0 fill-ins and no pivoting using \p CSR
  *  storage format
  *
  *  \details
@@ -1686,7 +1705,8 @@ rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle,
                                               rocsparse_mat_info info,
                                               rocsparse_int* position);
 
-/*! \brief Incomplete LU factorization with 0 fill-ins and no pivoting using \p CSR
+/*! \ingroup precond_module
+ *  \brief Incomplete LU factorization with 0 fill-ins and no pivoting using \p CSR
  *  storage format
  *
  *  \details
@@ -1739,7 +1759,8 @@ rocsparse_status rocsparse_csrilu0_buffer_size(rocsparse_handle handle,
                                                rocsparse_mat_info info,
                                                size_t* buffer_size);
 
-/*! \brief Incomplete LU factorization with 0 fill-ins and no pivoting using \p CSR
+/*! \ingroup precond_module
+ *  \brief Incomplete LU factorization with 0 fill-ins and no pivoting using \p CSR
  *  storage format
  *
  *  \details
@@ -1803,7 +1824,8 @@ rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
                                             rocsparse_solve_policy solve,
                                             void* temp_buffer);
 
-/*! \brief Incomplete LU factorization with 0 fill-ins and no pivoting using \p CSR
+/*! \ingroup precond_module
+ *  \brief Incomplete LU factorization with 0 fill-ins and no pivoting using \p CSR
  *  storage format
  *
  *  \details
@@ -1830,7 +1852,8 @@ rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle handle, rocsparse_mat_info info);
 
-/*! \brief Incomplete LU factorization with 0 fill-ins and no pivoting using \p CSR
+/*! \ingroup precond_module
+ *  \brief Incomplete LU factorization with 0 fill-ins and no pivoting using \p CSR
  *  storage format
  *
  *  \details
@@ -2057,7 +2080,7 @@ rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle handle, rocsparse_mat_
  *      rocsparse_destroy_handle(handle);
  *  \endcode
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsrilu0(rocsparse_handle handle,
                                     rocsparse_int m,
@@ -2081,7 +2104,7 @@ rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
                                     rocsparse_mat_info info,
                                     rocsparse_solve_policy policy,
                                     void* temp_buffer);
-///@}
+/**@}*/
 
 /*
  * ===========================================================================
@@ -2089,7 +2112,8 @@ rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
  * ===========================================================================
  */
 
-/*! \brief Convert a sparse \p CSR matrix into sparse \p COO matrix
+/*! \ingroup conv_module
+ *  \brief Convert a sparse \p CSR matrix into sparse \p COO matrix
  *
  *  \details
  *  \p rocsparse_csr2coo converts the \p CSR array containing the row offsets, that point
@@ -2128,7 +2152,8 @@ rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
                                    rocsparse_int* coo_row_ind,
                                    rocsparse_index_base idx_base);
 
-/*! \brief Convert a sparse \p CSR matrix into sparse \p CSC matrix
+/*! \ingroup conv_module
+ *  \brief Convert a sparse \p CSR matrix into sparse \p CSC matrix
  *
  *  \details
  *  \p rocsparse_csr2csc_buffer_size returns the size of the temporary storage buffer
@@ -2173,7 +2198,8 @@ rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handle,
                                                rocsparse_action copy_values,
                                                size_t* buffer_size);
 
-/*! \brief Convert a sparse \p CSR matrix into sparse \p CSC matrix
+/*! \ingroup conv_module
+ *  \brief Convert a sparse \p CSR matrix into sparse \p CSC matrix
  *
  *  \details
  *  \p rocsparse_csr2csc converts a \p CSR matrix info a \p CSC matrix. The resulting
@@ -2228,7 +2254,7 @@ rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handle,
  *              \ref rocsparse_status_arch_mismatch the device is not supported. <br>
  *              \ref rocsparse_status_internal_error an internal error occurred.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsr2csc(rocsparse_handle handle,
                                     rocsparse_int m,
@@ -2258,9 +2284,10 @@ rocsparse_status rocsparse_dcsr2csc(rocsparse_handle handle,
                                     rocsparse_action copy_values,
                                     rocsparse_index_base idx_base,
                                     void* temp_buffer);
-///@}
+/**@}*/
 
-/*! \brief Convert a sparse \p CSR matrix into sparse \p ELL matrix
+/*! \ingroup conv_module
+ *  \brief Convert a sparse \p CSR matrix into sparse \p ELL matrix
  *
  *  \details
  *  \p rocsparse_csr2ell_width computes the maximum of the per row non-zero elements
@@ -2301,7 +2328,8 @@ rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
                                          const rocsparse_mat_descr ell_descr,
                                          rocsparse_int* ell_width);
 
-/*! \brief Convert a sparse \p CSR matrix into sparse \p ELL matrix
+/*! \ingroup conv_module
+ *  \brief Convert a sparse \p CSR matrix into sparse \p ELL matrix
  *
  *  \details
  *  \p rocsparse_csr2ell converts a \p CSR matrix into an \p ELL matrix. It is assumed,
@@ -2345,7 +2373,7 @@ rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
  *              \ref rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
                                     rocsparse_int m,
@@ -2395,9 +2423,10 @@ rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
                                     rocsparse_double_complex* ell_val,
                                     rocsparse_int* ell_col_ind);
 */
-///@}
+/**@}*/
 
-/*! \brief Convert a sparse \p CSR matrix into sparse \p HYB matrix
+/*! \ingroup conv_module
+ *  \brief Convert a sparse \p CSR matrix into sparse \p HYB matrix
  *
  *  \details
  *  \p rocsparse_csr2hyb converts a \p CSR matrix into a \p HYB matrix. It is assumed
@@ -2446,7 +2475,7 @@ rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
  *              \ref rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_scsr2hyb(rocsparse_handle handle,
                                     rocsparse_int m,
@@ -2495,9 +2524,10 @@ rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle handle,
                                     rocsparse_int user_ell_width,
                                     rocsparse_hyb_partition partition_type);
 */
-///@}
+/**@}*/
 
-/*! \brief Convert a sparse \p COO matrix into sparse \p CSR matrix
+/*! \ingroup conv_module
+ *  \brief Convert a sparse \p COO matrix into sparse \p CSR matrix
  *
  *  \details
  *  \p rocsparse_coo2csr converts the \p COO array containing the row indices into a
@@ -2537,7 +2567,8 @@ rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
                                    rocsparse_int* csr_row_ptr,
                                    rocsparse_index_base idx_base);
 
-/*! \brief Convert a sparse \p ELL matrix into sparse \p CSR matrix
+/*! \ingroup conv_module
+ *  \brief Convert a sparse \p ELL matrix into sparse \p CSR matrix
  *
  *  \details
  *  \p rocsparse_ell2csr_nnz computes the total \p CSR non-zero elements and the \p CSR
@@ -2590,7 +2621,8 @@ rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
                                        rocsparse_int* csr_row_ptr,
                                        rocsparse_int* csr_nnz);
 
-/*! \brief Convert a sparse \p ELL matrix into sparse \p CSR matrix
+/*! \ingroup conv_module
+ *  \brief Convert a sparse \p ELL matrix into sparse \p CSR matrix
  *
  *  \details
  *  \p rocsparse_ell2csr converts an \p ELL matrix into a \p CSR matrix. It is assumed
@@ -2637,7 +2669,7 @@ rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
  *              \ref rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
-///@{
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_sell2csr(rocsparse_handle handle,
                                     rocsparse_int m,
@@ -2690,9 +2722,10 @@ rocsparse_status rocsparse_zell2csr(rocsparse_handle handle,
                                     const rocsparse_int* csr_row_ptr,
                                     rocsparse_int* csr_col_ind);
 */
-///@}
+/**@}*/
 
-/*! \brief Create the identity map
+/*! \ingroup conv_module
+ *  \brief Create the identity map
  *
  *  \details
  *  \p rocsparse_create_identity_permutation stores the identity map in \p p, such that
@@ -2722,7 +2755,8 @@ ROCSPARSE_EXPORT
 rocsparse_status
 rocsparse_create_identity_permutation(rocsparse_handle handle, rocsparse_int n, rocsparse_int* p);
 
-/*! \brief Sort a sparse \p CSR matrix
+/*! \ingroup conv_module
+ *  \brief Sort a sparse \p CSR matrix
  *
  *  \details
  *  \p rocsparse_csrsort_buffer_size returns the size of the temporary storage buffer
@@ -2763,7 +2797,8 @@ rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handle,
                                                const rocsparse_int* csr_col_ind,
                                                size_t* buffer_size);
 
-/*! \brief Sort a sparse \p CSR matrix
+/*! \ingroup conv_module
+ *  \brief Sort a sparse \p CSR matrix
  *
  *  \details
  *  \p rocsparse_csrsort sorts a matrix in \p CSR format. The sorted permutation vector
@@ -2856,7 +2891,8 @@ rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
                                    rocsparse_int* perm,
                                    void* temp_buffer);
 
-/*! \brief Sort a sparse \p COO matrix
+/*! \ingroup conv_module
+ *  \brief Sort a sparse \p COO matrix
  *
  *  \details
  *  coosort_buffer_size returns the size of the temporary storage buffer
@@ -2898,7 +2934,8 @@ rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handle,
                                                const rocsparse_int* coo_col_ind,
                                                size_t* buffer_size);
 
-/*! \brief Sort a sparse \p COO matrix by row
+/*! \ingroup conv_module
+ *  \brief Sort a sparse \p COO matrix by row
  *
  *  \details
  *  \p rocsparse_coosort_by_row sorts a matrix in \p COO format by row. The sorted
@@ -2949,7 +2986,8 @@ rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
                                           rocsparse_int* perm,
                                           void* temp_buffer);
 
-/*! \brief Sort a sparse \p COO matrix by column
+/*! \ingroup conv_module
+ *  \brief Sort a sparse \p COO matrix by column
  *
  *  \details
  *  \p rocsparse_coosort_by_column sorts a matrix in \p COO format by column. The sorted
