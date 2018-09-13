@@ -104,6 +104,18 @@ Sparse Level 2 Functions
 
 .. doxygenfunction:: rocsparse_dcsrmv
 
+.. doxygenfunction:: rocsparse_csrsv_buffer_size
+
+.. doxygenfunction:: rocsparse_csrsv_analysis
+
+.. doxygenfunction:: rocsparse_scsrsv_solve
+
+.. doxygenfunction:: rocsparse_dcsrsv_solve
+
+.. doxygenfunction:: rocsparse_csrsv_zero_pivot
+
+.. doxygenfunction:: rocsparse_csrsv_clear
+
 .. doxygenfunction:: rocsparse_sellmv
 
 .. doxygenfunction:: rocsparse_dellmv
@@ -118,6 +130,21 @@ Sparse Level 3 Functions
 .. doxygenfunction:: rocsparse_scsrmm
 
 .. doxygenfunction:: rocsparse_dcsrmm
+
+Sparse Preconditioner Functions
+-------------------------------
+
+.. doxygenfunction:: rocsparse_csrilu0_buffer_size
+
+.. doxygenfunction:: rocsparse_csrilu0_analysis
+
+.. doxygenfunction:: rocsparse_scsrilu0
+
+.. doxygenfunction:: rocsparse_dcsrilu0
+
+.. doxygenfunction:: rocsparse_csrilu0_zero_pivot
+
+.. doxygenfunction:: rocsparse_csrilu0_clear
 
 Sparse Conversion Functions
 ---------------------------
