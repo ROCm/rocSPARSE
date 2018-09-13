@@ -345,13 +345,13 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
         }
         if(keys.current() != csr_col_ind)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                csr_col_ind, keys.current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                csr_col_ind, keys.current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
         if(vals.current() != perm)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                perm, vals.current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                perm, vals.current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
 #elif defined(__HIP_PLATFORM_NVCC__)
         hipcub::DoubleBuffer<rocsparse_int> keys(csr_col_ind, tmp_cols);
@@ -361,13 +361,13 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
             tmp_rocprim, size, keys, vals, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
         if(keys.Current() != csr_col_ind)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                csr_col_ind, keys.Current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                csr_col_ind, keys.Current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
         if(vals.Current() != perm)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                perm, vals.Current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                perm, vals.Current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
 #endif
     }
@@ -408,8 +408,8 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
         }
         if(keys.current() != csr_col_ind)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                csr_col_ind, keys.current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                csr_col_ind, keys.current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
 #elif defined(__HIP_PLATFORM_NVCC__)
         hipcub::DoubleBuffer<rocsparse_int> keys(csr_col_ind, tmp_cols);
@@ -418,8 +418,8 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
             tmp_rocprim, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
         if(keys.Current() != csr_col_ind)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                csr_col_ind, keys.Current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                csr_col_ind, keys.Current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
 #endif
     }
