@@ -79,12 +79,14 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
+    hipStream_t stream = handle->stream;
+
     // Quick return if possible
     if(m == 0)
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIP_ERROR(hipMemset(ell_width, 0, sizeof(rocsparse_int)));
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(ell_width, 0, sizeof(rocsparse_int), stream));
         }
         else
         {
@@ -92,8 +94,6 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
         }
         return rocsparse_status_success;
     }
-
-    hipStream_t stream = handle->stream;
 
 // Determine ELL width
 
@@ -127,13 +127,16 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToDevice));
+            hipMemcpyAsync(ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
     }
     else
     {
         RETURN_IF_HIP_ERROR(
             hipMemcpy(ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
     }
+
+    // Free workspace
+    RETURN_IF_HIP_ERROR(hipFree(workspace));
 
     return rocsparse_status_success;
 }
