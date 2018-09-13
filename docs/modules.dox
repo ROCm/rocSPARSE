@@ -9,6 +9,10 @@
 
 /*! \defgroup aux_module SPARSE Auxiliary functions
  *  \brief This module holds all sparse auxiliary functions.
+ *
+ *  \details
+ *  The functions that are contained in the auxiliary module describe all available
+ *  helper functions that are required for subsequent library calls.
  */
 
 /*! \defgroup types_module SPARSE Types
@@ -17,20 +21,40 @@
 
 /*! \defgroup level1_module SPARSE Level 1 routines
  *  \brief This module holds all sparse level 1 routines.
+ *
+ *  \details
+ *  The sparse level 1 routines describe operations between a vector in sparse format
+ *  and a vector in dense format.
  */
 
 /*! \defgroup level2_module SPARSE Level 2 routines
  *  \brief This module holds all sparse level 2 routines.
+ *
+ *  \details
+ *  The sparse level 2 routines describe operations between a matrix in sparse format
+ *  and a vector in dense format.
  */
 
 /*! \defgroup level3_module SPARSE Level 3 routines
  *  \brief This module holds all sparse level 3 routines.
+ *
+ *  \details
+ *  The sparse level 3 routines describe operations between a matrix in sparse format
+ *  and multiple vectors in dense format that can also be seen as a dense matrix.
  */
 
 /*! \defgroup precond_module SPARSE Preconditioners
  *  \brief This module holds all sparse preconditioners.
+ *
+ *  \details
+ *  The sparse preconditioners describe manipulations on a matrix in sparse format to
+ *  obtain a sparse preconditioner matrix.
  */
 
 /*! \defgroup conv_module SPARSE Conversion routines
  *  \brief This module holds all sparse conversion routines.
+ *
+ *  \details
+ *  The sparse conversion routines describe operations on a matrix in sparse format to
+ *  obtain a matrix in a different sparse format.
  */
