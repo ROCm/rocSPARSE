@@ -16,6 +16,26 @@
 
 #include <hip/hip_runtime_api.h>
 
+static void set_one(const rocsparse_handle handle, float* one)
+{
+    one = handle->sone;
+}
+
+static void set_one(const rocsparse_handle handle, double* one)
+{
+    one = handle->done;
+}
+
+static void set_one(const rocsparse_handle handle, float2* one)
+{
+    one = handle->cone;
+}
+
+static void set_one(const rocsparse_handle handle, double2* one)
+{
+    one = handle->zone;
+}
+
 template <typename T>
 rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
                                           rocsparse_operation trans,
@@ -194,12 +214,9 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
                 // Beta is applied by ELL part, IF ell_nnz > 0
                 if(hyb->ell_nnz > 0)
                 {
-                    T one = static_cast<T>(1);
-                    T* coo_beta;
+                    T* coo_beta = NULL;
+                    set_one(handle, coo_beta);
 
-                    RETURN_IF_HIP_ERROR(hipMalloc((void**)&coo_beta, sizeof(T)));
-                    RETURN_IF_HIP_ERROR(
-                        hipMemcpy(coo_beta, &one, sizeof(T), hipMemcpyHostToDevice));
                     RETURN_IF_ROCSPARSE_ERROR(rocsparse_coomv_template(handle,
                                                                        trans,
                                                                        hyb->m,
@@ -213,7 +230,6 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
                                                                        x,
                                                                        coo_beta,
                                                                        y));
-                    RETURN_IF_HIP_ERROR(hipFree(coo_beta));
                 }
                 else
                 {
