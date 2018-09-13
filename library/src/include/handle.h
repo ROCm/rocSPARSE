@@ -49,6 +49,14 @@ struct _rocsparse_handle
     rocsparse_pointer_mode pointer_mode = rocsparse_pointer_mode_host;
     // logging mode
     rocsparse_layer_mode layer_mode;
+    // device buffer
+    void* buffer;
+    // device one
+    float* sone;
+    double* done;
+    float2* cone;
+    double2* zone;
+
 
     // logging streams
     std::ofstream log_trace_ofs;

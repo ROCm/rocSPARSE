@@ -32,6 +32,32 @@ _rocsparse_handle::_rocsparse_handle()
         layer_mode = (rocsparse_layer_mode)(atoi(str_layer_mode));
     }
 
+    // Allocating small device buffer
+    rocsparse_int nthreads = properties.maxThreadsPerBlock;
+    rocsparse_int nprocs   = properties.multiProcessorCount;
+    rocsparse_int nblocks  = (nprocs * nthreads - 1) / 128 + 1;
+    rocsparse_int nwfs     = nblocks * (128 / properties.warpSize);
+
+    size_t size = (((sizeof(rocsparse_int) + 16) * nwfs - 1) / 256 + 1) * 256;
+    
+    THROW_IF_HIP_ERROR(hipMalloc(&buffer, size));
+
+    // Device one
+    THROW_IF_HIP_ERROR(hipMalloc(&sone, sizeof(float)));
+    THROW_IF_HIP_ERROR(hipMalloc(&done, sizeof(double)));
+    THROW_IF_HIP_ERROR(hipMalloc(&cone, sizeof(float2)));
+    THROW_IF_HIP_ERROR(hipMalloc(&zone, sizeof(double2)));
+
+    float hsone = 1.0f;
+    double hdone = 1.0;
+    float2 hcone = float2(1.0f, 0.0f);
+    double2 hzone = double2(1.0, 0.0);
+
+    THROW_IF_HIP_ERROR(hipMemcpy(sone, &hsone, sizeof(float), hipMemcpyHostToDevice));
+    THROW_IF_HIP_ERROR(hipMemcpy(done, &hdone, sizeof(double), hipMemcpyHostToDevice));
+    THROW_IF_HIP_ERROR(hipMemcpy(cone, &hcone, sizeof(float2), hipMemcpyHostToDevice));
+    THROW_IF_HIP_ERROR(hipMemcpy(zone, &hzone, sizeof(double2), hipMemcpyHostToDevice));
+
     // Open log file
     if(layer_mode & rocsparse_layer_mode_log_trace)
     {
@@ -50,6 +76,12 @@ _rocsparse_handle::_rocsparse_handle()
  ******************************************************************************/
 _rocsparse_handle::~_rocsparse_handle()
 {
+    PRINT_IF_HIP_ERROR(hipFree(buffer));
+    PRINT_IF_HIP_ERROR(hipFree(sone));
+    PRINT_IF_HIP_ERROR(hipFree(done));
+    PRINT_IF_HIP_ERROR(hipFree(cone));
+    PRINT_IF_HIP_ERROR(hipFree(zone));
+
     // Close log files
     if(log_trace_ofs.is_open())
     {

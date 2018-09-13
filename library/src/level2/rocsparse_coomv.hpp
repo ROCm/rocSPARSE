@@ -237,12 +237,16 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
         dim3 coomvn_blocks(nblocks);
         dim3 coomvn_threads(COOMVN_DIM);
 
-        rocsparse_int* row_block_red = NULL;
-        T* val_block_red             = NULL;
+        // Buffer
+        char* ptr = reinterpret_cast<char*>(handle->buffer);
+        ptr += 256;
 
-        // Allocating a maximum of 8 kByte
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&row_block_red, sizeof(rocsparse_int) * nwfs));
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&val_block_red, sizeof(T) * nwfs));
+        // row block reduction buffer
+        rocsparse_int* row_block_red = reinterpret_cast<rocsparse_int*>(ptr);
+        ptr += ((sizeof(rocsparse_int) * nwfs - 1) / 256 + 1) * 256;
+
+        // val block reduction buffer
+        T* val_block_red = reinterpret_cast<T*>(ptr);
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
@@ -376,9 +380,6 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                            row_block_red,
                            val_block_red,
                            y);
-
-        RETURN_IF_HIP_ERROR(hipFree(row_block_red));
-        RETURN_IF_HIP_ERROR(hipFree(val_block_red));
 #undef COOMVN_DIM
     }
     else
