@@ -54,9 +54,6 @@ struct _rocsparse_handle
     // device one
     float* sone;
     double* done;
-    float2* cone;
-    double2* zone;
-
 
     // logging streams
     std::ofstream log_trace_ofs;

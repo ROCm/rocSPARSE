@@ -16,26 +16,6 @@
 
 #include <hip/hip_runtime_api.h>
 
-static void set_one(const rocsparse_handle handle, float* one)
-{
-    one = handle->sone;
-}
-
-static void set_one(const rocsparse_handle handle, double* one)
-{
-    one = handle->done;
-}
-
-static void set_one(const rocsparse_handle handle, float2* one)
-{
-    one = handle->cone;
-}
-
-static void set_one(const rocsparse_handle handle, double2* one)
-{
-    one = handle->zone;
-}
-
 template <typename T>
 rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
                                           rocsparse_operation trans,
@@ -215,7 +195,7 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
                 if(hyb->ell_nnz > 0)
                 {
                     T* coo_beta = NULL;
-                    set_one(handle, coo_beta);
+                    rocsparse_one(handle, &coo_beta);
 
                     RETURN_IF_ROCSPARSE_ERROR(rocsparse_coomv_template(handle,
                                                                        trans,
