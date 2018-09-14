@@ -22,7 +22,8 @@ __global__ void coomv_scale_host_pointer(rocsparse_int size, T beta, T* __restri
 }
 
 template <typename T>
-__global__ void coomv_scale_device_pointer(rocsparse_int size, const T* __restrict__ beta, T* __restrict__ data)
+__global__ void
+coomv_scale_device_pointer(rocsparse_int size, const T* __restrict__ beta, T* __restrict__ data)
 {
     if(*beta == static_cast<T>(1))
     {

@@ -382,8 +382,8 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         // Copy reordered permutation, if stored in buffer
         if(mapping != perm)
         {
-            RETURN_IF_HIP_ERROR(
-                hipMemcpyAsync(perm, mapping, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                perm, mapping, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
     }
     else

@@ -126,8 +126,8 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
     // Copy ELL width back to host, if handle says so
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        RETURN_IF_HIP_ERROR(
-            hipMemcpyAsync(ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
     }
     else
     {

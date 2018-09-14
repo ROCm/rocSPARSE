@@ -157,7 +157,8 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(csr_nnz, &nnz, sizeof(rocsparse_int), hipMemcpyHostToDevice));
+            RETURN_IF_HIP_ERROR(
+                hipMemcpy(csr_nnz, &nnz, sizeof(rocsparse_int), hipMemcpyHostToDevice));
         }
         else
         {
@@ -168,11 +169,13 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
         }
         else
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            RETURN_IF_HIP_ERROR(
+                hipMemcpy(csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
         }
     }
 

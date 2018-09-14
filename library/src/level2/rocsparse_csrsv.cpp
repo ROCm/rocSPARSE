@@ -24,16 +24,8 @@ extern "C" rocsparse_status rocsparse_scsrsv_buffer_size(rocsparse_handle handle
                                                          rocsparse_mat_info info,
                                                          size_t* buffer_size)
 {
-    return rocsparse_csrsv_buffer_size_template<float>(handle,
-                                                       trans,
-                                                       m,
-                                                       nnz,
-                                                       descr,
-                                                       csr_val,
-                                                       csr_row_ptr,
-                                                       csr_col_ind,
-                                                       info,
-                                                       buffer_size);
+    return rocsparse_csrsv_buffer_size_template<float>(
+        handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);
 }
 
 extern "C" rocsparse_status rocsparse_dcsrsv_buffer_size(rocsparse_handle handle,
@@ -47,16 +39,8 @@ extern "C" rocsparse_status rocsparse_dcsrsv_buffer_size(rocsparse_handle handle
                                                          rocsparse_mat_info info,
                                                          size_t* buffer_size)
 {
-    return rocsparse_csrsv_buffer_size_template<double>(handle,
-                                                        trans,
-                                                        m,
-                                                        nnz,
-                                                        descr,
-                                                        csr_val,
-                                                        csr_row_ptr,
-                                                        csr_col_ind,
-                                                        info,
-                                                        buffer_size);
+    return rocsparse_csrsv_buffer_size_template<double>(
+        handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);
 }
 
 extern "C" rocsparse_status rocsparse_scsrsv_analysis(rocsparse_handle handle,
