@@ -426,10 +426,7 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
     }
 
     // Stream
-    //    hipStream_t stream = handle->stream;
-
-    // Synchronize stream TODO should not be required...
-    //    hipStreamSynchronize(stream);
+    hipStream_t stream = handle->stream;
 
     // Determine the info meta data place
     rocsparse_csrtr_info csrsv = nullptr;
@@ -467,7 +464,7 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIP_ERROR(hipMemset(position, 255, sizeof(rocsparse_int)));
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, 255, sizeof(rocsparse_int), stream));
         }
         else
         {
@@ -488,7 +485,7 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle handle,
 
         if(pivot == std::numeric_limits<rocsparse_int>::max())
         {
-            RETURN_IF_HIP_ERROR(hipMemset(position, 255, sizeof(rocsparse_int)));
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, 255, sizeof(rocsparse_int), stream));
         }
         else
         {

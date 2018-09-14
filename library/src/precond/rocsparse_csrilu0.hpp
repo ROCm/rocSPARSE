@@ -113,7 +113,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
     rocsparse_int* d_done_array = reinterpret_cast<rocsparse_int*>(ptr);
 
     // Initialize buffers
-    RETURN_IF_HIP_ERROR(hipMemset(d_done_array, 0, sizeof(rocsparse_int) * m));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(d_done_array, 0, sizeof(rocsparse_int) * m, stream));
 
 #define CSRILU0_DIM 256
     dim3 csrilu0_blocks((m * handle->wavefront_size - 1) / CSRILU0_DIM + 1);

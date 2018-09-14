@@ -266,10 +266,7 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle
     }
 
     // Stream
-    //    hipStream_t stream = handle->stream;
-
-    // Synchronize stream TODO should not be required...
-    //    hipStreamSynchronize(stream);
+    hipStream_t stream = handle->stream;
 
     // If m == 0 || nnz == 0 it can happen, that info structure is not created.
     // In this case, always return -1.
@@ -277,7 +274,7 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIP_ERROR(hipMemset(position, 255, sizeof(rocsparse_int)));
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, 255, sizeof(rocsparse_int), stream));
         }
         else
         {
@@ -298,7 +295,7 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle handle
 
         if(pivot == std::numeric_limits<rocsparse_int>::max())
         {
-            RETURN_IF_HIP_ERROR(hipMemset(position, 255, sizeof(rocsparse_int)));
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(position, 255, sizeof(rocsparse_int), stream));
         }
         else
         {
