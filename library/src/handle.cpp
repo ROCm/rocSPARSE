@@ -39,14 +39,14 @@ _rocsparse_handle::_rocsparse_handle()
     rocsparse_int nwfs     = nblocks * (128 / properties.warpSize);
 
     size_t size = (((sizeof(rocsparse_int) + 16) * nwfs - 1) / 256 + 1) * 256;
-    
+
     THROW_IF_HIP_ERROR(hipMalloc(&buffer, size));
 
     // Device one
     THROW_IF_HIP_ERROR(hipMalloc(&sone, sizeof(float)));
     THROW_IF_HIP_ERROR(hipMalloc(&done, sizeof(double)));
 
-    float hsone = 1.0f;
+    float hsone  = 1.0f;
     double hdone = 1.0;
 
     THROW_IF_HIP_ERROR(hipMemcpy(sone, &hsone, sizeof(float), hipMemcpyHostToDevice));
