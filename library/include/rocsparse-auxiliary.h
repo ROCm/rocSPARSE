@@ -172,6 +172,24 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr* descr);
 
 /*! \ingroup aux_module
+ *  \brief Copy a matrix descriptor
+ *  \details
+ *  \p rocsparse_copy_mat_descr copies a matrix descriptor. Both, source and destination
+ *  matrix descriptors must be initialized prior to calling \p rocsparse_copy_mat_descr.
+ *
+ *  @param[out]
+ *  dest    the pointer to the destination matrix descriptor.
+ *  @param[in]
+ *  src     the pointer to the source matrix descriptor.
+ *
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_pointer \p src or \p dest pointer is
+ *              invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_copy_mat_descr(rocsparse_mat_descr dest, const rocsparse_mat_descr src);
+
+/*! \ingroup aux_module
  *  \brief Destroy a matrix descriptor
  *
  *  \details

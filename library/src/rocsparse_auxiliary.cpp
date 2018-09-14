@@ -173,6 +173,28 @@ rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr* descr)
 }
 
 /********************************************************************************
+ * \brief copy matrix descriptor
+ *******************************************************************************/
+rocsparse_status rocsparse_copy_mat_descr(rocsparse_mat_descr dest, const rocsparse_mat_descr src)
+{
+    if(dest == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(src == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    dest->type = src->type;
+    dest->fill_mode = src->fill_mode;
+    dest->diag_type = src->diag_type;
+    dest->base = src->base;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
  * \brief destroy matrix descriptor
  *******************************************************************************/
 rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr)
