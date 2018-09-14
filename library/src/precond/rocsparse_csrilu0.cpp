@@ -6,7 +6,6 @@
 #include "definitions.h"
 #include "rocsparse.h"
 #include "rocsparse_csrilu0.hpp"
-#include "../level2/rocsparse_csrsv.hpp"
 
 #include <hipcub/hipcub.hpp>
 
@@ -16,170 +15,98 @@
  * ===========================================================================
  */
 
-extern "C" rocsparse_status rocsparse_csrilu0_buffer_size(rocsparse_handle handle,
-                                                          rocsparse_int m,
-                                                          rocsparse_int nnz,
-                                                          const rocsparse_mat_descr descr,
-                                                          const rocsparse_int* csr_row_ptr,
-                                                          const rocsparse_int* csr_col_ind,
-                                                          rocsparse_mat_info info,
-                                                          size_t* buffer_size)
+extern "C" rocsparse_status rocsparse_scsrilu0_buffer_size(rocsparse_handle handle,
+                                                           rocsparse_int m,
+                                                           rocsparse_int nnz,
+                                                           const rocsparse_mat_descr descr,
+                                                           const float* csr_val,
+                                                           const rocsparse_int* csr_row_ptr,
+                                                           const rocsparse_int* csr_col_ind,
+                                                           rocsparse_mat_info info,
+                                                           size_t* buffer_size)
 {
-    return rocsparse_csrsv_buffer_size(handle,
-                                       rocsparse_operation_none,
-                                       m,
-                                       nnz,
-                                       descr,
-                                       csr_row_ptr,
-                                       csr_col_ind,
-                                       info,
-                                       buffer_size);
+    return rocsparse_scsrsv_buffer_size(handle,
+                                        rocsparse_operation_none,
+                                        m,
+                                        nnz,
+                                        descr,
+                                        csr_val,
+                                        csr_row_ptr,
+                                        csr_col_ind,
+                                        info,
+                                        buffer_size);
 }
 
-extern "C" rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle handle,
-                                                       rocsparse_int m,
-                                                       rocsparse_int nnz,
-                                                       const rocsparse_mat_descr descr,
-                                                       const rocsparse_int* csr_row_ptr,
-                                                       const rocsparse_int* csr_col_ind,
-                                                       rocsparse_mat_info info,
-                                                       rocsparse_analysis_policy analysis,
-                                                       rocsparse_solve_policy solve,
-                                                       void* temp_buffer)
+extern "C" rocsparse_status rocsparse_dcsrilu0_buffer_size(rocsparse_handle handle,
+                                                           rocsparse_int m,
+                                                           rocsparse_int nnz,
+                                                           const rocsparse_mat_descr descr,
+                                                           const double* csr_val,
+                                                           const rocsparse_int* csr_row_ptr,
+                                                           const rocsparse_int* csr_col_ind,
+                                                           rocsparse_mat_info info,
+                                                           size_t* buffer_size)
 {
-    // Check for valid handle
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-    else if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
+    return rocsparse_dcsrsv_buffer_size(handle,
+                                        rocsparse_operation_none,
+                                        m,
+                                        nnz,
+                                        descr,
+                                        csr_val,
+                                        csr_row_ptr,
+                                        csr_col_ind,
+                                        info,
+                                        buffer_size);
+}
 
-    // Logging
-    log_trace(handle,
-              "rocsparse_csrilu0_analysis",
-              m,
-              nnz,
-              (const void*&)descr,
-              (const void*&)csr_row_ptr,
-              (const void*&)csr_col_ind,
-              (const void*&)info,
-              solve,
-              analysis);
+extern "C" rocsparse_status rocsparse_scsrilu0_analysis(rocsparse_handle handle,
+                                                        rocsparse_int m,
+                                                        rocsparse_int nnz,
+                                                        const rocsparse_mat_descr descr,
+                                                        const float* csr_val,
+                                                        const rocsparse_int* csr_row_ptr,
+                                                        const rocsparse_int* csr_col_ind,
+                                                        rocsparse_mat_info info,
+                                                        rocsparse_analysis_policy analysis,
+                                                        rocsparse_solve_policy solve,
+                                                        void* temp_buffer)
+{
+    return rocsparse_csrilu0_analysis_template<float>(handle,
+                                                      m,
+                                                      nnz,
+                                                      descr,
+                                                      csr_val,
+                                                      csr_row_ptr,
+                                                      csr_col_ind,
+                                                      info,
+                                                      analysis,
+                                                      solve,
+                                                      temp_buffer);
+}
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        // TODO
-        return rocsparse_status_not_implemented;
-    }
-
-    // Check analysis policy
-    if(analysis != rocsparse_analysis_policy_reuse && analysis != rocsparse_analysis_policy_force)
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check solve policy
-    if(solve != rocsparse_solve_policy_auto)
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check sizes
-    if(m < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check pointer arguments
-    if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(temp_buffer == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Quick return if possible
-    if(m == 0 || nnz == 0)
-    {
-        return rocsparse_status_success;
-    }
-
-    // Differentiate the analysis policies
-    if(analysis == rocsparse_analysis_policy_reuse)
-    {
-        // We try to re-use already analyzed lower part, if available.
-        // It is the user's responsibility that this data is still valid,
-        // since he passed the 'reuse' flag.
-
-        // If csrilu0 meta data is already available, do nothing
-        if(info->csrilu0_info != nullptr)
-        {
-            return rocsparse_status_success;
-        }
-
-        // Check for other lower analysis meta data
-        rocsparse_csrtr_info reuse = nullptr;
-
-        // csrsv_lower meta data
-        if(info->csrsv_lower_info != nullptr)
-        {
-            reuse = info->csrsv_lower_info;
-        }
-
-        // TODO add more crossover data here
-
-        // If data has been found, use it
-        if(reuse != nullptr)
-        {
-            info->csrilu0_info = reuse;
-
-            return rocsparse_status_success;
-        }
-    }
-
-    // User is explicitly asking to force a re-analysis, or no valid data has been
-    // found to be re-used.
-
-    // Clear csrilu0 info
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrilu0_info));
-
-    // Create csrilu0 info
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrtr_info(&info->csrilu0_info));
-
-    // Perform analysis
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrtr_analysis(handle,
-                                                       rocsparse_operation_none,
+extern "C" rocsparse_status rocsparse_dcsrilu0_analysis(rocsparse_handle handle,
+                                                        rocsparse_int m,
+                                                        rocsparse_int nnz,
+                                                        const rocsparse_mat_descr descr,
+                                                        const double* csr_val,
+                                                        const rocsparse_int* csr_row_ptr,
+                                                        const rocsparse_int* csr_col_ind,
+                                                        rocsparse_mat_info info,
+                                                        rocsparse_analysis_policy analysis,
+                                                        rocsparse_solve_policy solve,
+                                                        void* temp_buffer)
+{
+    return rocsparse_csrilu0_analysis_template<double>(handle,
                                                        m,
                                                        nnz,
                                                        descr,
+                                                       csr_val,
                                                        csr_row_ptr,
                                                        csr_col_ind,
-                                                       info->csrilu0_info,
-                                                       temp_buffer));
-
-    return rocsparse_status_success;
+                                                       info,
+                                                       analysis,
+                                                       solve,
+                                                       temp_buffer);
 }
 
 extern "C" rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle handle,

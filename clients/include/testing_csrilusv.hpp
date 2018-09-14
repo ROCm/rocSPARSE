@@ -86,7 +86,7 @@ rocsparse_status testing_csrilusv(Arguments argus)
     // Obtain csrilu0 buffer size
     size_t size;
     CHECK_ROCSPARSE_ERROR(
-        rocsparse_csrilu0_buffer_size(handle, m, nnz, descr_M, dptr, dcol, info, &size));
+        rocsparse_csrilu0_buffer_size(handle, m, nnz, descr_M, dval, dptr, dcol, info, &size));
 
     // Allocate buffer on the device
     auto dbuffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * size), device_free};
@@ -101,7 +101,7 @@ rocsparse_status testing_csrilusv(Arguments argus)
 
     // csrilu0 analysis
     CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis(
-        handle, m, nnz, descr_M, dptr, dcol, info, analysis, rocsparse_solve_policy_auto, dbuffer));
+        handle, m, nnz, descr_M, dval, dptr, dcol, info, analysis, rocsparse_solve_policy_auto, dbuffer));
 
     // Compute incomplete LU factorization
     CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0(
@@ -167,9 +167,9 @@ rocsparse_status testing_csrilusv(Arguments argus)
     // Obtain csrsv buffer sizes
     size_t size_lower, size_upper;
     CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size(
-        handle, rocsparse_operation_none, m, nnz, descr_L, dptr, dcol, info, &size_lower));
+        handle, rocsparse_operation_none, m, nnz, descr_L, dval, dptr, dcol, info, &size_lower));
     CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size(
-        handle, rocsparse_operation_none, m, nnz, descr_U, dptr, dcol, info, &size_upper));
+        handle, rocsparse_operation_none, m, nnz, descr_U, dval, dptr, dcol, info, &size_upper));
 
     // Sizes should match with csrilu0
     unit_check_general(1, 1, 1, &size, &size_lower);
@@ -181,6 +181,7 @@ rocsparse_status testing_csrilusv(Arguments argus)
                                                    m,
                                                    nnz,
                                                    descr_L,
+                                                   dval,
                                                    dptr,
                                                    dcol,
                                                    info,
@@ -193,6 +194,7 @@ rocsparse_status testing_csrilusv(Arguments argus)
                                                    m,
                                                    nnz,
                                                    descr_U,
+                                                   dval,
                                                    dptr,
                                                    dcol,
                                                    info,
