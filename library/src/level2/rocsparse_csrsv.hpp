@@ -37,7 +37,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                          sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
 
     // Set temporary buffer to 0
-    RETURN_IF_HIP_ERROR(hipMemset(ptr, 0, sizeof(char) * buffer_size));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(ptr, 0, sizeof(char) * buffer_size, stream));
 
     // max_depth
     rocsparse_int* d_max_depth = reinterpret_cast<rocsparse_int*>(ptr);
@@ -434,7 +434,7 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle handle,
     rocsparse_int* d_done_array = reinterpret_cast<rocsparse_int*>(ptr);
 
     // Initialize buffers
-    RETURN_IF_HIP_ERROR(hipMemset(d_done_array, 0, sizeof(rocsparse_int) * m));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(d_done_array, 0, sizeof(rocsparse_int) * m, stream));
 
     rocsparse_csrtr_info csrsv = (descr->fill_mode == rocsparse_fill_mode_upper)
                                      ? info->csrsv_upper_info
