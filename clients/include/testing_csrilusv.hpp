@@ -100,8 +100,17 @@ rocsparse_status testing_csrilusv(Arguments argus)
     }
 
     // csrilu0 analysis
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis(
-        handle, m, nnz, descr_M, dval, dptr, dcol, info, analysis, rocsparse_solve_policy_auto, dbuffer));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis(handle,
+                                                     m,
+                                                     nnz,
+                                                     descr_M,
+                                                     dval,
+                                                     dptr,
+                                                     dcol,
+                                                     info,
+                                                     analysis,
+                                                     rocsparse_solve_policy_auto,
+                                                     dbuffer));
 
     // Compute incomplete LU factorization
     CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0(

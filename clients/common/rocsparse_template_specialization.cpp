@@ -262,16 +262,8 @@ rocsparse_status rocsparse_csrsv_buffer_size(rocsparse_handle handle,
                                              rocsparse_mat_info info,
                                              size_t* buffer_size)
 {
-    return rocsparse_scsrsv_buffer_size(handle,
-                                        trans,
-                                        m,
-                                        nnz,
-                                        descr,
-                                        csr_val,
-                                        csr_row_ptr,
-                                        csr_col_ind,
-                                        info,
-                                        buffer_size);
+    return rocsparse_scsrsv_buffer_size(
+        handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);
 }
 
 template <>
@@ -286,16 +278,8 @@ rocsparse_status rocsparse_csrsv_buffer_size(rocsparse_handle handle,
                                              rocsparse_mat_info info,
                                              size_t* buffer_size)
 {
-    return rocsparse_dcsrsv_buffer_size(handle,
-                                        trans,
-                                        m,
-                                        nnz,
-                                        descr,
-                                        csr_val,
-                                        csr_row_ptr,
-                                        csr_col_ind,
-                                        info,
-                                        buffer_size);
+    return rocsparse_dcsrsv_buffer_size(
+        handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);
 }
 
 template <>
@@ -567,15 +551,8 @@ rocsparse_status rocsparse_csrilu0_buffer_size(rocsparse_handle handle,
                                                rocsparse_mat_info info,
                                                size_t* buffer_size)
 {
-    return rocsparse_scsrilu0_buffer_size(handle,
-                                          m,
-                                          nnz,
-                                          descr,
-                                          csr_val,
-                                          csr_row_ptr,
-                                          csr_col_ind,
-                                          info,
-                                          buffer_size);
+    return rocsparse_scsrilu0_buffer_size(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);
 }
 
 template <>
@@ -589,15 +566,8 @@ rocsparse_status rocsparse_csrilu0_buffer_size(rocsparse_handle handle,
                                                rocsparse_mat_info info,
                                                size_t* buffer_size)
 {
-    return rocsparse_dcsrilu0_buffer_size(handle,
-                                          m,
-                                          nnz,
-                                          descr,
-                                          csr_val,
-                                          csr_row_ptr,
-                                          csr_col_ind,
-                                          info,
-                                          buffer_size);
+    return rocsparse_dcsrilu0_buffer_size(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);
 }
 
 template <>
