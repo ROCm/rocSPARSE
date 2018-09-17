@@ -158,7 +158,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         while(!local_done)
         {
 #if defined(__HIP_PLATFORM_HCC__)
-            local_done = __atomic_load_n(&done_array[local_col], __ATOMIC_RELAXED);
+            local_done = __atomic_load_n(&done_array[local_col], __ATOMIC_ACQUIRE);
 #elif defined(__HIP_PLATFORM_NVCC__)
             local_done = atomicOr(&done_array[local_col], 0);
 #endif
@@ -177,7 +177,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
     {
 // Lane 0 writes the "row is done" flag
 #if defined(__HIP_PLATFORM_HCC__)
-        __atomic_store_n(&done_array[row], local_max, __ATOMIC_RELAXED);
+        __atomic_store_n(&done_array[row], local_max, __ATOMIC_RELEASE);
 #elif defined(__HIP_PLATFORM_NVCC__)
         atomicOr(&done_array[row], local_max);
 #endif
@@ -447,7 +447,7 @@ __device__ void csrsv_device(rocsparse_int m,
 
 // Spin loop until dependency has been resolved
 #if defined(__HIP_PLATFORM_HCC__)
-        while(!__atomic_load_n(&done_array[local_col], __ATOMIC_RELAXED))
+        while(!__atomic_load_n(&done_array[local_col], __ATOMIC_ACQUIRE))
             ;
 #elif defined(__HIP_PLATFORM_NVCC__)
         while(!atomicOr(&done_array[local_col], 0))
@@ -457,7 +457,7 @@ __device__ void csrsv_device(rocsparse_int m,
 // Load y value bypassing caches
 #if defined(__HIP_PLATFORM_HCC__)
         T out_val;
-        __atomic_load(&y[local_col], &out_val, __ATOMIC_RELAXED);
+        __atomic_load(&y[local_col], &out_val, __ATOMIC_ACQUIRE);
 #elif defined(__HIP_PLATFORM_NVCC__)
         T out_val = y[local_col];
 #endif
@@ -480,8 +480,8 @@ __device__ void csrsv_device(rocsparse_int m,
     {
 // Lane 0 writes the "row is done" flag and stores the rows result in y
 #if defined(__HIP_PLATFORM_HCC__)
-        __atomic_store(&y[row], &local_sum, __ATOMIC_RELAXED);
-        __atomic_store_n(&done_array[row], 1, __ATOMIC_RELAXED);
+        __atomic_store(&y[row], &local_sum, __ATOMIC_RELEASE);
+        __atomic_store_n(&done_array[row], 1, __ATOMIC_RELEASE);
 #elif defined(__HIP_PLATFORM_NVCC__)
         y[row]    = local_sum;
         atomicOr(&done_array[row], 1);
