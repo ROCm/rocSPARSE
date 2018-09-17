@@ -106,7 +106,7 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
         while(!local_done)
         {
 #if defined(__HIP_PLATFORM_HCC__)
-            local_done = __atomic_load_n(&done[local_col], __ATOMIC_RELAXED);
+            local_done = __atomic_load_n(&done[local_col], __ATOMIC_ACQUIRE);
 #elif defined(__HIP_PLATFORM_NVCC__)
             local_done      = atomicOr(&done[local_col], 0);
 #endif
@@ -115,7 +115,7 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
 // Load diagonal entry
 #if defined(__HIP_PLATFORM_HCC__)
         T diag_val;
-        __atomic_load(&csr_val[local_diag], &diag_val, __ATOMIC_RELAXED);
+        __atomic_load(&csr_val[local_diag], &diag_val, __ATOMIC_ACQUIRE);
 #elif defined(__HIP_PLATFORM_NVCC__)
         T diag_val          = csr_val[local_diag];
 #endif
@@ -159,7 +159,7 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
 // Entry found, do ILU computation
 #if defined(__HIP_PLATFORM_HCC__)
                     T val_k;
-                    __atomic_load(&csr_val[k], &val_k, __ATOMIC_RELAXED);
+                    __atomic_load(&csr_val[k], &val_k, __ATOMIC_ACQUIRE);
 #elif defined(__HIP_PLATFORM_NVCC__)
                     T val_k = csr_val[k];
 #endif
@@ -177,7 +177,7 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
     {
 // Lane 0 write "we are done" flag
 #if defined(__HIP_PLATFORM_HCC__)
-        __atomic_store_n(&done[row], 1, __ATOMIC_RELAXED);
+        __atomic_store_n(&done[row], 1, __ATOMIC_RELEASE);
 #elif defined(__HIP_PLATFORM_NVCC__)
         atomicOr(&done[row], 1);
 #endif
@@ -236,7 +236,7 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
         while(!local_done)
         {
 #if defined(__HIP_PLATFORM_HCC__)
-            local_done = __atomic_load_n(&done[local_col], __ATOMIC_RELAXED);
+            local_done = __atomic_load_n(&done[local_col], __ATOMIC_ACQUIRE);
 #elif defined(__HIP_PLATFORM_NVCC__)
             local_done = atomicOr(&done[local_col], 0);
 #endif
@@ -245,7 +245,7 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
 // Load diagonal entry
 #if defined(__HIP_PLATFORM_HCC__)
         T diag_val;
-        __atomic_load(&csr_val[local_diag], &diag_val, __ATOMIC_RELAXED);
+        __atomic_load(&csr_val[local_diag], &diag_val, __ATOMIC_ACQUIRE);
 #elif defined(__HIP_PLATFORM_NVCC__)
         // TODO
         volatile T diag_val      = csr_val[local_diag];
@@ -300,7 +300,7 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
 // If a match has been found, do ILU computation
 #if defined(__HIP_PLATFORM_HCC__)
                 T val_k;
-                __atomic_load(&csr_val[k], &val_k, __ATOMIC_RELAXED);
+                __atomic_load(&csr_val[k], &val_k, __ATOMIC_ACQUIRE);
 #elif defined(__HIP_PLATFORM_NVCC__)
                 volatile T val_k = csr_val[k];
 #endif
@@ -314,7 +314,7 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
     {
 // Lane 0 write "we are done" flag
 #if defined(__HIP_PLATFORM_HCC__)
-        __atomic_store_n(&done[row], 1, __ATOMIC_RELAXED);
+        __atomic_store_n(&done[row], 1, __ATOMIC_RELEASE);
 #elif defined(__HIP_PLATFORM_NVCC__)
         atomicOr(&done[row], 1);
 #endif
