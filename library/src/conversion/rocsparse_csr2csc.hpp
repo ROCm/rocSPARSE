@@ -128,8 +128,8 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle handle,
     void* tmp_hipcub = reinterpret_cast<void*>(ptr);
 
     // Load CSR column indices into work1 buffer
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(tmp_work1, csr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+        tmp_work1, csr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
 
     if(copy_values == rocsparse_action_symbolic)
     {
@@ -156,8 +156,11 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle handle,
         // Copy csc_row_ind if not current
         if(vals.Current() != csc_row_ind)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                csc_row_ind, vals.Current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(csc_row_ind,
+                                               vals.Current(),
+                                               sizeof(rocsparse_int) * nnz,
+                                               hipMemcpyDeviceToDevice,
+                                               stream));
         }
     }
     else

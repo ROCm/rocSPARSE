@@ -367,7 +367,7 @@ rocsparse_status testing_ellmv(Arguments argus)
 
                 if(col >= 0 && col < n)
                 {
-                    sum += hell_val[idx] * hx[col];
+                    sum = std::fma(hell_val[idx], hx[col], sum);
                 }
                 else
                 {
@@ -377,7 +377,7 @@ rocsparse_status testing_ellmv(Arguments argus)
 
             if(h_beta != static_cast<T>(0))
             {
-                hy_gold[i] = h_beta * hy_gold[i] + h_alpha * sum;
+                hy_gold[i] = std::fma(h_beta, hy_gold[i], h_alpha * sum);
             }
             else
             {

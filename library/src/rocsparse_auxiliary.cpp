@@ -173,6 +173,28 @@ rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr* descr)
 }
 
 /********************************************************************************
+ * \brief copy matrix descriptor
+ *******************************************************************************/
+rocsparse_status rocsparse_copy_mat_descr(rocsparse_mat_descr dest, const rocsparse_mat_descr src)
+{
+    if(dest == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(src == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    dest->type = src->type;
+    dest->fill_mode = src->fill_mode;
+    dest->diag_type = src->diag_type;
+    dest->base = src->base;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
  * \brief destroy matrix descriptor
  *******************************************************************************/
 rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr)
@@ -252,18 +274,8 @@ rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr)
     return descr->type;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr, rocsparse_fill_mode fill_mode)
+rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr,
+                                             rocsparse_fill_mode fill_mode)
 {
     // Check if descriptor is valid
     if(descr == nullptr)
@@ -288,8 +300,8 @@ rocsparse_fill_mode rocsparse_get_mat_fill_mode(const rocsparse_mat_descr descr)
     return descr->fill_mode;
 }
 
-
-rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr, rocsparse_diag_type diag_type)
+rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr,
+                                             rocsparse_diag_type diag_type)
 {
     // Check if descriptor is valid
     if(descr == nullptr)
@@ -313,19 +325,6 @@ rocsparse_diag_type rocsparse_get_mat_diag_type(const rocsparse_mat_descr descr)
     }
     return descr->diag_type;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /********************************************************************************
  * \brief rocsparse_create_hyb_mat is a structure holding the rocsparse HYB

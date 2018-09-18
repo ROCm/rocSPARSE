@@ -656,8 +656,8 @@ rocsparse_status testing_csrmv(Arguments argus)
 
         if(adaptive)
         {
-            unit_check_near(1, m, hy_gold.data(), hy_1.data());
-            unit_check_near(1, m, hy_gold.data(), hy_2.data());
+            unit_check_near(1, m, 1, hy_gold.data(), hy_1.data());
+            unit_check_near(1, m, 1, hy_gold.data(), hy_2.data());
         }
         else
         {

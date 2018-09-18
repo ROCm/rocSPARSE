@@ -230,8 +230,8 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         // Copy sorted rows, if stored in buffer
         if(output != coo_row_ind)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                coo_row_ind, output, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                coo_row_ind, output, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
 
         // Obtain segments for segmented sort by columns
@@ -375,15 +375,15 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         // Copy sorted columns, if stored in buffer
         if(output != coo_col_ind)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                coo_col_ind, output, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                coo_col_ind, output, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
 
         // Copy reordered permutation, if stored in buffer
         if(mapping != perm)
         {
-            RETURN_IF_HIP_ERROR(
-                hipMemcpy(perm, mapping, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                perm, mapping, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
     }
     else
@@ -414,8 +414,8 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         // Copy sorted rows, if stored in buffer
         if(output != coo_row_ind)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                coo_row_ind, output, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                coo_row_ind, output, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
 
         // Obtain segments for segmented sort by columns
@@ -474,8 +474,8 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         // Copy sorted columns, if stored in buffer
         if(output != coo_col_ind)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                coo_col_ind, output, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                coo_col_ind, output, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
         }
     }
 

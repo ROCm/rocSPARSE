@@ -32,7 +32,4 @@ void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, T* 
 template <typename T>
 void unit_check_near(rocsparse_int M, rocsparse_int N, rocsparse_int lda, T* hCPU, T* hGPU);
 
-template <typename T>
-void unit_check_near(rocsparse_int M, rocsparse_int N, T* hCPU, T* hGPU);
-
 #endif // UNIT_HPP

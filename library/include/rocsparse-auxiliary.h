@@ -3,9 +3,9 @@
  *
  * ************************************************************************ */
 
-/*!\file
- * \brief rocsparse-auxiliary.h provides auxilary functions in rocsparse
-*/
+/*! \file
+ *  \brief rocsparse-auxiliary.h provides auxilary functions in rocsparse
+ */
 
 #pragma once
 #ifndef _ROCSPARSE_AUXILIARY_H_
@@ -20,7 +20,8 @@
 extern "C" {
 #endif
 
-/*! \brief Create a rocsparse handle
+/*! \ingroup aux_module
+ *  \brief Create a rocsparse handle
  *
  *  \details
  *  \p rocsparse_create_handle creates the rocSPARSE library context. It must be
@@ -38,7 +39,8 @@ extern "C" {
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_handle(rocsparse_handle* handle);
 
-/*! \brief Destroy a rocsparse handle
+/*! \ingroup aux_module
+ *  \brief Destroy a rocsparse handle
  *
  *  \details
  *  \p rocsparse_destroy_handle destroys the rocSPARSE library context and releases all
@@ -54,7 +56,8 @@ rocsparse_status rocsparse_create_handle(rocsparse_handle* handle);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle);
 
-/*! \brief Specify user defined HIP stream
+/*! \ingroup aux_module
+ *  \brief Specify user defined HIP stream
  *
  *  \details
  *  \p rocsparse_set_stream specifies the stream to be used by the rocSPARSE library
@@ -71,7 +74,8 @@ rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_set_stream(rocsparse_handle handle, hipStream_t stream);
 
-/*! \brief Get current stream from library context
+/*! \ingroup aux_module
+ *  \brief Get current stream from library context
  *
  *  \details
  *  \p rocsparse_get_stream gets the rocSPARSE library context stream which is currently
@@ -88,7 +92,8 @@ rocsparse_status rocsparse_set_stream(rocsparse_handle handle, hipStream_t strea
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_get_stream(rocsparse_handle handle, hipStream_t* stream);
 
-/*! \brief Specify pointer mode
+/*! \ingroup aux_module
+ *  \brief Specify pointer mode
  *
  *  \details
  *  \p rocsparse_set_pointer_mode specifies the pointer mode to be used by the rocSPARSE
@@ -108,7 +113,8 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle handle,
                                             rocsparse_pointer_mode pointer_mode);
 
-/*! \brief Get current pointer mode from library context
+/*! \ingroup aux_module
+ *  \brief Get current pointer mode from library context
  *
  *  \details
  *  \p rocsparse_get_pointer_mode gets the rocSPARSE library context pointer mode which
@@ -127,7 +133,8 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
                                             rocsparse_pointer_mode* pointer_mode);
 
-/*! \brief Get rocSPARSE version
+/*! \ingroup aux_module
+ *  \brief Get rocSPARSE version
  *
  *  \details
  *  rocsparse_get_version gets the rocSPARSE library version number.
@@ -147,7 +154,8 @@ rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_get_version(rocsparse_handle handle, int* version);
 
-/*! \brief Create a matrix descriptor
+/*! \ingroup aux_module
+ *  \brief Create a matrix descriptor
  *  \details
  *  \p rocsparse_create_mat_descr creates a matrix descriptor. It initializes
  *  \ref rocsparse_matrix_type to \ref rocsparse_matrix_type_general and
@@ -163,7 +171,26 @@ rocsparse_status rocsparse_get_version(rocsparse_handle handle, int* version);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr* descr);
 
-/*! \brief Destroy a matrix descriptor
+/*! \ingroup aux_module
+ *  \brief Copy a matrix descriptor
+ *  \details
+ *  \p rocsparse_copy_mat_descr copies a matrix descriptor. Both, source and destination
+ *  matrix descriptors must be initialized prior to calling \p rocsparse_copy_mat_descr.
+ *
+ *  @param[out]
+ *  dest    the pointer to the destination matrix descriptor.
+ *  @param[in]
+ *  src     the pointer to the source matrix descriptor.
+ *
+ *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
+ *              \ref rocsparse_status_invalid_pointer \p src or \p dest pointer is
+ *              invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_copy_mat_descr(rocsparse_mat_descr dest, const rocsparse_mat_descr src);
+
+/*! \ingroup aux_module
+ *  \brief Destroy a matrix descriptor
  *
  *  \details
  *  \p rocsparse_destroy_mat_descr destroys a matrix descriptor and releases all
@@ -178,7 +205,8 @@ rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr* descr);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr);
 
-/*! \brief Specify the index base of a matrix descriptor
+/*! \ingroup aux_module
+ *  \brief Specify the index base of a matrix descriptor
  *
  *  \details
  *  \p rocsparse_set_mat_index_base sets the index base of a matrix descriptor. Valid
@@ -196,7 +224,8 @@ rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr, rocsparse_index_base base);
 
-/*! \brief Get the index base of a matrix descriptor
+/*! \ingroup aux_module
+ *  \brief Get the index base of a matrix descriptor
  *
  *  \details
  *  \p rocsparse_get_mat_index_base returns the index base of a matrix descriptor.
@@ -209,7 +238,8 @@ rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr, rocspar
 ROCSPARSE_EXPORT
 rocsparse_index_base rocsparse_get_mat_index_base(const rocsparse_mat_descr descr);
 
-/*! \brief Specify the matrix type of a matrix descriptor
+/*! \ingroup aux_module
+ *  \brief Specify the matrix type of a matrix descriptor
  *
  *  \details
  *  \p rocsparse_set_mat_type sets the matrix type of a matrix descriptor. Valid
@@ -231,7 +261,8 @@ rocsparse_index_base rocsparse_get_mat_index_base(const rocsparse_mat_descr desc
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr, rocsparse_matrix_type type);
 
-/*! \brief Get the matrix type of a matrix descriptor
+/*! \ingroup aux_module
+ *  \brief Get the matrix type of a matrix descriptor
  *
  *  \details
  *  \p rocsparse_get_mat_type returns the matrix type of a matrix descriptor.
@@ -246,7 +277,8 @@ rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr, rocsparse_mat
 ROCSPARSE_EXPORT
 rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr);
 
-/*! \brief Specify the matrix fill mode of a matrix descriptor
+/*! \ingroup aux_module
+ *  \brief Specify the matrix fill mode of a matrix descriptor
  *
  *  \details
  *  \p rocsparse_set_mat_fill_mode sets the matrix fill mode of a matrix descriptor.
@@ -263,9 +295,11 @@ rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr);
  *              \ref rocsparse_status_invalid_value \p fill_mode is invalid.
  */
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr, rocsparse_fill_mode fill_mode);
+rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr,
+                                             rocsparse_fill_mode fill_mode);
 
-/*! \brief Get the matrix fill mode of a matrix descriptor
+/*! \ingroup aux_module
+ *  \brief Get the matrix fill mode of a matrix descriptor
  *
  *  \details
  *  \p rocsparse_get_mat_fill_mode returns the matrix fill mode of a matrix descriptor.
@@ -278,7 +312,8 @@ rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr, rocspars
 ROCSPARSE_EXPORT
 rocsparse_fill_mode rocsparse_get_mat_fill_mode(const rocsparse_mat_descr descr);
 
-/*! \brief Specify the matrix diagonal type of a matrix descriptor
+/*! \ingroup aux_module
+ *  \brief Specify the matrix diagonal type of a matrix descriptor
  *
  *  \details
  *  \p rocsparse_set_mat_diag_type sets the matrix diagonal type of a matrix
@@ -295,9 +330,11 @@ rocsparse_fill_mode rocsparse_get_mat_fill_mode(const rocsparse_mat_descr descr)
  *              \ref rocsparse_status_invalid_value \p diag_type is invalid.
  */
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr, rocsparse_diag_type diag_type);
+rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr,
+                                             rocsparse_diag_type diag_type);
 
-/*! \brief Get the matrix diagonal type of a matrix descriptor
+/*! \ingroup aux_module
+ *  \brief Get the matrix diagonal type of a matrix descriptor
  *
  *  \details
  *  \p rocsparse_get_mat_diag_type returns the matrix diagonal type of a matrix
@@ -311,7 +348,8 @@ rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr, rocspars
 ROCSPARSE_EXPORT
 rocsparse_diag_type rocsparse_get_mat_diag_type(const rocsparse_mat_descr descr);
 
-/*! \brief Create a \p HYB matrix structure
+/*! \ingroup aux_module
+ *  \brief Create a \p HYB matrix structure
  *
  *  \details
  *  \p rocsparse_create_hyb_mat creates a structure that holds the matrix in \p HYB
@@ -326,7 +364,8 @@ rocsparse_diag_type rocsparse_get_mat_diag_type(const rocsparse_mat_descr descr)
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb);
 
-/*! \brief Destroy a \p HYB matrix structure
+/*! \ingroup aux_module
+ *  \brief Destroy a \p HYB matrix structure
  *
  *  \details
  *  \p rocsparse_destroy_hyb_mat destroys a \p HYB structure.
@@ -341,7 +380,8 @@ rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb);
 
-/*! \brief Create a matrix info structure
+/*! \ingroup aux_module
+ *  \brief Create a matrix info structure
  *
  *  \details
  *  \p rocsparse_create_mat_info creates a structure that holds the matrix info data
@@ -357,7 +397,8 @@ rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info);
 
-/*! \brief Destroy a matrix info structure
+/*! \ingroup aux_module
+ *  \brief Destroy a matrix info structure
  *
  *  \details
  *  \p rocsparse_destroy_mat_info destroys a matrix info structure.
