@@ -1,5 +1,5 @@
 # Find HIP package
-find_package(HIP REQUIRED)
+find_package(HIP 1.5.18353 REQUIRED) # ROCm 1.9
 
 # Select toolchain
 if(HIP_PLATFORM STREQUAL "nvcc" OR HIP_COMPILER STREQUAL "clang")

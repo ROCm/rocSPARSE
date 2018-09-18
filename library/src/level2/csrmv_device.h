@@ -226,7 +226,8 @@ __device__ static __inline__ int64_t rocsparse_mul24(int64_t x, int64_t y)
     return ((x << 40) >> 40) * ((y << 40) >> 40);
 }
 
-__device__ static __inline__ rocsparse_int rocsparse_mad24(rocsparse_int x, rocsparse_int y, rocsparse_int z)
+__device__ static __inline__ rocsparse_int
+rocsparse_mad24(rocsparse_int x, rocsparse_int y, rocsparse_int z)
 {
     return rocsparse_mul24(x, y) + z;
 }
@@ -296,7 +297,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
 
     // Any workgroup only calculates, at most, BLOCK_MULTIPLIER*BLOCKSIZE items in a row.
     // If there are more items in this row, we assign more workgroups.
-    rocsparse_int vecStart = rocsparse_mad24(wg, BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
+    rocsparse_int vecStart =
+        rocsparse_mad24(wg, BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
     rocsparse_int vecEnd =
         ((csr_row_ptr[row + 1] - idx_base) > vecStart + BLOCK_MULTIPLIER * BLOCKSIZE)
             ? vecStart + BLOCK_MULTIPLIER * BLOCKSIZE
@@ -417,7 +419,9 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
                 // If so, just do a write rather than a read-write. Measured to be a slight (~5%)
                 // performance improvement.
                 if(beta != 0.)
-                    temp_sum += beta * y[local_row];
+                {
+                    temp_sum = fma(beta, y[local_row], temp_sum);
+                }
                 y[local_row] = temp_sum;
             }
         }
@@ -445,7 +449,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
                 // put that into the output for each row.
                 if(beta != 0.)
                 {
-                    temp_sum += beta * y[local_row];
+                    temp_sum = fma(beta, y[local_row], temp_sum);
                 }
 
                 y[local_row] = temp_sum;
@@ -480,7 +484,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             for(unsigned long long j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
                 rocsparse_int col = csr_col_ind[(unsigned int)j] - idx_base;
-                temp_sum += alpha * csr_val[(unsigned int)j] * x[col];
+                temp_sum          = fma(alpha, csr_val[(unsigned int)j] * x[col], temp_sum);
             }
 
             partialSums[lid] = temp_sum;
@@ -496,7 +500,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             {
                 if(beta != 0.)
                 {
-                    temp_sum += beta * y[row];
+                    temp_sum = fma(beta, y[row], temp_sum);
                 }
 
                 y[row] = temp_sum;
@@ -558,11 +562,13 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             // That increases register pressure and reduces occupancy.
             for(rocsparse_int j = 0; j < vecEnd - col; j += WG_SIZE)
             {
-                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
+                temp_sum =
+                    fma(alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
 #if 2 * WG_SIZE <= BLOCK_MULTIPLIER * BLOCKSIZE
                 // If you can, unroll this loop once. It somewhat helps performance.
                 j += WG_SIZE;
-                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
+                temp_sum =
+                    fma(alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
 #endif
             }
         }
@@ -570,7 +576,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
         {
             for(rocsparse_int j = 0; j < vecEnd - col; j += WG_SIZE)
             {
-                temp_sum += alpha * csr_val[col + j] * x[csr_col_ind[col + j] - idx_base];
+                temp_sum =
+                    fma(alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
             }
         }
 

@@ -22,6 +22,17 @@ static inline rocsparse_int rocsparse_clz(rocsparse_int n) { return 64 - __built
 static inline rocsparse_int rocsparse_clz(rocsparse_int n) { return 32 - __builtin_clz(n); }
 #endif
 
+// Return one on the device
+static inline void rocsparse_one(const rocsparse_handle handle, float** one)
+{
+    *one = handle->sone;
+}
+
+static inline void rocsparse_one(const rocsparse_handle handle, double** one)
+{
+    *one = handle->done;
+}
+
 // if trace logging is turned on with
 // (handle->layer_mode & rocsparse_layer_mode_log_trace) == true
 // then

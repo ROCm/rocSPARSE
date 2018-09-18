@@ -15,11 +15,56 @@
 
 #include <hip/hip_runtime.h>
 
+template <typename T>
+__global__ void coomv_scale_host_pointer(rocsparse_int size, T beta, T* __restrict__ data)
+{
+    coomv_scale_device<T>(size, beta, data);
+}
+
+template <typename T>
+__global__ void
+coomv_scale_device_pointer(rocsparse_int size, const T* __restrict__ beta, T* __restrict__ data)
+{
+    if(*beta == static_cast<T>(1))
+    {
+        return;
+    }
+
+    coomv_scale_device<T>(size, *beta, data);
+}
+
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 __launch_bounds__(128) __global__
     void coomvn_wf_host_pointer(rocsparse_int nnz,
+                                rocsparse_int loops,
+                                T alpha,
+                                const rocsparse_int* __restrict__ coo_row_ind,
+                                const rocsparse_int* __restrict__ coo_col_ind,
+                                const T* __restrict__ coo_val,
+                                const T* __restrict__ x,
+                                T* __restrict__ y,
+                                rocsparse_int* __restrict__ row_block_red,
+                                T* __restrict__ val_block_red,
+                                rocsparse_index_base idx_base)
+{
+    coomvn_general_wf_reduce<T, BLOCKSIZE, WF_SIZE>(nnz,
+                                                    loops,
+                                                    alpha,
+                                                    coo_row_ind,
+                                                    coo_col_ind,
+                                                    coo_val,
+                                                    x,
+                                                    y,
+                                                    row_block_red,
+                                                    val_block_red,
+                                                    idx_base);
+}
+
+template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+__launch_bounds__(128) __global__
+    void coomvn_wf_device_pointer(rocsparse_int nnz,
                                   rocsparse_int loops,
-                                  T alpha,
+                                  const T* alpha,
                                   const rocsparse_int* __restrict__ coo_row_ind,
                                   const rocsparse_int* __restrict__ coo_col_ind,
                                   const T* __restrict__ coo_val,
@@ -30,43 +75,16 @@ __launch_bounds__(128) __global__
                                   rocsparse_index_base idx_base)
 {
     coomvn_general_wf_reduce<T, BLOCKSIZE, WF_SIZE>(nnz,
-                                                      loops,
-                                                      alpha,
-                                                      coo_row_ind,
-                                                      coo_col_ind,
-                                                      coo_val,
-                                                      x,
-                                                      y,
-                                                      row_block_red,
-                                                      val_block_red,
-                                                      idx_base);
-}
-
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
-__launch_bounds__(128) __global__
-    void coomvn_wf_device_pointer(rocsparse_int nnz,
-                                    rocsparse_int loops,
-                                    const T* alpha,
-                                    const rocsparse_int* __restrict__ coo_row_ind,
-                                    const rocsparse_int* __restrict__ coo_col_ind,
-                                    const T* __restrict__ coo_val,
-                                    const T* __restrict__ x,
-                                    T* __restrict__ y,
-                                    rocsparse_int* __restrict__ row_block_red,
-                                    T* __restrict__ val_block_red,
-                                    rocsparse_index_base idx_base)
-{
-    coomvn_general_wf_reduce<T, BLOCKSIZE, WF_SIZE>(nnz,
-                                                      loops,
-                                                      *alpha,
-                                                      coo_row_ind,
-                                                      coo_col_ind,
-                                                      coo_val,
-                                                      x,
-                                                      y,
-                                                      row_block_red,
-                                                      val_block_red,
-                                                      idx_base);
+                                                    loops,
+                                                    *alpha,
+                                                    coo_row_ind,
+                                                    coo_col_ind,
+                                                    coo_val,
+                                                    x,
+                                                    y,
+                                                    row_block_red,
+                                                    val_block_red,
+                                                    idx_base);
 }
 
 template <typename T>
@@ -220,34 +238,28 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
         dim3 coomvn_blocks(nblocks);
         dim3 coomvn_threads(COOMVN_DIM);
 
-        rocsparse_int* row_block_red = NULL;
-        T* val_block_red             = NULL;
+        // Buffer
+        char* ptr = reinterpret_cast<char*>(handle->buffer);
+        ptr += 256;
 
-        // Allocating a maximum of 8 kByte
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&row_block_red, sizeof(rocsparse_int) * nwfs));
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&val_block_red, sizeof(T) * nwfs));
+        // row block reduction buffer
+        rocsparse_int* row_block_red = reinterpret_cast<rocsparse_int*>(ptr);
+        ptr += ((sizeof(rocsparse_int) * nwfs - 1) / 256 + 1) * 256;
+
+        // val block reduction buffer
+        T* val_block_red = reinterpret_cast<T*>(ptr);
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            // We need a host copy of beta to avoid unneccessary kernel launch
-            T h_beta;
-            RETURN_IF_HIP_ERROR(hipMemcpy(&h_beta, beta, sizeof(T), hipMemcpyDeviceToHost));
-
-            if(h_beta == static_cast<T>(0))
-            {
-                RETURN_IF_HIP_ERROR(hipMemset(y, 0, sizeof(T) * m));
-            }
-            else if(h_beta != static_cast<T>(1))
-            {
-                hipLaunchKernelGGL((coomv_scale<T>),
-                                   dim3((m - 1) / COOMVN_DIM + 1),
-                                   coomvn_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   h_beta,
-                                   y);
-            }
+            // Scale y with beta
+            hipLaunchKernelGGL((coomv_scale_device_pointer<T>),
+                               dim3((m - 1) / 1024 + 1),
+                               dim3(1024),
+                               0,
+                               stream,
+                               m,
+                               beta,
+                               y);
 
             if(handle->wavefront_size == 32)
             {
@@ -302,13 +314,13 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
             // If beta == 0.0 we need to set y to 0
             if(*beta == static_cast<T>(0))
             {
-                RETURN_IF_HIP_ERROR(hipMemset(y, 0, sizeof(T) * m));
+                RETURN_IF_HIP_ERROR(hipMemsetAsync(y, 0, sizeof(T) * m, stream));
             }
             else if(*beta != static_cast<T>(1))
             {
-                hipLaunchKernelGGL((coomv_scale<T>),
-                                   dim3((m - 1) / COOMVN_DIM + 1),
-                                   coomvn_threads,
+                hipLaunchKernelGGL((coomv_scale_host_pointer<T>),
+                                   dim3((m - 1) / 1024 + 1),
+                                   dim3(1024),
                                    0,
                                    stream,
                                    m,
@@ -369,9 +381,6 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
                            row_block_red,
                            val_block_red,
                            y);
-
-        RETURN_IF_HIP_ERROR(hipFree(row_block_red));
-        RETURN_IF_HIP_ERROR(hipFree(val_block_red));
 #undef COOMVN_DIM
     }
     else

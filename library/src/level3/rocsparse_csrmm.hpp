@@ -81,21 +81,21 @@ __launch_bounds__(256) __global__
                                      rocsparse_index_base idx_base)
 {
     csrmmnt_general_device<T, BLOCKSIZE, WF_SIZE>(offset,
-                                                       ncol,
-                                                       m,
-                                                       n,
-                                                       k,
-                                                       nnz,
-                                                       alpha,
-                                                       csr_row_ptr,
-                                                       csr_col_ind,
-                                                       csr_val,
-                                                       B,
-                                                       ldb,
-                                                       beta,
-                                                       C,
-                                                       ldc,
-                                                       idx_base);
+                                                  ncol,
+                                                  m,
+                                                  n,
+                                                  k,
+                                                  nnz,
+                                                  alpha,
+                                                  csr_row_ptr,
+                                                  csr_col_ind,
+                                                  csr_val,
+                                                  B,
+                                                  ldb,
+                                                  beta,
+                                                  C,
+                                                  ldc,
+                                                  idx_base);
 }
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
@@ -123,21 +123,21 @@ __launch_bounds__(256) __global__
     }
 
     csrmmnt_general_device<T, BLOCKSIZE, WF_SIZE>(offset,
-                                                       ncol,
-                                                       m,
-                                                       n,
-                                                       k,
-                                                       nnz,
-                                                       *alpha,
-                                                       csr_row_ptr,
-                                                       csr_col_ind,
-                                                       csr_val,
-                                                       B,
-                                                       ldb,
-                                                       *beta,
-                                                       C,
-                                                       ldc,
-                                                       idx_base);
+                                                  ncol,
+                                                  m,
+                                                  n,
+                                                  k,
+                                                  nnz,
+                                                  *alpha,
+                                                  csr_row_ptr,
+                                                  csr_col_ind,
+                                                  csr_val,
+                                                  B,
+                                                  ldb,
+                                                  *beta,
+                                                  C,
+                                                  ldc,
+                                                  idx_base);
 }
 
 template <typename T>

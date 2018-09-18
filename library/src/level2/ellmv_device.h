@@ -39,7 +39,7 @@ static __device__ void ellmvn_device(rocsparse_int m,
 
         if(col >= 0 && col < n)
         {
-            sum += ell_val[idx] * __ldg(x + col);
+            sum = fma(ell_val[idx], __ldg(x + col), sum);
         }
         else
         {
@@ -49,7 +49,7 @@ static __device__ void ellmvn_device(rocsparse_int m,
 
     if(beta != static_cast<T>(0))
     {
-        y[ai] = beta * y[ai] + alpha * sum;
+        y[ai] = fma(beta, y[ai], alpha * sum);
     }
     else
     {

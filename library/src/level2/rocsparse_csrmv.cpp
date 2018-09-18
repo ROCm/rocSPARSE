@@ -391,8 +391,7 @@ extern "C" rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
     return rocsparse_status_success;
 }
 
-extern "C" rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle,
-                                                  rocsparse_mat_info info)
+extern "C" rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle, rocsparse_mat_info info)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)

@@ -96,12 +96,14 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
+    hipStream_t stream = handle->stream;
+
     // Quick return if possible
     if(m == 0 || n == 0 || ell_width == 0)
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIP_ERROR(hipMemset(csr_nnz, 0, sizeof(rocsparse_int)));
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(csr_nnz, 0, sizeof(rocsparse_int), stream));
         }
         else
         {
@@ -109,8 +111,6 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
         }
         return rocsparse_status_success;
     }
-
-    hipStream_t stream = handle->stream;
 
 // Count nnz per row
 #define ELL2CSR_DIM 256
@@ -146,25 +146,41 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
     RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(
         d_temp_storage, temp_storage_bytes, csr_row_ptr, csr_row_ptr, m + 1));
 
-    // Free hipcub buffer
-    RETURN_IF_HIP_ERROR(hipFree(d_temp_storage));
-
     // Extract and adjust nnz according to index base
-    rocsparse_int nnz;
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(&nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-
-    nnz -= csr_descr->base;
-
-    // Set nnz
-    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    if(csr_descr->base == rocsparse_index_base_one)
     {
-        RETURN_IF_HIP_ERROR(hipMemcpy(csr_nnz, &nnz, sizeof(rocsparse_int), hipMemcpyHostToDevice));
+        rocsparse_int nnz;
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        nnz -= csr_descr->base;
+
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_HIP_ERROR(
+                hipMemcpy(csr_nnz, &nnz, sizeof(rocsparse_int), hipMemcpyHostToDevice));
+        }
+        else
+        {
+            *csr_nnz = nnz;
+        }
     }
     else
     {
-        *csr_nnz = nnz;
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
+        }
+        else
+        {
+            RETURN_IF_HIP_ERROR(
+                hipMemcpy(csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        }
     }
+
+    // Free hipcub buffer
+    RETURN_IF_HIP_ERROR(hipFree(d_temp_storage));
 
     return rocsparse_status_success;
 }

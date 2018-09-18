@@ -142,8 +142,9 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle handle,
                                result);
         }
         RETURN_IF_HIP_ERROR(hipMemcpy(result, workspace, sizeof(T), hipMemcpyDeviceToHost));
-        RETURN_IF_HIP_ERROR(hipFree(workspace));
     }
+
+    RETURN_IF_HIP_ERROR(hipFree(workspace));
 
     return rocsparse_status_success;
 }

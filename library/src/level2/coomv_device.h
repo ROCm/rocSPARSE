@@ -11,7 +11,7 @@
 
 // Scale kernel for beta != 1.0
 template <typename T>
-__global__ void coomv_scale(rocsparse_int size, T scalar, T* __restrict__ data)
+__device__ void coomv_scale_device(rocsparse_int size, T beta, T* __restrict__ data)
 {
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
@@ -20,7 +20,7 @@ __global__ void coomv_scale(rocsparse_int size, T scalar, T* __restrict__ data)
         return;
     }
 
-    data[gid] *= scalar;
+    data[gid] *= beta;
 }
 
 // Implementation motivated by papers 'Efficient Sparse Matrix-Vector Multiplication on CUDA',

@@ -32,6 +32,26 @@ _rocsparse_handle::_rocsparse_handle()
         layer_mode = (rocsparse_layer_mode)(atoi(str_layer_mode));
     }
 
+    // Allocating small device buffer
+    rocsparse_int nthreads = properties.maxThreadsPerBlock;
+    rocsparse_int nprocs   = properties.multiProcessorCount;
+    rocsparse_int nblocks  = (nprocs * nthreads - 1) / 128 + 1;
+    rocsparse_int nwfs     = nblocks * (128 / properties.warpSize);
+
+    size_t size = (((sizeof(rocsparse_int) + 16) * nwfs - 1) / 256 + 1) * 256;
+
+    THROW_IF_HIP_ERROR(hipMalloc(&buffer, size));
+
+    // Device one
+    THROW_IF_HIP_ERROR(hipMalloc(&sone, sizeof(float)));
+    THROW_IF_HIP_ERROR(hipMalloc(&done, sizeof(double)));
+
+    float hsone  = 1.0f;
+    double hdone = 1.0;
+
+    THROW_IF_HIP_ERROR(hipMemcpy(sone, &hsone, sizeof(float), hipMemcpyHostToDevice));
+    THROW_IF_HIP_ERROR(hipMemcpy(done, &hdone, sizeof(double), hipMemcpyHostToDevice));
+
     // Open log file
     if(layer_mode & rocsparse_layer_mode_log_trace)
     {
@@ -50,6 +70,10 @@ _rocsparse_handle::_rocsparse_handle()
  ******************************************************************************/
 _rocsparse_handle::~_rocsparse_handle()
 {
+    PRINT_IF_HIP_ERROR(hipFree(buffer));
+    PRINT_IF_HIP_ERROR(hipFree(sone));
+    PRINT_IF_HIP_ERROR(hipFree(done));
+
     // Close log files
     if(log_trace_ofs.is_open())
     {
@@ -90,7 +114,7 @@ rocsparse_status _rocsparse_handle::get_stream(hipStream_t* user_stream) const
  * \brief rocsparse_csrmv_info is a structure holding the rocsparse csrmv info
  * data gathered during csrmv_analysis. It must be initialized using the
  * rocsparse_create_csrmv_info() routine. It should be destroyed at the end
- * rocsparse_destroy_csrmv_info().
+ * using rocsparse_destroy_csrmv_info().
  *******************************************************************************/
 rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info)
 {
@@ -141,19 +165,12 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
     return rocsparse_status_success;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+/********************************************************************************
+ * \brief rocsparse_csrtr_info is a structure holding the rocsparse csrsv and
+ * csrilu0 data gathered during csrsv_analysis and csrilu0_analysis. It must be
+ * initialized using the rocsparse_create_csrtr_info() routine. It should be
+ * destroyed at the end using rocsparse_destroy_csrtr_info().
+ *******************************************************************************/
 rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info)
 {
     if(info == nullptr)
@@ -175,6 +192,9 @@ rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info)
     }
 }
 
+/********************************************************************************
+ * \brief Destroy csrmv info.
+ *******************************************************************************/
 rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
 {
     if(info == nullptr)
@@ -193,6 +213,12 @@ rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
     {
         RETURN_IF_HIP_ERROR(hipFree(info->csr_diag_ind));
         info->csr_diag_ind = nullptr;
+    }
+
+    if(info->zero_pivot != nullptr)
+    {
+        RETURN_IF_HIP_ERROR(hipFree(info->zero_pivot));
+        info->zero_pivot = nullptr;
     }
 
     // Destruct

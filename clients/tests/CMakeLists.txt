@@ -54,9 +54,11 @@ set(ROCSPARSE_TEST_SOURCES
   test_sctr.cpp
   test_coomv.cpp
   test_csrmv.cpp
+  test_csrsv.cpp
   test_ellmv.cpp
   test_hybmv.cpp
   test_csrmm.cpp
+  test_csrilu0.cpp
   test_csr2coo.cpp
   test_csr2csc.cpp
   test_csr2ell.cpp
@@ -66,6 +68,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_identity.cpp
   test_csrsort.cpp
   test_coosort.cpp
+  test_csrilusv.cpp
 )
 
 set(ROCSPARSE_CLIENTS_COMMON
