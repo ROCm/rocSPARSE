@@ -7,8 +7,6 @@
 #include "rocsparse.h"
 #include "rocsparse_csrilu0.hpp"
 
-#include <hipcub/hipcub.hpp>
-
 /*
  * ===========================================================================
  *    C wrapper
