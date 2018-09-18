@@ -4,7 +4,7 @@ rocSPARSE exposes a common interface that provides Basic Linear Algebra Subrouti
 ## Requirements
 * Git
 * CMake (3.5 or later)
-* AMD [ROCm] platform
+* AMD [ROCm] 1.9 platform
 
 Optional:
 * [GTest][]
@@ -15,6 +15,25 @@ Optional:
   * Required for benchmarks.
 
 ## Quickstart rocSPARSE build and install
+
+#### Install script
+You can build rocSPARSE using the *install.sh* script
+```
+# Clone rocSPARSE using git
+git clone https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
+
+# Go to rocSPARSE directory
+cd rocSPARSE
+
+# Run install.sh script
+# Command line options:
+#   -h|--help         - prints help message
+#   -i|--install      - install after build
+#   -d|--dependencies - install build dependencies
+#   -c|--clients      - build library clients too (combines with -i & -d)
+#   -g|--debug        - build with debug flag
+./install.sh -dci
+```
 
 #### CMake
 All compiler specifications are determined automatically. The compilation process can be performed by
@@ -39,26 +58,6 @@ make
 
 # Install
 [sudo] make install
-```
-
-#### Install script
-You can also build rocSPARSE using the *install.sh* script
-```
-# Clone rocSPARSE using git
-git clone https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
-
-# Go to rocSPARSE directory
-cd rocSPARSE
-
-# Run install.sh script
-# Command line options:
-#   -h|--help         - prints help message
-#   -i|--install      - install after build
-#   -d|--dependencies - install build dependencies
-#   -c|--clients      - build library clients too (combines with -i & -d)
-#   -g|--debug        - build with debug flag
-#   --cuda            - build library for cuda backend
-./install.sh -dci
 ```
 
 ## Unit tests
@@ -86,8 +85,6 @@ Please use [the issue tracker][] for bugs and feature requests.
 
 ## License
 The [license file][] can be found in the main repository.
-
-
 
 [ROCm]: https://github.com/RadeonOpenCompute/ROCm
 [HIP]: https://github.com/GPUOpen-ProfessionalCompute-Tools/HIP/
