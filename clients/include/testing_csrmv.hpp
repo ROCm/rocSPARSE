@@ -65,35 +65,42 @@ void testing_csrmv_bad_arg(void)
     {
         rocsparse_int* dptr_null = nullptr;
 
-        status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dptr_null, dcol, info);
+        status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dval, dptr_null, dcol, info);
         verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
     }
     // testing for(nullptr == dcol)
     {
         rocsparse_int* dcol_null = nullptr;
 
-        status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dptr, dcol_null, info);
+        status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dval, dptr, dcol_null, info);
+        verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
+    }
+    // testing for(nullptr == dval)
+    {
+        T* dval_null = nullptr;
+
+        status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dval_null, dptr, dcol, info);
         verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
     }
     // testing for(nullptr == descr)
     {
         rocsparse_mat_descr descr_null = nullptr;
 
-        status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr_null, dptr, dcol, info);
+        status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr_null, dval, dptr, dcol, info);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == info)
     {
         rocsparse_mat_info info_null = nullptr;
 
-        status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dptr, dcol, info_null);
+        status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dval, dptr, dcol, info_null);
         verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
     }
     // testing for(nullptr == handle)
     {
         rocsparse_handle handle_null = nullptr;
 
-        status = rocsparse_csrmv_analysis(handle_null, transA, m, n, nnz, descr, dptr, dcol, info);
+        status = rocsparse_csrmv_analysis(handle_null, transA, m, n, nnz, descr, dval, dptr, dcol, info);
         verify_rocsparse_status_invalid_handle(status);
     }
 
@@ -387,7 +394,7 @@ rocsparse_status testing_csrmv(Arguments argus)
         if(adaptive)
         {
             // Test rocsparse_csrmv_analysis
-            status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dptr, dcol, info);
+            status = rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dval, dptr, dcol, info);
 
             if(m < 0 || n < 0 || nnz < 0)
             {
@@ -530,7 +537,7 @@ rocsparse_status testing_csrmv(Arguments argus)
     {
         // csrmv analysis
         CHECK_ROCSPARSE_ERROR(
-            rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dptr, dcol, info));
+            rocsparse_csrmv_analysis(handle, transA, m, n, nnz, descr, dval, dptr, dcol, info));
     }
 
     if(argus.unit_check)
