@@ -216,9 +216,9 @@ typedef enum rocsparse_pointer_mode_ {
  *  TODO rocsparse_logging for more informations.
  */
 typedef enum rocsparse_layer_mode {
-    rocsparse_layer_mode_none      = 0b0000000000, /**< layer is not active. */
-    rocsparse_layer_mode_log_trace = 0b0000000001, /**< layer is in logging mode. */
-    rocsparse_layer_mode_log_bench = 0b0000000010, /**< layer is in benchmarking mode. */
+    rocsparse_layer_mode_none      = 0x0, /**< layer is not active. */
+    rocsparse_layer_mode_log_trace = 0x1, /**< layer is in logging mode. */
+    rocsparse_layer_mode_log_bench = 0x2  /**< layer is in benchmarking mode. */
 } rocsparse_layer_mode;
 
 /*! \ingroup types_module
