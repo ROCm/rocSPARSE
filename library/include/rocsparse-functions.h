@@ -647,6 +647,8 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle handle,
  *  @param[in]
  *  descr       descriptor of the sparse \p CSR matrix.
  *  @param[in]
+ *  csr_val     array of \p nnz elements of the sparse \p CSR matrix.
+ *  @param[in]
  *  csr_row_ptr array of \p m+1 elements that point to the start of every row of the
  *              sparse \p CSR matrix.
  *  @param[in]
@@ -659,8 +661,8 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle handle,
  *              \ref rocsparse_status_invalid_handle the library context was
  *              not initialized. <br>
  *              \ref rocsparse_status_invalid_size \p m, \p n or \p nnz is invalid. <br>
- *              \ref rocsparse_status_invalid_pointer \p descr, \p csr_row_ptr,
- *              \p csr_col_ind or \p info pointer is invalid. <br>
+ *              \ref rocsparse_status_invalid_pointer \p descr, \p csr_val,
+ *              \p csr_row_ptr, \p csr_col_ind or \p info pointer is invalid. <br>
  *              \ref rocsparse_status_memory_error the buffer for the gathered
  *              information could not be allocated. <br>
  *              \ref rocsparse_status_internal_error an internal error occurred. <br>
@@ -668,16 +670,31 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle handle,
  *              \p trans != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
+/**@{*/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle handle,
-                                          rocsparse_operation trans,
-                                          rocsparse_int m,
-                                          rocsparse_int n,
-                                          rocsparse_int nnz,
-                                          const rocsparse_mat_descr descr,
-                                          const rocsparse_int* csr_row_ptr,
-                                          const rocsparse_int* csr_col_ind,
-                                          rocsparse_mat_info info);
+rocsparse_status rocsparse_scsrmv_analysis(rocsparse_handle handle,
+                                           rocsparse_operation trans,
+                                           rocsparse_int m,
+                                           rocsparse_int n,
+                                           rocsparse_int nnz,
+                                           const rocsparse_mat_descr descr,
+                                           const float* csr_val,
+                                           const rocsparse_int* csr_row_ptr,
+                                           const rocsparse_int* csr_col_ind,
+                                           rocsparse_mat_info info);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcsrmv_analysis(rocsparse_handle handle,
+                                           rocsparse_operation trans,
+                                           rocsparse_int m,
+                                           rocsparse_int n,
+                                           rocsparse_int nnz,
+                                           const rocsparse_mat_descr descr,
+                                           const double* csr_val,
+                                           const rocsparse_int* csr_row_ptr,
+                                           const rocsparse_int* csr_col_ind,
+                                           rocsparse_mat_info info);
+/**@}*/
 
 /*! \ingroup level2_module
  *  \brief Sparse matrix vector multiplication using \p CSR storage format
