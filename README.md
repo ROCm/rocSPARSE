@@ -42,7 +42,7 @@ All compiler specifications are determined automatically. The compilation proces
 git clone https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
 
 # Go to rocSPARSE directory, create and go to the build directory
-cd rocSPARSE; mkdir build; cd build
+cd rocSPARSE; mkdir -p build/release; cd build/release
 
 # Configure rocSPARSE
 # Build options:
@@ -51,7 +51,7 @@ cd rocSPARSE; mkdir build; cd build
 #   BUILD_CLIENTS_SAMPLES    - build examples (ON)
 #   BUILD_VERBOSE            - verbose output (OFF)
 #   BUILD_SHARED_LIBS        - build rocSPARSE as a shared library (ON)
-cmake -DBUILD_CLIENTS_TESTS=ON ..
+cmake -DBUILD_CLIENTS_TESTS=ON ../..
 
 # Build
 make
@@ -64,7 +64,7 @@ make
 To run unit tests, rocSPARSE has to be built with option -DBUILD_CLIENTS_TESTS=ON.
 ```
 # Go to rocSPARSE build directory
-cd rocSPARSE; cd build
+cd rocSPARSE; cd build/release
 
 # Run all tests
 ./clients/tests/rocsparse-test
@@ -74,7 +74,7 @@ cd rocSPARSE; cd build
 To run benchmarks, rocSPARSE has to be built with option -DBUILD_CLIENTS_BENCHMARKS=ON.
 ```
 # Go to rocSPARSE build directory
-cd rocSPARSE/build
+cd rocSPARSE/build/release
 
 # Run benchmark, e.g.
 ./clients/benchmarks/rocsparse-bench -f hybmv --laplacian-dim 2000 -i 200
