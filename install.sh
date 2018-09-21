@@ -8,7 +8,7 @@
 # #################################################
 function display_help()
 {
-  echo "rocsparse build & installation helper script"
+  echo "rocSPARSE build & installation helper script"
   echo "./install [-h|--help] "
   echo "    [-h|--help] prints this help message"
 #  echo "    [--prefix] Specify an alternate CMAKE_INSTALL_PREFIX for cmake"
@@ -113,7 +113,7 @@ install_packages( )
     exit 2
   fi
 
-  # dependencies needed for rocsparse and clients to build
+  # dependencies needed for library and clients to build
   local library_dependencies_ubuntu=( "make" "cmake-curses-gui" "hip_hcc" "pkg-config" )
   local library_dependencies_centos=( "epel-release" "make" "cmake3" "hip_hcc" "gcc-c++" )
   local library_dependencies_fedora=( "make" "cmake" "hip_hcc" "gcc-c++" "libcxx-devel" "rpm-build" )
@@ -319,19 +319,22 @@ pushd .
     cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_SAMPLES=ON -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON"
   fi
 
-  compiler="hcc"
-  hip_compiler="hcc"
-  if [[ "${build_cuda}" == true || "${build_hip_clang}" == true ]]; then
-    compiler="hipcc"
-    hip_compiler="clang"
+  # cpack
+  cmake_common_options="${cmake_common_options} -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm"
+
+  # compiler
+  compiler="hipcc"
+  if [[ "${build_cuda}" == false ]]; then
+    if [[ "${build_hip_clang}" == true ]]; then
+      cmake_common_options="${cmake_common_options} -DHIP_COMPILER=clang"
+    else
+      compiler="hcc"
+      cmake_common_options="${cmake_common_options} -DHIP_COMPILER=hcc"
+    fi
   fi
 
   # Build library with AMD toolchain because of existense of device kernels
-  if [[ "${build_clients}" == true ]]; then
-    CXX=${compiler} ${cmake_executable} -DHIP_COMPILER=${hip_compiler} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=rocsparse-install -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm ../..
-  else
-    CXX=${compiler} ${cmake_executable} -DHIP_COMPILER=${hip_compiler} ${cmake_common_options} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=rocsparse-install -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm ../..
-  fi
+  CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_INSTALL_PREFIX=rocsparse-install ../..
   check_exit_code
 
   make -j$(nproc) install
