@@ -1,0 +1,21 @@
+# Parameters related to building rocsparse
+ARG base_image
+
+FROM ${base_image}
+MAINTAINER Nico Trost
+
+# Copy the debian package of rocsparse into the container from host
+COPY *.deb /tmp/
+
+# Install the debian package
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends --allow-unauthenticated -y \
+    /tmp/rocsparse-*.deb \
+  && rm -f /tmp/*.deb \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* \
+  && printf "ls -la /etc/ld.so.conf.d/\n" && ls -la /etc/ld.so.conf.d/ \
+  && printf "ls -la /opt/rocm/include\n" && ls -la /opt/rocm/include \
+  && printf "ls -la /opt/rocm/lib\n" && ls -la /opt/rocm/lib \
+  && printf "ls -la /opt/rocm/lib/cmake\n" && ls -la /opt/rocm/lib/cmake \
+  && printf "ls -la /opt/rocm/rocsparse/include\n" && ls -la /opt/rocm/rocsparse/include \
+  && printf "ls -la /opt/rocm/rocsparse/lib\n" && ls -la /opt/rocm/rocsparse/lib
