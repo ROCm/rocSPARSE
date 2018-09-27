@@ -37,3 +37,7 @@ tags
 
 # build-in-source directory
 build
+
+# doc directory
+docBin
+_build
