@@ -1,6 +1,9 @@
 # rocSPARSE
 rocSPARSE exposes a common interface that provides Basic Linear Algebra Subroutines for sparse computation implemented on top of AMD's Radeon Open Compute [ROCm][] runtime and toolchains. rocSPARSE is created using the [HIP][] programming language and optimized for AMD's latest discrete GPUs.
 
+## Documentation
+The latest rocSPARSE documentation and API description can be found [here][].
+
 ## Requirements
 * Git
 * CMake (3.5 or later)
@@ -92,3 +95,4 @@ The [license file][] can be found in the main repository.
 [Boost]: https://www.boost.org/
 [the issue tracker]: https://github.com/ROCmSoftwarePlatform/rocSPARSE/issues
 [license file]: https://github.com/ROCmSoftwarePlatform/rocSPARSE
+[here]: https://rocsparse.readthedocs.io/en/develop/library.html
