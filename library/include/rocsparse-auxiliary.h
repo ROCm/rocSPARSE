@@ -50,9 +50,9 @@ extern "C" {
  *  @param[out]
  *  handle  the pointer to the handle to the rocSPARSE library context.
  *
- *  \returns    \ref rocsparse_status_success the initialization succeeded. <br>
- *              \ref rocsparse_status_invalid_handle \p handle pointer is invalid. <br>
- *              \ref rocsparse_status_internal_error an internal error occurred.
+ *  \retval rocsparse_status_success the initialization succeeded.
+ *  \retval rocsparse_status_invalid_handle \p handle pointer is invalid.
+ *  \retval rocsparse_status_internal_error an internal error occurred.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_handle(rocsparse_handle* handle);
@@ -67,9 +67,9 @@ rocsparse_status rocsparse_create_handle(rocsparse_handle* handle);
  *  @param[in]
  *  handle  the handle to the rocSPARSE library context.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_handle \p handle is invalid. <br>
- *              \ref rocsparse_status_internal_error an internal error occurred.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_handle \p handle is invalid.
+ *  \retval rocsparse_status_internal_error an internal error occurred.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle);
@@ -86,8 +86,8 @@ rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle);
  *  @param[in]
  *  stream  the stream to be used by the rocSPARSE library context.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_handle \p handle is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_handle \p handle is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_set_stream(rocsparse_handle handle, hipStream_t stream);
@@ -104,8 +104,8 @@ rocsparse_status rocsparse_set_stream(rocsparse_handle handle, hipStream_t strea
  *  @param[out]
  *  stream the stream currently used by the rocSPARSE library context.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_handle \p handle is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_handle \p handle is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_get_stream(rocsparse_handle handle, hipStream_t* stream);
@@ -124,8 +124,8 @@ rocsparse_status rocsparse_get_stream(rocsparse_handle handle, hipStream_t* stre
  *  @param[in]
  *  pointer_mode    the pointer mode to be used by the rocSPARSE library context.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_handle \p handle is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_handle \p handle is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle handle,
@@ -144,8 +144,8 @@ rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle handle,
  *  pointer_mode    the pointer mode that is currently used by the rocSPARSE library
  *                  context.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_handle \p handle is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_handle \p handle is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
@@ -155,19 +155,18 @@ rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
  *  \brief Get rocSPARSE version
  *
  *  \details
- *  rocsparse_get_version gets the rocSPARSE library version number.
- *
- *  patch = version % 100 <br>
- *  minor = version / 100 % 1000 <br>
- *  major = version / 100000
+ *  \p rocsparse_get_version gets the rocSPARSE library version number.
+ *  - patch = version % 100
+ *  - minor = version / 100 % 1000
+ *  - major = version / 100000
  *
  *  @param[in]
  *  handle  the handle to the rocSPARSE library context.
  *  @param[out]
  *  version the version number of the rocSPARSE library.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_handle \p handle is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_handle \p handle is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_get_version(rocsparse_handle handle, int* version);
@@ -183,8 +182,8 @@ rocsparse_status rocsparse_get_version(rocsparse_handle handle, int* version);
  *  @param[out]
  *  descr   the pointer to the matrix descriptor.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_pointer \p descr pointer is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p descr pointer is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr* descr);
@@ -200,9 +199,8 @@ rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr* descr);
  *  @param[in]
  *  src     the pointer to the source matrix descriptor.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_pointer \p src or \p dest pointer is
- *              invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p src or \p dest pointer is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_copy_mat_descr(rocsparse_mat_descr dest, const rocsparse_mat_descr src);
@@ -217,8 +215,8 @@ rocsparse_status rocsparse_copy_mat_descr(rocsparse_mat_descr dest, const rocspa
  *  @param[in]
  *  descr   the matrix descriptor.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_pointer \p descr is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p descr is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr);
@@ -235,9 +233,9 @@ rocsparse_status rocsparse_destroy_mat_descr(rocsparse_mat_descr descr);
  *  @param[in]
  *  base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_pointer \p descr pointer is invalid. <br>
- *              \ref rocsparse_status_invalid_value \p base is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p descr pointer is invalid.
+ *  \retval rocsparse_status_invalid_value \p base is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr, rocsparse_index_base base);
@@ -251,7 +249,7 @@ rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr, rocspar
  *  @param[in]
  *  descr   the matrix descriptor.
  *
- *  \returns    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
+ *  \returns \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
  */
 ROCSPARSE_EXPORT
 rocsparse_index_base rocsparse_get_mat_index_base(const rocsparse_mat_descr descr);
@@ -272,9 +270,9 @@ rocsparse_index_base rocsparse_get_mat_index_base(const rocsparse_mat_descr desc
  *          \ref rocsparse_matrix_type_hermitian or
  *          \ref rocsparse_matrix_type_triangular.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_pointer \p descr pointer is invalid. <br>
- *              \ref rocsparse_status_invalid_value \p type is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p descr pointer is invalid.
+ *  \retval rocsparse_status_invalid_value \p type is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr, rocsparse_matrix_type type);
@@ -308,9 +306,9 @@ rocsparse_matrix_type rocsparse_get_mat_type(const rocsparse_mat_descr descr);
  *  @param[in]
  *  fill_mode   \ref rocsparse_fill_mode_lower or \ref rocsparse_fill_mode_upper.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_pointer \p descr pointer is invalid. <br>
- *              \ref rocsparse_status_invalid_value \p fill_mode is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p descr pointer is invalid.
+ *  \retval rocsparse_status_invalid_value \p fill_mode is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr,
@@ -343,9 +341,9 @@ rocsparse_fill_mode rocsparse_get_mat_fill_mode(const rocsparse_mat_descr descr)
  *  @param[in]
  *  diag_type   \ref rocsparse_diag_type_unit or \ref rocsparse_diag_type_non_unit.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_pointer \p descr pointer is invalid. <br>
- *              \ref rocsparse_status_invalid_value \p diag_type is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p descr pointer is invalid.
+ *  \retval rocsparse_status_invalid_value \p diag_type is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr,
@@ -376,8 +374,8 @@ rocsparse_diag_type rocsparse_get_mat_diag_type(const rocsparse_mat_descr descr)
  *  @param[inout]
  *  hyb the pointer to the hybrid matrix.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_pointer \p hyb pointer is invalid.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p hyb pointer is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb);
@@ -389,11 +387,11 @@ rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb);
  *  \p rocsparse_destroy_hyb_mat destroys a \p HYB structure.
  *
  *  @param[in]
- *  hyb
+ *  hyb the hybrid matrix structure.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_pointer \p hyb pointer is invalid. <br>
- *              \ref rocsparse_status_internal_error an internal error occurred.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p hyb pointer is invalid.
+ *  \retval rocsparse_status_internal_error an internal error occurred.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb);
@@ -407,10 +405,10 @@ rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb);
  *  at the end using rocsparse_destroy_mat_info().
  *
  *  @param[inout]
- *  info
+ *  info    the pointer to the info structure.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_pointer \p info pointer is invalid. <br>
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p info pointer is invalid.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info);
@@ -422,11 +420,11 @@ rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info);
  *  \p rocsparse_destroy_mat_info destroys a matrix info structure.
  *
  *  @param[in]
- *  info
+ *  info    the info structure.
  *
- *  \returns    \ref rocsparse_status_success the operation completed successfully. <br>
- *              \ref rocsparse_status_invalid_pointer \p info pointer is invalid. <br>
- *              \ref rocsparse_status_internal_error an internal error occurred.
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p info pointer is invalid.
+ *  \retval rocsparse_status_internal_error an internal error occurred.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info);
