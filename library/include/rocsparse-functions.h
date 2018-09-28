@@ -61,6 +61,10 @@ extern "C" {
  *      }
  *  \endcode
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -139,6 +143,10 @@ rocsparse_status rocsparse_zaxpyi(rocsparse_handle handle,
  *          result += x_val[i] * y[x_ind[i]];
  *      }
  *  \endcode
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -219,6 +227,10 @@ rocsparse_status rocsparse_zdoti(rocsparse_handle handle,
  *      }
  *  \endcode
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -291,6 +303,10 @@ rocsparse_status rocsparse_zgthr(rocsparse_handle handle,
  *          y[x_ind[i]] = 0;
  *      }
  *  \endcode
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -369,6 +385,10 @@ rocsparse_status rocsparse_zgthrz(rocsparse_handle handle,
  *      }
  *  \endcode
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -430,6 +450,10 @@ rocsparse_status rocsparse_droti(rocsparse_handle handle,
  *          y[x_ind[i]] = x_val[i];
  *      }
  *  \endcode
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -529,6 +553,10 @@ rocsparse_status rocsparse_zsctr(rocsparse_handle handle,
  *          y[coo_row_ind[i]] += alpha * coo_val[i] * x[coo_col_ind[i]];
  *      }
  *  \endcode
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  \note
  *  Currently, only \p trans == \ref rocsparse_operation_none is supported.
@@ -778,6 +806,10 @@ rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle, rocsparse_mat_in
  *          }
  *      }
  *  \endcode
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  \note
  *  Currently, only \p trans == \ref rocsparse_operation_none is supported.
@@ -1155,6 +1187,12 @@ rocsparse_status rocsparse_csrsv_clear(rocsparse_handle handle,
  *  \note
  *  The sparse CSR matrix has to be sorted. This can be achieved by calling
  *  rocsparse_csrsort().
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
+ *  \note
  *  Currently, only \p trans == \ref rocsparse_operation_none is supported.
  *
  *  @param[in]
@@ -1347,6 +1385,10 @@ rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle handle,
  *  \endcode
  *
  *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
+ *  \note
  *  Currently, only \p trans == \ref rocsparse_operation_none is supported.
  *
  *  @param[in]
@@ -1469,6 +1511,10 @@ rocsparse_status rocsparse_sellmv(rocsparse_handle handle,
  *    \end{array}
  *    \right.
  *  \f]
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  \note
  *  Currently, only \p trans == \ref rocsparse_operation_none is supported.
@@ -1603,6 +1649,10 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
  *          }
  *      }
  *  \endcode
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  \note
  *  Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
@@ -1985,6 +2035,10 @@ rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle handle, rocsparse_mat_
  *  The sparse CSR matrix has to be sorted. This can be achieved by calling
  *  rocsparse_csrsort().
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -2241,6 +2295,10 @@ rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
  *  It can also be used to convert a CSC array containing the column offsets into a COO
  *  array of column indices.
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -2330,6 +2388,10 @@ rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handle,
  *
  *  \note
  *  The resulting matrix can also be seen as the transpose of the input matrix.
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -2454,6 +2516,10 @@ rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
  *  number of rows times the number of ELL non-zero elements per row, such that
  *  \f$\text{nnz}_{\text{ELL}} = m \cdot \text{ell_width}\f$. The number of ELL
  *  non-zero elements per row is obtained by rocsparse_csr2ell_width().
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -2653,6 +2719,10 @@ rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle handle,
  *  a CSC array of column offsets, that point to the start of every column. Then, it is
  *  assumed that the COO column index array is sorted, instead.
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -2743,6 +2813,10 @@ rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
  *  are allocated by the user. \p csr_row_ptr and allocation size of \p csr_col_ind and
  *  \p csr_val is defined by the number of CSR non-zero elements. Both can be obtained
  *  by rocsparse_ell2csr_nnz().
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -2849,6 +2923,10 @@ rocsparse_status rocsparse_zell2csr(rocsparse_handle handle,
  *      }
  *  \endcode
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -2919,6 +2997,10 @@ rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handle,
  *
  *  \note
  *  \p perm can be \p NULL if a sorted permutation vector is not required.
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle          handle to the rocsparse library context queue.
@@ -3060,6 +3142,10 @@ rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handle,
  *  \note
  *  \p perm can be \p NULL if a sorted permutation vector is not required.
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle          handle to the rocsparse library context queue.
  *  @param[in]
@@ -3113,6 +3199,10 @@ rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
  *
  *  \note
  *  \p perm can be \p NULL if a sorted permutation vector is not required.
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle          handle to the rocsparse library context queue.
