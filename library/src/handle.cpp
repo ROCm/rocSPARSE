@@ -50,14 +50,19 @@ _rocsparse_handle::_rocsparse_handle()
         layer_mode = (rocsparse_layer_mode)(atoi(str_layer_mode));
     }
 
-    // Allocating small device buffer
+    // Obtain size for coomv device buffer
     rocsparse_int nthreads = properties.maxThreadsPerBlock;
     rocsparse_int nprocs   = properties.multiProcessorCount;
     rocsparse_int nblocks  = (nprocs * nthreads - 1) / 128 + 1;
     rocsparse_int nwfs     = nblocks * (128 / properties.warpSize);
 
-    size_t size = (((sizeof(rocsparse_int) + 16) * nwfs - 1) / 256 + 1) * 256;
+    size_t coomv_size = (((sizeof(rocsparse_int) + 16) * nwfs - 1) / 256 + 1) * 256;
 
+    // Obtain size for doti device buffer
+    size_t doti_size = sizeof(double) * 1024;
+
+    // Allocate maximum of device buffers
+    size_t size = std::max(coomv_size, doti_size);
     THROW_IF_HIP_ERROR(hipMalloc(&buffer, size));
 
     // Device one
