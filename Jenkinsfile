@@ -470,7 +470,7 @@ def build_pipeline( compiler_data compiler_args, docker_data docker_args, projec
 //},
 rocm_ubuntu:
 {
-  node( 'docker && rocm && dkms')
+  node( 'docker && rocm19 && dkms')
   {
     def hcc_docker_args = new docker_data(
         from_image:'rocm/dev-ubuntu-16.04:1.9.0',
