@@ -13,7 +13,7 @@ rocSPARSE
 Introduction
 ------------
 
-rocSPARSE is a library that contains basic linear algebra subroutines for sparse matrices and vectors written in HiP for GPU devices. It is designed to be used from C and C++ code. The functionality of rocSPARSE is organized in in the following categories:
+rocSPARSE is a library that contains basic linear algebra subroutines for sparse matrices and vectors written in HiP for GPU devices. It is designed to be used from C and C++ code. The functionality of rocSPARSE is organized in the following categories:
 
 * :ref:`rocsparse_auxiliary_functions_` describe available helper functions that are required for subsequent library calls.
 * :ref:`rocsparse_level1_functions_` describe operations between a vector in sparse format and a vector in dense format.
