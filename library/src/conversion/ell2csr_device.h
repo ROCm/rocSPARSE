@@ -29,6 +29,11 @@
 
 #include <hip/hip_runtime.h>
 
+__global__ void ell2csr_index_base(rocsparse_int* __restrict__ nnz)
+{
+    --(*nnz);
+}
+
 __global__ void ell2csr_nnz_per_row(rocsparse_int m,
                                     rocsparse_int n,
                                     rocsparse_int ell_width,
