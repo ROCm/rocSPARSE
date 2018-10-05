@@ -88,6 +88,28 @@ rocsparse_status rocsparse_destroy_handle(rocsparse_handle handle);
  *
  *  \retval rocsparse_status_success the operation completed successfully.
  *  \retval rocsparse_status_invalid_handle \p handle is invalid.
+ *
+ *  \par Example
+ *  This example illustrates, how a user defined stream can be used in rocSPARSE.
+ *  \code{.c}
+ *      // Create rocSPARSE handle
+ *      rocsparse_handle handle;
+ *      rocsparse_create_handle(&handle);
+ *
+ *      // Create stream
+ *      hipStream_t stream;
+ *      hipStreamCreate(&stream);
+ *
+ *      // Set stream to rocSPARSE handle
+ *      rocsparse_set_stream(handle, stream);
+ *
+ *      // Do some work
+ *      // ...
+ *
+ *      // Clean up
+ *      rocsparse_destroy_handle(handle);
+ *      hipStreamDestroy(stream);
+ *  \endcode
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_set_stream(rocsparse_handle handle, hipStream_t stream);
