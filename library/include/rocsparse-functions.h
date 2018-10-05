@@ -678,6 +678,10 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle handle,
  *  \note
  *  If the matrix sparsity pattern changes, the gathered information will become invalid.
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -860,6 +864,49 @@ rocsparse_status rocsparse_csrmv_clear(rocsparse_handle handle, rocsparse_mat_in
  *  \retval     rocsparse_status_not_implemented
  *              \p trans != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
+ *
+ *  \par Example
+ *  This example performs a sparse matrix vector multiplication in CSR format
+ *  using additional meta data to improve performance.
+ *  \code{.c}
+ *      // Create matrix info structure
+ *      rocsparse_mat_info info;
+ *      rocsparse_create_mat_info(&info);
+ *
+ *      // Perform analysis step to obtain meta data
+ *      rocsparse_scsrmv_analysis(handle,
+ *                                rocsparse_operation_none,
+ *                                m,
+ *                                n,
+ *                                nnz,
+ *                                descr,
+ *                                csr_val,
+ *                                csr_row_ptr,
+ *                                csr_col_ind,
+ *                                info);
+ *
+ *      // Compute y = Ax
+ *      rocsparse_scsrmv(handle,
+ *                       rocsparse_operation_none,
+ *                       m,
+ *                       n,
+ *                       nnz,
+ *                       &alpha,
+ *                       descr,
+ *                       csr_val,
+ *                       csr_row_ptr,
+ *                       csr_col_ind,
+ *                       info,
+ *                       x,
+ *                       &beta,
+ *                       y);
+ *
+ *      // Do more work
+ *      // ...
+ *
+ *      // Clean up
+ *      rocsparse_destroy_mat_info(info);
+ *  \endcode
  */
 /**@{*/
 ROCSPARSE_EXPORT
@@ -1053,6 +1100,10 @@ rocsparse_status rocsparse_dcsrsv_buffer_size(rocsparse_handle handle,
  *
  *  \note
  *  If the matrix sparsity pattern changes, the gathered information will become invalid.
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -1710,6 +1761,64 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle handle,
  *  \retval     rocsparse_status_not_implemented
  *              \p trans_A != \ref rocsparse_operation_none or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
+ *
+ *  \par Example
+ *  This example multiplies a CSR matrix with a dense matrix.
+ *  \code{.c}
+ *      //     1 2 0 3 0
+ *      // A = 0 4 5 0 0
+ *      //     6 0 0 7 8
+ *
+ *      rocsparse_int m   = 3;
+ *      rocsparse_int k   = 5;
+ *      rocsparse_int nnz = 8;
+ *
+ *      csr_row_ptr[m+1] = {0, 3, 5, 8};             // device memory
+ *      csr_col_ind[nnz] = {0, 1, 3, 1, 2, 0, 3, 4}; // device memory
+ *      csr_val[nnz]     = {1, 2, 3, 4, 5, 6, 7, 8}; // device memory
+ *
+ *      // Set dimension n of B
+ *      rocsparse_int n = 64;
+ *
+ *      // Allocate and generate dense matrix B
+ *      std::vector<float> hB(k * n);
+ *      for(rocsparse_int i = 0; i < k * n; ++i)
+ *      {
+ *          hB[i] = static_cast<float>(rand()) / RAND_MAX;
+ *      }
+ *
+ *      // Copy B to the device
+ *      float* B;
+ *      hipMalloc((void**)&B, sizeof(float) * k * n);
+ *      hipMemcpy(B, hB.data(), sizeof(float) * k * n, hipMemcpyHostToDevice);
+ *
+ *      // alpha and beta
+ *      float alpha = 1.0f;
+ *      float beta  = 0.0f;
+ *
+ *      // Allocate memory for the resulting matrix C
+ *      float* C;
+ *      hipMalloc((void**)&C, sizeof(float) * m * n);
+ *
+ *      // Perform the matrix multiplication
+ *      rocsparse_scsrmm(handle,
+ *                       rocsparse_operation_none,
+ *                       rocsparse_operation_none,
+ *                       m,
+ *                       n,
+ *                       k,
+ *                       nnz,
+ *                       &alpha,
+ *                       descr,
+ *                       csr_val,
+ *                       csr_row_ptr,
+ *                       csr_col_ind,
+ *                       B,
+ *                       k,
+ *                       &beta,
+ *                       C,
+ *                       m);
+ *  \endcode
  */
 /**@{*/
 ROCSPARSE_EXPORT
@@ -1917,6 +2026,10 @@ rocsparse_status rocsparse_dcsrilu0_buffer_size(rocsparse_handle handle,
  *
  *  \note
  *  If the matrix sparsity pattern changes, the gathered information will become invalid.
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -2320,6 +2433,50 @@ rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
  *  \retval     rocsparse_status_invalid_pointer \p csr_row_ptr or \p coo_row_ind
  *              pointer is invalid.
  *  \retval     rocsparse_status_arch_mismatch the device is not supported.
+ *
+ *  \par Example
+ *  This example converts a CSR matrix into a COO matrix.
+ *  \code{.c}
+ *      //     1 2 0 3 0
+ *      // A = 0 4 5 0 0
+ *      //     6 0 0 7 8
+ *
+ *      rocsparse_int m   = 3;
+ *      rocsparse_int n   = 5;
+ *      rocsparse_int nnz = 8;
+ *
+ *      csr_row_ptr[m+1] = {0, 3, 5, 8};             // device memory
+ *      csr_col_ind[nnz] = {0, 1, 3, 1, 2, 0, 3, 4}; // device memory
+ *      csr_val[nnz]     = {1, 2, 3, 4, 5, 6, 7, 8}; // device memory
+ *
+ *      // Allocate COO matrix arrays
+ *      rocsparse_int* coo_row_ind;
+ *      rocsparse_int* coo_col_ind;
+ *      float* coo_val;
+ *
+ *      hipMalloc((void**)&coo_row_ind, sizeof(rocsparse_int) * nnz);
+ *      hipMalloc((void**)&coo_col_ind, sizeof(rocsparse_int) * nnz);
+ *      hipMalloc((void**)&coo_val, sizeof(float) * nnz);
+ *
+ *      // Convert the csr row offsets into coo row indices
+ *      rocsparse_csr2coo(handle,
+ *                        csr_row_ptr,
+ *                        nnz,
+ *                        m,
+ *                        coo_row_ind,
+ *                        rocsparse_index_base_zero);
+ *
+ *      // Copy the column and value arrays
+ *      hipMemcpy(coo_col_ind,
+ *                csr_col_ind,
+ *                sizeof(rocsparse_int) * nnz,
+ *                hipMemcpyDeviceToDevice);
+ *
+ *      hipMemcpy(coo_val,
+ *                csr_val,
+ *                sizeof(float) * nnz,
+ *                hipMemcpyDeviceToDevice);
+ *  \endcode
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csr2coo(rocsparse_handle handle,
@@ -2433,6 +2590,64 @@ rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handle,
  *              \p temp_buffer pointer is invalid.
  *  \retval     rocsparse_status_arch_mismatch the device is not supported.
  *  \retval     rocsparse_status_internal_error an internal error occurred.
+ *
+ *  \par Example
+ *  This example computes the transpose of a CSR matrix.
+ *  \code{.c}
+ *      //     1 2 0 3 0
+ *      // A = 0 4 5 0 0
+ *      //     6 0 0 7 8
+ *
+ *      rocsparse_int m_A   = 3;
+ *      rocsparse_int n_A   = 5;
+ *      rocsparse_int nnz_A = 8;
+ *
+ *      csr_row_ptr_A[m+1] = {0, 3, 5, 8};             // device memory
+ *      csr_col_ind_A[nnz] = {0, 1, 3, 1, 2, 0, 3, 4}; // device memory
+ *      csr_val_A[nnz]     = {1, 2, 3, 4, 5, 6, 7, 8}; // device memory
+ *
+ *      // Allocate memory for transposed CSR matrix
+ *      rocsparse_int m_T   = n_A;
+ *      rocsparse_int n_T   = m_A;
+ *      rocsparse_int nnz_T = nnz_A;
+ *
+ *      rocsparse_int* csr_row_ptr_T;
+ *      rocsparse_int* csr_col_ind_T;
+ *      float* csr_val_T;
+ *
+ *      hipMalloc((void**)&csr_row_ptr_T, sizeof(rocsparse_int) * (m_T + 1));
+ *      hipMalloc((void**)&csr_col_ind_T, sizeof(rocsparse_int) * nnz_T);
+ *      hipMalloc((void**)&csr_val_T, sizeof(float) * nnz_T);
+ *
+ *      // Obtain the temporary buffer size
+ *      size_t buffer_size;
+ *      rocsparse_csr2csc_buffer_size(handle,
+ *                                    m_A,
+ *                                    n_A,
+ *                                    nnz_A,
+ *                                    csr_row_ptr_A,
+ *                                    csr_col_ind_A,
+ *                                    rocsparse_action_numeric,
+ *                                    &buffer_size);
+ *
+ *      // Allocate temporary buffer
+ *      void* temp_buffer;
+ *      hipMalloc(&temp_buffer, buffer_size);
+ *
+ *      rocsparse_scsr2csc(handle,
+ *                         m_A,
+ *                         n_A,
+ *                         nnz_A,
+ *                         csr_val_A,
+ *                         csr_row_ptr_A,
+ *                         csr_col_ind_A,
+ *                         csr_val_T,
+ *                         csr_col_ind_T,
+ *                         csr_row_ptr_T,
+ *                         rocsparse_action_numeric,
+ *                         rocsparse_index_base_zero,
+ *                         temp_buffer);
+ *  \endcode
  */
 /**@{*/
 ROCSPARSE_EXPORT
@@ -2472,6 +2687,10 @@ rocsparse_status rocsparse_dcsr2csc(rocsparse_handle handle,
  *  \details
  *  \p rocsparse_csr2ell_width computes the maximum of the per row non-zero elements
  *  over all rows, the ELL \p width, for a given CSR matrix.
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -2554,6 +2773,57 @@ rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
  *              \p ell_col_ind pointer is invalid.
  *  \retval     rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
+ *
+ *  \par Example
+ *  This example converts a CSR matrix into an ELL matrix.
+ *  \code{.c}
+ *      //     1 2 0 3 0
+ *      // A = 0 4 5 0 0
+ *      //     6 0 0 7 8
+ *
+ *      rocsparse_int m   = 3;
+ *      rocsparse_int n   = 5;
+ *      rocsparse_int nnz = 8;
+ *
+ *      csr_row_ptr[m+1] = {0, 3, 5, 8};             // device memory
+ *      csr_col_ind[nnz] = {0, 1, 3, 1, 2, 0, 3, 4}; // device memory
+ *      csr_val[nnz]     = {1, 2, 3, 4, 5, 6, 7, 8}; // device memory
+ *
+ *      // Create ELL matrix descriptor
+ *      rocsparse_mat_descr ell_descr;
+ *      rocsparse_create_mat_descr(&ell_descr);
+ *
+ *      // Obtain the ELL width
+ *      rocsparse_int ell_width;
+ *      rocsparse_csr2ell_width(handle,
+ *                              m,
+ *                              csr_descr,
+ *                              csr_row_ptr,
+ *                              ell_descr,
+ *                              &ell_width);
+ *
+ *      // Compute ELL non-zero entries
+ *      rocsparse_int ell_nnz = m * ell_width;
+ *
+ *      // Allocate ELL column and value arrays
+ *      rocsparse_int* ell_col_ind;
+ *      hipMalloc((void**)&ell_col_ind, sizeof(rocsparse_int) * ell_nnz);
+ *
+ *      float* ell_val;
+ *      hipMalloc((void**)&ell_val, sizeof(float) * ell_nnz);
+ *
+ *      // Format conversion
+ *      rocsparse_scsr2ell(handle,
+ *                         m,
+ *                         csr_descr,
+ *                         csr_val,
+ *                         csr_row_ptr,
+ *                         csr_col_ind,
+ *                         ell_descr,
+ *                         ell_width,
+ *                         ell_val,
+ *                         ell_col_ind);
+ *  \endcode
  */
 /**@{*/
 ROCSPARSE_EXPORT
@@ -2618,6 +2888,10 @@ rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
  *  This function requires a significant amount of storage for the HYB matrix,
  *  depending on the matrix structure.
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle          handle to the rocsparse library context queue.
  *  @param[in]
@@ -2655,6 +2929,34 @@ rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
  *  \retval     rocsparse_status_internal_error an internal error occurred.
  *  \retval     rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
+ *
+ *  \par Example
+ *  This example converts a CSR matrix into a HYB matrix using user defined partitioning.
+ *  \code{.c}
+ *      // Create HYB matrix structure
+ *      rocsparse_hyb_mat hyb;
+ *      rocsparse_create_hyb_mat(&hyb);
+ *
+ *      // User defined ell width
+ *      rocsparse_int user_ell_width = 5;
+ *
+ *      // Perform the conversion
+ *      rocsparse_scsr2hyb(handle,
+ *                         m,
+ *                         n,
+ *                         descr,
+ *                         csr_val,
+ *                         csr_row_ptr,
+ *                         csr_col_ind,
+ *                         hyb,
+ *                         user_ell_width,
+ *                         rocsparse_hyb_partition_user);
+ *
+ *      // Do some work
+ *
+ *      // Clean up
+ *      rocsparse_destroy_hyb_mat(hyb);
+ *  \endcode
  */
 /**@{*/
 ROCSPARSE_EXPORT
@@ -2743,6 +3045,50 @@ rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle handle,
  *  \retval     rocsparse_status_invalid_size \p m or \p nnz is invalid.
  *  \retval     rocsparse_status_invalid_pointer \p coo_row_ind or \p csr_row_ptr
  *              pointer is invalid.
+ *
+ *  \par Example
+ *  This example converts a COO matrix into a CSR matrix.
+ *  \code{.c}
+ *      //     1 2 0 3 0
+ *      // A = 0 4 5 0 0
+ *      //     6 0 0 7 8
+ *
+ *      rocsparse_int m   = 3;
+ *      rocsparse_int n   = 5;
+ *      rocsparse_int nnz = 8;
+ *
+ *      coo_row_ind[nnz] = {0, 0, 0, 1, 1, 2, 2, 2}; // device memory
+ *      coo_col_ind[nnz] = {0, 1, 3, 1, 2, 0, 3, 4}; // device memory
+ *      coo_val[nnz]     = {1, 2, 3, 4, 5, 6, 7, 8}; // device memory
+ *
+ *      // Allocate CSR matrix arrays
+ *      rocsparse_int* csr_row_ptr;
+ *      rocsparse_int* csr_col_ind;
+ *      float* csr_val;
+ *
+ *      hipMalloc((void**)&csr_row_ptr, sizeof(rocsparse_int) * (m + 1));
+ *      hipMalloc((void**)&csr_col_ind, sizeof(rocsparse_int) * nnz);
+ *      hipMalloc((void**)&csr_val, sizeof(float) * nnz);
+ *
+ *      // Convert the coo row indices into csr row offsets
+ *      rocsparse_coo2csr(handle,
+ *                        coo_row_ind,
+ *                        nnz,
+ *                        m,
+ *                        csr_row_ptr,
+ *                        rocsparse_index_base_zero);
+ *
+ *      // Copy the column and value arrays
+ *      hipMemcpy(csr_col_ind,
+ *                coo_col_ind,
+ *                sizeof(rocsparse_int) * nnz,
+ *                hipMemcpyDeviceToDevice);
+ *
+ *      hipMemcpy(csr_val,
+ *                coo_val,
+ *                sizeof(float) * nnz,
+ *                hipMemcpyDeviceToDevice);
+ *  \endcode
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
@@ -2760,6 +3106,10 @@ rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
  *  row offsets, that point to the start of every row of the sparse CSR matrix, for
  *  a given ELL matrix. It is assumed that \p csr_row_ptr has been allocated with
  *  size \p m + 1.
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -2853,6 +3203,63 @@ rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
  *              \p ell_col_ind pointer is invalid.
  *  \retval     rocsparse_status_not_implemented
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
+ *
+ *  \par Example
+ *  This example converts an ELL matrix into a CSR matrix.
+ *  \code{.c}
+ *      //     1 2 0 3 0
+ *      // A = 0 4 5 0 0
+ *      //     6 0 0 7 8
+ *
+ *      rocsparse_int m         = 3;
+ *      rocsparse_int n         = 5;
+ *      rocsparse_int nnz       = 9;
+ *      rocsparse_int ell_width = 3;
+ *
+ *      ell_col_ind[nnz] = {0, 1, 0, 1, 2, 3, 3, -1, 4}; // device memory
+ *      ell_val[nnz]     = {1, 4, 6, 2, 5, 7, 3, 0, 8};  // device memory
+ *
+ *      // Create CSR matrix descriptor
+ *      rocsparse_mat_descr csr_descr;
+ *      rocsparse_create_mat_descr(&csr_descr);
+ *
+ *      // Allocate csr_row_ptr array for row offsets
+ *      rocsparse_int* csr_row_ptr;
+ *      hipMalloc((void**)&csr_row_ptr, sizeof(rocsparse_int) * (m + 1));
+ *
+ *      // Obtain the number of CSR non-zero entries
+ *      // and fill csr_row_ptr array with row offsets
+ *      rocsparse_int csr_nnz;
+ *      rocsparse_ell2csr_nnz(handle,
+ *                            m,
+ *                            n,
+ *                            ell_descr,
+ *                            ell_width,
+ *                            ell_col_ind,
+ *                            csr_descr,
+ *                            csr_row_ptr,
+ *                            &csr_nnz);
+ *
+ *      // Allocate CSR column and value arrays
+ *      rocsparse_int* csr_col_ind;
+ *      hipMalloc((void**)&csr_col_ind, sizeof(rocsparse_int) * csr_nnz);
+ *
+ *      float* csr_val;
+ *      hipMalloc((void**)&csr_val, sizeof(float) * csr_nnz);
+ *
+ *      // Format conversion
+ *      rocsparse_sell2csr(handle,
+ *                         m,
+ *                         n,
+ *                         ell_descr,
+ *                         ell_width,
+ *                         ell_val,
+ *                         ell_col_ind,
+ *                         csr_descr,
+ *                         csr_val,
+ *                         csr_row_ptr,
+ *                         csr_col_ind);
+ *  \endcode
  */
 /**@{*/
 ROCSPARSE_EXPORT
@@ -2938,6 +3345,19 @@ rocsparse_status rocsparse_zell2csr(rocsparse_handle handle,
  *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
  *  \retval     rocsparse_status_invalid_size \p n is invalid.
  *  \retval     rocsparse_status_invalid_pointer \p p pointer is invalid.
+ *
+ *  \par Example
+ *  The following example creates an identity permutation.
+ *  \code{.c}
+ *      rocsparse_int size = 200;
+ *
+ *      // Allocate memory to hold the identity map
+ *      rocsparse_int* perm;
+ *      hipMalloc((void**)&perm, sizeof(rocsparse_int) * size);
+ *
+ *      // Fill perm with the identity permutation
+ *      rocsparse_create_identity_permutation(handle, size, perm);
+ *  \endcode
  */
 ROCSPARSE_EXPORT
 rocsparse_status
@@ -3036,6 +3456,7 @@ rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handle,
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  *
  *  \par Example
+ *  The following example sorts a \f$3 \times 3\f$ CSR matrix.
  *  \code{.c}
  *      //     1 2 3
  *      // A = 4 5 6
@@ -3048,22 +3469,22 @@ rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handle,
  *      csr_col_ind[nnz]   = {2, 0, 1, 0, 1, 2, 0, 2, 1}; // device memory
  *      csr_val[nnz]       = {3, 1, 2, 4, 5, 6, 7, 9, 8}; // device memory
  *
- *      // Allocate temporary buffer
- *      size_t buffer_size = 0;
- *      void* temp_buffer  = NULL;
- *      rocsparse_csrsort_buffer_size(handle, m, n, nnz, csr_row_ptr, csr_col_ind, &buffer_size);
- *      hipMalloc(&temp_buffer, sizeof(char) * buffer_size);
- *
  *      // Create permutation vector perm as the identity map
- *      rocsparse_int* perm = NULL;
+ *      rocsparse_int* perm;
  *      hipMalloc((void**)&perm, sizeof(rocsparse_int) * nnz);
  *      rocsparse_create_identity_permutation(handle, nnz, perm);
+ *
+ *      // Allocate temporary buffer
+ *      size_t buffer_size;
+ *      void* temp_buffer;
+ *      rocsparse_csrsort_buffer_size(handle, m, n, nnz, csr_row_ptr, csr_col_ind, &buffer_size);
+ *      hipMalloc(&temp_buffer, buffer_size);
  *
  *      // Sort the CSR matrix
  *      rocsparse_csrsort(handle, m, n, nnz, descr, csr_row_ptr, csr_col_ind, perm, temp_buffer);
  *
  *      // Gather sorted csr_val array
- *      float* csr_val_sorted = NULL;
+ *      float* csr_val_sorted;
  *      hipMalloc((void**)&csr_val_sorted, sizeof(float) * nnz);
  *      rocsparse_sgthr(handle, nnz, csr_val, csr_val_sorted, perm, rocsparse_index_base_zero);
  *
@@ -3173,6 +3594,58 @@ rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handle,
  *  \retval     rocsparse_status_invalid_pointer \p coo_row_ind, \p coo_col_ind or
  *              \p temp_buffer pointer is invalid.
  *  \retval     rocsparse_status_internal_error an internal error occurred.
+ *
+ *  \par Example
+ *  The following example sorts a \f$3 \times 3\f$ COO matrix by row indices.
+ *  \code{.c}
+ *      //     1 2 3
+ *      // A = 4 5 6
+ *      //     7 8 9
+ *      rocsparse_int m   = 3;
+ *      rocsparse_int n   = 3;
+ *      rocsparse_int nnz = 9;
+ *
+ *      coo_row_ind[nnz] = {0, 1, 2, 0, 1, 2, 0, 1, 2}; // device memory
+ *      coo_col_ind[nnz] = {0, 0, 0, 1, 1, 1, 2, 2, 2}; // device memory
+ *      coo_val[nnz]     = {1, 4, 7, 2, 5, 8, 3, 6, 9}; // device memory
+ *
+ *      // Create permutation vector perm as the identity map
+ *      rocsparse_int* perm;
+ *      hipMalloc((void**)&perm, sizeof(rocsparse_int) * nnz);
+ *      rocsparse_create_identity_permutation(handle, nnz, perm);
+ *
+ *      // Allocate temporary buffer
+ *      size_t buffer_size;
+ *      void* temp_buffer;
+ *      rocsparse_coosort_buffer_size(handle,
+ *                                    m,
+ *                                    n,
+ *                                    nnz,
+ *                                    coo_row_ind,
+ *                                    coo_col_ind,
+ *                                    &buffer_size);
+ *      hipMalloc(&temp_buffer, buffer_size);
+ *
+ *      // Sort the COO matrix
+ *      rocsparse_coosort_by_row(handle,
+ *                               m,
+ *                               n,
+ *                               nnz,
+ *                               coo_row_ind,
+ *                               coo_col_ind,
+ *                               perm,
+ *                               temp_buffer);
+ *
+ *      // Gather sorted coo_val array
+ *      float* coo_val_sorted;
+ *      hipMalloc((void**)&coo_val_sorted, sizeof(float) * nnz);
+ *      rocsparse_sgthr(handle, nnz, coo_val, coo_val_sorted, perm, rocsparse_index_base_zero);
+ *
+ *      // Clean up
+ *      hipFree(temp_buffer);
+ *      hipFree(perm);
+ *      hipFree(coo_val);
+ *  \endcode
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
@@ -3231,6 +3704,58 @@ rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
  *  \retval     rocsparse_status_invalid_pointer \p coo_row_ind, \p coo_col_ind or
  *              \p temp_buffer pointer is invalid.
  *  \retval     rocsparse_status_internal_error an internal error occurred.
+ *
+ *  \par Example
+ *  The following example sorts a \f$3 \times 3\f$ COO matrix by column indices.
+ *  \code{.c}
+ *      //     1 2 3
+ *      // A = 4 5 6
+ *      //     7 8 9
+ *      rocsparse_int m   = 3;
+ *      rocsparse_int n   = 3;
+ *      rocsparse_int nnz = 9;
+ *
+ *      coo_row_ind[nnz] = {0, 0, 0, 1, 1, 1, 2, 2, 2}; // device memory
+ *      coo_col_ind[nnz] = {0, 1, 2, 0, 1, 2, 0, 1, 2}; // device memory
+ *      coo_val[nnz]     = {1, 2, 3, 4, 5, 6, 7, 8, 9}; // device memory
+ *
+ *      // Create permutation vector perm as the identity map
+ *      rocsparse_int* perm;
+ *      hipMalloc((void**)&perm, sizeof(rocsparse_int) * nnz);
+ *      rocsparse_create_identity_permutation(handle, nnz, perm);
+ *
+ *      // Allocate temporary buffer
+ *      size_t buffer_size;
+ *      void* temp_buffer;
+ *      rocsparse_coosort_buffer_size(handle,
+ *                                    m,
+ *                                    n,
+ *                                    nnz,
+ *                                    coo_row_ind,
+ *                                    coo_col_ind,
+ *                                    &buffer_size);
+ *      hipMalloc(&temp_buffer, buffer_size);
+ *
+ *      // Sort the COO matrix
+ *      rocsparse_coosort_by_column(handle,
+ *                                  m,
+ *                                  n,
+ *                                  nnz,
+ *                                  coo_row_ind,
+ *                                  coo_col_ind,
+ *                                  perm,
+ *                                  temp_buffer);
+ *
+ *      // Gather sorted coo_val array
+ *      float* coo_val_sorted;
+ *      hipMalloc((void**)&coo_val_sorted, sizeof(float) * nnz);
+ *      rocsparse_sgthr(handle, nnz, coo_val, coo_val_sorted, perm, rocsparse_index_base_zero);
+ *
+ *      // Clean up
+ *      hipFree(temp_buffer);
+ *      hipFree(perm);
+ *      hipFree(coo_val);
+ *  \endcode
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,

@@ -115,18 +115,20 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
 
 // Determine ELL width
 
-#define CSR2ELL_DIM 512
+#define CSR2ELL_DIM 1024
     // Workspace size
-    rocsparse_int blocks = (m - 1) / CSR2ELL_DIM + 1;
+    rocsparse_int nblocks = CSR2ELL_DIM;
 
-    // Allocate workspace
-    rocsparse_int* workspace = NULL;
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&workspace, sizeof(rocsparse_int) * blocks));
+    // Get workspace from handle device buffer
+    rocsparse_int* workspace = reinterpret_cast<rocsparse_int*>(handle->buffer);
+
+    dim3 csr2ell_blocks(nblocks);
+    dim3 csr2ell_threads(CSR2ELL_DIM);
 
     // Compute maximum nnz per row
     hipLaunchKernelGGL((ell_width_kernel_part1<CSR2ELL_DIM>),
-                       dim3(blocks),
-                       dim3(CSR2ELL_DIM),
+                       csr2ell_blocks,
+                       csr2ell_threads,
                        0,
                        stream,
                        m,
@@ -135,10 +137,10 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
 
     hipLaunchKernelGGL((ell_width_kernel_part2<CSR2ELL_DIM>),
                        dim3(1),
-                       dim3(CSR2ELL_DIM),
+                       csr2ell_threads,
                        0,
                        stream,
-                       blocks,
+                       nblocks,
                        workspace);
 
     // Copy ELL width back to host, if handle says so
@@ -152,9 +154,6 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
         RETURN_IF_HIP_ERROR(
             hipMemcpy(ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
     }
-
-    // Free workspace
-    RETURN_IF_HIP_ERROR(hipFree(workspace));
 
     return rocsparse_status_success;
 }
