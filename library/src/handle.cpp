@@ -58,12 +58,9 @@ _rocsparse_handle::_rocsparse_handle()
 
     size_t coomv_size = (((sizeof(rocsparse_int) + 16) * nwfs - 1) / 256 + 1) * 256;
 
-    // Obtain size for doti device buffer
-    size_t doti_size = sizeof(double) * 1024;
-
-    // Allocate maximum of device buffers
-    size_t size = std::max(coomv_size, doti_size);
-    THROW_IF_HIP_ERROR(hipMalloc(&buffer, size));
+    // Allocate device buffer
+    buffer_size = (coomv_size > 1024 * 1024) ? coomv_size : 1024 * 1024;
+    THROW_IF_HIP_ERROR(hipMalloc(&buffer, buffer_size));
 
     // Device one
     THROW_IF_HIP_ERROR(hipMalloc(&sone, sizeof(float)));
