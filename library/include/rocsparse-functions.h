@@ -678,6 +678,10 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle handle,
  *  \note
  *  If the matrix sparsity pattern changes, the gathered information will become invalid.
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -1053,6 +1057,10 @@ rocsparse_status rocsparse_dcsrsv_buffer_size(rocsparse_handle handle,
  *
  *  \note
  *  If the matrix sparsity pattern changes, the gathered information will become invalid.
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -1918,6 +1926,10 @@ rocsparse_status rocsparse_dcsrilu0_buffer_size(rocsparse_handle handle,
  *  \note
  *  If the matrix sparsity pattern changes, the gathered information will become invalid.
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -2473,6 +2485,10 @@ rocsparse_status rocsparse_dcsr2csc(rocsparse_handle handle,
  *  \p rocsparse_csr2ell_width computes the maximum of the per row non-zero elements
  *  over all rows, the ELL \p width, for a given CSR matrix.
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -2618,6 +2634,10 @@ rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
  *  This function requires a significant amount of storage for the HYB matrix,
  *  depending on the matrix structure.
  *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
  *  @param[in]
  *  handle          handle to the rocsparse library context queue.
  *  @param[in]
@@ -2760,6 +2780,10 @@ rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
  *  row offsets, that point to the start of every row of the sparse CSR matrix, for
  *  a given ELL matrix. It is assumed that \p csr_row_ptr has been allocated with
  *  size \p m + 1.
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
