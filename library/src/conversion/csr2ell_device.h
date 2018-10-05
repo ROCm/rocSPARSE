@@ -56,14 +56,12 @@ ell_width_kernel_part1(rocsparse_int m, const rocsparse_int* csr_row_ptr, rocspa
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
     __shared__ rocsparse_int sdata[NB];
+    sdata[tid] = 0;
 
-    if(gid < m)
+    for(rocsparse_int idx = gid; idx < m; idx += hipGridDim_x * hipBlockDim_x)
     {
-        sdata[tid] = csr_row_ptr[gid + 1] - csr_row_ptr[gid];
-    }
-    else
-    {
-        sdata[tid] = 0;
+        rocsparse_int row_nnz = csr_row_ptr[idx + 1] - csr_row_ptr[idx];
+        sdata[tid] = max(sdata[tid], row_nnz);
     }
 
     ell_width_reduce<NB>(tid, sdata);
