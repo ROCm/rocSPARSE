@@ -50,15 +50,17 @@ _rocsparse_handle::_rocsparse_handle()
         layer_mode = (rocsparse_layer_mode)(atoi(str_layer_mode));
     }
 
-    // Allocating small device buffer
+    // Obtain size for coomv device buffer
     rocsparse_int nthreads = properties.maxThreadsPerBlock;
     rocsparse_int nprocs   = properties.multiProcessorCount;
     rocsparse_int nblocks  = (nprocs * nthreads - 1) / 128 + 1;
     rocsparse_int nwfs     = nblocks * (128 / properties.warpSize);
 
-    size_t size = (((sizeof(rocsparse_int) + 16) * nwfs - 1) / 256 + 1) * 256;
+    size_t coomv_size = (((sizeof(rocsparse_int) + 16) * nwfs - 1) / 256 + 1) * 256;
 
-    THROW_IF_HIP_ERROR(hipMalloc(&buffer, size));
+    // Allocate device buffer
+    buffer_size = (coomv_size > 1024 * 1024) ? coomv_size : 1024 * 1024;
+    THROW_IF_HIP_ERROR(hipMalloc(&buffer, buffer_size));
 
     // Device one
     THROW_IF_HIP_ERROR(hipMalloc(&sone, sizeof(float)));

@@ -41,8 +41,7 @@ list(APPEND CMAKE_MODULE_PATH
 include(cmake/SetToolchain.cmake)
 
 # rocSPARSE project
-project(rocsparse VERSION 0.1.3.1 LANGUAGES CXX)
-set(rocsparse_SOVERSION 0)
+project(rocsparse LANGUAGES CXX)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -71,6 +70,10 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 
 # Dependencies
 include(cmake/Dependencies.cmake)
+
+# Setup version
+rocm_setup_version(VERSION 0.1.3.2 NO_GIT_TAG_VERSION)
+set(rocsparse_SOVERSION 0)
 
 # AMD targets
 set(AMDGPU_TARGETS gfx803;gfx900;gfx906 CACHE STRING "List of specific machine types for library to target")
