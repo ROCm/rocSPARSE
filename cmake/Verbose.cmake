@@ -21,7 +21,7 @@
 #
 # ########################################################################
 
-message(STATUS "rocsparse_VERSION                      : ${rocsparse_VERSION}")
+message(STATUS "rocsparse_VERSION                         : ${rocsparse_VERSION}")
 message(STATUS "\t==>CMAKE_BUILD_TYPE                  : ${CMAKE_BUILD_TYPE}")
 message(STATUS "\t==>BUILD_SHARED_LIBS                 : ${BUILD_SHARED_LIBS}")
 message(STATUS "\t==>CMAKE_INSTALL_PREFIX link         : ${CMAKE_INSTALL_PREFIX}")
