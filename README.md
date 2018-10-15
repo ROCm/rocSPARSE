@@ -95,4 +95,4 @@ The [license file][] can be found in the main repository.
 [Boost]: https://www.boost.org/
 [the issue tracker]: https://github.com/ROCmSoftwarePlatform/rocSPARSE/issues
 [license file]: https://github.com/ROCmSoftwarePlatform/rocSPARSE
-[here]: https://rocsparse.readthedocs.io/en/develop/library.html
+[here]: https://rocsparse.readthedocs.io
