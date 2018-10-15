@@ -52,7 +52,7 @@ if(NOT TARGET rocsparse)
 endif()
 
 # Hip headers required of all clients; clients use hip to allocate device memory
-find_package(hip REQUIRED CONFIG PATHS /opt/rocm)
+find_package(HIP REQUIRED CONFIG PATHS /opt/rocm)
 
 if(BUILD_CLIENTS_SAMPLES)
   add_subdirectory(samples)

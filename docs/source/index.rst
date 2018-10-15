@@ -11,8 +11,6 @@ Welcome to rocSPARSE's documentation!
    :caption: Contents:
 
    library
-   api
-   allapi
 
 Indices and tables
 ==================
