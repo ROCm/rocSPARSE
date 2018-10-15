@@ -13,20 +13,24 @@ rocSPARSE
 Introduction
 ------------
 
-rocSPARSE is a library that contains basic linear algebra subroutines for sparse matrices and vectors written in HiP for GPU devices. It is designed to be used from C and C++ code. The functionality of rocSPARSE is organized in in the following categories:
+rocSPARSE is a library that contains basic linear algebra subroutines for sparse matrices and vectors written in HiP for GPU devices. It is designed to be used from C and C++ code. The functionality of rocSPARSE is organized in the following categories:
 
-* :ref:`rocsparse_auxiliary_functions` describe available helper functions that are required for subsequent library calls.
-* :ref:`rocsparse_level1_functions` describe operations between a vector in sparse format and a vector in dense format.
-* :ref:`rocsparse_level2_functions` describe operations between a matrix in sparse format and a vector in dense format.
-* :ref:`rocsparse_level3_functions` describe operations between a matrix in sparse format and multiple vectors in dense format.
-* :ref:`rocsparse_precond_functions` describe manipulations on a matrix in sparse format to obtain a preconditioner.
-* :ref:`rocsparse_conversion_functions` describe operations on a matrix in sparse format to obtain a different matrix format.
+* :ref:`rocsparse_auxiliary_functions_` describe available helper functions that are required for subsequent library calls.
+* :ref:`rocsparse_level1_functions_` describe operations between a vector in sparse format and a vector in dense format.
+* :ref:`rocsparse_level2_functions_` describe operations between a matrix in sparse format and a vector in dense format.
+* :ref:`rocsparse_level3_functions_` describe operations between a matrix in sparse format and multiple vectors in dense format.
+* :ref:`rocsparse_precond_functions_` describe manipulations on a matrix in sparse format to obtain a preconditioner.
+* :ref:`rocsparse_conversion_functions_` describe operations on a matrix in sparse format to obtain a different matrix format.
 
 The code is open and hosted here: https://github.com/ROCmSoftwarePlatform/rocSPARSE
 
 Device and Stream Management
 *****************************
-:cpp:func:`hipSetDevice` and :cpp:func:`hipGetDevice` are HIP device management APIs. They are NOT part of the rocSPARSE API.
+*hipSetDevice()* and *hipGetDevice()* are HIP device management APIs. They are NOT part of the rocSPARSE API.
+
+Asynchronous Execution
+``````````````````````
+All rocSPARSE library functions, unless otherwise stated, are non blocking and executed asynchronously with respect to the host. They may return before the actual computation has finished. To force synchronization, *hipDeviceSynchronize()* or *hipStreamSynchronize()* can be used. This will ensure that all previously executed rocSPARSE functions on the device / this particular stream have completed.
 
 HIP Device Management
 ``````````````````````
@@ -34,17 +38,17 @@ Before a HIP kernel invocation, users need to call *hipSetDevice()* to set a dev
 
 The above is a HIP (and CUDA) device management approach and has nothing to do with rocSPARSE. rocSPARSE honors the approach above and assumes users have already set the device before a rocSPARSE routine call.
 
-Once users set the device, they create a handle with :ref:`rocsparse_create_handle`.
+Once users set the device, they create a handle with :ref:`rocsparse_create_handle_`.
 
 Subsequent rocSPARSE routines take this handle as an input parameter. rocSPARSE ONLY queries (by *hipGetDevice()*) the user's device; rocSPARSE does NOT set the device for users. If rocSPARSE does not see a valid device, it returns an error message. It is the users' responsibility to provide a valid device to rocSPARSE and ensure the device safety.
 
-Users CANNOT switch devices between :ref:`rocsparse_create_handle` and :ref:`rocsparse_destroy_handle`. If users want to change device, they must destroy the current handle and create another rocSPARSE handle.
+Users CANNOT switch devices between :ref:`rocsparse_create_handle_` and :ref:`rocsparse_destroy_handle_`. If users want to change device, they must destroy the current handle and create another rocSPARSE handle.
 
 HIP Stream Management
 ``````````````````````
 HIP kernels are always launched in a queue (also known as stream).
 
-If users do not explicitly specify a stream, the system provides a default stream, maintained by the system. Users cannot create or destroy the default stream. However, users can freely create new streams (with *hipStreamCreate()*) and bind it to the rocSPARSE handle using :ref:`rocsparse_set_stream`. HIP kernels are invoked in rocSPARSE routines. The rocSPARSE handle is always associated with a stream, and rocSPARSE passes its stream to the kernels inside the routine. One rocSPARSE routine only takes one stream in a single invocation. If users create a stream, they are responsible for destroying it.
+If users do not explicitly specify a stream, the system provides a default stream, maintained by the system. Users cannot create or destroy the default stream. However, users can freely create new streams (with *hipStreamCreate()*) and bind it to the rocSPARSE handle using :ref:`rocsparse_set_stream_`. HIP kernels are invoked in rocSPARSE routines. The rocSPARSE handle is always associated with a stream, and rocSPARSE passes its stream to the kernels inside the routine. One rocSPARSE routine only takes one stream in a single invocation. If users create a stream, they are responsible for destroying it.
 
 Multiple Streams and Multiple Devices
 ``````````````````````````````````````
@@ -392,136 +396,101 @@ coo_row_ind array of ``nnz`` elements containing the COO part row indices (integ
 coo_col_ind array of ``nnz`` elements containing the COO part column indices (integer).
 =========== =========================================================================================
 
-The HYB format is a combination of the ELL and COO sparse matrix formats. Typically, the regular part of the matrix is stored in ELL storage format, and the irregular part of the matrix is stored in COO storage format. Three different partitioning schemes can be applied when converting a CSR matrix to a matrix in HYB storage format. For further details on the partitioning schemes, see :ref:`rocsparse_hyb_partition`.
+The HYB format is a combination of the ELL and COO sparse matrix formats. Typically, the regular part of the matrix is stored in ELL storage format, and the irregular part of the matrix is stored in COO storage format. Three different partitioning schemes can be applied when converting a CSR matrix to a matrix in HYB storage format. For further details on the partitioning schemes, see :ref:`rocsparse_hyb_partition_`.
 
 Types
 -----
 
-.. _rocsparse_handle:
-
 rocsparse_handle
 *****************
-The rocSPARSE handle is a structure holding the rocSPARSE library context. It must be initialized using :ref:`rocsparse_create_handle` and the returned handle must be passed to all subsequent library function calls. It should be destroyed at the end using :ref:`rocsparse_destroy_handle`.
 
-.. _rocsparse_mat_descr:
+.. doxygentypedef:: rocsparse_handle
 
 rocsparse_mat_descr
 ********************
-The rocSPARSE matrix descriptor is a structure holding all properties of a matrix. It must be initialized using :ref:`rocsparse_create_mat_descr` and the returned descriptor must be passed to all subsequent library calls that involve the matrix. It should be destroyed at the end using :ref:`rocsparse_destroy_mat_descr`.
 
-.. _rocsparse_mat_info:
+.. doxygentypedef:: rocsparse_mat_descr
+
+
+.. _rocsparse_mat_info_:
 
 rocsparse_mat_info
 *******************
-The rocSPARSE matrix info is a structure holding all matrix information that is gathered during analysis routines. It must be initialized using :ref:`rocsparse_create_mat_info` and the returned info structure must be passed to all subsequent library calls that require additional matrix information. It should be destroyed at the end using :ref:`rocsparse_destroy_mat_info`.
 
-.. _rocsparse_hyb_mat:
+.. doxygentypedef:: rocsparse_mat_info
 
 rocsparse_hyb_mat
 ******************
-The rocSPARSE HYB matrix structure holds the HYB matrix. It must be initialized using :ref:`rocsparse_create_hyb_mat` and the returned HYB matrix must be passed to all subsequent library calls that involve the matrix. It should be destroyed at the end using :ref:`rocsparse_destroy_hyb_mat`. For more details on the HYB format, see :ref:`HYB storage format`.
 
-.. _rocsparse_action:
+.. doxygentypedef:: rocsparse_hyb_mat
+
+For more details on the HYB format, see :ref:`HYB storage format`.
 
 rocsparse_action
 *****************
-The rocSPARSE action indicates whether the operation is performed on the full matrix, or only on the sparsity pattern of the matrix.
 
-========================= ====
-rocsparse_action_numeric  operate on data and indices.
-rocsparse_action_symbolic operate only on indices.
-========================= ====
+.. doxygenenum:: rocsparse_action
 
-.. _rocsparse_hyb_partition:
+.. _rocsparse_hyb_partition_:
 
 rocsparse_hyb_partition
 ************************
-The rocSPARSE hyb partition type indicates how the hybrid format partitioning between COO and ELL storage formats is performed.
 
-============================ ====
-rocsparse_hyb_partition_auto automatically decide on ELL non-zero elements per row (recommended).
-rocsparse_hyb_partition_user user given ELL non-zero elements per row.
-rocsparse_hyb_partition_max  maximum ELL non-zero elements per row, COO part is empty.
-============================ ====
-
-.. _rocsparse_index_base:
+.. doxygenenum:: rocsparse_hyb_partition
 
 rocsparse_index_base
 *********************
-The rocSPARSE index base indicates the index base of the given indices.
 
-========================= ===========================================
-rocsparse_index_base_zero zero index base (e.g. indices start with 0)
-rocsparse_index_base_one  one index base (e.g. indices start with 1)
-========================= ===========================================
+.. doxygenenum:: rocsparse_index_base
 
-.. _rocsparse_layer_mode:
-
-rocsparse_layer_mode
-*********************
-The rocSPARSE layer mode bit mask indicates the logging characteristics. See :ref:`rocsparse_logging` for more informations.
-
-============================== ==============================
-rocsparse_layer_mode_none      layer is not active.
-rocsparse_layer_mode_log_trace layer is in logging mode.
-rocsparse_layer_mode_log_bench layer is in benchmarking mode.
-============================== ==============================
-
-.. _rocsparse_matrix_type:
+.. _rocsparse_layer_mode_:
 
 rocsparse_matrix_type
 **********************
-The rocSPARSE matrix type indices the type of the given matrix.
 
-================================ ======================
-rocsparse_matrix_type_general    general matrix type
-rocsparse_matrix_type_symmetric  symmetric matrix type
-rocsparse_matrix_type_hermitian  hermitian matrix type
-rocsparse_matrix_type_triangular triangular matrix type
-================================ ======================
+.. doxygenenum:: rocsparse_matrix_type
 
-.. _rocsparse_operation:
+rocsparse_fill_mode
+*******************
+
+.. doxygenenum:: rocsparse_fill_mode
+
+rocsparse_diag_type
+*******************
+
+.. doxygenenum:: rocsparse_diag_type
 
 rocsparse_operation
 ********************
-The rocSPARSE operation indicates the operation performed with the given matrix.
 
-======================================= ==================================
-rocsparse_operation_none                non transposed operation mode
-rocsparse_operation_transpose           transpose operation mode
-rocsparse_operation_conjugate_transpose conjugate transpose operation mode
-======================================= ==================================
-
-.. _rocsparse_pointer_mode:
+.. doxygenenum:: rocsparse_operation
 
 rocsparse_pointer_mode
 ***********************
-The rocSPARSE pointer mode indicates whether scalar values are passed by reference on the host or device. The pointer mode can be changed by :ref:`rocsparse_set_pointer_mode`. The currently used pointer mode can be obtained by :ref:`rocsparse_get_pointer_mode`.
 
-The following table lists the available pointer modes.
+.. doxygenenum:: rocsparse_pointer_mode
 
-============================= ====================================================
-rocsparse_pointer_mode_host   scalar values are passed by reference on the host.
-rocsparse_pointer_mode_device scalar values are passed by reference on the device.
-============================= ====================================================
+rocsparse_analysis_policy
+*************************
 
-.. _rocsparse_status:
+.. doxygenenum:: rocsparse_analysis_policy
+
+rocsparse_solve_policy
+**********************
+
+.. doxygenenum:: rocsparse_solve_policy
+
+rocsparse_layer_mode
+*********************
+
+.. doxygenenum:: rocsparse_layer_mode
+
+For more details on logging, see :ref:`rocsparse_logging`.
 
 rocsparse_status
 *****************
-This is a list of the status types that are used by the rocSPARSE library.
 
-================================ ============================================
-rocsparse_status_success         success.
-rocsparse_status_invalid_handle  handle not initialized, invalid or ``NULL``.
-rocsparse_status_not_implemented function is not implemented.
-rocsparse_status_invalid_pointer invalid pointer parameter.
-rocsparse_status_invalid_size    invalid size parameter.
-rocsparse_status_memory_error    failed memory allocation, copy or dealloc.
-rocsparse_status_internal_error  other internal library failure.
-rocsparse_status_invalid_value   invalid value parameter.
-rocsparse_status_arch_mismatch   device is not supported.
-================================ ============================================
+.. doxygenenum:: rocsparse_status
 
 .. _rocsparse_logging:
 
@@ -529,7 +498,7 @@ Logging
 -------
 Three different environment variables can be set to enable logging in rocSPARSE: ``ROCSPARSE_LAYER``, ``ROCSPARSE_LOG_TRACE_PATH`` and ``ROCSPARSE_LOG_BENCH_PATH``.
 
-``ROCSPARSE_LAYER`` is a bit mask, where several logging modes (:ref:`rocsparse_layer_mode`) can be combined as follows:
+``ROCSPARSE_LAYER`` is a bit mask, where several logging modes (:ref:`rocsparse_layer_mode_`) can be combined as follows:
 
 ================================  ===========================================
 ``ROCSPARSE_LAYER`` unset         logging is disabled.
@@ -544,2344 +513,408 @@ If the user sets the environment variable ``ROCSPARSE_LOG_TRACE_PATH`` to the fu
 
 Note that performance will degrade when logging is enabled. By default, the environment variable ``ROCSPARSE_LAYER`` is unset and logging is disabled.
 
-.. _rocsparse_auxiliary_functions:
+.. _rocsparse_auxiliary_functions_:
 
 Sparse Auxiliary Functions
 --------------------------
-This section describes all rocSPARSE auxiliary functions.
 
-.. _rocsparse_create_handle:
+This module holds all sparse auxiliary functions.
+
+The functions that are contained in the auxiliary module describe all available helper functions that are required for subsequent library calls.
+
+.. _rocsparse_create_handle_:
 
 rocsparse_create_handle()
 **************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_create_handle(rocsparse_handle* handle);
+.. doxygenfunction:: rocsparse_create_handle
 
-*rocsparse_create_handle()* creates the rocSPARSE library context. It must be initialized before any other rocSPARSE API function is invoked and must be passed to all subsequent library function calls. The handle should be destroyed at the end using :ref:`rocsparse_destroy_handle`.
-
-====== ===========================================================
-Output
-====== ===========================================================
-handle the pointer to the handle to the rocSPARSE library context.
-====== ===========================================================
-
-=============================== ===============================================
-Status Returned
-=============================== ===============================================
-rocsparse_status_success        the initialization succeeded.
-rocsparse_status_invalid_handle ``handle`` pointer is invalid.
-rocsparse_status_internal_error an internal error occurred.
-=============================== ===============================================
-
-.. _rocsparse_destroy_handle:
+.. _rocsparse_destroy_handle_:
 
 rocsparse_destroy_handle()
 ***************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_destroy_handle(rocsparse_handle handle);
+.. doxygenfunction:: rocsparse_destroy_handle
 
-*rocsparse_destroy_handle()* destroys the rocSPARSE library context.
-
-====== ============================================
-Input
-====== ============================================
-handle the handle to the rocSPARSE library context.
-====== ============================================
-
-=============================== ===============================================
-Status Returned
-=============================== ===============================================
-rocsparse_status_success        the initialization succeeded.
-rocsparse_status_internal_error an internal error occurred.
-=============================== ===============================================
-
-.. _rocsparse_set_stream:
+.. _rocsparse_set_stream_:
 
 rocsparse_set_stream()
 ***********************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_set_stream(rocsparse_handle handle,
-                       hipStream_t stream);
-
-*rocsparse_set_stream()* specifies the stream to be used by the rocSPARSE library context and all subsequent function calls.
-
-====== =======================================================
-Input
-====== =======================================================
-handle the handle to the rocSPARSE library context.
-stream the stream to be used by the rocSPARSE library context.
-====== =======================================================
-
-================================ =============================
-Status Returned
-================================ =============================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_handle  the library context was not initialized.
-================================ =============================
+.. doxygenfunction:: rocsparse_set_stream
 
 rocsparse_get_stream()
 ***********************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_get_stream(rocsparse_handle handle,
-                       hipStream_t* stream);
-
-*rocsparse_get_stream()* gets the rocSPARSE library context stream which is currently used for all subsequent function calls.
-
-====== ============================================
-Input
-====== ============================================
-handle the handle to the rocSPARSE library context.
-====== ============================================
-
-====== ===========================================================
-Output
-====== ===========================================================
-stream the stream currently used by the rocSPARSE library context.
-====== ===========================================================
-
-================================ ===============================================
-Status Returned
-================================ ===============================================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_handle  the library context was not initialized.
-================================ ===============================================
-
-.. _rocsparse_set_pointer_mode:
+.. doxygenfunction:: rocsparse_get_stream
 
 rocsparse_set_pointer_mode()
 *****************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_set_pointer_mode(rocsparse_handle handle,
-                             rocsparse_pointer_mode pointer_mode);
-
-*rocsparse_set_pointer_mode()* specifies the pointer mode to be used by the rocSPARSE library context and all subsequent function calls. By default, all values are passed by reference on the host. Valid pointer modes are ``rocsparse_pointer_mode_host`` or ``rocsparse_pointer_mode_device``.
-
-============ =============================================================
-Input
-============ =============================================================
-handle       the handle to the rocSPARSE library context.
-pointer_mode the pointer mode to be used by the rocSPARSE library context.
-============ =============================================================
-
-================================ =============================
-Status Returned
-================================ =============================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_handle  the library context was not initialized.
-================================ =============================
-
-.. _rocsparse_get_pointer_mode:
+.. doxygenfunction:: rocsparse_set_pointer_mode
 
 rocsparse_get_pointer_mode()
 *****************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_get_pointer_mode(rocsparse_handle handle,
-                             rocsparse_pointer_mode* pointer_mode);
-
-*rocsparse_get_pointer_mode()* gets the rocSPARSE library context pointer mode which is currently used for all subsequent function calls.
-
-====== ============================================
-Input
-====== ============================================
-handle the handle to the rocSPARSE library context.
-====== ============================================
-
-============ =========================================================================
-Output
-============ =========================================================================
-pointer_mode the pointer mode that is currently used by the rocSPARSE library context.
-============ =========================================================================
-
-================================ ===============================================
-Status Returned
-================================ ===============================================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_handle  the library context was not initialized.
-================================ ===============================================
+.. doxygenfunction:: rocsparse_get_pointer_mode
 
 rocsparse_get_version()
 ************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_get_version(rocsparse_handle handle,
-                        rocsparse_int* version);
-
-*rocsparse_get_version()* gets the rocSPARSE library version number.
-
-====== ============================================
-Input
-====== ============================================
-handle the handle to the rocSPARSE library context.
-====== ============================================
-
-======= ============================================
-Output
-======= ============================================
-version the version number of the rocSPARSE library.
-======= ============================================
-
-================================ ===============================================
-Status Returned
-================================ ===============================================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_handle  the library context was not initialized.
-================================ ===============================================
-
-.. _rocsparse_create_mat_descr:
+.. doxygenfunction:: rocsparse_get_version
 
 rocsparse_create_mat_descr()
 *****************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_create_mat_descr(rocsparse_mat_descr* descr);
-
-*rocsparse_create_mat_descr()* creates the matrix descriptor. It initializes ``rocsparse_matrix_type`` to ``rocsparse_matrix_type_general`` and ``rocsparse_index_base`` to ``rocsparse_index_base_zero``. It should be destroyed at the end using :ref:`rocsparse_destroy_mat_descr`.
-
-====== =====================================
-Output
-====== =====================================
-descr  the pointer to the matrix descriptor.
-====== =====================================
-
-================================ ===============================================
-Status Returned
-================================ ===============================================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_pointer ``descr`` pointer is invalid.
-================================ ===============================================
-
-.. _rocsparse_destroy_mat_descr:
+.. doxygenfunction:: rocsparse_create_mat_descr
 
 rocsparse_destroy_mat_descr()
 ******************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_destroy_mat_descr(rocsparse_mat_descr descr);
+.. doxygenfunction:: rocsparse_destroy_mat_descr
 
-*rocsparse_destroy_mat_descr()* destroys the matrix descriptor.
+rocsparse_copy_mat_descr()
+**************************
 
-===== ======================
-Input
-===== ======================
-descr the matrix descriptor.
-===== ======================
-
-================================ ===============================================
-Status Returned
-================================ ===============================================
-rocsparse_status_success         the initialization succeeded.
-================================ ===============================================
+.. doxygenfunction:: rocsparse_copy_mat_descr
 
 rocsparse_set_mat_index_base()
 *******************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_set_mat_index_base(rocsparse_mat_descr descr,
-                               rocsparse_index_base base);
-
-*rocsparse_set_mat_index_base()* sets the index base of the matrix descriptor. Valid index bases are ``rocsparse_index_base_zero`` or ``rocsparse_index_base_one``.
-
-===== ============================================================================================
-Input
-===== ============================================================================================
-descr the matrix descriptor.
-base  the matrix index base, can be ``rocsparse_index_base_zero`` or ``rocsparse_index_base_one``.
-===== ============================================================================================
-
-================================ ===============================================
-Status Returned
-================================ ===============================================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_pointer ``descr`` pointer is invalid.
-rocsparse_status_invalid_value   ``base`` is invalid.
-================================ ===============================================
+.. doxygenfunction:: rocsparse_set_mat_index_base
 
 rocsparse_get_mat_index_base()
 *******************************
-.. code-block:: c
 
-  rocsparse_index_base
-  rocsparse_get_mat_index_base(const rocsparse_mat_descr descr);
-
-*rocsparse_get_mat_index_base()* returns the index base of the matrix descriptor.
-
-===== ======================
-Input
-===== ======================
-descr the matrix descriptor.
-===== ======================
+.. doxygenfunction:: rocsparse_get_mat_index_base
 
 rocsparse_set_mat_type()
 *************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_set_mat_type(rocsparse_mat_descr descr,
-                         rocsparse_matrix_type type);
-
-*rocsparse_set_mat_type()* sets the matrix type of the matrix descriptor. Valid matrix types are ``rocsparse_matrix_type_general``, ``rocsparse_matrix_type_symmetric``, ``rocsparse_matrix_type_hermitian`` or ``rocsparse_matrix_type_triangular``.
-
-===== ==========================================================================
-Input
-===== ==========================================================================
-descr the matrix descriptor.
-type  the matrix type, can be ``rocsparse_matrix_type_general``, |br| ``rocsparse_matrix_type_symmetric``, ``rocsparse_matrix_type_hermitian`` or |br| ``rocsparse_matrix_type_triangular``.
-===== ==========================================================================
-
-================================ ===============================================
-Status Returned
-================================ ===============================================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_pointer ``descr`` pointer is invalid.
-rocsparse_status_invalid_value   ``type`` is invalid.
-================================ ===============================================
+.. doxygenfunction:: rocsparse_set_mat_type
 
 rocsparse_get_mat_type()
 *************************
-.. code-block:: c
 
-  rocsparse_matrix_type
-  rocsparse_get_mat_type(const rocsparse_mat_descr descr);
+.. doxygenfunction:: rocsparse_get_mat_type
 
-*rocsparse_get_mat_type()* returns the matrix type of the matrix descriptor.
-
-===== ====================================
-Input
-===== ====================================
-descr the matrix descriptor.
-===== ====================================
-
-.. _rocsparse_create_mat_info:
-
-rocsparse_create_mat_info()
-****************************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_create_mat_info(rocsparse_mat_info* info);
-
-*rocsparse_create_mat_info()* creates a structure that holds the matrix info data that is gathered during the analysis routines available. It should be destroyed at the end using :ref:`rocsparse_destroy_mat_info`.
-
-====== =================================
-Output
-====== =================================
-info   the pointer to the info structure.
-====== =================================
-
-================================ ===============================================
-Status Returned
-================================ ===============================================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_pointer ``info`` pointer is invalid.
-================================ ===============================================
-
-.. _rocsparse_destroy_mat_info:
-
-rocsparse_destroy_mat_info()
+rocsparse_set_mat_fill_mode()
 *****************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_destroy_mat_info(rocsparse_mat_info info);
+.. doxygenfunction:: rocsparse_set_mat_fill_mode
 
-*rocsparse_destroy_mat_info()* destroys the info structure.
+rocsparse_get_mat_fill_mode()
+*****************************
 
-===== ===================
-Input
-===== ===================
-info  the info structure.
-===== ===================
+.. doxygenfunction:: rocsparse_get_mat_fill_mode
 
-================================ ===============================================
-Status Returned
-================================ ===============================================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_pointer ``info`` pointer is invalid.
-rocsparse_status_internal_error  an internal error occurred.
-================================ ===============================================
+rocsparse_set_mat_diag_type()
+*****************************
 
-.. _rocsparse_create_hyb_mat:
+.. doxygenfunction:: rocsparse_set_mat_diag_type
+
+rocsparse_get_mat_diag_type()
+*****************************
+
+.. doxygenfunction:: rocsparse_get_mat_diag_type
+
+.. _rocsparse_create_hyb_mat_:
 
 rocsparse_create_hyb_mat()
 ***************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb);
-
-*rocsparse_create_hyb_mat()* creates a structure that holds the matrix in HYB storage format. It should be destroyed at the end using :ref:`rocsparse_destroy_hyb_mat`.
-
-====== =================================
-Output
-====== =================================
-hyb    the pointer to the hybrid matrix.
-====== =================================
-
-================================ ===============================================
-Status Returned
-================================ ===============================================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_pointer ``hyb`` pointer is invalid.
-================================ ===============================================
-
-.. _rocsparse_destroy_hyb_mat:
+.. doxygenfunction:: rocsparse_create_hyb_mat
 
 rocsparse_destroy_hyb_mat()
 ****************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb);
+.. doxygenfunction:: rocsparse_destroy_hyb_mat
 
-*rocsparse_destroy_hyb_mat()* destroys the HYB structure.
+rocsparse_create_mat_info()
+***************************
 
-===== ==================
-Input
-===== ==================
-hyb   the hybrid matrix.
-===== ==================
+.. doxygenfunction:: rocsparse_create_mat_info
 
-================================ ===============================================
-Status Returned
-================================ ===============================================
-rocsparse_status_success         the initialization succeeded.
-rocsparse_status_invalid_pointer ``hyb`` pointer is invalid.
-rocsparse_status_internal_error  an internal error occurred.
-================================ ===============================================
+.. _rocsparse_destroy_mat_info_:
 
-.. _rocsparse_level1_functions:
+rocsparse_destroy_mat_info()
+*****************************
+
+.. doxygenfunction:: rocsparse_destroy_mat_info
+
+.. _rocsparse_level1_functions_:
 
 Sparse Level 1 Functions
 ------------------------
 
-This section describes all rocSPARSE level 1 sparse linear algebra functions.
+The sparse level 1 routines describe operations between a vector in sparse format and a vector in dense format. This section describes all rocSPARSE level 1 sparse linear algebra functions.
 
 rocsparse_axpyi()
-*********************
-.. code-block:: c
+*****************
 
-  rocsparse_status
-  rocsparse_saxpyi(rocsparse_handle handle,
-                   rocsparse_int nnz,
-                   const float* alpha,
-                   const float* x_val,
-                   const rocsparse_int* x_ind,
-                   float* y,
-                   rocsparse_index_base idx_base);
-
-  rocsparse_status
-  rocsparse_daxpyi(rocsparse_handle handle,
-                   rocsparse_int nnz,
-                   const double* alpha,
-                   const double* x_val,
-                   const rocsparse_int* x_ind,
-                   double* y,
-                   rocsparse_index_base idx_base);
-
-*rocsparse_axpyi()* multiplies the sparse vector :math:`x` with scalar :math:`\alpha` and adds the result to the dense vector :math:`y`, such that :math:`y := y + \alpha \cdot x`.
-
-.. code-block:: c
-
-  for(i = 0; i < nnz; ++i)
-    y[x_ind[i] - idx_base] = y[x_ind[i] - idx_base] + alpha * x_val[i];
-
-======== =============================================================================
-Input
-======== =============================================================================
-handle   handle to the rocSPARSE library context queue.
-nnz      number of non-zero entries of vector :math:`x`.
-alpha    scalar :math:`\alpha`.
-x_val    array of ``nnz`` elements containing the values of :math:`x`.
-x_ind    array of ``nnz`` elements containing the indices of the non-zero values of :math:`x`.
-y        array of values in dense format.
-idx_base ``rocsparse_index_base_zero`` or ``rocsparse_index_base_one``.
-======== =============================================================================
-
-====== ================================
-Output
-====== ================================
-y      array of values in dense format.
-====== ================================
-
-================================ ====
-Returned rocsparse_status
-================================ ====
-rocsparse_status_success         the operation completed successfully.
-rocsparse_status_invalid_handle  the library context was not initialized.
-rocsparse_status_invalid_value   ``idx_base`` is invalid.
-rocsparse_status_invalid_size    ``nnz`` is invalid.
-rocsparse_status_invalid_pointer ``alpha``, ``x_val``, ``x_ind`` or ``y`` pointer is invalid.
-================================ ====
+.. doxygenfunction:: rocsparse_saxpyi
+  :outline:
+.. doxygenfunction:: rocsparse_daxpyi
 
 rocsparse_doti()
 *********************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_sdoti(rocsparse_handle handle,
-                  rocsparse_int nnz,
-                  const float* x_val,
-                  const rocsparse_int* x_ind,
-                  const float* y,
-                  float* result,
-                  rocsparse_index_base idx_base);
-
-  rocsparse_status
-  rocsparse_ddoti(rocsparse_handle handle,
-                  rocsparse_int nnz,
-                  const double* x_val,
-                  const rocsparse_int* x_ind,
-                  const double* y,
-                  double* result,
-                  rocsparse_index_base idx_base);
-
-*rocsparse_doti()* computes the dot product of the sparse vector :math:`x` with the dense vector :math:`y`, such that :math:`\text{result} := y^T x`.
-
-.. code-block:: c
-
-  for(i = 0; i < nnz; ++i)
-    result = result + x_val[i] * y[x_ind[i] - idx_base];
-
-======== =============================================================================
-Input
-======== =============================================================================
-handle   handle to the rocSPARSE library context queue.
-nnz      number of non-zero entries of vector :math:`x`.
-x_val    array of ``nnz`` elements, containing the values of :math:`x`.
-x_ind    array of ``nnz`` elements, containing the indices of the non-zero values of :math:`x`.
-y        array of values in dense format.
-idx_base ``rocsparse_index_base_zero`` or ``rocsparse_index_base_one``.
-======== =============================================================================
-
-====== ====================================================
-Output
-====== ====================================================
-result pointer to the ``result``, can be host or device memory.
-====== ====================================================
-
-================================ ====
-Returned rocsparse_status
-================================ ====
-rocsparse_status_success         the operation completed successfully.
-rocsparse_status_invalid_handle  the library context was not initialized.
-rocsparse_status_invalid_value   ``idx_base`` is invalid.
-rocsparse_status_invalid_size    ``nnz`` is invalid.
-rocsparse_status_invalid_pointer ``x_val``, ``x_ind``, ``y`` or ``result`` pointer is invalid.
-rocsparse_status_memory_error    the buffer for the dot product reduction could not be allocated.
-rocsparse_status_internal_error  an internal error occurred.
-================================ ====
+.. doxygenfunction:: rocsparse_sdoti
+  :outline:
+.. doxygenfunction:: rocsparse_ddoti
 
 rocsparse_gthr()
 *********************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_sgthr(rocsparse_handle handle,
-                  rocsparse_int nnz,
-                  const float* y,
-                  float* x_val,
-                  const rocsparse_int* x_ind,
-                  rocsparse_index_base idx_base);
-
-  rocsparse_status
-  rocsparse_dgthr(rocsparse_handle handle,
-                  rocsparse_int nnz,
-                  const double* y,
-                  double* x_val,
-                  const rocsparse_int* x_ind,
-                  rocsparse_index_base idx_base);
-
-*rocsparse_gthr()* gathers the elements that are listed in ``x_ind`` from the dense vector :math:`y` and stores them in the sparse vector :math:`x`.
-
-.. code-block:: c
-
-  for(i = 0; i < nnz; ++i)
-    x_val[i] = y[x_ind[i] - idx_base];
-
-======== =============================================================================
-Input
-======== =============================================================================
-handle   handle to the rocSPARSE library context queue.
-nnz      number of non-zero entries of vector :math:`x`.
-y        array of values in dense format.
-x_ind    array of ``nnz`` elements, containing the indices of the non-zero values of :math:`x`.
-idx_base ``rocsparse_index_base_zero`` or ``rocsparse_index_base_one``.
-======== =============================================================================
-
-====== =====================================================
-Output
-====== =====================================================
-x_val  array of ``nnz`` elements containing the values of :math:`x`.
-====== =====================================================
-
-================================ ====
-Returned rocsparse_status
-================================ ====
-rocsparse_status_success         the operation completed successfully.
-rocsparse_status_invalid_handle  the library context was not initialized.
-rocsparse_status_invalid_value   ``idx_base`` is invalid.
-rocsparse_status_invalid_size    ``nnz`` is invalid.
-rocsparse_status_invalid_pointer ``y``, ``x_val`` or ``x_ind`` pointer is invalid.
-================================ ====
+.. doxygenfunction:: rocsparse_sgthr
+  :outline:
+.. doxygenfunction:: rocsparse_dgthr
 
 rocsparse_gthrz()
 *********************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_sgthrz(rocsparse_handle handle,
-                   rocsparse_int nnz,
-                   const float* y,
-                   float* x_val,
-                   const rocsparse_int* x_ind,
-                   rocsparse_index_base idx_base);
-
-  rocsparse_status
-  rocsparse_dgthrz(rocsparse_handle handle,
-                   rocsparse_int nnz,
-                   const double* y,
-                   double* x_val,
-                   const rocsparse_int* x_ind,
-                   rocsparse_index_base idx_base);
-
-*rocsparse_gthrz()* gathers the elements that are listed in ``x_ind`` from the dense vector :math:`y` and stores them in the sparse vector :math:`x`. The gathered elements in :math:`y` are replaced by zero.
-
-.. code-block:: c
-
-  for(i = 0; i < nnz; ++i)
-  {
-    x_val[i] = y[x_ind[i] - idx_base];
-    y[x_ind[i] - idx_base] = 0;
-  }
-
-======== =============================================================================
-Input
-======== =============================================================================
-handle   handle to the rocSPARSE library context queue.
-nnz      number of non-zero entries of vector :math:`x`.
-y        array of values in dense format.
-x_ind    array of ``nnz`` elements, containing the indices of the non-zero values of :math:`x`.
-idx_base ``rocsparse_index_base_zero`` or ``rocsparse_index_base_one``.
-======== =============================================================================
-
-====== =====================================================
-Output
-====== =====================================================
-x_val  array of ``nnz`` elements containing the values of :math:`x`.
-====== =====================================================
-
-================================ ====
-Returned rocsparse_status
-================================ ====
-rocsparse_status_success         the operation completed successfully.
-rocsparse_status_invalid_handle  the library context was not initialized.
-rocsparse_status_invalid_value   ``idx_base`` is invalid.
-rocsparse_status_invalid_size    ``nnz`` is invalid.
-rocsparse_status_invalid_pointer ``y``, ``x_val`` or ``x_ind`` pointer is invalid.
-================================ ====
+.. doxygenfunction:: rocsparse_sgthrz
+  :outline:
+.. doxygenfunction:: rocsparse_dgthrz
 
 rocsparse_roti()
-*********************
-.. code-block:: c
+****************
 
-  rocsparse_status
-  rocsparse_sroti(rocsparse_handle handle,
-                  rocsparse_int nnz,
-                  float* x_val,
-                  const rocsparse_int* x_ind,
-                  float* y,
-                  const float* c,
-                  const float* s,
-                  rocsparse_index_base idx_base);
-
-  rocsparse_status
-  rocsparse_droti(rocsparse_handle handle,
-                  rocsparse_int nnz,
-                  double* x_val,
-                  const rocsparse_int* x_ind,
-                  double* y,
-                  const double* c,
-                  const double* s,
-                  rocsparse_index_base idx_base);
-
-*rocsparse_roti()* applies the Givens rotation matrix :math:`G` to the sparse vector :math:`x` and the dense vector :math:`y`, where
-
-.. math::
-
-  G = \begin{pmatrix} c & s \\ -s & c \end{pmatrix}.
-
-.. code-block:: c
-
-  for(i = 0; i < nnz; ++i)
-  {
-    double x = x_val[i];
-    double y = y[x_ind[i] - idx_base];
-
-    x_val[i]               = c * x + s * y;
-    y[x_ind[i] - idx_base] = c * y - s * x;
-  }
-
-======== =============================================================================
-Input
-======== =============================================================================
-handle   handle to the rocSPARSE library context queue.
-nnz      number of non-zero entries of vector :math:`x`.
-x_val    array of ``nnz`` elements, containing the values of :math:`x`.
-x_ind    array of ``nnz`` elements, containing the indices of the non-zero values of :math:`x`.
-y        array of values in dense format.
-c        pointer to the cosine element of :math:`G`, can be on host or device.
-s        pointer to the sine element of :math:`G`, can be on host or device.
-idx_base ``rocsparse_index_base_zero`` or ``rocsparse_index_base_one``.
-======== =============================================================================
-
-====== =====================================================
-Output
-====== =====================================================
-x_val  array of ``nnz`` elements, containing the values of :math:`x`.
-y      array of values in dense format.
-====== =====================================================
-
-================================ ====
-Returned rocsparse_status
-================================ ====
-rocsparse_status_success         the operation completed successfully.
-rocsparse_status_invalid_handle  the library context was not initialized.
-rocsparse_status_invalid_value   ``idx_base`` is invalid.
-rocsparse_status_invalid_size    ``nnz`` is invalid.
-rocsparse_status_invalid_pointer ``c``, ``s``, ``x_val``, ``x_ind`` or ``y`` pointer is invalid.
-================================ ====
+.. doxygenfunction:: rocsparse_sroti
+  :outline:
+.. doxygenfunction:: rocsparse_droti
 
 rocsparse_sctr()
-*********************
-.. code-block:: c
+****************
 
-  rocsparse_status
-  rocsparse_ssctr(rocsparse_handle handle,
-                  rocsparse_int nnz,
-                  const float* x_val,
-                  const rocsparse_int* x_ind,
-                  float* y,
-                  rocsparse_index_base idx_base);
+.. doxygenfunction:: rocsparse_ssctr
+  :outline:
+.. doxygenfunction:: rocsparse_dsctr
 
-  rocsparse_status
-  rocsparse_dsctr(rocsparse_handle handle,
-                  rocsparse_int nnz,
-                  const double* x_val,
-                  const rocsparse_int* x_ind,
-                  double* y,
-                  rocsparse_index_base idx_base);
-
-*rocsparse_sctr()* scatters the elements that are listed in ``x_ind`` from the sparse vector :math:`x` into the dense vector :math:`y`. Entries of :math:`y` that are not listed in ``x_ind`` remain unchanged.
-
-.. code-block:: c
-
-  for(i = 0; i < nnz; ++i)
-    y[x_ind[i] - idx_base] = x_val[i];
-
-======== =============================================================================
-Input
-======== =============================================================================
-handle   handle to the rocSPARSE library context queue.
-nnz      number of non-zero entries of vector :math:`x`.
-x_val    array of ``nnz`` elements, containing the values of :math:`x`.
-x_ind    array of ``nnz`` elements, containing the indices of the non-zero values of :math:`x`.
-y        array of values in dense format.
-idx_base ``rocsparse_index_base_zero`` or ``rocsparse_index_base_one``.
-======== =============================================================================
-
-====== =====================================================
-Output
-====== =====================================================
-y      array of values in dense format.
-====== =====================================================
-
-================================ ====
-Returned rocsparse_status
-================================ ====
-rocsparse_status_success         the operation completed successfully.
-rocsparse_status_invalid_handle  the library context was not initialized.
-rocsparse_status_invalid_value   ``idx_base`` is invalid.
-rocsparse_status_invalid_size    ``nnz`` is invalid.
-rocsparse_status_invalid_pointer ``x_val``, ``x_ind`` or ``y`` pointer is invalid.
-================================ ====
-
-.. _rocsparse_level2_functions:
+.. _rocsparse_level2_functions_:
 
 Sparse Level 2 Functions
 ------------------------
 
-This section describes all rocSPARSE level 2 sparse linear algebra functions.
+This module holds all sparse level 2 routines.
+
+The sparse level 2 routines describe operations between a matrix in sparse format and a vector in dense format.
 
 rocsparse_coomv()
-*********************
-.. code-block:: c
+*****************
 
-  rocsparse_status
-  rocsparse_scoomv(rocsparse_handle handle,
-                   rocsparse_operation trans,
-                   rocsparse_int m,
-                   rocsparse_int n,
-                   rocsparse_int nnz,
-                   const float* alpha,
-                   const rocsparse_mat_descr descr,
-                   const float* coo_val,
-                   const rocsparse_int* coo_row_ind,
-                   const rocsparse_int* coo_col_ind,
-                   const float* x,
-                   const float* beta,
-                   float* y);
-
-  rocsparse_status
-  rocsparse_dcoomv(rocsparse_handle handle,
-                   rocsparse_operation trans,
-                   rocsparse_int m,
-                   rocsparse_int n,
-                   rocsparse_int nnz,
-                   const double* alpha,
-                   const rocsparse_mat_descr descr,
-                   const double* coo_val,
-                   const rocsparse_int* coo_row_ind,
-                   const rocsparse_int* coo_col_ind,
-                   const double* x,
-                   const double* beta,
-                   double* y);
-
-*rocsparse_coomv()* multiplies the scalar :math:`\alpha` with a sparse :math:`m \times n` matrix, defined in COO storage format, and the dense vector :math:`x` and adds the result to the dense vector :math:`y` that is multiplied by the scalar :math:`\beta`, such that :math:`y := \alpha \cdot op(A) \cdot x + \beta \cdot y` with
-
-.. math::
-
-  op(A) = \Bigg\{
-            \begin{array}{ll}
-              A, & \text{if trans == rocsparse_operation_none} \\
-              A^T, & \text{if trans == rocsparse_operation_transpose} \\
-              A^H, & \text{if trans == rocsparse_operation_conjugate_transpose}
-            \end{array}.
-
-Currently, only ``trans == rocsparse_operation_none`` is supported.
-
-The COO matrix has to be sorted by row indices. This can be achieved by using :ref:`rocsparse_coosort`.
-
-.. code-block:: c
-
-  for(i = 0; i < m; ++i)
-    y[i] = beta * y[i];
-
-  for(i = 0; i < nnz; ++i)
-    y[coo_row_ind[i]] += alpha * coo_val[i] * x[coo_col_ind[i]];
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-trans       matrix operation type.
-m           number of rows of the sparse COO matrix.
-n           number of columns of the sparse COO matrix.
-nnz         number of non-zero entries of the sparse COO matrix.
-alpha       scalar :math:`\alpha`.
-descr       descriptor of the sparse COO matrix. |br| Currently, *rocsparse_coomv()* supports only ``rocsparse_matrix_type_general``.
-coo_val     array of ``nnz`` elements of the sparse COO matrix.
-coo_row_ind array of ``nnz`` elements containing the row indices of the sparse COO matrix.
-coo_col_ind array of ``nnz`` elements containing the column indices of the sparse COO matrix.
-x           array of ``n`` elements (:math:`op(A) == A`) or |br| ``m`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-beta        scalar :math:`\beta`.
-y           array of ``m`` elements (:math:`op(A) == A`) or |br| ``n`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-=========== =============================================================================
-
-====== ================================
-Output
-====== ================================
-y      array of ``m`` elements (:math:`op(A) == A`) or |br| ``n`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-====== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``descr``, ``alpha``, ``coo_val``, ``coo_row_ind``, ``coo_col_ind``, |br| ``x``, ``beta`` or ``y`` pointer is invalid.
-rocsparse_status_arch_mismatch    the device is not supported by *rocsparse_coomv()*.
-rocsparse_status_not_implemented  ``trans != rocsparse_operation_none`` or |br| ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_csrmv_analysis:
+.. doxygenfunction:: rocsparse_scoomv
+  :outline:
+.. doxygenfunction:: rocsparse_dcoomv
 
 rocsparse_csrmv_analysis()
 ***************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_csrmv_analysis(rocsparse_handle handle,
-                           rocsparse_operation trans,
-                           rocsparse_int m,
-                           rocsparse_int n,
-                           rocsparse_int nnz,
-                           const rocsparse_mat_descr descr,
-                           const rocsparse_int* csr_row_ptr,
-                           const rocsparse_int* csr_col_ind,
-                           rocsparse_mat_info info);
+.. doxygenfunction:: rocsparse_scsrmv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrmv_analysis
 
-*rocsparse_csrmv_analysis()* performs the analysis step for :ref:`rocsparse_csrmv`. It is expected that this function will be executed only once for a given matrix and particular operation type. Note that if the matrix sparsity pattern changes, the gathered information will become invalid.
+rocsparse_csrmv()
+*****************
 
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-trans       matrix operation type.
-m           number of rows of the sparse CSR matrix.
-n           number of columns of the sparse CSR matrix.
-nnz         number of non-zero entries of the sparse CSR matrix.
-descr       descriptor of the sparse CSR matrix. |br| Currently, *rocsparse_csrmv_analysis()* supports only ``rocsparse_matrix_type_general``.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_col_ind array of ``nnz`` elements containing the column indices of the sparse CSR matrix.
-=========== =============================================================================
-
-====== ================================
-Output
-====== ================================
-info   structure that holds the information collected during analysis step.
-====== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``descr``, ``csr_row_ptr``, ``csr_col_ind`` or ``info`` pointer is invalid.
-rocsparse_status_memory_error     the buffer for the gathered information could not be allocated.
-rocsparse_status_internal_error   an internal error occurred.
-rocsparse_status_not_implemented  ``trans != rocsparse_operation_none`` or |br| ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_csrmv_analysis_clear:
+.. doxygenfunction:: rocsparse_scsrmv
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrmv
 
 rocsparse_csrmv_analysis_clear()
 *********************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_csrmv_analysis_clear(rocsparse_handle handle,
-                                 rocsparse_mat_info info);
-
-*rocsparse_csrmv_analysis_clear()* deallocates all memory that was allocated by :ref:`rocsparse_csrmv_analysis`. This is especially useful, if memory is an issue and the analysis data is not required anymore for further computation, e.g. when switching to another sparse matrix format. Calling *rocsparse_csrmv_analysis_clear()* is optional. All allocated resources will be cleared when the opaque :ref:`rocsparse_mat_info` struct is destroyed using :ref:`rocsparse_destroy_mat_info`.
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-info        structure that holds the information collected during analysis step.
-=========== =============================================================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_pointer  ``info`` pointer is invalid.
-rocsparse_status_memory_error     the buffer for the information could not be deallocated.
-rocsparse_status_internal_error   an internal error occurred.
-================================  ====
-
-.. _rocsparse_csrmv:
-
-rocsparse_csrmv()
-*********************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_scsrmv(rocsparse_handle handle,
-                   rocsparse_operation trans,
-                   rocsparse_int m,
-                   rocsparse_int n,
-                   rocsparse_int nnz,
-                   const float* alpha,
-                   const rocsparse_mat_descr descr,
-                   const float* csr_val,
-                   const rocsparse_int* csr_row_ptr,
-                   const rocsparse_int* csr_col_ind,
-                   const float* x,
-                   const float* beta,
-                   float* y,
-                   const rocsparse_mat_info info);
-
-  rocsparse_status
-  rocsparse_dcsrmv(rocsparse_handle handle,
-                   rocsparse_operation trans,
-                   rocsparse_int m,
-                   rocsparse_int n,
-                   rocsparse_int nnz,
-                   const double* alpha,
-                   const rocsparse_mat_descr descr,
-                   const double* csr_val,
-                   const rocsparse_int* csr_row_ptr,
-                   const rocsparse_int* csr_col_ind,
-                   const double* x,
-                   const double* beta,
-                   double* y,
-                   const rocsparse_mat_info info);
-
-*rocsparse_csrmv()* multiplies the scalar :math:`\alpha` with a sparse :math:`m \times n` matrix, defined in CSR storage format, and the dense vector :math:`x` and adds the result to the dense vector :math:`y` that is multiplied by the scalar :math:`\beta`, such that :math:`y := \alpha \cdot op(A) \cdot x + \beta \cdot y` with
-
-.. math::
-
-  op(A) = \Bigg\{
-            \begin{array}{ll}
-              A, & \text{if trans == rocsparse_operation_none} \\
-              A^T, & \text{if trans == rocsparse_operation_transpose} \\
-              A^H, & \text{if trans == rocsparse_operation_conjugate_transpose}
-            \end{array}.
-
-The ``info`` parameter is optional and contains information collected by :ref:`rocsparse_csrmv_analysis`. If present, the information will be used to speed up the *csrmv* computation. If ``info == NULL``, general *csrmv* routine will be used instead.
-
-Currently, only ``trans == rocsparse_operation_none`` is supported.
-
-.. code-block:: c
-
-  for(i = 0; i < m; ++i)
-  {
-    y[i] = beta * y[i];
-    for(j = csr_row_ptr[i]; j < csr_row_ptr[i + 1]; ++j)
-      y[i] = y[i] + alpha * csr_val[j] * x[csr_col_ind[j]];
-  }
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-trans       matrix operation type.
-m           number of rows of the sparse CSR matrix.
-n           number of columns of the sparse CSR matrix.
-nnz         number of non-zero entries of the sparse CSR matrix.
-alpha       scalar :math:`\alpha`.
-descr       descriptor of the sparse CSR matrix. |br| Currently, *rocsparse_csrmv()* supports only ``rocsparse_matrix_type_general``.
-csr_val     array of ``nnz`` elements of the sparse CSR matrix.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_col_ind array of ``nnz`` elements containing the column indices of the sparse CSR matrix.
-x           array of ``n`` elements (:math:`op(A) == A`) or |br| ``m`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-beta        scalar :math:`\beta`.
-y           array of ``m`` elements (:math:`op(A) == A`) or |br| ``n`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-info        information collected by :ref:`rocsparse_csrmv_analysis`, |br| can be ``NULL`` if no information is available.
-=========== =============================================================================
-
-====== ================================
-Output
-====== ================================
-y      array of ``m`` elements (:math:`op(A) == A`) or |br| ``n`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-====== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``descr``, ``alpha``, ``csr_val``, ``csr_row_ptr``, ``csr_col_ind``, |br| ``x``, ``beta`` or ``y`` pointer is invalid.
-rocsparse_status_arch_mismatch    the device is not supported by *rocsparse_csrmv()*.
-rocsparse_status_memory_error     the buffer for the segmented reduction could not be allocated.
-rocsparse_status_internal_error   an internal error occurred.
-rocsparse_status_not_implemented  ``trans != rocsparse_operation_none`` or |br| ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
+.. doxygenfunction:: rocsparse_csrmv_clear
 
 rocsparse_ellmv()
-*********************
-.. code-block:: c
+*****************
 
-  rocsparse_status
-  rocsparse_sellmv(rocsparse_handle handle,
-                   rocsparse_operation trans,
-                   rocsparse_int m,
-                   rocsparse_int n,
-                   const float* alpha,
-                   const rocsparse_mat_descr descr,
-                   const float* ell_val,
-                   const rocsparse_int* ell_col_ind,
-                   rocsparse_int ell_width,
-                   const float* x,
-                   const float* beta,
-                   float* y);
-
-  rocsparse_status
-  rocsparse_dellmv(rocsparse_handle handle,
-                   rocsparse_operation trans,
-                   rocsparse_int m,
-                   rocsparse_int n,
-                   const double* alpha,
-                   const rocsparse_mat_descr descr,
-                   const double* ell_val,
-                   const rocsparse_int* ell_col_ind,
-                   rocsparse_int ell_width,
-                   const double* x,
-                   const double* beta,
-                   double* y);
-
-*rocsparse_ellmv()* multiplies the scalar :math:`\alpha` with a sparse :math:`m \times n` matrix, defined in ELL storage format, and the dense vector :math:`x` and adds the result to the dense vector :math:`y` that is multiplied by the scalar :math:`\beta`, such that :math:`y := \alpha \cdot op(A) \cdot x + \beta \cdot y` with
-
-.. math::
-
-  op(A) = \Bigg\{
-            \begin{array}{ll}
-              A, & \text{if trans == rocsparse_operation_none} \\
-              A^T, & \text{if trans == rocsparse_operation_transpose} \\
-              A^H, & \text{if trans == rocsparse_operation_conjugate_transpose}
-            \end{array}.
-
-Currently, only ``trans == rocsparse_operation_none`` is supported.
-
-.. code-block:: c
-
-  for(i = 0; i < m; ++i)
-  {
-    y[i] = beta * y[i];
-    for(p = 0; p < ell_width; ++p)
-      if((ell_col_ind[p * m + i] >= 0) && (ell_col_ind[p * m + i] < n))
-        y[i] = y[i] + alpha * ell_val[p * m + i] * x[ell_col_ind[p * m + i]];
-  }
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-trans       matrix operation type.
-m           number of rows of the sparse ELL matrix.
-n           number of columns of the sparse ELL matrix.
-alpha       scalar :math:`\alpha`.
-descr       descriptor of the sparse ELL matrix. |br| Currently, *rocsparse_ellmv()* supports only ``rocsparse_matrix_type_general``.
-ell_val     array that contains the elements of the sparse ELL matrix. |br| Padded elements should be zero.
-ell_col_ind array that contains the column indices of the sparse ELL matrix. |br| Padded column indices should be -1.
-ell_width   number of non-zero elements per row of the sparse ELL matrix.
-x           array of ``n`` elements (:math:`op(A) == A`) or |br| ``m`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-beta        scalar :math:`\beta`.
-y           array of ``m`` elements (:math:`op(A) == A`) or |br| ``n`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-=========== =============================================================================
-
-====== ================================
-Output
-====== ================================
-y      array of ``m`` elements (:math:`op(A) == A`) or |br| ``n`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-====== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``ell_width`` is invalid.
-rocsparse_status_invalid_pointer  ``descr``, ``alpha``, ``ell_val``, ``ell_col_ind``, |br| ``x``, ``beta`` or ``y`` pointer is invalid.
-rocsparse_status_not_implemented  ``trans != rocsparse_operation_none`` or |br| ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
+.. doxygenfunction:: rocsparse_sellmv
+  :outline:
+.. doxygenfunction:: rocsparse_dellmv
 
 rocsparse_hybmv()
-*********************
-.. code-block:: c
+*****************
 
-  rocsparse_status
-  rocsparse_shybmv(rocsparse_handle handle,
-                   rocsparse_operation trans,
-                   const float* alpha,
-                   const rocsparse_mat_descr descr,
-                   const rocsparse_hyb_mat hyb,
-                   const float* x,
-                   const float* beta,
-                   float* y);
+.. doxygenfunction:: rocsparse_shybmv
+  :outline:
+.. doxygenfunction:: rocsparse_dhybmv
 
-  rocsparse_status
-  rocsparse_dhybmv(rocsparse_handle handle,
-                   rocsparse_operation trans,
-                   const double* alpha,
-                   const rocsparse_mat_descr descr,
-                   const rocsparse_hyb_mat hyb,
-                   const double* x,
-                   const double* beta,
-                   double* y);
+rocsparse_csrsv_zero_pivot()
+****************************
 
-
-*rocsparse_hybmv()* multiplies the scalar :math:`\alpha` with a sparse :math:`m \times n` matrix, defined in HYB storage format, and the dense vector :math:`x` and adds the result to the dense vector :math:`y` that is multiplied by the scalar :math:`\beta`, such that :math:`y := \alpha \cdot op(A) \cdot x + \beta \cdot y` with
-
-.. math::
-
-  op(A) = \Bigg\{
-            \begin{array}{ll}
-              A, & \text{if trans == rocsparse_operation_none} \\
-              A^T, & \text{if trans == rocsparse_operation_transpose} \\
-              A^H, & \text{if trans == rocsparse_operation_conjugate_transpose}
-            \end{array}.
-
-Currently, only ``trans == rocsparse_operation_none`` is supported.
-
-.. code-block:: c
-
-  // ellmv on the ELL matrix part
-  ellmv(hyb->ell);
-  // coomv on the COO matrix part
-  coomv(hyb->coo);
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-trans       matrix operation type.
-alpha       scalar :math:`\alpha`.
-descr       descriptor of the sparse HYB matrix. |br| Currently, *rocsparse_hybmv()* supports only ``rocsparse_matrix_type_general``.
-hyb         matrix in HYB storage format.
-x           array of ``n`` elements (:math:`op(A) == A`) or |br| ``m`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-beta        scalar :math:`\beta`.
-y           array of ``m`` elements (:math:`op(A) == A`) or |br| ``n`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-=========== =============================================================================
-
-====== ================================
-Output
-====== ================================
-y      array of ``m`` elements (:math:`op(A) == A`) or |br| ``n`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-====== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``hyb`` structure was not initialized with valid matrix sizes.
-rocsparse_status_invalid_pointer  ``descr``, ``alpha``, ``hyb``, ``x``, ``beta`` or ``y`` pointer is invalid.
-rocsparse_status_invalid_value    ``hyb`` structure was not initialized with a valid partitioning type.
-rocsparse_status_arch_mismatch    the device is not supported by *rocsparse_hybmv()*.
-rocsparse_status_memory_error     the buffer for *rocsparse_hybmv()* could not be allocated.
-rocsparse_status_internal_error   an internal error occurred.
-rocsparse_status_not_implemented  ``trans != rocsparse_operation_none`` or |br| ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_csrsv_buffer_size:
+.. doxygenfunction:: rocsparse_csrsv_zero_pivot
 
 rocsparse_csrsv_buffer_size()
-******************************
-.. code-block:: c
+*****************************
 
-  rocsparse_status
-  rocsparse_csrsv_buffer_size(rocsparse_handle handle,
-                              rocsparse_operation trans,
-                              rocsparse_int m,
-                              rocsparse_int nnz,
-                              const rocsparse_mat_descr descr,
-                              const rocsparse_int* csr_row_ptr,
-                              const rocsparse_int* csr_col_ind,
-                              rocsparse_mat_info info,
-                              size_t* buffer_size);
-
-*rocsparse_csrsv_buffer_size()* returns the size of the temporary storage buffer required by :ref:`rocsparse_csrsv_analysis`. The temporary storage buffer must be allocated by the user.
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-trans       matrix operation type.
-m           number of rows of the sparse CSR matrix.
-nnz         number of non-zero entries of the sparse CSR matrix.
-descr       descriptor of the sparse CSR matrix. |br| Currently, *rocsparse_csrsv_buffer_size()* supports only ``rocsparse_matrix_type_general``.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_col_ind array of ``nnz`` elements containing the column indices of the sparse CSR matrix.
-info        structure that holds the information collected during analysis step.
-=========== =============================================================================
-
-=========== ================================
-Output
-=========== ================================
-buffer_size number of bytes of the temporary storage buffer required by :ref:`rocsparse_csrsv_analysis`.
-=========== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``descr``, ``csr_row_ptr``, ``csr_col_ind``, ``info`` |br| or ``buffer_size`` pointer is invalid.
-rocsparse_status_internal_error   an internal error occurred.
-rocsparse_status_not_implemented  ``trans != rocsparse_operation_none`` or |br| ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_csrsv_analysis:
+.. doxygenfunction:: rocsparse_scsrsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrsv_buffer_size
 
 rocsparse_csrsv_analysis()
-***************************
-.. code-block:: c
+**************************
 
-  rocsparse_status
-  rocsparse_csrsv_analysis(rocsparse_handle handle,
-                           rocsparse_operation trans,
-                           rocsparse_int m,
-                           rocsparse_int nnz,
-                           const rocsparse_mat_descr descr,
-                           const rocsparse_int* csr_row_ptr,
-                           const rocsparse_int* csr_col_ind,
-                           rocsparse_mat_info info,
-                           void* temp_buffer);
+.. doxygenfunction:: rocsparse_scsrsv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrsv_analysis
 
-*rocsparse_csrsv_analysis()* performs the analysis step for :ref:`rocsparse_csrsv`, :ref:`rocsparse_csric0` and/or :ref:`rocsparse_csrilu0`. It is expected that this function will be executed only once for a given matrix and particular operation type. Note that if the matrix sparsity pattern changes, the gathered information will become invalid.
-*rocsparse_csrsv_analysis()* requires extra temporary storage buffer that has to be allocated by the user. Storage buffer size can be determined by :ref:`rocsparse_csrsv_buffer_size`.
+rocsparse_csrsv_solve()
+***********************
 
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-trans       matrix operation type.
-m           number of rows of the sparse CSR matrix.
-nnz         number of non-zero entries of the sparse CSR matrix.
-descr       descriptor of the sparse CSR matrix. |br| Currently, *rocsparse_csrsv_analysis()* supports only ``rocsparse_matrix_type_general``.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_col_ind array of ``nnz`` elements containing the column indices of the sparse CSR matrix.
-temp_buffer temporary storage buffer allocated by the user, |br| size is returned by :ref:`rocsparse_csrsv_buffer_size`.
-=========== =============================================================================
-
-====== ================================
-Output
-====== ================================
-info   structure that holds the information collected during analysis step.
-====== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``descr``, ``csr_row_ptr``, ``csr_col_ind``, ``info`` |br| or ``temp_buffer`` pointer is invalid.
-rocsparse_status_internal_error   an internal error occurred.
-rocsparse_status_not_implemented  ``trans != rocsparse_operation_none`` or |br| ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_csrsv_analysis_clear:
+.. doxygenfunction:: rocsparse_scsrsv_solve
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrsv_solve
 
 rocsparse_csrsv_analysis_clear()
-*********************************
-.. code-block:: c
+********************************
 
-  rocsparse_status
-  rocsparse_csrsv_analysis_clear(rocsparse_handle handle,
-                                 rocsparse_mat_info info);
+.. doxygenfunction:: rocsparse_csrsv_clear
 
-*rocsparse_csrsv_analysis_clear()* deallocates all memory that was allocated by :ref:`rocsparse_csrsv_analysis`. This is especially useful, if memory is an issue and the analysis data is not required anymore for further computation, e.g. when switching to another sparse matrix format. Calling *rocsparse_csrmv_analysis_clear()* is optional. All allocated resources will be cleared when the opaque :ref:`rocsparse_mat_info` struct is destroyed using :ref:`rocsparse_destroy_mat_info`.
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-info        structure that holds the information collected during analysis step.
-=========== =============================================================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_pointer  ``info`` pointer is invalid.
-rocsparse_status_memory_error     the buffer for the information could not be deallocated.
-rocsparse_status_internal_error   an internal error occurred.
-================================  ====
-
-.. _rocsparse_csrsv:
-
-rocsparse_csrsv()
-*********************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_scsrsv(rocsparse_handle handle,
-                   rocsparse_operation trans,
-                   rocsparse_int m,
-                   rocsparse_int nnz,
-                   const float* alpha,
-                   const rocsparse_mat_descr descr,
-                   const float* csr_val,
-                   const rocsparse_int* csr_row_ptr,
-                   const rocsparse_int* csr_col_ind,
-                   const rocsparse_mat_info info,
-                   const float* x,
-                   float* y,
-                   rocsparse_solve_policy policy,
-                   void* temp_buffer);
-
-  rocsparse_status
-  rocsparse_dcsrsv(rocsparse_handle handle,
-                   rocsparse_operation trans,
-                   rocsparse_int m,
-                   rocsparse_int nnz,
-                   const double* alpha,
-                   const rocsparse_mat_descr descr,
-                   const double* csr_val,
-                   const rocsparse_int* csr_row_ptr,
-                   const rocsparse_int* csr_col_ind,
-                   const rocsparse_mat_info info,
-                   const float* x,
-                   float* y,
-                   rocsparse_solve_policy policy,
-                   void* temp_buffer);
-
-*rocsparse_csrsv()* solves a sparse triangular linear system with a sparse :math:`m \times n` matrix, defined in CSR storage format, the dense vector :math:`y`, the scalar :math:`\alpha` and the right-hand side vector :math:`x` such that :math:`op(A) \cdot y = \alpha \cdot x` with
-
-.. math::
-
-  op(A) = \Bigg\{
-            \begin{array}{ll}
-              A, & \text{if trans == rocsparse_operation_none} \\
-              A^T, & \text{if trans == rocsparse_operation_transpose} \\
-              A^H, & \text{if trans == rocsparse_operation_conjugate_transpose}
-            \end{array}.
-
-Currently, only ``trans == rocsparse_operation_none`` is supported.
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-trans       matrix operation type.
-m           number of rows of the sparse CSR matrix.
-nnz         number of non-zero entries of the sparse CSR matrix.
-alpha       scalar :math:`\alpha`.
-descr       descriptor of the sparse CSR matrix. |br| Currently, *rocsparse_csrmv()* supports only ``rocsparse_matrix_type_general``.
-csr_val     array of ``nnz`` elements of the sparse CSR matrix.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_col_ind array of ``nnz`` elements containing the column indices of the sparse CSR matrix.
-info        information collected by :ref:`rocsparse_csrsv_analysis`.
-x           array of ``n`` elements (:math:`op(A) == A`) or |br| ``m`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-policy      ``rocsparse_solve_policy_no_level`` or ``rocsparse_solve_policy_use_level``.
-temp_buffer temporary storage buffer allocated by the user, |br| size is returned by :ref:`rocsparse_csrsv_buffer_size`.
-=========== =============================================================================
-
-====== ================================
-Output
-====== ================================
-y      array of ``m`` elements (:math:`op(A) == A`) or |br| ``n`` elements (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-====== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``descr``, ``alpha``, ``csr_val``, ``csr_row_ptr``, ``csr_col_ind``, |br| ``x`` or ``y`` pointer is invalid.
-rocsparse_status_arch_mismatch    the device is not supported by *rocsparse_csrsv()*.
-rocsparse_status_internal_error   an internal error occurred.
-rocsparse_status_not_implemented  ``trans != rocsparse_operation_none`` or |br| ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_level3_functions:
+.. _rocsparse_level3_functions_:
 
 Sparse Level 3 Functions
 ------------------------
 
-This section describes all rocSPARSE level 3 sparse linear algebra functions.
+This module holds all sparse level 3 routines.
+
+The sparse level 3 routines describe operations between a matrix in sparse format and multiple vectors in dense format that can also be seen as a dense matrix.
 
 rocsparse_csrmm()
 *********************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_scsrmm(rocsparse_handle handle,
-                   rocsparse_operation trans_A,
-                   rocsparse_operation trans_B,
-                   rocsparse_int m,
-                   rocsparse_int n,
-                   rocsparse_int k,
-                   rocsparse_int nnz,
-                   const float* alpha,
-                   const rocsparse_mat_descr descr,
-                   const float* csr_val,
-                   const rocsparse_int* csr_row_ptr,
-                   const rocsparse_int* csr_col_ind,
-                   const float* B,
-                   rocsparse_int ldb,
-                   const float* beta,
-                   float* C,
-                   rocsparse_int ldc);
+.. doxygenfunction:: rocsparse_scsrmm
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrmm
 
-  rocsparse_status
-  rocsparse_dcsrmm(rocsparse_handle handle,
-                   rocsparse_operation trans_A,
-                   rocsparse_operation trans_B,
-                   rocsparse_int m,
-                   rocsparse_int n,
-                   rocsparse_int k,
-                   rocsparse_int nnz,
-                   const double* alpha,
-                   const rocsparse_mat_descr descr,
-                   const double* csr_val,
-                   const rocsparse_int* csr_row_ptr,
-                   const rocsparse_int* csr_col_ind,
-                   const double* B,
-                   rocsparse_int ldb,
-                   const double* beta,
-                   double* C,
-                   rocsparse_int ldc);
-
-*rocsparse_csrmm()* multiplies the scalar :math:`\alpha` with a sparse :math:`m \times k` matrix :math:`A`, defined in CSR storage format, and the dense :math:`k \times n` matrix :math:`B` and adds the result to the dense :math:`m \times n` matrix :math:`C` that is multiplied by the scalar :math:`\beta`, such that :math:`C := \alpha \cdot op(A) \cdot op(B) + \beta \cdot C` with
-
-.. math::
-
-  op(A) = \Bigg\{
-            \begin{array}{ll}
-              A, & \text{if trans_A == rocsparse_operation_none} \\
-              A^T, & \text{if trans_A == rocsparse_operation_transpose} \\
-              A^H, & \text{if trans_A == rocsparse_operation_conjugate_transpose}
-            \end{array}
-
-and 
-
-.. math::
-
-  op(B) = \Bigg\{
-            \begin{array}{ll}
-              B, & \text{if trans_B == rocsparse_operation_none} \\
-              B^T, & \text{if trans_B == rocsparse_operation_transpose} \\
-              B^H, & \text{if trans_B == rocsparse_operation_conjugate_transpose}
-            \end{array}.
-
-Currently, only ``trans_A == rocsparse_operation_none`` is supported.
-
-.. code-block:: c
-
-  for(i = 0; i < ldc; ++i)
-    for(j = 0; j < n; ++j)
-    {
-      C[i][j] = beta * C[i][j];
-      for(k = csr_row_ptr[i]; k < csr_row_ptr[i + 1]; ++k)
-        C[i][j] += alpha * csr_val[k] * B[csr_col_ind[k]][j];
-    }
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-trans_A     matrix :math:`A` operation type.
-trans_B     matrix :math:`B` operation type.
-m           number of rows of the sparse CSR matrix :math:`A`.
-n           number of columns of the dense matrix :math:`op(B)` and :math:`C`.
-k           number of columns of the sparse CSR matrix :math:`A`.
-nnz         number of non-zero entries of the sparse CSR matrix :math:`A`.
-alpha       scalar :math:`\alpha`.
-descr       descriptor of the sparse CSR matrix :math:`A`. |br| Currently, *rocsparse_csrmm()* supports only ``rocsparse_matrix_type_general``.
-csr_val     array of ``nnz`` elements of the sparse CSR matrix :math:`A`.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix :math:`A`.
-csr_col_ind array of ``nnz`` elements containing the column indices of the sparse CSR matrix :math:`A`.
-B           array of dimension :math:`ldb \times n` (:math:`op(B) == B`) or |br| :math:`ldb \times k` (:math:`op(B) == B^T` or :math:`op(B) == B^H`).
-ldb         leading dimension of :math:`B`, must be at least :math:`\max{(1, k)}` (:math:`op(A) == A`) or |br| :math:`\max{(1, m)}` (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-beta        scalar :math:`\beta`.
-C           array of dimension :math:`ldc \times n`.
-ldc         leading dimension of :math:`C`, must be at least :math:`\max{(1, m)}` (:math:`op(A) == A`) or |br| :math:`\max{(1, k)}` (:math:`op(A) == A^T` or :math:`op(A) == A^H`).
-=========== =============================================================================
-
-====== ================================
-Output
-====== ================================
-C      array of dimension :math:`ldc \times n`.
-====== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n``, ``k``, ``nnz``, ``ldb`` or ``ldc`` is invalid.
-rocsparse_status_invalid_pointer  ``descr``, ``alpha``, ``csr_val``, ``csr_row_ptr``, ``csr_col_ind``, |br| ``B``, ``beta`` or ``C`` pointer is invalid.
-rocsparse_status_arch_mismatch    the device is not supported by *rocsparse_csrmm()*.
-rocsparse_status_not_implemented  ``trans_A != rocsparse_operation_none`` or |br| ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_precond_functions:
+.. _rocsparse_precond_functions_:
 
 Preconditioner Functions
 ------------------------
 
-.. _rocsparse_csric0:
+This module holds all sparse preconditioners.
 
-rocsparse_csric0
-*****************
+The sparse preconditioners describe manipulations on a matrix in sparse format to obtain a sparse preconditioner matrix.
 
-.. _rocsparse_csrilu0:
+rocsparse_csrilu0_zero_pivot()
+******************************
 
-rocsparse_csrilu0
-******************
+.. doxygenfunction:: rocsparse_csrilu0_zero_pivot
 
-.. _rocsparse_conversion_functions:
+rocsparse_csrilu0_buffer_size()
+*******************************
+
+.. doxygenfunction:: rocsparse_scsrilu0_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrilu0_buffer_size
+
+rocsparse_csrilu0_analysis()
+****************************
+
+.. doxygenfunction:: rocsparse_scsrilu0_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrilu0_analysis
+
+rocsparse_csrilu0()
+*******************
+
+.. doxygenfunction:: rocsparse_scsrilu0
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrilu0
+
+rocsparse_csrilu0_analysis_clear()
+**********************************
+
+.. doxygenfunction:: rocsparse_csrilu0_clear
+
+.. _rocsparse_conversion_functions_:
 
 Sparse Conversion Functions
 ---------------------------
 
-This section describes all rocSPARSE conversion functions.
+This module holds all sparse conversion routines.
 
-rocsparse_csr2coo
-******************
-.. code-block:: c
+The sparse conversion routines describe operations on a matrix in sparse format to obtain a matrix in a different sparse format.
 
-  rocsparse_status
-  rocsparse_csr2coo(rocsparse_handle handle,
-                    const rocsparse_int* csr_row_ptr,
-                    rocsparse_int nnz,
-                    rocsparse_int m,
-                    rocsparse_int* coo_row_ind,
-                    rocsparse_index_base idx_base);
+rocsparse_csr2coo()
+*******************
 
-*rocsparse_csr2coo()* converts the CSR array containing the row offsets, that point to the start of every row, into a COO array of row indices. It can also be used, to convert a CSC array containing the column offsets into a COO array of column indices.
+.. doxygenfunction:: rocsparse_csr2coo
 
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-nnz         number of non-zero entries of the sparse CSR matrix.
-m           number of rows of the sparse CSR matrix.
-idx_base    ``rocsparse_index_base_zero`` or ``rocsparse_index_base_one``.
-=========== =============================================================================
+rocsparse_coo2csr()
+*******************
 
-=========== ================================
-Output
-=========== ================================
-coo_row_ind array of ``nnz`` elements containing the row indices of the sparse COO matrix.
-=========== ================================
+.. doxygenfunction:: rocsparse_coo2csr
 
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``csr_row_ptr`` or ``coo_row_ind`` pointer is invalid.
-rocsparse_status_arch_mismatch    the device is not supported by *rocsparse_csr2coo()*.
-================================  ====
+rocsparse_csr2csc_buffer_size()
+*******************************
 
-rocsparse_coo2csr
-******************
-.. code-block:: c
+.. doxygenfunction:: rocsparse_csr2csc_buffer_size
 
-  rocsparse_status
-  rocsparse_coo2csr(rocsparse_handle handle,
-                    const rocsparse_int* coo_row_ind,
-                    rocsparse_int nnz,
-                    rocsparse_int m,
-                    rocsparse_int* csr_row_ptr,
-                    rocsparse_index_base idx_base);
+rocsparse_csr2csc()
+*******************
 
-*rocsparse_coo2csr()* converts the COO array containing the row indices into a CSR array of row offsets, that point to the start of every row. It can also be used, to convert a COO array containing the column indices into a CSC array of column offsets, that point to the start of every column.
+.. doxygenfunction:: rocsparse_scsr2csc
+  :outline:
+.. doxygenfunction:: rocsparse_dcsr2csc
 
-It is assumed that the COO row index array is sorted.
+rocsparse_csr2ell_width()
+*************************
 
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-coo_row_ind array of ``nnz`` elements containing the row indices of the sparse COO matrix.
-nnz         number of non-zero entries of the sparse CSR matrix.
-m           number of rows of the sparse CSR matrix.
-idx_base    ``rocsparse_index_base_zero`` or ``rocsparse_index_base_one``.
-=========== =============================================================================
+.. doxygenfunction:: rocsparse_csr2ell_width
 
-=========== ================================
-Output
-=========== ================================
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-=========== ================================
+rocsparse_csr2ell()
+*******************
 
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``coo_row_ind`` or ``csr_row_ptr`` pointer is invalid.
-================================  ====
+.. doxygenfunction:: rocsparse_scsr2ell
+  :outline:
+.. doxygenfunction:: rocsparse_dcsr2ell
 
-.. _rocsparse_csr2csc_buffer_size:
+rocsparse_ell2csr_nnz()
+***********************
 
-rocsparse_csr2csc_buffer_size
-******************************
-.. code-block:: c
+.. doxygenfunction:: rocsparse_ell2csr_nnz
 
-  rocsparse_status
-  rocsparse_csr2csc_buffer_size(rocsparse_handle handle,
-                                rocsparse_int m,
-                                rocsparse_int n,
-                                rocsparse_int nnz,
-                                const rocsparse_int* csr_row_ptr,
-                                const rocsparse_int* csr_col_ind,
-                                rocsparse_action copy_values,
-                                size_t* buffer_size);
+rocsparse_ell2csr()
+*******************
 
-*rocsparse_csr2csc_buffer_size()* returns the size of the temporary storage buffer required by :ref:`rocsparse_csr2csc`. The temporary storage buffer must be allocated by the user.
+.. doxygenfunction:: rocsparse_sell2csr
+  :outline:
+.. doxygenfunction:: rocsparse_dell2csr
 
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-m           number of rows of the sparse CSR matrix.
-n           number of columns of the sparse CSR matrix.
-nnz         number of non-zero entries of the sparse CSR matrix.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_col_ind array of ``nnz`` elements containing the column indices of the sparse CSR matrix.
-copy_values ``rocsparse_action_numeric`` or ``rocsparse_action_symbolic``.
-=========== =============================================================================
+rocsparse_csr2hyb()
+*******************
 
-=========== ================================
-Output
-=========== ================================
-buffer_size number of bytes of the temporary storage buffer required by :ref:`rocsparse_csr2csc`.
-=========== ================================
+.. doxygenfunction:: rocsparse_scsr2hyb
+  :outline:
+.. doxygenfunction:: rocsparse_dcsr2hyb
 
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``csr_row_ptr``, ``csr_col_ind`` or ``buffer_size`` pointer is invalid.
-rocsparse_status_internal_error   an internal error occurred.
-================================  ====
+rocsparse_create_identity_permutation()
+***************************************
 
-.. _rocsparse_csr2csc:
+.. doxygenfunction:: rocsparse_create_identity_permutation
 
-rocsparse_csr2csc
-*********************
-.. code-block:: c
+rocsparse_csrsort_buffer_size()
+*******************************
 
-  rocsparse_status
-  rocsparse_scsr2csc(rocsparse_handle handle,
-                     rocsparse_int m,
-                     rocsparse_int n,
-                     rocsparse_int nnz,
-                     const float* csr_val,
-                     const rocsparse_int* csr_row_ptr,
-                     const rocsparse_int* csr_col_ind,
-                     float* csc_val,
-                     rocsparse_int* csc_row_ind,
-                     rocsparse_int* csc_col_ptr,
-                     rocsparse_action copy_values,
-                     void* temp_buffer);
+.. doxygenfunction:: rocsparse_csrsort_buffer_size
 
-  rocsparse_status
-  rocsparse_dcsr2csc(rocsparse_handle handle,
-                     rocsparse_int m,
-                     rocsparse_int n,
-                     rocsparse_int nnz,
-                     const double* csr_val,
-                     const rocsparse_int* csr_row_ptr,
-                     const rocsparse_int* csr_col_ind,
-                     double* csc_val,
-                     rocsparse_int* csc_row_ind,
-                     rocsparse_int* csc_col_ptr,
-                     rocsparse_action copy_values,
-                     void* temp_buffer);
+rocsparse_csrsort()
+*******************
 
-*rocsparse_csr2csc()* converts a CSR matrix info a CSC matrix. The resulting matrix can also be seen as the transpose of the input matrix. *rocsparse_csr2csc()* can also be used to convert a CSC matrix into a CSR matrix. ``copy_values`` decides whether ``csc_val`` is being filled during conversion (``rocsparse_action_numeric``) or not (``rocsparse_action_symbolic``).
+.. doxygenfunction:: rocsparse_csrsort
 
-*rocsparse_csr2csc()* requires extra temporary storage buffer that has to be allocated by the user. Storage buffer size can be determined by :ref:`rocsparse_csr2csc_buffer_size`.
+rocsparse_coosort_buffer_size()
+*******************************
 
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-m           number of rows of the sparse CSR matrix.
-n           number of columns of the sparse CSR matrix.
-nnz         number of non-zero entries of the sparse CSR matrix.
-csr_val     array of ``nnz`` elements of the sparse CSR matrix.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_col_ind array of ``nnz`` elements containing the column indices of the sparse CSR matrix.
-copy_values ``rocsparse_action_numeric`` or ``rocsparse_action_symbolic``.
-temp_buffer temporary storage buffer allocated by the user, |br| size is returned by :ref:`rocsparse_csr2csc_buffer_size`.
-=========== =============================================================================
+.. doxygenfunction:: rocsparse_coosort_buffer_size
 
-=========== ================================
-Output
-=========== ================================
-csc_val     array of ``nnz`` elements of the sparse CSC matrix.
-csc_row_ind array of ``nnz`` elements containing the row indices of the sparse CSC matrix.
-csc_col_ptr array of ``n+1`` elements that point to the start of every column of the sparse CSC matrix.
-=========== ================================
+rocsparse_coosort_by_row()
+**************************
 
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``csr_val``, ``csr_row_ptr``, ``csr_col_ind``, ``csc_val``, |br| ``csc_row_ind``, ``csc_col_ptr`` or ``temp_buffer`` pointer is invalid.
-rocsparse_status_arch_mismatch    the device is not supported by *rocsparse_csr2csc()*.
-rocsparse_status_internal_error   an internal error occurred.
-================================  ====
+.. doxygenfunction:: rocsparse_coosort_by_row
 
-.. _rocsparse_csr2ell_width:
-
-rocsparse_csr2ell_width
-************************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_csr2ell_width(rocsparse_handle handle,
-                          rocsparse_int m,
-                          const rocsparse_mat_descr csr_descr,
-                          const rocsparse_int* csr_row_ptr,
-                          const rocsparse_mat_descr ell_descr,
-                          rocsparse_int* ell_width);
-
-*rocsparse_csr2ell_width()* computes the maximum of the per row non-zero elements over all rows, the ELL width, for a given CSR matrix.
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-m           number of rows of the sparse CSR matrix.
-csr_descr   descriptor of the sparse CSR matrix. |br| Currently, *rocsparse_csr2ell_width()* supports only ``rocsparse_matrix_type_general``.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-ell_descr   descriptor of the sparse ELL matrix. |br| Currently, *rocsparse_csr2ell_width()* supports only ``rocsparse_matrix_type_general``.
-=========== =============================================================================
-
-=========== ================================
-Output
-=========== ================================
-ell_width   pointer to the number of non-zero elements per row in ELL storage format.
-=========== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m`` is invalid.
-rocsparse_status_invalid_pointer  ``csr_descr``, ``csr_row_ptr``, |br| ``ell_descr`` or ``ell_width`` pointer is invalid.
-rocsparse_status_internal_error   an internal error occurred.
-rocsparse_status_not_implemented  ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_csr2ell:
-
-rocsparse_csr2ell
-*********************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_scsr2ell(rocsparse_handle handle,
-                     rocsparse_int m,
-                     const rocsparse_mat_descr csr_descr,
-                     const float* csr_val,
-                     const rocsparse_int* csr_row_ptr,
-                     const rocsparse_int* csr_col_ind,
-                     const rocsparse_mat_descr ell_descr,
-                     rocsparse_int ell_width,
-                     float* ell_val,
-                     rocsparse_int* ell_col_ind);
-
-  rocsparse_status
-  rocsparse_dcsr2ell(rocsparse_handle handle,
-                     rocsparse_int m,
-                     const rocsparse_mat_descr csr_descr,
-                     const double* csr_val,
-                     const rocsparse_int* csr_row_ptr,
-                     const rocsparse_int* csr_col_ind,
-                     const rocsparse_mat_descr ell_descr,
-                     rocsparse_int ell_width,
-                     double* ell_val,
-                     rocsparse_int* ell_col_ind);
-
-*rocsparse_csr2ell()* converts a CSR matrix into an ELL matrix. It is assumed, that ``ell_val`` and ``ell_col_ind`` are allocated. Allocation size is computed by the number of rows times the number of ELL non-zero elements per row, such that :math:`\text{nnz}_{\text{ELL}} = m \cdot \text{ell_width}`. The number of ELL non-zero elements per row is obtained by :ref:`rocsparse_csr2ell_width`.
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-m           number of rows of the sparse CSR matrix.
-csr_descr   descriptor of the sparse CSR matrix. |br| Currently, *rocsparse_csr2ell()* supports only ``rocsparse_matrix_type_general``.
-csr_val     array containing the values of the sparse CSR matrix.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_col_ind array containing the column indices of the sparse CSR matrix.
-ell_descr   descriptor of the sparse ELL matrix. |br| Currently, *rocsparse_csr2ell()* supports only ``rocsparse_matrix_type_general``.
-ell_width   number of non-zero elements per row in ELL storage format.
-=========== =============================================================================
-
-=========== ================================
-Output
-=========== ================================
-ell_val     array of ``m`` times ``ell_width`` elements of the sparse ELL matrix.
-ell_col_ind array of ``m`` times ``ell_width`` elements containing the column indices |br| of the sparse ELL matrix.
-=========== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m`` or ``ell_width`` is invalid.
-rocsparse_status_invalid_pointer  ``csr_descr``, ``csr_val``, ``csr_row_ptr``, ``csr_col_ind``, |br| ``ell_descr``, ``ell_val`` or ``ell_col_ind`` pointer is invalid.
-rocsparse_status_not_implemented  ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_ell2csr_nnz:
-
-rocsparse_ell2csr_nnz
-**********************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_ell2csr_nnz(rocsparse_handle handle,
-                        rocsparse_int m,
-                        rocsparse_int n,
-                        const rocsparse_mat_descr ell_descr,
-                        rocsparse_int ell_width,
-                        const rocsparse_int* ell_col_ind,
-                        const rocsparse_mat_descr csr_descr,
-                        rocsparse_int* csr_row_ptr,
-                        rocsparse_int* csr_nnz);
-
-*rocsparse_ell2csr_nnz()* computes the total CSR non-zero elements and the CSR row offsets, that point to the start of every row of the sparse CSR matrix, for a given ELL matrix. It is assumed that ``csr_row_ptr`` has been allocated with size ``m + 1``.
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-m           number of rows of the sparse ELL matrix.
-n           number of columns of the sparse ELL matrix.
-ell_descr   descriptor of the sparse ELL matrix. |br| Currently, *rocsparse_ell2csr_nnz()* supports only ``rocsparse_matrix_type_general``.
-ell_width   number of non-zero elements per row in ELL storage format.
-ell_col_ind array of ``m`` times ``ell_width`` elements containing the column indices |br| of the sparse ELL matrix.
-csr_descr   descriptor of the sparse CSR matrix. |br| Currently, *rocsparse_ell2csr_nnz()* supports only ``rocsparse_matrix_type_general``.
-=========== =============================================================================
-
-=========== ================================
-Output
-=========== ================================
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_nnz     pointer to the total number of non-zero elements in CSR storage format.
-=========== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``ell_width`` is invalid.
-rocsparse_status_invalid_pointer  ``ell_descr``, ``ell_col_ind``, |br| ``csr_descr``, ``csr_row_ptr`` or ``csr_nnz`` pointer is invalid.
-rocsparse_status_not_implemented  ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_ell2csr:
-
-rocsparse_ell2csr
-*********************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_sell2csr(rocsparse_handle handle,
-                     rocsparse_int m,
-                     rocsparse_int n,
-                     const rocsparse_mat_descr ell_descr,
-                     rocsparse_int ell_width,
-                     const float* ell_val,
-                     const rocsparse_int* ell_col_ind,
-                     const rocsparse_mat_descr csr_descr,
-                     float* csr_val,
-                     const rocsparse_int* csr_row_ptr,
-                     rocsparse_int* csr_col_ind);
-
-  rocsparse_status
-  rocsparse_dell2csr(rocsparse_handle handle,
-                     rocsparse_int m,
-                     rocsparse_int n,
-                     const rocsparse_mat_descr ell_descr,
-                     rocsparse_int ell_width,
-                     const double* ell_val,
-                     const rocsparse_int* ell_col_ind,
-                     const rocsparse_mat_descr csr_descr,
-                     double* csr_val,
-                     const rocsparse_int* csr_row_ptr,
-                     rocsparse_int* csr_col_ind);
-
-*rocsparse_ell2csr()* converts an ELL matrix into a CSR matrix. It is assumed that ``csr_row_ptr`` has already been filled and that ``csr_val`` and ``csr_col_ind`` are allocated by the user. ``csr_row_ptr`` and allocation size of ``csr_col_ind`` and ``csr_val`` is defined by the number of CSR non-zero elements. Both can be obtained by :ref:`rocsparse_ell2csr_nnz`.
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-m           number of rows of the sparse ELL matrix.
-n           number of columns of the sparse ELL matrix.
-ell_descr   descriptor of the sparse ELL matrix. |br| Currently, *rocsparse_ell2csr()* supports only ``rocsparse_matrix_type_general``.
-ell_width   number of non-zero elements per row in ELL storage format.
-ell_val     array of ``m`` times ``ell_width`` elements of the sparse ELL matrix.
-ell_col_ind array of ``m`` times ``ell_width`` elements containing the column indices |br| of the sparse ELL matrix.
-csr_descr   descriptor of the sparse CSR matrix. |br| Currently, *rocsparse_ell2csr()* supports only ``rocsparse_matrix_type_general``.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-=========== =============================================================================
-
-=========== ================================
-Output
-=========== ================================
-csr_val     array containing the values of the sparse CSR matrix.
-csr_col_ind array containing the column indices of the sparse CSR matrix.
-=========== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``ell_width`` is invalid.
-rocsparse_status_invalid_pointer  ``csr_descr``, ``csr_val``, ``csr_row_ptr``, ``csr_col_ind``, |br| ``ell_descr``, ``ell_val`` or ``ell_col_ind`` pointer is invalid.
-rocsparse_status_not_implemented  ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-rocsparse_csr2hyb
-*********************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_scsr2hyb(rocsparse_handle handle,
-                     rocsparse_int m,
-                     rocsparse_int n,
-                     const rocsparse_mat_descr descr,
-                     const float* csr_val,
-                     const rocsparse_int* csr_row_ptr,
-                     const rocsparse_int* csr_col_ind,
-                     rocsparse_hyb_mat hyb,
-                     rocsparse_int user_ell_width,
-                     rocsparse_hyb_partition partition_type);
-
-  rocsparse_status
-  rocsparse_dcsr2hyb(rocsparse_handle handle,
-                     rocsparse_int m,
-                     rocsparse_int n,
-                     const rocsparse_mat_descr descr,
-                     const double* csr_val,
-                     const rocsparse_int* csr_row_ptr,
-                     const rocsparse_int* csr_col_ind,
-                     rocsparse_hyb_mat hyb,
-                     rocsparse_int user_ell_width,
-                     rocsparse_hyb_partition partition_type);
-
-*rocsparse_csr2hyb()* converts a CSR matrix into a HYB matrix. It is assumed that ``hyb`` has been initialized with :ref:`rocsparse_create_hyb_mat`.
-
-This function requires a significant amount of storage for the HYB matrix, depending on the matrix structure.
-
-============== =============================================================================
-Input
-============== =============================================================================
-handle         handle to the rocSPARSE library context queue.
-m              number of rows of the sparse ELL matrix.
-n              number of columns of the sparse ELL matrix.
-descr          descriptor of the sparse CSR matrix. |br| Currently, *rocsparse_csr2hyb()* supports only ``rocsparse_matrix_type_general``.
-csr_val        array containing the values of the sparse CSR matrix.
-csr_row_ptr    array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_col_ind    array containing the column indices of the sparse CSR matrix.
-user_ell_width width of the ELL part of the HYB matrix (only required if |br| ``partition_type == rocsparse_hyb_partition_user``).
-partition_type ``rocsparse_hyb_partition_auto`` (recommended), |br| ``rocsparse_hyb_partition_user`` or ``rocsparse_hyb_partition_max``.
-============== =============================================================================
-
-====== ================================
-Output
-====== ================================
-hyb    sparse matrix in HYB format.
-====== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``user_ell_width`` is invalid.
-rocsparse_status_invalid_value    ``partition_type`` is invalid.
-rocsparse_status_invalid_pointer  ``descr``, ``hyb``, ``csr_val``, ``csr_row_ptr`` |br| or ``csr_col_ind`` pointer is invalid.
-rocsparse_status_memory_error     the buffer for the HYB matrix could not be allocated.
-rocsparse_status_internal_error   an internal error occurred.
-rocsparse_status_not_implemented  ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_create_identity_permutation:
-
-rocsparse_create_identity_permutation
-**************************************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_create_identity_permutation(rocsparse_handle handle,
-                                        rocsparse_int n,
-                                        rocsparse_int* p);
-
-*rocsparse_create_identity_permutation()* stores the identity map in ``p``, such that :math:`p = 0:1:(n-1)`.
-
-.. code-block:: c
-
-  for(i = 0; i < n; ++i)
-    p[i] = i;
-
-====== ==============================================
-Input
-====== ==============================================
-handle handle to the rocSPARSE library context queue.
-n      size of the map ``p``.
-====== ==============================================
-
-====== ===========================================
-Output
-====== ===========================================
-p      array of ``n`` integers containing the map.
-====== ===========================================
-
-================================  ========================================
-Returned rocsparse_status
-================================  ========================================
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``n`` is invalid.
-rocsparse_status_invalid_pointer  ``p`` pointer is invalid.
-================================  ========================================
-
-.. _rocsparse_csrsort_buffer_size:
-
-rocsparse_csrsort_buffer_size
-******************************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_csrsort_buffer_size(rocsparse_handle handle,
-                                rocsparse_int m,
-                                rocsparse_int n,
-                                rocsparse_int nnz,
-                                const rocsparse_int* csr_row_ptr,
-                                const rocsparse_int* csr_col_ind,
-                                size_t* buffer_size);
-
-*rocsparse_csrsort_buffer_size()* returns the size of the temporary storage buffer required by :ref:`rocsparse_csrsort`. The temporary storage buffer must be allocated by the user.
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-m           number of rows of the sparse CSR matrix.
-n           number of columns of the sparse CSR matrix.
-nnz         number of non-zero entries of the sparse CSR matrix.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_col_ind array of ``nnz`` elements containing the column indices of the sparse CSR matrix.
-=========== =============================================================================
-
-=========== ================================
-Output
-=========== ================================
-buffer_size number of bytes of the temporary storage buffer required by :ref:`rocsparse_csrsort`.
-=========== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``csr_row_ptr``, ``csr_col_ind`` or ``buffer_size`` pointer is invalid.
-rocsparse_status_internal_error   an internal error occurred.
-================================  ====
-
-.. _rocsparse_csrsort:
-
-rocsparse_csrsort
-*********************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_csrsort(rocsparse_handle handle,
-                    rocsparse_int m,
-                    rocsparse_int n,
-                    rocsparse_int nnz,
-                    const rocsparse_mat_descr descr,
-                    const rocsparse_int* csr_row_ptr,
-                    rocsparse_int* csr_col_ind,
-                    rocsparse_int* perm,
-                    void* temp_buffer);
-
-*rocsparse_csrsort()* sorts a matrix in CSR format. The sorted permutation vector ``perm`` can be used to obtain sorted ``csr_val`` array. In this case, ``perm`` must be initialized as the identity permutation, see :ref:`rocsparse_create_identity_permutation`.
-
-*rocsparse_csrsort()* requires extra temporary storage buffer that has to be allocated by the user. Storage buffer size can be determined by :ref:`rocsparse_csrsort_buffer_size`.
-
-Example application:
-
-.. code-block:: c
-
-  //     1 2 3
-  // A = 4 5 6
-  //     7 8 9
-  rocsparse_int m   = 3;
-  rocsparse_int n   = 3;
-  rocsparse_int nnz = 9;
-
-  csr_row_ptr[m + 1] = {0, 3, 6, 9}                 // device memory
-  csr_col_ind[nnz]   = {2, 0, 1, 0, 1, 2, 0, 2, 1}; // device memory
-  csr_val[nnz]       = {3, 1, 2, 4, 5, 6, 7, 9, 8}; // device memory
-
-  // Allocate temporary buffer
-  size_t buffer_size = 0;
-  void* temp_buffer  = NULL;
-  rocsparse_csrsort_buffer_size(handle, m, n, nnz, csr_row_ptr, csr_col_ind, &buffer_size);
-  hipMalloc(&temp_buffer, sizeof(char) * buffer_size);
-
-  // Create permutation vector perm as the identity map
-  rocsparse_int* perm = NULL;
-  hipMalloc((void**)&perm, sizeof(rocsparse_int) * nnz);
-  rocsparse_create_identity_permutation(handle, nnz, perm);
-
-  // Sort the CSR matrix
-  rocsparse_csrsort(handle, m, n, nnz, descr, csr_row_ptr, csr_col_ind, perm, temp_buffer);
-
-  // Gather sorted csr_val array
-  float* csr_val_sorted = NULL;
-  hipMalloc((void**)&csr_val_sorted, sizeof(float) * nnz);
-  rocsparse_sgthr(handle, nnz, csr_val, csr_val_sorted, perm, rocsparse_index_base_zero);
-
-  // Clean up
-  hipFree(temp_buffer);
-  hipFree(perm);
-  hipFree(csr_val);
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-m           number of rows of the sparse CSR matrix.
-n           number of columns of the sparse CSR matrix.
-nnz         number of non-zero entries of the sparse CSR matrix.
-descr       descriptor of the sparse CSR matrix. |br| Currently, *rocsparse_csrsort()* supports only ``rocsparse_matrix_type_general``.
-csr_row_ptr array of ``m+1`` elements that point to the start of every row of the sparse CSR matrix.
-csr_col_ind array of ``nnz`` elements containing the column indices of the sparse CSR matrix.
-perm        array of ``nnz`` integers containing the unsorted map indices, can be ``NULL``.
-temp_buffer temporary storage buffer allocated by the user, |br| size is returned by :ref:`rocsparse_csrsort_buffer_size`.
-=========== =============================================================================
-
-=========== ================================
-Output
-=========== ================================
-csr_col_ind array of ``nnz`` elements containing the column indices of the sparse CSR matrix.
-perm        array of ``nnz`` integers containing the unsorted map indices, if not ``NULL``.
-=========== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``descr``, ``csr_row_ptr``, ``csr_col_ind`` or |br| ``temp_buffer`` pointer is invalid.
-rocsparse_status_internal_error   an internal error occurred.
-rocsparse_status_not_implemented  ``rocsparse_matrix_type != rocsparse_matrix_type_general``.
-================================  ====
-
-.. _rocsparse_coosort_buffer_size:
-
-rocsparse_coosort_buffer_size
+rocsparse_coosort_by_column()
 *****************************
-.. code-block:: c
 
-  rocsparse_status
-  rocsparse_coosort_buffer_size(rocsparse_handle handle,
-                                rocsparse_int m,
-                                rocsparse_int n,
-                                rocsparse_int nnz,
-                                const rocsparse_int* coo_row_ind,
-                                const rocsparse_int* coo_col_ind,
-                                size_t* buffer_size);
-
-*rocsparse_coosort_buffer_size()* returns the size of the temporary storage buffer required by :ref:`rocsparse_coosort`. The temporary storage buffer must be allocated by the user.
-
-=========== =============================================================================
-Input
-=========== =============================================================================
-handle      handle to the rocSPARSE library context queue.
-m           number of rows of the sparse COO matrix.
-n           number of columns of the sparse COO matrix.
-nnz         number of non-zero entries of the sparse COO matrix.
-coo_row_ind array of ``nnz`` elements containing the row indices of the sparse COO matrix.
-coo_col_ind array of ``nnz`` elements containing the column indices of the sparse COO matrix.
-=========== =============================================================================
-
-=========== ================================
-Output
-=========== ================================
-buffer_size number of bytes of the temporary storage buffer required by :ref:`rocsparse_coosort`.
-=========== ================================
-
-================================  ====
-Returned rocsparse_status
-================================  ====
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``coo_row_ind``, ``coo_col_ind`` or ``buffer_size`` pointer is invalid.
-rocsparse_status_internal_error   an internal error occurred.
-================================  ====
-
-.. _rocsparse_coosort:
-
-rocsparse_coosort
-*****************
-.. code-block:: c
-
-  rocsparse_status
-  rocsparse_coosort_by_row(rocsparse_handle handle,
-                           rocsparse_int m,
-                           rocsparse_int n,
-                           rocsparse_int nnz,
-                           rocsparse_int* coo_row_ind,
-                           rocsparse_int* coo_col_ind,
-                           rocsparse_int* perm,
-                           void* temp_buffer);
-
-  rocsparse_status
-  rocsparse_coosort_by_column(rocsparse_handle handle,
-                              rocsparse_int m,
-                              rocsparse_int n,
-                              rocsparse_int nnz,
-                              rocsparse_int* coo_row_ind,
-                              rocsparse_int* coo_col_ind,
-                              rocsparse_int* perm,
-                              void* temp_buffer);
-
-*rocsparse_coosort_by_row/column()* sorts a matrix in COO format by row/column. The sorted permutation vector ``perm`` can be used to obtain sorted ``coo_val`` array. In this case, ``perm`` must be initialized as the identity permutation, see :ref:`rocsparse_create_identity_permutation`.
-
-*rocsparse_coosort_by_row/column()* requires extra temporary storage buffer that has to be allocated by the user. Storage buffer size can be determined by :ref:`rocsparse_coosort_buffer_size`.
-
-=========== =================================================================================================
-Input
-=========== =================================================================================================
-handle      handle to the rocSPARSE library context queue.
-m           number of rows of the sparse COO matrix.
-n           number of columns of the sparse COO matrix.
-nnz         number of non-zero entries of the sparse COO matrix.
-coo_row_ind array of ``nnz`` elements containing the row indices of the sparse COO matrix.
-coo_col_ind array of ``nnz`` elements containing the column indices of the sparse COO matrix.
-perm        array of ``nnz`` integers containing the unsorted map indices, can be ``NULL``.
-temp_buffer temporary storage buffer allocated by the user, |br| size is returned by :ref:`rocsparse_coosort_buffer_size`.
-=========== =================================================================================================
-
-=========== =================================================================================
-Output
-=========== =================================================================================
-coo_row_ind array of ``nnz`` elements containing the row indices of the sparse COO matrix.
-coo_col_ind array of ``nnz`` elements containing the column indices of the sparse COO matrix.
-perm        array of ``nnz`` integers containing the unsorted map indices, if not ``NULL``.
-=========== =================================================================================
-
-================================  =======================================================================
-Returned rocsparse_status
-================================  =======================================================================
-rocsparse_status_success          the operation completed successfully.
-rocsparse_status_invalid_handle   the library context was not initialized.
-rocsparse_status_invalid_size     ``m``, ``n`` or ``nnz`` is invalid.
-rocsparse_status_invalid_pointer  ``coo_row_ind``, ``coo_col_ind`` or ``temp_buffer`` pointer is invalid.
-rocsparse_status_internal_error   an internal error occurred.
-================================  =======================================================================
+.. doxygenfunction:: rocsparse_coosort_by_column

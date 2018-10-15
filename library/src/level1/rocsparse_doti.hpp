@@ -113,12 +113,11 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle handle,
     // Stream
     hipStream_t stream = handle->stream;
 
-#define DOTI_DIM 512
-    rocsparse_int nblocks = (nnz - 1) / DOTI_DIM + 1;
+#define DOTI_DIM 1024
+    rocsparse_int nblocks = DOTI_DIM;
 
-    // Allocate workspace
-    T* workspace = NULL;
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&workspace, sizeof(T) * nblocks));
+    // Get workspace from handle device buffer
+    T* workspace = reinterpret_cast<T*>(handle->buffer);
 
     dim3 doti_blocks(nblocks);
     dim3 doti_threads(DOTI_DIM);
@@ -148,21 +147,17 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle handle,
     }
     else
     {
-        if(nblocks > 1)
-        {
-            hipLaunchKernelGGL((doti_kernel_part2<T, DOTI_DIM, 0>),
-                               dim3(1),
-                               doti_threads,
-                               0,
-                               stream,
-                               nblocks,
-                               workspace,
-                               result);
-        }
+        hipLaunchKernelGGL((doti_kernel_part2<T, DOTI_DIM, 0>),
+                           dim3(1),
+                           doti_threads,
+                           0,
+                           stream,
+                           nblocks,
+                           workspace,
+                           result);
+
         RETURN_IF_HIP_ERROR(hipMemcpy(result, workspace, sizeof(T), hipMemcpyDeviceToHost));
     }
-
-    RETURN_IF_HIP_ERROR(hipFree(workspace));
 
     return rocsparse_status_success;
 }

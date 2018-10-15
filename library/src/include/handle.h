@@ -68,6 +68,7 @@ struct _rocsparse_handle
     // logging mode
     rocsparse_layer_mode layer_mode;
     // device buffer
+    size_t buffer_size;
     void* buffer;
     // device one
     float* sone;

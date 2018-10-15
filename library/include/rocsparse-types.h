@@ -56,9 +56,9 @@ typedef struct _rocsparse_handle* rocsparse_handle;
  *
  *  \details
  *  The rocSPARSE matrix descriptor is a structure holding all properties of a matrix.
- *  It must be initialized using rocsparse_create_mat_descr() and the returned descriptor
- *  must be passed to all subsequent library calls that involve the matrix. It should be
- *  destroyed at the end using rocsparse_destroy_mat_descr().
+ *  It must be initialized using rocsparse_create_mat_descr() and the returned
+ *  descriptor must be passed to all subsequent library calls that involve the matrix.
+ *  It should be destroyed at the end using rocsparse_destroy_mat_descr().
  */
 typedef struct _rocsparse_mat_descr* rocsparse_mat_descr;
 
@@ -69,8 +69,7 @@ typedef struct _rocsparse_mat_descr* rocsparse_mat_descr;
  *  The rocSPARSE HYB matrix structure holds the HYB matrix. It must be initialized using
  *  rocsparse_create_hyb_mat() and the returned HYB matrix must be passed to all
  *  subsequent library calls that involve the matrix. It should be destroyed at the end
- *  using rocsparse_destroy_hyb_mat(). TODO For more details on the HYB format, see HYB storage
- * format.
+ *  using rocsparse_destroy_hyb_mat().
  */
 typedef struct _rocsparse_hyb_mat* rocsparse_hyb_mat;
 
@@ -230,8 +229,7 @@ typedef enum rocsparse_pointer_mode_ {
  *  \brief Indicates if layer is active with bitmask.
  *
  *  \details
- *  The \ref rocsparse_layer_mode bit mask indicates the logging characteristics. See
- *  TODO rocsparse_logging for more informations.
+ *  The \ref rocsparse_layer_mode bit mask indicates the logging characteristics.
  */
 typedef enum rocsparse_layer_mode {
     rocsparse_layer_mode_none      = 0x0, /**< layer is not active. */
