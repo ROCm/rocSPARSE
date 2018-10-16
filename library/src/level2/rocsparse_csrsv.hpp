@@ -346,8 +346,11 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     }
 
     // Copy row map to device
-    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-        info->d_row_map, info->h_row_map, sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice, stream));
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->d_row_map,
+                                       info->h_row_map,
+                                       sizeof(rocsparse_int) * (m + 1),
+                                       hipMemcpyHostToDevice,
+                                       stream));
 
     // Store some pointers to verify correct execution
     info->m           = m;
