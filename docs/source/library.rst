@@ -766,7 +766,7 @@ rocsparse_csrsv_solve()
   :outline:
 .. doxygenfunction:: rocsparse_dcsrsv_solve
 
-rocsparse_csrsv_analysis_clear()
+rocsparse_csrsv_clear()
 ********************************
 
 .. doxygenfunction:: rocsparse_csrsv_clear
@@ -822,7 +822,7 @@ rocsparse_csrilu0()
   :outline:
 .. doxygenfunction:: rocsparse_dcsrilu0
 
-rocsparse_csrilu0_analysis_clear()
+rocsparse_csrilu0_clear()
 **********************************
 
 .. doxygenfunction:: rocsparse_csrilu0_clear
