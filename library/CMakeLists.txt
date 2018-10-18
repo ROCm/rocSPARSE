@@ -95,7 +95,7 @@ rocm_install_targets(TARGETS rocsparse
 # Export targets
 rocm_export_targets(TARGETS roc::rocsparse
                     PREFIX rocsparse
-                    DEPENDS PACKAGE HIP
+                    DEPENDS PACKAGE hip
                     NAMESPACE roc::
 )
 
