@@ -45,7 +45,7 @@ if(HIP_PLATFORM STREQUAL "nvcc" OR HIP_COMPILER STREQUAL "clang")
   endif()
   mark_as_advanced(HIP_HIPCC_EXECUTABLE)
   set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
-elseif(HIP_PLATFORM STREQUAL "hcc")
+else()
   # Find HCC executable
   find_program(
       HIP_HCC_EXECUTABLE
@@ -65,6 +65,4 @@ elseif(HIP_PLATFORM STREQUAL "hcc")
   endif()
   mark_as_advanced(HIP_HCC_EXECUTABLE)
   set(CMAKE_CXX_COMPILER ${HIP_HCC_EXECUTABLE})
-else()
-  message(FATAL_ERROR "HIP_PLATFORM must be 'hcc/nvcc' (AMD ROCm platform).")
 endif()

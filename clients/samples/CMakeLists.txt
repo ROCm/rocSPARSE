@@ -35,7 +35,12 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
   )
 
-  if(HIP_PLATFORM STREQUAL "hcc")
+  if(HIP_PLATFORM STREQUAL "nvcc")
+    target_link_libraries(${EXAMPLE_TARGET}
+      PRIVATE
+        rocsparse
+    )
+  else()
     target_link_libraries(${EXAMPLE_TARGET}
       PRIVATE
         rocsparse
@@ -49,12 +54,6 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
     endforeach()
   endif()
 
-  if(HIP_PLATFORM STREQUAL "nvcc")
-    target_link_libraries(${EXAMPLE_TARGET}
-      PRIVATE
-        rocsparse
-    )
-  endif()
   set_target_properties(${EXAMPLE_TARGET}
     PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/example"
