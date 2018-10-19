@@ -987,6 +987,9 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle handle,
  *  \p position can be in host or device memory. If no zero pivot has been found,
  *  \p position is set to -1 and \ref rocsparse_status_success is returned instead.
  *
+ *  \note \p rocsparse_csrsv_zero_pivot is a blocking function. It might influence
+ *  performance negatively.
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
@@ -1917,6 +1920,9 @@ rocsparse_status rocsparse_zcsrmm(rocsparse_handle handle,
  *
  *  \p position can be in host or device memory. If no zero pivot has been found,
  *  \p position is set to -1 and \ref rocsparse_status_success is returned instead.
+ *
+ *  \note \p rocsparse_csrilu0_zero_pivot is a blocking function. It might influence
+ *  performance negatively.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.

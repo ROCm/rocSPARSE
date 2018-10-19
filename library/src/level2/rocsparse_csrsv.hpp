@@ -198,6 +198,15 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     // Allocate buffer to hold zero pivot
     RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->zero_pivot, sizeof(rocsparse_int)));
 
+    // Allocate buffer to hold row map
+    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->d_row_map, sizeof(rocsparse_int) * (m + 1)));
+
+    // Allocate host buffer to hold row map
+    RETURN_IF_HIP_ERROR(hipHostMalloc((void**)&info->h_row_map, sizeof(rocsparse_int) * (m + 1)));
+
+    // Initialize row map
+    memset(info->h_row_map, 0, sizeof(rocsparse_int) * (m + 1));
+
     // Initialize zero pivot
     rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
     RETURN_IF_HIP_ERROR(
@@ -323,7 +332,6 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     RETURN_IF_HIP_ERROR(hipMemcpy(
         done_array.data(), d_done_array, sizeof(rocsparse_int) * m, hipMemcpyDeviceToHost));
 
-    std::vector<rocsparse_int> row_map(m + 1, 0);
     std::vector<rocsparse_int> counter(info->max_depth, 0);
 
     // Create row map
@@ -333,14 +341,16 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
         rocsparse_int prev_level   = level - 1;
         rocsparse_int depth_offset = (level == 0) ? 0 : info->rows_per_level[prev_level];
 
-        row_map[depth_offset + counter[level]] = i;
+        info->h_row_map[depth_offset + counter[level]] = i;
         ++counter[level];
     }
 
     // Copy row map to device
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->row_map, sizeof(rocsparse_int) * (m + 1)));
-    RETURN_IF_HIP_ERROR(hipMemcpy(
-        info->row_map, row_map.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->d_row_map,
+                                       info->h_row_map,
+                                       sizeof(rocsparse_int) * (m + 1),
+                                       hipMemcpyHostToDevice,
+                                       stream));
 
     // Store some pointers to verify correct execution
     info->m           = m;
@@ -803,7 +813,7 @@ CSRSV_DIM + 1);
                                        x,
                                        y,
                                        d_done_array,
-                                       csrsv->row_map,
+                                       csrsv->d_row_map,
                                        depth_offset,
                                        csrsv->zero_pivot,
                                        descr->base,
@@ -825,7 +835,7 @@ CSRSV_DIM + 1);
                                        x,
                                        y,
                                        d_done_array,
-                                       csrsv->row_map,
+                                       csrsv->d_row_map,
                                        depth_offset,
                                        csrsv->zero_pivot,
                                        descr->base,
@@ -855,7 +865,7 @@ CSRSV_DIM + 1);
                                        x,
                                        y,
                                        d_done_array,
-                                       csrsv->row_map,
+                                       csrsv->d_row_map,
                                        depth_offset,
                                        csrsv->zero_pivot,
                                        descr->base,
@@ -877,7 +887,7 @@ CSRSV_DIM + 1);
                                        x,
                                        y,
                                        d_done_array,
-                                       csrsv->row_map,
+                                       csrsv->d_row_map,
                                        depth_offset,
                                        csrsv->zero_pivot,
                                        descr->base,
@@ -918,7 +928,7 @@ CSRSV_DIM + 1);
                                    x,
                                    y,
                                    d_done_array,
-                                   csrsv->row_map,
+                                   csrsv->d_row_map,
                                    depth_offset,
                                    csrsv->zero_pivot,
                                    descr->base,
@@ -940,7 +950,7 @@ CSRSV_DIM + 1);
                                    x,
                                    y,
                                    d_done_array,
-                                   csrsv->row_map,
+                                   csrsv->d_row_map,
                                    depth_offset,
                                    csrsv->zero_pivot,
                                    descr->base,
@@ -970,7 +980,7 @@ CSRSV_DIM + 1);
                                    x,
                                    y,
                                    d_done_array,
-                                   csrsv->row_map,
+                                   csrsv->d_row_map,
                                    depth_offset,
                                    csrsv->zero_pivot,
                                    descr->base,
@@ -992,7 +1002,7 @@ CSRSV_DIM + 1);
                                    x,
                                    y,
                                    d_done_array,
-                                   csrsv->row_map,
+                                   csrsv->d_row_map,
                                    depth_offset,
                                    csrsv->zero_pivot,
                                    descr->base,
@@ -1029,7 +1039,7 @@ CSRSV_DIM + 1);
                                x,
                                y,
                                d_done_array,
-                               csrsv->row_map,
+                               csrsv->d_row_map,
                                0,
                                csrsv->zero_pivot,
                                descr->base,
@@ -1051,7 +1061,7 @@ CSRSV_DIM + 1);
                                x,
                                y,
                                d_done_array,
-                               csrsv->row_map,
+                               csrsv->d_row_map,
                                0,
                                csrsv->zero_pivot,
                                descr->base,
@@ -1081,7 +1091,7 @@ CSRSV_DIM + 1);
                                x,
                                y,
                                d_done_array,
-                               csrsv->row_map,
+                               csrsv->d_row_map,
                                0,
                                csrsv->zero_pivot,
                                descr->base,
@@ -1103,7 +1113,7 @@ CSRSV_DIM + 1);
                                x,
                                y,
                                d_done_array,
-                               csrsv->row_map,
+                               csrsv->d_row_map,
                                0,
                                csrsv->zero_pivot,
                                descr->base,
