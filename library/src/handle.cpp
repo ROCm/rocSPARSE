@@ -231,7 +231,7 @@ rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
 
     if(info->h_row_map != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFreeHost(info->h_row_map));
+        RETURN_IF_HIP_ERROR(hipHostFree(info->h_row_map));
         info->h_row_map = nullptr;
     }
 
