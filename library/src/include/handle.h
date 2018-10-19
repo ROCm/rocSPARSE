@@ -194,7 +194,9 @@ struct _rocsparse_csrtr_info
     // host array to hold number of rows per level
     std::vector<rocsparse_int> rows_per_level;
     // device array to hold row permutation
-    rocsparse_int* row_map = nullptr;
+    rocsparse_int* d_row_map = nullptr;
+    // host array to hold row permutation
+    rocsparse_int* h_row_map = nullptr;
     // device array to hold pointer to diagonal entry
     rocsparse_int* csr_diag_ind = nullptr;
     // device pointer to hold zero pivot

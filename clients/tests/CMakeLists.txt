@@ -113,7 +113,13 @@ target_include_directories(rocsparse-test
       $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
 )
 
-if(HIP_PLATFORM STREQUAL "hcc")
+if(HIP_PLATFORM STREQUAL "nvcc")
+  target_link_libraries(rocsparse-test
+    PRIVATE
+      roc::rocsparse
+      ${GTEST_BOTH_LIBRARIES}
+  )
+else()
   target_link_libraries(rocsparse-test
     PRIVATE
       roc::rocsparse
@@ -128,14 +134,6 @@ if(HIP_PLATFORM STREQUAL "hcc")
         --amdgpu-target=${amdgpu_target}
     )
   endforeach()
-endif()
-
-if(HIP_PLATFORM STREQUAL "nvcc")
-  target_link_libraries(rocsparse-test
-    PRIVATE
-      roc::rocsparse
-      ${GTEST_BOTH_LIBRARIES}
-  )
 endif()
 
 add_test(rocsparse-test rocsparse-test)
