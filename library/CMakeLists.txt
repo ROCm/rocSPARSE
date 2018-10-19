@@ -50,7 +50,7 @@ add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
 add_library(roc::rocsparse ALIAS rocsparse)
 
 # Target link libraries
-if(HIP_PLATFORM STREQUAL "hcc")
+if(NOT HIP_PLATFORM STREQUAL "nvcc")
   target_link_libraries(rocsparse PRIVATE hip::hip_hcc hip::hip_device hcc::hccshared)
   foreach(target ${AMDGPU_TARGETS})
     target_link_libraries(rocsparse PRIVATE --amdgpu-target=${target})
@@ -68,7 +68,7 @@ target_include_directories(rocsparse
 )
 
 # Target properties
-if(HIP_PLATFORM STREQUAL "hcc")
+if(NOT HIP_PLATFORM STREQUAL "nvcc")
   set_target_properties(rocsparse PROPERTIES VERSION ${rocsparse_VERSION} SOVERSION ${rocsparse_SOVERSION})
   set_target_properties(rocsparse PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON)
 endif()
@@ -76,7 +76,7 @@ set_target_properties(rocsparse PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_B
 set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")
 
 # Target definitions
-if(HIP_PLATFORM STREQUAL "hcc")
+if(NOT HIP_PLATFORM STREQUAL "nvcc")
   target_compile_definitions(rocsparse PRIVATE ROCPRIM_HIP_API=1)
 endif()
 
@@ -114,12 +114,10 @@ endif()
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include")
 
 # Package name differs for CUDA backend
-if(HIP_PLATFORM STREQUAL "hcc")
-  set(package_name rocsparse)
-endif()
-
 if(HIP_PLATFORM STREQUAL "nvcc")
   set(package_name rocsparse-alt)
+else()
+  set(package_name rocsparse)
 endif()
 
 set(ROCSPARSE_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file")
