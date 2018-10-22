@@ -158,6 +158,7 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle handle,
 
         RETURN_IF_HIP_ERROR(hipMemcpy(result, workspace, sizeof(T), hipMemcpyDeviceToHost));
     }
+#undef DOTI_DIM
 
     return rocsparse_status_success;
 }
