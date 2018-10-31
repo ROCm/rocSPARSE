@@ -51,7 +51,7 @@ add_library(roc::rocsparse ALIAS rocsparse)
 
 # Target link libraries
 if(NOT HIP_PLATFORM STREQUAL "nvcc")
-  target_link_libraries(rocsparse PRIVATE hip::hip_hcc hip::hip_device hcc::hccshared)
+  target_link_libraries(rocsparse PRIVATE hip::device)
   foreach(target ${AMDGPU_TARGETS})
     target_link_libraries(rocsparse PRIVATE --amdgpu-target=${target})
   endforeach()
