@@ -124,8 +124,7 @@ else()
     PRIVATE
       roc::rocsparse
       ${GTEST_BOTH_LIBRARIES}
-      hip::hip_hcc
-      hip::hip_device
+      hip::device
   )
 
   foreach(amdgpu_target ${AMDGPU_TARGETS})
