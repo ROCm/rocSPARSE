@@ -32,8 +32,24 @@
 
 int main(int argc, char** argv)
 {
+    // Print version
+    char version[256];
+    query_version(version);
+
+    printf("rocSPARSE version: %s\n", version);
+
+    // Get device id from command line
+    int device_id = 0;
+
+    for(int i = 1; i < argc; ++i)
+    {
+        if(strcmp(argv[i], "--device") == 0 && argc > i + 1)
+        {
+            device_id = atoi(argv[i+1]);
+        }
+    }
+
     // Device Query
-    int device_id    = 0;
     int device_count = query_device_property();
 
     if(device_count <= device_id)

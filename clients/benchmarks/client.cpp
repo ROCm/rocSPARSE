@@ -103,10 +103,10 @@ int main(int argc, char* argv[])
 
         ("alpha", 
           po::value<double>(&argus.alpha)->default_value(1.0), "specifies the scalar alpha")
-        
+
         ("beta", 
           po::value<double>(&argus.beta)->default_value(0.0), "specifies the scalar beta")
-        
+
         ("function,f",
          po::value<std::string>(&function)->default_value("axpyi"),
          "SPARSE function to test. Options:\n"
@@ -118,10 +118,10 @@ int main(int argc, char* argv[])
          "              csr2hyb, coo2csr, ell2csr\n"
          "  Sorting: csrsort, coosort\n"
          "  Misc: identity")
-        
+
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d")
-        
+
         ("verify,v",
          po::value<rocsparse_int>(&argus.unit_check)->default_value(0),
          "Validate GPU results with CPU? 0 = No, 1 = Yes (default: No)")
@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
         ("iters,i",
          po::value<rocsparse_int>(&argus.iters)->default_value(10),
          "Iterations to run inside timing loop")
-        
+
         ("device,d",
          po::value<rocsparse_int>(&device_id)->default_value(0),
          "Set default device to be used for subsequent program runs");

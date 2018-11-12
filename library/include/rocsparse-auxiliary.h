@@ -194,6 +194,23 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_get_version(rocsparse_handle handle, int* version);
 
 /*! \ingroup aux_module
+ *  \brief Get rocSPARSE git revision
+ *
+ *  \details
+ *  \p rocsparse_get_git_rev gets the rocSPARSE library git commit revision (SHA-1).
+ *
+ *  @param[in]
+ *  handle  the handle to the rocSPARSE library context.
+ *  @param[out]
+ *  rev     the git commit revision (SHA-1).
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_handle \p handle is invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_get_git_rev(rocsparse_handle handle, char* rev);
+
+/*! \ingroup aux_module
  *  \brief Create a matrix descriptor
  *  \details
  *  \p rocsparse_create_mat_descr creates a matrix descriptor. It initializes
