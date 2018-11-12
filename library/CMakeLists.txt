@@ -26,6 +26,14 @@ if(BUILD_VERBOSE)
   include(../cmake/Verbose.cmake)
 endif()
 
+# Get full git commit SHA-1
+set(GIT_COMMAND ${GIT} rev-parse -q HEAD)
+execute_process(COMMAND ${GIT_COMMAND}
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                OUTPUT_VARIABLE rocsparse_GIT_REVISION
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_QUIET)
+
 # Configure a header file to pass the rocSPARSE version
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse-version.h.in"
                "${PROJECT_BINARY_DIR}/include/rocsparse-version.h"

@@ -163,6 +163,24 @@ rocsparse_status rocsparse_get_version(rocsparse_handle handle, int* version)
 }
 
 /********************************************************************************
+ * \brief Get rocSPARSE git revision
+ *******************************************************************************/
+rocsparse_status rocsparse_get_git_rev(rocsparse_handle handle, char* rev)
+{
+    // Check if handle is valid
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+
+    strcpy(rev, ROCSPARSE_GIT_REVISION);
+
+    log_trace(handle, "rocsparse_get_git_rev", rev);
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
  * \brief rocsparse_create_mat_descr_t is a structure holding the rocsparse matrix
  * descriptor. It must be initialized using rocsparse_create_mat_descr()
  * and the retured handle must be passed to all subsequent library function
