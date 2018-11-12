@@ -88,6 +88,11 @@ void set_device(rocsparse_int device_id)
         printf("Set device error: cannot set device ID %d, there may not be such device ID\n",
                (int)device_id);
     }
+
+    hipDeviceProp_t prop;
+    hipGetDeviceProperties(&prop, device_id);
+    printf("Using device ID %d (%s) for rocSPARSE\n", (int)device_id, prop.name);
+    printf("-------------------------------------------------------------------------\n");
 }
 /* ============================================================================================ */
 /*  timing:*/
