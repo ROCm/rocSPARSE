@@ -32,9 +32,15 @@
 
 int main(int argc, char** argv)
 {
-    int device_id = 0;
+    // Print version
+    char version[256];
+    query_version(version);
+
+    printf("rocSPARSE version: %s\n", version);
 
     // Get device id from command line
+    int device_id = 0;
+
     for(int i = 1; i < argc; ++i)
     {
         if(strcmp(argv[i], "--device") == 0 && argc > i + 1)

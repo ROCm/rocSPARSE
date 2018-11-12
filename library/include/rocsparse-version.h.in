@@ -34,6 +34,7 @@
 #define ROCSPARSE_VERSION_MINOR @rocsparse_VERSION_MINOR@
 #define ROCSPARSE_VERSION_PATCH @rocsparse_VERSION_PATCH@
 #define ROCSPARSE_VERSION_TWEAK @rocsparse_VERSION_TWEAK@
+#define ROCSPARSE_GIT_REVISION "@rocsparse_GIT_REVISION@"
 // clang-format on
 
 #endif // _ROCSPARSE_VERSION_H_

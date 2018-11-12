@@ -33,6 +33,28 @@ extern "C" {
 #endif
 
 /* ============================================================================================ */
+/*  query for rocsparse version and git commit SHA-1. */
+void query_version(char* version)
+{
+    rocsparse_handle handle;
+    rocsparse_create_handle(&handle);
+
+    int ver;
+    rocsparse_get_version(handle, &ver);
+
+    char rev[64];
+    rocsparse_get_git_rev(handle, rev);
+
+    sprintf(version, "v%d.%d.%d-%s",
+            ver / 100000,
+            ver / 100 % 1000,
+            ver % 100,
+            rev);
+
+    rocsparse_destroy_handle(handle);
+}
+
+/* ============================================================================================ */
 /*  device query and print out their ID and name; return number of compute-capable devices. */
 rocsparse_int query_device_property()
 {
