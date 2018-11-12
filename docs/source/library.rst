@@ -563,6 +563,11 @@ rocsparse_get_version()
 
 .. doxygenfunction:: rocsparse_get_version
 
+rocsparse_get_git_rev()
+************************
+
+.. doxygenfunction:: rocsparse_get_git_rev
+
 rocsparse_create_mat_descr()
 *****************************
 

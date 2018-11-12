@@ -906,6 +906,10 @@ extern "C" {
 #endif
 
 /* ============================================================================================ */
+/*  query for rocsparse version and git commit SHA-1. */
+void query_version(char* version);
+
+/* ============================================================================================ */
 /*  device query and print out their ID and name */
 rocsparse_int query_device_property();
 
