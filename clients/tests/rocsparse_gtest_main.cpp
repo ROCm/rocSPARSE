@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     {
         if(strcmp(argv[i], "--device") == 0 && argc > i + 1)
         {
-            device_id = atoi(argv[i+1]);
+            device_id = atoi(argv[i + 1]);
         }
     }
 
@@ -64,5 +64,9 @@ int main(int argc, char** argv)
 
     ::testing::InitGoogleTest(&argc, argv);
 
-    return RUN_ALL_TESTS();
+    int ret = RUN_ALL_TESTS();
+
+    hipDeviceReset();
+
+    return ret;
 }
