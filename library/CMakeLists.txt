@@ -27,7 +27,7 @@ if(BUILD_VERBOSE)
 endif()
 
 # Get full git commit SHA-1
-set(GIT_COMMAND ${GIT} rev-parse -q HEAD)
+set(GIT_COMMAND ${GIT_EXECUTABLE} rev-parse -q HEAD)
 execute_process(COMMAND ${GIT_COMMAND}
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
                 OUTPUT_VARIABLE rocsparse_GIT_REVISION
