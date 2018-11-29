@@ -157,7 +157,12 @@ Building and Installing
 
 Installing from AMD ROCm repositories
 **************************************
-TODO, not yet available
+rocSPARSE can be installed from `AMD ROCm repositories <https://rocm.github.io/ROCmInstall.html#installing-from-amd-rocm-repositories>`_ by
+
+::
+
+  sudo apt install rocsparse
+
 
 Building rocSPARSE from Open-Source repository
 ***********************************************
