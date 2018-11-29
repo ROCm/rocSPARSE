@@ -473,7 +473,7 @@ rocm_ubuntu:
   node( 'docker && rocm19 && dkms')
   {
     def hcc_docker_args = new docker_data(
-        from_image:'rocm/dev-ubuntu-16.04:1.9.0',
+        from_image:'rocm/dev-ubuntu-16.04:latest',
         build_docker_file:'dockerfile-build-ubuntu',
         install_docker_file:'dockerfile-install-ubuntu',
         docker_run_args:'--device=/dev/kfd --device=/dev/dri --group-add=video',
