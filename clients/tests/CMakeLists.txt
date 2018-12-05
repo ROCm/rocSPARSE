@@ -39,6 +39,12 @@ set(TEST_MATRICES
   HB/nos7
 )
 
+if(NOT TARGET rocsparse)
+  set(CONVERT ${CMAKE_SOURCE_DIR}/../deps/convert)
+else()
+  set(CONVERT ${CMAKE_SOURCE_DIR}/deps/convert)
+endif()
+
 foreach(m ${TEST_MATRICES})
   string(REPLACE "/" ";" sep_m ${m})
   list(GET sep_m 0 dir)
@@ -53,7 +59,7 @@ foreach(m ${TEST_MATRICES})
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
     execute_process(COMMAND mv ${mat}/${mat}.mtx .
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
-    execute_process(COMMAND ${CMAKE_SOURCE_DIR}/deps/convert ${mat}.mtx ${mat}.bin
+    execute_process(COMMAND ${CONVERT} ${mat}.mtx ${mat}.bin
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
     execute_process(COMMAND rm ${mat}.tar.gz ${mat} ${mat}.mtx -rf
                     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
@@ -110,28 +116,22 @@ target_include_directories(rocsparse-test
   SYSTEM
     PRIVATE
       $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
-      $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
+      $<BUILD_INTERFACE:${hip_INCLUDE_DIRS}>
 )
 
-if(HIP_PLATFORM STREQUAL "nvcc")
-  target_link_libraries(rocsparse-test
-    PRIVATE
-      roc::rocsparse
-      ${GTEST_BOTH_LIBRARIES}
-  )
+if(NOT TARGET rocsparse)
+  target_link_libraries(rocsparse-test PRIVATE ${ROCSPARSE_LIBRARIES})
 else()
-  target_link_libraries(rocsparse-test
-    PRIVATE
-      roc::rocsparse
-      ${GTEST_BOTH_LIBRARIES}
-      hip::device
-  )
+  target_link_libraries(rocsparse-test PRIVATE roc::rocsparse)
+endif()
+
+if(HIP_PLATFORM STREQUAL "nvcc")
+  target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES})
+else()
+  target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} ${hip_LIBRARIES})
 
   foreach(amdgpu_target ${AMDGPU_TARGETS})
-    target_link_libraries(rocsparse-test
-      PRIVATE
-        --amdgpu-target=${amdgpu_target}
-    )
+    target_link_libraries(rocsparse-test PRIVATE --amdgpu-target=${amdgpu_target})
   endforeach()
 endif()
 

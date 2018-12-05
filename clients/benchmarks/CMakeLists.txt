@@ -59,24 +59,17 @@ target_include_directories(rocsparse-bench
       $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
 )
 
-if(HIP_PLATFORM STREQUAL "nvcc")
-  target_link_libraries(rocsparse-bench
-    PRIVATE
-      ${Boost_LIBRARIES}
-      roc::rocsparse
-  )
-else()
-  target_link_libraries(rocsparse-bench
-    PRIVATE
-      ${Boost_LIBRARIES}
-      roc::rocsparse
-      hip::device
-  )
+target_link_libraries(rocsparse-bench PRIVATE ${Boost_LIBRARIES})
 
+if(NOT TARGET rocsparse)
+  target_link_libraries(rocsparse-bench PRIVATE ${ROCSPARSE_LIBRARIES})
+else()
+  target_link_libraries(rocsparse-bench PRIVATE roc::rocsparse)
+endif()
+
+if(NOT HIP_PLATFORM STREQUAL "nvcc")
+  target_link_libraries(rocsparse-bench PRIVATE ${hip_LIBRARIES})
   foreach(amdgpu_target ${AMDGPU_TARGETS})
-    target_link_libraries(rocsparse-bench
-      PRIVATE
-        --amdgpu-target=${amdgpu_target}
-    )
+    target_link_libraries(rocsparse-bench PRIVATE --amdgpu-target=${amdgpu_target})
   endforeach()
 endif()
