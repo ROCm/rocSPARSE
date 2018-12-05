@@ -35,22 +35,16 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
   )
 
-  if(HIP_PLATFORM STREQUAL "nvcc")
-    target_link_libraries(${EXAMPLE_TARGET}
-      PRIVATE
-        rocsparse
-    )
+  if(NOT TARGET rocsparse)
+    target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${ROCSPARSE_LIBRARIES})
   else()
-    target_link_libraries(${EXAMPLE_TARGET}
-      PRIVATE
-        rocsparse
-        hip::hip_hcc
-    )
+    target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse)
+  endif()
+
+  if(NOT HIP_PLATFORM STREQUAL "nvcc")
+    target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${hip_LIBRARIES})
     foreach(amdgpu_target ${AMDGPU_TARGETS})
-      target_link_libraries(${EXAMPLE_TARGET}
-        PRIVATE
-          --amdgpu-target=${amdgpu_target}
-      )
+      target_link_libraries(${EXAMPLE_TARGET} PRIVATE --amdgpu-target=${amdgpu_target})
     endforeach()
   endif()
 

@@ -43,6 +43,14 @@ project(rocsparse-clients LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+# Check for compiler
+if(NOT (CMAKE_CXX_COMPILER MATCHES ".*/hcc$" OR CMAKE_CXX_COMPILER MATCHES ".*/hipcc$"))
+  message(FATAL_ERROR "'hcc' or 'clang' must be used as C++ compiler.")
+endif()
+
+# Ignore hcc warning
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-command-line-argument")
+
 # This option only works for make/nmake and the ninja generators, but no reason it shouldn't be on all the time
 # This tells cmake to create a compile_commands.json file that can be used with clang tooling or vim
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
