@@ -2408,7 +2408,7 @@ rocsparse_status rocsparse_dcsrilu0(rocsparse_handle handle,
  *
  *  \details
  *  \p rocsparse_csr2coo converts the CSR array containing the row offsets, that point
- *  to the start of every row, into a COO array of row indices. 
+ *  to the start of every row, into a COO array of row indices.
  *
  *  \note
  *  It can also be used to convert a CSC array containing the column offsets into a COO

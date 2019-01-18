@@ -174,16 +174,8 @@ int main(int argc, char* argv[])
     rocsparse_create_mat_info(&info);
 
     // Analyse CSR matrix
-    rocsparse_dcsrmv_analysis(handle,
-                              rocsparse_operation_none,
-                              m,
-                              n,
-                              nnz,
-                              descrA,
-                              dAval,
-                              dAptr,
-                              dAcol,
-                              info);
+    rocsparse_dcsrmv_analysis(
+        handle, rocsparse_operation_none, m, n, nnz, descrA, dAval, dAptr, dAcol, info);
 
     // Warm up
     for(int i = 0; i < 10; ++i)
@@ -237,10 +229,10 @@ int main(int argc, char* argv[])
         hipDeviceSynchronize();
     }
 
-    time             = (get_time_us() - time) / (trials * batch_size * 1e3);
+    time      = (get_time_us() - time) / (trials * batch_size * 1e3);
     bandwidth = static_cast<double>(sizeof(double) * (2 * m + nnz) +
-                                           sizeof(rocsparse_int) * (m + 1 + nnz)) /
-                       time / 1e6;
+                                    sizeof(rocsparse_int) * (m + 1 + nnz)) /
+                time / 1e6;
     gflops = static_cast<double>(2 * nnz) / time / 1e6;
     printf("\n### rocsparse_dcsrmv WITH meta data ###\n");
     printf("m\t\tn\t\tnnz\t\talpha\tbeta\tGFlops\tGB/s\tusec\n");
