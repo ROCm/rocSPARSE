@@ -222,10 +222,10 @@ rocsparse_status rocsparse_copy_mat_descr(rocsparse_mat_descr dest, const rocspa
         return rocsparse_status_invalid_pointer;
     }
 
-    dest->type = src->type;
+    dest->type      = src->type;
     dest->fill_mode = src->fill_mode;
     dest->diag_type = src->diag_type;
-    dest->base = src->base;
+    dest->base      = src->base;
 
     return rocsparse_status_success;
 }

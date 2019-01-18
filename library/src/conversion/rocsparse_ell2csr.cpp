@@ -164,7 +164,7 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
     if(handle->buffer_size >= temp_storage_bytes)
     {
         d_temp_storage = handle->buffer;
-        d_temp_alloc = false;
+        d_temp_alloc   = false;
     }
     else
     {
@@ -181,19 +181,16 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+                csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
 
             // Adjust nnz according to index base
-            hipLaunchKernelGGL((ell2csr_index_base),
-                               dim3(1),
-                               dim3(1),
-                               0,
-                               stream,
-                               csr_nnz);
+            hipLaunchKernelGGL((ell2csr_index_base), dim3(1), dim3(1), 0, stream, csr_nnz);
         }
         else
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            RETURN_IF_HIP_ERROR(
+                hipMemcpy(csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
             // Adjust nnz according to index base
             *csr_nnz -= csr_descr->base;

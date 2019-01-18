@@ -45,11 +45,7 @@ void query_version(char* version)
     char rev[64];
     rocsparse_get_git_rev(handle, rev);
 
-    sprintf(version, "v%d.%d.%d-%s",
-            ver / 100000,
-            ver / 100 % 1000,
-            ver % 100,
-            rev);
+    sprintf(version, "v%d.%d.%d-%s", ver / 100000, ver / 100 % 1000, ver % 100, rev);
 
     rocsparse_destroy_handle(handle);
 }
