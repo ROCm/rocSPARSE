@@ -106,7 +106,8 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int nnz,
         if(idx < nnz)
         {
             row = __builtin_nontemporal_load(coo_row_ind + idx) - idx_base;
-            val = alpha * __builtin_nontemporal_load(coo_val + idx) * __ldg(x + __builtin_nontemporal_load(coo_col_ind + idx) - idx_base);
+            val = alpha * __builtin_nontemporal_load(coo_val + idx) *
+                  __ldg(x + __builtin_nontemporal_load(coo_col_ind + idx) - idx_base);
         }
         else
         {
