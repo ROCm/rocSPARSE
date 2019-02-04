@@ -25,7 +25,9 @@
 #include "handle.h"
 #include "logging.h"
 
-#include <hip/hip_runtime_api.h>
+#include <hip/hip_runtime.h>
+
+__global__ void init_kernel() {};
 
 /*******************************************************************************
  * constructor
@@ -65,6 +67,9 @@ _rocsparse_handle::_rocsparse_handle()
     // Device one
     THROW_IF_HIP_ERROR(hipMalloc(&sone, sizeof(float)));
     THROW_IF_HIP_ERROR(hipMalloc(&done, sizeof(double)));
+
+    // Execute empty kernel for initialization
+    hipLaunchKernelGGL(init_kernel, dim3(1), dim3(1), 0, 0);
 
     float hsone  = 1.0f;
     double hdone = 1.0;
