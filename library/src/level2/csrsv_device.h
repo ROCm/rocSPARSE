@@ -142,7 +142,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         // non-zero values. We must then ensure that the output from the row
         // associated with the local_col is complete to ensure that we can
         // calculate the right answer.
-        int local_col = csr_col_ind[j] - idx_base;
+        int local_col = __builtin_nontemporal_load(csr_col_ind + j) - idx_base;
 
         // Store diagonal index
         if(local_col == row)
@@ -394,16 +394,16 @@ __device__ void csrsv_device(rocsparse_int m,
     if(lid == 0)
     {
         // Lane 0 initializes its local sum with alpha and x
-        local_sum = alpha * x[row];
+        local_sum = alpha * __builtin_nontemporal_load(x + row);
     }
 
     for(rocsparse_int j = row_begin + lid; j < row_end; j += WF_SIZE)
     {
         // Current column this lane operates on
-        rocsparse_int local_col = csr_col_ind[j] - idx_base;
+        rocsparse_int local_col = __builtin_nontemporal_load(csr_col_ind + j) - idx_base;
 
         // Local value this lane operates with
-        T local_val = csr_val[j];
+        T local_val = __builtin_nontemporal_load(csr_val + j);
 
         // Check for numerical zero
         if(local_val == static_cast<T>(0) && local_col == row &&

@@ -68,8 +68,8 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int nnz,
     // Initialize block buffers
     if(lid == 0)
     {
-        row_block_red[wid] = -1;
-        val_block_red[wid] = static_cast<T>(0);
+        __builtin_nontemporal_store(-1, row_block_red + wid);
+        __builtin_nontemporal_store(static_cast<T>(0), val_block_red + wid);
     }
 
     // Global COO array index start for current wavefront
@@ -105,8 +105,9 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int nnz,
         // nnz % WF_SIZE != 0
         if(idx < nnz)
         {
-            row = coo_row_ind[idx] - idx_base;
-            val = alpha * coo_val[idx] * __ldg(x + coo_col_ind[idx] - idx_base);
+            row = __builtin_nontemporal_load(coo_row_ind + idx) - idx_base;
+            val = alpha * __builtin_nontemporal_load(coo_val + idx) *
+                  __ldg(x + __builtin_nontemporal_load(coo_col_ind + idx) - idx_base);
         }
         else
         {
@@ -173,8 +174,8 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int nnz,
     // Write last entries into buffers for segmented block reduction
     if(lid == WF_SIZE - 1)
     {
-        row_block_red[wid] = row;
-        val_block_red[wid] = val;
+        __builtin_nontemporal_store(row, row_block_red + wid);
+        __builtin_nontemporal_store(val, val_block_red + wid);
     }
 }
 
