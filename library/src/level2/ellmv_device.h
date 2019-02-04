@@ -53,11 +53,11 @@ static __device__ void ellmvn_device(rocsparse_int m,
     for(rocsparse_int p = 0; p < ell_width; ++p)
     {
         rocsparse_int idx = ELL_IND(ai, p, m, ell_width);
-        rocsparse_int col = ell_col_ind[idx] - idx_base;
+        rocsparse_int col = __builtin_nontemporal_load(ell_col_ind + idx) - idx_base;
 
         if(col >= 0 && col < n)
         {
-            sum = fma(ell_val[idx], __ldg(x + col), sum);
+            sum = fma(__builtin_nontemporal_load(ell_val + idx), __ldg(x + col), sum);
         }
         else
         {
@@ -67,11 +67,12 @@ static __device__ void ellmvn_device(rocsparse_int m,
 
     if(beta != static_cast<T>(0))
     {
-        y[ai] = fma(beta, y[ai], alpha * sum);
+        T yv = __builtin_nontemporal_load(y + ai);
+        __builtin_nontemporal_store(fma(beta, yv, alpha * sum), y + ai);
     }
     else
     {
-        y[ai] = alpha * sum;
+        __builtin_nontemporal_store(alpha * sum, y + ai);
     }
 }
 
