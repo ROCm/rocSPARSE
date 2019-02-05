@@ -27,7 +27,7 @@
 
 #include <hip/hip_runtime.h>
 
-__global__ void init_kernel() {};
+__global__ void init_kernel(){};
 
 /*******************************************************************************
  * constructor
