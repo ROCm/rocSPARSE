@@ -65,40 +65,7 @@ else
     echo ">>" $(realpath $(ldd $bench | grep rocsparse | awk '{print $3;}'))
 fi
 
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/12month1.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/ASIC_320k.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/bibd_22_8.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/bmw3_2.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/bmw7st_1.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/bmwcra_1.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/bone010.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/cage15.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/cant.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/Chebyshev4.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/circuit5M.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/consph.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/crankseg_2.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/eu-2005.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/Ga41As41H72.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/hood.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/in-2004.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/ldoor.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/mac_econ_fwd500.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/mc2depi.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/mip1.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/nd24k.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/pdb1HYS.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/pwtk.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/rail4284.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/rajat31.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/rma10.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/Rucci1.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/s3dkq4m2.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/scircuit.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/shipsec1.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/Si41Ge41H72.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/sls.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/sme3Dc.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/spal_004.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/torso1.csr
-$bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution matrices/webbase-1M.csr
+# Run csrmv for all matrices available
+for filename in ./matrices/*.csr; do
+    $bench -f csrmv --precision d --device $dev --alpha 1 --beta 0 --iters 200 --rocalution $filename
+done
