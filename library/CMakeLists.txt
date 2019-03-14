@@ -111,8 +111,8 @@ rocm_export_targets(TARGETS roc::rocsparse
 rocm_install_symlink_subdir(rocsparse)
 
 # Package specific CPACK vars
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip_hcc (>= 1.5.18353)") # 1.5.18353 is HIP version in ROCm 1.9
-set(CPACK_RPM_PACKAGE_REQUIRES "hip_hcc >= 1.5.18353")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip_hcc (>= 1.5.19055)") # 1.5.19055 is HIP version in ROCm 2.2
+set(CPACK_RPM_PACKAGE_REQUIRES "hip_hcc >= 1.5.19055")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.md")
 
 if(NOT CPACK_PACKAGING_INSTALL_PREFIX)
