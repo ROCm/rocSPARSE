@@ -32,6 +32,7 @@
 #include <vector>
 #include <algorithm>
 #include <sstream>
+#include <fstream>
 #include <rocsparse.h>
 #include <hip/hip_runtime_api.h>
 
@@ -600,6 +601,78 @@ rocsparse_int read_bin_matrix(const char* filename,
 }
 
 /* ============================================================================================ */
+/*! \brief  Read matrix from binary file in rocALUTION format */
+template <typename T>
+rocsparse_int read_rocalution_matrix(const char* filename,
+                                     rocsparse_int& nrow,
+                                     rocsparse_int& ncol,
+                                     rocsparse_int& nnz,
+                                     std::vector<rocsparse_int>& ptr,
+                                     std::vector<rocsparse_int>& col,
+                                     std::vector<T>& val,
+                                     rocsparse_index_base idx_base)
+{
+    printf("Reading matrix %s...", filename);
+    fflush(stdout);
+
+    std::ifstream in(filename, std::ios::in | std::ios::binary);
+    if(!in.is_open())
+    {
+        return -1;
+    }
+
+    std::string header;
+    std::getline(in, header);
+
+    if(header != "#rocALUTION binary csr file")
+    {
+        return -1;
+    }
+
+    int version;
+    in.read((char*)&version, sizeof(int));
+
+    in.read((char*)&nrow, sizeof(int));
+    in.read((char*)&ncol, sizeof(int));
+    in.read((char*)&nnz, sizeof(int));
+
+    // Allocate memory
+    ptr.resize(nrow + 1);
+    col.resize(nnz);
+    val.resize(nnz);
+    std::vector<double> tmp(nnz);
+
+    in.read((char*)ptr.data(), sizeof(int) * (nrow + 1));
+    in.read((char*)col.data(), sizeof(int) * nnz);
+    in.read((char*)tmp.data(), sizeof(double) * nnz);
+
+    in.close();
+
+    for(rocsparse_int i = 0; i < nnz; ++i)
+    {
+        val[i] = static_cast<T>(tmp[i]);
+    }
+
+    if(idx_base == rocsparse_index_base_one)
+    {
+        for(rocsparse_int i = 0; i < nrow + 1; ++i)
+        {
+            ++ptr[i];
+        }
+
+        for(rocsparse_int i = 0; i < nnz; ++i)
+        {
+            ++col[i];
+        }
+    }
+
+    printf("done.\n");
+    fflush(stdout);
+
+    return 0;
+}
+
+/* ============================================================================================ */
 /*! \brief  Compute incomplete LU factorization without fill-ins and no pivoting using CSR
  *  matrix storage format.
  */
@@ -970,8 +1043,9 @@ class Arguments
     rocsparse_int ell_width = 0;
     rocsparse_int temp      = 0;
 
-    std::string filename = "";
-    bool bswitch         = false;
+    std::string filename   = "";
+    std::string rocalution = "";
+    bool bswitch           = false;
 
     Arguments& operator=(const Arguments& rhs)
     {
@@ -1005,8 +1079,9 @@ class Arguments
         this->ell_width = rhs.ell_width;
         this->temp      = rhs.temp;
 
-        this->filename = rhs.filename;
-        this->bswitch  = rhs.bswitch;
+        this->filename   = rhs.filename;
+        this->rocalution = rhs.rocalution;
+        this->bswitch    = rhs.bswitch;
 
         return *this;
     }
