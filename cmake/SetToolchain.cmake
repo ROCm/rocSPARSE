@@ -22,7 +22,7 @@
 # ########################################################################
 
 # Find HIP package
-find_package(HIP 1.5.18353 REQUIRED) # ROCm 1.9
+find_package(HIP 1.5.19055 REQUIRED) # ROCm 2.2
 
 # Select toolchain
 if(HIP_PLATFORM STREQUAL "nvcc" OR HIP_COMPILER STREQUAL "clang")
