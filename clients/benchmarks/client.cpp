@@ -96,6 +96,10 @@ int main(int argc, char* argv[])
          po::value<std::string>(&argus.filename)->default_value(""), "read from matrix "
          "market (.mtx) format. This will override parameters m, n, and z.")
 
+        ("rocalution",
+         po::value<std::string>(&argus.rocalution)->default_value(""),
+         "read from rocalution matrix binary file.")
+
         ("laplacian-dim",
          po::value<rocsparse_int>(&argus.laplacian)->default_value(0), "assemble "
          "laplacian matrix for 2D unit square with dimension <dim>. This will override "
@@ -224,6 +228,7 @@ int main(int argc, char* argv[])
     }
     else if(function == "csrmv")
     {
+        argus.bswitch = true;
         if(precision == 's')
             testing_csrmv<float>(argus);
         else if(precision == 'd')
