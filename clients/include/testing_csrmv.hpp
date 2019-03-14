@@ -352,6 +352,7 @@ rocsparse_status testing_csrmv(Arguments argus)
     bool adaptive                 = argus.bswitch;
     std::string binfile           = "";
     std::string filename          = "";
+    std::string rocalution        = "";
     rocsparse_status status;
 
     // When in testing mode, M == N == -99 indicates that we are testing with a real
@@ -364,7 +365,14 @@ rocsparse_status testing_csrmv(Arguments argus)
 
     if(argus.timing == 1)
     {
-        filename = argus.filename;
+        if(argus.rocalution != "")
+        {
+            rocalution = argus.rocalution;
+        }
+        else if(argus.filename != "")
+        {
+            filename = argus.filename;
+        }
     }
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
@@ -466,6 +474,15 @@ rocsparse_status testing_csrmv(Arguments argus)
         if(read_bin_matrix(binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcol_ind, hval, idx_base) != 0)
         {
             fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
+    }
+    else if(rocalution != "")
+    {
+        if(read_rocalution_matrix(
+               rocalution.c_str(), m, n, nnz, hcsr_row_ptr, hcol_ind, hval, idx_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", rocalution.c_str());
             return rocsparse_status_internal_error;
         }
     }

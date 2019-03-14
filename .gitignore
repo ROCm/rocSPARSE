@@ -41,3 +41,7 @@ build
 # doc directory
 docBin
 _build
+
+# matrices
+*.csr
+*.mtx
