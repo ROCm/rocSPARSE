@@ -448,8 +448,6 @@ rocsparse_index_base
 
 .. doxygenenum:: rocsparse_index_base
 
-.. _rocsparse_layer_mode_:
-
 rocsparse_matrix_type
 **********************
 
@@ -484,6 +482,8 @@ rocsparse_solve_policy
 **********************
 
 .. doxygenenum:: rocsparse_solve_policy
+
+.. _rocsparse_layer_mode_:
 
 rocsparse_layer_mode
 *********************
