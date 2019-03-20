@@ -26,25 +26,9 @@
 #define CSR2ELL_DEVICE_H
 
 #include "handle.h"
+#include "common.h"
 
 #include <hip/hip_runtime.h>
-
-// Block reduce kernel computing maximum entry in data array
-template <rocsparse_int NB>
-__device__ void ell_width_reduce(rocsparse_int tid, rocsparse_int* data)
-{
-    __syncthreads();
-
-    for(rocsparse_int i = NB >> 1; i > 0; i >>= 1)
-    {
-        if(tid < i)
-        {
-            data[tid] = max(data[tid], data[tid + i]);
-        }
-
-        __syncthreads();
-    }
-}
 
 // Compute non-zero entries per CSR row and do a block reduction over the maximum
 // Store result in a workspace for final reduction on part2
@@ -60,11 +44,12 @@ ell_width_kernel_part1(rocsparse_int m, const rocsparse_int* csr_row_ptr, rocspa
 
     for(rocsparse_int idx = gid; idx < m; idx += hipGridDim_x * hipBlockDim_x)
     {
-        rocsparse_int row_nnz = csr_row_ptr[idx + 1] - csr_row_ptr[idx];
-        sdata[tid]            = max(sdata[tid], row_nnz);
+        sdata[tid] = max(sdata[tid], csr_row_ptr[idx + 1] - csr_row_ptr[idx]);
     }
 
-    ell_width_reduce<NB>(tid, sdata);
+    __syncthreads();
+
+    rocsparse_blockreduce_max<rocsparse_int, NB>(tid, sdata);
 
     if(tid == 0)
     {
@@ -83,25 +68,12 @@ __global__ void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace
 
     for(rocsparse_int i = tid; i < m; i += NB)
     {
-        sdata[tid] = (workspace[i] > sdata[tid]) ? workspace[i] : sdata[tid];
+        sdata[tid] = max(sdata[tid], workspace[i]);
     }
 
     __syncthreads();
 
-    if(m < 32)
-    {
-        if(tid == 0)
-        {
-            for(rocsparse_int i = 1; i < m; ++i)
-            {
-                sdata[0] = (sdata[i] > sdata[0]) ? sdata[i] : sdata[0];
-            }
-        }
-    }
-    else
-    {
-        ell_width_reduce<NB>(tid, sdata);
-    }
+    rocsparse_blockreduce_max<rocsparse_int, NB>(tid, sdata);
 
     if(tid == 0)
     {
