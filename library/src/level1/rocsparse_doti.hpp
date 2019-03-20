@@ -136,7 +136,7 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((doti_kernel_part2<T, DOTI_DIM, 1>),
+        hipLaunchKernelGGL((doti_kernel_part2<T, DOTI_DIM>),
                            dim3(1),
                            doti_threads,
                            0,
@@ -147,14 +147,14 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle handle,
     }
     else
     {
-        hipLaunchKernelGGL((doti_kernel_part2<T, DOTI_DIM, 0>),
+        hipLaunchKernelGGL((doti_kernel_part2<T, DOTI_DIM>),
                            dim3(1),
                            doti_threads,
                            0,
                            stream,
                            nblocks,
                            workspace,
-                           result);
+                           nullptr);
 
         RETURN_IF_HIP_ERROR(hipMemcpy(result, workspace, sizeof(T), hipMemcpyDeviceToHost));
     }

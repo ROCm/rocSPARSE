@@ -25,6 +25,8 @@
 #ifndef CSRILU0_DEVICE_H
 #define CSRILU0_DEVICE_H
 
+#include "common.h"
+
 #include <hip/hip_runtime.h>
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE, unsigned int HASH>
@@ -34,7 +36,7 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
                                     T* __restrict__ csr_val,
                                     const rocsparse_int* __restrict__ csr_diag_ind,
                                     rocsparse_int* __restrict__ done,
-                                    rocsparse_int* __restrict__ map,
+                                    const rocsparse_int* __restrict__ map,
                                     rocsparse_int* __restrict__ zero_pivot,
                                     rocsparse_index_base idx_base)
 {
@@ -120,23 +122,11 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
         }
 
         // Spin loop until dependency has been resolved
-        rocsparse_int local_done = 0;
-        while(!local_done)
-        {
-#if defined(__HIP_PLATFORM_HCC__)
-            local_done = __atomic_load_n(&done[local_col], __ATOMIC_ACQUIRE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-            local_done      = atomicOr(&done[local_col], 0);
-#endif
-        }
+        while(!rocsparse_atomic_load(&done[local_col], __ATOMIC_ACQUIRE))
+            ;
 
-// Load diagonal entry
-#if defined(__HIP_PLATFORM_HCC__)
-        T diag_val;
-        __atomic_load(&csr_val[local_diag], &diag_val, __ATOMIC_ACQUIRE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-        T diag_val          = csr_val[local_diag];
-#endif
+        // Load diagonal entry
+        T diag_val = csr_val[local_diag];
 
         // Row has numerical zero diagonal
         if(diag_val == static_cast<T>(0))
@@ -165,40 +155,31 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
             // Hash operation
             while(true)
             {
-                rocsparse_int val = table[hash];
-
-                if(val == -1)
+                if(table[hash] == -1)
                 {
                     // No entry for the key, done
                     break;
                 }
-                else if(val == key)
+                else if(table[hash] == key)
                 {
-// Entry found, do ILU computation
-#if defined(__HIP_PLATFORM_HCC__)
-                    T val_k;
-                    __atomic_load(&csr_val[k], &val_k, __ATOMIC_ACQUIRE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-                    T val_k = csr_val[k];
-#endif
-                    csr_val[data[hash]] -= local_val * val_k;
+                    // Entry found, do ILU computation
+                    rocsparse_int idx = data[hash];
+                    csr_val[idx]      = rocsparse_fma(-local_val, csr_val[k], csr_val[idx]);
                     break;
                 }
-
-                // Collision, compute new hash
-                hash = (hash + 1) & (WF_SIZE * HASH - 1);
+                else
+                {
+                    // Collision, compute new hash
+                    hash = (hash + 1) & (WF_SIZE * HASH - 1);
+                }
             }
         }
     }
 
     if(lid == 0)
     {
-// Lane 0 write "we are done" flag
-#if defined(__HIP_PLATFORM_HCC__)
-        __atomic_store_n(&done[row], 1, __ATOMIC_RELEASE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-        atomicOr(&done[row], 1);
-#endif
+        // Lane 0 write "we are done" flag
+        rocsparse_atomic_store(&done[row], 1, __ATOMIC_RELEASE);
     }
 }
 
@@ -209,7 +190,7 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
                                          T* __restrict__ csr_val,
                                          const rocsparse_int* __restrict__ csr_diag_ind,
                                          rocsparse_int* __restrict__ done,
-                                         rocsparse_int* __restrict__ map,
+                                         const rocsparse_int* __restrict__ map,
                                          rocsparse_int* __restrict__ zero_pivot,
                                          rocsparse_index_base idx_base)
 {
@@ -250,24 +231,11 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
         }
 
         // Spin loop until dependency has been resolved
-        rocsparse_int local_done = 0;
-        while(!local_done)
-        {
-#if defined(__HIP_PLATFORM_HCC__)
-            local_done = __atomic_load_n(&done[local_col], __ATOMIC_ACQUIRE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-            local_done = atomicOr(&done[local_col], 0);
-#endif
-        }
+        while(!rocsparse_atomic_load(&done[local_col], __ATOMIC_ACQUIRE))
+            ;
 
-// Load diagonal entry
-#if defined(__HIP_PLATFORM_HCC__)
-        T diag_val;
-        __atomic_load(&csr_val[local_diag], &diag_val, __ATOMIC_ACQUIRE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-        // TODO
-        volatile T diag_val      = csr_val[local_diag];
-#endif
+        // Load diagonal entry
+        T diag_val = csr_val[local_diag];
 
         // Row has numerical zero diagonal
         if(diag_val == static_cast<T>(0))
@@ -315,27 +283,16 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
             // Check if a match has been found
             if(col_j == col_k)
             {
-// If a match has been found, do ILU computation
-#if defined(__HIP_PLATFORM_HCC__)
-                T val_k;
-                __atomic_load(&csr_val[k], &val_k, __ATOMIC_ACQUIRE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-                volatile T val_k = csr_val[k];
-#endif
-
-                csr_val[l] -= local_val * val_k;
+                // If a match has been found, do ILU computation
+                csr_val[l] = rocsparse_fma(-local_val, csr_val[k], csr_val[l]);
             }
         }
     }
 
     if(lid == 0)
     {
-// Lane 0 write "we are done" flag
-#if defined(__HIP_PLATFORM_HCC__)
-        __atomic_store_n(&done[row], 1, __ATOMIC_RELEASE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-        atomicOr(&done[row], 1);
-#endif
+        // Lane 0 write "we are done" flag
+        rocsparse_atomic_store(&done[row], 1, __ATOMIC_RELEASE);
     }
 }
 

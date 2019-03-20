@@ -26,6 +26,7 @@
 #define ELLMV_DEVICE_H
 
 #include "handle.h"
+#include "common.h"
 
 #include <hip/hip_runtime.h>
 
@@ -53,11 +54,12 @@ static __device__ void ellmvn_device(rocsparse_int m,
     for(rocsparse_int p = 0; p < ell_width; ++p)
     {
         rocsparse_int idx = ELL_IND(ai, p, m, ell_width);
-        rocsparse_int col = __builtin_nontemporal_load(ell_col_ind + idx) - idx_base;
+        rocsparse_int col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
 
         if(col >= 0 && col < n)
         {
-            sum = fma(__builtin_nontemporal_load(ell_val + idx), __ldg(x + col), sum);
+            sum = rocsparse_fma(
+                rocsparse_nontemporal_load(ell_val + idx), rocsparse_ldg(x + col), sum);
         }
         else
         {
@@ -67,12 +69,12 @@ static __device__ void ellmvn_device(rocsparse_int m,
 
     if(beta != static_cast<T>(0))
     {
-        T yv = __builtin_nontemporal_load(y + ai);
-        __builtin_nontemporal_store(fma(beta, yv, alpha * sum), y + ai);
+        T yv = rocsparse_nontemporal_load(y + ai);
+        rocsparse_nontemporal_store(rocsparse_fma(beta, yv, alpha * sum), y + ai);
     }
     else
     {
-        __builtin_nontemporal_store(alpha * sum, y + ai);
+        rocsparse_nontemporal_store(alpha * sum, y + ai);
     }
 }
 
