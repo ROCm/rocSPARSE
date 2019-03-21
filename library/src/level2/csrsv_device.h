@@ -125,7 +125,11 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
     rocsparse_wfreduce_sum_max<WF_SIZE>(&local_spin, &local_max);
     ++local_max;
 
+#if defined(__HIP_PLATFORM_HCC__)
     if(lid == WF_SIZE - 1)
+#elif defined(__HIP_PLATFORM_NVCC__)
+    if(lid == 0)
+#endif
     {
         // Lane 0 writes the "row is done" flag
         rocsparse_atomic_store(&done_array[row], local_max, __ATOMIC_RELEASE);
