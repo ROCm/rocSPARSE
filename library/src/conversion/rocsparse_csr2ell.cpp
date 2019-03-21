@@ -115,7 +115,7 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
 
 // Determine ELL width
 
-#define CSR2ELL_DIM 1024
+#define CSR2ELL_DIM 256
     // Workspace size
     rocsparse_int nblocks = CSR2ELL_DIM;
 

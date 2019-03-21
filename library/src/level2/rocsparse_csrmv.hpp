@@ -892,7 +892,7 @@ rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle handle,
         }
         else
         {
-            if(*alpha == 0.0 && *beta == 1.0)
+            if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
             {
                 return rocsparse_status_success;
             }
@@ -1179,7 +1179,7 @@ rocsparse_status rocsparse_csrmv_adaptive_template(rocsparse_handle handle,
         }
         else
         {
-            if(*alpha == 0.0 && *beta == 1.0)
+            if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
             {
                 return rocsparse_status_success;
             }

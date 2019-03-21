@@ -25,139 +25,9 @@
 #ifndef CSRMV_DEVICE_H
 #define CSRMV_DEVICE_H
 
+#include "common.h"
+
 #include <hip/hip_runtime.h>
-
-#if defined(__HIP_PLATFORM_HCC__)
-// While HIP does not contain llvm intrinsics
-__device__ int __llvm_amdgcn_readlane(int index, int offset) __asm("llvm.amdgcn.readlane");
-#endif
-
-#if defined(__HIP_PLATFORM_HCC__)
-// Swizzle-based float wavefront reduction
-template <rocsparse_int WF_SIZE>
-__device__ float wf_reduce(float sum)
-{
-    typedef union flt_b32
-    {
-        float val;
-        uint32_t b32;
-    } flt_b32_t;
-
-    flt_b32_t upper_sum;
-    flt_b32_t temp_sum;
-    temp_sum.val = sum;
-
-    if(WF_SIZE > 1)
-    {
-        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x80b1);
-        temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 2)
-    {
-        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x804e);
-        temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 4)
-    {
-        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x101f);
-        temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 8)
-    {
-        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x201f);
-        temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 16)
-    {
-        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x401f);
-        temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 32)
-    {
-        upper_sum.b32 = __llvm_amdgcn_readlane(temp_sum.b32, 32);
-        temp_sum.val += upper_sum.val;
-    }
-
-    sum = temp_sum.val;
-    return sum;
-}
-
-// Swizzle-based double wavefront reduction
-template <rocsparse_int WF_SIZE>
-__device__ double wf_reduce(double sum)
-{
-    typedef union dbl_b32
-    {
-        double val;
-        uint32_t b32[2];
-    } dbl_b32_t;
-
-    dbl_b32_t upper_sum;
-    dbl_b32_t temp_sum;
-    temp_sum.val = sum;
-
-    if(WF_SIZE > 1)
-    {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x80b1);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x80b1);
-        temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 2)
-    {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x804e);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x804e);
-        temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 4)
-    {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x101f);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x101f);
-        temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 8)
-    {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x201f);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x201f);
-        temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 16)
-    {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x401f);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x401f);
-        temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 32)
-    {
-        upper_sum.b32[0] = __llvm_amdgcn_readlane(temp_sum.b32[0], 32);
-        upper_sum.b32[1] = __llvm_amdgcn_readlane(temp_sum.b32[1], 32);
-        temp_sum.val += upper_sum.val;
-    }
-
-    sum = temp_sum.val;
-    return sum;
-}
-#elif defined(__HIP_PLATFORM_NVCC__)
-template <rocsparse_int WF_SIZE, typename T>
-__device__ T wf_reduce(T sum)
-{
-    for(rocsparse_int i = WF_SIZE >> 1; i > 0; i >>= 1)
-    {
-        sum += __shfl_down_sync(0xffffffff, sum, i);
-    }
-
-    return sum;
-}
-#endif
 
 template <typename T, rocsparse_int WF_SIZE>
 static __device__ void csrmvn_general_device(rocsparse_int m,
@@ -187,11 +57,12 @@ static __device__ void csrmvn_general_device(rocsparse_int m,
         // Loop over non-zero elements
         for(rocsparse_int j = row_start + lid; j < row_end; j += WF_SIZE)
         {
-            sum = fma(alpha * csr_val[j], __ldg(x + csr_col_ind[j] - idx_base), sum);
+            sum = rocsparse_fma(
+                alpha * csr_val[j], rocsparse_ldg(x + csr_col_ind[j] - idx_base), sum);
         }
 
         // Obtain row sum using parallel reduction
-        sum = wf_reduce<WF_SIZE>(sum);
+        sum = rocsparse_wfreduce_sum<WF_SIZE>(sum);
 
         // First thread of each wavefront writes result into global memory
         if(lid == 0)
@@ -202,52 +73,10 @@ static __device__ void csrmvn_general_device(rocsparse_int m,
             }
             else
             {
-                y[row] = fma(beta, y[row], sum);
+                y[row] = rocsparse_fma(beta, y[row], sum);
             }
         }
     }
-}
-
-__device__ static __inline__ void atomic_add(float* address, float val)
-{
-    unsigned int newVal;
-    unsigned int prevVal;
-
-    do
-    {
-        prevVal = __float_as_uint(*address);
-        newVal  = __float_as_uint(val + *address);
-    } while(atomicCAS((unsigned int*)address, prevVal, newVal) != prevVal);
-}
-
-__device__ static __inline__ void atomic_add(double* address, double val)
-{
-    unsigned long long newVal;
-    unsigned long long prevVal;
-
-    do
-    {
-        prevVal = __double_as_longlong(*address);
-        newVal  = __double_as_longlong(val + *address);
-    } while(atomicCAS((unsigned long long*)address, prevVal, newVal) != prevVal);
-}
-
-// rocsparse_int == int32_t
-__device__ static __inline__ int32_t rocsparse_mul24(int32_t x, int32_t y)
-{
-    return ((x << 8) >> 8) * ((y << 8) >> 8);
-}
-
-// rocsparse_int == int64_t
-__device__ static __inline__ int64_t rocsparse_mul24(int64_t x, int64_t y)
-{
-    return ((x << 40) >> 40) * ((y << 40) >> 40);
-}
-
-__device__ static __inline__ rocsparse_int
-rocsparse_mad24(rocsparse_int x, rocsparse_int y, rocsparse_int z)
-{
-    return rocsparse_mul24(x, y) + z;
 }
 
 template <typename T>
@@ -322,7 +151,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             ? vecStart + BLOCK_MULTIPLIER * BLOCKSIZE
             : (csr_row_ptr[row + 1] - idx_base);
 
-    T temp_sum = 0.;
+    T temp_sum = static_cast<T>(0);
 
     // If the next row block starts more than 2 rows away, then we choose CSR-Stream.
     // If this is zero (long rows) or one (final workgroup in a long row, or a single
@@ -436,9 +265,9 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
                 // All of our write-outs check to see if the output vector should first be zeroed.
                 // If so, just do a write rather than a read-write. Measured to be a slight (~5%)
                 // performance improvement.
-                if(beta != 0.)
+                if(beta != static_cast<T>(0))
                 {
-                    temp_sum = fma(beta, y[local_row], temp_sum);
+                    temp_sum = rocsparse_fma(beta, y[local_row], temp_sum);
                 }
                 y[local_row] = temp_sum;
             }
@@ -456,7 +285,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             {
                 rocsparse_int local_first_val = (csr_row_ptr[local_row] - csr_row_ptr[row]);
                 rocsparse_int local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
-                temp_sum                      = 0.;
+                temp_sum                      = static_cast<T>(0);
                 for(rocsparse_int local_cur_val = local_first_val; local_cur_val < local_last_val;
                     local_cur_val++)
                 {
@@ -465,9 +294,9 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
 
                 // After you've done the reduction into the temp_sum register,
                 // put that into the output for each row.
-                if(beta != 0.)
+                if(beta != static_cast<T>(0))
                 {
-                    temp_sum = fma(beta, y[local_row], temp_sum);
+                    temp_sum = rocsparse_fma(beta, y[local_row], temp_sum);
                 }
 
                 y[local_row] = temp_sum;
@@ -490,7 +319,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
         {
             // Any workgroup only calculates, at most, BLOCKSIZE items in this row.
             // If there are more items in this row, we use CSR-LongRows.
-            temp_sum = 0.;
+            temp_sum = static_cast<T>(0);
             vecStart = csr_row_ptr[row] - idx_base;
             vecEnd   = csr_row_ptr[row + 1] - idx_base;
 
@@ -502,7 +331,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             for(unsigned long long j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
                 rocsparse_int col = csr_col_ind[(unsigned int)j] - idx_base;
-                temp_sum          = fma(alpha, csr_val[(unsigned int)j] * x[col], temp_sum);
+                temp_sum = rocsparse_fma(alpha, csr_val[(unsigned int)j] * x[col], temp_sum);
             }
 
             partialSums[lid] = temp_sum;
@@ -516,9 +345,9 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
 
             if(lid == 0)
             {
-                if(beta != 0.)
+                if(beta != static_cast<T>(0))
                 {
-                    temp_sum = fma(beta, y[row], temp_sum);
+                    temp_sum = rocsparse_fma(beta, y[row], temp_sum);
                 }
 
                 y[row] = temp_sum;
@@ -549,7 +378,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
         {
             // The first workgroup handles the output initialization.
             T out_val = y[row];
-            temp_sum  = (beta - 1.) * out_val;
+            temp_sum  = (beta - static_cast<T>(1)) * out_val;
             atomicXor(&row_blocks[first_wg_in_row], (1ULL << WG_BITS)); // Release other workgroups.
         }
         // For every other workgroup, bit 24 holds the value they wait on.
@@ -580,13 +409,13 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             // That increases register pressure and reduces occupancy.
             for(rocsparse_int j = 0; j < vecEnd - col; j += WG_SIZE)
             {
-                temp_sum =
-                    fma(alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
+                temp_sum = rocsparse_fma(
+                    alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
 #if 2 * WG_SIZE <= BLOCK_MULTIPLIER * BLOCKSIZE
                 // If you can, unroll this loop once. It somewhat helps performance.
                 j += WG_SIZE;
-                temp_sum =
-                    fma(alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
+                temp_sum = rocsparse_fma(
+                    alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
 #endif
             }
         }
@@ -594,8 +423,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
         {
             for(rocsparse_int j = 0; j < vecEnd - col; j += WG_SIZE)
             {
-                temp_sum =
-                    fma(alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
+                temp_sum = rocsparse_fma(
+                    alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
             }
         }
 
@@ -610,7 +439,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
 
         if(lid == 0)
         {
-            atomic_add(&y[row], temp_sum);
+            rocsparse_atomic_add(&y[row], temp_sum);
         }
     }
 }
