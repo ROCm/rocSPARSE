@@ -25,6 +25,8 @@
 #ifndef CSRMM_DEVICE_H
 #define CSRMM_DEVICE_H
 
+#include "common.h"
+
 #include <hip/hip_runtime.h>
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
@@ -76,19 +78,19 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
 
             for(rocsparse_int i = 0; i < WF_SIZE && col < N; ++i)
             {
-                sum = fma(shared_val[wid][i], B[shared_col[wid][i] + colB], sum);
+                sum = rocsparse_fma(shared_val[wid][i], B[shared_col[wid][i] + colB], sum);
             }
         }
 
         if(col < N)
         {
-            if(beta == 0.0)
+            if(beta == static_cast<T>(0))
             {
                 C[row + colC] = sum;
             }
             else
             {
-                C[row + colC] = fma(beta, C[row + colC], sum);
+                C[row + colC] = rocsparse_fma(beta, C[row + colC], sum);
             }
         }
     }
@@ -147,8 +149,9 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
 
             for(rocsparse_int i = 0; i < WF_SIZE; ++i)
             {
-                T val_B = (col < ncol) ? __ldg(B + col + shared_col[wid][i]) : static_cast<T>(0);
-                sum     = fma(shared_val[wid][i], val_B, sum);
+                T val_B =
+                    (col < ncol) ? rocsparse_ldg(B + col + shared_col[wid][i]) : static_cast<T>(0);
+                sum = rocsparse_fma(shared_val[wid][i], val_B, sum);
             }
         }
 
@@ -160,7 +163,7 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
             }
             else
             {
-                C[row + col * ldc] = fma(beta, C[row + col * ldc], sum);
+                C[row + col * ldc] = rocsparse_fma(beta, C[row + col * ldc], sum);
             }
         }
     }

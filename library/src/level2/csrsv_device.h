@@ -25,70 +25,9 @@
 #ifndef CSRSV_DEVICE_H
 #define CSRSV_DEVICE_H
 
+#include "common.h"
+
 #include <hip/hip_runtime.h>
-
-// Compute intra wavefront maximum and spin summation
-template <rocsparse_int WF_SIZE>
-static __device__ __inline__ void two_reduce(int* local_max, int* local_spin)
-{
-#if defined(__HIP_PLATFORM_HCC__)
-    int max_depth = *local_max;
-
-    if(WF_SIZE > 1)
-    {
-        // row_shr = 1
-        max_depth = __hip_move_dpp(*local_max, 0x111, 0xf, 0xf, 0);
-        *local_spin += __hip_move_dpp(*local_spin, 0x111, 0xf, 0xf, 0);
-        *local_max = (max_depth > *local_max) ? max_depth : *local_max;
-    }
-
-    if(WF_SIZE > 2)
-    {
-        // row_shr = 2
-        max_depth = __hip_move_dpp(*local_max, 0x112, 0xf, 0xf, 0);
-        *local_spin += __hip_move_dpp(*local_spin, 0x112, 0xf, 0xf, 0);
-        *local_max = (max_depth > *local_max) ? max_depth : *local_max;
-    }
-
-    if(WF_SIZE > 4)
-    {
-        // row_shr = 4 ; bank_mask = 0xe
-        max_depth = __hip_move_dpp(*local_max, 0x114, 0xf, 0xe, 0);
-        *local_spin += __hip_move_dpp(*local_spin, 0x114, 0xf, 0xe, 0);
-        *local_max = (max_depth > *local_max) ? max_depth : *local_max;
-    }
-
-    if(WF_SIZE > 8)
-    {
-        // row_shr = 8 ; bank_mask = 0xc
-        max_depth = __hip_move_dpp(*local_max, 0x118, 0xf, 0xc, 0);
-        *local_spin += __hip_move_dpp(*local_spin, 0x118, 0xf, 0xc, 0);
-        *local_max = (max_depth > *local_max) ? max_depth : *local_max;
-    }
-
-    if(WF_SIZE > 16)
-    {
-        // row_bcast = 15 ; row_mask = 0xa
-        max_depth = __hip_move_dpp(*local_max, 0x142, 0xa, 0xf, 0);
-        *local_spin += __hip_move_dpp(*local_spin, 0x142, 0xa, 0xf, 0);
-        *local_max = (max_depth > *local_max) ? max_depth : *local_max;
-    }
-
-    if(WF_SIZE > 32)
-    {
-        // row_bcast = 31 ; row_mask = 0xc
-        max_depth = __hip_move_dpp(*local_max, 0x143, 0xc, 0xf, 0);
-        *local_spin += __hip_move_dpp(*local_spin, 0x143, 0xc, 0xf, 0);
-        *local_max = (max_depth > *local_max) ? max_depth : *local_max;
-    }
-#elif defined(__HIP_PLATFORM_NVCC__)
-    for(int i = WF_SIZE >> 1; i >= 1; i >>= 1)
-    {
-        *local_max = max(*local_max, __shfl_down_sync(0xffffffff, *local_max, i));
-        *local_spin += __shfl_down_sync(0xffffffff, *local_spin, i);
-    }
-#endif
-}
 
 template <rocsparse_int WF_SIZE, rocsparse_fill_mode FILL_MODE>
 __global__ void csrsv_analysis_kernel(rocsparse_int m,
@@ -142,7 +81,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         // non-zero values. We must then ensure that the output from the row
         // associated with the local_col is complete to ensure that we can
         // calculate the right answer.
-        int local_col = __builtin_nontemporal_load(csr_col_ind + j) - idx_base;
+        int local_col = rocsparse_nontemporal_load(csr_col_ind + j) - idx_base;
 
         // Store diagonal index
         if(local_col == row)
@@ -169,17 +108,12 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
             }
         }
 
-        int local_done = 0;
-
         // While there are threads in this workgroup that have been unable to
         // get their input, loop and wait for the flag to exist.
+        int local_done = 0;
         while(!local_done)
         {
-#if defined(__HIP_PLATFORM_HCC__)
-            local_done = __atomic_load_n(&done_array[local_col], __ATOMIC_ACQUIRE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-            local_done = atomicOr(&done_array[local_col], 0);
-#endif
+            local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
             ++local_spin;
         }
 
@@ -188,17 +122,13 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
     }
 
     // Determine maximum local depth and local spin loops within the wavefront
-    two_reduce<WF_SIZE>(&local_max, &local_spin);
+    rocsparse_wfreduce_sum_max<WF_SIZE>(&local_spin, &local_max);
     ++local_max;
 
     if(lid == WF_SIZE - 1)
     {
-// Lane 0 writes the "row is done" flag
-#if defined(__HIP_PLATFORM_HCC__)
-        __atomic_store_n(&done_array[row], local_max, __ATOMIC_RELEASE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-        atomicOr(&done_array[row], local_max);
-#endif
+        // Lane 0 writes the "row is done" flag
+        rocsparse_atomic_store(&done_array[row], local_max, __ATOMIC_RELEASE);
 
         // Must atomic these next three, since other WGs are doing the same thing
         // We're sending out "local_max - 1" because of 0-based indexing.
@@ -216,137 +146,6 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         }
     }
 }
-
-#if defined(__HIP_PLATFORM_HCC__)
-// While HIP does not contain llvm intrinsics
-__device__ int __llvm_amdgcn_readlane(int index, int offset) __asm("llvm.amdgcn.readlane");
-
-// Swizzle based intra wavefront reduction sum
-template <rocsparse_int WF_SIZE>
-static __device__ __inline__ float wf_reduce(float temp_sum)
-{
-    typedef union flt_b32
-    {
-        float val;
-        int b32;
-    } flt_b32_t;
-    flt_b32_t upper_sum, t_temp_sum;
-
-    t_temp_sum.val = temp_sum;
-
-    if(WF_SIZE > 1)
-    {
-        upper_sum.b32 = __hip_ds_swizzle(t_temp_sum.b32, 0x80b1);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 2)
-    {
-        upper_sum.b32 = __hip_ds_swizzle(t_temp_sum.b32, 0x804e);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 4)
-    {
-        upper_sum.b32 = __hip_ds_swizzle(t_temp_sum.b32, 0x101f);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 8)
-    {
-        upper_sum.b32 = __hip_ds_swizzle(t_temp_sum.b32, 0x201f);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 16)
-    {
-        upper_sum.b32 = __hip_ds_swizzle(t_temp_sum.b32, 0x401f);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 32)
-    {
-        upper_sum.b32 = __llvm_amdgcn_readlane(t_temp_sum.b32, 32);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    temp_sum = t_temp_sum.val;
-
-    return temp_sum;
-}
-
-// Swizzle based intra wavefront reduction sum
-template <rocsparse_int WF_SIZE>
-static __device__ __inline__ double wf_reduce(double temp_sum)
-{
-    typedef union dbl_b32
-    {
-        double val;
-        int b32[2];
-    } dbl_b32_t;
-    dbl_b32_t upper_sum, t_temp_sum;
-
-    t_temp_sum.val = temp_sum;
-
-    if(WF_SIZE > 1)
-    {
-        upper_sum.b32[0] = __hip_ds_swizzle(t_temp_sum.b32[0], 0x80b1);
-        upper_sum.b32[1] = __hip_ds_swizzle(t_temp_sum.b32[1], 0x80b1);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 2)
-    {
-        upper_sum.b32[0] = __hip_ds_swizzle(t_temp_sum.b32[0], 0x804e);
-        upper_sum.b32[1] = __hip_ds_swizzle(t_temp_sum.b32[1], 0x804e);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 4)
-    {
-        upper_sum.b32[0] = __hip_ds_swizzle(t_temp_sum.b32[0], 0x101f);
-        upper_sum.b32[1] = __hip_ds_swizzle(t_temp_sum.b32[1], 0x101f);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 8)
-    {
-        upper_sum.b32[0] = __hip_ds_swizzle(t_temp_sum.b32[0], 0x201f);
-        upper_sum.b32[1] = __hip_ds_swizzle(t_temp_sum.b32[1], 0x201f);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 16)
-    {
-        upper_sum.b32[0] = __hip_ds_swizzle(t_temp_sum.b32[0], 0x401f);
-        upper_sum.b32[1] = __hip_ds_swizzle(t_temp_sum.b32[1], 0x401f);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    if(WF_SIZE > 32)
-    {
-        upper_sum.b32[0] = __llvm_amdgcn_readlane(t_temp_sum.b32[0], 32);
-        upper_sum.b32[1] = __llvm_amdgcn_readlane(t_temp_sum.b32[1], 32);
-        t_temp_sum.val += upper_sum.val;
-    }
-
-    temp_sum = t_temp_sum.val;
-
-    return temp_sum;
-}
-#elif defined(__HIP_PLATFORM_NVCC__)
-template <rocsparse_int WF_SIZE, typename T>
-static __device__ __inline__ T wf_reduce(T temp_sum)
-{
-    // Perform wavefront reduction sum
-    for(int i = WF_SIZE >> 1; i >= 1; i >>= 1)
-    {
-        temp_sum += __shfl_down_sync(0xffffffff, temp_sum, i);
-    }
-
-    return temp_sum;
-}
-#endif
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 __device__ void csrsv_device(rocsparse_int m,
@@ -394,16 +193,16 @@ __device__ void csrsv_device(rocsparse_int m,
     if(lid == 0)
     {
         // Lane 0 initializes its local sum with alpha and x
-        local_sum = alpha * __builtin_nontemporal_load(x + row);
+        local_sum = alpha * rocsparse_nontemporal_load(x + row);
     }
 
     for(rocsparse_int j = row_begin + lid; j < row_end; j += WF_SIZE)
     {
         // Current column this lane operates on
-        rocsparse_int local_col = __builtin_nontemporal_load(csr_col_ind + j) - idx_base;
+        rocsparse_int local_col = rocsparse_nontemporal_load(csr_col_ind + j) - idx_base;
 
         // Local value this lane operates with
-        T local_val = __builtin_nontemporal_load(csr_val + j);
+        T local_val = rocsparse_nontemporal_load(csr_val + j);
 
         // Check for numerical zero
         if(local_val == static_cast<T>(0) && local_col == row &&
@@ -433,7 +232,7 @@ __device__ void csrsv_device(rocsparse_int m,
                 // This is not required for unit diagonal for obvious reasons
                 if(diag_type == rocsparse_diag_type_non_unit)
                 {
-                    diagonal[wid] = static_cast<T>(1) / local_val;
+                    diagonal[wid] = rocsparse_rcp(local_val);
                 }
 
                 continue;
@@ -456,36 +255,23 @@ __device__ void csrsv_device(rocsparse_int m,
                 // This is not required for unit diagonal for obvious reasons
                 if(diag_type == rocsparse_diag_type_non_unit)
                 {
-                    diagonal[wid] = static_cast<T>(1) / local_val;
+                    diagonal[wid] = rocsparse_rcp(local_val);
                 }
 
                 break;
             }
         }
 
-// Spin loop until dependency has been resolved
-#if defined(__HIP_PLATFORM_HCC__)
-        while(!__atomic_load_n(&done_array[local_col], __ATOMIC_ACQUIRE))
+        // Spin loop until dependency has been resolved
+        while(!rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE))
             ;
-#elif defined(__HIP_PLATFORM_NVCC__)
-        while(!atomicOr(&done_array[local_col], 0))
-            ;
-#endif
-
-// Load y value bypassing caches
-#if defined(__HIP_PLATFORM_HCC__)
-        T out_val;
-        __atomic_load(&y[local_col], &out_val, __ATOMIC_ACQUIRE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-        T out_val = y[local_col];
-#endif
 
         // Local sum computation for each lane
-        local_sum -= local_val * out_val;
+        local_sum -= local_val * y[local_col];
     }
 
     // Gather all local sums for each lane
-    local_sum = wf_reduce<WF_SIZE>(local_sum);
+    local_sum = rocsparse_wfreduce_sum<WF_SIZE>(local_sum);
 
     // If we have non unit diagonal, take the diagonal into account
     // For unit diagonal, this would be multiplication with one
@@ -496,14 +282,9 @@ __device__ void csrsv_device(rocsparse_int m,
 
     if(lid == 0)
     {
-// Lane 0 writes the "row is done" flag and stores the rows result in y
-#if defined(__HIP_PLATFORM_HCC__)
-        __atomic_store(&y[row], &local_sum, __ATOMIC_RELEASE);
-        __atomic_store_n(&done_array[row], 1, __ATOMIC_RELEASE);
-#elif defined(__HIP_PLATFORM_NVCC__)
-        y[row]    = local_sum;
-        atomicOr(&done_array[row], 1);
-#endif
+        // Lane 0 writes the "row is done" flag and stores the rows result in y
+        rocsparse_nontemporal_store(local_sum, &y[row]);
+        rocsparse_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE);
     }
 }
 

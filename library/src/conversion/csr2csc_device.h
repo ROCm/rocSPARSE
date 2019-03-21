@@ -42,8 +42,10 @@ __global__ void csr2csc_permute_kernel(rocsparse_int nnz,
         return;
     }
 
-    out1[gid] = in1[map[gid]];
-    out2[gid] = in2[map[gid]];
+    rocsparse_int idx = map[gid];
+
+    out1[gid] = in1[idx];
+    out2[gid] = in2[idx];
 }
 
 #endif // CSR2CSC_DEVICE_H

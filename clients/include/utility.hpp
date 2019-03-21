@@ -724,7 +724,8 @@ rocsparse_int csrilu0(rocsparse_int m,
                         // if nnz at this position do linear combination
                         if(nnz_entries[col[k] - idx_base] != 0)
                         {
-                            val[nnz_entries[col[k] - idx_base]] -= val[j] * val[k];
+                            rocsparse_int idx = nnz_entries[col[k] - idx_base];
+                            val[idx]          = std::fma(-val[j], val[k], val[idx]);
                         }
                     }
                 }
@@ -790,11 +791,11 @@ rocsparse_int lsolve(rocsparse_int m,
         rocsparse_int row_begin = ptr[i] - idx_base;
         rocsparse_int row_end   = ptr[i + 1] - idx_base;
 
-        T diag_val;
+        T diag_val = static_cast<T>(0);
 
         for(rocsparse_int l = row_begin; l < row_end; l += wf_size)
         {
-            for(rocsparse_int k = 0; k < wf_size; ++k)
+            for(unsigned int k = 0; k < wf_size; ++k)
             {
                 rocsparse_int j = l + k;
 
@@ -838,9 +839,9 @@ rocsparse_int lsolve(rocsparse_int m,
             }
         }
 
-        for(rocsparse_int j = 1; j < wf_size; j <<= 1)
+        for(unsigned int j = 1; j < wf_size; j <<= 1)
         {
-            for(rocsparse_int k = 0; k < wf_size - j; ++k)
+            for(unsigned int k = 0; k < wf_size - j; ++k)
             {
                 temp[k] += temp[k + j];
             }
@@ -895,11 +896,11 @@ rocsparse_int usolve(rocsparse_int m,
         rocsparse_int row_begin = ptr[i] - idx_base;
         rocsparse_int row_end   = ptr[i + 1] - idx_base;
 
-        T diag_val;
+        T diag_val = static_cast<T>(0);
 
         for(rocsparse_int l = row_begin; l < row_end; l += wf_size)
         {
-            for(rocsparse_int k = 0; k < wf_size; ++k)
+            for(unsigned int k = 0; k < wf_size; ++k)
             {
                 rocsparse_int j = l + k;
 
@@ -943,9 +944,9 @@ rocsparse_int usolve(rocsparse_int m,
             }
         }
 
-        for(rocsparse_int j = 1; j < wf_size; j <<= 1)
+        for(unsigned int j = 1; j < wf_size; j <<= 1)
         {
-            for(rocsparse_int k = 0; k < wf_size - j; ++k)
+            for(unsigned int k = 0; k < wf_size - j; ++k)
             {
                 temp[k] += temp[k + j];
             }
