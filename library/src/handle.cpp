@@ -228,16 +228,10 @@ rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
     }
 
     // Clean up
-    if(info->d_row_map != nullptr)
+    if(info->row_map != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->d_row_map));
-        info->d_row_map = nullptr;
-    }
-
-    if(info->h_row_map != nullptr)
-    {
-        RETURN_IF_HIP_ERROR(hipHostFree(info->h_row_map));
-        info->h_row_map = nullptr;
+        RETURN_IF_HIP_ERROR(hipFree(info->row_map));
+        info->row_map = nullptr;
     }
 
     if(info->csr_diag_ind != nullptr)
