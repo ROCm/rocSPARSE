@@ -147,9 +147,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
     rocsparse_int vecStart =
         rocsparse_mad24(wg, BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
     rocsparse_int vecEnd =
-        ((csr_row_ptr[row + 1] - idx_base) > vecStart + BLOCK_MULTIPLIER * BLOCKSIZE)
-            ? vecStart + BLOCK_MULTIPLIER * BLOCKSIZE
-            : (csr_row_ptr[row + 1] - idx_base);
+        min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
 
     T temp_sum = static_cast<T>(0);
 
@@ -287,7 +285,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
                 rocsparse_int local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
                 temp_sum                      = static_cast<T>(0);
                 for(rocsparse_int local_cur_val = local_first_val; local_cur_val < local_last_val;
-                    local_cur_val++)
+                    ++local_cur_val)
                 {
                     temp_sum += partialSums[local_cur_val];
                 }
@@ -328,23 +326,23 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
             // Using a long induction variable to make sure unsigned int overflow doesn't break
             // things.
-            for(unsigned long long j = vecStart + lid; j < vecEnd; j += WG_SIZE)
+            for(rocsparse_int j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
-                rocsparse_int col = csr_col_ind[(unsigned int)j] - idx_base;
-                temp_sum = rocsparse_fma(alpha, csr_val[(unsigned int)j] * x[col], temp_sum);
+                temp_sum =
+                    rocsparse_fma(alpha * csr_val[j], x[csr_col_ind[j] - idx_base], temp_sum);
             }
 
             partialSums[lid] = temp_sum;
 
+            __syncthreads();
+
             // Reduce partial sums
-            for(rocsparse_int i = (WG_SIZE >> 1); i > 0; i >>= 1)
-            {
-                __syncthreads();
-                temp_sum = sum2_reduce(temp_sum, partialSums, lid, WG_SIZE, i);
-            }
+            rocsparse_blockreduce_sum<T, WG_SIZE>(lid, partialSums);
 
             if(lid == 0)
             {
+                temp_sum = partialSums[0];
+
                 if(beta != static_cast<T>(0))
                 {
                     temp_sum = rocsparse_fma(beta, y[row], temp_sum);
@@ -401,45 +399,21 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
         // Load in a bunch of partial results into your register space, rather than LDS (no
         // contention)
         // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
-        rocsparse_int col = vecStart + lid;
-        if(row == stop_row) // inner thread, we can hardcode/unroll this loop
+        for(rocsparse_int j = vecStart + lid; j < vecEnd; j += WG_SIZE)
         {
-            // Don't put BLOCK_MULTIPLIER*BLOCKSIZE as the stop point, because
-            // some GPU compilers will *aggressively* unroll this loop.
-            // That increases register pressure and reduces occupancy.
-            for(rocsparse_int j = 0; j < vecEnd - col; j += WG_SIZE)
-            {
-                temp_sum = rocsparse_fma(
-                    alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
-#if 2 * WG_SIZE <= BLOCK_MULTIPLIER * BLOCKSIZE
-                // If you can, unroll this loop once. It somewhat helps performance.
-                j += WG_SIZE;
-                temp_sum = rocsparse_fma(
-                    alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
-#endif
-            }
-        }
-        else
-        {
-            for(rocsparse_int j = 0; j < vecEnd - col; j += WG_SIZE)
-            {
-                temp_sum = rocsparse_fma(
-                    alpha, csr_val[col + j] * x[csr_col_ind[col + j] - idx_base], temp_sum);
-            }
+            temp_sum = rocsparse_fma(alpha * csr_val[j], x[csr_col_ind[j] - idx_base], temp_sum);
         }
 
         partialSums[lid] = temp_sum;
 
+        __syncthreads();
+
         // Reduce partial sums
-        for(rocsparse_int i = (WG_SIZE >> 1); i > 0; i >>= 1)
-        {
-            __syncthreads();
-            temp_sum = sum2_reduce(temp_sum, partialSums, lid, WG_SIZE, i);
-        }
+        rocsparse_blockreduce_sum<T, WG_SIZE>(lid, partialSums);
 
         if(lid == 0)
         {
-            rocsparse_atomic_add(&y[row], temp_sum);
+            rocsparse_atomic_add(&y[row], partialSums[0]);
         }
     }
 }

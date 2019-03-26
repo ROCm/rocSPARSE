@@ -35,7 +35,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
                                       const rocsparse_int* __restrict__ csr_col_ind,
                                       rocsparse_int* __restrict__ csr_diag_ind,
                                       rocsparse_int* __restrict__ done_array,
-                                      rocsparse_int* __restrict__ rows_per_level,
+                                      // rocsparse_int* __restrict__ rows_per_level,
                                       rocsparse_int* __restrict__ max_depth,
                                       unsigned long long* __restrict__ total_spin,
                                       rocsparse_int* __restrict__ max_nnz,
@@ -125,7 +125,11 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
     rocsparse_wfreduce_sum_max<WF_SIZE>(&local_spin, &local_max);
     ++local_max;
 
+#if defined(__HIP_PLATFORM_HCC__)
     if(lid == WF_SIZE - 1)
+#elif defined(__HIP_PLATFORM_NVCC__)
+    if(lid == 0)
+#endif
     {
         // Lane 0 writes the "row is done" flag
         rocsparse_atomic_store(&done_array[row], local_max, __ATOMIC_RELEASE);
@@ -134,7 +138,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         // We're sending out "local_max - 1" because of 0-based indexing.
         // However, we needed to put a non-zero value into the done_array up above
         // when we crammed local_depth in, so these two will be off by one.
-        atomicAdd(&rows_per_level[local_max - 1], 1);
+        // atomicAdd(&rows_per_level[local_max - 1], 1);
         atomicMax(max_depth, local_max);
         atomicAdd(total_spin, local_spin);
         atomicMax(max_nnz, row_end - row_begin);
