@@ -66,13 +66,26 @@ __device__ __forceinline__ rocsparse_int rocsparse_mad24(rocsparse_int x, rocspa
 #if defined(__HIP_PLATFORM_HCC__)
 __device__ __forceinline__ rocsparse_int rocsparse_atomic_load(const rocsparse_int* ptr, int memorder) { return __atomic_load_n(ptr, memorder); }
 #elif defined(__HIP_PLATFORM_NVCC__)
-__device__ __forceinline__ rocsparse_int rocsparse_atomic_load(const rocsparse_int* ptr, int memorder) { return atomicOr(ptr, 0); }
+__device__ __forceinline__ rocsparse_int rocsparse_atomic_load(const rocsparse_int* ptr, int memorder)
+{
+    const volatile rocsparse_int* vptr = ptr;
+    __threadfence();
+    rocsparse_int val = *vptr;
+    __threadfence();
+
+    return val;
+}
 #endif
 
 #if defined(__HIP_PLATFORM_HCC__)
 __device__ __forceinline__ void rocsparse_atomic_store(rocsparse_int* ptr, rocsparse_int val, int memorder) { __atomic_store_n(ptr, val, memorder); }
 #elif defined(__HIP_PLATFORM_NVCC__)
-__device__ __forceinline__ void rocsparse_atomic_store(rocsparse_int* ptr, rocsparse_int val, int memorder) { atomicOr(ptr, val); }
+__device__ __forceinline__ void rocsparse_atomic_store(rocsparse_int* ptr, rocsparse_int val, int memorder)
+{
+    volatile rocsparse_int* vptr = ptr;
+    __threadfence();
+    *vptr = val;
+}
 #endif
 
 __device__ __forceinline__ void rocsparse_atomic_add(float* ptr, float val)

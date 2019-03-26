@@ -121,6 +121,9 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle handle,
         return rocsparse_status_success;
     }
 
+    // Stream
+    hipStream_t stream = handle->stream;
+
     // rocsparse_int max depth
     *buffer_size = 256;
 
@@ -136,9 +139,14 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle handle,
     // rocsparse_int rows_per_level[m]
     *buffer_size += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
 
+    // rocsparse_int workspace
+    *buffer_size += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
+
     size_t hipcub_size = 0;
-    rocsparse_int* ptr = nullptr;
-    RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(nullptr, hipcub_size, ptr, ptr, m));
+    rocsparse_int* ptr = reinterpret_cast<rocsparse_int*>(buffer_size);
+    hipcub::DoubleBuffer<rocsparse_int> dummy(ptr, ptr);
+    RETURN_IF_HIP_ERROR(
+        hipcub::DeviceRadixSort::SortPairs(nullptr, hipcub_size, dummy, dummy, m, 0, 32, stream));
 
     // hipcub buffer
     *buffer_size += hipcub_size;
@@ -182,11 +190,15 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     ptr += 256;
 
     // done array
-    rocsparse_int* d_done_array = reinterpret_cast<rocsparse_int*>(ptr);
+    rocsparse_int* done_array = reinterpret_cast<rocsparse_int*>(ptr);
     ptr += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
 
     // rows_per_level
     rocsparse_int* d_rows_per_level = reinterpret_cast<rocsparse_int*>(ptr);
+    ptr += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
+
+    // workspace
+    rocsparse_int* workspace = reinterpret_cast<rocsparse_int*>(ptr);
     ptr += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
 
     // hipcub buffer
@@ -199,13 +211,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->zero_pivot, sizeof(rocsparse_int)));
 
     // Allocate buffer to hold row map
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->d_row_map, sizeof(rocsparse_int) * (m + 1)));
-
-    // Allocate host buffer to hold row map
-    RETURN_IF_HIP_ERROR(hipHostMalloc((void**)&info->h_row_map, sizeof(rocsparse_int) * (m + 1)));
-
-    // Initialize row map
-    memset(info->h_row_map, 0, sizeof(rocsparse_int) * (m + 1));
+    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->row_map, sizeof(rocsparse_int) * m));
 
     // Initialize zero pivot
     rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
@@ -231,8 +237,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                csr_row_ptr,
                                csr_col_ind,
                                info->csr_diag_ind,
-                               d_done_array,
-                               d_rows_per_level,
+                               done_array,
+                               // d_rows_per_level,
                                d_max_depth,
                                d_total_spin,
                                d_max_nnz,
@@ -250,8 +256,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                csr_row_ptr,
                                csr_col_ind,
                                info->csr_diag_ind,
-                               d_done_array,
-                               d_rows_per_level,
+                               done_array,
+                               // d_rows_per_level,
                                d_max_depth,
                                d_total_spin,
                                d_max_nnz,
@@ -272,8 +278,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                csr_row_ptr,
                                csr_col_ind,
                                info->csr_diag_ind,
-                               d_done_array,
-                               d_rows_per_level,
+                               done_array,
+                               // d_rows_per_level,
                                d_max_depth,
                                d_total_spin,
                                d_max_nnz,
@@ -291,8 +297,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                csr_row_ptr,
                                csr_col_ind,
                                info->csr_diag_ind,
-                               d_done_array,
-                               d_rows_per_level,
+                               done_array,
+                               // d_rows_per_level,
                                d_max_depth,
                                d_total_spin,
                                d_max_nnz,
@@ -313,44 +319,29 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     RETURN_IF_HIP_ERROR(
         hipMemcpy(&info->max_nnz, d_max_nnz, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
-    // Inclusive sum to obtain rows per level
-    size_t hipcub_size = 0;
-    RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(
-        nullptr, hipcub_size, d_rows_per_level, d_rows_per_level, info->max_depth));
-    RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(
-        hipcub_buffer, hipcub_size, d_rows_per_level, d_rows_per_level, info->max_depth));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, m, workspace));
 
-    // Allocate host memory for meta data
-    info->rows_per_level.resize(info->max_depth);
-    std::vector<rocsparse_int> done_array(m);
+    size_t hipcub_size;
 
-    // Move meta data to host (required for kernel launching)
-    RETURN_IF_HIP_ERROR(hipMemcpy(info->rows_per_level.data(),
-                                  d_rows_per_level,
-                                  sizeof(rocsparse_int) * info->max_depth,
-                                  hipMemcpyDeviceToHost));
-    RETURN_IF_HIP_ERROR(hipMemcpy(
-        done_array.data(), d_done_array, sizeof(rocsparse_int) * m, hipMemcpyDeviceToHost));
+    unsigned int startbit = 0;
+    unsigned int endbit   = rocsparse_clz(m);
 
-    std::vector<rocsparse_int> counter(info->max_depth, 0);
+    hipcub::DoubleBuffer<rocsparse_int> keys(done_array, d_rows_per_level);
+    hipcub::DoubleBuffer<rocsparse_int> vals(workspace, info->row_map);
 
-    // Create row map
-    for(rocsparse_int i = 0; i < m; ++i)
+    RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
+        nullptr, hipcub_size, keys, vals, m, startbit, endbit, stream));
+    RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
+        hipcub_buffer, hipcub_size, keys, vals, m, startbit, endbit, stream));
+
+    if(vals.Current() != info->row_map)
     {
-        rocsparse_int level        = done_array[i] - 1;
-        rocsparse_int prev_level   = level - 1;
-        rocsparse_int depth_offset = (level == 0) ? 0 : info->rows_per_level[prev_level];
-
-        info->h_row_map[depth_offset + counter[level]] = i;
-        ++counter[level];
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->row_map,
+                                           vals.Current(),
+                                           sizeof(rocsparse_int) * m,
+                                           hipMemcpyDeviceToDevice,
+                                           stream));
     }
-
-    // Copy row map to device
-    RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->d_row_map,
-                                       info->h_row_map,
-                                       sizeof(rocsparse_int) * (m + 1),
-                                       hipMemcpyHostToDevice,
-                                       stream));
 
     // Store some pointers to verify correct execution
     info->m           = m;
@@ -755,10 +746,10 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle handle,
     ptr += 256;
 
     // done array
-    rocsparse_int* d_done_array = reinterpret_cast<rocsparse_int*>(ptr);
+    rocsparse_int* done_array = reinterpret_cast<rocsparse_int*>(ptr);
 
     // Initialize buffers
-    RETURN_IF_HIP_ERROR(hipMemsetAsync(d_done_array, 0, sizeof(rocsparse_int) * m, stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(rocsparse_int) * m, stream));
 
     rocsparse_csrtr_info csrsv = (descr->fill_mode == rocsparse_fill_mode_upper)
                                      ? info->csrsv_upper_info
@@ -812,8 +803,8 @@ CSRSV_DIM + 1);
                                        csr_val,
                                        x,
                                        y,
-                                       d_done_array,
-                                       csrsv->d_row_map,
+                                       done_array,
+                                       csrsv->row_map,
                                        depth_offset,
                                        csrsv->zero_pivot,
                                        descr->base,
@@ -834,8 +825,8 @@ CSRSV_DIM + 1);
                                        csr_val,
                                        x,
                                        y,
-                                       d_done_array,
-                                       csrsv->d_row_map,
+                                       done_array,
+                                       csrsv->row_map,
                                        depth_offset,
                                        csrsv->zero_pivot,
                                        descr->base,
@@ -864,8 +855,8 @@ CSRSV_DIM + 1);
                                        csr_val,
                                        x,
                                        y,
-                                       d_done_array,
-                                       csrsv->d_row_map,
+                                       done_array,
+                                       csrsv->row_map,
                                        depth_offset,
                                        csrsv->zero_pivot,
                                        descr->base,
@@ -886,8 +877,8 @@ CSRSV_DIM + 1);
                                        csr_val,
                                        x,
                                        y,
-                                       d_done_array,
-                                       csrsv->d_row_map,
+                                       done_array,
+                                       csrsv->row_map,
                                        depth_offset,
                                        csrsv->zero_pivot,
                                        descr->base,
@@ -927,8 +918,8 @@ CSRSV_DIM + 1);
                                    csr_val,
                                    x,
                                    y,
-                                   d_done_array,
-                                   csrsv->d_row_map,
+                                   done_array,
+                                   csrsv->row_map,
                                    depth_offset,
                                    csrsv->zero_pivot,
                                    descr->base,
@@ -949,8 +940,8 @@ CSRSV_DIM + 1);
                                    csr_val,
                                    x,
                                    y,
-                                   d_done_array,
-                                   csrsv->d_row_map,
+                                   done_array,
+                                   csrsv->row_map,
                                    depth_offset,
                                    csrsv->zero_pivot,
                                    descr->base,
@@ -979,8 +970,8 @@ CSRSV_DIM + 1);
                                    csr_val,
                                    x,
                                    y,
-                                   d_done_array,
-                                   csrsv->d_row_map,
+                                   done_array,
+                                   csrsv->row_map,
                                    depth_offset,
                                    csrsv->zero_pivot,
                                    descr->base,
@@ -1001,8 +992,8 @@ CSRSV_DIM + 1);
                                    csr_val,
                                    x,
                                    y,
-                                   d_done_array,
-                                   csrsv->d_row_map,
+                                   done_array,
+                                   csrsv->row_map,
                                    depth_offset,
                                    csrsv->zero_pivot,
                                    descr->base,
@@ -1038,8 +1029,8 @@ CSRSV_DIM + 1);
                                csr_val,
                                x,
                                y,
-                               d_done_array,
-                               csrsv->d_row_map,
+                               done_array,
+                               csrsv->row_map,
                                0,
                                csrsv->zero_pivot,
                                descr->base,
@@ -1060,8 +1051,8 @@ CSRSV_DIM + 1);
                                csr_val,
                                x,
                                y,
-                               d_done_array,
-                               csrsv->d_row_map,
+                               done_array,
+                               csrsv->row_map,
                                0,
                                csrsv->zero_pivot,
                                descr->base,
@@ -1090,8 +1081,8 @@ CSRSV_DIM + 1);
                                csr_val,
                                x,
                                y,
-                               d_done_array,
-                               csrsv->d_row_map,
+                               done_array,
+                               csrsv->row_map,
                                0,
                                csrsv->zero_pivot,
                                descr->base,
@@ -1112,8 +1103,8 @@ CSRSV_DIM + 1);
                                csr_val,
                                x,
                                y,
-                               d_done_array,
-                               csrsv->d_row_map,
+                               done_array,
+                               csrsv->row_map,
                                0,
                                csrsv->zero_pivot,
                                descr->base,
