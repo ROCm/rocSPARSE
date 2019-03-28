@@ -413,7 +413,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
 
         if(lid == 0)
         {
-            rocsparse_atomic_add(&y[row], partialSums[0]);
+            atomicAdd(y + row, partialSums[0]);
         }
     }
 }
