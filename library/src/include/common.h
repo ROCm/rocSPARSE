@@ -88,30 +88,6 @@ __device__ __forceinline__ void rocsparse_atomic_store(rocsparse_int* ptr, rocsp
 }
 #endif
 
-__device__ __forceinline__ void rocsparse_atomic_add(float* ptr, float val)
-{
-    unsigned int new_val;
-    unsigned int prev_val;
-
-    do
-    {
-        prev_val = __float_as_uint(*ptr);
-        new_val  = __float_as_uint(val + *ptr);
-    } while(atomicCAS((unsigned int*)ptr, prev_val, new_val) != prev_val);
-}
-
-__device__ __forceinline__ void rocsparse_atomic_add(double* ptr, double val)
-{
-    unsigned long long new_val;
-    unsigned long long prev_val;
-
-    do
-    {
-        prev_val = __double_as_longlong(*ptr);
-        new_val  = __double_as_longlong(val + *ptr);
-    } while(atomicCAS((unsigned long long*)ptr, prev_val, new_val) != prev_val);
-}
-
 // Block reduce kernel computing block sum
 template <typename T, unsigned int BLOCKSIZE>
 __device__ __forceinline__ void rocsparse_blockreduce_sum(int i, T* data)
