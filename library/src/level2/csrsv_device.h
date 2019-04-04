@@ -284,7 +284,7 @@ __device__ void csrsv_device(rocsparse_int m,
         local_sum *= diagonal[wid];
     }
 
-    if(lid == 0)
+    if(lid == WF_SIZE - 1)
     {
         // Lane 0 writes the "row is done" flag and stores the rows result in y
         rocsparse_nontemporal_store(local_sum, &y[row]);
