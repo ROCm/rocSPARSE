@@ -468,6 +468,7 @@ rocsparse_status testing_csrsv(Arguments argus)
     T h_alpha                     = argus.alpha;
     std::string binfile           = "";
     std::string filename          = "";
+    std::string rocalution        = "";
     rocsparse_status status;
     size_t size;
 
@@ -481,7 +482,14 @@ rocsparse_status testing_csrsv(Arguments argus)
 
     if(argus.timing == 1)
     {
-        filename = argus.filename;
+        if(argus.rocalution != "")
+        {
+            rocalution = argus.rocalution;
+        }
+        else if(argus.filename != "")
+        {
+            filename = argus.filename;
+        }
     }
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
@@ -626,6 +634,15 @@ rocsparse_status testing_csrsv(Arguments argus)
                binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base) != 0)
         {
             fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+            return rocsparse_status_internal_error;
+        }
+    }
+    else if(rocalution != "")
+    {
+        if(read_rocalution_matrix(
+               rocalution.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base) != 0)
+        {
+            fprintf(stderr, "Cannot open [read] %s\n", rocalution.c_str());
             return rocsparse_status_internal_error;
         }
     }
