@@ -65,7 +65,7 @@ static __device__ void csrmvn_general_device(rocsparse_int m,
         sum = rocsparse_wfreduce_sum<WF_SIZE>(sum);
 
         // First thread of each wavefront writes result into global memory
-        if(lid == 0)
+        if(lid == WF_SIZE - 1)
         {
             if(beta == static_cast<T>(0))
             {
@@ -413,7 +413,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
 
         if(lid == 0)
         {
-            rocsparse_atomic_add(&y[row], partialSums[0]);
+            atomicAdd(y + row, partialSums[0]);
         }
     }
 }
