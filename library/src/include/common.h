@@ -187,37 +187,37 @@ __device__ __forceinline__ float rocsparse_wfreduce_sum(float sum)
 
     if(WFSIZE > 1)
     {
-        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x80b1);
+        upper_sum.b32 = __hip_move_dpp(temp_sum.b32, 0x111, 0xf, 0xf, false);
         temp_sum.val += upper_sum.val;
     }
 
     if(WFSIZE > 2)
     {
-        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x804e);
+        upper_sum.b32 = __hip_move_dpp(temp_sum.b32, 0x112, 0xf, 0xf, false);
         temp_sum.val += upper_sum.val;
     }
 
     if(WFSIZE > 4)
     {
-        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x101f);
+        upper_sum.b32 = __hip_move_dpp(temp_sum.b32, 0x114, 0xf, 0xe, false);
         temp_sum.val += upper_sum.val;
     }
 
     if(WFSIZE > 8)
     {
-        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x201f);
+        upper_sum.b32 = __hip_move_dpp(temp_sum.b32, 0x118, 0xf, 0xc, false);
         temp_sum.val += upper_sum.val;
     }
 
     if(WFSIZE > 16)
     {
-        upper_sum.b32 = __hip_ds_swizzle(temp_sum.b32, 0x401f);
+        upper_sum.b32 = __hip_move_dpp(temp_sum.b32, 0x142, 0xa, 0xf, false);
         temp_sum.val += upper_sum.val;
     }
 
     if(WFSIZE > 32)
     {
-        upper_sum.b32 = __llvm_amdgcn_readlane(temp_sum.b32, 32);
+        upper_sum.b32 = __hip_move_dpp(temp_sum.b32, 0x143, 0xc, 0xf, false);
         temp_sum.val += upper_sum.val;
     }
 
@@ -241,43 +241,43 @@ __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
 
     if(WFSIZE > 1)
     {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x80b1);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x80b1);
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x111, 0xf, 0xf, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x111, 0xf, 0xf, false);
         temp_sum.val += upper_sum.val;
     }
 
     if(WFSIZE > 2)
     {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x804e);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x804e);
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x112, 0xf, 0xf, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x112, 0xf, 0xf, false);
         temp_sum.val += upper_sum.val;
     }
 
     if(WFSIZE > 4)
     {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x101f);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x101f);
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x114, 0xf, 0xe, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x114, 0xf, 0xe, false);
         temp_sum.val += upper_sum.val;
     }
 
     if(WFSIZE > 8)
     {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x201f);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x201f);
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x118, 0xf, 0xc, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x118, 0xf, 0xc, false);
         temp_sum.val += upper_sum.val;
     }
 
     if(WFSIZE > 16)
     {
-        upper_sum.b32[0] = __hip_ds_swizzle(temp_sum.b32[0], 0x401f);
-        upper_sum.b32[1] = __hip_ds_swizzle(temp_sum.b32[1], 0x401f);
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x142, 0xa, 0xf, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x142, 0xa, 0xf, false);
         temp_sum.val += upper_sum.val;
     }
 
     if(WFSIZE > 32)
     {
-        upper_sum.b32[0] = __llvm_amdgcn_readlane(temp_sum.b32[0], 32);
-        upper_sum.b32[1] = __llvm_amdgcn_readlane(temp_sum.b32[1], 32);
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x143, 0xc, 0xf, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x143, 0xc, 0xf, false);
         temp_sum.val += upper_sum.val;
     }
 
