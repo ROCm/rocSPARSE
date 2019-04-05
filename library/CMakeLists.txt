@@ -57,6 +57,11 @@ include(src/CMakeLists.txt)
 add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
 add_library(roc::rocsparse ALIAS rocsparse)
 
+# Target compile options
+if(NOT HIP_PLATFORM STREQUAL "nvcc")
+  target_compile_options(rocsparse PRIVATE -fno-gpu-rdc)
+endif()
+
 # Target link libraries
 if(NOT HIP_PLATFORM STREQUAL "nvcc")
   target_link_libraries(rocsparse PRIVATE hip::device)
