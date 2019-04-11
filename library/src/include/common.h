@@ -125,50 +125,14 @@ __device__ int __llvm_amdgcn_readlane(int index, int offset) __asm("llvm.amdgcn.
 
 // DPP-based wavefront reduction combination of sum and max
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_sum_max(rocsparse_int* sum,
-                                                           rocsparse_int* maximum)
+__device__ __forceinline__ void rocsparse_wfreduce_max(rocsparse_int* maximum)
 {
-    if(WFSIZE > 1)
-    {
-        // row_shr = 1
-        *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x111, 0xf, 0xf, 0));
-        *sum += __hip_move_dpp(*sum, 0x111, 0xf, 0xf, 0);
-    }
-
-    if(WFSIZE > 2)
-    {
-        // row_shr = 2
-        *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x112, 0xf, 0xf, 0));
-        *sum += __hip_move_dpp(*sum, 0x112, 0xf, 0xf, 0);
-    }
-
-    if(WFSIZE > 4)
-    {
-        // row_shr = 4 ; bank_mask = 0xe
-        *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x114, 0xf, 0xe, 0));
-        *sum += __hip_move_dpp(*sum, 0x114, 0xf, 0xe, 0);
-    }
-
-    if(WFSIZE > 8)
-    {
-        // row_shr = 8 ; bank_mask = 0xc
-        *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x118, 0xf, 0xc, 0));
-        *sum += __hip_move_dpp(*sum, 0x118, 0xf, 0xc, 0);
-    }
-
-    if(WFSIZE > 16)
-    {
-        // row_bcast = 15 ; row_mask = 0xa
-        *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x142, 0xa, 0xf, 0));
-        *sum += __hip_move_dpp(*sum, 0x142, 0xa, 0xf, 0);
-    }
-
-    if(WFSIZE > 32)
-    {
-        // row_bcast = 31 ; row_mask = 0xc
-        *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x143, 0xc, 0xf, 0));
-        *sum += __hip_move_dpp(*sum, 0x143, 0xc, 0xf, 0);
-    }
+    if(WFSIZE >  1) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x111, 0xf, 0xf, 0));
+    if(WFSIZE >  2) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x112, 0xf, 0xf, 0));
+    if(WFSIZE >  4) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x114, 0xf, 0xe, 0));
+    if(WFSIZE >  8) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x118, 0xf, 0xc, 0));
+    if(WFSIZE > 16) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x142, 0xa, 0xf, 0));
+    if(WFSIZE > 32) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x143, 0xc, 0xf, 0));
 }
 
 // Swizzle-based float wavefront reduction sum
