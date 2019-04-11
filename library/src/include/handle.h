@@ -186,13 +186,9 @@ struct _rocsparse_csrtr_info
 {
     // maximum depth
     rocsparse_int max_depth;
-    // total number of spin loops
-    unsigned long long total_spin;
     // maximum non-zero entries of a single row
     rocsparse_int max_nnz;
 
-    // host array to hold number of rows per level
-    std::vector<rocsparse_int> rows_per_level;
     // device array to hold row permutation
     rocsparse_int* row_map = nullptr;
     // device array to hold pointer to diagonal entry

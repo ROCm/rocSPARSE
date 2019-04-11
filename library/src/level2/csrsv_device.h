@@ -35,9 +35,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
                                       const rocsparse_int* __restrict__ csr_col_ind,
                                       rocsparse_int* __restrict__ csr_diag_ind,
                                       rocsparse_int* __restrict__ done_array,
-                                      // rocsparse_int* __restrict__ rows_per_level,
                                       rocsparse_int* __restrict__ max_depth,
-                                      unsigned long long* __restrict__ total_spin,
                                       rocsparse_int* __restrict__ max_nnz,
                                       rocsparse_int* __restrict__ zero_pivot,
                                       rocsparse_index_base idx_base)
@@ -66,9 +64,8 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         csr_diag_ind[row] = -1;
     }
 
-    // Local depth and spin
-    rocsparse_int local_max  = 0;
-    rocsparse_int local_spin = 0;
+    // Local depth
+    rocsparse_int local_max = 0;
 
     int row_begin = csr_row_ptr[row] - idx_base;
     int row_end   = csr_row_ptr[row + 1] - idx_base;
@@ -114,15 +111,14 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         while(!local_done)
         {
             local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
-            ++local_spin;
         }
 
         // Local maximum
         local_max = max(local_done, local_max);
     }
 
-    // Determine maximum local depth and local spin loops within the wavefront
-    rocsparse_wfreduce_sum_max<WF_SIZE>(&local_spin, &local_max);
+    // Determine maximum local depth within the wavefront
+    rocsparse_wfreduce_max<WF_SIZE>(&local_max);
     ++local_max;
 
 #if defined(__HIP_PLATFORM_HCC__)
@@ -138,9 +134,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         // We're sending out "local_max - 1" because of 0-based indexing.
         // However, we needed to put a non-zero value into the done_array up above
         // when we crammed local_depth in, so these two will be off by one.
-        // atomicAdd(&rows_per_level[local_max - 1], 1);
         atomicMax(max_depth, local_max);
-        atomicAdd(total_spin, local_spin);
         atomicMax(max_nnz, row_end - row_begin);
 
         if(csr_diag_ind[row] == -1)
