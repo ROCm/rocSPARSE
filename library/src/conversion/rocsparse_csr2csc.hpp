@@ -85,6 +85,12 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle handle,
         return rocsparse_status_invalid_size;
     }
 
+    // Quick return if possible
+    if(m == 0 || n == 0 || nnz == 0)
+    {
+        return rocsparse_status_success;
+    }
+
     // Check pointer arguments
     if(csr_val == nullptr && rocsparse_action_numeric)
     {
@@ -113,12 +119,6 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle handle,
     else if(temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
-    }
-
-    // Quick return if possible
-    if(m == 0 || n == 0 || nnz == 0)
-    {
-        return rocsparse_status_success;
     }
 
     // Stream
