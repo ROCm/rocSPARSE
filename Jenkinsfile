@@ -31,7 +31,7 @@ rocSPARSECI:
 
     def rocsparse = new rocProject('rocsparse')
     // customize for project
-    rocsparse.paths.build_command = './install.sh -c'
+    rocsparse.paths.build_command = './install.sh -cd'
 
     // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(['gfx900', 'gfx906'], rocsparse)
