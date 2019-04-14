@@ -73,6 +73,14 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handl
         return rocsparse_status_invalid_size;
     }
 
+    // Quick return if possible
+    if(m == 0 || n == 0 || nnz == 0)
+    {
+        // Do not return 0 as buffer size
+        *buffer_size = 4;
+        return rocsparse_status_success;
+    }
+
     // Check pointer arguments
     if(csr_row_ptr == nullptr)
     {
@@ -85,14 +93,6 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle handl
     else if(buffer_size == nullptr)
     {
         return rocsparse_status_invalid_pointer;
-    }
-
-    // Quick return if possible
-    if(m == 0 || n == 0 || nnz == 0)
-    {
-        // Do not return 0 as buffer size
-        *buffer_size = 4;
-        return rocsparse_status_success;
     }
 
     hipStream_t stream = handle->stream;

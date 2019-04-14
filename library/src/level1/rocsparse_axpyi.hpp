@@ -115,6 +115,12 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle handle,
         return rocsparse_status_invalid_size;
     }
 
+    // Quick return if possible
+    if(nnz == 0)
+    {
+        return rocsparse_status_success;
+    }
+
     // Check pointer arguments
     if(alpha == nullptr)
     {
@@ -131,12 +137,6 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle handle,
     else if(y == nullptr)
     {
         return rocsparse_status_invalid_pointer;
-    }
-
-    // Quick return if possible
-    if(nnz == 0)
-    {
-        return rocsparse_status_success;
     }
 
     // Stream
