@@ -100,20 +100,7 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
         return rocsparse_status_invalid_size;
     }
 
-    // Check pointer arguments
-    if(ell_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_nnz == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
+    // Stream
     hipStream_t stream = handle->stream;
 
     // Quick return if possible
@@ -128,6 +115,20 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
             *csr_nnz = 0;
         }
         return rocsparse_status_success;
+    }
+
+    // Check pointer arguments
+    if(ell_col_ind == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(csr_row_ptr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(csr_nnz == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
     }
 
 // Count nnz per row

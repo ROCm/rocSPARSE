@@ -104,6 +104,12 @@ rocsparse_status rocsparse_ell2csr_template(rocsparse_handle handle,
         return rocsparse_status_invalid_size;
     }
 
+    // Quick return if possible
+    if(m == 0 || n == 0 || ell_width == 0)
+    {
+        return rocsparse_status_success;
+    }
+
     // Check pointer arguments
     if(ell_val == nullptr)
     {
@@ -124,12 +130,6 @@ rocsparse_status rocsparse_ell2csr_template(rocsparse_handle handle,
     else if(csr_col_ind == nullptr)
     {
         return rocsparse_status_invalid_pointer;
-    }
-
-    // Quick return if possible
-    if(m == 0 || n == 0 || ell_width == 0)
-    {
-        return rocsparse_status_success;
     }
 
     // Stream
