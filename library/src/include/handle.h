@@ -184,10 +184,8 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info);
 
 struct _rocsparse_csrtr_info
 {
-    // maximum depth
-    rocsparse_int max_depth;
-    // maximum non-zero entries of a single row
-    rocsparse_int max_nnz;
+    // maximum non-zero entries per row
+    rocsparse_int max_nnz = 0;
 
     // device array to hold row permutation
     rocsparse_int* row_map = nullptr;
