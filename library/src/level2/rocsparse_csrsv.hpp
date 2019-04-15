@@ -124,11 +124,8 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle handle,
     // Stream
     hipStream_t stream = handle->stream;
 
-    // rocsparse_int max depth
-    *buffer_size = 256;
-
     // rocsparse_int max_nnz
-    *buffer_size += 256;
+    *buffer_size = 256;
 
     // rocsparse_int done_array[m]
     *buffer_size += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
@@ -167,16 +164,9 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     // Buffer
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
-    // Initialize temporary buffer
-    size_t buffer_size = 256 + 256 + 256 + sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256 +
-                         sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
-
-    // Set temporary buffer to 0
+    // Initialize temporary buffer with 0
+    size_t buffer_size = 256 + sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
     RETURN_IF_HIP_ERROR(hipMemsetAsync(ptr, 0, sizeof(char) * buffer_size, stream));
-
-    // max_depth
-    rocsparse_int* d_max_depth = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += 256;
 
     // max_nnz
     rocsparse_int* d_max_nnz = reinterpret_cast<rocsparse_int*>(ptr);
@@ -231,7 +221,6 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                csr_col_ind,
                                info->csr_diag_ind,
                                done_array,
-                               d_max_depth,
                                d_max_nnz,
                                info->zero_pivot,
                                descr->base);
@@ -248,7 +237,6 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                csr_col_ind,
                                info->csr_diag_ind,
                                done_array,
-                               d_max_depth,
                                d_max_nnz,
                                info->zero_pivot,
                                descr->base);
@@ -268,7 +256,6 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                csr_col_ind,
                                info->csr_diag_ind,
                                done_array,
-                               d_max_depth,
                                d_max_nnz,
                                info->zero_pivot,
                                descr->base);
@@ -285,7 +272,6 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
                                csr_col_ind,
                                info->csr_diag_ind,
                                done_array,
-                               d_max_depth,
                                d_max_nnz,
                                info->zero_pivot,
                                descr->base);
@@ -297,10 +283,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     }
 
     // Post processing
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(&info->max_depth, d_max_depth, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(&info->max_nnz, d_max_nnz, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+        &info->max_nnz, d_max_nnz, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
 
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, m, workspace));
 

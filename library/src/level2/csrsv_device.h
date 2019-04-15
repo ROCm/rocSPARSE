@@ -35,7 +35,6 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
                                       const rocsparse_int* __restrict__ csr_col_ind,
                                       rocsparse_int* __restrict__ csr_diag_ind,
                                       rocsparse_int* __restrict__ done_array,
-                                      rocsparse_int* __restrict__ max_depth,
                                       rocsparse_int* __restrict__ max_nnz,
                                       rocsparse_int* __restrict__ zero_pivot,
                                       rocsparse_index_base idx_base)
@@ -130,11 +129,7 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         // Lane 0 writes the "row is done" flag
         rocsparse_atomic_store(&done_array[row], local_max, __ATOMIC_RELEASE);
 
-        // Must atomic these next three, since other WGs are doing the same thing
-        // We're sending out "local_max - 1" because of 0-based indexing.
-        // However, we needed to put a non-zero value into the done_array up above
-        // when we crammed local_depth in, so these two will be off by one.
-        atomicMax(max_depth, local_max);
+        // Obtain maximum nnz
         atomicMax(max_nnz, row_end - row_begin);
 
         if(csr_diag_ind[row] == -1)
