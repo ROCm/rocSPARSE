@@ -121,8 +121,6 @@ __device__ __forceinline__ void rocsparse_blockreduce_max(int i, T* data)
 }
 
 #if defined(__HIP_PLATFORM_HCC__)
-__device__ int __llvm_amdgcn_readlane(int index, int offset) __asm("llvm.amdgcn.readlane");
-
 // DPP-based wavefront reduction combination of sum and max
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void rocsparse_wfreduce_max(rocsparse_int* maximum)
@@ -135,7 +133,7 @@ __device__ __forceinline__ void rocsparse_wfreduce_max(rocsparse_int* maximum)
     if(WFSIZE > 32) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x143, 0xc, 0xf, 0));
 }
 
-// Swizzle-based float wavefront reduction sum
+// DPP-based float wavefront reduction sum
 template <unsigned int WFSIZE>
 __device__ __forceinline__ float rocsparse_wfreduce_sum(float sum)
 {
@@ -189,7 +187,7 @@ __device__ __forceinline__ float rocsparse_wfreduce_sum(float sum)
     return sum;
 }
 
-// Swizzle-based double wavefront reduction
+// DPP-based double wavefront reduction
 template <unsigned int WFSIZE>
 __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
 {
