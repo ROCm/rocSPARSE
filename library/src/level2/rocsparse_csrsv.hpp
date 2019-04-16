@@ -128,19 +128,21 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle handle,
     *buffer_size = 256;
 
     // rocsparse_int done_array[m]
-    *buffer_size += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
+    *buffer_size += sizeof(int) * ((m - 1) / 256 + 1) * 256;
 
     // rocsparse_int workspace
     *buffer_size += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
 
     // rocsparse_int workspace2
-    *buffer_size += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
+    *buffer_size += sizeof(int) * ((m - 1) / 256 + 1) * 256;
 
     size_t hipcub_size = 0;
     rocsparse_int* ptr = reinterpret_cast<rocsparse_int*>(buffer_size);
+    int* ptr2          = reinterpret_cast<int*>(buffer_size);
     hipcub::DoubleBuffer<rocsparse_int> dummy(ptr, ptr);
+    hipcub::DoubleBuffer<rocsparse_int> dummy2(ptr2, ptr2);
     RETURN_IF_HIP_ERROR(
-        hipcub::DeviceRadixSort::SortPairs(nullptr, hipcub_size, dummy, dummy, m, 0, 32, stream));
+        hipcub::DeviceRadixSort::SortPairs(nullptr, hipcub_size, dummy2, dummy, m, 0, 32, stream));
 
     // hipcub buffer
     *buffer_size += hipcub_size;
@@ -165,7 +167,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
     // Initialize temporary buffer with 0
-    size_t buffer_size = 256 + sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
+    size_t buffer_size = 256 + sizeof(int) * ((m - 1) / 256 + 1) * 256;
     RETURN_IF_HIP_ERROR(hipMemsetAsync(ptr, 0, sizeof(char) * buffer_size, stream));
 
     // max_nnz
@@ -173,16 +175,16 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     ptr += 256;
 
     // done array
-    rocsparse_int* done_array = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
+    int* done_array = reinterpret_cast<int*>(ptr);
+    ptr += sizeof(int) * ((m - 1) / 256 + 1) * 256;
 
     // workspace
     rocsparse_int* workspace = reinterpret_cast<rocsparse_int*>(ptr);
     ptr += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
 
     // workspace2
-    rocsparse_int* workspace2 = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
+    int* workspace2 = reinterpret_cast<int*>(ptr);
+    ptr += sizeof(int) * ((m - 1) / 256 + 1) * 256;
 
     // hipcub buffer
     void* hipcub_buffer = reinterpret_cast<void*>(ptr);
@@ -293,7 +295,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     unsigned int startbit = 0;
     unsigned int endbit   = rocsparse_clz(m);
 
-    hipcub::DoubleBuffer<rocsparse_int> keys(done_array, workspace2);
+    hipcub::DoubleBuffer<int> keys(done_array, workspace2);
     hipcub::DoubleBuffer<rocsparse_int> vals(workspace, info->row_map);
 
     RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
@@ -504,7 +506,7 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle handle,
     return rocsparse_status_success;
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
 __launch_bounds__(BLOCKSIZE) __global__
     void csrsv_host_pointer(rocsparse_int m,
                             T alpha,
@@ -513,7 +515,7 @@ __launch_bounds__(BLOCKSIZE) __global__
                             const T* __restrict__ csr_val,
                             const T* __restrict__ x,
                             T* __restrict__ y,
-                            rocsparse_int* __restrict__ done_array,
+                            int* __restrict__ done_array,
                             rocsparse_int* __restrict__ map,
                             rocsparse_int offset,
                             rocsparse_int* __restrict__ zero_pivot,
@@ -537,7 +539,7 @@ __launch_bounds__(BLOCKSIZE) __global__
                                         diag_type);
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
 __launch_bounds__(BLOCKSIZE) __global__
     void csrsv_device_pointer(rocsparse_int m,
                               const T* alpha,
@@ -546,7 +548,7 @@ __launch_bounds__(BLOCKSIZE) __global__
                               const T* __restrict__ csr_val,
                               const T* __restrict__ x,
                               T* __restrict__ y,
-                              rocsparse_int* __restrict__ done_array,
+                              int* __restrict__ done_array,
                               rocsparse_int* __restrict__ map,
                               rocsparse_int offset,
                               rocsparse_int* __restrict__ zero_pivot,
@@ -709,14 +711,12 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle handle,
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
     ptr += 256;
-    ptr += 256;
-    ptr += 256;
 
     // done array
-    rocsparse_int* done_array = reinterpret_cast<rocsparse_int*>(ptr);
+    int* done_array = reinterpret_cast<int*>(ptr);
 
     // Initialize buffers
-    RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(rocsparse_int) * m, stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * m, stream));
 
     rocsparse_csrtr_info csrsv = (descr->fill_mode == rocsparse_fill_mode_upper)
                                      ? info->csrsv_upper_info

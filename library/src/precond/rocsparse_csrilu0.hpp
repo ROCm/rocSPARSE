@@ -280,10 +280,10 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
     ptr += 256;
 
     // done array
-    rocsparse_int* d_done_array = reinterpret_cast<rocsparse_int*>(ptr);
+    int* d_done_array = reinterpret_cast<int*>(ptr);
 
     // Initialize buffers
-    RETURN_IF_HIP_ERROR(hipMemsetAsync(d_done_array, 0, sizeof(rocsparse_int) * m, stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(d_done_array, 0, sizeof(int) * m, stream));
 
     // Max nnz per row
     rocsparse_int max_nnz = info->csrilu0_info->max_nnz;

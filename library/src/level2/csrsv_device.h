@@ -29,18 +29,18 @@
 
 #include <hip/hip_runtime.h>
 
-template <rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE>
 __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
                                             const rocsparse_int* __restrict__ csr_row_ptr,
                                             const rocsparse_int* __restrict__ csr_col_ind,
                                             rocsparse_int* __restrict__ csr_diag_ind,
-                                            rocsparse_int* __restrict__ done_array,
+                                            int* __restrict__ done_array,
                                             rocsparse_int* __restrict__ max_nnz,
                                             rocsparse_int* __restrict__ zero_pivot,
                                             rocsparse_index_base idx_base)
 {
-    rocsparse_int lid = hipThreadIdx_x & (WF_SIZE - 1);
-    rocsparse_int wid = hipThreadIdx_x / WF_SIZE;
+    int lid = hipThreadIdx_x & (WF_SIZE - 1);
+    int wid = hipThreadIdx_x / WF_SIZE;
 
     // First row in this block
     rocsparse_int first_row = hipBlockIdx_x * BLOCKSIZE / WF_SIZE;
@@ -49,7 +49,7 @@ __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
     rocsparse_int row = first_row + wid;
 
     // Shared memory to set done flag for intra-block dependencies
-    __shared__ rocsparse_int local_done_array[BLOCKSIZE / WF_SIZE];
+    __shared__ int local_done_array[BLOCKSIZE / WF_SIZE];
 
     // Initialize local done array
     local_done_array[wid] = 0;
@@ -70,7 +70,7 @@ __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
     }
 
     // Local depth
-    rocsparse_int local_max = 0;
+    int local_max = 0;
 
     rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
     rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
@@ -157,18 +157,18 @@ __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
     }
 }
 
-template <rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE>
 __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
                                             const rocsparse_int* __restrict__ csr_row_ptr,
                                             const rocsparse_int* __restrict__ csr_col_ind,
                                             rocsparse_int* __restrict__ csr_diag_ind,
-                                            rocsparse_int* __restrict__ done_array,
+                                            int* __restrict__ done_array,
                                             rocsparse_int* __restrict__ max_nnz,
                                             rocsparse_int* __restrict__ zero_pivot,
                                             rocsparse_index_base idx_base)
 {
-    rocsparse_int lid = hipThreadIdx_x & (WF_SIZE - 1);
-    rocsparse_int wid = hipThreadIdx_x / WF_SIZE;
+    int lid = hipThreadIdx_x & (WF_SIZE - 1);
+    int wid = hipThreadIdx_x / WF_SIZE;
 
     // Last row in this block
     rocsparse_int last_row = m - 1 - hipBlockIdx_x * BLOCKSIZE / WF_SIZE;
@@ -177,7 +177,7 @@ __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
     rocsparse_int row = last_row - wid;
 
     // Shared memory to set done flag for intra-block dependencies
-    __shared__ rocsparse_int local_done_array[BLOCKSIZE / WF_SIZE];
+    __shared__ int local_done_array[BLOCKSIZE / WF_SIZE];
 
     // Initialize local done array
     local_done_array[wid] = 0;
@@ -198,7 +198,7 @@ __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
     }
 
     // Local depth
-    rocsparse_int local_max = 0;
+    int local_max = 0;
 
     rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
     rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
@@ -285,7 +285,7 @@ __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
     }
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
 __device__ void csrsv_device(rocsparse_int m,
                              T alpha,
                              const rocsparse_int* __restrict__ csr_row_ptr,
@@ -293,7 +293,7 @@ __device__ void csrsv_device(rocsparse_int m,
                              const T* __restrict__ csr_val,
                              const T* __restrict__ x,
                              T* __restrict__ y,
-                             rocsparse_int* __restrict__ done_array,
+                             int* __restrict__ done_array,
                              rocsparse_int* __restrict__ map,
                              rocsparse_int offset,
                              rocsparse_int* __restrict__ zero_pivot,
@@ -301,8 +301,8 @@ __device__ void csrsv_device(rocsparse_int m,
                              rocsparse_fill_mode fill_mode,
                              rocsparse_diag_type diag_type)
 {
-    rocsparse_int lid = hipThreadIdx_x & (WF_SIZE - 1);
-    rocsparse_int wid = hipThreadIdx_x / WF_SIZE;
+    int lid = hipThreadIdx_x & (WF_SIZE - 1);
+    int wid = hipThreadIdx_x / WF_SIZE;
 
     // Index into the row map
     rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WF_SIZE + wid;
@@ -422,7 +422,7 @@ __device__ void csrsv_device(rocsparse_int m,
     if(lid == 0)
 #endif
     {
-        // Lane 0 writes the "row is done" flag and stores the rows result in y
+        // Write the "row is done" flag and store the rows result in y
         rocsparse_nontemporal_store(local_sum, &y[row]);
         rocsparse_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE);
     }
