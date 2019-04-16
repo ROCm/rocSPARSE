@@ -29,32 +29,38 @@
 
 #include <hip/hip_runtime.h>
 
-template <rocsparse_int WF_SIZE, rocsparse_fill_mode FILL_MODE>
-__global__ void csrsv_analysis_kernel(rocsparse_int m,
-                                      const rocsparse_int* __restrict__ csr_row_ptr,
-                                      const rocsparse_int* __restrict__ csr_col_ind,
-                                      rocsparse_int* __restrict__ csr_diag_ind,
-                                      rocsparse_int* __restrict__ done_array,
-                                      rocsparse_int* __restrict__ max_nnz,
-                                      rocsparse_int* __restrict__ zero_pivot,
-                                      rocsparse_index_base idx_base)
+template <rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+__global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
+                                            const rocsparse_int* __restrict__ csr_row_ptr,
+                                            const rocsparse_int* __restrict__ csr_col_ind,
+                                            rocsparse_int* __restrict__ csr_diag_ind,
+                                            rocsparse_int* __restrict__ done_array,
+                                            rocsparse_int* __restrict__ max_nnz,
+                                            rocsparse_int* __restrict__ zero_pivot,
+                                            rocsparse_index_base idx_base)
 {
-    rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
-    rocsparse_int lid = tid & (WF_SIZE - 1);
-    rocsparse_int row = gid / WF_SIZE;
+    rocsparse_int lid = hipThreadIdx_x & (WF_SIZE - 1);
+    rocsparse_int wid = hipThreadIdx_x / WF_SIZE;
+
+    // First row in this block
+    rocsparse_int first_row = hipBlockIdx_x * BLOCKSIZE / WF_SIZE;
+
+    // Row that the wavefront will process
+    rocsparse_int row = first_row + wid;
+
+    // Shared memory to set done flag for intra-block dependencies
+    __shared__ rocsparse_int local_done_array[BLOCKSIZE / WF_SIZE];
+
+    // Initialize local done array
+    local_done_array[wid] = 0;
+
+    // Wait for initialization to finish
+    __syncthreads();
 
     // Do not run out of bounds
     if(row >= m)
     {
         return;
-    }
-
-    // If we process upper triangular, we need to access with reverse index
-    if(FILL_MODE == rocsparse_fill_mode_upper)
-    {
-        // Processing upper triangular matrix
-        row = m - 1 - row;
     }
 
     // Initialize matrix diagonal index
@@ -66,42 +72,26 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
     // Local depth
     rocsparse_int local_max = 0;
 
-    int row_begin = csr_row_ptr[row] - idx_base;
-    int row_end   = csr_row_ptr[row + 1] - idx_base;
+    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
+    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // This wavefront operates on a single row, from its beginning to end.
-    for(int j = row_begin + lid; j < row_end; j += WF_SIZE)
+    // First, we process all nodes that have dependencies outside the current block.
+    rocsparse_int local_col;
+    rocsparse_int j;
+    for(j = row_begin + lid; j < row_end; j += WF_SIZE)
     {
         // local_col will tell us, for this iteration of the above for loop
         // (i.e. for this entry in this row), which columns contain the
         // non-zero values. We must then ensure that the output from the row
         // associated with the local_col is complete to ensure that we can
         // calculate the right answer.
-        int local_col = rocsparse_nontemporal_load(csr_col_ind + j) - idx_base;
+        local_col = rocsparse_nontemporal_load(csr_col_ind + j) - idx_base;
 
-        // Store diagonal index
-        if(local_col == row)
+        // Skip all columns where corresponding row belongs to this block
+        if(local_col >= first_row)
         {
-            csr_diag_ind[row] = j;
-        }
-
-        // Differentiate fill mode
-        if(FILL_MODE == rocsparse_fill_mode_upper)
-        {
-            // If upper triangular, skip all entries that are not in the upper part
-            // of the matrix
-            if(local_col <= row)
-            {
-                continue;
-            }
-        }
-        else if(FILL_MODE == rocsparse_fill_mode_lower)
-        {
-            // Diagonal and above, skip this.
-            if(local_col >= row)
-            {
-                break;
-            }
+            break;
         }
 
         // While there are threads in this workgroup that have been unable to
@@ -109,16 +99,40 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
         int local_done = 0;
         while(!local_done)
         {
-            local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+            local_done = atomicOr(&done_array[local_col], 0);
         }
 
         // Local maximum
         local_max = max(local_done, local_max);
     }
 
+    // Process remaining columns
+    if(j < row_end)
+    {
+        // Store diagonal index
+        if(local_col == row)
+        {
+            csr_diag_ind[row] = j;
+        }
+
+        // Now, process all nodes that belong to the current block
+        if(local_col < row)
+        {
+            // Index into shared memory to query for done flag
+            int local_idx = local_col - first_row;
+
+            int local_done = 0;
+            while(!local_done)
+            {
+                local_done = atomicOr(&local_done_array[local_idx], 0);
+            }
+
+            local_max = max(local_done, local_max);
+        }
+    }
+
     // Determine maximum local depth within the wavefront
     rocsparse_wfreduce_max<WF_SIZE>(&local_max);
-    ++local_max;
 
 #if defined(__HIP_PLATFORM_HCC__)
     if(lid == WF_SIZE - 1)
@@ -126,8 +140,139 @@ __global__ void csrsv_analysis_kernel(rocsparse_int m,
     if(lid == 0)
 #endif
     {
-        // Lane 0 writes the "row is done" flag
-        rocsparse_atomic_store(&done_array[row], local_max, __ATOMIC_RELEASE);
+        // Write the local "row is done" flag
+        atomicOr(&local_done_array[wid], local_max + 1);
+
+        // Write the "row is done" flag
+        atomicOr(&done_array[row], local_max + 1);
+
+        // Obtain maximum nnz
+        atomicMax(max_nnz, row_end - row_begin);
+
+        if(csr_diag_ind[row] == -1)
+        {
+            // We are looking for the first zero pivot
+            atomicMin(zero_pivot, row + idx_base);
+        }
+    }
+}
+
+template <rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+__global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
+                                            const rocsparse_int* __restrict__ csr_row_ptr,
+                                            const rocsparse_int* __restrict__ csr_col_ind,
+                                            rocsparse_int* __restrict__ csr_diag_ind,
+                                            rocsparse_int* __restrict__ done_array,
+                                            rocsparse_int* __restrict__ max_nnz,
+                                            rocsparse_int* __restrict__ zero_pivot,
+                                            rocsparse_index_base idx_base)
+{
+    rocsparse_int lid = hipThreadIdx_x & (WF_SIZE - 1);
+    rocsparse_int wid = hipThreadIdx_x / WF_SIZE;
+
+    // Last row in this block
+    rocsparse_int last_row = m - 1 - hipBlockIdx_x * BLOCKSIZE / WF_SIZE;
+
+    // Row that the wavefront will process
+    rocsparse_int row = last_row - wid;
+
+    // Shared memory to set done flag for intra-block dependencies
+    __shared__ rocsparse_int local_done_array[BLOCKSIZE / WF_SIZE];
+
+    // Initialize local done array
+    local_done_array[wid] = 0;
+
+    // Wait for initialization to finish
+    __syncthreads();
+
+    // Do not run out of bounds
+    if(row < 0)
+    {
+        return;
+    }
+
+    // Initialize matrix diagonal index
+    if(lid == 0)
+    {
+        csr_diag_ind[row] = -1;
+    }
+
+    // Local depth
+    rocsparse_int local_max = 0;
+
+    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
+    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+
+    // This wavefront operates on a single row, from its end to its begin.
+    // First, we process all nodes that have dependencies outside the current block.
+    rocsparse_int local_col;
+    rocsparse_int j;
+    for(j = row_end - 1 - lid; j >= row_begin; j -= WF_SIZE)
+    {
+        // local_col will tell us, for this iteration of the above for loop
+        // (i.e. for this entry in this row), which columns contain the
+        // non-zero values. We must then ensure that the output from the row
+        // associated with the local_col is complete to ensure that we can
+        // calculate the right answer.
+        local_col = rocsparse_nontemporal_load(csr_col_ind + j) - idx_base;
+
+        // Skip all columns where corresponding row belongs to this block
+        if(local_col <= last_row)
+        {
+            break;
+        }
+
+        // While there are threads in this workgroup that have been unable to
+        // get their input, loop and wait for the flag to exist.
+        int local_done = 0;
+        while(!local_done)
+        {
+            local_done = atomicOr(&done_array[local_col], 0);
+        }
+
+        // Local maximum
+        local_max = max(local_done, local_max);
+    }
+
+    // Process remaining columns
+    if(j >= row_begin)
+    {
+        // Store diagonal index
+        if(local_col == row)
+        {
+            csr_diag_ind[row] = j;
+        }
+
+        // Now, process all nodes that belong to the current block
+        if(local_col > row)
+        {
+            // Index into shared memory to query for done flag
+            int local_idx = last_row - local_col;
+
+            int local_done = 0;
+            while(!local_done)
+            {
+                local_done = atomicOr(&local_done_array[local_idx], 0);
+            }
+
+            local_max = max(local_done, local_max);
+        }
+    }
+
+    // Determine maximum local depth within the wavefront
+    rocsparse_wfreduce_max<WF_SIZE>(&local_max);
+
+#if defined(__HIP_PLATFORM_HCC__)
+    if(lid == WF_SIZE - 1)
+#elif defined(__HIP_PLATFORM_NVCC__)
+    if(lid == 0)
+#endif
+    {
+        // Write the local "row is done" flag
+        atomicOr(&local_done_array[wid], local_max + 1);
+
+        // Write the "row is done" flag
+        atomicOr(&done_array[row], local_max + 1);
 
         // Obtain maximum nnz
         atomicMax(max_nnz, row_end - row_begin);
@@ -156,15 +301,13 @@ __device__ void csrsv_device(rocsparse_int m,
                              rocsparse_fill_mode fill_mode,
                              rocsparse_diag_type diag_type)
 {
-    rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + tid;
-    rocsparse_int lid = tid & (WF_SIZE - 1);
-    rocsparse_int wid = tid / WF_SIZE;
+    rocsparse_int lid = hipThreadIdx_x & (WF_SIZE - 1);
+    rocsparse_int wid = hipThreadIdx_x / WF_SIZE;
 
     // Index into the row map
-    rocsparse_int idx = gid / WF_SIZE;
+    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WF_SIZE + wid;
 
-    // LDS to hold diagonal entry
+    // Shared memory to hold diagonal entry
     __shared__ T diagonal[BLOCKSIZE / WF_SIZE];
 
     // Do not run out of bounds
@@ -260,7 +403,7 @@ __device__ void csrsv_device(rocsparse_int m,
             ;
 
         // Local sum computation for each lane
-        local_sum -= local_val * y[local_col];
+        local_sum = rocsparse_fma(-local_val, y[local_col], local_sum);
     }
 
     // Gather all local sums for each lane
@@ -273,7 +416,11 @@ __device__ void csrsv_device(rocsparse_int m,
         local_sum *= diagonal[wid];
     }
 
+#if defined(__HIP_PLATFORM_HCC__)
     if(lid == WF_SIZE - 1)
+#elif defined(__HIP_PLATFORM_NVCC__)
+    if(lid == 0)
+#endif
     {
         // Lane 0 writes the "row is done" flag and stores the rows result in y
         rocsparse_nontemporal_store(local_sum, &y[row]);

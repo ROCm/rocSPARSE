@@ -205,13 +205,12 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
 #define CSRILU0_DIM 1024
     dim3 csrsv_blocks((handle->wavefront_size * m - 1) / CSRILU0_DIM + 1);
     dim3 csrsv_threads(CSRILU0_DIM);
-#undef CSRILU0_DIM
 
     if(handle->wavefront_size == 32)
     {
         if(descr->fill_mode == rocsparse_fill_mode_upper)
         {
-            hipLaunchKernelGGL((csrsv_analysis_kernel<32, rocsparse_fill_mode_upper>),
+            hipLaunchKernelGGL((csrsv_analysis_upper_kernel<CSRILU0_DIM, 32>),
                                csrsv_blocks,
                                csrsv_threads,
                                0,
@@ -227,7 +226,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
         }
         else if(descr->fill_mode == rocsparse_fill_mode_lower)
         {
-            hipLaunchKernelGGL((csrsv_analysis_kernel<32, rocsparse_fill_mode_lower>),
+            hipLaunchKernelGGL((csrsv_analysis_lower_kernel<CSRILU0_DIM, 32>),
                                csrsv_blocks,
                                csrsv_threads,
                                0,
@@ -246,7 +245,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     {
         if(descr->fill_mode == rocsparse_fill_mode_upper)
         {
-            hipLaunchKernelGGL((csrsv_analysis_kernel<64, rocsparse_fill_mode_upper>),
+            hipLaunchKernelGGL((csrsv_analysis_upper_kernel<CSRILU0_DIM, 64>),
                                csrsv_blocks,
                                csrsv_threads,
                                0,
@@ -262,7 +261,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
         }
         else if(descr->fill_mode == rocsparse_fill_mode_lower)
         {
-            hipLaunchKernelGGL((csrsv_analysis_kernel<64, rocsparse_fill_mode_lower>),
+            hipLaunchKernelGGL((csrsv_analysis_lower_kernel<CSRILU0_DIM, 64>),
                                csrsv_blocks,
                                csrsv_threads,
                                0,
@@ -281,6 +280,7 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle handle,
     {
         return rocsparse_status_arch_mismatch;
     }
+#undef CSRILU0_DIM
 
     // Post processing
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
