@@ -811,7 +811,7 @@ rocsparse_int lsolve(rocsparse_int m,
                 if(col_j < i)
                 {
                     // Lower part
-                    temp[k] -= val[j] * y[col_j];
+                    temp[k] = std::fma(-val[j], y[col_j], temp[k]);
                 }
                 else if(col_j == i)
                 {
@@ -898,14 +898,14 @@ rocsparse_int usolve(rocsparse_int m,
 
         T diag_val = static_cast<T>(0);
 
-        for(rocsparse_int l = row_begin; l < row_end; l += wf_size)
+        for(rocsparse_int l = row_end - 1; l >= row_begin; l -= wf_size)
         {
             for(unsigned int k = 0; k < wf_size; ++k)
             {
-                rocsparse_int j = l + k;
+                rocsparse_int j = l - k;
 
                 // Do not run out of bounds
-                if(j >= row_end)
+                if(j < row_begin)
                 {
                     break;
                 }
@@ -939,7 +939,7 @@ rocsparse_int usolve(rocsparse_int m,
                 else
                 {
                     // Upper part
-                    temp[k] -= val[j] * y[col_j];
+                    temp[k] = std::fma(-val[j], y[col_j], temp[k]);
                 }
             }
         }

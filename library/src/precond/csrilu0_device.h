@@ -29,20 +29,20 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE, unsigned int HASH>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE, unsigned int HASH>
 __global__ void csrilu0_hash_kernel(rocsparse_int m,
                                     const rocsparse_int* __restrict__ csr_row_ptr,
                                     const rocsparse_int* __restrict__ csr_col_ind,
                                     T* __restrict__ csr_val,
                                     const rocsparse_int* __restrict__ csr_diag_ind,
-                                    rocsparse_int* __restrict__ done,
+                                    int* __restrict__ done,
                                     const rocsparse_int* __restrict__ map,
                                     rocsparse_int* __restrict__ zero_pivot,
                                     rocsparse_index_base idx_base)
 {
-    rocsparse_int tid = hipThreadIdx_x;
+    int tid           = hipThreadIdx_x;
+    int lid           = tid & (WF_SIZE - 1);
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
-    rocsparse_int lid = tid & (WF_SIZE - 1);
     rocsparse_int idx = gid / WF_SIZE;
 
     __shared__ rocsparse_int stable[BLOCKSIZE * HASH];
@@ -53,7 +53,7 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
     rocsparse_int* data  = &sdata[(tid / WF_SIZE) * WF_SIZE * HASH];
 
     // Initialize hash table with -1
-    for(rocsparse_int j = lid; j < WF_SIZE * HASH; j += WF_SIZE)
+    for(unsigned int j = lid; j < WF_SIZE * HASH; j += WF_SIZE)
     {
         table[j] = -1;
     }
@@ -183,20 +183,20 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
     }
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
 __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
                                          const rocsparse_int* __restrict__ csr_row_ptr,
                                          const rocsparse_int* __restrict__ csr_col_ind,
                                          T* __restrict__ csr_val,
                                          const rocsparse_int* __restrict__ csr_diag_ind,
-                                         rocsparse_int* __restrict__ done,
+                                         int* __restrict__ done,
                                          const rocsparse_int* __restrict__ map,
                                          rocsparse_int* __restrict__ zero_pivot,
                                          rocsparse_index_base idx_base)
 {
-    rocsparse_int tid = hipThreadIdx_x;
+    int tid           = hipThreadIdx_x;
+    int lid           = tid & (WF_SIZE - 1);
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
-    rocsparse_int lid = tid & (WF_SIZE - 1);
     rocsparse_int idx = gid / WF_SIZE;
 
     // Do not run out of bounds
