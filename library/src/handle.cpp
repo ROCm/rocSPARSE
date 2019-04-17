@@ -71,6 +71,10 @@ _rocsparse_handle::_rocsparse_handle()
     // Execute empty kernel for initialization
     hipLaunchKernelGGL(init_kernel, dim3(1), dim3(1), 0, 0);
 
+    // Execute memset for initialization
+    THROW_IF_HIP_ERROR(hipMemset(sone, 0, sizeof(float)));
+    THROW_IF_HIP_ERROR(hipMemset(done, 0, sizeof(double)));
+
     float hsone  = 1.0f;
     double hdone = 1.0;
 

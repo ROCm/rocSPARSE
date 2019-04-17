@@ -277,16 +277,16 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
 
     // Buffer
     char* ptr = reinterpret_cast<char*>(temp_buffer);
-
-    ptr += 256;
-    ptr += 256;
     ptr += 256;
 
     // done array
-    rocsparse_int* d_done_array = reinterpret_cast<rocsparse_int*>(ptr);
+    int* d_done_array = reinterpret_cast<int*>(ptr);
 
     // Initialize buffers
-    RETURN_IF_HIP_ERROR(hipMemsetAsync(d_done_array, 0, sizeof(rocsparse_int) * m, stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(d_done_array, 0, sizeof(int) * m, stream));
+
+    // Max nnz per row
+    rocsparse_int max_nnz = info->csrilu0_info->max_nnz;
 
 #define CSRILU0_DIM 256
     dim3 csrilu0_blocks((m * handle->wavefront_size - 1) / CSRILU0_DIM + 1);
@@ -294,7 +294,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
 
     if(handle->wavefront_size == 32)
     {
-        if(info->csrilu0_info->max_nnz <= 32)
+        if(max_nnz <= 32)
         {
             hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 1>),
                                csrilu0_blocks,
@@ -311,7 +311,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->zero_pivot,
                                descr->base);
         }
-        else if(info->csrilu0_info->max_nnz <= 64)
+        else if(max_nnz <= 64)
         {
             hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 2>),
                                csrilu0_blocks,
@@ -328,7 +328,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->zero_pivot,
                                descr->base);
         }
-        else if(info->csrilu0_info->max_nnz <= 128)
+        else if(max_nnz <= 128)
         {
             hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 4>),
                                csrilu0_blocks,
@@ -345,7 +345,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->zero_pivot,
                                descr->base);
         }
-        else if(info->csrilu0_info->max_nnz <= 256)
+        else if(max_nnz <= 256)
         {
             hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 8>),
                                csrilu0_blocks,
@@ -362,7 +362,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->zero_pivot,
                                descr->base);
         }
-        else if(info->csrilu0_info->max_nnz <= 512)
+        else if(max_nnz <= 512)
         {
             hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 16>),
                                csrilu0_blocks,
@@ -399,7 +399,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
     }
     else if(handle->wavefront_size == 64)
     {
-        if(info->csrilu0_info->max_nnz <= 64)
+        if(max_nnz <= 64)
         {
             hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 1>),
                                csrilu0_blocks,
@@ -416,7 +416,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->zero_pivot,
                                descr->base);
         }
-        else if(info->csrilu0_info->max_nnz <= 128)
+        else if(max_nnz <= 128)
         {
             hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 2>),
                                csrilu0_blocks,
@@ -433,7 +433,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->zero_pivot,
                                descr->base);
         }
-        else if(info->csrilu0_info->max_nnz <= 256)
+        else if(max_nnz <= 256)
         {
             hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 4>),
                                csrilu0_blocks,
@@ -450,7 +450,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->zero_pivot,
                                descr->base);
         }
-        else if(info->csrilu0_info->max_nnz <= 512)
+        else if(max_nnz <= 512)
         {
             hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 8>),
                                csrilu0_blocks,
@@ -467,7 +467,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
                                info->csrilu0_info->zero_pivot,
                                descr->base);
         }
-        else if(info->csrilu0_info->max_nnz <= 1024)
+        else if(max_nnz <= 1024)
         {
             hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 16>),
                                csrilu0_blocks,

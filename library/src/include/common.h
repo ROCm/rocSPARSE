@@ -64,13 +64,13 @@ __device__ __forceinline__ int64_t rocsparse_mul24(int64_t x, int64_t y) { retur
 __device__ __forceinline__ rocsparse_int rocsparse_mad24(rocsparse_int x, rocsparse_int y, rocsparse_int z) { return rocsparse_mul24(x, y) + z; }
 
 #if defined(__HIP_PLATFORM_HCC__)
-__device__ __forceinline__ rocsparse_int rocsparse_atomic_load(const rocsparse_int* ptr, int memorder) { return __atomic_load_n(ptr, memorder); }
+__device__ __forceinline__ int rocsparse_atomic_load(const int* ptr, int memorder) { return __atomic_load_n(ptr, memorder); }
 #elif defined(__HIP_PLATFORM_NVCC__)
-__device__ __forceinline__ rocsparse_int rocsparse_atomic_load(const rocsparse_int* ptr, int memorder)
+__device__ __forceinline__ int rocsparse_atomic_load(const int* ptr, int memorder)
 {
-    const volatile rocsparse_int* vptr = ptr;
+    const volatile int* vptr = ptr;
     __threadfence();
-    rocsparse_int val = *vptr;
+    int val = *vptr;
     __threadfence();
 
     return val;
@@ -78,11 +78,11 @@ __device__ __forceinline__ rocsparse_int rocsparse_atomic_load(const rocsparse_i
 #endif
 
 #if defined(__HIP_PLATFORM_HCC__)
-__device__ __forceinline__ void rocsparse_atomic_store(rocsparse_int* ptr, rocsparse_int val, int memorder) { __atomic_store_n(ptr, val, memorder); }
+__device__ __forceinline__ void rocsparse_atomic_store(int* ptr, int val, int memorder) { __atomic_store_n(ptr, val, memorder); }
 #elif defined(__HIP_PLATFORM_NVCC__)
-__device__ __forceinline__ void rocsparse_atomic_store(rocsparse_int* ptr, rocsparse_int val, int memorder)
+__device__ __forceinline__ void rocsparse_atomic_store(int* ptr, int val, int memorder)
 {
-    volatile rocsparse_int* vptr = ptr;
+    volatile int* vptr = ptr;
     __threadfence();
     *vptr = val;
 }
@@ -121,11 +121,9 @@ __device__ __forceinline__ void rocsparse_blockreduce_max(int i, T* data)
 }
 
 #if defined(__HIP_PLATFORM_HCC__)
-__device__ int __llvm_amdgcn_readlane(int index, int offset) __asm("llvm.amdgcn.readlane");
-
 // DPP-based wavefront reduction combination of sum and max
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_max(rocsparse_int* maximum)
+__device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
 {
     if(WFSIZE >  1) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x111, 0xf, 0xf, 0));
     if(WFSIZE >  2) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x112, 0xf, 0xf, 0));
@@ -135,7 +133,7 @@ __device__ __forceinline__ void rocsparse_wfreduce_max(rocsparse_int* maximum)
     if(WFSIZE > 32) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x143, 0xc, 0xf, 0));
 }
 
-// Swizzle-based float wavefront reduction sum
+// DPP-based float wavefront reduction sum
 template <unsigned int WFSIZE>
 __device__ __forceinline__ float rocsparse_wfreduce_sum(float sum)
 {
@@ -189,7 +187,7 @@ __device__ __forceinline__ float rocsparse_wfreduce_sum(float sum)
     return sum;
 }
 
-// Swizzle-based double wavefront reduction
+// DPP-based double wavefront reduction
 template <unsigned int WFSIZE>
 __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
 {
@@ -250,13 +248,11 @@ __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
 }
 #elif defined(__HIP_PLATFORM_NVCC__)
 template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_sum_max(rocsparse_int* sum,
-                                                           rocsparse_int* maximum)
+__device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
 {
     for(unsigned int i = WFSIZE >> 1; i > 0; i >>= 1)
     {
         *maximum = max(*maximum, __shfl_down_sync(0xffffffff, *maximum, i));
-        *sum += __shfl_down_sync(0xffffffff, *sum, i);
     }
 }
 
