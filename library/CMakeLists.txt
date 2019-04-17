@@ -68,6 +68,9 @@ endif()
 # Target link libraries
 if(NOT HIP_PLATFORM STREQUAL "nvcc")
   target_link_libraries(rocsparse PRIVATE hip::device)
+  foreach(target ${AMDGPU_TARGETS})
+    target_link_libraries(rocsparse PRIVATE --amdgpu-target=${target})
+  endforeach()
 endif()
 
 # Target include directories
