@@ -1904,6 +1904,221 @@ rocsparse_status rocsparse_zcsrmm(rocsparse_handle handle,
 
 /*
  * ===========================================================================
+ *    extra SPARSE
+ * ===========================================================================
+ */
+
+/*! \ingroup extra_module
+ *  \brief Sparse matrix sparse matrix multiplication using CSR storage format
+ *
+ *  \details
+ *  \p rocsparse_csrgemm_buffer_size returns the size of the temporary storage buffer
+ *  that is required by rocsparse_scsrgemm() and rocsparse_dcsrgemm(). The temporary
+ *  storage buffer must be allocated by the user.
+ */
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scsrgemm_buffer_size(rocsparse_handle handle,
+                                                rocsparse_int m,
+                                                rocsparse_int n,
+                                                rocsparse_int k,
+                                                const float* alpha,
+                                                const rocsparse_mat_descr descr_A,
+                                                rocsparse_int nnz_A,
+                                                const rocsparse_int* csr_row_ptr_A,
+                                                const rocsparse_int* csr_col_ind_A,
+                                                const rocsparse_mat_descr descr_B,
+                                                rocsparse_int nnz_B,
+                                                const rocsparse_int* csr_row_ptr_B,
+                                                const rocsparse_int* csr_col_ind_B,
+                                                rocsparse_mat_info info,
+                                                size_t* buffer_size);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcsrgemm_buffer_size(rocsparse_handle handle,
+                                                rocsparse_int m,
+                                                rocsparse_int n,
+                                                rocsparse_int k,
+                                                const double* alpha,
+                                                const rocsparse_mat_descr descr_A,
+                                                rocsparse_int nnz_A,
+                                                const rocsparse_int* csr_row_ptr_A,
+                                                const rocsparse_int* csr_col_ind_A,
+                                                const rocsparse_mat_descr descr_B,
+                                                rocsparse_int nnz_B,
+                                                const rocsparse_int* csr_row_ptr_B,
+                                                const rocsparse_int* csr_col_ind_B,
+                                                rocsparse_mat_info info,
+                                                size_t* buffer_size);
+/**@}*/
+
+/*! \ingroup extra_module
+ *  \brief Sparse matrix sparse matrix multiplication using CSR storage format
+ *
+ *  \details
+ *  \p rocsparse_csrgemm_nnz computes the total CSR non-zero elements and the CSR row
+ *  offsets, that point to the start of every row of the sparse CSR matrix, of the
+ *  resulting multiplied matrix C. It is assumed that \p csr_row_ptr_C has been allocated
+ *  with size \p m + 1.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle handle,
+                                       rocsparse_int m,
+                                       rocsparse_int n,
+                                       rocsparse_int k,
+                                       const rocsparse_mat_descr descr_A,
+                                       rocsparse_int nnz_A,
+                                       const rocsparse_int* csr_row_ptr_A,
+                                       const rocsparse_int* csr_col_ind_A,
+                                       const rocsparse_mat_descr descr_B,
+                                       rocsparse_int nnz_B,
+                                       const rocsparse_int* csr_row_ptr_B,
+                                       const rocsparse_int* csr_col_ind_B,
+                                       const rocsparse_mat_descr descr_C,
+                                       rocsparse_int* csr_row_ptr_C,
+                                       rocsparse_int* nnz_C,
+                                       const rocsparse_mat_info info,
+                                       void* temp_buffer);
+
+/*! \ingroup extra_module
+ *  \brief Sparse matrix sparse matrix multiplication using CSR storage format
+ *
+ *  \details
+ *  \p rocsparse_csrgemm multiplies the scalar \f$\alpha\f$ with the sparse
+ *  \f$m \times k\f$ matrix \f$A\f$, defined in CSR storage format, and the sparse
+ *  \f$k \times n\f$ matrix \f$B\f$, defined in CSR storage format, and stores the result
+ *  in the sparse \f$m \times n\f$ matrix \f$C\f$, defined in CSR storage format, such
+ *  that
+ *  \f[
+ *    C := \alpha \cdot op(A) \cdot op(B),
+ *  \f]
+ *  with
+ *  \f[
+ *    op(A) = \left\{
+ *    \begin{array}{ll}
+ *        A,   & \text{if trans_A == rocsparse_operation_none} \\
+ *        A^T, & \text{if trans_A == rocsparse_operation_transpose} \\
+ *        A^H, & \text{if trans_A == rocsparse_operation_conjugate_transpose}
+ *    \end{array}
+ *    \right.
+ *  \f]
+ *  and
+ *  \f[
+ *    op(B) = \left\{
+ *    \begin{array}{ll}
+ *        B,   & \text{if trans_B == rocsparse_operation_none} \\
+ *        B^T, & \text{if trans_B == rocsparse_operation_transpose} \\
+ *        B^H, & \text{if trans_B == rocsparse_operation_conjugate_transpose}
+ *    \end{array}
+ *    \right.
+ *  \f]
+ *
+ *  It is assumed that \p csr_row_ptr_C has already been filled and that \p csr_val_C and
+ *  \p csr_col_ind_C are allocated by the user. \p csr_row_ptr_C and allocation size of
+ *  \p csr_col_ind_C and \p csr_val_C is defined by the number of non-zero elements of
+ *  the sparse CSR matrix C. Both can be obtained by rocsparse_csrgemm_nnz().
+ *
+ *  \note
+ *  Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
+ */
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scsrgemm(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    rocsparse_int k,
+                                    const float* alpha,
+                                    const rocsparse_mat_descr descr_A,
+                                    rocsparse_int nnz_A,
+                                    const float* csr_val_A,
+                                    const rocsparse_int* csr_row_ptr_A,
+                                    const rocsparse_int* csr_col_ind_A,
+                                    const rocsparse_mat_descr descr_B,
+                                    rocsparse_int nnz_B,
+                                    const float* csr_val_B,
+                                    const rocsparse_int* csr_row_ptr_B,
+                                    const rocsparse_int* csr_col_ind_B,
+                                    const rocsparse_mat_descr descr_C,
+                                    float* csr_val_C,
+                                    const rocsparse_int* csr_row_ptr_C,
+                                    rocsparse_int* csr_col_ind_C,
+                                    const rocsparse_mat_info info,
+                                    void* temp_buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcsrgemm(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    rocsparse_int k,
+                                    const double* alpha,
+                                    const rocsparse_mat_descr descr_A,
+                                    rocsparse_int nnz_A,
+                                    const double* csr_val_A,
+                                    const rocsparse_int* csr_row_ptr_A,
+                                    const rocsparse_int* csr_col_ind_A,
+                                    const rocsparse_mat_descr descr_B,
+                                    rocsparse_int nnz_B,
+                                    const double* csr_val_B,
+                                    const rocsparse_int* csr_row_ptr_B,
+                                    const rocsparse_int* csr_col_ind_B,
+                                    const rocsparse_mat_descr descr_C,
+                                    double* csr_val_C,
+                                    const rocsparse_int* csr_row_ptr_C,
+                                    rocsparse_int* csr_col_ind_C,
+                                    const rocsparse_mat_info info,
+                                    void* temp_buffer);
+
+/*
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ccsrgemm(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    rocsparse_int k,
+                                    const rocsparse_float_complex* alpha,
+                                    const rocsparse_mat_descr descr_A,
+                                    rocsparse_int nnz_A,
+                                    const rocsparse_float_complex* csr_val_A,
+                                    const rocsparse_int* csr_row_ptr_A,
+                                    const rocsparse_int* csr_col_ind_A,
+                                    const rocsparse_mat_descr descr_B,
+                                    rocsparse_int nnz_B,
+                                    const rocsparse_float_complex* csr_val_B,
+                                    const rocsparse_int* csr_row_ptr_B,
+                                    const rocsparse_int* csr_col_ind_B,
+                                    const rocsparse_mat_descr descr_C,
+                                    rocsparse_float_complex* csr_val_C,
+                                    const rocsparse_int* csr_row_ptr_C,
+                                    rocsparse_int* csr_col_ind_C,
+                                    const rocsparse_mat_info info,
+                                    void* temp_buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zcsrgemm(rocsparse_handle handle,
+                                    rocsparse_int m,
+                                    rocsparse_int n,
+                                    rocsparse_int k,
+                                    const rocsparse_double_complex* alpha,
+                                    const rocsparse_mat_descr descr_A,
+                                    rocsparse_int nnz_A,
+                                    const rocsparse_double_complex* csr_val_A,
+                                    const rocsparse_int* csr_row_ptr_A,
+                                    const rocsparse_int* csr_col_ind_A,
+                                    const rocsparse_mat_descr descr_B,
+                                    rocsparse_int nnz_B,
+                                    const rocsparse_double_complex* csr_val_B,
+                                    const rocsparse_int* csr_row_ptr_B,
+                                    const rocsparse_int* csr_col_ind_B,
+                                    const rocsparse_mat_descr descr_C,
+                                    rocsparse_double_complex* csr_val_C,
+                                    const rocsparse_int* csr_row_ptr_C,
+                                    rocsparse_int* csr_col_ind_C,
+                                    const rocsparse_mat_info info,
+                                    void* temp_buffer);
+*/
+/**@}*/
+
+/*
+ * ===========================================================================
  *    preconditioner SPARSE
  * ===========================================================================
  */
