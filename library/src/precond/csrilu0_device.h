@@ -40,23 +40,23 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
                                     rocsparse_int* __restrict__ zero_pivot,
                                     rocsparse_index_base idx_base)
 {
-    int tid           = hipThreadIdx_x;
-    int lid           = tid & (WF_SIZE - 1);
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
-    rocsparse_int idx = gid / WF_SIZE;
+    int lid = hipThreadIdx_x & (WF_SIZE - 1);
+    int wid = hipThreadIdx_x / WF_SIZE;
 
     __shared__ rocsparse_int stable[BLOCKSIZE * HASH];
     __shared__ rocsparse_int sdata[BLOCKSIZE * HASH];
 
     // Pointer to each wavefronts shared data
-    rocsparse_int* table = &stable[(tid / WF_SIZE) * WF_SIZE * HASH];
-    rocsparse_int* data  = &sdata[(tid / WF_SIZE) * WF_SIZE * HASH];
+    rocsparse_int* table = &stable[wid * WF_SIZE * HASH];
+    rocsparse_int* data  = &sdata[wid * WF_SIZE * HASH];
 
     // Initialize hash table with -1
     for(unsigned int j = lid; j < WF_SIZE * HASH; j += WF_SIZE)
     {
         table[j] = -1;
     }
+
+    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WF_SIZE + wid;
 
     // Do not run out of bounds
     if(idx >= m)
@@ -66,6 +66,7 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
 
     // Current row this wavefront is working on
     rocsparse_int row = map[idx];
+
     // Diagonal entry point of the current row
     rocsparse_int row_diag  = csr_diag_ind[row];
     rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
