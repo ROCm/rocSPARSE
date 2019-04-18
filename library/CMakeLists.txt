@@ -91,11 +91,6 @@ endif()
 set_target_properties(rocsparse PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")
 
-# Target definitions
-if(NOT HIP_PLATFORM STREQUAL "nvcc")
-  target_compile_definitions(rocsparse PRIVATE ROCPRIM_HIP_API=1)
-endif()
-
 # Generate export header
 include(GenerateExportHeader)
 generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse-export.h)

@@ -30,7 +30,7 @@
 #include <hip/hip_runtime.h>
 
 #if defined(__HIP_PLATFORM_HCC__)
-#include <rocprim/rocprim.hpp>
+#include <rocprim/rocprim_hip.hpp>
 #elif defined(__HIP_PLATFORM_NVCC__)
 #include <hipcub/hipcub.hpp>
 #endif

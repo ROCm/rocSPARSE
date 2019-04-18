@@ -31,7 +31,7 @@
 #include <hipcub/hipcub.hpp>
 
 #if defined(__HIP_PLATFORM_HCC__)
-#include <rocprim/rocprim.hpp>
+#include <rocprim/rocprim_hip.hpp>
 #endif
 
 extern "C" rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handle,
