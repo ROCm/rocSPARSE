@@ -975,6 +975,62 @@ rocsparse_int usolve(rocsparse_int m,
     return -1;
 }
 
+/* ============================================================================================ */
+/*! \brief  Transpose sparse matrix using CSR storage format. */
+template <typename T>
+void transpose(rocsparse_int m,
+               rocsparse_int n,
+               rocsparse_int nnz,
+               const rocsparse_int* csr_row_ptr_A,
+               const rocsparse_int* csr_col_ind_A,
+               const T* csr_val_A,
+               rocsparse_int* csr_row_ptr_B,
+               rocsparse_int* csr_col_ind_B,
+               T* csr_val_B,
+               rocsparse_index_base idx_base_A,
+               rocsparse_index_base idx_base_B)
+{
+    memset(csr_row_ptr_B, 0, sizeof(rocsparse_int) * (n + 1));
+
+    // Determine nnz per column
+    for(rocsparse_int i = 0; i < nnz; ++i)
+    {
+        ++csr_row_ptr_B[csr_col_ind_A[i] + 1 - idx_base_A];
+    }
+
+    // Scan
+    for(rocsparse_int i = 0; i < n; ++i)
+    {
+        csr_row_ptr_B[i + 1] += csr_row_ptr_B[i];
+    }
+
+    // Fill row indices and values
+    for(rocsparse_int i = 0; i < m; ++i)
+    {
+        rocsparse_int row_begin = csr_row_ptr_A[i] - idx_base_A;
+        rocsparse_int row_end   = csr_row_ptr_A[i + 1] - idx_base_A;
+
+        for(rocsparse_int j = row_begin; j < row_end; ++j)
+        {
+            rocsparse_int col = csr_col_ind_A[j] - idx_base_A;
+            rocsparse_int idx = csr_row_ptr_B[col];
+
+            csr_col_ind_B[idx] = i + idx_base_B;
+            csr_val_B[idx]     = csr_val_A[j];
+
+            ++csr_row_ptr_B[col];
+        }
+    }
+
+    // Shift column pointer array
+    for(rocsparse_int i = n; i > 0; --i)
+    {
+        csr_row_ptr_B[i] = csr_row_ptr_B[i - 1] + idx_base_B;
+    }
+
+    csr_row_ptr_B[0] = idx_base_B;
+}
+
 #ifdef __cplusplus
 extern "C" {
 #endif

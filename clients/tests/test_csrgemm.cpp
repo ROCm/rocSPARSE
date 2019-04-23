@@ -31,17 +31,20 @@
 #include <string>
 
 typedef rocsparse_index_base base;
+typedef rocsparse_operation trans;
 
-typedef std::tuple<int, int, int, double, base> csrgemm_tuple;
-typedef std::tuple<double, base, std::string> csrgemm_bin_tuple;
+typedef std::tuple<int, int, int, base, base, trans, trans> csrgemm_tuple;
+typedef std::tuple<base, base, trans, trans, std::string> csrgemm_bin_tuple;
 
 int csrgemm_M_range[] = {-1, 0, 50, 647, 1799};
 int csrgemm_N_range[] = {-1, 0, 13, 523, 3712};
 int csrgemm_K_range[] = {-1, 0, 50, 254, 1942};
 
-double csrgemm_alpha_range[] = {1.0}; //-1.0, 0.0, 3.3};
+base csrgemm_idxbaseA_range[] = {rocsparse_index_base_zero}; //, rocsparse_index_base_one};
+base csrgemm_idxbaseB_range[] = {rocsparse_index_base_zero}; //, rocsparse_index_base_one};
 
-base csrgemm_idxbase_range[] = {rocsparse_index_base_zero}; //, rocsparse_index_base_one};
+trans csrgemm_transA_range[] = {rocsparse_operation_none};
+trans csrgemm_transB_range[] = {rocsparse_operation_none};
 
 std::string csrgemm_bin[] = {/*"rma10.bin",
                              "mac_econ_fwd500.bin",
@@ -79,27 +82,31 @@ class parameterized_csrgemm_bin : public testing::TestWithParam<csrgemm_bin_tupl
 Arguments setup_csrgemm_arguments(csrgemm_tuple tup)
 {
     Arguments arg;
-    arg.M        = std::get<0>(tup);
-    arg.N        = std::get<1>(tup);
-    arg.K        = std::get<2>(tup);
-    arg.alpha    = std::get<3>(tup);
-    arg.idx_base = std::get<4>(tup);
-    arg.timing   = 0;
+    arg.M         = std::get<0>(tup);
+    arg.N         = std::get<1>(tup);
+    arg.K         = std::get<2>(tup);
+    arg.idx_base  = std::get<3>(tup);
+    arg.idx_base2 = std::get<4>(tup);
+    arg.transA    = std::get<5>(tup);
+    arg.transB    = std::get<6>(tup);
+    arg.timing    = 0;
     return arg;
 }
 
 Arguments setup_csrgemm_arguments(csrgemm_bin_tuple tup)
 {
     Arguments arg;
-    arg.M        = -99;
-    arg.N        = -99;
-    arg.K        = -99;
-    arg.alpha    = std::get<0>(tup);
-    arg.idx_base = std::get<1>(tup);
-    arg.timing   = 0;
+    arg.M         = -99;
+    arg.N         = -99;
+    arg.K         = -99;
+    arg.idx_base  = std::get<0>(tup);
+    arg.idx_base2 = std::get<1>(tup);
+    arg.transA    = std::get<2>(tup);
+    arg.transB    = std::get<3>(tup);
+    arg.timing    = 0;
 
     // Determine absolute path of test matrix
-    std::string bin_file = std::get<2>(tup);
+    std::string bin_file = std::get<4>(tup);
 
     // Get current executables absolute path
     char path_exe[PATH_MAX];
@@ -158,11 +165,15 @@ INSTANTIATE_TEST_CASE_P(csrgemm,
                         testing::Combine(testing::ValuesIn(csrgemm_M_range),
                                          testing::ValuesIn(csrgemm_N_range),
                                          testing::ValuesIn(csrgemm_K_range),
-                                         testing::ValuesIn(csrgemm_alpha_range),
-                                         testing::ValuesIn(csrgemm_idxbase_range)));
+                                         testing::ValuesIn(csrgemm_idxbaseA_range),
+                                         testing::ValuesIn(csrgemm_idxbaseB_range),
+                                         testing::ValuesIn(csrgemm_transA_range),
+                                         testing::ValuesIn(csrgemm_transB_range)));
 
 INSTANTIATE_TEST_CASE_P(csrgemm_bin,
                         parameterized_csrgemm_bin,
-                        testing::Combine(testing::ValuesIn(csrgemm_alpha_range),
-                                         testing::ValuesIn(csrgemm_idxbase_range),
+                        testing::Combine(testing::ValuesIn(csrgemm_idxbaseA_range),
+                                         testing::ValuesIn(csrgemm_idxbaseB_range),
+                                         testing::ValuesIn(csrgemm_transA_range),
+                                         testing::ValuesIn(csrgemm_transB_range),
                                          testing::ValuesIn(csrgemm_bin)));
