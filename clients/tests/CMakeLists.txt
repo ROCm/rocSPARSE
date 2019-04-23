@@ -94,6 +94,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_csrsort.cpp
   test_coosort.cpp
   test_csrilusv.cpp
+  test_csrgemm.cpp
 )
 
 set(ROCSPARSE_CLIENTS_COMMON

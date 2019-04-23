@@ -210,6 +210,29 @@ rocsparse_status rocsparse_csrmm(rocsparse_handle handle,
                                  rocsparse_int ldc);
 
 template <typename T>
+rocsparse_status rocsparse_csrgemm(rocsparse_handle handle,
+                                   rocsparse_operation trans_A,
+                                   rocsparse_operation trans_B,
+                                   rocsparse_int m,
+                                   rocsparse_int n,
+                                   rocsparse_int k,
+                                   const rocsparse_mat_descr descr_A,
+                                   rocsparse_int nnz_A,
+                                   const T* csr_val_A,
+                                   const rocsparse_int* csr_row_ptr_A,
+                                   const rocsparse_int* csr_col_ind_A,
+                                   const rocsparse_mat_descr descr_B,
+                                   rocsparse_int nnz_B,
+                                   const T* csr_val_B,
+                                   const rocsparse_int* csr_row_ptr_B,
+                                   const rocsparse_int* csr_col_ind_B,
+                                   const rocsparse_mat_descr descr_C,
+                                   T* csr_val_C,
+                                   const rocsparse_int* csr_row_ptr_C,
+                                   rocsparse_int* csr_col_ind_C,
+                                   void* temp_buffer);
+
+template <typename T>
 rocsparse_status rocsparse_csrilu0_buffer_size(rocsparse_handle handle,
                                                rocsparse_int m,
                                                rocsparse_int nnz,
