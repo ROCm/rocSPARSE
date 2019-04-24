@@ -33,32 +33,32 @@
 typedef rocsparse_index_base base;
 typedef rocsparse_operation trans;
 
-typedef std::tuple<int, int, int, base, base, trans, trans> csrgemm_tuple;
-typedef std::tuple<base, base, trans, trans, std::string> csrgemm_bin_tuple;
+typedef std::tuple<int, int, int, base, base, base, trans, trans> csrgemm_tuple;
+typedef std::tuple<base, base, base, trans, trans, std::string> csrgemm_bin_tuple;
 
 int csrgemm_M_range[] = {-1, 0, 50, 647, 1799};
 int csrgemm_N_range[] = {-1, 0, 13, 523, 3712};
 int csrgemm_K_range[] = {-1, 0, 50, 254, 1942};
 
-base csrgemm_idxbaseA_range[] = {rocsparse_index_base_zero}; //, rocsparse_index_base_one};
-base csrgemm_idxbaseB_range[] = {rocsparse_index_base_zero}; //, rocsparse_index_base_one};
+base csrgemm_idxbaseA_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
+base csrgemm_idxbaseB_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
+base csrgemm_idxbaseC_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 
 trans csrgemm_transA_range[] = {rocsparse_operation_none};
 trans csrgemm_transB_range[] = {rocsparse_operation_none};
 
-std::string csrgemm_bin[] = {/*"rma10.bin",
+std::string csrgemm_bin[] = {"rma10.bin",
                              "mac_econ_fwd500.bin",
                              "bibd_22_8.bin",
                              "mc2depi.bin",
                              "scircuit.bin",
-                             "ASIC_320k.bin",
-                             "bmwcra_1.bin",*/
+                             "bmwcra_1.bin",
                              "nos1.bin",
                              "nos2.bin",
                              "nos3.bin",
-                             /*                             "nos4.bin",
-                                                          "nos5.bin",
-                                                          "nos6.bin",*/
+                             "nos4.bin",
+                             "nos5.bin",
+                             "nos6.bin",
                              "nos7.bin"};
 
 class parameterized_csrgemm : public testing::TestWithParam<csrgemm_tuple>
@@ -87,8 +87,9 @@ Arguments setup_csrgemm_arguments(csrgemm_tuple tup)
     arg.K         = std::get<2>(tup);
     arg.idx_base  = std::get<3>(tup);
     arg.idx_base2 = std::get<4>(tup);
-    arg.transA    = std::get<5>(tup);
-    arg.transB    = std::get<6>(tup);
+    arg.idx_base3 = std::get<5>(tup);
+    arg.transA    = std::get<6>(tup);
+    arg.transB    = std::get<7>(tup);
     arg.timing    = 0;
     return arg;
 }
@@ -101,12 +102,13 @@ Arguments setup_csrgemm_arguments(csrgemm_bin_tuple tup)
     arg.K         = -99;
     arg.idx_base  = std::get<0>(tup);
     arg.idx_base2 = std::get<1>(tup);
-    arg.transA    = std::get<2>(tup);
-    arg.transB    = std::get<3>(tup);
+    arg.idx_base3 = std::get<2>(tup);
+    arg.transA    = std::get<3>(tup);
+    arg.transB    = std::get<4>(tup);
     arg.timing    = 0;
 
     // Determine absolute path of test matrix
-    std::string bin_file = std::get<4>(tup);
+    std::string bin_file = std::get<5>(tup);
 
     // Get current executables absolute path
     char path_exe[PATH_MAX];
@@ -167,6 +169,7 @@ INSTANTIATE_TEST_CASE_P(csrgemm,
                                          testing::ValuesIn(csrgemm_K_range),
                                          testing::ValuesIn(csrgemm_idxbaseA_range),
                                          testing::ValuesIn(csrgemm_idxbaseB_range),
+                                         testing::ValuesIn(csrgemm_idxbaseC_range),
                                          testing::ValuesIn(csrgemm_transA_range),
                                          testing::ValuesIn(csrgemm_transB_range)));
 
@@ -174,6 +177,7 @@ INSTANTIATE_TEST_CASE_P(csrgemm_bin,
                         parameterized_csrgemm_bin,
                         testing::Combine(testing::ValuesIn(csrgemm_idxbaseA_range),
                                          testing::ValuesIn(csrgemm_idxbaseB_range),
+                                         testing::ValuesIn(csrgemm_idxbaseC_range),
                                          testing::ValuesIn(csrgemm_transA_range),
                                          testing::ValuesIn(csrgemm_transB_range),
                                          testing::ValuesIn(csrgemm_bin)));

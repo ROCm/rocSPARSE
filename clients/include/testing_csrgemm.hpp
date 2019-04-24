@@ -970,7 +970,7 @@ static rocsparse_int csrgemm_nnz(rocsparse_int m,
         }
     }
 
-    return csr_row_ptr_C[m];
+    return csr_row_ptr_C[m] - idx_base_C;
 }
 
 template <typename T>
@@ -1024,7 +1024,7 @@ static void csrgemm(rocsparse_int m,
                 if(nnz[col_B] < row_begin_C)
                 {
                     nnz[col_B]               = row_end_C;
-                    csr_col_ind_C[row_end_C] = col_B;
+                    csr_col_ind_C[row_end_C] = col_B + idx_base_C;
                     csr_val_C[row_end_C]     = val_A * val_B;
                     ++row_end_C;
                 }
@@ -1039,9 +1039,12 @@ static void csrgemm(rocsparse_int m,
     // Sort column indices within each row
     for(rocsparse_int i = 0; i < m; ++i)
     {
-        for(rocsparse_int j = csr_row_ptr_C[i]; j < csr_row_ptr_C[i + 1]; ++j)
+        rocsparse_int row_begin = csr_row_ptr_C[i] - idx_base_C;
+        rocsparse_int row_end   = csr_row_ptr_C[i + 1] - idx_base_C;
+
+        for(rocsparse_int j = row_begin; j < row_end; ++j)
         {
-            for(rocsparse_int jj = csr_row_ptr_C[i]; jj < csr_row_ptr_C[i + 1] - 1; ++jj)
+            for(rocsparse_int jj = row_begin; jj < row_end - 1; ++jj)
             {
                 if(csr_col_ind_C[jj] > csr_col_ind_C[jj + 1])
                 {
@@ -1071,6 +1074,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
     rocsparse_operation trans_B     = argus.transB;
     rocsparse_index_base idx_base_A = argus.idx_base;
     rocsparse_index_base idx_base_B = argus.idx_base2;
+    rocsparse_index_base idx_base_C = argus.idx_base3;
     std::string binfile             = "";
     std::string filename            = "";
     std::string rocalution          = "";
@@ -1112,8 +1116,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_A, idx_base_A));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_B, idx_base_B));
-    CHECK_ROCSPARSE_ERROR(
-        rocsparse_set_mat_index_base(descr_C, idx_base_A)); // TODO extra idx base for C?
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_C, idx_base_C));
 
     // Determine number of non-zero elements
     double scale = 0.02;
@@ -1536,7 +1539,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                hcsr_row_ptr_C_gold.data(),
                                                idx_base_A,
                                                idx_base_B,
-                                               idx_base_A);
+                                               idx_base_C);
 
         std::vector<rocsparse_int> hcsr_col_ind_C_gold(nnz_C_gold);
         std::vector<T> hcsr_val_C_gold(nnz_C_gold);
@@ -1555,7 +1558,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
                 hcsr_val_C_gold.data(),
                 idx_base_A,
                 idx_base_B,
-                idx_base_A);
+                idx_base_C);
 
         cpu_time_used = get_time_us() - cpu_time_used;
 
@@ -1606,9 +1609,8 @@ rocsparse_status testing_csrgemm(Arguments argus)
 
         // Check structure and entries of C
         unit_check_general(1, M + 1, 1, hcsr_row_ptr_C_gold.data(), hcsr_row_ptr_C.data());
-        //        unit_check_general(1, nnz_C_gold, 1, hcsr_col_ind_C_gold.data(),
-        //        hcsr_col_ind_C.data());
-        //        unit_check_general(1, nnz_C_gold, 1, hcsr_val_C_gold.data(), hcsr_val_C.data());
+        unit_check_general(1, nnz_C_gold, 1, hcsr_col_ind_C_gold.data(), hcsr_col_ind_C.data());
+        unit_check_near(1, nnz_C_gold, 1, hcsr_val_C_gold.data(), hcsr_val_C.data());
     }
 
     if(argus.timing)
