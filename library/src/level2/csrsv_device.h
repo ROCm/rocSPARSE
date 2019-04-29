@@ -77,7 +77,7 @@ __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
 
     // This wavefront operates on a single row, from its beginning to end.
     // First, we process all nodes that have dependencies outside the current block.
-    rocsparse_int local_col;
+    rocsparse_int local_col = -1;
     rocsparse_int j;
     for(j = row_begin + lid; j < row_end; j += WF_SIZE)
     {
@@ -205,7 +205,7 @@ __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
 
     // This wavefront operates on a single row, from its end to its begin.
     // First, we process all nodes that have dependencies outside the current block.
-    rocsparse_int local_col;
+    rocsparse_int local_col = -1;
     rocsparse_int j;
     for(j = row_end - 1 - lid; j >= row_begin; j -= WF_SIZE)
     {
