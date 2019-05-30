@@ -21,11 +21,11 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse.h"
+#include "csrsort_device.h"
 #include "definitions.h"
 #include "handle.h"
+#include "rocsparse.h"
 #include "utility.h"
-#include "csrsort_device.h"
 
 #include <hip/hip_runtime.h>
 
@@ -35,13 +35,13 @@
 #include <hipcub/hipcub.hpp>
 #endif
 
-extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handle,
-                                                          rocsparse_int m,
-                                                          rocsparse_int n,
-                                                          rocsparse_int nnz,
+extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle     handle,
+                                                          rocsparse_int        m,
+                                                          rocsparse_int        n,
+                                                          rocsparse_int        nnz,
                                                           const rocsparse_int* csr_row_ptr,
                                                           const rocsparse_int* csr_col_ind,
-                                                          size_t* buffer_size)
+                                                          size_t*              buffer_size)
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -124,15 +124,15 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle handl
     return rocsparse_status_success;
 }
 
-extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
-                                              rocsparse_int m,
-                                              rocsparse_int n,
-                                              rocsparse_int nnz,
+extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle          handle,
+                                              rocsparse_int             m,
+                                              rocsparse_int             n,
+                                              rocsparse_int             nnz,
                                               const rocsparse_mat_descr descr,
-                                              const rocsparse_int* csr_row_ptr,
-                                              rocsparse_int* csr_col_ind,
-                                              rocsparse_int* perm,
-                                              void* temp_buffer)
+                                              const rocsparse_int*      csr_row_ptr,
+                                              rocsparse_int*            csr_col_ind,
+                                              rocsparse_int*            perm,
+                                              void*                     temp_buffer)
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -197,7 +197,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
 
     unsigned int startbit = 0;
     unsigned int endbit   = rocsparse_clz(n);
-    size_t size;
+    size_t       size;
 
     if(perm != nullptr)
     {
@@ -301,8 +301,8 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
 
         if(avg_row_nnz < 64)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys,
@@ -317,8 +317,8 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
         }
         else if(avg_row_nnz < 128)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys,
@@ -333,8 +333,8 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
         }
         else if(avg_row_nnz < 256)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys,
@@ -412,22 +412,22 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle handle,
 
         if(avg_row_nnz < 64)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
                 tmp_rocprim, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
         }
         else if(avg_row_nnz < 128)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
                 tmp_rocprim, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
         }
         else if(avg_row_nnz < 256)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
                 tmp_rocprim, size, keys, nnz, m, offsets, offsets + 1, startbit, endbit, stream));
         }

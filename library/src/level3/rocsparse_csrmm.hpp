@@ -25,10 +25,10 @@
 #ifndef ROCSPARSE_CSRMM_HPP
 #define ROCSPARSE_CSRMM_HPP
 
-#include "rocsparse.h"
-#include "handle.h"
-#include "utility.h"
 #include "csrmm_device.h"
+#include "handle.h"
+#include "rocsparse.h"
+#include "utility.h"
 
 #include <hip/hip_runtime.h>
 
@@ -38,15 +38,15 @@ __launch_bounds__(256) __global__
                                      rocsparse_int n,
                                      rocsparse_int k,
                                      rocsparse_int nnz,
-                                     T alpha,
+                                     T             alpha,
                                      const rocsparse_int* __restrict__ csr_row_ptr,
                                      const rocsparse_int* __restrict__ csr_col_ind,
                                      const T* __restrict__ csr_val,
                                      const T* __restrict__ B,
                                      rocsparse_int ldb,
-                                     T beta,
+                                     T             beta,
                                      T* __restrict__ C,
-                                     rocsparse_int ldc,
+                                     rocsparse_int        ldc,
                                      rocsparse_index_base idx_base)
 {
     csrmmnn_general_device<T, BLOCKSIZE, WF_SIZE>(
@@ -59,15 +59,15 @@ __launch_bounds__(256) __global__
                                        rocsparse_int n,
                                        rocsparse_int k,
                                        rocsparse_int nnz,
-                                       const T* alpha,
+                                       const T*      alpha,
                                        const rocsparse_int* __restrict__ csr_row_ptr,
                                        const rocsparse_int* __restrict__ csr_col_ind,
                                        const T* __restrict__ csr_val,
                                        const T* __restrict__ B,
                                        rocsparse_int ldb,
-                                       const T* beta,
+                                       const T*      beta,
                                        T* __restrict__ C,
-                                       rocsparse_int ldc,
+                                       rocsparse_int        ldc,
                                        rocsparse_index_base idx_base)
 {
     if(*alpha == 0.0 && *beta == 1.0)
@@ -87,15 +87,15 @@ __launch_bounds__(256) __global__
                                      rocsparse_int n,
                                      rocsparse_int k,
                                      rocsparse_int nnz,
-                                     T alpha,
+                                     T             alpha,
                                      const rocsparse_int* __restrict__ csr_row_ptr,
                                      const rocsparse_int* __restrict__ csr_col_ind,
                                      const T* __restrict__ csr_val,
                                      const T* __restrict__ B,
                                      rocsparse_int ldb,
-                                     T beta,
+                                     T             beta,
                                      T* __restrict__ C,
-                                     rocsparse_int ldc,
+                                     rocsparse_int        ldc,
                                      rocsparse_index_base idx_base)
 {
     csrmmnt_general_device<T, BLOCKSIZE, WF_SIZE>(offset,
@@ -124,15 +124,15 @@ __launch_bounds__(256) __global__
                                        rocsparse_int n,
                                        rocsparse_int k,
                                        rocsparse_int nnz,
-                                       const T* alpha,
+                                       const T*      alpha,
                                        const rocsparse_int* __restrict__ csr_row_ptr,
                                        const rocsparse_int* __restrict__ csr_col_ind,
                                        const T* __restrict__ csr_val,
                                        const T* __restrict__ B,
                                        rocsparse_int ldb,
-                                       const T* beta,
+                                       const T*      beta,
                                        T* __restrict__ C,
-                                       rocsparse_int ldc,
+                                       rocsparse_int        ldc,
                                        rocsparse_index_base idx_base)
 {
     if(*alpha == 0.0 && *beta == 1.0)
@@ -159,23 +159,23 @@ __launch_bounds__(256) __global__
 }
 
 template <typename T>
-rocsparse_status rocsparse_csrmm_template(rocsparse_handle handle,
-                                          rocsparse_operation trans_A,
-                                          rocsparse_operation trans_B,
-                                          rocsparse_int m,
-                                          rocsparse_int n,
-                                          rocsparse_int k,
-                                          rocsparse_int nnz,
-                                          const T* alpha,
+rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
+                                          rocsparse_operation       trans_A,
+                                          rocsparse_operation       trans_B,
+                                          rocsparse_int             m,
+                                          rocsparse_int             n,
+                                          rocsparse_int             k,
+                                          rocsparse_int             nnz,
+                                          const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T* csr_val,
-                                          const rocsparse_int* csr_row_ptr,
-                                          const rocsparse_int* csr_col_ind,
-                                          const T* B,
-                                          rocsparse_int ldb,
-                                          const T* beta,
-                                          T* C,
-                                          rocsparse_int ldc)
+                                          const T*                  csr_val,
+                                          const rocsparse_int*      csr_row_ptr,
+                                          const rocsparse_int*      csr_col_ind,
+                                          const T*                  B,
+                                          rocsparse_int             ldb,
+                                          const T*                  beta,
+                                          T*                        C,
+                                          rocsparse_int             ldc)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)

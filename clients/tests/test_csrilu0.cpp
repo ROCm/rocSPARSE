@@ -24,14 +24,14 @@
 #include "testing_csrilu0.hpp"
 #include "utility.hpp"
 
-#include <rocsparse.h>
 #include <gtest/gtest.h>
+#include <rocsparse.h>
+#include <string>
 #include <unistd.h>
 #include <vector>
-#include <string>
 
-typedef rocsparse_index_base base;
-typedef std::tuple<int, base> csrilu0_tuple;
+typedef rocsparse_index_base          base;
+typedef std::tuple<int, base>         csrilu0_tuple;
 typedef std::tuple<base, std::string> csrilu0_bin_tuple;
 
 int csrilu0_M_range[] = {-1, 0, 50, 647};
@@ -54,7 +54,7 @@ std::string csrilu0_bin[] = {"rma10.bin",
 
 class parameterized_csrilu0 : public testing::TestWithParam<csrilu0_tuple>
 {
-    protected:
+protected:
     parameterized_csrilu0() {}
     virtual ~parameterized_csrilu0() {}
     virtual void SetUp() {}
@@ -63,7 +63,7 @@ class parameterized_csrilu0 : public testing::TestWithParam<csrilu0_tuple>
 
 class parameterized_csrilu0_bin : public testing::TestWithParam<csrilu0_bin_tuple>
 {
-    protected:
+protected:
     parameterized_csrilu0_bin() {}
     virtual ~parameterized_csrilu0_bin() {}
     virtual void SetUp() {}
@@ -90,7 +90,7 @@ Arguments setup_csrilu0_arguments(csrilu0_bin_tuple tup)
     std::string bin_file = std::get<1>(tup);
 
     // Get current executables absolute path
-    char path_exe[PATH_MAX];
+    char    path_exe[PATH_MAX];
     ssize_t len = readlink("/proc/self/exe", path_exe, sizeof(path_exe) - 1);
     if(len < 14)
     {
@@ -107,7 +107,10 @@ Arguments setup_csrilu0_arguments(csrilu0_bin_tuple tup)
     return arg;
 }
 
-TEST(csrilu0_bad_arg, csrilu0_float) { testing_csrilu0_bad_arg<float>(); }
+TEST(csrilu0_bad_arg, csrilu0_float)
+{
+    testing_csrilu0_bad_arg<float>();
+}
 
 TEST_P(parameterized_csrilu0, csrilu0_float)
 {

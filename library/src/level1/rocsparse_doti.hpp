@@ -25,21 +25,21 @@
 #ifndef ROCSPARSE_DOTI_HPP
 #define ROCSPARSE_DOTI_HPP
 
-#include "rocsparse.h"
 #include "definitions.h"
-#include "handle.h"
-#include "utility.h"
 #include "doti_device.h"
+#include "handle.h"
+#include "rocsparse.h"
+#include "utility.h"
 
 #include <hip/hip_runtime.h>
 
 template <typename T>
-rocsparse_status rocsparse_doti_template(rocsparse_handle handle,
-                                         rocsparse_int nnz,
-                                         const T* x_val,
+rocsparse_status rocsparse_doti_template(rocsparse_handle     handle,
+                                         rocsparse_int        nnz,
+                                         const T*             x_val,
                                          const rocsparse_int* x_ind,
-                                         const T* y,
-                                         T* result,
+                                         const T*             y,
+                                         T*                   result,
                                          rocsparse_index_base idx_base)
 {
     // Check for valid handle

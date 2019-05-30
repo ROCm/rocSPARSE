@@ -29,9 +29,9 @@
 
 // CSR to COO matrix conversion kernel
 template <rocsparse_int WF_SIZE>
-__global__ void csr2coo_kernel(rocsparse_int m,
+__global__ void csr2coo_kernel(rocsparse_int        m,
                                const rocsparse_int* csr_row_ptr,
-                               rocsparse_int* coo_row_ind,
+                               rocsparse_int*       coo_row_ind,
                                rocsparse_index_base idx_base)
 {
     rocsparse_int tid = hipThreadIdx_x;

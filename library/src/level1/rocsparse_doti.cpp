@@ -21,8 +21,8 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse.h"
 #include "rocsparse_doti.hpp"
+#include "rocsparse.h"
 
 /*
  * ===========================================================================
@@ -30,23 +30,23 @@
  * ===========================================================================
  */
 
-extern "C" rocsparse_status rocsparse_sdoti(rocsparse_handle handle,
-                                            rocsparse_int nnz,
-                                            const float* x_val,
+extern "C" rocsparse_status rocsparse_sdoti(rocsparse_handle     handle,
+                                            rocsparse_int        nnz,
+                                            const float*         x_val,
                                             const rocsparse_int* x_ind,
-                                            const float* y,
-                                            float* result,
+                                            const float*         y,
+                                            float*               result,
                                             rocsparse_index_base idx_base)
 {
     return rocsparse_doti_template<float>(handle, nnz, x_val, x_ind, y, result, idx_base);
 }
 
-extern "C" rocsparse_status rocsparse_ddoti(rocsparse_handle handle,
-                                            rocsparse_int nnz,
-                                            const double* x_val,
+extern "C" rocsparse_status rocsparse_ddoti(rocsparse_handle     handle,
+                                            rocsparse_int        nnz,
+                                            const double*        x_val,
                                             const rocsparse_int* x_ind,
-                                            const double* y,
-                                            double* result,
+                                            const double*        y,
+                                            double*              result,
                                             rocsparse_index_base idx_base)
 {
     return rocsparse_doti_template<double>(handle, nnz, x_val, x_ind, y, result, idx_base);

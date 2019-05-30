@@ -21,11 +21,11 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse.h"
+#include "coosort_device.h"
 #include "definitions.h"
 #include "handle.h"
+#include "rocsparse.h"
 #include "utility.h"
-#include "coosort_device.h"
 
 #include <hip/hip_runtime.h>
 #include <hipcub/hipcub.hpp>
@@ -34,13 +34,13 @@
 #include <rocprim/rocprim_hip.hpp>
 #endif
 
-extern "C" rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handle,
-                                                          rocsparse_int m,
-                                                          rocsparse_int n,
-                                                          rocsparse_int nnz,
+extern "C" rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle     handle,
+                                                          rocsparse_int        m,
+                                                          rocsparse_int        n,
+                                                          rocsparse_int        nnz,
                                                           const rocsparse_int* coo_row_ind,
                                                           const rocsparse_int* coo_col_ind,
-                                                          size_t* buffer_size)
+                                                          size_t*              buffer_size)
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -140,13 +140,13 @@ extern "C" rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle handl
 }
 
 extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
-                                                     rocsparse_int m,
-                                                     rocsparse_int n,
-                                                     rocsparse_int nnz,
-                                                     rocsparse_int* coo_row_ind,
-                                                     rocsparse_int* coo_col_ind,
-                                                     rocsparse_int* perm,
-                                                     void* temp_buffer)
+                                                     rocsparse_int    m,
+                                                     rocsparse_int    n,
+                                                     rocsparse_int    nnz,
+                                                     rocsparse_int*   coo_row_ind,
+                                                     rocsparse_int*   coo_col_ind,
+                                                     rocsparse_int*   perm,
+                                                     void*            temp_buffer)
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -224,8 +224,8 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
     ptr += sizeof(rocsparse_int) * (std::max(m, n) / 256 + 1) * 256;
 
     // Temporary rocprim buffer
-    size_t size       = 0;
-    void* tmp_rocprim = reinterpret_cast<void*>(ptr);
+    size_t size        = 0;
+    void*  tmp_rocprim = reinterpret_cast<void*>(ptr);
 
     if(perm != nullptr)
     {
@@ -306,8 +306,8 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
 
         if(avg_row_nnz < 64)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys2,
@@ -322,8 +322,8 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         }
         else if(avg_row_nnz < 128)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys2,
@@ -338,8 +338,8 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         }
         else if(avg_row_nnz < 256)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs<config>(tmp_rocprim,
                                                                             size,
                                                                             keys2,
@@ -458,22 +458,22 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
 
         if(avg_row_nnz < 64)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 1>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
                 tmp_rocprim, size, vals, nnz, nsegm, work4, work4 + 1, startbit, endbit, stream));
         }
         else if(avg_row_nnz < 128)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 2>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
                 tmp_rocprim, size, vals, nnz, nsegm, work4, work4 + 1, startbit, endbit, stream));
         }
         else if(avg_row_nnz < 256)
         {
-            using config =
-                rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
+            using config
+                = rocprim::segmented_radix_sort_config<6, 5, rocprim::kernel_config<64, 4>>;
             RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_keys<config>(
                 tmp_rocprim, size, vals, nnz, nsegm, work4, work4 + 1, startbit, endbit, stream));
         }
@@ -501,13 +501,13 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
 }
 
 extern "C" rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,
-                                                        rocsparse_int m,
-                                                        rocsparse_int n,
-                                                        rocsparse_int nnz,
-                                                        rocsparse_int* coo_row_ind,
-                                                        rocsparse_int* coo_col_ind,
-                                                        rocsparse_int* perm,
-                                                        void* temp_buffer)
+                                                        rocsparse_int    m,
+                                                        rocsparse_int    n,
+                                                        rocsparse_int    nnz,
+                                                        rocsparse_int*   coo_row_ind,
+                                                        rocsparse_int*   coo_col_ind,
+                                                        rocsparse_int*   perm,
+                                                        void*            temp_buffer)
 {
     return rocsparse_coosort_by_row(handle, n, m, nnz, coo_col_ind, coo_row_ind, perm, temp_buffer);
 }

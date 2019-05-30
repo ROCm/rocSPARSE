@@ -21,11 +21,11 @@
  *
  * ************************************************************************ */
 
-#include "definitions.h"
-#include "utility.h"
-#include "rocsparse.h"
-#include "ell2csr_device.h"
 #include "rocsparse_ell2csr.hpp"
+#include "definitions.h"
+#include "ell2csr_device.h"
+#include "rocsparse.h"
+#include "utility.h"
 
 #include <hip/hip_runtime.h>
 #include <hipcub/hipcub.hpp>
@@ -36,15 +36,15 @@
  * ===========================================================================
  */
 
-extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
-                                                  rocsparse_int m,
-                                                  rocsparse_int n,
+extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle          handle,
+                                                  rocsparse_int             m,
+                                                  rocsparse_int             n,
                                                   const rocsparse_mat_descr ell_descr,
-                                                  rocsparse_int ell_width,
-                                                  const rocsparse_int* ell_col_ind,
+                                                  rocsparse_int             ell_width,
+                                                  const rocsparse_int*      ell_col_ind,
                                                   const rocsparse_mat_descr csr_descr,
-                                                  rocsparse_int* csr_row_ptr,
-                                                  rocsparse_int* csr_nnz)
+                                                  rocsparse_int*            csr_row_ptr,
+                                                  rocsparse_int*            csr_nnz)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -158,7 +158,7 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
         nullptr, temp_storage_bytes, csr_row_ptr, csr_row_ptr, m + 1));
 
     // Get hipcub buffer
-    bool d_temp_alloc;
+    bool  d_temp_alloc;
     void* d_temp_storage;
 
     // Device buffer should be sufficient for hipcub in most cases
@@ -220,17 +220,17 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle handle,
     return rocsparse_status_success;
 }
 
-extern "C" rocsparse_status rocsparse_sell2csr(rocsparse_handle handle,
-                                               rocsparse_int m,
-                                               rocsparse_int n,
+extern "C" rocsparse_status rocsparse_sell2csr(rocsparse_handle          handle,
+                                               rocsparse_int             m,
+                                               rocsparse_int             n,
                                                const rocsparse_mat_descr ell_descr,
-                                               rocsparse_int ell_width,
-                                               const float* ell_val,
-                                               const rocsparse_int* ell_col_ind,
+                                               rocsparse_int             ell_width,
+                                               const float*              ell_val,
+                                               const rocsparse_int*      ell_col_ind,
                                                const rocsparse_mat_descr csr_descr,
-                                               float* csr_val,
-                                               const rocsparse_int* csr_row_ptr,
-                                               rocsparse_int* csr_col_ind)
+                                               float*                    csr_val,
+                                               const rocsparse_int*      csr_row_ptr,
+                                               rocsparse_int*            csr_col_ind)
 {
     return rocsparse_ell2csr_template<float>(handle,
                                              m,
@@ -245,17 +245,17 @@ extern "C" rocsparse_status rocsparse_sell2csr(rocsparse_handle handle,
                                              csr_col_ind);
 }
 
-extern "C" rocsparse_status rocsparse_dell2csr(rocsparse_handle handle,
-                                               rocsparse_int m,
-                                               rocsparse_int n,
+extern "C" rocsparse_status rocsparse_dell2csr(rocsparse_handle          handle,
+                                               rocsparse_int             m,
+                                               rocsparse_int             n,
                                                const rocsparse_mat_descr ell_descr,
-                                               rocsparse_int ell_width,
-                                               const double* ell_val,
-                                               const rocsparse_int* ell_col_ind,
+                                               rocsparse_int             ell_width,
+                                               const double*             ell_val,
+                                               const rocsparse_int*      ell_col_ind,
                                                const rocsparse_mat_descr csr_descr,
-                                               double* csr_val,
-                                               const rocsparse_int* csr_row_ptr,
-                                               rocsparse_int* csr_col_ind)
+                                               double*                   csr_val,
+                                               const rocsparse_int*      csr_row_ptr,
+                                               rocsparse_int*            csr_col_ind)
 {
     return rocsparse_ell2csr_template<double>(handle,
                                               m,

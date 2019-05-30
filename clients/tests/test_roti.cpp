@@ -24,11 +24,11 @@
 #include "testing_roti.hpp"
 #include "utility.hpp"
 
-#include <rocsparse.h>
 #include <gtest/gtest.h>
+#include <rocsparse.h>
 #include <vector>
 
-typedef rocsparse_index_base base;
+typedef rocsparse_index_base                       base;
 typedef std::tuple<int, int, double, double, base> roti_tuple;
 
 int roti_N_range[]   = {12000, 15332, 22031};
@@ -41,7 +41,7 @@ base roti_idx_base_range[] = {rocsparse_index_base_zero, rocsparse_index_base_on
 
 class parameterized_roti : public testing::TestWithParam<roti_tuple>
 {
-    protected:
+protected:
     parameterized_roti() {}
     virtual ~parameterized_roti() {}
     virtual void SetUp() {}
@@ -60,7 +60,10 @@ Arguments setup_roti_arguments(roti_tuple tup)
     return arg;
 }
 
-TEST(roti_bad_arg, roti_float) { testing_roti_bad_arg<float>(); }
+TEST(roti_bad_arg, roti_float)
+{
+    testing_roti_bad_arg<float>();
+}
 
 TEST_P(parameterized_roti, roti_float)
 {

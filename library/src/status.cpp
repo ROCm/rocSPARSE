@@ -60,6 +60,7 @@ rocsparse_status get_rocsparse_status_for_hip_status(hipError_t status)
     // hip runtime failing
     case hipErrorNoDevice: // no hip devices
     case hipErrorUnknown:
-    default: return rocsparse_status_internal_error;
+    default:
+        return rocsparse_status_internal_error;
     }
 }

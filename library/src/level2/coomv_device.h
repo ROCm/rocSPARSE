@@ -47,16 +47,16 @@ __device__ void coomv_scale_device(rocsparse_int size, T beta, T* __restrict__ d
 // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
 // 'Segmented operations for sparse matrix computation on vector multiprocessors'
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
-static __device__ void coomvn_general_wf_reduce(rocsparse_int nnz,
-                                                rocsparse_int loops,
-                                                T alpha,
+static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
+                                                rocsparse_int        loops,
+                                                T                    alpha,
                                                 const rocsparse_int* coo_row_ind,
                                                 const rocsparse_int* coo_col_ind,
-                                                const T* coo_val,
-                                                const T* x,
-                                                T* y,
-                                                rocsparse_int* row_block_red,
-                                                T* val_block_red,
+                                                const T*             coo_val,
+                                                const T*             x,
+                                                T*                   y,
+                                                rocsparse_int*       row_block_red,
+                                                T*                   val_block_red,
                                                 rocsparse_index_base idx_base)
 {
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -94,7 +94,7 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int nnz,
     }
 
     rocsparse_int row;
-    T val;
+    T             val;
 
     // Current threads index into COO structure
     rocsparse_int idx = offset + lid;
@@ -108,8 +108,8 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int nnz,
         if(idx < nnz)
         {
             row = rocsparse_nontemporal_load(coo_row_ind + idx) - idx_base;
-            val = alpha * rocsparse_nontemporal_load(coo_val + idx) *
-                  rocsparse_ldg(x + rocsparse_nontemporal_load(coo_col_ind + idx) - idx_base);
+            val = alpha * rocsparse_nontemporal_load(coo_val + idx)
+                  * rocsparse_ldg(x + rocsparse_nontemporal_load(coo_col_ind + idx) - idx_base);
         }
         else
         {

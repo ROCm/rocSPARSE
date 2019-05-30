@@ -25,11 +25,11 @@
 #ifndef ROCSPARSE_ELLMV_HPP
 #define ROCSPARSE_ELLMV_HPP
 
-#include "rocsparse.h"
 #include "definitions.h"
-#include "handle.h"
-#include "utility.h"
 #include "ellmv_device.h"
+#include "handle.h"
+#include "rocsparse.h"
+#include "utility.h"
 
 #include <hip/hip_runtime.h>
 
@@ -37,7 +37,7 @@ template <typename T>
 __global__ void ellmvn_kernel_host_pointer(rocsparse_int m,
                                            rocsparse_int n,
                                            rocsparse_int ell_width,
-                                           T alpha,
+                                           T             alpha,
                                            const rocsparse_int* __restrict__ ell_col_ind,
                                            const T* __restrict__ ell_val,
                                            const T* __restrict__ x,
@@ -52,7 +52,7 @@ template <typename T>
 __global__ void ellmvn_kernel_device_pointer(rocsparse_int m,
                                              rocsparse_int n,
                                              rocsparse_int ell_width,
-                                             const T* alpha,
+                                             const T*      alpha,
                                              const rocsparse_int* __restrict__ ell_col_ind,
                                              const T* __restrict__ ell_val,
                                              const T* __restrict__ x,
@@ -64,18 +64,18 @@ __global__ void ellmvn_kernel_device_pointer(rocsparse_int m,
 }
 
 template <typename T>
-rocsparse_status rocsparse_ellmv_template(rocsparse_handle handle,
-                                          rocsparse_operation trans,
-                                          rocsparse_int m,
-                                          rocsparse_int n,
-                                          const T* alpha,
+rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,
+                                          rocsparse_operation       trans,
+                                          rocsparse_int             m,
+                                          rocsparse_int             n,
+                                          const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T* ell_val,
-                                          const rocsparse_int* ell_col_ind,
-                                          rocsparse_int ell_width,
-                                          const T* x,
-                                          const T* beta,
-                                          T* y)
+                                          const T*                  ell_val,
+                                          const rocsparse_int*      ell_col_ind,
+                                          rocsparse_int             ell_width,
+                                          const T*                  x,
+                                          const T*                  beta,
+                                          T*                        y)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
