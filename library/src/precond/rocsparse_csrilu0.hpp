@@ -272,6 +272,12 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
+    // Check for analysis call
+    if(info->csrilu0_info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Stream
     hipStream_t stream = handle->stream;
 

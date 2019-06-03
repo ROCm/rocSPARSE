@@ -722,6 +722,11 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle handle,
                                      ? info->csrsv_upper_info
                                      : info->csrsv_lower_info;
 
+    if(csrsv == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // If diag type is unit, re-initialize zero pivot to remove structural zeros
     if(descr->diag_type == rocsparse_diag_type_unit)
     {
