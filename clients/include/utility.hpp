@@ -1086,6 +1086,7 @@ class Arguments
     rocsparse_index_base idx_base      = rocsparse_index_base_zero;
     rocsparse_index_base idx_base2     = rocsparse_index_base_zero;
     rocsparse_index_base idx_base3     = rocsparse_index_base_zero;
+    rocsparse_index_base idx_base4     = rocsparse_index_base_zero;
     rocsparse_action action            = rocsparse_action_numeric;
     rocsparse_hyb_partition part       = rocsparse_hyb_partition_auto;
     rocsparse_diag_type diag_type      = rocsparse_diag_type_non_unit;
@@ -1123,6 +1124,7 @@ class Arguments
         this->idx_base  = rhs.idx_base;
         this->idx_base2 = rhs.idx_base2;
         this->idx_base3 = rhs.idx_base3;
+        this->idx_base4 = rhs.idx_base4;
         this->action    = rhs.action;
         this->part      = rhs.part;
         this->diag_type = rhs.diag_type;

@@ -261,3 +261,52 @@ rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
     }
     return rocsparse_status_success;
 }
+
+/********************************************************************************
+ * \brief rocsparse_csrgemm_info is a structure holding the rocsparse csrgemm
+ * info data gathered during csrgemm_buffer_size. It must be initialized using
+ * the rocsparse_create_csrgemm_info() routine. It should be destroyed at the
+ * end using rocsparse_destroy_csrgemm_info().
+ *******************************************************************************/
+rocsparse_status rocsparse_create_csrgemm_info(rocsparse_csrgemm_info* info)
+{
+    if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else
+    {
+        // Allocate
+        try
+        {
+            *info = new _rocsparse_csrgemm_info;
+        }
+        catch(const rocsparse_status& status)
+        {
+            return status;
+        }
+        return rocsparse_status_success;
+    }
+}
+
+/********************************************************************************
+ * \brief Destroy csrgemm info.
+ *******************************************************************************/
+rocsparse_status rocsparse_destroy_csrgemm_info(rocsparse_csrgemm_info info)
+{
+    if(info == nullptr)
+    {
+        return rocsparse_status_success;
+    }
+
+    // Destruct
+    try
+    {
+        delete info;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+    return rocsparse_status_success;
+}

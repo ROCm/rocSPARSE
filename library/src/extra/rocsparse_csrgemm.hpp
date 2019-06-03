@@ -65,6 +65,197 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle handle,
     {
         return rocsparse_status_invalid_pointer;
     }
+
+    // Logging
+    if(handle->pointer_mode == rocsparse_pointer_mode_host)
+    {
+        log_trace(handle,
+                  replaceX<T>("rocsparse_Xcsrgemm_buffer_size"),
+                  trans_A,
+                  trans_B,
+                  m,
+                  n,
+                  k,
+                  *alpha,
+                  (const void*&)descr_A,
+                  nnz_A,
+                  (const void*&)csr_row_ptr_A,
+                  (const void*&)csr_col_ind_A,
+                  (const void*&)descr_B,
+                  nnz_B,
+                  (const void*&)csr_row_ptr_B,
+                  (const void*&)csr_col_ind_B,
+                  *beta,
+                  (const void*&)descr_D,
+                  nnz_D,
+                  (const void*&)csr_row_ptr_D,
+                  (const void*&)csr_col_ind_D,
+                  (const void*&)info,
+                  (const void*&)buffer_size);
+    }
+    else
+    {
+        log_trace(handle,
+                  replaceX<T>("rocsparse_Xcsrgemm_buffer_size"),
+                  trans_A,
+                  trans_B,
+                  m,
+                  n,
+                  k,
+                  (const void*&)alpha,
+                  (const void*&)descr_A,
+                  nnz_A,
+                  (const void*&)csr_row_ptr_A,
+                  (const void*&)csr_col_ind_A,
+                  (const void*&)descr_B,
+                  nnz_B,
+                  (const void*&)csr_row_ptr_B,
+                  (const void*&)csr_col_ind_B,
+                  (const void*&)beta,
+                  (const void*&)descr_D,
+                  nnz_D,
+                  (const void*&)csr_row_ptr_D,
+                  (const void*&)csr_col_ind_D,
+                  (const void*&)info,
+                  (const void*&)buffer_size);
+    }
+
+    // Check sizes
+    if(m < 0 || n < 0 || k < 0 || nnz_A < 0 || nnz_B < 0 || nnz_D < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Either alpha or beta can be nullptr
+    if(alpha == nullptr && beta == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Quick return if possible
+    if(m == 0 || n == 0)
+    {
+        // Do not return 0 as buffer size
+        *buffer_size = 4;
+
+        return rocsparse_status_success;
+    }
+    if(alpha == nullptr)
+    {
+        if(nnz_D == 0)
+        {
+            // Do not return 0 as buffer size
+            *buffer_size = 4;
+
+            return rocsparse_status_success;
+        }
+    }
+    if(beta == nullptr)
+    {
+        if(k == 0 || nnz_A == 0 || nnz_B == 0)
+        {
+            // Do not return 0 as buffer size
+            *buffer_size = 4;
+
+            return rocsparse_status_success;
+        }
+    }
+    if((nnz_A == 0 || nnz_B == 0) && nnz_D == 0)
+    {
+        // Do not return 0 as buffer size
+        *buffer_size = 4;
+
+        return rocsparse_status_success;
+    }
+
+    // If alpha != nullptr, A and B must be valid
+    if(alpha != nullptr)
+    {
+        // Check valid pointers
+        if(descr_A == nullptr || csr_row_ptr_A == nullptr || csr_col_ind_A == nullptr ||
+           descr_B == nullptr || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        // Check index base
+        if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
+        {
+            return rocsparse_status_invalid_value;
+        }
+        if(descr_B->base != rocsparse_index_base_zero && descr_B->base != rocsparse_index_base_one)
+        {
+            return rocsparse_status_invalid_value;
+        }
+
+        // Check matrix type
+        if(descr_A->type != rocsparse_matrix_type_general)
+        {
+            return rocsparse_status_not_implemented;
+        }
+        if(descr_B->type != rocsparse_matrix_type_general)
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
+
+    // If beta != nullptr, D must be valid
+    if(beta != nullptr)
+    {
+        // Check valid pointers
+        if(descr_D == nullptr || csr_row_ptr_D == nullptr || csr_col_ind_D == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        // Check index base
+        if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
+        {
+            return rocsparse_status_invalid_value;
+        }
+
+        // Check matrix type
+        if(descr_D->type != rocsparse_matrix_type_general)
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
+
+    if(buffer_size == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Clear csrgemm info
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrgemm_info(info->csrgemm_info));
+
+    // Create csrgemm info
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrgemm_info(&info->csrgemm_info));
+
+    // Multiplicative part
+    info->csrgemm_info->mul = (alpha != nullptr);
+
+    // Additive part
+    info->csrgemm_info->add = (beta != nullptr);
+
+
+
+
+
+
+
+
+
+
+
+
+*buffer_size = 4;
+
+
+
+
+
+    return rocsparse_status_success;
 }
 
 
@@ -99,20 +290,16 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle handle,
                                             const rocsparse_mat_info info,
                                             void* temp_buffer)
 {
-    // Check for valid handle and matrix descriptors
+    // Check for valid handle and info structure
     if(handle == nullptr)
     {
         return rocsparse_status_invalid_handle;
     }
-    else if(descr_A == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(descr_B == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
     else if(descr_C == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(info == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -187,98 +374,101 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle handle,
                   (const void*&)temp_buffer);
     }
 
-    // Check index base
-    if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
+    // Check sizes
+    if(m < 0 || n < 0 || k < 0 || nnz_A < 0 || nnz_B < 0 || nnz_D < 0)
     {
-        return rocsparse_status_invalid_value;
-    }
-    if(descr_B->base != rocsparse_index_base_zero && descr_B->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(descr_C->base != rocsparse_index_base_zero && descr_C->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(descr_A->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    if(descr_B->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    if(descr_C->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_size;
     }
 
-    // Check sizes
-    if(m < 0)
+    // Either alpha or beta can be nullptr
+    if(alpha == nullptr && beta == nullptr)
     {
-        return rocsparse_status_invalid_size;
-    }
-    else if(n < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(k < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnz_A < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnz_B < 0)
-    {
-        return rocsparse_status_invalid_size;
+        return rocsparse_status_invalid_pointer;
     }
 
     // Quick return if possible
-    if(m == 0 || n == 0 || k == 0 || nnz_A == 0 || nnz_B == 0)
+    if(m == 0 || n == 0)
+    {
+        return rocsparse_status_success;
+    }
+    if(alpha == nullptr)
+    {
+        if(nnz_D == 0)
+        {
+            return rocsparse_status_success;
+        }
+    }
+    if(beta == nullptr)
+    {
+        if(k == 0 || nnz_A == 0 || nnz_B == 0)
+        {
+            return rocsparse_status_success;
+        }
+    }
+    if((nnz_A == 0 || nnz_B == 0) && nnz_D == 0)
     {
         return rocsparse_status_success;
     }
 
-    // Check pointer arguments
-    if(csr_val_A == nullptr)
+    // If alpha != nullptr, A and B must be valid
+    if(alpha != nullptr)
+    {
+        // Check valid pointers
+        if(descr_A == nullptr || csr_val_A == nullptr || csr_row_ptr_A == nullptr || csr_col_ind_A == nullptr ||
+           descr_B == nullptr || csr_val_B == nullptr || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        // Check index base
+        if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
+        {
+            return rocsparse_status_invalid_value;
+        }
+        if(descr_B->base != rocsparse_index_base_zero && descr_B->base != rocsparse_index_base_one)
+        {
+            return rocsparse_status_invalid_value;
+        }
+
+        // Check matrix type
+        if(descr_A->type != rocsparse_matrix_type_general)
+        {
+            return rocsparse_status_not_implemented;
+        }
+        if(descr_B->type != rocsparse_matrix_type_general)
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
+
+    // If beta != nullptr, D must be valid
+    if(beta != nullptr)
+    {
+        // Check valid pointers
+        if(descr_D == nullptr || csr_val_D == nullptr || csr_row_ptr_D == nullptr || csr_col_ind_D == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        // Check index base
+        if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
+        {
+            return rocsparse_status_invalid_value;
+        }
+
+        // Check matrix type
+        if(descr_D->type != rocsparse_matrix_type_general)
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
+
+    if(temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(csr_row_ptr_A == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind_A == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_val_B == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_row_ptr_B == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind_B == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_val_C == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_row_ptr_C == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind_C == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(temp_buffer == nullptr)
+
+    if(csr_val_C == nullptr || csr_row_ptr_C == nullptr || csr_col_ind_C == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
