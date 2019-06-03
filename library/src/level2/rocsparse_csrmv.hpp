@@ -25,9 +25,10 @@
 #ifndef ROCSPARSE_CSRMV_HPP
 #define ROCSPARSE_CSRMV_HPP
 
+#include "rocsparse.h"
+
 #include "csrmv_device.h"
 #include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
 
 #include <hip/hip_runtime.h>

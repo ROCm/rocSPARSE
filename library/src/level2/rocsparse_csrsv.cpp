@@ -21,8 +21,9 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_csrsv.hpp"
 #include "rocsparse.h"
+
+#include "rocsparse_csrsv.hpp"
 
 #include <limits>
 

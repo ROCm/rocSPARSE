@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
-#include "rocsparse_csrmv.hpp"
 #include "definitions.h"
 #include "rocsparse.h"
+
+#include "rocsparse_csrmv.hpp"
 
 /*
  * ===========================================================================

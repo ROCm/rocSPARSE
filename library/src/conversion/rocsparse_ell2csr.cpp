@@ -20,11 +20,12 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "rocsparse.h"
 
 #include "rocsparse_ell2csr.hpp"
+
 #include "definitions.h"
 #include "ell2csr_device.h"
-#include "rocsparse.h"
 #include "utility.h"
 
 #include <hip/hip_runtime.h>

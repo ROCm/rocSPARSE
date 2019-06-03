@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "rocsparse.h"
 
 #include "csr2coo_device.h"
 #include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
 
 #include <hip/hip_runtime.h>

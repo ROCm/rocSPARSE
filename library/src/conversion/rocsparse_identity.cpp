@@ -20,10 +20,10 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "rocsparse.h"
 
 #include "handle.h"
 #include "identity_device.h"
-#include "rocsparse.h"
 #include "utility.h"
 
 #include <hip/hip_runtime.h>

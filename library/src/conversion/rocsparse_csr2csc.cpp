@@ -20,9 +20,9 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "rocsparse.h"
 
 #include "rocsparse_csr2csc.hpp"
-#include "rocsparse.h"
 
 #include <hip/hip_runtime_api.h>
 #include <hipcub/hipcub.hpp>

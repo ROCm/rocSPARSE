@@ -20,11 +20,11 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "rocsparse.h"
 
 #include "coosort_device.h"
 #include "definitions.h"
 #include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
 
 #include <hip/hip_runtime.h>
