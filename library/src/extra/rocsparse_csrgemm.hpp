@@ -33,12 +33,49 @@
 #include <hip/hip_runtime.h>
 
 template <typename T>
+rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle handle,
+                                                        rocsparse_operation trans_A,
+                                                        rocsparse_operation trans_B,
+                                                        rocsparse_int m,
+                                                        rocsparse_int n,
+                                                        rocsparse_int k,
+                                                        const T* alpha,
+                                                        const rocsparse_mat_descr descr_A,
+                                                        rocsparse_int nnz_A,
+                                                        const rocsparse_int* csr_row_ptr_A,
+                                                        const rocsparse_int* csr_col_ind_A,
+                                                        const rocsparse_mat_descr descr_B,
+                                                        rocsparse_int nnz_B,
+                                                        const rocsparse_int* csr_row_ptr_B,
+                                                        const rocsparse_int* csr_col_ind_B,
+                                                        const T* beta,
+                                                        const rocsparse_mat_descr descr_D,
+                                                        rocsparse_int nnz_D,
+                                                        const rocsparse_int* csr_row_ptr_D,
+                                                        const rocsparse_int* csr_col_ind_D,
+                                                        rocsparse_mat_info info,
+                                                        size_t* buffer_size)
+{
+    // Check for valid handle and info structure
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+    else if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+}
+
+
+template <typename T>
 rocsparse_status rocsparse_csrgemm_template(rocsparse_handle handle,
                                             rocsparse_operation trans_A,
                                             rocsparse_operation trans_B,
                                             rocsparse_int m,
                                             rocsparse_int n,
                                             rocsparse_int k,
+                                            const T* alpha,
                                             const rocsparse_mat_descr descr_A,
                                             rocsparse_int nnz_A,
                                             const T* csr_val_A,
@@ -49,10 +86,17 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle handle,
                                             const T* csr_val_B,
                                             const rocsparse_int* csr_row_ptr_B,
                                             const rocsparse_int* csr_col_ind_B,
+                                            const T* beta,
+                                            const rocsparse_mat_descr descr_D,
+                                            rocsparse_int nnz_D,
+                                            const T* csr_val_D,
+                                            const rocsparse_int* csr_row_ptr_D,
+                                            const rocsparse_int* csr_col_ind_D,
                                             const rocsparse_mat_descr descr_C,
                                             T* csr_val_C,
                                             const rocsparse_int* csr_row_ptr_C,
                                             rocsparse_int* csr_col_ind_C,
+                                            const rocsparse_mat_info info,
                                             void* temp_buffer)
 {
     // Check for valid handle and matrix descriptors
@@ -74,30 +118,74 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle handle,
     }
 
     // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xcsrgemm"),
-              trans_A,
-              trans_B,
-              m,
-              n,
-              k,
-              (const void*&)descr_A,
-              nnz_A,
-              (const void*&)csr_val_A,
-              (const void*&)csr_row_ptr_A,
-              (const void*&)csr_col_ind_A,
-              (const void*&)descr_B,
-              nnz_B,
-              (const void*&)csr_val_B,
-              (const void*&)csr_row_ptr_B,
-              (const void*&)csr_col_ind_B,
-              (const void*&)descr_C,
-              (const void*&)csr_val_C,
-              (const void*&)csr_row_ptr_C,
-              (const void*&)csr_col_ind_C,
-              (const void*&)temp_buffer);
+    if(handle->pointer_mode == rocsparse_pointer_mode_host)
+    {
+        log_trace(handle,
+                  replaceX<T>("rocsparse_Xcsrgemm"),
+                  trans_A,
+                  trans_B,
+                  m,
+                  n,
+                  k,
+                  *alpha,
+                  (const void*&)descr_A,
+                  nnz_A,
+                  (const void*&)csr_val_A,
+                  (const void*&)csr_row_ptr_A,
+                  (const void*&)csr_col_ind_A,
+                  (const void*&)descr_B,
+                  nnz_B,
+                  (const void*&)csr_val_B,
+                  (const void*&)csr_row_ptr_B,
+                  (const void*&)csr_col_ind_B,
+                  *beta,
+                  (const void*&)descr_D,
+                  nnz_D,
+                  (const void*&)csr_val_D,
+                  (const void*&)csr_row_ptr_D,
+                  (const void*&)csr_col_ind_D,
+                  (const void*&)descr_C,
+                  (const void*&)csr_val_C,
+                  (const void*&)csr_row_ptr_C,
+                  (const void*&)csr_col_ind_C,
+                  (const void*&)info,
+                  (const void*&)temp_buffer);
 
-    log_bench(handle, "./rocsparse-bench -f csrgemm -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
+        log_bench(handle, "./rocsparse-bench -f csrgemm -r", replaceX<T>("X"), "--mtx <matrix.mtx>"); // TODO alpha
+    }
+    else
+    {
+        log_trace(handle,
+                  replaceX<T>("rocsparse_Xcsrgemm"),
+                  trans_A,
+                  trans_B,
+                  m,
+                  n,
+                  k,
+                  (const void*&)alpha,
+                  (const void*&)descr_A,
+                  nnz_A,
+                  (const void*&)csr_val_A,
+                  (const void*&)csr_row_ptr_A,
+                  (const void*&)csr_col_ind_A,
+                  (const void*&)descr_B,
+                  nnz_B,
+                  (const void*&)csr_val_B,
+                  (const void*&)csr_row_ptr_B,
+                  (const void*&)csr_col_ind_B,
+                  (const void*&)beta,
+                  (const void*&)descr_D,
+                  nnz_D,
+                  (const void*&)csr_val_D,
+                  (const void*&)csr_row_ptr_D,
+                  (const void*&)csr_col_ind_D,
+                  (const void*&)descr_C,
+                  (const void*&)csr_val_C,
+                  (const void*&)csr_row_ptr_C,
+                  (const void*&)csr_col_ind_C,
+                  (const void*&)info,
+                  (const void*&)temp_buffer);
+    }
 
     // Check index base
     if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
@@ -195,7 +283,7 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    return rocsparse_status_not_implemented;
+    return rocsparse_status_success;
 }
 
 #endif // ROCSPARSE_CSRGEMM_HPP
