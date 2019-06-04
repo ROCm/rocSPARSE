@@ -28,10 +28,10 @@
 #include <hip/hip_runtime.h>
 
 // COO to CSR matrix conversion kernel
-__global__ void coosort_permute_kernel(rocsparse_int nnz,
+__global__ void coosort_permute_kernel(rocsparse_int        nnz,
                                        const rocsparse_int* in,
                                        const rocsparse_int* perm,
-                                       rocsparse_int* out)
+                                       rocsparse_int*       out)
 {
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 

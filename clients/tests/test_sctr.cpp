@@ -24,11 +24,11 @@
 #include "testing_sctr.hpp"
 #include "utility.hpp"
 
-#include <rocsparse.h>
 #include <gtest/gtest.h>
+#include <rocsparse.h>
 #include <vector>
 
-typedef rocsparse_index_base base;
+typedef rocsparse_index_base       base;
 typedef std::tuple<int, int, base> sctr_tuple;
 
 int sctr_N_range[]   = {12000, 15332, 22031};
@@ -38,7 +38,7 @@ base sctr_idx_base_range[] = {rocsparse_index_base_zero, rocsparse_index_base_on
 
 class parameterized_sctr : public testing::TestWithParam<sctr_tuple>
 {
-    protected:
+protected:
     parameterized_sctr() {}
     virtual ~parameterized_sctr() {}
     virtual void SetUp() {}
@@ -55,7 +55,10 @@ Arguments setup_sctr_arguments(sctr_tuple tup)
     return arg;
 }
 
-TEST(sctr_bad_arg, sctr_float) { testing_sctr_bad_arg<float>(); }
+TEST(sctr_bad_arg, sctr_float)
+{
+    testing_sctr_bad_arg<float>();
+}
 
 TEST_P(parameterized_sctr, sctr_float)
 {

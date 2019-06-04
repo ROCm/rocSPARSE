@@ -21,8 +21,8 @@
  *
  * ************************************************************************ */
 
-#include "utility.hpp"
 #include "rocsparse.hpp"
+#include "utility.hpp"
 
 // Level1
 #include "testing_axpyi.hpp"
@@ -46,20 +46,20 @@
 #include "testing_csrilu0.hpp"
 
 // Conversion
+#include "testing_coo2csr.hpp"
+#include "testing_coosort.hpp"
 #include "testing_csr2coo.hpp"
 #include "testing_csr2csc.hpp"
 #include "testing_csr2ell.hpp"
 #include "testing_csr2hyb.hpp"
-#include "testing_coo2csr.hpp"
+#include "testing_csrsort.hpp"
 #include "testing_ell2csr.hpp"
 #include "testing_identity.hpp"
-#include "testing_csrsort.hpp"
-#include "testing_coosort.hpp"
 
-#include <iostream>
-#include <stdio.h>
 #include <boost/program_options.hpp>
+#include <iostream>
 #include <rocsparse.h>
+#include <stdio.h>
 
 namespace po = boost::program_options;
 
@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
     argus.timing     = 1;
 
     std::string function;
-    char precision = 's';
+    char        precision = 's';
 
     rocsparse_int device_id;
 

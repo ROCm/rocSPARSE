@@ -21,20 +21,20 @@
  *
  * ************************************************************************ */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include <vector>
-#include <sstream>
 #include <algorithm>
+#include <math.h>
+#include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <vector>
 
-int read_mtx_matrix(const char* filename,
-                    int& nrow,
-                    int& ncol,
-                    int& nnz,
-                    std::vector<int>& row,
-                    std::vector<int>& col,
+int read_mtx_matrix(const char*          filename,
+                    int&                 nrow,
+                    int&                 ncol,
+                    int&                 nnz,
+                    std::vector<int>&    row,
+                    std::vector<int>&    col,
                     std::vector<double>& val)
 {
     FILE* f = fopen(filename, "r");
@@ -64,13 +64,13 @@ int read_mtx_matrix(const char* filename,
     }
 
     // Convert to lower case
-    for(char *p = array; *p != '\0'; *p = tolower(*p), p++)
+    for(char* p = array; *p != '\0'; *p = tolower(*p), p++)
         ;
-    for(char *p = coord; *p != '\0'; *p = tolower(*p), p++)
+    for(char* p = coord; *p != '\0'; *p = tolower(*p), p++)
         ;
-    for(char *p = data; *p != '\0'; *p = tolower(*p), p++)
+    for(char* p = data; *p != '\0'; *p = tolower(*p), p++)
         ;
-    for(char *p = type; *p != '\0'; *p = tolower(*p), p++)
+    for(char* p = type; *p != '\0'; *p = tolower(*p), p++)
         ;
 
     // Check banner
@@ -121,8 +121,8 @@ int read_mtx_matrix(const char* filename,
     sscanf(line, "%d %d %d", &nrow, &ncol, &snnz);
     nnz = symm ? (snnz - nrow) * 2 + nrow : snnz;
 
-    std::vector<int> unsorted_row(nnz);
-    std::vector<int> unsorted_col(nnz);
+    std::vector<int>    unsorted_row(nnz);
+    std::vector<int>    unsorted_col(nnz);
     std::vector<double> unsorted_val(nnz);
 
     // Read entries
@@ -134,8 +134,8 @@ int read_mtx_matrix(const char* filename,
             return -1;
         }
 
-        int irow;
-        int icol;
+        int    irow;
+        int    icol;
         double ival;
 
         if(!strcmp(data, "pattern"))
@@ -258,9 +258,9 @@ int main(int argc, char* argv[])
     int n;
     int nnz;
 
-    std::vector<int> ptr;
-    std::vector<int> row;
-    std::vector<int> col;
+    std::vector<int>    ptr;
+    std::vector<int>    row;
+    std::vector<int>    col;
     std::vector<double> val;
 
     if(read_mtx_matrix(argv[1], m, n, nnz, row, col, val) != 0)

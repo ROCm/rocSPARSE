@@ -26,9 +26,10 @@
 #define ROCSPARSE_CSRMV_HPP
 
 #include "rocsparse.h"
+
+#include "csrmv_device.h"
 #include "handle.h"
 #include "utility.h"
-#include "csrmv_device.h"
 
 #include <hip/hip_runtime.h>
 
@@ -66,9 +67,9 @@ static unsigned long long numThreadsForReduction(unsigned long long num_rows)
     return WG_SIZE >> (_bit_scan_reverse(num_rows - 1) + 1);
 #elif(defined(__HIP_PLATFORM_NVCC__))
     return flp2(WG_SIZE / num_rows);
-#elif(defined(__clang__) && __has_builtin(__builtin_clz)) || \
-    !defined(__clang) && defined(__GNUG__) &&                \
-        ((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 30202)
+#elif(defined(__clang__) && __has_builtin(__builtin_clz)) \
+    || !defined(__clang) && defined(__GNUG__)             \
+           && ((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 30202)
     return (WG_SIZE >> (8 * sizeof(int) - __builtin_clz(num_rows - 1)));
 #elif defined(_MSC_VER) && (_MSC_VER >= 1400)
     unsigned long long bit_returned;
@@ -79,11 +80,11 @@ static unsigned long long numThreadsForReduction(unsigned long long num_rows)
 #endif
 }
 
-static void ComputeRowBlocks(unsigned long long* rowBlocks,
-                             size_t& rowBlockSize,
+static void ComputeRowBlocks(unsigned long long*  rowBlocks,
+                             size_t&              rowBlockSize,
                              const rocsparse_int* rowDelimiters,
-                             rocsparse_int nRows,
-                             bool allocate_row_blocks = true)
+                             rocsparse_int        nRows,
+                             bool                 allocate_row_blocks = true)
 {
     unsigned long long* rowBlocksBase;
 
@@ -102,8 +103,8 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
     unsigned long long last_i = 0;
 
     // Check to ensure nRows can fit in 32 bits
-    if(static_cast<unsigned long long>(nRows) >
-       static_cast<unsigned long long>(std::pow(2, ROW_BITS)))
+    if(static_cast<unsigned long long>(nRows)
+       > static_cast<unsigned long long>(std::pow(2, ROW_BITS)))
     {
         fprintf(stderr, "nrow does not fit in 32 bits\n");
         exit(1);
@@ -264,8 +265,8 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
     }
 
     // If we didn't fill a row block with the last row, make sure we don't lose it.
-    if(allocate_row_blocks &&
-       (*(rowBlocks - 1) >> (64 - ROW_BITS)) != static_cast<unsigned long long>(nRows))
+    if(allocate_row_blocks
+       && (*(rowBlocks - 1) >> (64 - ROW_BITS)) != static_cast<unsigned long long>(nRows))
     {
         *rowBlocks = (static_cast<unsigned long long>(nRows) << (64 - ROW_BITS));
         if((nRows - last_i) > static_cast<unsigned long long>(ROWS_FOR_VECTOR))
@@ -294,16 +295,16 @@ static void ComputeRowBlocks(unsigned long long* rowBlocks,
 }
 
 template <typename T>
-rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle handle,
-                                                   rocsparse_operation trans,
-                                                   rocsparse_int m,
-                                                   rocsparse_int n,
-                                                   rocsparse_int nnz,
+rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          handle,
+                                                   rocsparse_operation       trans,
+                                                   rocsparse_int             m,
+                                                   rocsparse_int             n,
+                                                   rocsparse_int             nnz,
                                                    const rocsparse_mat_descr descr,
-                                                   const T* csr_val,
-                                                   const rocsparse_int* csr_row_ptr,
-                                                   const rocsparse_int* csr_col_ind,
-                                                   rocsparse_mat_info info)
+                                                   const T*                  csr_val,
+                                                   const rocsparse_int*      csr_row_ptr,
+                                                   const rocsparse_int*      csr_col_ind,
+                                                   rocsparse_mat_info        info)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -426,7 +427,7 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle handle,
 
 template <typename T, rocsparse_int WF_SIZE>
 __global__ void csrmvn_general_kernel_host_pointer(rocsparse_int m,
-                                                   T alpha,
+                                                   T             alpha,
                                                    const rocsparse_int* __restrict__ csr_row_ptr,
                                                    const rocsparse_int* __restrict__ csr_col_ind,
                                                    const T* __restrict__ csr_val,
@@ -441,7 +442,7 @@ __global__ void csrmvn_general_kernel_host_pointer(rocsparse_int m,
 
 template <typename T, rocsparse_int WF_SIZE>
 __global__ void csrmvn_general_kernel_device_pointer(rocsparse_int m,
-                                                     const T* alpha,
+                                                     const T*      alpha,
                                                      const rocsparse_int* __restrict__ csr_row_ptr,
                                                      const rocsparse_int* __restrict__ csr_col_ind,
                                                      const T* __restrict__ csr_val,
@@ -499,20 +500,20 @@ __launch_bounds__(WG_SIZE) __global__
 }
 
 template <typename T>
-rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
-                                          rocsparse_operation trans,
-                                          rocsparse_int m,
-                                          rocsparse_int n,
-                                          rocsparse_int nnz,
-                                          const T* alpha,
+rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
+                                          rocsparse_operation       trans,
+                                          rocsparse_int             m,
+                                          rocsparse_int             n,
+                                          rocsparse_int             nnz,
+                                          const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T* csr_val,
-                                          const rocsparse_int* csr_row_ptr,
-                                          const rocsparse_int* csr_col_ind,
-                                          rocsparse_mat_info info,
-                                          const T* x,
-                                          const T* beta,
-                                          T* y)
+                                          const T*                  csr_val,
+                                          const rocsparse_int*      csr_row_ptr,
+                                          const rocsparse_int*      csr_col_ind,
+                                          rocsparse_mat_info        info,
+                                          const T*                  x,
+                                          const T*                  beta,
+                                          T*                        y)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -664,19 +665,19 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle handle,
 }
 
 template <typename T>
-rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle handle,
-                                                  rocsparse_operation trans,
-                                                  rocsparse_int m,
-                                                  rocsparse_int n,
-                                                  rocsparse_int nnz,
-                                                  const T* alpha,
+rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle          handle,
+                                                  rocsparse_operation       trans,
+                                                  rocsparse_int             m,
+                                                  rocsparse_int             n,
+                                                  rocsparse_int             nnz,
+                                                  const T*                  alpha,
                                                   const rocsparse_mat_descr descr,
-                                                  const T* csr_val,
-                                                  const rocsparse_int* csr_row_ptr,
-                                                  const rocsparse_int* csr_col_ind,
-                                                  const T* x,
-                                                  const T* beta,
-                                                  T* y)
+                                                  const T*                  csr_val,
+                                                  const rocsparse_int*      csr_row_ptr,
+                                                  const rocsparse_int*      csr_col_ind,
+                                                  const T*                  x,
+                                                  const T*                  beta,
+                                                  T*                        y)
 {
     // Stream
     hipStream_t stream = handle->stream;
@@ -1106,20 +1107,20 @@ rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle handle,
 }
 
 template <typename T>
-rocsparse_status rocsparse_csrmv_adaptive_template(rocsparse_handle handle,
-                                                   rocsparse_operation trans,
-                                                   rocsparse_int m,
-                                                   rocsparse_int n,
-                                                   rocsparse_int nnz,
-                                                   const T* alpha,
+rocsparse_status rocsparse_csrmv_adaptive_template(rocsparse_handle          handle,
+                                                   rocsparse_operation       trans,
+                                                   rocsparse_int             m,
+                                                   rocsparse_int             n,
+                                                   rocsparse_int             nnz,
+                                                   const T*                  alpha,
                                                    const rocsparse_mat_descr descr,
-                                                   const T* csr_val,
-                                                   const rocsparse_int* csr_row_ptr,
-                                                   const rocsparse_int* csr_col_ind,
-                                                   rocsparse_csrmv_info info,
-                                                   const T* x,
-                                                   const T* beta,
-                                                   T* y)
+                                                   const T*                  csr_val,
+                                                   const rocsparse_int*      csr_row_ptr,
+                                                   const rocsparse_int*      csr_col_ind,
+                                                   rocsparse_csrmv_info      info,
+                                                   const T*                  x,
+                                                   const T*                  beta,
+                                                   T*                        y)
 {
     // Check if info matches current matrix and options
     if(info->trans != trans)

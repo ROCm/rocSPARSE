@@ -25,18 +25,18 @@
 #ifndef ROCSPARSE_GTHR_HPP
 #define ROCSPARSE_GTHR_HPP
 
-#include "rocsparse.h"
-#include "handle.h"
-#include "utility.h"
 #include "gthr_device.h"
+#include "handle.h"
+#include "rocsparse.h"
+#include "utility.h"
 
 #include <hip/hip_runtime.h>
 
 template <typename T>
-rocsparse_status rocsparse_gthr_template(rocsparse_handle handle,
-                                         rocsparse_int nnz,
-                                         const T* y,
-                                         T* x_val,
+rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
+                                         rocsparse_int        nnz,
+                                         const T*             y,
+                                         T*                   x_val,
                                          const rocsparse_int* x_ind,
                                          rocsparse_index_base idx_base)
 {

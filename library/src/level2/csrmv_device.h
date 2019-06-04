@@ -30,14 +30,14 @@
 #include <hip/hip_runtime.h>
 
 template <typename T, rocsparse_int WF_SIZE>
-static __device__ void csrmvn_general_device(rocsparse_int m,
-                                             T alpha,
+static __device__ void csrmvn_general_device(rocsparse_int        m,
+                                             T                    alpha,
                                              const rocsparse_int* row_offset,
                                              const rocsparse_int* csr_col_ind,
-                                             const T* csr_val,
-                                             const T* x,
-                                             T beta,
-                                             T* y,
+                                             const T*             csr_val,
+                                             const T*             x,
+                                             T                    beta,
+                                             T*                   y,
                                              rocsparse_index_base idx_base)
 {
     rocsparse_int tid = hipThreadIdx_x;
@@ -99,17 +99,17 @@ template <typename T,
           rocsparse_int WG_BITS,
           rocsparse_int ROW_BITS,
           rocsparse_int WG_SIZE>
-__device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
-                                       T alpha,
+__device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
+                                       T                    alpha,
                                        const rocsparse_int* csr_row_ptr,
                                        const rocsparse_int* csr_col_ind,
-                                       const T* csr_val,
-                                       const T* x,
-                                       T beta,
-                                       T* y,
+                                       const T*             csr_val,
+                                       const T*             x,
+                                       T                    beta,
+                                       T*                   y,
                                        rocsparse_index_base idx_base)
 {
-    __shared__ T partialSums[BLOCKSIZE];
+    __shared__ T  partialSums[BLOCKSIZE];
     rocsparse_int gid = hipBlockIdx_x;
     rocsparse_int lid = hipThreadIdx_x;
 
@@ -135,8 +135,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
     // value. While this bit is the same as the first workgroup's flag bit, this
     // workgroup will spin-loop.
     rocsparse_int row = ((row_blocks[gid] >> (64 - ROW_BITS)) & ((1ULL << ROW_BITS) - 1ULL));
-    rocsparse_int stop_row =
-        ((row_blocks[gid + 1] >> (64 - ROW_BITS)) & ((1ULL << ROW_BITS) - 1ULL));
+    rocsparse_int stop_row
+        = ((row_blocks[gid + 1] >> (64 - ROW_BITS)) & ((1ULL << ROW_BITS) - 1ULL));
     rocsparse_int num_rows = stop_row - row;
 
     // Get the workgroup within this long row ID out of the bottom bits of the row block.
@@ -144,10 +144,10 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
 
     // Any workgroup only calculates, at most, BLOCK_MULTIPLIER*BLOCKSIZE items in a row.
     // If there are more items in this row, we assign more workgroups.
-    rocsparse_int vecStart =
-        rocsparse_mad24(wg, BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
-    rocsparse_int vecEnd =
-        min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
+    rocsparse_int vecStart
+        = rocsparse_mad24(wg, BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
+    rocsparse_int vecEnd
+        = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
 
     T temp_sum = static_cast<T>(0);
 
@@ -190,8 +190,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
         {
             for(rocsparse_int i = 0; i < BLOCKSIZE; i += WG_SIZE)
             {
-                partialSums[lid + i] =
-                    alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
+                partialSums[lid + i]
+                    = alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
             }
         }
         else
@@ -205,8 +205,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             // to be launched, and this loop can't be unrolled.
             for(rocsparse_int i = 0; col + i < csr_row_ptr[stop_row] - idx_base; i += WG_SIZE)
             {
-                partialSums[lid + i] =
-                    alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
+                partialSums[lid + i]
+                    = alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
             }
         }
         __syncthreads();
@@ -328,8 +328,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
             // things.
             for(rocsparse_int j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
-                temp_sum =
-                    rocsparse_fma(alpha * csr_val[j], x[csr_col_ind[j] - idx_base], temp_sum);
+                temp_sum
+                    = rocsparse_fma(alpha * csr_val[j], x[csr_col_ind[j] - idx_base], temp_sum);
             }
 
             partialSums[lid] = temp_sum;
@@ -383,9 +383,9 @@ __device__ void csrmvn_adaptive_device(unsigned long long* row_blocks,
         // If your bit 24 == first_wg's bit 24, you spin loop.
         // The first workgroup will eventually flip this bit, and you can move forward.
         __syncthreads();
-        while(
-            gid != first_wg_in_row && lid == 0 &&
-            ((atomicMax(&row_blocks[first_wg_in_row], 0ULL) & (1ULL << WG_BITS)) == compare_value))
+        while(gid != first_wg_in_row && lid == 0
+              && ((atomicMax(&row_blocks[first_wg_in_row], 0ULL) & (1ULL << WG_BITS))
+                  == compare_value))
             ;
         __syncthreads();
 

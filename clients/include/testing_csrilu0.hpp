@@ -25,14 +25,14 @@
 #ifndef TESTING_CSRILU0_HPP
 #define TESTING_CSRILU0_HPP
 
-#include "rocsparse_test_unique_ptr.hpp"
 #include "rocsparse.hpp"
-#include "utility.hpp"
+#include "rocsparse_test_unique_ptr.hpp"
 #include "unit.hpp"
+#include "utility.hpp"
 
-#include <string>
 #include <cmath>
 #include <rocsparse.h>
+#include <string>
 
 using namespace rocsparse;
 using namespace rocsparse_test;
@@ -40,34 +40,34 @@ using namespace rocsparse_test;
 template <typename T>
 void testing_csrilu0_bad_arg(void)
 {
-    rocsparse_int m                    = 100;
-    rocsparse_int nnz                  = 100;
-    rocsparse_int safe_size            = 100;
-    rocsparse_analysis_policy analysis = rocsparse_analysis_policy_reuse;
-    rocsparse_solve_policy solve       = rocsparse_solve_policy_auto;
-    rocsparse_status status;
+    rocsparse_int             m         = 100;
+    rocsparse_int             nnz       = 100;
+    rocsparse_int             safe_size = 100;
+    rocsparse_analysis_policy analysis  = rocsparse_analysis_policy_reuse;
+    rocsparse_solve_policy    solve     = rocsparse_solve_policy_auto;
+    rocsparse_status          status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle handle = unique_ptr_handle->handle;
+    rocsparse_handle               handle = unique_ptr_handle->handle;
 
     std::unique_ptr<descr_struct> unique_ptr_descr(new descr_struct);
-    rocsparse_mat_descr descr = unique_ptr_descr->descr;
+    rocsparse_mat_descr           descr = unique_ptr_descr->descr;
 
     std::unique_ptr<mat_info_struct> unique_ptr_mat_info(new mat_info_struct);
-    rocsparse_mat_info info = unique_ptr_mat_info->info;
+    rocsparse_mat_info               info = unique_ptr_mat_info->info;
 
-    auto dptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dcol_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dbuffer_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+    auto dptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto dcol_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto dval_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+    auto dbuffer_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(char) * safe_size), device_free};
 
-    rocsparse_int* dptr = (rocsparse_int*)dptr_managed.get();
-    rocsparse_int* dcol = (rocsparse_int*)dcol_managed.get();
-    T* dval             = (T*)dval_managed.get();
-    void* dbuffer       = (void*)dbuffer_managed.get();
+    rocsparse_int* dptr    = (rocsparse_int*)dptr_managed.get();
+    rocsparse_int* dcol    = (rocsparse_int*)dcol_managed.get();
+    T*             dval    = (T*)dval_managed.get();
+    void*          dbuffer = (void*)dbuffer_managed.get();
 
     if(!dval || !dptr || !dcol || !dbuffer)
     {
@@ -106,8 +106,8 @@ void testing_csrilu0_bad_arg(void)
     {
         size_t* size_null = nullptr;
 
-        status =
-            rocsparse_csrilu0_buffer_size(handle, m, nnz, descr, dval, dptr, dcol, info, size_null);
+        status = rocsparse_csrilu0_buffer_size(
+            handle, m, nnz, descr, dval, dptr, dcol, info, size_null);
         verify_rocsparse_status_invalid_pointer(status, "Error: size is nullptr");
     }
     // testing for(nullptr == descr)
@@ -200,56 +200,56 @@ void testing_csrilu0_bad_arg(void)
     {
         rocsparse_int* dptr_null = nullptr;
 
-        status =
-            rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr_null, dcol, info, solve, dbuffer);
+        status
+            = rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr_null, dcol, info, solve, dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
     }
     // testing for(nullptr == dcol)
     {
         rocsparse_int* dcol_null = nullptr;
 
-        status =
-            rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr, dcol_null, info, solve, dbuffer);
+        status
+            = rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr, dcol_null, info, solve, dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
     }
     // testing for(nullptr == dval)
     {
         T* dval_null = nullptr;
 
-        status =
-            rocsparse_csrilu0(handle, m, nnz, descr, dval_null, dptr, dcol, info, solve, dbuffer);
+        status
+            = rocsparse_csrilu0(handle, m, nnz, descr, dval_null, dptr, dcol, info, solve, dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
     }
     // testing for(nullptr == dbuffer)
     {
         void* dbuffer_null = nullptr;
 
-        status =
-            rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr, dcol, info, solve, dbuffer_null);
+        status
+            = rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr, dcol, info, solve, dbuffer_null);
         verify_rocsparse_status_invalid_pointer(status, "Error: dbuffer is nullptr");
     }
     // testing for(nullptr == descr)
     {
         rocsparse_mat_descr descr_null = nullptr;
 
-        status =
-            rocsparse_csrilu0(handle, m, nnz, descr_null, dval, dptr, dcol, info, solve, dbuffer);
+        status
+            = rocsparse_csrilu0(handle, m, nnz, descr_null, dval, dptr, dcol, info, solve, dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
     }
     // testing for(nullptr == info)
     {
         rocsparse_mat_info info_null = nullptr;
 
-        status =
-            rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr, dcol, info_null, solve, dbuffer);
+        status
+            = rocsparse_csrilu0(handle, m, nnz, descr, dval, dptr, dcol, info_null, solve, dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
     }
     // testing for(nullptr == handle)
     {
         rocsparse_handle handle_null = nullptr;
 
-        status =
-            rocsparse_csrilu0(handle_null, m, nnz, descr, dval, dptr, dcol, info, solve, dbuffer);
+        status
+            = rocsparse_csrilu0(handle_null, m, nnz, descr, dval, dptr, dcol, info, solve, dbuffer);
         verify_rocsparse_status_invalid_handle(status);
     }
 
@@ -299,13 +299,13 @@ void testing_csrilu0_bad_arg(void)
 template <typename T>
 rocsparse_status testing_csrilu0(Arguments argus)
 {
-    rocsparse_int safe_size       = 100;
-    rocsparse_int m               = argus.M;
-    rocsparse_index_base idx_base = argus.idx_base;
-    std::string binfile           = "";
-    std::string filename          = "";
-    rocsparse_status status;
-    size_t size;
+    rocsparse_int        safe_size = 100;
+    rocsparse_int        m         = argus.M;
+    rocsparse_index_base idx_base  = argus.idx_base;
+    std::string          binfile   = "";
+    std::string          filename  = "";
+    rocsparse_status     status;
+    size_t               size;
 
     // When in testing mode, M == N == -99 indicates that we are testing with a real
     // matrix from cise.ufl.edu
@@ -321,13 +321,13 @@ rocsparse_status testing_csrilu0(Arguments argus)
     }
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
-    rocsparse_handle handle = test_handle->handle;
+    rocsparse_handle               handle = test_handle->handle;
 
     std::unique_ptr<descr_struct> test_descr(new descr_struct);
-    rocsparse_mat_descr descr = test_descr->descr;
+    rocsparse_mat_descr           descr = test_descr->descr;
 
     std::unique_ptr<mat_info_struct> unique_ptr_mat_info(new mat_info_struct);
-    rocsparse_mat_info info = unique_ptr_mat_info->info;
+    rocsparse_mat_info               info = unique_ptr_mat_info->info;
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, idx_base));
@@ -343,18 +343,19 @@ rocsparse_status testing_csrilu0(Arguments argus)
     // Argument sanity check before allocating invalid memory
     if(m <= 0 || nnz <= 0)
     {
-        auto dptr_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dcol_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto buffer_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+        auto dptr_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto dcol_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto dval_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+        auto buffer_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(char) * safe_size), device_free};
 
-        rocsparse_int* dptr = (rocsparse_int*)dptr_managed.get();
-        rocsparse_int* dcol = (rocsparse_int*)dcol_managed.get();
-        T* dval             = (T*)dval_managed.get();
-        void* buffer        = (void*)buffer_managed.get();
+        rocsparse_int* dptr   = (rocsparse_int*)dptr_managed.get();
+        rocsparse_int* dcol   = (rocsparse_int*)dcol_managed.get();
+        T*             dval   = (T*)dval_managed.get();
+        void*          buffer = (void*)buffer_managed.get();
 
         if(!dval || !dptr || !dcol || !buffer)
         {
@@ -364,8 +365,8 @@ rocsparse_status testing_csrilu0(Arguments argus)
         }
 
         // Test rocsparse_csrilu0_buffer_size
-        status =
-            rocsparse_csrilu0_buffer_size(handle, m, nnz, descr, dval, dptr, dcol, info, &size);
+        status
+            = rocsparse_csrilu0_buffer_size(handle, m, nnz, descr, dval, dptr, dcol, info, &size);
 
         if(m < 0 || nnz < 0)
         {
@@ -428,14 +429,15 @@ rocsparse_status testing_csrilu0(Arguments argus)
     // Host structures
     std::vector<rocsparse_int> hcsr_row_ptr;
     std::vector<rocsparse_int> hcsr_col_ind;
-    std::vector<T> hcsr_val;
+    std::vector<T>             hcsr_val;
 
     // Initial Data on CPU
     srand(12345ULL);
     if(binfile != "")
     {
         if(read_bin_matrix(
-               binfile.c_str(), m, m, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base) != 0)
+               binfile.c_str(), m, m, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base)
+           != 0)
         {
             fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
             return rocsparse_status_internal_error;
@@ -453,8 +455,8 @@ rocsparse_status testing_csrilu0(Arguments argus)
         if(filename != "")
         {
             if(read_mtx_matrix(
-                   filename.c_str(), m, m, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, idx_base) !=
-               0)
+                   filename.c_str(), m, m, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, idx_base)
+               != 0)
             {
                 fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
@@ -480,17 +482,17 @@ rocsparse_status testing_csrilu0(Arguments argus)
     }
 
     // Allocate memory on device
-    auto dptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
-    auto dcol_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto d_position_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int)), device_free};
+    auto dptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
+    auto dcol_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dval_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * nnz), device_free};
+    auto d_position_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int)), device_free};
 
     rocsparse_int* dptr       = (rocsparse_int*)dptr_managed.get();
     rocsparse_int* dcol       = (rocsparse_int*)dcol_managed.get();
-    T* dval                   = (T*)dval_managed.get();
+    T*             dval       = (T*)dval_managed.get();
     rocsparse_int* d_position = (rocsparse_int*)d_position_managed.get();
 
     if(!dval || !dptr || !dcol || !d_position)
@@ -512,7 +514,7 @@ rocsparse_status testing_csrilu0(Arguments argus)
         rocsparse_csrilu0_buffer_size(handle, m, nnz, descr, dval, dptr, dcol, info, &size));
 
     // Allocate buffer on the device
-    auto dbuffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * size), device_free};
+    auto dbuffer_managed = rocsparse_unique_ptr {device_malloc(sizeof(char) * size), device_free};
 
     void* dbuffer = (void*)dbuffer_managed.get();
 
@@ -543,7 +545,7 @@ rocsparse_status testing_csrilu0(Arguments argus)
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-        rocsparse_int hposition_1;
+        rocsparse_int    hposition_1;
         rocsparse_status pivot_status_1;
         pivot_status_1 = rocsparse_csrilu0_zero_pivot(handle, info, &hposition_1);
 
@@ -554,7 +556,7 @@ rocsparse_status testing_csrilu0(Arguments argus)
         pivot_status_2 = rocsparse_csrilu0_zero_pivot(handle, info, d_position);
 
         // Copy output from device to CPU
-        rocsparse_int hposition_2;
+        rocsparse_int  hposition_2;
         std::vector<T> result(nnz);
         CHECK_HIP_ERROR(hipMemcpy(result.data(), dval, sizeof(T) * nnz, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(
@@ -563,8 +565,8 @@ rocsparse_status testing_csrilu0(Arguments argus)
         // Host csrilu0
         double cpu_time_used = get_time_us();
 
-        rocsparse_int position_gold =
-            csrilu0(m, hcsr_row_ptr.data(), hcsr_col_ind.data(), hcsr_val.data(), idx_base);
+        rocsparse_int position_gold
+            = csrilu0(m, hcsr_row_ptr.data(), hcsr_col_ind.data(), hcsr_val.data(), idx_base);
 
         cpu_time_used = get_time_us() - cpu_time_used;
 

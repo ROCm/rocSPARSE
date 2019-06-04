@@ -25,13 +25,13 @@
 #ifndef TESTING_COOSORT_HPP
 #define TESTING_COOSORT_HPP
 
-#include "rocsparse_test_unique_ptr.hpp"
 #include "rocsparse.hpp"
-#include "utility.hpp"
+#include "rocsparse_test_unique_ptr.hpp"
 #include "unit.hpp"
+#include "utility.hpp"
 
-#include <rocsparse.h>
 #include <algorithm>
+#include <rocsparse.h>
 #include <string>
 
 using namespace rocsparse;
@@ -39,30 +39,30 @@ using namespace rocsparse_test;
 
 void testing_coosort_bad_arg(void)
 {
-    rocsparse_int m         = 100;
-    rocsparse_int n         = 100;
-    rocsparse_int nnz       = 100;
-    rocsparse_int safe_size = 100;
+    rocsparse_int    m         = 100;
+    rocsparse_int    n         = 100;
+    rocsparse_int    nnz       = 100;
+    rocsparse_int    safe_size = 100;
     rocsparse_status status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle handle = unique_ptr_handle->handle;
+    rocsparse_handle               handle = unique_ptr_handle->handle;
 
     size_t buffer_size = 0;
 
-    auto coo_row_ind_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto coo_col_ind_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto perm_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto buffer_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+    auto coo_row_ind_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto coo_col_ind_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto perm_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto buffer_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(char) * safe_size), device_free};
 
     rocsparse_int* coo_row_ind = (rocsparse_int*)coo_row_ind_managed.get();
     rocsparse_int* coo_col_ind = (rocsparse_int*)coo_col_ind_managed.get();
     rocsparse_int* perm        = (rocsparse_int*)perm_managed.get();
-    void* buffer               = (void*)buffer_managed.get();
+    void*          buffer      = (void*)buffer_managed.get();
 
     if(!coo_row_ind || !coo_col_ind || !perm || !buffer)
     {
@@ -187,15 +187,15 @@ void testing_coosort_bad_arg(void)
 
 rocsparse_status testing_coosort(Arguments argus)
 {
-    rocsparse_int m               = argus.M;
-    rocsparse_int n               = argus.N;
-    rocsparse_int safe_size       = 100;
-    rocsparse_int by_row          = argus.transA == rocsparse_operation_none;
-    rocsparse_int permute         = argus.temp;
-    rocsparse_index_base idx_base = argus.idx_base;
-    std::string binfile           = "";
-    std::string filename          = "";
-    rocsparse_status status;
+    rocsparse_int        m         = argus.M;
+    rocsparse_int        n         = argus.N;
+    rocsparse_int        safe_size = 100;
+    rocsparse_int        by_row    = argus.transA == rocsparse_operation_none;
+    rocsparse_int        permute   = argus.temp;
+    rocsparse_index_base idx_base  = argus.idx_base;
+    std::string          binfile   = "";
+    std::string          filename  = "";
+    rocsparse_status     status;
 
     // When in testing mode, M == N == -99 indicates that we are testing with a real
     // matrix from cise.ufl.edu
@@ -220,24 +220,24 @@ rocsparse_status testing_coosort(Arguments argus)
     rocsparse_int nnz = m * scale * n;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle handle = unique_ptr_handle->handle;
+    rocsparse_handle               handle = unique_ptr_handle->handle;
 
     // Argument sanity check before allocating invalid memory
     if(m <= 0 || n <= 0 || nnz <= 0)
     {
-        auto coo_row_ind_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto coo_col_ind_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto perm_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto buffer_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+        auto coo_row_ind_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto coo_col_ind_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto perm_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto buffer_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(char) * safe_size), device_free};
 
         rocsparse_int* coo_row_ind = (rocsparse_int*)coo_row_ind_managed.get();
         rocsparse_int* coo_col_ind = (rocsparse_int*)coo_col_ind_managed.get();
         rocsparse_int* perm        = (rocsparse_int*)perm_managed.get();
-        void* buffer               = (void*)buffer_managed.get();
+        void*          buffer      = (void*)buffer_managed.get();
 
         if(!coo_row_ind || !coo_col_ind || !perm || !buffer)
         {
@@ -264,8 +264,8 @@ rocsparse_status testing_coosort(Arguments argus)
 
         if(by_row)
         {
-            status =
-                rocsparse_coosort_by_row(handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, buffer);
+            status = rocsparse_coosort_by_row(
+                handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, buffer);
         }
         else
         {
@@ -290,7 +290,7 @@ rocsparse_status testing_coosort(Arguments argus)
     // Host structures
     std::vector<rocsparse_int> hcoo_row_ind;
     std::vector<rocsparse_int> hcoo_col_ind;
-    std::vector<float> hcoo_val;
+    std::vector<float>         hcoo_val;
 
     // Sample initial COO matrix on CPU
     srand(12345ULL);
@@ -298,7 +298,8 @@ rocsparse_status testing_coosort(Arguments argus)
     {
         std::vector<rocsparse_int> hcsr_row_ptr;
         if(read_bin_matrix(
-               binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcoo_col_ind, hcoo_val, idx_base) != 0)
+               binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcoo_col_ind, hcoo_val, idx_base)
+           != 0)
         {
             fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
             return rocsparse_status_internal_error;
@@ -335,8 +336,8 @@ rocsparse_status testing_coosort(Arguments argus)
         if(filename != "")
         {
             if(read_mtx_matrix(
-                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcoo_col_ind, hcoo_val, idx_base) !=
-               0)
+                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcoo_col_ind, hcoo_val, idx_base)
+               != 0)
             {
                 fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
@@ -351,7 +352,7 @@ rocsparse_status testing_coosort(Arguments argus)
     // Unsort COO columns
     std::vector<rocsparse_int> hcoo_row_ind_unsorted(nnz);
     std::vector<rocsparse_int> hcoo_col_ind_unsorted(nnz);
-    std::vector<float> hcoo_val_unsorted(nnz);
+    std::vector<float>         hcoo_val_unsorted(nnz);
 
     hcoo_row_ind_unsorted = hcoo_row_ind;
     hcoo_col_ind_unsorted = hcoo_col_ind;
@@ -363,7 +364,7 @@ rocsparse_status testing_coosort(Arguments argus)
 
         rocsparse_int temp_row = hcoo_row_ind_unsorted[i];
         rocsparse_int temp_col = hcoo_col_ind_unsorted[i];
-        float temp_val         = hcoo_val_unsorted[i];
+        float         temp_val = hcoo_val_unsorted[i];
 
         hcoo_row_ind_unsorted[i] = hcoo_row_ind_unsorted[rng];
         hcoo_col_ind_unsorted[i] = hcoo_col_ind_unsorted[rng];
@@ -407,20 +408,20 @@ rocsparse_status testing_coosort(Arguments argus)
     }
 
     // Allocate memory on the device
-    auto dcoo_row_ind_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dcoo_col_ind_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dcoo_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(float) * nnz), device_free};
-    auto dcoo_val_sorted_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(float) * nnz), device_free};
-    auto dperm_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dcoo_row_ind_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dcoo_col_ind_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dcoo_val_managed = rocsparse_unique_ptr {device_malloc(sizeof(float) * nnz), device_free};
+    auto dcoo_val_sorted_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(float) * nnz), device_free};
+    auto dperm_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
 
-    rocsparse_int* dcoo_row_ind = (rocsparse_int*)dcoo_row_ind_managed.get();
-    rocsparse_int* dcoo_col_ind = (rocsparse_int*)dcoo_col_ind_managed.get();
-    float* dcoo_val             = (float*)dcoo_val_managed.get();
-    float* dcoo_val_sorted      = (float*)dcoo_val_sorted_managed.get();
+    rocsparse_int* dcoo_row_ind    = (rocsparse_int*)dcoo_row_ind_managed.get();
+    rocsparse_int* dcoo_col_ind    = (rocsparse_int*)dcoo_col_ind_managed.get();
+    float*         dcoo_val        = (float*)dcoo_val_managed.get();
+    float*         dcoo_val_sorted = (float*)dcoo_val_sorted_managed.get();
 
     // Set permutation vector, if asked for
     rocsparse_int* dperm = permute ? (rocsparse_int*)dperm_managed.get() : nullptr;
@@ -452,8 +453,8 @@ rocsparse_status testing_coosort(Arguments argus)
             handle, m, n, nnz, dcoo_row_ind, dcoo_col_ind, &buffer_size));
 
         // Allocate buffer on the device
-        auto dbuffer_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(char) * buffer_size), device_free};
+        auto dbuffer_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(char) * buffer_size), device_free};
 
         void* dbuffer = (void*)dbuffer_managed.get();
 
@@ -524,8 +525,8 @@ rocsparse_status testing_coosort(Arguments argus)
         // Allocate buffer for coosort
         rocsparse_coosort_buffer_size(handle, m, n, nnz, dcoo_row_ind, dcoo_col_ind, &buffer_size);
 
-        auto dbuffer_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(char) * buffer_size), device_free};
+        auto dbuffer_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(char) * buffer_size), device_free};
         void* dbuffer = (void*)dbuffer_managed.get();
 
         for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)

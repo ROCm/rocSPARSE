@@ -25,29 +25,29 @@
 #ifndef ROCSPARSE_CSR2CSC_HPP
 #define ROCSPARSE_CSR2CSC_HPP
 
-#include "rocsparse.h"
+#include "csr2csc_device.h"
 #include "definitions.h"
 #include "handle.h"
+#include "rocsparse.h"
 #include "utility.h"
-#include "csr2csc_device.h"
 
 #include <hip/hip_runtime.h>
 #include <hipcub/hipcub.hpp>
 
 template <typename T>
-rocsparse_status rocsparse_csr2csc_template(rocsparse_handle handle,
-                                            rocsparse_int m,
-                                            rocsparse_int n,
-                                            rocsparse_int nnz,
-                                            const T* csr_val,
+rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
+                                            rocsparse_int        m,
+                                            rocsparse_int        n,
+                                            rocsparse_int        nnz,
+                                            const T*             csr_val,
                                             const rocsparse_int* csr_row_ptr,
                                             const rocsparse_int* csr_col_ind,
-                                            T* csc_val,
-                                            rocsparse_int* csc_row_ind,
-                                            rocsparse_int* csc_col_ptr,
-                                            rocsparse_action copy_values,
+                                            T*                   csc_val,
+                                            rocsparse_int*       csc_row_ind,
+                                            rocsparse_int*       csc_col_ptr,
+                                            rocsparse_action     copy_values,
                                             rocsparse_index_base idx_base,
-                                            void* temp_buffer)
+                                            void*                temp_buffer)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)

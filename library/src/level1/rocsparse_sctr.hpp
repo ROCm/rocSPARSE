@@ -25,19 +25,19 @@
 #ifndef ROCSPARSE_SCTR_HPP
 #define ROCSPARSE_SCTR_HPP
 
-#include "rocsparse.h"
 #include "handle.h"
-#include "utility.h"
+#include "rocsparse.h"
 #include "sctr_device.h"
+#include "utility.h"
 
 #include <hip/hip_runtime.h>
 
 template <typename T>
-rocsparse_status rocsparse_sctr_template(rocsparse_handle handle,
-                                         rocsparse_int nnz,
-                                         const T* x_val,
+rocsparse_status rocsparse_sctr_template(rocsparse_handle     handle,
+                                         rocsparse_int        nnz,
+                                         const T*             x_val,
                                          const rocsparse_int* x_ind,
-                                         T* y,
+                                         T*                   y,
                                          rocsparse_index_base idx_base)
 {
     // Check for valid handle

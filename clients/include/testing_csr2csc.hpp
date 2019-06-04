@@ -25,13 +25,13 @@
 #ifndef TESTING_CSR2CSC_HPP
 #define TESTING_CSR2CSC_HPP
 
-#include "rocsparse_test_unique_ptr.hpp"
 #include "rocsparse.hpp"
-#include "utility.hpp"
+#include "rocsparse_test_unique_ptr.hpp"
 #include "unit.hpp"
+#include "utility.hpp"
 
-#include <rocsparse.h>
 #include <algorithm>
+#include <rocsparse.h>
 #include <string>
 
 using namespace rocsparse;
@@ -40,40 +40,40 @@ using namespace rocsparse_test;
 template <typename T>
 void testing_csr2csc_bad_arg(void)
 {
-    rocsparse_int m         = 100;
-    rocsparse_int n         = 100;
-    rocsparse_int nnz       = 100;
-    rocsparse_int safe_size = 100;
+    rocsparse_int    m         = 100;
+    rocsparse_int    n         = 100;
+    rocsparse_int    nnz       = 100;
+    rocsparse_int    safe_size = 100;
     rocsparse_status status;
 
     size_t size = 0;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle handle = unique_ptr_handle->handle;
+    rocsparse_handle               handle = unique_ptr_handle->handle;
 
-    auto csr_row_ptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto csr_col_ind_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto csr_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto csc_row_ind_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto csc_col_ptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto csc_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto buffer_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+    auto csr_row_ptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto csr_col_ind_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto csr_val_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+    auto csc_row_ind_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto csc_col_ptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto csc_val_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+    auto buffer_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(char) * safe_size), device_free};
 
     rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
     rocsparse_int* csr_col_ind = (rocsparse_int*)csr_col_ind_managed.get();
-    T* csr_val                 = (T*)csr_val_managed.get();
+    T*             csr_val     = (T*)csr_val_managed.get();
     rocsparse_int* csc_row_ind = (rocsparse_int*)csc_row_ind_managed.get();
     rocsparse_int* csc_col_ptr = (rocsparse_int*)csc_col_ptr_managed.get();
-    T* csc_val                 = (T*)csc_val_managed.get();
-    void* buffer               = (void*)buffer_managed.get();
+    T*             csc_val     = (T*)csc_val_managed.get();
+    void*          buffer      = (void*)buffer_managed.get();
 
-    if(!csr_row_ptr || !csr_col_ind || !csr_val || !csc_row_ind || !csc_col_ptr || !csc_val ||
-       !buffer)
+    if(!csr_row_ptr || !csr_col_ind || !csr_val || !csc_row_ind || !csc_col_ptr || !csc_val
+       || !buffer)
     {
         PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -289,14 +289,14 @@ void testing_csr2csc_bad_arg(void)
 template <typename T>
 rocsparse_status testing_csr2csc(Arguments argus)
 {
-    rocsparse_int m               = argus.M;
-    rocsparse_int n               = argus.N;
-    rocsparse_int safe_size       = 100;
-    rocsparse_index_base idx_base = argus.idx_base;
-    rocsparse_action action       = argus.action;
-    std::string binfile           = "";
-    std::string filename          = "";
-    rocsparse_status status;
+    rocsparse_int        m         = argus.M;
+    rocsparse_int        n         = argus.N;
+    rocsparse_int        safe_size = 100;
+    rocsparse_index_base idx_base  = argus.idx_base;
+    rocsparse_action     action    = argus.action;
+    std::string          binfile   = "";
+    std::string          filename  = "";
+    rocsparse_status     status;
 
     // When in testing mode, M == N == -99 indicates that we are testing with a real
     // matrix from cise.ufl.edu
@@ -321,36 +321,36 @@ rocsparse_status testing_csr2csc(Arguments argus)
     rocsparse_int nnz = m * scale * n;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle handle = unique_ptr_handle->handle;
+    rocsparse_handle               handle = unique_ptr_handle->handle;
 
     // Argument sanity check before allocating invalid memory
     if(m <= 0 || n <= 0 || nnz <= 0)
     {
-        auto csr_row_ptr_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto csr_col_ind_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto csr_val_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto csc_row_ind_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto csc_col_ptr_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto csc_val_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto buffer_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+        auto csr_row_ptr_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto csr_col_ind_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto csr_val_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+        auto csc_row_ind_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto csc_col_ptr_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto csc_val_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+        auto buffer_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(char) * safe_size), device_free};
 
         rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
         rocsparse_int* csr_col_ind = (rocsparse_int*)csr_col_ind_managed.get();
-        T* csr_val                 = (T*)csr_val_managed.get();
+        T*             csr_val     = (T*)csr_val_managed.get();
         rocsparse_int* csc_row_ind = (rocsparse_int*)csc_row_ind_managed.get();
         rocsparse_int* csc_col_ptr = (rocsparse_int*)csc_col_ptr_managed.get();
-        T* csc_val                 = (T*)csc_val_managed.get();
-        void* buffer               = (void*)buffer_managed.get();
+        T*             csc_val     = (T*)csc_val_managed.get();
+        void*          buffer      = (void*)buffer_managed.get();
 
-        if(!csr_row_ptr || !csr_col_ind || !csr_val || !csc_row_ind || !csc_col_ptr || !csc_val ||
-           !buffer)
+        if(!csr_row_ptr || !csr_col_ind || !csr_val || !csc_row_ind || !csc_col_ptr || !csc_val
+           || !buffer)
         {
             verify_rocsparse_status_success(rocsparse_status_memory_error,
                                             "!csr_row_ptr || !csr_col_ind || !csr_val || "
@@ -403,14 +403,15 @@ rocsparse_status testing_csr2csc(Arguments argus)
     // Host structures
     std::vector<rocsparse_int> hcsr_row_ptr;
     std::vector<rocsparse_int> hcsr_col_ind;
-    std::vector<T> hcsr_val;
+    std::vector<T>             hcsr_val;
 
     // Sample initial COO matrix on CPU
     srand(12345ULL);
     if(binfile != "")
     {
         if(read_bin_matrix(
-               binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base) != 0)
+               binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base)
+           != 0)
         {
             fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
             return rocsparse_status_internal_error;
@@ -428,8 +429,8 @@ rocsparse_status testing_csr2csc(Arguments argus)
         if(filename != "")
         {
             if(read_mtx_matrix(
-                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, idx_base) !=
-               0)
+                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, idx_base)
+               != 0)
             {
                 fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
@@ -455,23 +456,23 @@ rocsparse_status testing_csr2csc(Arguments argus)
     }
 
     // Allocate memory on the device
-    auto dcsr_row_ptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
-    auto dcsr_col_ind_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dcsr_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dcsc_row_ind_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dcsc_col_ptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (n + 1)), device_free};
-    auto dcsc_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
+    auto dcsr_row_ptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
+    auto dcsr_col_ind_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dcsr_val_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * nnz), device_free};
+    auto dcsc_row_ind_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dcsc_col_ptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * (n + 1)), device_free};
+    auto dcsc_val_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * nnz), device_free};
 
     rocsparse_int* dcsr_row_ptr = (rocsparse_int*)dcsr_row_ptr_managed.get();
     rocsparse_int* dcsr_col_ind = (rocsparse_int*)dcsr_col_ind_managed.get();
-    T* dcsr_val                 = (T*)dcsr_val_managed.get();
+    T*             dcsr_val     = (T*)dcsr_val_managed.get();
     rocsparse_int* dcsc_row_ind = (rocsparse_int*)dcsc_row_ind_managed.get();
     rocsparse_int* dcsc_col_ptr = (rocsparse_int*)dcsc_col_ptr_managed.get();
-    T* dcsc_val                 = (T*)dcsc_val_managed.get();
+    T*             dcsc_val     = (T*)dcsc_val_managed.get();
 
     if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dcsc_row_ind || !dcsc_col_ptr || !dcsc_val)
     {
@@ -498,7 +499,7 @@ rocsparse_status testing_csr2csc(Arguments argus)
         handle, m, n, nnz, dcsr_row_ptr, dcsr_col_ind, action, &size));
 
     // Allocate buffer on the device
-    auto dbuffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * size), device_free};
+    auto dbuffer_managed = rocsparse_unique_ptr {device_malloc(sizeof(char) * size), device_free};
 
     void* dbuffer = (void*)dbuffer_managed.get();
 
@@ -527,7 +528,7 @@ rocsparse_status testing_csr2csc(Arguments argus)
         // Copy output from device to host
         std::vector<rocsparse_int> hcsc_row_ind(nnz);
         std::vector<rocsparse_int> hcsc_col_ptr(n + 1);
-        std::vector<T> hcsc_val(nnz);
+        std::vector<T>             hcsc_val(nnz);
 
         CHECK_HIP_ERROR(hipMemcpy(
             hcsc_row_ind.data(), dcsc_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
@@ -541,7 +542,7 @@ rocsparse_status testing_csr2csc(Arguments argus)
         // Host csr2csc conversion
         std::vector<rocsparse_int> hcsc_row_ind_gold(nnz);
         std::vector<rocsparse_int> hcsc_col_ptr_gold(n + 1, 0);
-        std::vector<T> hcsc_val_gold(nnz);
+        std::vector<T>             hcsc_val_gold(nnz);
 
         // Determine nnz per column
         for(rocsparse_int i = 0; i < nnz; ++i)

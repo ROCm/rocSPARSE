@@ -31,10 +31,10 @@
 
 // Compute non-zero entries per CSR row to obtain the COO nnz per row.
 template <rocsparse_int NB>
-__global__ void hyb_coo_nnz(rocsparse_int m,
-                            rocsparse_int ell_width,
+__global__ void hyb_coo_nnz(rocsparse_int        m,
+                            rocsparse_int        ell_width,
                             const rocsparse_int* csr_row_ptr,
-                            rocsparse_int* coo_row_nnz,
+                            rocsparse_int*       coo_row_nnz,
                             rocsparse_index_base idx_base)
 {
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -62,17 +62,17 @@ __global__ void hyb_coo_nnz(rocsparse_int m,
 
 // CSR to HYB format conversion kernel
 template <typename T>
-__global__ void csr2hyb_kernel(rocsparse_int m,
-                               const T* csr_val,
+__global__ void csr2hyb_kernel(rocsparse_int        m,
+                               const T*             csr_val,
                                const rocsparse_int* csr_row_ptr,
                                const rocsparse_int* csr_col_ind,
-                               rocsparse_int ell_width,
-                               rocsparse_int* ell_col_ind,
-                               T* ell_val,
-                               rocsparse_int* coo_row_ind,
-                               rocsparse_int* coo_col_ind,
-                               T* coo_val,
-                               rocsparse_int* workspace,
+                               rocsparse_int        ell_width,
+                               rocsparse_int*       ell_col_ind,
+                               T*                   ell_val,
+                               rocsparse_int*       coo_row_ind,
+                               rocsparse_int*       coo_col_ind,
+                               T*                   coo_val,
+                               rocsparse_int*       workspace,
                                rocsparse_index_base idx_base)
 {
     rocsparse_int ai = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;

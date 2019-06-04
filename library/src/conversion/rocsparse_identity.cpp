@@ -20,16 +20,17 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "rocsparse.h"
+
 #include "handle.h"
-#include "utility.h"
 #include "identity_device.h"
+#include "utility.h"
 
 #include <hip/hip_runtime.h>
 
-extern "C" rocsparse_status
-rocsparse_create_identity_permutation(rocsparse_handle handle, rocsparse_int n, rocsparse_int* p)
+extern "C" rocsparse_status rocsparse_create_identity_permutation(rocsparse_handle handle,
+                                                                  rocsparse_int    n,
+                                                                  rocsparse_int*   p)
 {
     // Check for valid handle
     if(handle == nullptr)
