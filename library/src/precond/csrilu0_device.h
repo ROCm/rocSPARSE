@@ -195,8 +195,8 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
                                          rocsparse_int* __restrict__ zero_pivot,
                                          rocsparse_index_base idx_base)
 {
-    int tid           = hipThreadIdx_x;
-    int lid           = tid & (WF_SIZE - 1);
+    int           tid = hipThreadIdx_x;
+    int           lid = tid & (WF_SIZE - 1);
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
     rocsparse_int idx = gid / WF_SIZE;
 

@@ -24,13 +24,13 @@
 #include "testing_coomv.hpp"
 #include "utility.hpp"
 
-#include <rocsparse.h>
 #include <gtest/gtest.h>
-#include <vector>
+#include <rocsparse.h>
 #include <string>
+#include <vector>
 
-typedef rocsparse_index_base base;
-typedef std::tuple<int, int, double, double, base> coomv_tuple;
+typedef rocsparse_index_base                          base;
+typedef std::tuple<int, int, double, double, base>    coomv_tuple;
 typedef std::tuple<double, double, base, std::string> coomv_bin_tuple;
 
 int coo_M_range[] = {-1, 0, 10, 500, 7111, 10000};
@@ -58,7 +58,7 @@ std::string coo_bin[] = {"rma10.bin",
 
 class parameterized_coomv : public testing::TestWithParam<coomv_tuple>
 {
-    protected:
+protected:
     parameterized_coomv() {}
     virtual ~parameterized_coomv() {}
     virtual void SetUp() {}
@@ -67,7 +67,7 @@ class parameterized_coomv : public testing::TestWithParam<coomv_tuple>
 
 class parameterized_coomv_bin : public testing::TestWithParam<coomv_bin_tuple>
 {
-    protected:
+protected:
     parameterized_coomv_bin() {}
     virtual ~parameterized_coomv_bin() {}
     virtual void SetUp() {}
@@ -100,7 +100,7 @@ Arguments setup_coomv_arguments(coomv_bin_tuple tup)
     std::string bin_file = std::get<3>(tup);
 
     // Get current executables absolute path
-    char path_exe[PATH_MAX];
+    char    path_exe[PATH_MAX];
     ssize_t len = readlink("/proc/self/exe", path_exe, sizeof(path_exe) - 1);
     if(len < 14)
     {
@@ -117,7 +117,10 @@ Arguments setup_coomv_arguments(coomv_bin_tuple tup)
     return arg;
 }
 
-TEST(coomv_bad_arg, coomv_float) { testing_coomv_bad_arg<float>(); }
+TEST(coomv_bad_arg, coomv_float)
+{
+    testing_coomv_bad_arg<float>();
+}
 
 TEST_P(parameterized_coomv, coomv_float)
 {

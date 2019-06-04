@@ -20,8 +20,8 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "rocsparse.h"
+
 #include "rocsparse_csr2ell.hpp"
 
 /*
@@ -30,12 +30,12 @@
  * ===========================================================================
  */
 
-extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
-                                                    rocsparse_int m,
+extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle          handle,
+                                                    rocsparse_int             m,
                                                     const rocsparse_mat_descr csr_descr,
-                                                    const rocsparse_int* csr_row_ptr,
+                                                    const rocsparse_int*      csr_row_ptr,
                                                     const rocsparse_mat_descr ell_descr,
-                                                    rocsparse_int* ell_width)
+                                                    rocsparse_int*            ell_width)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -114,7 +114,7 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
-// Determine ELL width
+    // Determine ELL width
 
 #define CSR2ELL_DIM 256
     // Workspace size
@@ -159,16 +159,16 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle handle,
     return rocsparse_status_success;
 }
 
-extern "C" rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
-                                               rocsparse_int m,
+extern "C" rocsparse_status rocsparse_scsr2ell(rocsparse_handle          handle,
+                                               rocsparse_int             m,
                                                const rocsparse_mat_descr csr_descr,
-                                               const float* csr_val,
-                                               const rocsparse_int* csr_row_ptr,
-                                               const rocsparse_int* csr_col_ind,
+                                               const float*              csr_val,
+                                               const rocsparse_int*      csr_row_ptr,
+                                               const rocsparse_int*      csr_col_ind,
                                                const rocsparse_mat_descr ell_descr,
-                                               rocsparse_int ell_width,
-                                               float* ell_val,
-                                               rocsparse_int* ell_col_ind)
+                                               rocsparse_int             ell_width,
+                                               float*                    ell_val,
+                                               rocsparse_int*            ell_col_ind)
 {
     return rocsparse_csr2ell_template<float>(handle,
                                              m,
@@ -182,16 +182,16 @@ extern "C" rocsparse_status rocsparse_scsr2ell(rocsparse_handle handle,
                                              ell_col_ind);
 }
 
-extern "C" rocsparse_status rocsparse_dcsr2ell(rocsparse_handle handle,
-                                               rocsparse_int m,
+extern "C" rocsparse_status rocsparse_dcsr2ell(rocsparse_handle          handle,
+                                               rocsparse_int             m,
                                                const rocsparse_mat_descr csr_descr,
-                                               const double* csr_val,
-                                               const rocsparse_int* csr_row_ptr,
-                                               const rocsparse_int* csr_col_ind,
+                                               const double*             csr_val,
+                                               const rocsparse_int*      csr_row_ptr,
+                                               const rocsparse_int*      csr_col_ind,
                                                const rocsparse_mat_descr ell_descr,
-                                               rocsparse_int ell_width,
-                                               double* ell_val,
-                                               rocsparse_int* ell_col_ind)
+                                               rocsparse_int             ell_width,
+                                               double*                   ell_val,
+                                               rocsparse_int*            ell_col_ind)
 {
     return rocsparse_csr2ell_template<double>(handle,
                                               m,

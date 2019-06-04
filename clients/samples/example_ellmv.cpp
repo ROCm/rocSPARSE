@@ -23,10 +23,10 @@
 
 #include "utility.hpp"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <vector>
 #include <rocsparse.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <vector>
 
 int main(int argc, char* argv[])
 {
@@ -37,9 +37,9 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    rocsparse_int ndim = atoi(argv[1]);
-    int trials         = 200;
-    int batch_size     = 1;
+    rocsparse_int ndim       = atoi(argv[1]);
+    int           trials     = 200;
+    int           batch_size = 1;
 
     if(argc > 2)
     {
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
     rocsparse_create_handle(&handle);
 
     hipDeviceProp_t devProp;
-    int device_id = 0;
+    int             device_id = 0;
 
     hipGetDevice(&device_id);
     hipGetDeviceProperties(&devProp, device_id);
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
     // Generate problem in CSR format
     std::vector<rocsparse_int> hAptr;
     std::vector<rocsparse_int> hAcol;
-    std::vector<double> hAval;
+    std::vector<double>        hAval;
     rocsparse_int m   = gen_2d_laplacian(ndim, hAptr, hAcol, hAval, rocsparse_index_base_zero);
     rocsparse_int n   = m;
     rocsparse_int nnz = hAptr[m];
@@ -85,9 +85,9 @@ int main(int argc, char* argv[])
     // Offload data to device
     rocsparse_int* dAptr = NULL;
     rocsparse_int* dAcol = NULL;
-    double* dAval        = NULL;
-    double* dx           = NULL;
-    double* dy           = NULL;
+    double*        dAval = NULL;
+    double*        dx    = NULL;
+    double*        dy    = NULL;
 
     hipMalloc((void**)&dAptr, sizeof(rocsparse_int) * (m + 1));
     hipMalloc((void**)&dAcol, sizeof(rocsparse_int) * nnz);
@@ -142,9 +142,9 @@ int main(int argc, char* argv[])
     }
 
     time = (get_time_us() - time) / (trials * batch_size * 1e3);
-    double bandwidth =
-        static_cast<double>(sizeof(double) * (2 * m + nnz) + sizeof(rocsparse_int) * (nnz)) / time /
-        1e6;
+    double bandwidth
+        = static_cast<double>(sizeof(double) * (2 * m + nnz) + sizeof(rocsparse_int) * (nnz)) / time
+          / 1e6;
     double gflops = static_cast<double>(2 * nnz) / time / 1e6;
     printf("m\t\tn\t\tnnz\t\talpha\tbeta\tGFlops\tGB/s\tusec\n");
     printf("%8d\t%8d\t%9d\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\n",

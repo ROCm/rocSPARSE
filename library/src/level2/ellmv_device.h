@@ -25,22 +25,22 @@
 #ifndef ELLMV_DEVICE_H
 #define ELLMV_DEVICE_H
 
-#include "handle.h"
 #include "common.h"
+#include "handle.h"
 
 #include <hip/hip_runtime.h>
 
 // ELL SpMV for general, non-transposed matrices
 template <typename T>
-static __device__ void ellmvn_device(rocsparse_int m,
-                                     rocsparse_int n,
-                                     rocsparse_int ell_width,
-                                     T alpha,
+static __device__ void ellmvn_device(rocsparse_int        m,
+                                     rocsparse_int        n,
+                                     rocsparse_int        ell_width,
+                                     T                    alpha,
                                      const rocsparse_int* ell_col_ind,
-                                     const T* ell_val,
-                                     const T* x,
-                                     T beta,
-                                     T* y,
+                                     const T*             ell_val,
+                                     const T*             x,
+                                     T                    beta,
+                                     T*                   y,
                                      rocsparse_index_base idx_base)
 {
     rocsparse_int ai = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;

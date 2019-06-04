@@ -25,10 +25,10 @@
 #ifndef TESTING_AXPYI_HPP
 #define TESTING_AXPYI_HPP
 
-#include "rocsparse_test_unique_ptr.hpp"
 #include "rocsparse.hpp"
-#include "utility.hpp"
+#include "rocsparse_test_unique_ptr.hpp"
 #include "unit.hpp"
+#include "utility.hpp"
 
 #include <rocsparse.h>
 
@@ -40,22 +40,22 @@ void testing_axpyi_bad_arg(void)
 {
     rocsparse_int nnz       = 100;
     rocsparse_int safe_size = 100;
-    T alpha                 = 0.6;
+    T             alpha     = 0.6;
 
     rocsparse_index_base idx_base = rocsparse_index_base_zero;
-    rocsparse_status status;
+    rocsparse_status     status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle handle = unique_ptr_handle->handle;
+    rocsparse_handle               handle = unique_ptr_handle->handle;
 
-    auto dxVal_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dxInd_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dy_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+    auto dxVal_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+    auto dxInd_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto dy_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
 
-    T* dxVal             = (T*)dxVal_managed.get();
+    T*             dxVal = (T*)dxVal_managed.get();
     rocsparse_int* dxInd = (rocsparse_int*)dxInd_managed.get();
-    T* dy                = (T*)dy_managed.get();
+    T*             dy    = (T*)dy_managed.get();
 
     if(!dxInd || !dxVal || !dy)
     {
@@ -103,28 +103,28 @@ void testing_axpyi_bad_arg(void)
 template <typename T>
 rocsparse_status testing_axpyi(Arguments argus)
 {
-    rocsparse_int N               = argus.N;
-    rocsparse_int nnz             = argus.nnz;
-    rocsparse_int safe_size       = 100;
-    T h_alpha                     = argus.alpha;
-    rocsparse_index_base idx_base = argus.idx_base;
-    rocsparse_status status;
+    rocsparse_int        N         = argus.N;
+    rocsparse_int        nnz       = argus.nnz;
+    rocsparse_int        safe_size = 100;
+    T                    h_alpha   = argus.alpha;
+    rocsparse_index_base idx_base  = argus.idx_base;
+    rocsparse_status     status;
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
-    rocsparse_handle handle = test_handle->handle;
+    rocsparse_handle               handle = test_handle->handle;
 
     // Argument sanity check before allocating invalid memory
     if(nnz <= 0)
     {
-        auto dxInd_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dxVal_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto dy_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+        auto dxInd_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto dxVal_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+        auto dy_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
 
         rocsparse_int* dxInd = (rocsparse_int*)dxInd_managed.get();
-        T* dxVal             = (T*)dxVal_managed.get();
-        T* dy                = (T*)dy_managed.get();
+        T*             dxVal = (T*)dxVal_managed.get();
+        T*             dy    = (T*)dy_managed.get();
 
         if(!dxInd || !dxVal || !dy)
         {
@@ -150,10 +150,10 @@ rocsparse_status testing_axpyi(Arguments argus)
 
     // Host structures
     std::vector<rocsparse_int> hxInd(nnz);
-    std::vector<T> hxVal(nnz);
-    std::vector<T> hy_1(N);
-    std::vector<T> hy_2(N);
-    std::vector<T> hy_gold(N);
+    std::vector<T>             hxVal(nnz);
+    std::vector<T>             hy_1(N);
+    std::vector<T>             hy_2(N);
+    std::vector<T>             hy_gold(N);
 
     // Initial Data on CPU
     srand(12345ULL);
@@ -166,18 +166,18 @@ rocsparse_status testing_axpyi(Arguments argus)
     hy_gold = hy_1;
 
     // allocate memory on device
-    auto dxInd_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dxVal_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dy_1_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
-    auto dy_2_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
-    auto d_alpha_managed = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
+    auto dxInd_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dxVal_managed   = rocsparse_unique_ptr {device_malloc(sizeof(T) * nnz), device_free};
+    auto dy_1_managed    = rocsparse_unique_ptr {device_malloc(sizeof(T) * N), device_free};
+    auto dy_2_managed    = rocsparse_unique_ptr {device_malloc(sizeof(T) * N), device_free};
+    auto d_alpha_managed = rocsparse_unique_ptr {device_malloc(sizeof(T)), device_free};
 
-    rocsparse_int* dxInd = (rocsparse_int*)dxInd_managed.get();
-    T* dxVal             = (T*)dxVal_managed.get();
-    T* dy_1              = (T*)dy_1_managed.get();
-    T* dy_2              = (T*)dy_2_managed.get();
-    T* d_alpha           = (T*)d_alpha_managed.get();
+    rocsparse_int* dxInd   = (rocsparse_int*)dxInd_managed.get();
+    T*             dxVal   = (T*)dxVal_managed.get();
+    T*             dy_1    = (T*)dy_1_managed.get();
+    T*             dy_2    = (T*)dy_2_managed.get();
+    T*             d_alpha = (T*)d_alpha_managed.get();
 
     if(!dxInd || !dxVal || !dy_1 || !dy_2 || !d_alpha)
     {
@@ -248,8 +248,8 @@ rocsparse_status testing_axpyi(Arguments argus)
 
         gpu_time_used     = (get_time_us() - gpu_time_used) / number_hot_calls;
         double gpu_gflops = (2.0 * nnz) / 1e9 / gpu_time_used * 1e6 * 1;
-        double bandwidth =
-            (sizeof(rocsparse_int) * nnz + (sizeof(T) * (nnz + N))) / gpu_time_used / 1e3;
+        double bandwidth
+            = (sizeof(rocsparse_int) * nnz + (sizeof(T) * (nnz + N))) / gpu_time_used / 1e3;
 
         printf("nnz\t\talpha\tGFlops\tGB/s\tusec\n");
         printf("%9d\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\n",

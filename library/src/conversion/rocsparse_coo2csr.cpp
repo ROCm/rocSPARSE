@@ -20,19 +20,19 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "rocsparse.h"
+
+#include "coo2csr_device.h"
 #include "handle.h"
 #include "utility.h"
-#include "coo2csr_device.h"
 
 #include <hip/hip_runtime.h>
 
-extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle handle,
+extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle     handle,
                                               const rocsparse_int* coo_row_ind,
-                                              rocsparse_int nnz,
-                                              rocsparse_int m,
-                                              rocsparse_int* csr_row_ptr,
+                                              rocsparse_int        nnz,
+                                              rocsparse_int        m,
+                                              rocsparse_int*       csr_row_ptr,
                                               rocsparse_index_base idx_base)
 {
     // Check for valid handle

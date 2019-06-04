@@ -25,32 +25,32 @@
 #ifndef ROCSPARSE_ROTI_HPP
 #define ROCSPARSE_ROTI_HPP
 
-#include "rocsparse.h"
 #include "handle.h"
-#include "utility.h"
+#include "rocsparse.h"
 #include "roti_device.h"
+#include "utility.h"
 
 #include <hip/hip_runtime.h>
 
 template <typename T>
-__global__ void roti_kernel_host_scalar(rocsparse_int nnz,
-                                        T* x_val,
+__global__ void roti_kernel_host_scalar(rocsparse_int        nnz,
+                                        T*                   x_val,
                                         const rocsparse_int* x_ind,
-                                        T* y,
-                                        T c,
-                                        T s,
+                                        T*                   y,
+                                        T                    c,
+                                        T                    s,
                                         rocsparse_index_base idx_base)
 {
     roti_device(nnz, x_val, x_ind, y, c, s, idx_base);
 }
 
 template <typename T>
-__global__ void roti_kernel_device_scalar(rocsparse_int nnz,
-                                          T* x_val,
+__global__ void roti_kernel_device_scalar(rocsparse_int        nnz,
+                                          T*                   x_val,
                                           const rocsparse_int* x_ind,
-                                          T* y,
-                                          const T* c,
-                                          const T* s,
+                                          T*                   y,
+                                          const T*             c,
+                                          const T*             s,
                                           rocsparse_index_base idx_base)
 {
     if(*c == static_cast<T>(1) && *s == static_cast<T>(0))
@@ -62,13 +62,13 @@ __global__ void roti_kernel_device_scalar(rocsparse_int nnz,
 }
 
 template <typename T>
-rocsparse_status rocsparse_roti_template(rocsparse_handle handle,
-                                         rocsparse_int nnz,
-                                         T* x_val,
+rocsparse_status rocsparse_roti_template(rocsparse_handle     handle,
+                                         rocsparse_int        nnz,
+                                         T*                   x_val,
                                          const rocsparse_int* x_ind,
-                                         T* y,
-                                         const T* c,
-                                         const T* s,
+                                         T*                   y,
+                                         const T*             c,
+                                         const T*             s,
                                          rocsparse_index_base idx_base)
 {
     // Check for valid handle
