@@ -25,19 +25,25 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
-#include "rocsparse.h"
 #include "handle.h"
 #include "logging.h"
+#include "rocsparse.h"
 
+#include <algorithm>
 #include <fstream>
 #include <string>
-#include <algorithm>
 
 // Return the leftmost significant bit position
 #if defined(rocsparse_ILP64)
-static inline rocsparse_int rocsparse_clz(rocsparse_int n) { return 64 - __builtin_clzll(n); }
+static inline rocsparse_int rocsparse_clz(rocsparse_int n)
+{
+    return 64 - __builtin_clzll(n);
+}
 #else
-static inline rocsparse_int rocsparse_clz(rocsparse_int n) { return 32 - __builtin_clz(n); }
+static inline rocsparse_int rocsparse_clz(rocsparse_int n)
+{
+    return 32 - __builtin_clz(n);
+}
 #endif
 
 // Return one on the device

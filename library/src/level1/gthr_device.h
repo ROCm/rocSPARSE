@@ -28,9 +28,9 @@
 #include <hip/hip_runtime.h>
 
 template <typename T>
-__global__ void gthr_kernel(rocsparse_int nnz,
-                            const T* y,
-                            T* x_val,
+__global__ void gthr_kernel(rocsparse_int        nnz,
+                            const T*             y,
+                            T*                   x_val,
                             const rocsparse_int* x_ind,
                             rocsparse_index_base idx_base)
 {

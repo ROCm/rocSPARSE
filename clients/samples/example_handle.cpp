@@ -21,8 +21,8 @@
  *
  * ************************************************************************ */
 
-#include <stdio.h>
 #include <rocsparse.h>
+#include <stdio.h>
 
 int main(int argc, char* argv[])
 {

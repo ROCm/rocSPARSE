@@ -25,24 +25,24 @@
 #ifndef ROCSPARSE_HYBMV_HPP
 #define ROCSPARSE_HYBMV_HPP
 
-#include "rocsparse.h"
 #include "definitions.h"
 #include "handle.h"
-#include "utility.h"
+#include "rocsparse.h"
 #include "rocsparse_coomv.hpp"
 #include "rocsparse_ellmv.hpp"
+#include "utility.h"
 
 #include <hip/hip_runtime_api.h>
 
 template <typename T>
-rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
-                                          rocsparse_operation trans,
-                                          const T* alpha,
+rocsparse_status rocsparse_hybmv_template(rocsparse_handle          handle,
+                                          rocsparse_operation       trans,
+                                          const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const rocsparse_hyb_mat hyb,
-                                          const T* x,
-                                          const T* beta,
-                                          T* y)
+                                          const rocsparse_hyb_mat   hyb,
+                                          const T*                  x,
+                                          const T*                  beta,
+                                          T*                        y)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -105,9 +105,9 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle handle,
         return rocsparse_status_not_implemented;
     }
     // Check partition type
-    if(hyb->partition != rocsparse_hyb_partition_max &&
-       hyb->partition != rocsparse_hyb_partition_auto &&
-       hyb->partition != rocsparse_hyb_partition_user)
+    if(hyb->partition != rocsparse_hyb_partition_max
+       && hyb->partition != rocsparse_hyb_partition_auto
+       && hyb->partition != rocsparse_hyb_partition_user)
     {
         return rocsparse_status_invalid_value;
     }

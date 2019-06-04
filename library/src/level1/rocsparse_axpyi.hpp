@@ -25,30 +25,30 @@
 #ifndef ROCSPARSE_AXPYI_HPP
 #define ROCSPARSE_AXPYI_HPP
 
-#include "rocsparse.h"
-#include "handle.h"
-#include "utility.h"
 #include "axpyi_device.h"
+#include "handle.h"
+#include "rocsparse.h"
+#include "utility.h"
 
 #include <hip/hip_runtime.h>
 
 template <typename T>
-__global__ void axpyi_kernel_host_scalar(rocsparse_int nnz,
-                                         T alpha,
-                                         const T* x_val,
+__global__ void axpyi_kernel_host_scalar(rocsparse_int        nnz,
+                                         T                    alpha,
+                                         const T*             x_val,
                                          const rocsparse_int* x_ind,
-                                         T* y,
+                                         T*                   y,
                                          rocsparse_index_base idx_base)
 {
     axpyi_device(nnz, alpha, x_val, x_ind, y, idx_base);
 }
 
 template <typename T>
-__global__ void axpyi_kernel_device_scalar(rocsparse_int nnz,
-                                           const T* alpha,
-                                           const T* x_val,
+__global__ void axpyi_kernel_device_scalar(rocsparse_int        nnz,
+                                           const T*             alpha,
+                                           const T*             x_val,
                                            const rocsparse_int* x_ind,
-                                           T* y,
+                                           T*                   y,
                                            rocsparse_index_base idx_base)
 {
     if(*alpha == static_cast<T>(0))
@@ -60,12 +60,12 @@ __global__ void axpyi_kernel_device_scalar(rocsparse_int nnz,
 }
 
 template <typename T>
-rocsparse_status rocsparse_axpyi_template(rocsparse_handle handle,
-                                          rocsparse_int nnz,
-                                          const T* alpha,
-                                          const T* x_val,
+rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
+                                          rocsparse_int        nnz,
+                                          const T*             alpha,
+                                          const T*             x_val,
                                           const rocsparse_int* x_ind,
-                                          T* y,
+                                          T*                   y,
                                           rocsparse_index_base idx_base)
 {
     // Check for valid handle

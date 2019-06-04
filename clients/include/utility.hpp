@@ -25,16 +25,16 @@
 #ifndef TESTING_UTILITY_HPP
 #define TESTING_UTILITY_HPP
 
-#include <stdlib.h>
-#include <stdio.h>
+#include <algorithm>
+#include <fstream>
+#include <hip/hip_runtime_api.h>
 #include <math.h>
+#include <rocsparse.h>
+#include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <vector>
-#include <algorithm>
-#include <sstream>
-#include <fstream>
-#include <rocsparse.h>
-#include <hip/hip_runtime_api.h>
 
 /*!\file
  * \brief provide data initialization and timing utilities.
@@ -122,7 +122,7 @@ template <typename I>
 void rocsparse_init_index(I* x, rocsparse_int nnz, rocsparse_int start, rocsparse_int end)
 {
     std::vector<bool> check(end - start, false);
-    int num = 0;
+    int               num = 0;
     while(num < nnz)
     {
         rocsparse_int val = start + rand() % (end - start);
@@ -141,10 +141,10 @@ void rocsparse_init_index(I* x, rocsparse_int nnz, rocsparse_int start, rocspars
 template <typename T>
 void rocsparse_init_csr(std::vector<rocsparse_int>& ptr,
                         std::vector<rocsparse_int>& col,
-                        std::vector<T>& val,
-                        rocsparse_int nrow,
-                        rocsparse_int ncol,
-                        rocsparse_int nnz)
+                        std::vector<T>&             val,
+                        rocsparse_int               nrow,
+                        rocsparse_int               ncol,
+                        rocsparse_int               nnz)
 {
     // Row offsets
     ptr[0]    = 0;
@@ -173,11 +173,11 @@ void rocsparse_init_csr(std::vector<rocsparse_int>& ptr,
 /* ============================================================================================ */
 /*! \brief  Generate 2D laplacian on unit square in CSR format */
 template <typename T>
-rocsparse_int gen_2d_laplacian(rocsparse_int ndim,
+rocsparse_int gen_2d_laplacian(rocsparse_int               ndim,
                                std::vector<rocsparse_int>& rowptr,
                                std::vector<rocsparse_int>& col,
-                               std::vector<T>& val,
-                               rocsparse_index_base idx_base)
+                               std::vector<T>&             val,
+                               rocsparse_index_base        idx_base)
 {
     if(ndim == 0)
     {
@@ -242,13 +242,13 @@ rocsparse_int gen_2d_laplacian(rocsparse_int ndim,
 /* ============================================================================================ */
 /*! \brief  Generate a random sparse matrix in COO format */
 template <typename T>
-void gen_matrix_coo(rocsparse_int m,
-                    rocsparse_int n,
-                    rocsparse_int nnz,
+void gen_matrix_coo(rocsparse_int               m,
+                    rocsparse_int               n,
+                    rocsparse_int               nnz,
                     std::vector<rocsparse_int>& row_ind,
                     std::vector<rocsparse_int>& col_ind,
-                    std::vector<T>& val,
-                    rocsparse_index_base idx_base)
+                    std::vector<T>&             val,
+                    rocsparse_index_base        idx_base)
 {
     if((rocsparse_int)row_ind.size() != nnz)
     {
@@ -293,8 +293,8 @@ void gen_matrix_coo(rocsparse_int m,
         while(idx < i)
         {
             // Normal distribution around the diagonal
-            rocsparse_int rng = (i - begin) * sqrt(-2.0 * log((double)rand() / RAND_MAX)) *
-                                cos(2.0 * M_PI * (double)rand() / RAND_MAX);
+            rocsparse_int rng = (i - begin) * sqrt(-2.0 * log((double)rand() / RAND_MAX))
+                                * cos(2.0 * M_PI * (double)rand() / RAND_MAX);
 
             if(m <= n)
             {
@@ -346,14 +346,14 @@ void gen_matrix_coo(rocsparse_int m,
 /* ============================================================================================ */
 /*! \brief  Read matrix from mtx file in COO format */
 template <typename T>
-rocsparse_int read_mtx_matrix(const char* filename,
-                              rocsparse_int& nrow,
-                              rocsparse_int& ncol,
-                              rocsparse_int& nnz,
+rocsparse_int read_mtx_matrix(const char*                 filename,
+                              rocsparse_int&              nrow,
+                              rocsparse_int&              ncol,
+                              rocsparse_int&              nnz,
                               std::vector<rocsparse_int>& row,
                               std::vector<rocsparse_int>& col,
-                              std::vector<T>& val,
-                              rocsparse_index_base idx_base)
+                              std::vector<T>&             val,
+                              rocsparse_index_base        idx_base)
 {
     printf("Reading matrix %s...", filename);
     fflush(stdout);
@@ -385,13 +385,13 @@ rocsparse_int read_mtx_matrix(const char* filename,
     }
 
     // Convert to lower case
-    for(char *p = array; *p != '\0'; *p = tolower(*p), p++)
+    for(char* p = array; *p != '\0'; *p = tolower(*p), p++)
         ;
-    for(char *p = coord; *p != '\0'; *p = tolower(*p), p++)
+    for(char* p = coord; *p != '\0'; *p = tolower(*p), p++)
         ;
-    for(char *p = data; *p != '\0'; *p = tolower(*p), p++)
+    for(char* p = data; *p != '\0'; *p = tolower(*p), p++)
         ;
-    for(char *p = type; *p != '\0'; *p = tolower(*p), p++)
+    for(char* p = type; *p != '\0'; *p = tolower(*p), p++)
         ;
 
     // Check banner
@@ -444,7 +444,7 @@ rocsparse_int read_mtx_matrix(const char* filename,
 
     std::vector<rocsparse_int> unsorted_row(nnz);
     std::vector<rocsparse_int> unsorted_col(nnz);
-    std::vector<T> unsorted_val(nnz);
+    std::vector<T>             unsorted_val(nnz);
 
     // Read entries
     rocsparse_int idx = 0;
@@ -457,7 +457,7 @@ rocsparse_int read_mtx_matrix(const char* filename,
 
         rocsparse_int irow;
         rocsparse_int icol;
-        T ival;
+        T             ival;
 
         std::istringstream ss(line);
 
@@ -540,14 +540,14 @@ rocsparse_int read_mtx_matrix(const char* filename,
 /* ============================================================================================ */
 /*! \brief  Read matrix from binary file in CSR format */
 template <typename T>
-rocsparse_int read_bin_matrix(const char* filename,
-                              rocsparse_int& nrow,
-                              rocsparse_int& ncol,
-                              rocsparse_int& nnz,
+rocsparse_int read_bin_matrix(const char*                 filename,
+                              rocsparse_int&              nrow,
+                              rocsparse_int&              ncol,
+                              rocsparse_int&              nnz,
                               std::vector<rocsparse_int>& ptr,
                               std::vector<rocsparse_int>& col,
-                              std::vector<T>& val,
-                              rocsparse_index_base idx_base)
+                              std::vector<T>&             val,
+                              rocsparse_index_base        idx_base)
 {
     printf("Reading matrix %s...", filename);
     fflush(stdout);
@@ -603,14 +603,14 @@ rocsparse_int read_bin_matrix(const char* filename,
 /* ============================================================================================ */
 /*! \brief  Read matrix from binary file in rocALUTION format */
 template <typename T>
-rocsparse_int read_rocalution_matrix(const char* filename,
-                                     rocsparse_int& nrow,
-                                     rocsparse_int& ncol,
-                                     rocsparse_int& nnz,
+rocsparse_int read_rocalution_matrix(const char*                 filename,
+                                     rocsparse_int&              nrow,
+                                     rocsparse_int&              ncol,
+                                     rocsparse_int&              nnz,
                                      std::vector<rocsparse_int>& ptr,
                                      std::vector<rocsparse_int>& col,
-                                     std::vector<T>& val,
-                                     rocsparse_index_base idx_base)
+                                     std::vector<T>&             val,
+                                     rocsparse_index_base        idx_base)
 {
     printf("Reading matrix %s...", filename);
     fflush(stdout);
@@ -677,10 +677,10 @@ rocsparse_int read_rocalution_matrix(const char* filename,
  *  matrix storage format.
  */
 template <typename T>
-rocsparse_int csrilu0(rocsparse_int m,
+rocsparse_int csrilu0(rocsparse_int        m,
                       const rocsparse_int* ptr,
                       const rocsparse_int* col,
-                      T* val,
+                      T*                   val,
                       rocsparse_index_base idx_base)
 {
     // pointer of upper part of each row
@@ -768,18 +768,18 @@ rocsparse_int csrilu0(rocsparse_int m,
 /* ============================================================================================ */
 /*! \brief  Sparse triangular lower solve using CSR storage format. */
 template <typename T>
-rocsparse_int lsolve(rocsparse_int m,
+rocsparse_int lsolve(rocsparse_int        m,
                      const rocsparse_int* ptr,
                      const rocsparse_int* col,
-                     const T* val,
-                     T alpha,
-                     const T* x,
-                     T* y,
+                     const T*             val,
+                     T                    alpha,
+                     const T*             x,
+                     T*                   y,
                      rocsparse_index_base idx_base,
-                     rocsparse_diag_type diag_type,
-                     unsigned int wf_size)
+                     rocsparse_diag_type  diag_type,
+                     unsigned int         wf_size)
 {
-    rocsparse_int pivot = std::numeric_limits<rocsparse_int>::max();
+    rocsparse_int  pivot = std::numeric_limits<rocsparse_int>::max();
     std::vector<T> temp(wf_size);
 
     for(rocsparse_int i = 0; i < m; ++i)
@@ -806,7 +806,7 @@ rocsparse_int lsolve(rocsparse_int m,
                 }
 
                 rocsparse_int col_j = col[j] - idx_base;
-                T val_j             = val[j];
+                T             val_j = val[j];
 
                 if(col_j < i)
                 {
@@ -873,18 +873,18 @@ rocsparse_int lsolve(rocsparse_int m,
 /* ============================================================================================ */
 /*! \brief  Sparse triangular upper solve using CSR storage format. */
 template <typename T>
-rocsparse_int usolve(rocsparse_int m,
+rocsparse_int usolve(rocsparse_int        m,
                      const rocsparse_int* ptr,
                      const rocsparse_int* col,
-                     const T* val,
-                     T alpha,
-                     const T* x,
-                     T* y,
+                     const T*             val,
+                     T                    alpha,
+                     const T*             x,
+                     T*                   y,
                      rocsparse_index_base idx_base,
-                     rocsparse_diag_type diag_type,
-                     unsigned int wf_size)
+                     rocsparse_diag_type  diag_type,
+                     unsigned int         wf_size)
 {
-    rocsparse_int pivot = std::numeric_limits<rocsparse_int>::max();
+    rocsparse_int  pivot = std::numeric_limits<rocsparse_int>::max();
     std::vector<T> temp(wf_size);
 
     for(rocsparse_int i = m - 1; i >= 0; --i)
@@ -911,7 +911,7 @@ rocsparse_int usolve(rocsparse_int m,
                 }
 
                 rocsparse_int col_j = col[j] - idx_base;
-                T val_j             = val[j];
+                T             val_j = val[j];
 
                 if(col_j < i)
                 {
@@ -1013,7 +1013,7 @@ double get_time_us_sync(hipStream_t stream);
 
 class Arguments
 {
-    public:
+public:
     rocsparse_int M   = 128;
     rocsparse_int N   = 128;
     rocsparse_int K   = 128;
@@ -1025,15 +1025,15 @@ class Arguments
     double alpha = 1.0;
     double beta  = 0.0;
 
-    rocsparse_operation transA         = rocsparse_operation_none;
-    rocsparse_operation transB         = rocsparse_operation_none;
-    rocsparse_index_base idx_base      = rocsparse_index_base_zero;
-    rocsparse_index_base idx_base2     = rocsparse_index_base_zero;
-    rocsparse_action action            = rocsparse_action_numeric;
-    rocsparse_hyb_partition part       = rocsparse_hyb_partition_auto;
-    rocsparse_diag_type diag_type      = rocsparse_diag_type_non_unit;
-    rocsparse_fill_mode fill_mode      = rocsparse_fill_mode_lower;
-    rocsparse_analysis_policy analysis = rocsparse_analysis_policy_reuse;
+    rocsparse_operation       transA    = rocsparse_operation_none;
+    rocsparse_operation       transB    = rocsparse_operation_none;
+    rocsparse_index_base      idx_base  = rocsparse_index_base_zero;
+    rocsparse_index_base      idx_base2 = rocsparse_index_base_zero;
+    rocsparse_action          action    = rocsparse_action_numeric;
+    rocsparse_hyb_partition   part      = rocsparse_hyb_partition_auto;
+    rocsparse_diag_type       diag_type = rocsparse_diag_type_non_unit;
+    rocsparse_fill_mode       fill_mode = rocsparse_fill_mode_lower;
+    rocsparse_analysis_policy analysis  = rocsparse_analysis_policy_reuse;
 
     rocsparse_int norm_check = 0;
     rocsparse_int unit_check = 1;
@@ -1046,7 +1046,7 @@ class Arguments
 
     std::string filename   = "";
     std::string rocalution = "";
-    bool bswitch           = false;
+    bool        bswitch    = false;
 
     Arguments& operator=(const Arguments& rhs)
     {

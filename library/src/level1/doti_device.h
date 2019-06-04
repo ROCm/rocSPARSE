@@ -30,11 +30,11 @@
 #include <hip/hip_runtime.h>
 
 template <typename T, rocsparse_int NB>
-__global__ void doti_kernel_part1(rocsparse_int nnz,
-                                  const T* x_val,
+__global__ void doti_kernel_part1(rocsparse_int        nnz,
+                                  const T*             x_val,
                                   const rocsparse_int* x_ind,
-                                  const T* y,
-                                  T* workspace,
+                                  const T*             y,
+                                  T*                   workspace,
                                   rocsparse_index_base idx_base)
 {
     rocsparse_int tid = hipThreadIdx_x;

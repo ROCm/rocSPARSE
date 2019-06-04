@@ -29,9 +29,9 @@
 
 // Compute lower bound by binary search
 static inline __device__ rocsparse_int lower_bound(const rocsparse_int* arr,
-                                                   rocsparse_int key,
-                                                   rocsparse_int low,
-                                                   rocsparse_int high)
+                                                   rocsparse_int        key,
+                                                   rocsparse_int        low,
+                                                   rocsparse_int        high)
 {
     while(low < high)
     {
@@ -51,10 +51,10 @@ static inline __device__ rocsparse_int lower_bound(const rocsparse_int* arr,
 }
 
 // COO to CSR matrix conversion kernel
-__global__ void coo2csr_kernel(rocsparse_int m,
-                               rocsparse_int nnz,
+__global__ void coo2csr_kernel(rocsparse_int        m,
+                               rocsparse_int        nnz,
                                const rocsparse_int* coo_row_ind,
-                               rocsparse_int* csr_row_ptr,
+                               rocsparse_int*       csr_row_ptr,
                                rocsparse_index_base idx_base)
 {
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
