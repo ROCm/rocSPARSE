@@ -25,25 +25,25 @@
 #ifndef ROCSPARSE_CSR2ELL_HPP
 #define ROCSPARSE_CSR2ELL_HPP
 
-#include "rocsparse.h"
+#include "csr2ell_device.h"
 #include "definitions.h"
 #include "handle.h"
+#include "rocsparse.h"
 #include "utility.h"
-#include "csr2ell_device.h"
 
 #include <hip/hip_runtime.h>
 
 template <typename T>
-rocsparse_status rocsparse_csr2ell_template(rocsparse_handle handle,
-                                            rocsparse_int m,
+rocsparse_status rocsparse_csr2ell_template(rocsparse_handle          handle,
+                                            rocsparse_int             m,
                                             const rocsparse_mat_descr csr_descr,
-                                            const T* csr_val,
-                                            const rocsparse_int* csr_row_ptr,
-                                            const rocsparse_int* csr_col_ind,
+                                            const T*                  csr_val,
+                                            const rocsparse_int*      csr_row_ptr,
+                                            const rocsparse_int*      csr_col_ind,
                                             const rocsparse_mat_descr ell_descr,
-                                            rocsparse_int ell_width,
-                                            T* ell_val,
-                                            rocsparse_int* ell_col_ind)
+                                            rocsparse_int             ell_width,
+                                            T*                        ell_val,
+                                            rocsparse_int*            ell_col_ind)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)

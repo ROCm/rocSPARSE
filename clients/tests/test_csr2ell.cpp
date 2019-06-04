@@ -24,21 +24,21 @@
 #include "testing_csr2ell.hpp"
 #include "utility.hpp"
 
-#include <rocsparse.h>
 #include <gtest/gtest.h>
-#include <vector>
+#include <rocsparse.h>
 #include <string>
+#include <vector>
 
-typedef std::tuple<int, int, rocsparse_index_base, rocsparse_index_base> csr2ell_tuple;
+typedef std::tuple<int, int, rocsparse_index_base, rocsparse_index_base>    csr2ell_tuple;
 typedef std::tuple<rocsparse_index_base, rocsparse_index_base, std::string> csr2ell_bin_tuple;
 
 int csr2ell_M_range[] = {-1, 0, 10, 500, 872, 1000};
 int csr2ell_N_range[] = {-3, 0, 33, 242, 623, 1000};
 
-rocsparse_index_base csr2ell_csr_base_range[] = {rocsparse_index_base_zero,
-                                                 rocsparse_index_base_one};
-rocsparse_index_base csr2ell_ell_base_range[] = {rocsparse_index_base_zero,
-                                                 rocsparse_index_base_one};
+rocsparse_index_base csr2ell_csr_base_range[]
+    = {rocsparse_index_base_zero, rocsparse_index_base_one};
+rocsparse_index_base csr2ell_ell_base_range[]
+    = {rocsparse_index_base_zero, rocsparse_index_base_one};
 
 std::string csr2ell_bin[] = {"rma10.bin",
                              "mac_econ_fwd500.bin",
@@ -56,7 +56,7 @@ std::string csr2ell_bin[] = {"rma10.bin",
 
 class parameterized_csr2ell : public testing::TestWithParam<csr2ell_tuple>
 {
-    protected:
+protected:
     parameterized_csr2ell() {}
     virtual ~parameterized_csr2ell() {}
     virtual void SetUp() {}
@@ -65,7 +65,7 @@ class parameterized_csr2ell : public testing::TestWithParam<csr2ell_tuple>
 
 class parameterized_csr2ell_bin : public testing::TestWithParam<csr2ell_bin_tuple>
 {
-    protected:
+protected:
     parameterized_csr2ell_bin() {}
     virtual ~parameterized_csr2ell_bin() {}
     virtual void SetUp() {}
@@ -96,7 +96,7 @@ Arguments setup_csr2ell_arguments(csr2ell_bin_tuple tup)
     std::string bin_file = std::get<2>(tup);
 
     // Get current executables absolute path
-    char path_exe[PATH_MAX];
+    char    path_exe[PATH_MAX];
     ssize_t len = readlink("/proc/self/exe", path_exe, sizeof(path_exe) - 1);
     if(len < 14)
     {
@@ -113,7 +113,10 @@ Arguments setup_csr2ell_arguments(csr2ell_bin_tuple tup)
     return arg;
 }
 
-TEST(csr2ell_bad_arg, csr2ell) { testing_csr2ell_bad_arg<float>(); }
+TEST(csr2ell_bad_arg, csr2ell)
+{
+    testing_csr2ell_bad_arg<float>();
+}
 
 TEST_P(parameterized_csr2ell, csr2ell_float)
 {

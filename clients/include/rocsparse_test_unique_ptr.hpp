@@ -27,8 +27,8 @@
 
 #include "arg_check.hpp"
 
-#include <memory>
 #include <hip/hip_runtime_api.h>
+#include <memory>
 #include <rocsparse.h>
 
 #define PRINT_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                \
@@ -44,82 +44,86 @@
         }                                                         \
     }
 
-namespace rocsparse_test {
-
-// device_malloc wraps hipMalloc and provides same API as malloc
-static void* device_malloc(size_t byte_size)
+namespace rocsparse_test
 {
-    void* pointer;
-    PRINT_IF_HIP_ERROR(hipMalloc(&pointer, byte_size));
-    return pointer;
-}
 
-// device_free wraps hipFree and provides same API as free
-static void device_free(void* ptr) { PRINT_IF_HIP_ERROR(hipFree(ptr)); }
-
-struct handle_struct
-{
-    rocsparse_handle handle;
-    handle_struct()
+    // device_malloc wraps hipMalloc and provides same API as malloc
+    static void* device_malloc(size_t byte_size)
     {
-        rocsparse_status status = rocsparse_create_handle(&handle);
-        verify_rocsparse_status_success(status, "ERROR: handle_struct constructor");
+        void* pointer;
+        PRINT_IF_HIP_ERROR(hipMalloc(&pointer, byte_size));
+        return pointer;
     }
 
-    ~handle_struct()
+    // device_free wraps hipFree and provides same API as free
+    static void device_free(void* ptr)
     {
-        rocsparse_status status = rocsparse_destroy_handle(handle);
-        verify_rocsparse_status_success(status, "ERROR: handle_struct destructor");
-    }
-};
-
-struct descr_struct
-{
-    rocsparse_mat_descr descr;
-    descr_struct()
-    {
-        rocsparse_status status = rocsparse_create_mat_descr(&descr);
-        verify_rocsparse_status_success(status, "ERROR: descr_struct constructor");
+        PRINT_IF_HIP_ERROR(hipFree(ptr));
     }
 
-    ~descr_struct()
+    struct handle_struct
     {
-        rocsparse_status status = rocsparse_destroy_mat_descr(descr);
-        verify_rocsparse_status_success(status, "ERROR: descr_struct destructor");
-    }
-};
+        rocsparse_handle handle;
+        handle_struct()
+        {
+            rocsparse_status status = rocsparse_create_handle(&handle);
+            verify_rocsparse_status_success(status, "ERROR: handle_struct constructor");
+        }
 
-struct hyb_struct
-{
-    rocsparse_hyb_mat hyb;
-    hyb_struct()
-    {
-        rocsparse_status status = rocsparse_create_hyb_mat(&hyb);
-        verify_rocsparse_status_success(status, "ERROR: hyb_struct constructor");
-    }
+        ~handle_struct()
+        {
+            rocsparse_status status = rocsparse_destroy_handle(handle);
+            verify_rocsparse_status_success(status, "ERROR: handle_struct destructor");
+        }
+    };
 
-    ~hyb_struct()
+    struct descr_struct
     {
-        rocsparse_status status = rocsparse_destroy_hyb_mat(hyb);
-        verify_rocsparse_status_success(status, "ERROR: hyb_struct destructor");
-    }
-};
+        rocsparse_mat_descr descr;
+        descr_struct()
+        {
+            rocsparse_status status = rocsparse_create_mat_descr(&descr);
+            verify_rocsparse_status_success(status, "ERROR: descr_struct constructor");
+        }
 
-struct mat_info_struct
-{
-    rocsparse_mat_info info;
-    mat_info_struct()
-    {
-        rocsparse_status status = rocsparse_create_mat_info(&info);
-        verify_rocsparse_status_success(status, "ERROR: mat_info_struct constructor");
-    }
+        ~descr_struct()
+        {
+            rocsparse_status status = rocsparse_destroy_mat_descr(descr);
+            verify_rocsparse_status_success(status, "ERROR: descr_struct destructor");
+        }
+    };
 
-    ~mat_info_struct()
+    struct hyb_struct
     {
-        rocsparse_status status = rocsparse_destroy_mat_info(info);
-        verify_rocsparse_status_success(status, "ERROR: mat_info_struct destructor");
-    }
-};
+        rocsparse_hyb_mat hyb;
+        hyb_struct()
+        {
+            rocsparse_status status = rocsparse_create_hyb_mat(&hyb);
+            verify_rocsparse_status_success(status, "ERROR: hyb_struct constructor");
+        }
+
+        ~hyb_struct()
+        {
+            rocsparse_status status = rocsparse_destroy_hyb_mat(hyb);
+            verify_rocsparse_status_success(status, "ERROR: hyb_struct destructor");
+        }
+    };
+
+    struct mat_info_struct
+    {
+        rocsparse_mat_info info;
+        mat_info_struct()
+        {
+            rocsparse_status status = rocsparse_create_mat_info(&info);
+            verify_rocsparse_status_success(status, "ERROR: mat_info_struct constructor");
+        }
+
+        ~mat_info_struct()
+        {
+            rocsparse_status status = rocsparse_destroy_mat_info(info);
+            verify_rocsparse_status_success(status, "ERROR: mat_info_struct destructor");
+        }
+    };
 
 } // namespace rocsparse_test
 

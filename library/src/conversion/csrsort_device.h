@@ -29,7 +29,7 @@
 
 // Shift CSR offsets
 __global__ void
-csrsort_shift_kernel(rocsparse_int size, const rocsparse_int* in, rocsparse_int* out)
+    csrsort_shift_kernel(rocsparse_int size, const rocsparse_int* in, rocsparse_int* out)
 {
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 

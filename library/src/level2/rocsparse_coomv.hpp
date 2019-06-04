@@ -25,11 +25,11 @@
 #ifndef ROCSPARSE_COOMV_HPP
 #define ROCSPARSE_COOMV_HPP
 
-#include "rocsparse.h"
+#include "coomv_device.h"
 #include "definitions.h"
 #include "handle.h"
+#include "rocsparse.h"
 #include "utility.h"
-#include "coomv_device.h"
 
 #include <hip/hip_runtime.h>
 
@@ -41,7 +41,7 @@ __global__ void coomv_scale_host_pointer(rocsparse_int size, T beta, T* __restri
 
 template <typename T>
 __global__ void
-coomv_scale_device_pointer(rocsparse_int size, const T* __restrict__ beta, T* __restrict__ data)
+    coomv_scale_device_pointer(rocsparse_int size, const T* __restrict__ beta, T* __restrict__ data)
 {
     if(*beta == static_cast<T>(1))
     {
@@ -55,7 +55,7 @@ template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 __launch_bounds__(128) __global__
     void coomvn_wf_host_pointer(rocsparse_int nnz,
                                 rocsparse_int loops,
-                                T alpha,
+                                T             alpha,
                                 const rocsparse_int* __restrict__ coo_row_ind,
                                 const rocsparse_int* __restrict__ coo_col_ind,
                                 const T* __restrict__ coo_val,
@@ -82,7 +82,7 @@ template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
 __launch_bounds__(128) __global__
     void coomvn_wf_device_pointer(rocsparse_int nnz,
                                   rocsparse_int loops,
-                                  const T* alpha,
+                                  const T*      alpha,
                                   const rocsparse_int* __restrict__ coo_row_ind,
                                   const rocsparse_int* __restrict__ coo_col_ind,
                                   const T* __restrict__ coo_val,
@@ -106,19 +106,19 @@ __launch_bounds__(128) __global__
 }
 
 template <typename T>
-rocsparse_status rocsparse_coomv_template(rocsparse_handle handle,
-                                          rocsparse_operation trans,
-                                          rocsparse_int m,
-                                          rocsparse_int n,
-                                          rocsparse_int nnz,
-                                          const T* alpha,
+rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
+                                          rocsparse_operation       trans,
+                                          rocsparse_int             m,
+                                          rocsparse_int             n,
+                                          rocsparse_int             nnz,
+                                          const T*                  alpha,
                                           const rocsparse_mat_descr descr,
-                                          const T* coo_val,
-                                          const rocsparse_int* coo_row_ind,
-                                          const rocsparse_int* coo_col_ind,
-                                          const T* x,
-                                          const T* beta,
-                                          T* y)
+                                          const T*                  coo_val,
+                                          const rocsparse_int*      coo_row_ind,
+                                          const rocsparse_int*      coo_col_ind,
+                                          const T*                  x,
+                                          const T*                  beta,
+                                          T*                        y)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)

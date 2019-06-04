@@ -24,11 +24,11 @@
 #include "testing_gthr.hpp"
 #include "utility.hpp"
 
-#include <rocsparse.h>
 #include <gtest/gtest.h>
+#include <rocsparse.h>
 #include <vector>
 
-typedef rocsparse_index_base base;
+typedef rocsparse_index_base       base;
 typedef std::tuple<int, int, base> gthr_tuple;
 
 int gthr_N_range[]   = {12000, 15332, 22031};
@@ -38,7 +38,7 @@ base gthr_idx_base_range[] = {rocsparse_index_base_zero, rocsparse_index_base_on
 
 class parameterized_gthr : public testing::TestWithParam<gthr_tuple>
 {
-    protected:
+protected:
     parameterized_gthr() {}
     virtual ~parameterized_gthr() {}
     virtual void SetUp() {}
@@ -55,7 +55,10 @@ Arguments setup_gthr_arguments(gthr_tuple tup)
     return arg;
 }
 
-TEST(gthr_bad_arg, gthr_float) { testing_gthr_bad_arg<float>(); }
+TEST(gthr_bad_arg, gthr_float)
+{
+    testing_gthr_bad_arg<float>();
+}
 
 TEST_P(parameterized_gthr, gthr_float)
 {

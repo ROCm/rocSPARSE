@@ -58,7 +58,7 @@
 
 inline void open_log_stream(std::ostream** log_os,
                             std::ofstream* log_ofs,
-                            std::string environment_variable_name)
+                            std::string    environment_variable_name)
 {
     *log_os = &std::cerr;
 
@@ -100,7 +100,7 @@ inline void open_log_stream(std::ostream** log_os,
 template <typename F, typename... Ts>
 void each_args(F f, Ts&... xs)
 {
-    (void)std::initializer_list<int>{((void)f(xs), 0)...};
+    (void)std::initializer_list<int> {((void)f(xs), 0)...};
 }
 
 /**
@@ -123,7 +123,11 @@ void each_args(F)
  */
 struct log_arg
 {
-    log_arg(std::ostream& os, std::string& separator) : os_(os), separator_(separator) {}
+    log_arg(std::ostream& os, std::string& separator)
+        : os_(os)
+        , separator_(separator)
+    {
+    }
 
     /// Generic overload for () operator.
     template <typename T>
@@ -144,9 +148,9 @@ struct log_arg
         os_ << separator_ << complex_value.x << separator_ << complex_value.y;
     }
     */
-    private:
-    std::ostream& os_;       ///< Output stream.
-    std::string& separator_; ///< Separator: output preceding argument.
+private:
+    std::ostream& os_; ///< Output stream.
+    std::string&  separator_; ///< Separator: output preceding argument.
 };
 
 /**
@@ -178,7 +182,7 @@ template <typename H, typename... Ts>
 void log_arguments(std::ostream& os, std::string& separator, H head, Ts&... xs)
 {
     os << "\n" << head;
-    each_args(log_arg{os, separator}, xs...);
+    each_args(log_arg {os, separator}, xs...);
 }
 
 /**

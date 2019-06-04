@@ -23,8 +23,8 @@
 
 #include "arg_check.hpp"
 
-#include <iostream>
 #include <hip/hip_runtime_api.h>
+#include <iostream>
 #include <rocsparse.h>
 
 #ifdef GOOGLE_TEST

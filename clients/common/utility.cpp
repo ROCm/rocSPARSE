@@ -23,10 +23,10 @@
 
 #include "utility.hpp"
 
+#include <hip/hip_runtime_api.h>
+#include <rocsparse.h>
 #include <stdio.h>
 #include <sys/time.h>
-#include <rocsparse.h>
-#include <hip/hip_runtime_api.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,7 +54,7 @@ void query_version(char* version)
 /*  device query and print out their ID and name; return number of compute-capable devices. */
 rocsparse_int query_device_property()
 {
-    int device_count;
+    int              device_count;
     rocsparse_status status = (rocsparse_status)hipGetDeviceCount(&device_count);
     if(status != rocsparse_status_success)
     {
@@ -68,7 +68,7 @@ rocsparse_int query_device_property()
 
     for(int i = 0; i < device_count; i++)
     {
-        hipDeviceProp_t props;
+        hipDeviceProp_t  props;
         rocsparse_status status = (rocsparse_status)hipGetDeviceProperties(&props, i);
         if(status != rocsparse_status_success)
         {

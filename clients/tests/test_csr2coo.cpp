@@ -24,19 +24,19 @@
 #include "testing_csr2coo.hpp"
 #include "utility.hpp"
 
-#include <rocsparse.h>
 #include <gtest/gtest.h>
-#include <vector>
+#include <rocsparse.h>
 #include <string>
+#include <vector>
 
-typedef std::tuple<int, int, rocsparse_index_base> csr2coo_tuple;
+typedef std::tuple<int, int, rocsparse_index_base>    csr2coo_tuple;
 typedef std::tuple<rocsparse_index_base, std::string> csr2coo_bin_tuple;
 
 int csr2coo_M_range[] = {-1, 0, 10, 500, 872, 1000};
 int csr2coo_N_range[] = {-3, 0, 33, 242, 623, 1000};
 
-rocsparse_index_base csr2coo_idx_base_range[] = {rocsparse_index_base_zero,
-                                                 rocsparse_index_base_one};
+rocsparse_index_base csr2coo_idx_base_range[]
+    = {rocsparse_index_base_zero, rocsparse_index_base_one};
 
 std::string csr2coo_bin[] = {"rma10.bin",
                              "mac_econ_fwd500.bin",
@@ -55,7 +55,7 @@ std::string csr2coo_bin[] = {"rma10.bin",
 
 class parameterized_csr2coo : public testing::TestWithParam<csr2coo_tuple>
 {
-    protected:
+protected:
     parameterized_csr2coo() {}
     virtual ~parameterized_csr2coo() {}
     virtual void SetUp() {}
@@ -64,7 +64,7 @@ class parameterized_csr2coo : public testing::TestWithParam<csr2coo_tuple>
 
 class parameterized_csr2coo_bin : public testing::TestWithParam<csr2coo_bin_tuple>
 {
-    protected:
+protected:
     parameterized_csr2coo_bin() {}
     virtual ~parameterized_csr2coo_bin() {}
     virtual void SetUp() {}
@@ -93,7 +93,7 @@ Arguments setup_csr2coo_arguments(csr2coo_bin_tuple tup)
     std::string bin_file = std::get<1>(tup);
 
     // Get current executables absolute path
-    char path_exe[PATH_MAX];
+    char    path_exe[PATH_MAX];
     ssize_t len = readlink("/proc/self/exe", path_exe, sizeof(path_exe) - 1);
     if(len < 14)
     {
@@ -110,7 +110,10 @@ Arguments setup_csr2coo_arguments(csr2coo_bin_tuple tup)
     return arg;
 }
 
-TEST(csr2coo_bad_arg, csr2coo) { testing_csr2coo_bad_arg(); }
+TEST(csr2coo_bad_arg, csr2coo)
+{
+    testing_csr2coo_bad_arg();
+}
 
 TEST_P(parameterized_csr2coo, csr2coo)
 {

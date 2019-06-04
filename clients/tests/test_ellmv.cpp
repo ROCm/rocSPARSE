@@ -24,13 +24,13 @@
 #include "testing_ellmv.hpp"
 #include "utility.hpp"
 
-#include <rocsparse.h>
 #include <gtest/gtest.h>
-#include <vector>
+#include <rocsparse.h>
 #include <string>
+#include <vector>
 
-typedef rocsparse_index_base base;
-typedef std::tuple<int, int, double, double, base> ellmv_tuple;
+typedef rocsparse_index_base                          base;
+typedef std::tuple<int, int, double, double, base>    ellmv_tuple;
 typedef std::tuple<double, double, base, std::string> ellmv_bin_tuple;
 
 int ell_M_range[] = {-1, 0, 10, 500, 7111, 10000};
@@ -57,7 +57,7 @@ std::string ell_bin[] = {"rma10.bin",
 
 class parameterized_ellmv : public testing::TestWithParam<ellmv_tuple>
 {
-    protected:
+protected:
     parameterized_ellmv() {}
     virtual ~parameterized_ellmv() {}
     virtual void SetUp() {}
@@ -66,7 +66,7 @@ class parameterized_ellmv : public testing::TestWithParam<ellmv_tuple>
 
 class parameterized_ellmv_bin : public testing::TestWithParam<ellmv_bin_tuple>
 {
-    protected:
+protected:
     parameterized_ellmv_bin() {}
     virtual ~parameterized_ellmv_bin() {}
     virtual void SetUp() {}
@@ -99,7 +99,7 @@ Arguments setup_ellmv_arguments(ellmv_bin_tuple tup)
     std::string bin_file = std::get<3>(tup);
 
     // Get current executables absolute path
-    char path_exe[PATH_MAX];
+    char    path_exe[PATH_MAX];
     ssize_t len = readlink("/proc/self/exe", path_exe, sizeof(path_exe) - 1);
     if(len < 14)
     {
@@ -116,7 +116,10 @@ Arguments setup_ellmv_arguments(ellmv_bin_tuple tup)
     return arg;
 }
 
-TEST(ellmv_bad_arg, ellmv_float) { testing_ellmv_bad_arg<float>(); }
+TEST(ellmv_bad_arg, ellmv_float)
+{
+    testing_ellmv_bad_arg<float>();
+}
 
 TEST_P(parameterized_ellmv, ellmv_float)
 {
