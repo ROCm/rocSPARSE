@@ -36,8 +36,8 @@ typedef rocsparse_operation trans;
 typedef std::tuple<int, int, int, double, double, base, base, base, base> csrgemm_tuple;
 typedef std::tuple<double, double, base, base, base, base, std::string> csrgemm_bin_tuple;
 
-double csrgemm_alpha_range[] = {2.0};
-double csrgemm_beta_range[] = {0.0};
+double csrgemm_alpha_range[] = {0.0, 2.7, 99.0};
+double csrgemm_beta_range[] = {0.0, 1.3, 99.0};
 
 int csrgemm_M_range[] = {-1, 0, 50, 647, 1799};
 int csrgemm_N_range[] = {-1, 0, 13, 523, 3712};
@@ -51,12 +51,11 @@ base csrgemm_idxbaseD_range[] = {rocsparse_index_base_zero, rocsparse_index_base
 //trans csrgemm_transA_range[] = {rocsparse_operation_none};
 //trans csrgemm_transB_range[] = {rocsparse_operation_none};
 
-std::string csrgemm_bin[] = {"rma10.bin",
+std::string csrgemm_bin[] = {//"rma10.bin", // exceeding 8192 int max
                              "mac_econ_fwd500.bin",
-                             "bibd_22_8.bin",
                              "mc2depi.bin",
                              "scircuit.bin",
-                             "bmwcra_1.bin",
+                             //"bmwcra_1.bin", // exceeding 8192 int max
                              "nos1.bin",
                              "nos2.bin",
                              "nos3.bin",

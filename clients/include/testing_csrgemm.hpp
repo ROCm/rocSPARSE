@@ -1529,11 +1529,12 @@ template <typename T>
 static rocsparse_int csrgemm_nnz(rocsparse_int m,
                                  rocsparse_int n,
                                  rocsparse_int k,
+                                 const T* alpha,
                                  const rocsparse_int* csr_row_ptr_A,
                                  const rocsparse_int* csr_col_ind_A,
                                  const rocsparse_int* csr_row_ptr_B,
                                  const rocsparse_int* csr_col_ind_B,
-                                 T beta,
+                                 const T* beta,
                                  const rocsparse_int* csr_row_ptr_D,
                                  const rocsparse_int* csr_col_ind_D,
                                  rocsparse_int* csr_row_ptr_C,
@@ -1553,35 +1554,38 @@ static rocsparse_int csrgemm_nnz(rocsparse_int m,
         // Initialize csr row pointer with previous row offset
         csr_row_ptr_C[i + 1] = csr_row_ptr_C[i];
 
-        rocsparse_int row_begin_A = csr_row_ptr_A[i] - idx_base_A;
-        rocsparse_int row_end_A   = csr_row_ptr_A[i + 1] - idx_base_A;
-
-        // Loop over columns of A
-        for(rocsparse_int j = row_begin_A; j < row_end_A; ++j)
+        if(alpha)
         {
-            // Current column of A
-            rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+            rocsparse_int row_begin_A = csr_row_ptr_A[i] - idx_base_A;
+            rocsparse_int row_end_A   = csr_row_ptr_A[i + 1] - idx_base_A;
 
-            rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
-            rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
-
-            // Loop over columns of B in row col_A
-            for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
+            // Loop over columns of A
+            for(rocsparse_int j = row_begin_A; j < row_end_A; ++j)
             {
-                // Current column of B
-                rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
+                // Current column of A
+                rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
 
-                // Check if a new nnz is generated
-                if(nnz[col_B] != i)
+                rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
+                rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
+
+                // Loop over columns of B in row col_A
+                for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
                 {
-                    nnz[col_B] = i;
-                    ++csr_row_ptr_C[i + 1];
+                    // Current column of B
+                    rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
+
+                    // Check if a new nnz is generated
+                    if(nnz[col_B] != i)
+                    {
+                        nnz[col_B] = i;
+                        ++csr_row_ptr_C[i + 1];
+                    }
                 }
             }
         }
 
         // Add nnz of D if beta != 0
-        if(beta != (T)0)
+        if(beta)
         {
             rocsparse_int row_begin_D = csr_row_ptr_D[i] - idx_base_D;
             rocsparse_int row_end_D   = csr_row_ptr_D[i + 1] - idx_base_D;
@@ -1608,14 +1612,14 @@ template <typename T>
 static void csrgemm(rocsparse_int m,
                     rocsparse_int n,
                     rocsparse_int k,
-                    T alpha,
+                    const T* alpha,
                     const rocsparse_int* csr_row_ptr_A,
                     const rocsparse_int* csr_col_ind_A,
                     const T* csr_val_A,
                     const rocsparse_int* csr_row_ptr_B,
                     const rocsparse_int* csr_col_ind_B,
                     const T* csr_val_B,
-                    T beta,
+                    const T* beta,
                     const rocsparse_int* csr_row_ptr_D,
                     const rocsparse_int* csr_col_ind_D,
                     const T* csr_val_D,
@@ -1632,48 +1636,51 @@ static void csrgemm(rocsparse_int m,
     // Loop over rows of A
     for(rocsparse_int i = 0; i < m; ++i)
     {
-        rocsparse_int row_begin_A = csr_row_ptr_A[i] - idx_base_A;
-        rocsparse_int row_end_A   = csr_row_ptr_A[i + 1] - idx_base_A;
-
         rocsparse_int row_begin_C = csr_row_ptr_C[i] - idx_base_C;
         rocsparse_int row_end_C   = row_begin_C;
 
-        // Loop over columns of A
-        for(rocsparse_int j = row_begin_A; j < row_end_A; ++j)
+        if(alpha)
         {
-            // Current column of A
-            rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
-            // Current value of A
-            T val_A = alpha * csr_val_A[j];
+            rocsparse_int row_begin_A = csr_row_ptr_A[i] - idx_base_A;
+            rocsparse_int row_end_A   = csr_row_ptr_A[i + 1] - idx_base_A;
 
-            rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
-            rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
-
-            // Loop over columns of B in row col_A
-            for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
+            // Loop over columns of A
+            for(rocsparse_int j = row_begin_A; j < row_end_A; ++j)
             {
-                // Current column of B
-                rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
-                // Current value of B
-                T val_B = csr_val_B[k];
+                // Current column of A
+                rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+                // Current value of A
+                T val_A = *alpha * csr_val_A[j];
 
-                // Check if a new nnz is generated or if the product is appended
-                if(nnz[col_B] < row_begin_C)
+                rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
+                rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
+
+                // Loop over columns of B in row col_A
+                for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
                 {
-                    nnz[col_B]               = row_end_C;
-                    csr_col_ind_C[row_end_C] = col_B + idx_base_C;
-                    csr_val_C[row_end_C]     = val_A * val_B;
-                    ++row_end_C;
-                }
-                else
-                {
-                    csr_val_C[nnz[col_B]] += val_A * val_B;
+                    // Current column of B
+                    rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
+                    // Current value of B
+                    T val_B = csr_val_B[k];
+
+                    // Check if a new nnz is generated or if the product is appended
+                    if(nnz[col_B] < row_begin_C)
+                    {
+                        nnz[col_B]               = row_end_C;
+                        csr_col_ind_C[row_end_C] = col_B + idx_base_C;
+                        csr_val_C[row_end_C]     = val_A * val_B;
+                        ++row_end_C;
+                    }
+                    else
+                    {
+                        csr_val_C[nnz[col_B]] += val_A * val_B;
+                    }
                 }
             }
         }
 
         // Add nnz of D if beta != 0
-        if(beta != (T)0)
+        if(beta)
         {
             rocsparse_int row_begin_D = csr_row_ptr_D[i] - idx_base_D;
             rocsparse_int row_end_D   = csr_row_ptr_D[i + 1] - idx_base_D;
@@ -1684,7 +1691,7 @@ static void csrgemm(rocsparse_int m,
                 // Current column of D
                 rocsparse_int col_D = csr_col_ind_D[j] - idx_base_D;
                 // Current value of D
-                T val_D = beta * csr_val_D[j];
+                T val_D = *beta * csr_val_D[j];
 
                 // Check if a new nnz is generated or if the value is added
                 if(nnz[col_D] < row_begin_C)
@@ -1743,13 +1750,23 @@ rocsparse_status testing_csrgemm(Arguments argus)
     rocsparse_index_base idx_base_B = argus.idx_base2;
     rocsparse_index_base idx_base_C = argus.idx_base3;
     rocsparse_index_base idx_base_D = argus.idx_base4;
+    T alpha                         = argus.alpha;
+    T beta                          = argus.beta;
     std::string binfile             = "";
     std::string filename            = "";
     std::string rocalution          = "";
-    T h_alpha                       = argus.alpha;
-    T h_beta                        = argus.beta;
+
     rocsparse_status status;
     size_t size;
+
+    T* h_alpha = (alpha == static_cast<T>(99)) ? nullptr : &alpha;
+    T* h_beta  = (beta  == static_cast<T>(99)) ? nullptr : &beta;
+
+    // Skip alpha == beta == nullptr, as this is invalid (and checked in bad args tests)
+    if(h_alpha == nullptr && h_beta == nullptr)
+    {
+        return rocsparse_status_success;
+    }
 
     // When in testing mode, M == N == -99 indicates that we are testing with a real
     // matrix from cise.ufl.edu
@@ -1883,7 +1900,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                M,
                                                N,
                                                K,
-                                               &h_alpha,
+                                               h_alpha,
                                                descr_A,
                                                nnz_A,
                                                dAptr,
@@ -1892,7 +1909,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                nnz_B,
                                                dBptr,
                                                dBcol,
-                                               &h_beta,
+                                               h_beta,
                                                descr_D,
                                                nnz_D,
                                                dDptr,
@@ -1955,7 +1972,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                    M,
                                    N,
                                    K,
-                                   &h_alpha,
+                                   h_alpha,
                                    descr_A,
                                    nnz_A,
                                    dAval,
@@ -1966,7 +1983,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                    dBval,
                                    dBptr,
                                    dBcol,
-                                   &h_beta,
+                                   h_beta,
                                    descr_D,
                                    nnz_D,
                                    dDval,
@@ -1997,112 +2014,118 @@ rocsparse_status testing_csrgemm(Arguments argus)
     std::vector<rocsparse_int> hcsr_row_ptr_A;
     std::vector<rocsparse_int> hcsr_col_ind_A;
     std::vector<T> hcsr_val_A;
-
-    // Initial Data on CPU
-    srand(12345ULL);
-    if(binfile != "")
-    {
-        if(read_bin_matrix(binfile.c_str(),
-                           M,
-                           K,
-                           nnz_A,
-                           hcsr_row_ptr_A,
-                           hcsr_col_ind_A,
-                           hcsr_val_A,
-                           idx_base_A) != 0)
-        {
-            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
-            return rocsparse_status_internal_error;
-        }
-    }
-    else if(rocalution != "")
-    {
-        if(read_rocalution_matrix(rocalution.c_str(),
-                                  M,
-                                  K,
-                                  nnz_A,
-                                  hcsr_row_ptr_A,
-                                  hcsr_col_ind_A,
-                                  hcsr_val_A,
-                                  idx_base_A) != 0)
-        {
-            fprintf(stderr, "Cannot open [read] %s\n", rocalution.c_str());
-            return rocsparse_status_internal_error;
-        }
-    }
-    else if(argus.laplacian)
-    {
-        M = K = gen_2d_laplacian(
-            argus.laplacian, hcsr_row_ptr_A, hcsr_col_ind_A, hcsr_val_A, idx_base_A);
-        nnz_A = hcsr_row_ptr_A[M];
-    }
-    else
-    {
-        std::vector<rocsparse_int> hcoo_row_ind;
-
-        if(filename != "")
-        {
-            if(read_mtx_matrix(filename.c_str(),
-                               M,
-                               K,
-                               nnz_A,
-                               hcoo_row_ind,
-                               hcsr_col_ind_A,
-                               hcsr_val_A,
-                               idx_base_A) != 0)
-            {
-                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
-                return rocsparse_status_internal_error;
-            }
-        }
-        else
-        {
-            gen_matrix_coo(M, K, nnz_A, hcoo_row_ind, hcsr_col_ind_A, hcsr_val_A, idx_base_A);
-        }
-
-        // Convert COO to CSR
-        hcsr_row_ptr_A.resize(M + 1, 0);
-        for(rocsparse_int i = 0; i < nnz_A; ++i)
-        {
-            ++hcsr_row_ptr_A[hcoo_row_ind[i] + 1 - idx_base_A];
-        }
-
-        hcsr_row_ptr_A[0] = idx_base_A;
-        for(rocsparse_int i = 0; i < M; ++i)
-        {
-            hcsr_row_ptr_A[i + 1] += hcsr_row_ptr_A[i];
-        }
-
-        // TODO samples B matrix instead of squaring
-    }
-
-    // B = A^T so that we can compute the square of A
-    N     = M;
-    nnz_B = nnz_A;
-    std::vector<rocsparse_int> hcsr_row_ptr_B(K + 1, 0);
-    std::vector<rocsparse_int> hcsr_col_ind_B(nnz_B);
-    std::vector<T> hcsr_val_B(nnz_B);
-
-    // B = A^T
-    transpose(M,
-              K,
-              nnz_A,
-              hcsr_row_ptr_A.data(),
-              hcsr_col_ind_A.data(),
-              hcsr_val_A.data(),
-              hcsr_row_ptr_B.data(),
-              hcsr_col_ind_B.data(),
-              hcsr_val_B.data(),
-              idx_base_A,
-              idx_base_B);
-
-    // For simplicity we generate a COO matrix for D
+    std::vector<rocsparse_int> hcsr_row_ptr_B;
+    std::vector<rocsparse_int> hcsr_col_ind_B;
+    std::vector<T> hcsr_val_B;
     std::vector<rocsparse_int> hcsr_row_ptr_D;
     std::vector<rocsparse_int> hcsr_col_ind_D;
     std::vector<T> hcsr_val_D;
 
-    if(h_beta != (T)0)
+    if(h_alpha)
     {
+        // Initial Data on CPU
+        srand(12345ULL);
+        if(binfile != "")
+        {
+            if(read_bin_matrix(binfile.c_str(),
+                               M,
+                               K,
+                               nnz_A,
+                               hcsr_row_ptr_A,
+                               hcsr_col_ind_A,
+                               hcsr_val_A,
+                               idx_base_A) != 0)
+            {
+                fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
+                return rocsparse_status_internal_error;
+            }
+        }
+        else if(rocalution != "")
+        {
+            if(read_rocalution_matrix(rocalution.c_str(),
+                                      M,
+                                      K,
+                                      nnz_A,
+                                      hcsr_row_ptr_A,
+                                      hcsr_col_ind_A,
+                                      hcsr_val_A,
+                                      idx_base_A) != 0)
+            {
+                fprintf(stderr, "Cannot open [read] %s\n", rocalution.c_str());
+                return rocsparse_status_internal_error;
+            }
+        }
+        else if(argus.laplacian)
+        {
+            M = K = gen_2d_laplacian(
+                argus.laplacian, hcsr_row_ptr_A, hcsr_col_ind_A, hcsr_val_A, idx_base_A);
+            nnz_A = hcsr_row_ptr_A[M];
+        }
+        else
+        {
+            std::vector<rocsparse_int> hcoo_row_ind;
+
+            if(filename != "")
+            {
+                if(read_mtx_matrix(filename.c_str(),
+                                   M,
+                                   K,
+                                   nnz_A,
+                                   hcoo_row_ind,
+                                   hcsr_col_ind_A,
+                                   hcsr_val_A,
+                                   idx_base_A) != 0)
+                {
+                    fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
+                    return rocsparse_status_internal_error;
+                }
+            }
+            else
+            {
+                gen_matrix_coo(M, K, nnz_A, hcoo_row_ind, hcsr_col_ind_A, hcsr_val_A, idx_base_A);
+            }
+
+            // Convert COO to CSR
+            hcsr_row_ptr_A.resize(M + 1, 0);
+            for(rocsparse_int i = 0; i < nnz_A; ++i)
+            {
+                ++hcsr_row_ptr_A[hcoo_row_ind[i] + 1 - idx_base_A];
+            }
+
+            hcsr_row_ptr_A[0] = idx_base_A;
+            for(rocsparse_int i = 0; i < M; ++i)
+            {
+                hcsr_row_ptr_A[i + 1] += hcsr_row_ptr_A[i];
+            }
+
+            // TODO samples B matrix instead of squaring
+        }
+
+        // B = A^T so that we can compute the square of A
+        N     = M;
+        nnz_B = nnz_A;
+
+        hcsr_row_ptr_B.resize(K + 1, 0);
+        hcsr_col_ind_B.resize(nnz_B);
+        hcsr_val_B.resize(nnz_B);
+
+        // B = A^T
+        transpose(M,
+                  K,
+                  nnz_A,
+                  hcsr_row_ptr_A.data(),
+                  hcsr_col_ind_A.data(),
+                  hcsr_val_A.data(),
+                  hcsr_row_ptr_B.data(),
+                  hcsr_col_ind_B.data(),
+                  hcsr_val_B.data(),
+                  idx_base_A,
+                  idx_base_B);
+    }
+
+    if(h_beta)
+    {
+        // For simplicity we generate a COO matrix for D
         nnz_D = (nnz_A + nnz_B) / 2;
         std::vector<rocsparse_int> hcoo_row_ind;
         gen_matrix_coo(M, N, nnz_D, hcoo_row_ind, hcsr_col_ind_D, hcsr_val_D, idx_base_D);
@@ -2152,45 +2175,63 @@ rocsparse_status testing_csrgemm(Arguments argus)
     rocsparse_int* dDcol = (rocsparse_int*)dDcol_managed.get();
     T* dDval             = (T*)dDval_managed.get();
     rocsparse_int* dCptr = (rocsparse_int*)dCptr_managed.get();
-    T* dalpha            = (T*)dalpha_managed.get();
-    T* dbeta             = (T*)dbeta_managed.get();
+    T* dalpha            = nullptr;
+    T* dbeta             = nullptr;
 
     if(!dAval || !dAptr || !dAcol ||
        !dBval || !dBptr || !dBcol ||
        !dDval || !dDptr || !dDcol ||
-       !dCptr || !dalpha || !dbeta)
+       !dCptr)
     {
         verify_rocsparse_status_success(rocsparse_status_memory_error,
                                         "!dAval || !dAptr || !dAcol || "
                                         "!dBval || !dBptr || !dBcol || "
                                         "!dDval || !dDptr || !dDcol || "
-                                        "!dCptr || !dalpha || !dbeta");
+                                        "!dCptr");
         return rocsparse_status_memory_error;
     }
 
     // copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dAptr, hcsr_row_ptr_A.data(), sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dAcol, hcsr_col_ind_A.data(), sizeof(rocsparse_int) * nnz_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dAval, hcsr_val_A.data(), sizeof(T) * nnz_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dBptr, hcsr_row_ptr_B.data(), sizeof(rocsparse_int) * (K + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dBcol, hcsr_col_ind_B.data(), sizeof(rocsparse_int) * nnz_B, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dBval, hcsr_val_B.data(), sizeof(T) * nnz_B, hipMemcpyHostToDevice));
-
-    if(h_beta != (T)0)
+    if(h_beta)
     {
+        dbeta = (T*)dbeta_managed.get();
+
+        if(!dbeta)
+        {
+            verify_rocsparse_status_success(rocsparse_status_memory_error, "!dbeta");
+            return rocsparse_status_memory_error;
+        }
+
         CHECK_HIP_ERROR(hipMemcpy(
             dDptr, hcsr_row_ptr_D.data(), sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(
             dDcol, hcsr_col_ind_D.data(), sizeof(rocsparse_int) * nnz_D, hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(dDval, hcsr_val_D.data(), sizeof(T) * nnz_D, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dbeta, h_beta, sizeof(T), hipMemcpyHostToDevice));
     }
 
-    CHECK_HIP_ERROR(hipMemcpy(dalpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dbeta, &h_beta, sizeof(T), hipMemcpyHostToDevice));
+    if(h_alpha)
+    {
+        dalpha = (T*)dalpha_managed.get();
+
+        if(!dalpha)
+        {
+            verify_rocsparse_status_success(rocsparse_status_memory_error, "!dalpha");
+            return rocsparse_status_memory_error;
+        }
+
+        CHECK_HIP_ERROR(hipMemcpy(
+            dAptr, hcsr_row_ptr_A.data(), sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(
+            dAcol, hcsr_col_ind_A.data(), sizeof(rocsparse_int) * nnz_A, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dAval, hcsr_val_A.data(), sizeof(T) * nnz_A, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(
+            dBptr, hcsr_row_ptr_B.data(), sizeof(rocsparse_int) * (K + 1), hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(
+            dBcol, hcsr_col_ind_B.data(), sizeof(rocsparse_int) * nnz_B, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dBval, hcsr_val_B.data(), sizeof(T) * nnz_B, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dalpha, h_alpha, sizeof(T), hipMemcpyHostToDevice));
+    }
 
     // Obtain csrgemm buffer size
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
@@ -2200,7 +2241,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                         M,
                                                         N,
                                                         K,
-                                                        &h_alpha,
+                                                        h_alpha,
                                                         descr_A,
                                                         nnz_A,
                                                         dAptr,
@@ -2209,13 +2250,46 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                         nnz_B,
                                                         dBptr,
                                                         dBcol,
-                                                        &h_beta,
+                                                        h_beta,
                                                         descr_D,
                                                         nnz_D,
                                                         dDptr,
                                                         dDcol,
                                                         info,
                                                         &size));
+
+    if(argus.unit_check)
+    {
+        // Obtain csrgemm buffer size
+        size_t size2;
+
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_buffer_size(handle,
+                                                            trans_A,
+                                                            trans_B,
+                                                            M,
+                                                            N,
+                                                            K,
+                                                            dalpha,
+                                                            descr_A,
+                                                            nnz_A,
+                                                            dAptr,
+                                                            dAcol,
+                                                            descr_B,
+                                                            nnz_B,
+                                                            dBptr,
+                                                            dBcol,
+                                                            dbeta,
+                                                            descr_D,
+                                                            nnz_D,
+                                                            dDptr,
+                                                            dDcol,
+                                                            info,
+                                                            &size2));
+
+        // Check if buffer size matches
+        unit_check_general(1, 1, 1, &size, &size2);
+    }
 
     // Allocate buffer on the device
     auto dbuffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * size), device_free};
@@ -2312,6 +2386,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
         rocsparse_int nnz_C_gold = csrgemm_nnz(M,
                                                N,
                                                K,
+                                               h_alpha,
                                                hcsr_row_ptr_A.data(),
                                                hcsr_col_ind_A.data(),
                                                hcsr_row_ptr_B.data(),
@@ -2368,7 +2443,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                 M,
                                                 N,
                                                 K,
-                                                &h_alpha,
+                                                h_alpha,
                                                 descr_A,
                                                 nnz_A,
                                                 dAval,
@@ -2379,7 +2454,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                 dBval,
                                                 dBptr,
                                                 dBcol,
-                                                &h_beta,
+                                                h_beta,
                                                 descr_D,
                                                 nnz_D,
                                                 dDval,
@@ -2395,7 +2470,8 @@ rocsparse_status testing_csrgemm(Arguments argus)
         // Copy output from device to CPU
         std::vector<rocsparse_int> hcsr_row_ptr_C(M + 1);
         std::vector<rocsparse_int> hcsr_col_ind_C(nnz_C_gold);
-        std::vector<T> hcsr_val_C(nnz_C_gold);
+        std::vector<T> hcsr_val_C_1(nnz_C_gold);
+        std::vector<T> hcsr_val_C_2(nnz_C_gold);
 
         CHECK_HIP_ERROR(hipMemcpy(
             hcsr_row_ptr_C.data(), dCptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyDeviceToHost));
@@ -2404,12 +2480,50 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                   sizeof(rocsparse_int) * nnz_C_gold,
                                   hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(
-            hipMemcpy(hcsr_val_C.data(), dCval, sizeof(T) * nnz_C_gold, hipMemcpyDeviceToHost));
+            hipMemcpy(hcsr_val_C_1.data(), dCval, sizeof(T) * nnz_C_gold, hipMemcpyDeviceToHost));
+
+        CHECK_HIP_ERROR(hipMemset(dCval, 0, sizeof(T) * nnz_C_gold));
+
+        // Device pointer mode
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm(handle,
+                                                trans_A,
+                                                trans_B,
+                                                M,
+                                                N,
+                                                K,
+                                                dalpha,
+                                                descr_A,
+                                                nnz_A,
+                                                dAval,
+                                                dAptr,
+                                                dAcol,
+                                                descr_B,
+                                                nnz_B,
+                                                dBval,
+                                                dBptr,
+                                                dBcol,
+                                                dbeta,
+                                                descr_D,
+                                                nnz_D,
+                                                dDval,
+                                                dDptr,
+                                                dDcol,
+                                                descr_C,
+                                                dCval,
+                                                dCptr,
+                                                dCcol,
+                                                info,
+                                                dbuffer));
+
+        CHECK_HIP_ERROR(
+            hipMemcpy(hcsr_val_C_2.data(), dCval, sizeof(T) * nnz_C_gold, hipMemcpyDeviceToHost));
 
         // Check structure and entries of C
-//        unit_check_general(1, M + 1, 1, hcsr_row_ptr_C_gold.data(), hcsr_row_ptr_C.data());
+        unit_check_general(1, M + 1, 1, hcsr_row_ptr_C_gold.data(), hcsr_row_ptr_C.data());
 //        unit_check_general(1, nnz_C_gold, 1, hcsr_col_ind_C_gold.data(), hcsr_col_ind_C.data());
-//        unit_check_general(1, nnz_C_gold, 1, hcsr_val_C_gold.data(), hcsr_val_C.data());
+//        unit_check_general(1, nnz_C_gold, 1, hcsr_val_C_gold.data(), hcsr_val_C_1.data());
+//        unit_check_general(1, nnz_C_gold, 1, hcsr_val_C_gold.data(), hcsr_val_C_2.data());
     }
 
     if(argus.timing)
