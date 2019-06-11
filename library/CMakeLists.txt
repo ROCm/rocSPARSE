@@ -58,20 +58,16 @@ add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
 add_library(roc::rocsparse ALIAS rocsparse)
 
 # Target compile options
-if(NOT HIP_PLATFORM STREQUAL "nvcc")
-  target_compile_options(rocsparse PRIVATE -fno-gpu-rdc)
-  foreach(target ${AMDGPU_TARGETS})
-    target_compile_options(rocsparse PRIVATE --amdgpu-target=${target})
-  endforeach()
-endif()
+target_compile_options(rocsparse PRIVATE -fno-gpu-rdc)
+foreach(target ${AMDGPU_TARGETS})
+  target_compile_options(rocsparse PRIVATE --amdgpu-target=${target})
+endforeach()
 
 # Target link libraries
-if(NOT HIP_PLATFORM STREQUAL "nvcc")
-  target_link_libraries(rocsparse PRIVATE hip::device)
-  foreach(target ${AMDGPU_TARGETS})
-    target_link_libraries(rocsparse PRIVATE --amdgpu-target=${target})
-  endforeach()
-endif()
+target_link_libraries(rocsparse PRIVATE hip::device)
+foreach(target ${AMDGPU_TARGETS})
+  target_link_libraries(rocsparse PRIVATE --amdgpu-target=${target})
+endforeach()
 
 # Target include directories
 target_include_directories(rocsparse
@@ -84,10 +80,8 @@ target_include_directories(rocsparse
 )
 
 # Target properties
-if(NOT HIP_PLATFORM STREQUAL "nvcc")
-  set_target_properties(rocsparse PROPERTIES VERSION ${rocsparse_VERSION} SOVERSION ${rocsparse_SOVERSION})
-  set_target_properties(rocsparse PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON)
-endif()
+set_target_properties(rocsparse PROPERTIES VERSION ${rocsparse_VERSION} SOVERSION ${rocsparse_SOVERSION})
+set_target_properties(rocsparse PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON)
 set_target_properties(rocsparse PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")
 
@@ -114,8 +108,8 @@ rocm_export_targets(TARGETS roc::rocsparse
 rocm_install_symlink_subdir(rocsparse)
 
 # Package specific CPACK vars
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip_hcc (>= 1.5.19055)") # 1.5.19055 is HIP version in ROCm 2.2
-set(CPACK_RPM_PACKAGE_REQUIRES "hip_hcc >= 1.5.19055")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip_hcc (>= 1.5.19211)") # 1.5.19211 is HIP version in ROCm 2.5
+set(CPACK_RPM_PACKAGE_REQUIRES "hip_hcc >= 1.5.19211")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.md")
 
 if(NOT CPACK_PACKAGING_INSTALL_PREFIX)
@@ -124,12 +118,8 @@ endif()
 
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include")
 
-# Package name differs for CUDA backend
-if(HIP_PLATFORM STREQUAL "nvcc")
-  set(package_name rocsparse-alt)
-else()
-  set(package_name rocsparse)
-endif()
+# Package name
+set(package_name rocsparse)
 
 set(ROCSPARSE_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file")
 

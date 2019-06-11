@@ -41,12 +41,10 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
     target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse)
   endif()
 
-  if(NOT HIP_PLATFORM STREQUAL "nvcc")
-    target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${hip_LIBRARIES})
-    foreach(amdgpu_target ${AMDGPU_TARGETS})
-      target_link_libraries(${EXAMPLE_TARGET} PRIVATE --amdgpu-target=${amdgpu_target})
-    endforeach()
-  endif()
+  target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${hip_LIBRARIES})
+  foreach(amdgpu_target ${AMDGPU_TARGETS})
+    target_link_libraries(${EXAMPLE_TARGET} PRIVATE --amdgpu-target=${amdgpu_target})
+  endforeach()
 
   set_target_properties(${EXAMPLE_TARGET}
     PROPERTIES

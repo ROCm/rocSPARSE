@@ -33,7 +33,7 @@
 #include "utility.h"
 
 #include <hip/hip_runtime.h>
-#include <hipcub/hipcub.hpp>
+#include <rocprim/rocprim.hpp>
 
 template <typename T>
 rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
@@ -277,18 +277,28 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
             void*  d_temp_storage     = nullptr;
             size_t temp_storage_bytes = 0;
 
-            // Obtain hipcub buffer size
-            RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(
-                d_temp_storage, temp_storage_bytes, workspace, workspace, m + 1));
+            // Obtain rocprim buffer size
+            RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(d_temp_storage,
+                                                        temp_storage_bytes,
+                                                        workspace,
+                                                        workspace,
+                                                        m + 1,
+                                                        rocprim::plus<rocsparse_int>(),
+                                                        stream));
 
-            // Allocate hipcub buffer
+            // Allocate rocprim buffer
             RETURN_IF_HIP_ERROR(hipMalloc(&d_temp_storage, temp_storage_bytes));
 
             // Do inclusive sum
-            RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(
-                d_temp_storage, temp_storage_bytes, workspace, workspace, m + 1));
+            RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(d_temp_storage,
+                                                        temp_storage_bytes,
+                                                        workspace,
+                                                        workspace,
+                                                        m + 1,
+                                                        rocprim::plus<rocsparse_int>(),
+                                                        stream));
 
-            // Clear hipcub buffer
+            // Clear rocprim buffer
             RETURN_IF_HIP_ERROR(hipFree(d_temp_storage));
 
             // Obtain coo nnz from workspace

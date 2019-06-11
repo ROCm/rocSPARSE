@@ -28,11 +28,7 @@
 #include "utility.h"
 
 #include <hip/hip_runtime.h>
-#include <hipcub/hipcub.hpp>
-
-#if defined(__HIP_PLATFORM_HCC__)
-#include <rocprim/rocprim_hip.hpp>
-#endif
+#include <rocprim/rocprim.hpp>
 
 extern "C" rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle     handle,
                                                           rocsparse_int        m,
@@ -101,27 +97,20 @@ extern "C" rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle     h
     // Determine max buffer size
     size_t size;
     *buffer_size = 0;
-    hipcub::DoubleBuffer<rocsparse_int> dummy(ptr, ptr);
+    rocprim::double_buffer<rocsparse_int> dummy(ptr, ptr);
 
-    RETURN_IF_HIP_ERROR(
-        hipcub::DeviceRunLengthEncode::Encode(nullptr, size, ptr, ptr, ptr, ptr, nnz, stream));
+    RETURN_IF_HIP_ERROR(rocprim::run_length_encode(nullptr, size, ptr, nnz, ptr, ptr, ptr, stream));
     *buffer_size = std::max(size, *buffer_size);
-    RETURN_IF_HIP_ERROR(hipcub::DeviceScan::ExclusiveSum(nullptr, size, ptr, ptr, m + 1, stream));
+    RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(
+        nullptr, size, ptr, ptr, 0, m + 1, rocprim::plus<rocsparse_int>(), stream));
     *buffer_size = std::max(size, *buffer_size);
-    RETURN_IF_HIP_ERROR(
-        hipcub::DeviceRadixSort::SortPairs(nullptr, size, dummy, dummy, nnz, 0, 32, stream));
+    RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(nullptr, size, dummy, dummy, nnz, 0, 32, stream));
     *buffer_size = std::max(size, *buffer_size);
-#if defined(__HIP_PLATFORM_HCC__)
     rocprim::double_buffer<rocsparse_int> rpdummy(ptr, ptr);
 
     RETURN_IF_HIP_ERROR(rocprim::segmented_radix_sort_pairs(
         nullptr, size, rpdummy, rpdummy, nnz, m, ptr, ptr + 1, 0, 32, stream));
     *buffer_size = std::max(size, *buffer_size);
-#elif defined(__HIP_PLATFORM_NVCC__)
-    RETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortPairs(
-        nullptr, size, dummy, dummy, nnz, m, ptr, ptr, 0, 32, stream));
-    *buffer_size = std::max(size, *buffer_size);
-#endif
     *buffer_size = ((*buffer_size - 1) / 256 + 1) * 256;
 
     // rocPRIM does not support in-place sorting, so we need additional buffer
@@ -233,17 +222,17 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, nnz, work1));
 
         // Sort by rows and store permutation
-        hipcub::DoubleBuffer<rocsparse_int> keys(coo_row_ind, work3);
-        hipcub::DoubleBuffer<rocsparse_int> vals(work1, work2);
+        rocprim::double_buffer<rocsparse_int> keys(coo_row_ind, work3);
+        rocprim::double_buffer<rocsparse_int> vals(work1, work2);
 
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
-            nullptr, size, keys, vals, nnz, startbit, endbit, stream));
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
+        RETURN_IF_HIP_ERROR(
+            rocprim::radix_sort_pairs(nullptr, size, keys, vals, nnz, startbit, endbit, stream));
+        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
             tmp_rocprim, size, keys, vals, nnz, startbit, endbit, stream));
 
-        rocsparse_int* output  = keys.Current();
-        rocsparse_int* mapping = vals.Current();
-        rocsparse_int* alt_map = vals.Alternate();
+        rocsparse_int* output  = keys.current();
+        rocsparse_int* mapping = vals.current();
+        rocsparse_int* alt_map = vals.alternate();
 
         // Copy sorted rows, if stored in buffer
         if(output != coo_row_ind)
@@ -253,18 +242,18 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         }
 
         // Obtain segments for segmented sort by columns
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRunLengthEncode::Encode(
-            nullptr, size, coo_row_ind, work3 + 1, work4, work3, nnz, stream));
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRunLengthEncode::Encode(
-            tmp_rocprim, size, coo_row_ind, work3 + 1, work4, work3, nnz, stream));
+        RETURN_IF_HIP_ERROR(rocprim::run_length_encode(
+            nullptr, size, coo_row_ind, nnz, work3 + 1, work4, work3, stream));
+        RETURN_IF_HIP_ERROR(rocprim::run_length_encode(
+            tmp_rocprim, size, coo_row_ind, nnz, work3 + 1, work4, work3, stream));
 
         rocsparse_int nsegm;
         RETURN_IF_HIP_ERROR(hipMemcpy(&nsegm, work3, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
-        RETURN_IF_HIP_ERROR(
-            hipcub::DeviceScan::ExclusiveSum(nullptr, size, work4, work4, nsegm + 1, stream));
-        RETURN_IF_HIP_ERROR(
-            hipcub::DeviceScan::ExclusiveSum(tmp_rocprim, size, work4, work4, nsegm + 1, stream));
+        RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(
+            nullptr, size, work4, work4, 0, nsegm + 1, rocprim::plus<rocsparse_int>(), stream));
+        RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(
+            tmp_rocprim, size, work4, work4, 0, nsegm + 1, rocprim::plus<rocsparse_int>(), stream));
 
 // Reorder columns
 #define COOSORT_DIM 512
@@ -295,7 +284,6 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         // Sort columns per row
         endbit = rocsparse_clz(n);
 
-#if defined(__HIP_PLATFORM_HCC__)
         rocprim::double_buffer<rocsparse_int> keys2(work3, coo_col_ind);
         rocprim::double_buffer<rocsparse_int> vals2(alt_map, perm);
 
@@ -369,27 +357,7 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
 
         output  = keys2.current();
         mapping = vals2.current();
-#elif defined(__HIP_PLATFORM_NVCC__)
-        hipcub::DoubleBuffer<rocsparse_int> keys2(work3, coo_col_ind);
-        hipcub::DoubleBuffer<rocsparse_int> vals2(alt_map, perm);
 
-        RETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortPairs(
-            nullptr, size, keys2, vals2, nnz, nsegm, work4, work4 + 1, startbit, endbit, stream));
-        RETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortPairs(tmp_rocprim,
-                                                                        size,
-                                                                        keys2,
-                                                                        vals2,
-                                                                        nnz,
-                                                                        nsegm,
-                                                                        work4,
-                                                                        work4 + 1,
-                                                                        startbit,
-                                                                        endbit,
-                                                                        stream));
-
-        output  = keys2.Current();
-        mapping = vals2.Current();
-#endif
         // Copy sorted columns, if stored in buffer
         if(output != coo_col_ind)
         {
@@ -406,10 +374,9 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
     }
     else
     {
-// No permutation vector given
+        // No permutation vector given
 
-// Sort by rows and permute columns
-#if defined(__HIP_PLATFORM_HCC__)
+        // Sort by rows and permute columns
         rocprim::double_buffer<rocsparse_int> keys(coo_row_ind, work3);
         rocprim::double_buffer<rocsparse_int> vals(coo_col_ind, work2);
 
@@ -418,16 +385,6 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
             tmp_rocprim, size, keys, vals, nnz, startbit, endbit, stream));
         rocsparse_int* output = keys.current();
-#elif defined(__HIP_PLATFORM_NVCC__)
-        hipcub::DoubleBuffer<rocsparse_int> keys(coo_row_ind, work3);
-        hipcub::DoubleBuffer<rocsparse_int> vals(coo_col_ind, work2);
-
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
-            nullptr, size, keys, vals, nnz, startbit, endbit, stream));
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
-            tmp_rocprim, size, keys, vals, nnz, startbit, endbit, stream));
-        rocsparse_int* output = keys.Current();
-#endif
 
         // Copy sorted rows, if stored in buffer
         if(output != coo_row_ind)
@@ -437,23 +394,22 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         }
 
         // Obtain segments for segmented sort by columns
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRunLengthEncode::Encode(
-            nullptr, size, coo_row_ind, work3 + 1, work4, work3, nnz, stream));
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRunLengthEncode::Encode(
-            tmp_rocprim, size, coo_row_ind, work3 + 1, work4, work3, nnz, stream));
+        RETURN_IF_HIP_ERROR(rocprim::run_length_encode(
+            nullptr, size, coo_row_ind, nnz, work3 + 1, work4, work3, stream));
+        RETURN_IF_HIP_ERROR(rocprim::run_length_encode(
+            tmp_rocprim, size, coo_row_ind, nnz, work3 + 1, work4, work3, stream));
 
         rocsparse_int nsegm;
         RETURN_IF_HIP_ERROR(hipMemcpy(&nsegm, work3, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
-        RETURN_IF_HIP_ERROR(
-            hipcub::DeviceScan::ExclusiveSum(nullptr, size, work4, work4, nsegm + 1, stream));
-        RETURN_IF_HIP_ERROR(
-            hipcub::DeviceScan::ExclusiveSum(tmp_rocprim, size, work4, work4, nsegm + 1, stream));
+        RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(
+            nullptr, size, work4, work4, 0, nsegm + 1, rocprim::plus<rocsparse_int>(), stream));
+        RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(
+            tmp_rocprim, size, work4, work4, 0, nsegm + 1, rocprim::plus<rocsparse_int>(), stream));
 
         // Sort columns per row
         endbit = rocsparse_clz(n);
 
-#if defined(__HIP_PLATFORM_HCC__)
         rocsparse_int avg_row_nnz = nnz / nsegm;
 
         if(avg_row_nnz < 64)
@@ -483,11 +439,6 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
                 tmp_rocprim, size, vals, nnz, nsegm, work4, work4 + 1, startbit, endbit, stream));
         }
         output = vals.current();
-#elif defined(__HIP_PLATFORM_NVCC__)
-        RETURN_IF_HIP_ERROR(hipcub::DeviceSegmentedRadixSort::SortKeys(
-            tmp_rocprim, size, vals, nnz, nsegm, work4, work4 + 1, startbit, endbit, stream));
-        output = vals.Current();
-#endif
 
         // Copy sorted columns, if stored in buffer
         if(output != coo_col_ind)
