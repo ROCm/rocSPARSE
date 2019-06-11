@@ -32,25 +32,13 @@ __device__ __forceinline__ float rocsparse_ldg(const float* ptr) { return __ldg(
 __device__ __forceinline__ double rocsparse_ldg(const double* ptr) { return __ldg(ptr); }
 __device__ __forceinline__ rocsparse_int rocsparse_ldg(const rocsparse_int* ptr) { return __ldg(ptr); }
 
-#if defined(__HIP_PLATFORM_HCC__)
 __device__ __forceinline__ float rocsparse_nontemporal_load(const float* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ double rocsparse_nontemporal_load(const double* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ rocsparse_int rocsparse_nontemporal_load(const rocsparse_int* ptr) { return __builtin_nontemporal_load(ptr); }
-#elif defined(__HIP_PLATFORM_NVCC__)
-__device__ __forceinline__ float rocsparse_nontemporal_load(const float* ptr) { return *ptr; }
-__device__ __forceinline__ double rocsparse_nontemporal_load(const double* ptr) { return *ptr; }
-__device__ __forceinline__ rocsparse_int rocsparse_nontemporal_load(const rocsparse_int* ptr) { return *ptr; }
-#endif
 
-#if defined(__HIP_PLATFORM_HCC__)
 __device__ __forceinline__ void rocsparse_nontemporal_store(float val, float* ptr) { __builtin_nontemporal_store(val, ptr); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(double val, double* ptr) { __builtin_nontemporal_store(val, ptr); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_int val, rocsparse_int* ptr) { __builtin_nontemporal_store(val, ptr); }
-#elif defined(__HIP_PLATFORM_NVCC__)
-__device__ __forceinline__ void rocsparse_nontemporal_store(float val, float* ptr) { *ptr = val; }
-__device__ __forceinline__ void rocsparse_nontemporal_store(double val, double* ptr) { *ptr = val; }
-__device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_int val, rocsparse_int* ptr) { *ptr = val; }
-#endif
 
 __device__ __forceinline__ float rocsparse_fma(float p, float q, float r) { return fma(p, q, r); }
 __device__ __forceinline__ double rocsparse_fma(double p, double q, double r) { return fma(p, q, r); }
@@ -63,30 +51,9 @@ __device__ __forceinline__ int64_t rocsparse_mul24(int64_t x, int64_t y) { retur
 
 __device__ __forceinline__ rocsparse_int rocsparse_mad24(rocsparse_int x, rocsparse_int y, rocsparse_int z) { return rocsparse_mul24(x, y) + z; }
 
-#if defined(__HIP_PLATFORM_HCC__)
 __device__ __forceinline__ int rocsparse_atomic_load(const int* ptr, int memorder) { return __atomic_load_n(ptr, memorder); }
-#elif defined(__HIP_PLATFORM_NVCC__)
-__device__ __forceinline__ int rocsparse_atomic_load(const int* ptr, int memorder)
-{
-    const volatile int* vptr = ptr;
-    __threadfence();
-    int val = *vptr;
-    __threadfence();
 
-    return val;
-}
-#endif
-
-#if defined(__HIP_PLATFORM_HCC__)
 __device__ __forceinline__ void rocsparse_atomic_store(int* ptr, int val, int memorder) { __atomic_store_n(ptr, val, memorder); }
-#elif defined(__HIP_PLATFORM_NVCC__)
-__device__ __forceinline__ void rocsparse_atomic_store(int* ptr, int val, int memorder)
-{
-    volatile int* vptr = ptr;
-    __threadfence();
-    *vptr = val;
-}
-#endif
 
 // Block reduce kernel computing block sum
 template <typename T, unsigned int BLOCKSIZE>
@@ -120,7 +87,6 @@ __device__ __forceinline__ void rocsparse_blockreduce_max(int i, T* data)
     if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = max(data[i], data[i +   1]); } __syncthreads(); }
 }
 
-#if defined(__HIP_PLATFORM_HCC__)
 // DPP-based wavefront reduction combination of sum and max
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
@@ -246,27 +212,6 @@ __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
     sum = temp_sum.val;
     return sum;
 }
-#elif defined(__HIP_PLATFORM_NVCC__)
-template <unsigned int WFSIZE>
-__device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
-{
-    for(unsigned int i = WFSIZE >> 1; i > 0; i >>= 1)
-    {
-        *maximum = max(*maximum, __shfl_down_sync(0xffffffff, *maximum, i));
-    }
-}
-
-template <unsigned int WFSIZE, typename T>
-__device__ __forceinline__ T rocsparse_wfreduce_sum(T sum)
-{
-    for(unsigned int i = WFSIZE >> 1; i > 0; i >>= 1)
-    {
-        sum += __shfl_down_sync(0xffffffff, sum, i);
-    }
-
-    return sum;
-}
-#endif
 // clang-format on
 
 #endif // COMMON_H

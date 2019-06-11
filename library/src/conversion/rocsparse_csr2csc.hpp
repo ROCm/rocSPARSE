@@ -32,7 +32,7 @@
 #include "utility.h"
 
 #include <hip/hip_runtime.h>
-#include <hipcub/hipcub.hpp>
+#include <rocprim/rocprim.hpp>
 
 template <typename T>
 rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
@@ -142,8 +142,8 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
     rocsparse_int* tmp_perm = reinterpret_cast<rocsparse_int*>(ptr);
     ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
 
-    // hipcub buffer
-    void* tmp_hipcub = reinterpret_cast<void*>(ptr);
+    // rocprim buffer
+    void* tmp_rocprim = reinterpret_cast<void*>(ptr);
 
     // Load CSR column indices into work1 buffer
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
@@ -157,25 +157,25 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
         RETURN_IF_ROCSPARSE_ERROR(
             rocsparse_csr2coo(handle, csr_row_ptr, nnz, m, csc_row_ind, idx_base));
         // Stable sort COO by columns
-        hipcub::DoubleBuffer<rocsparse_int> keys(tmp_work1, tmp_perm);
-        hipcub::DoubleBuffer<rocsparse_int> vals(csc_row_ind, tmp_work2);
+        rocprim::double_buffer<rocsparse_int> keys(tmp_work1, tmp_perm);
+        rocprim::double_buffer<rocsparse_int> vals(csc_row_ind, tmp_work2);
 
         size_t size = 0;
 
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
-            nullptr, size, keys, vals, nnz, startbit, endbit, stream));
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
-            tmp_hipcub, size, keys, vals, nnz, startbit, endbit, stream));
+        RETURN_IF_HIP_ERROR(
+            rocprim::radix_sort_pairs(nullptr, size, keys, vals, nnz, startbit, endbit, stream));
+        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
+            tmp_rocprim, size, keys, vals, nnz, startbit, endbit, stream));
 
         // Create column pointers
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_coo2csr(handle, keys.Current(), nnz, n, csc_col_ptr, idx_base));
+            rocsparse_coo2csr(handle, keys.current(), nnz, n, csc_col_ptr, idx_base));
 
         // Copy csc_row_ind if not current
-        if(vals.Current() != csc_row_ind)
+        if(vals.current() != csc_row_ind)
         {
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(csc_row_ind,
-                                               vals.Current(),
+                                               vals.current(),
                                                sizeof(rocsparse_int) * nnz,
                                                hipMemcpyDeviceToDevice,
                                                stream));
@@ -189,19 +189,19 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, nnz, tmp_perm));
 
         // Stable sort COO by columns
-        hipcub::DoubleBuffer<rocsparse_int> keys(tmp_work1, csc_row_ind);
-        hipcub::DoubleBuffer<rocsparse_int> vals(tmp_perm, tmp_work2);
+        rocprim::double_buffer<rocsparse_int> keys(tmp_work1, csc_row_ind);
+        rocprim::double_buffer<rocsparse_int> vals(tmp_perm, tmp_work2);
 
         size_t size = 0;
 
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
-            nullptr, size, keys, vals, nnz, startbit, endbit, stream));
-        RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
-            tmp_hipcub, size, keys, vals, nnz, startbit, endbit, stream));
+        RETURN_IF_HIP_ERROR(
+            rocprim::radix_sort_pairs(nullptr, size, keys, vals, nnz, startbit, endbit, stream));
+        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
+            tmp_rocprim, size, keys, vals, nnz, startbit, endbit, stream));
 
         // Create column pointers
         RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_coo2csr(handle, keys.Current(), nnz, n, csc_col_ptr, idx_base));
+            rocsparse_coo2csr(handle, keys.current(), nnz, n, csc_col_ptr, idx_base));
 
         // Create row indices
         RETURN_IF_ROCSPARSE_ERROR(
@@ -220,7 +220,7 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
                            nnz,
                            tmp_work1,
                            csr_val,
-                           vals.Current(),
+                           vals.current(),
                            csc_row_ind,
                            csc_val);
 #undef CSR2CSC_DIM
