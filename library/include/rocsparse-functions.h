@@ -2024,6 +2024,8 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle handle,
  *  offsets, that point to the start of every row of the sparse CSR matrix, of the
  *  resulting multiplied matrix C. It is assumed that \p csr_row_ptr_C has been allocated
  *  with size \p m + 1.
+ *  The required buffer size can be obtained by rocsparse_scsrgemm_buffer_size() and
+ *  rocsparse_dcsrgemm_buffer_size(), respectively.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle handle,
@@ -2056,11 +2058,13 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle handle,
  *  \details
  *  \p rocsparse_csrgemm multiplies the scalar \f$\alpha\f$ with the sparse
  *  \f$m \times k\f$ matrix \f$A\f$, defined in CSR storage format, and the sparse
- *  \f$k \times n\f$ matrix \f$B\f$, defined in CSR storage format, and stores the result
- *  in the sparse \f$m \times n\f$ matrix \f$C\f$, defined in CSR storage format, such
+ *  \f$k \times n\f$ matrix \f$B\f$, defined in CSR storage format, and adds the result
+ *  to the sparse \f$m \times n\f$ matrix \f$D\f$ that is multiplied by \f$\beta\f$. The
+ *  final result is stored in the sparse \f$m \times n\f$ matrix \f$C\f$, defined in CSR
+ *  storage format, such
  *  that
  *  \f[
- *    C := \alpha \cdot op(A) \cdot op(B),
+ *    C := \alpha \cdot op(A) \cdot op(B) + \beta \cdot D,
  *  \f]
  *  with
  *  \f[
@@ -2086,10 +2090,134 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle handle,
  *  It is assumed that \p csr_row_ptr_C has already been filled and that \p csr_val_C and
  *  \p csr_col_ind_C are allocated by the user. \p csr_row_ptr_C and allocation size of
  *  \p csr_col_ind_C and \p csr_val_C is defined by the number of non-zero elements of
- *  the sparse CSR matrix C. Both can be obtained by rocsparse_csrgemm_nnz().
+ *  the sparse CSR matrix C. Both can be obtained by rocsparse_csrgemm_nnz(). The
+ *  required buffer size for the computation can be obtained by
+ *  rocsparse_scsrgemm_buffer_size() and rocsparse_dcsrgemm_buffer_size(), respectively.
  *
- *  \note
- *  Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
+ *  \note If \f$\alpha == 0\f$, then \f$C = \beta \cdot D\f$ will be computed.
+ *  \note If \f$\beta == 0\f$, then \f$C = \alpha \cdot op(A) \cdot op(B)\f$ will be computed.
+ *  \note \f$\alpha == beta == 0\f$ is invalid.
+ *  \note Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
+ *  \note Currently, only \p trans_B == \ref rocsparse_operation_none is supported.
+ *
+ *  \par Example
+ *  This example multiplies two CSR matrices with a scalar alpha and adds the result to
+ *  another CSR matrix.
+ *  \code{.c}
+ *  // Initialize scalar multipliers
+ *  float alpha = 2.0f;
+ *  float beta  = 1.0f;
+ *
+ *  // Create matrix descriptors
+ *  rocsparse_mat_descr descr_A;
+ *  rocsparse_mat_descr descr_B;
+ *  rocsparse_mat_descr descr_C;
+ *  rocsparse_mat_descr descr_D;
+ *
+ *  rocsparse_create_mat_descr(&descr_A);
+ *  rocsparse_create_mat_descr(&descr_B);
+ *  rocsparse_create_mat_descr(&descr_C);
+ *  rocsparse_create_mat_descr(&descr_D);
+ *
+ *  // Create matrix info structure
+ *  rocsparse_mat_info info;
+ *  rocsparse_create_mat_info(&info);
+ *
+ *  // Set pointer mode
+ *  rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host);
+ *
+ *  // Query rocsparse for the required buffer size
+ *  size_t buffer_size;
+ *
+ *  rocsparse_scsrgemm_buffer_size(handle,
+ *                                 rocsparse_operation_none,
+ *                                 rocsparse_operation_none,
+ *                                 m,
+ *                                 n,
+ *                                 k,
+ *                                 &alpha,
+ *                                 descr_A,
+ *                                 nnz_A,
+ *                                 csr_row_ptr_A,
+ *                                 csr_col_ind_A,
+ *                                 descr_B,
+ *                                 nnz_B,
+ *                                 csr_row_ptr_B,
+ *                                 csr_col_ind_B,
+ *                                 &beta,
+ *                                 descr_D,
+ *                                 nnz_D,
+ *                                 csr_row_ptr_D,
+ *                                 csr_col_ind_D,
+ *                                 info,
+ *                                 &buffer_size);
+ *
+ *  // Allocate buffer
+ *  void* buffer;
+ *  hipMalloc(&buffer, buffer_size);
+ *
+ *  // Obtain number of total non-zero entries in C and row pointers of C
+ *  rocsparse_int nnz_C;
+ *  hipMalloc((void**)&csr_row_ptr_C, sizeof(rocsparse_int) * (m + 1));
+ *
+ *  rocsparse_csrgemm_nnz(handle,
+ *                        rocsparse_operation_none,
+ *                        rocsparse_operation_none,
+ *                        m,
+ *                        n,
+ *                        k,
+ *                        descr_A,
+ *                        nnz_A,
+ *                        csr_row_ptr_A,
+ *                        csr_col_ind_A,
+ *                        descr_B,
+ *                        nnz_B,
+ *                        csr_row_ptr_B,
+ *                        csr_col_ind_B,
+ *                        descr_D,
+ *                        nnz_D,
+ *                        csr_row_ptr_D,
+ *                        csr_col_ind_D,
+ *                        descr_C,
+ *                        csr_row_ptr_C,
+ *                        &nnz_C,
+ *                        info,
+ *                        buffer);
+ *
+ *  // Compute column indices and values of C
+ *  hipMalloc((void**)&csr_col_ind_C, sizeof(rocsparse_int) * nnz_C);
+ *  hipMalloc((void**)&csr_val_C, sizeof(float) * nnz_C);
+ *
+ *  rocsparse_scsrgemm(handle,
+                       rocsparse_operation_none,
+                       rocsparse_operation_none,
+                       m,
+                       n,
+                       k,
+                       &alpha,
+                       descr_A,
+                       nnz_A,
+                       csr_val_A,
+                       csr_row_ptr_A,
+                       csr_col_ind_A,
+                       descr_B,
+                       nnz_B,
+                       csr_val_B,
+                       csr_row_ptr_B,
+                       csr_col_ind_B,
+                       &beta,
+                       descr_D,
+                       nnz_D,
+                       csr_val_D,
+                       csr_row_ptr_D,
+                       csr_col_ind_D,
+                       descr_C,
+                       csr_val_C,
+                       csr_row_ptr_C,
+                       csr_col_ind_C,
+                       info,
+                       buffer);
+ *  \endcode
  */
 /**@{*/
 ROCSPARSE_EXPORT
