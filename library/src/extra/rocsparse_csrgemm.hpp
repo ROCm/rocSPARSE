@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,120 @@
 #include "csrgemm_device.h"
 
 #include <hip/hip_runtime.h>
+#include <rocprim/rocprim_hip.hpp>
+
+#define CSRGEMM_MAXGROUPS 8
+
+template <typename T>
+rocsparse_status rocsparse_csrgemm_mult_buffer_size_template(rocsparse_handle handle,
+                                                             rocsparse_operation trans_A,
+                                                             rocsparse_operation trans_B,
+                                                             rocsparse_int m,
+                                                             rocsparse_int n,
+                                                             rocsparse_int k,
+                                                             const T* alpha,
+                                                             const rocsparse_mat_descr descr_A,
+                                                             rocsparse_int nnz_A,
+                                                             const rocsparse_int* csr_row_ptr_A,
+                                                             const rocsparse_int* csr_col_ind_A,
+                                                             const rocsparse_mat_descr descr_B,
+                                                             rocsparse_int nnz_B,
+                                                             const rocsparse_int* csr_row_ptr_B,
+                                                             const rocsparse_int* csr_col_ind_B,
+                                                             rocsparse_mat_info info,
+                                                             size_t* buffer_size)
+{
+    // Check for valid handle and info structure
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+    else if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(info->csrgemm_info == nullptr)
+    {
+        return rocsparse_status_internal_error;
+    }
+
+    // Check valid sizes
+    if(m < 0 || n < 0 || k < 0 || nnz_A < 0 || nnz_B < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check valid pointers
+    if(descr_A == nullptr || csr_row_ptr_A == nullptr || csr_col_ind_A == nullptr ||
+       descr_B == nullptr || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr ||
+       buffer_size == nullptr || alpha == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check index base
+    if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
+    {
+        return rocsparse_status_invalid_value;
+    }
+    if(descr_B->base != rocsparse_index_base_zero && descr_B->base != rocsparse_index_base_one)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check matrix type
+    if(descr_A->type != rocsparse_matrix_type_general)
+    {
+        return rocsparse_status_not_implemented;
+    }
+    if(descr_B->type != rocsparse_matrix_type_general)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
+    // Quick return if possible
+    if(m == 0 || n == 0 || k == 0 || nnz_A == 0 || nnz_B == 0)
+    {
+        // Do not return 0 as buffer size
+        *buffer_size = 4;
+
+        return rocsparse_status_success;
+    }
+
+    // Stream
+    hipStream_t stream = handle->stream;
+
+    // rocprim buffer
+    size_t rocprim_size;
+    size_t rocprim_max = 0;
+
+    // rocprim::reduce
+    RETURN_IF_HIP_ERROR(rocprim::reduce(nullptr, rocprim_size, csr_row_ptr_A, &nnz_A, 0, m, rocprim::maximum<rocsparse_int>(), stream));
+    rocprim_max = std::max(rocprim_max, rocprim_size);
+
+    // rocprim exclusive scan
+    RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(nullptr, rocprim_size, csr_row_ptr_A, &nnz_A, 0, m + 1, rocprim::plus<rocsparse_int>(), stream));
+    rocprim_max = std::max(rocprim_max, rocprim_size);
+
+    // rocprim::radix_sort_pairs
+    rocprim::double_buffer<rocsparse_int> buf(&nnz_A, &nnz_B);
+    RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(nullptr, rocprim_size, buf, buf, m, 0, 3, stream));
+    rocprim_max = std::max(rocprim_max, rocprim_size);
+
+    *buffer_size = ((rocprim_max - 1) / 256 + 1) * 256;
+
+    // Group arrays
+    *buffer_size += sizeof(int) * 256 * CSRGEMM_MAXGROUPS;
+    *buffer_size += sizeof(int) * 256;
+    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
+
+    // Permutation arrays
+    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
+
+    return rocsparse_status_success;
+}
 
 template <typename T>
 rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle handle,
@@ -60,10 +174,6 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle handle,
     if(handle == nullptr)
     {
         return rocsparse_status_invalid_handle;
-    }
-    else if(info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     // Logging
@@ -120,108 +230,7 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle handle,
                   (const void*&)buffer_size);
     }
 
-    // Check sizes
-    if(m < 0 || n < 0 || k < 0 || nnz_A < 0 || nnz_B < 0 || nnz_D < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Either alpha or beta can be nullptr
-    if(alpha == nullptr && beta == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Quick return if possible
-    if(m == 0 || n == 0)
-    {
-        // Do not return 0 as buffer size
-        *buffer_size = 4;
-
-        return rocsparse_status_success;
-    }
-    if(alpha == nullptr)
-    {
-        if(nnz_D == 0)
-        {
-            // Do not return 0 as buffer size
-            *buffer_size = 4;
-
-            return rocsparse_status_success;
-        }
-    }
-    if(beta == nullptr)
-    {
-        if(k == 0 || nnz_A == 0 || nnz_B == 0)
-        {
-            // Do not return 0 as buffer size
-            *buffer_size = 4;
-
-            return rocsparse_status_success;
-        }
-    }
-    if((nnz_A == 0 || nnz_B == 0) && nnz_D == 0)
-    {
-        // Do not return 0 as buffer size
-        *buffer_size = 4;
-
-        return rocsparse_status_success;
-    }
-
-    // If alpha != nullptr, A and B must be valid
-    if(alpha != nullptr)
-    {
-        // Check valid pointers
-        if(descr_A == nullptr || csr_row_ptr_A == nullptr || csr_col_ind_A == nullptr ||
-           descr_B == nullptr || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr)
-        {
-            return rocsparse_status_invalid_pointer;
-        }
-
-        // Check index base
-        if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
-        {
-            return rocsparse_status_invalid_value;
-        }
-        if(descr_B->base != rocsparse_index_base_zero && descr_B->base != rocsparse_index_base_one)
-        {
-            return rocsparse_status_invalid_value;
-        }
-
-        // Check matrix type
-        if(descr_A->type != rocsparse_matrix_type_general)
-        {
-            return rocsparse_status_not_implemented;
-        }
-        if(descr_B->type != rocsparse_matrix_type_general)
-        {
-            return rocsparse_status_not_implemented;
-        }
-    }
-
-    // If beta != nullptr, D must be valid
-    if(beta != nullptr)
-    {
-        // Check valid pointers
-        if(descr_D == nullptr || csr_row_ptr_D == nullptr || csr_col_ind_D == nullptr)
-        {
-            return rocsparse_status_invalid_pointer;
-        }
-
-        // Check index base
-        if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
-        {
-            return rocsparse_status_invalid_value;
-        }
-
-        // Check matrix type
-        if(descr_D->type != rocsparse_matrix_type_general)
-        {
-            return rocsparse_status_not_implemented;
-        }
-    }
-
-    if(buffer_size == nullptr)
+    if(info == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -232,32 +241,55 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle handle,
     // Create csrgemm info
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrgemm_info(&info->csrgemm_info));
 
-    // Multiplicative part
+    // Set info parameters
     info->csrgemm_info->mul = (alpha != nullptr);
-
-    // Additive part
     info->csrgemm_info->add = (beta != nullptr);
 
+    // Either alpha or beta can be nullptr
+    if(alpha != nullptr && beta != nullptr)
+    {
+        // alpha != nullptr && beta != nullptr
+        // TODO
+        // rocsparse_csrgemm_multadd_template(...)
+        return rocsparse_status_not_implemented;
+    }
+    else if(alpha != nullptr && beta == nullptr)
+    {
+        // alpha != nullptr && beta == nullptr
+        return rocsparse_csrgemm_mult_buffer_size_template<T>(handle,
+                                                              trans_A,
+                                                              trans_B,
+                                                              m,
+                                                              n,
+                                                              k,
+                                                              alpha,
+                                                              descr_A,
+                                                              nnz_A,
+                                                              csr_row_ptr_A,
+                                                              csr_col_ind_A,
+                                                              descr_B,
+                                                              nnz_B,
+                                                              csr_row_ptr_B,
+                                                              csr_col_ind_B,
+                                                              info,
+                                                              buffer_size);
+    }
+    else if(alpha == nullptr && beta != nullptr)
+    {
+        // alpha == nullptr && beta != nullptr
 
-
-
-
-
-
-
-
-
-
-
-*buffer_size = 4;
-
-
-
-
+        // TODO
+        // RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgeam_buffer_size_template<T>(...);
+        return rocsparse_status_not_implemented;
+    }
+    else
+    {
+        // alpha == nullptr && beta == nullptr
+        return rocsparse_status_invalid_pointer;
+    }
 
     return rocsparse_status_success;
 }
-
 
 template <typename T>
 rocsparse_status rocsparse_csrgemm_template(rocsparse_handle handle,
