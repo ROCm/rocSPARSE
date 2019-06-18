@@ -957,3 +957,7 @@ rocsparse_coosort_by_column()
 *****************************
 
 .. doxygenfunction:: rocsparse_coosort_by_column
+
+Bibliography
+------------
+.. bibliography:: references.bib

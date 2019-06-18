@@ -2026,6 +2026,11 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle handle,
  *  with size \p m + 1.
  *  The required buffer size can be obtained by rocsparse_scsrgemm_buffer_size() and
  *  rocsparse_dcsrgemm_buffer_size(), respectively.
+ *
+ *  The algorithm is based on the paper "High-performance and Memory-saving Sparse
+ *  General Matrix-Matrix Multiplication for NVIDIA Pascal GPU", by Nagasaka, Y.,
+ *  Nukada, A., Matsuoka, S. in 2017 46th International Conference on Parallel Processing
+ *  (ICPP) 101-110 \cite NAGASAKA
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle handle,
@@ -2099,6 +2104,11 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle handle,
  *  \note \f$\alpha == beta == 0\f$ is invalid.
  *  \note Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
  *  \note Currently, only \p trans_B == \ref rocsparse_operation_none is supported.
+ *
+ *  The algorithm is based on the paper "High-performance and Memory-saving Sparse
+ *  General Matrix-Matrix Multiplication for NVIDIA Pascal GPU", by Nagasaka, Y.,
+ *  Nukada, A., Matsuoka, S. in 2017 46th International Conference on Parallel Processing
+ *  (ICPP) 101-110 \cite NAGASAKA
  *
  *  \par Example
  *  This example multiplies two CSR matrices with a scalar alpha and adds the result to
