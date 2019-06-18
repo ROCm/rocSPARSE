@@ -32,7 +32,9 @@ rocSPARSECI:
     def rocsparse = new rocProject('rocsparse')
     // customize for project
     rocsparse.paths.build_command = './install.sh -c'
-
+    rocsparse.compiler.compiler_name = 'c++'
+    rocsparse.compiler.compiler_path = 'c++'
+    
     // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(['gfx900 && centos7', 'gfx906'], rocsparse)
 
@@ -43,12 +45,26 @@ rocSPARSECI:
         platform, project->
 
         project.paths.construct_build_prefix()
-        def command = """#!/usr/bin/env bash
-                  set -x
-                  cd ${project.paths.project_build_prefix}
-                  LD_LIBRARY_PATH=/opt/rocm/hcc/lib CXX=${project.compiler.compiler_path} ${project.paths.build_command}
+        
+        def command
+        
+        if(platform.jenkinsLabel.contains('centos'))
+        {   
+            command = """#!/usr/bin/env bash
+                    set -x
+                    cd ${project.paths.project_build_prefix}
+                    export PATH=/opt/rocm/hsa/include:$PATH
+                    LD_LIBRARY_PATH=/opt/rocm/hcc/lib CXX=/opt/rh/devtoolset-7/root/usr/bin/c++ ${project.paths.build_command}
                 """
-
+        }
+        else
+        {
+            command = """#!/usr/bin/env bash
+                    set -x
+                    cd ${project.paths.project_build_prefix}
+                    LD_LIBRARY_PATH=/opt/rocm/hcc/lib CXX=${project.compiler.compiler_path} ${project.paths.build_command}
+                """
+        }
         platform.runCommand(this, command)
     }
 

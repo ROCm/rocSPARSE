@@ -23,7 +23,7 @@ RUN yum install -y \
     clang-devel \
     gcc-c++ \
     pkgconfig \
-    numactl-libs \
+    numactl-libs 
 
 RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
     'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh
