@@ -22,6 +22,7 @@ RUN yum install -y \
     clang \
     clang-devel \
     gcc-c++ \
+    boost-devel \
     pkgconfig \
     numactl-libs 
 
