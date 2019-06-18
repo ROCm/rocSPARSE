@@ -157,6 +157,53 @@ __global__ void csrgemm_group_reduce_part1(rocsparse_int m,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS>
+__global__ void csrgemm_group_reduce_part2(rocsparse_int m,
+                                           const rocsparse_int* __restrict__ csr_row_ptr,
+                                           rocsparse_int* __restrict__ group_size,
+                                           rocsparse_int* __restrict__ workspace)
+{
+    rocsparse_int row = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    // Shared memory for block reduction
+    __shared__ rocsparse_int sdata[BLOCKSIZE * GROUPS];
+
+    // Initialize shared memory
+    for(unsigned int i = 0; i < GROUPS; ++i)
+    {
+        sdata[hipThreadIdx_x * GROUPS + i] = 0;
+    }
+
+    // Loop over rows
+    for(; row < m; row += hipGridDim_x * hipBlockDim_x)
+    {
+        rocsparse_int nnz = csr_row_ptr[row + 1] - csr_row_ptr[row];
+
+        // clang-format off
+             if(nnz <=    16) { ++sdata[hipThreadIdx_x * GROUPS + 0]; workspace[row] = 0; }
+        else if(nnz <=    32) { ++sdata[hipThreadIdx_x * GROUPS + 1]; workspace[row] = 1; }
+        else if(nnz <=   256) { ++sdata[hipThreadIdx_x * GROUPS + 2]; workspace[row] = 2; }
+        else if(nnz <=   512) { ++sdata[hipThreadIdx_x * GROUPS + 3]; workspace[row] = 3; }
+        else if(nnz <=  1024) { ++sdata[hipThreadIdx_x * GROUPS + 4]; workspace[row] = 4; }
+        else if(nnz <=  2048) { ++sdata[hipThreadIdx_x * GROUPS + 5]; workspace[row] = 5; }
+        else if(nnz <=  4096) { ++sdata[hipThreadIdx_x * GROUPS + 6]; workspace[row] = 6; }
+        else                  { ++sdata[hipThreadIdx_x * GROUPS + 7]; workspace[row] = 7; }
+        // clang-format on
+    }
+
+    // Wait for all threads to finish
+    __syncthreads();
+
+    // Reduce block
+    csrgemm_group_reduce<BLOCKSIZE, GROUPS>(hipThreadIdx_x, sdata);
+
+    // Write result
+    if(hipThreadIdx_x < GROUPS)
+    {
+        group_size[hipBlockIdx_x * GROUPS + hipThreadIdx_x] = sdata[hipThreadIdx_x];
+    }
+}
+
+template <unsigned int BLOCKSIZE, unsigned int GROUPS>
 __global__ void csrgemm_group_reduce_part3(rocsparse_int* __restrict__ group_size)
 {
     // Shared memory for block reduction
@@ -178,6 +225,64 @@ __global__ void csrgemm_group_reduce_part3(rocsparse_int* __restrict__ group_siz
     if(hipThreadIdx_x < GROUPS)
     {
         group_size[hipThreadIdx_x] = sdata[hipThreadIdx_x];
+    }
+}
+
+template <unsigned int BLOCKSIZE>
+__global__ void csrgemm_max_row_nnz_part1(rocsparse_int m,
+                                          const rocsparse_int* __restrict__ csr_row_ptr,
+                                          rocsparse_int* __restrict__ workspace)
+{
+    rocsparse_int row = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    // Initialize local maximum
+    rocsparse_int local_max = 0;
+
+    // Loop over rows
+    for(; row < m; row += hipGridDim_x * hipBlockDim_x)
+    {
+        // Determine local maximum
+        local_max = max(local_max, csr_row_ptr[row + 1] - csr_row_ptr[row]);
+    }
+
+    // Shared memory for block reduction
+    __shared__ rocsparse_int sdata[BLOCKSIZE];
+
+    // Write local maximum into shared memory
+    sdata[hipThreadIdx_x] = local_max;
+
+    // Wait for all threads to finish
+    __syncthreads();
+
+    // Reduce block
+    rocsparse_blockreduce_max<rocsparse_int, BLOCKSIZE>(hipThreadIdx_x, sdata);
+
+    // Write result
+    if(hipThreadIdx_x == 0)
+    {
+        workspace[hipBlockIdx_x] = sdata[0];
+    }
+}
+
+template <unsigned int BLOCKSIZE>
+__global__ void csrgemm_max_row_nnz_part2(rocsparse_int* __restrict__ workspace)
+{
+    // Shared memory for block reduction
+    __shared__ rocsparse_int sdata[BLOCKSIZE];
+
+    // Initialize shared memory with workspace entry
+    sdata[hipThreadIdx_x] = workspace[hipThreadIdx_x];
+
+    // Wait for all threads to finish
+    __syncthreads();
+
+    // Reduce block
+    rocsparse_blockreduce_max<rocsparse_int, BLOCKSIZE>(hipThreadIdx_x, sdata);
+
+    // Write result
+    if(hipThreadIdx_x == 0)
+    {
+        workspace[0] = sdata[0];
     }
 }
 

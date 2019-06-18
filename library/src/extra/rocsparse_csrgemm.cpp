@@ -114,8 +114,8 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
                                         stream));
 
     rocsparse_int int_max;
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(&int_max, csr_row_ptr_C + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+        &int_max, csr_row_ptr_C + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
 
     // Group offset buffer
     rocsparse_int* d_group_offset = reinterpret_cast<rocsparse_int*>(buffer);
@@ -176,7 +176,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
                                                     rocprim::plus<rocsparse_int>(),
                                                     stream));
 
-        // Copy group sizes and offsets to host
+        // Copy group sizes to host
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(&h_group_size,
                                            d_group_size,
                                            sizeof(rocsparse_int) * CSRGEMM_MAXGROUPS,
