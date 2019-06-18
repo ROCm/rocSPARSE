@@ -2031,6 +2031,10 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle handle,
  *  General Matrix-Matrix Multiplication for NVIDIA Pascal GPU", by Nagasaka, Y.,
  *  Nukada, A., Matsuoka, S. in 2017 46th International Conference on Parallel Processing
  *  (ICPP) 101-110 \cite NAGASAKA
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
@@ -2109,6 +2113,10 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
  *  General Matrix-Matrix Multiplication for NVIDIA Pascal GPU", by Nagasaka, Y.,
  *  Nukada, A., Matsuoka, S. in 2017 46th International Conference on Parallel Processing
  *  (ICPP) 101-110 \cite NAGASAKA
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
  *
  *  \par Example
  *  This example multiplies two CSR matrices with a scalar alpha and adds the result to
