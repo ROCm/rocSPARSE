@@ -17,12 +17,12 @@ RUN yum install -y \
     devtoolset-7 \
     ca-certificates \
     git \
+    gtest \
+    gtest-devel \
     cmake3 \
     make \
     clang \
     clang-devel \
-    gtest-devel \ 
-    gtest \
     gcc-c++ \
     boost-devel \
     pkgconfig \
@@ -41,11 +41,11 @@ RUN useradd --create-home -u ${user_uid} -o -G video --shell /bin/bash jenkins &
 ARG ROCSPARSE_SRC_ROOT=/usr/local/src/rocSPARSE
 
 # Clone rocsparse repo
-# Build rocsparse and install into /usr/local
+# Build client dependencies and install into /usr/local
 RUN mkdir -p ${ROCSPARSE_SRC_ROOT} && cd ${ROCSPARSE_SRC_ROOT} && \
     git clone -b develop --depth=1 https://github.com/ROCmSoftwarePlatform/rocSPARSE . && \
-    mkdir -p build && cd build && \
-    HIP_PLATFORM=hcc cmake3 -DBUILD_CLIENTS_SAMPLES=OFF .. && \
-    HIP_PLATFORM=hcc make -j $(nproc) install && \
+    mkdir -p build/deps && cd build/deps && \
+    cmake3 -DBUILD_BOOST=OFF ${ROCSPARSE_SRC_ROOT}/deps && \
+    make -j $(nproc) install && \
     rm -rf ${ROCSPARSE_SRC_ROOT}
     
