@@ -21,6 +21,8 @@ RUN yum install -y \
     make \
     clang \
     clang-devel \
+    gtest-devel \ 
+    gtest \
     gcc-c++ \
     boost-devel \
     pkgconfig \
