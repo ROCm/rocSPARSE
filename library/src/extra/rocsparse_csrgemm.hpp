@@ -25,10 +25,11 @@
 #ifndef ROCSPARSE_CSRGEMM_HPP
 #define ROCSPARSE_CSRGEMM_HPP
 
-#include "rocsparse.h"
-#include "handle.h"
-#include "utility.h"
 #include "csrgemm_device.h"
+#include "definitions.h"
+#include "handle.h"
+#include "rocsparse.h"
+#include "utility.h"
 
 #include <hip/hip_runtime.h>
 #include <rocprim/rocprim_hip.hpp>
@@ -36,23 +37,23 @@
 #define CSRGEMM_MAXGROUPS 8
 
 template <typename T>
-rocsparse_status rocsparse_csrgemm_mult_buffer_size_template(rocsparse_handle handle,
-                                                             rocsparse_operation trans_A,
-                                                             rocsparse_operation trans_B,
-                                                             rocsparse_int m,
-                                                             rocsparse_int n,
-                                                             rocsparse_int k,
-                                                             const T* alpha,
+rocsparse_status rocsparse_csrgemm_mult_buffer_size_template(rocsparse_handle          handle,
+                                                             rocsparse_operation       trans_A,
+                                                             rocsparse_operation       trans_B,
+                                                             rocsparse_int             m,
+                                                             rocsparse_int             n,
+                                                             rocsparse_int             k,
+                                                             const T*                  alpha,
                                                              const rocsparse_mat_descr descr_A,
-                                                             rocsparse_int nnz_A,
+                                                             rocsparse_int             nnz_A,
                                                              const rocsparse_int* csr_row_ptr_A,
                                                              const rocsparse_int* csr_col_ind_A,
                                                              const rocsparse_mat_descr descr_B,
-                                                             rocsparse_int nnz_B,
+                                                             rocsparse_int             nnz_B,
                                                              const rocsparse_int* csr_row_ptr_B,
                                                              const rocsparse_int* csr_col_ind_B,
-                                                             rocsparse_mat_info info,
-                                                             size_t* buffer_size)
+                                                             rocsparse_mat_info   info,
+                                                             size_t*              buffer_size)
 {
     // Check for valid handle and info structure
     if(handle == nullptr)
@@ -75,9 +76,9 @@ rocsparse_status rocsparse_csrgemm_mult_buffer_size_template(rocsparse_handle ha
     }
 
     // Check valid pointers
-    if(descr_A == nullptr || csr_row_ptr_A == nullptr || csr_col_ind_A == nullptr ||
-       descr_B == nullptr || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr ||
-       buffer_size == nullptr || alpha == nullptr)
+    if(descr_A == nullptr || csr_row_ptr_A == nullptr || csr_col_ind_A == nullptr
+       || descr_B == nullptr || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr
+       || buffer_size == nullptr || alpha == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -119,16 +120,31 @@ rocsparse_status rocsparse_csrgemm_mult_buffer_size_template(rocsparse_handle ha
     size_t rocprim_max = 0;
 
     // rocprim::reduce
-    RETURN_IF_HIP_ERROR(rocprim::reduce(nullptr, rocprim_size, csr_row_ptr_A, &nnz_A, 0, m, rocprim::maximum<rocsparse_int>(), stream));
+    RETURN_IF_HIP_ERROR(rocprim::reduce(nullptr,
+                                        rocprim_size,
+                                        csr_row_ptr_A,
+                                        &nnz_A,
+                                        0,
+                                        m,
+                                        rocprim::maximum<rocsparse_int>(),
+                                        stream));
     rocprim_max = std::max(rocprim_max, rocprim_size);
 
     // rocprim exclusive scan
-    RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(nullptr, rocprim_size, csr_row_ptr_A, &nnz_A, 0, m + 1, rocprim::plus<rocsparse_int>(), stream));
+    RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(nullptr,
+                                                rocprim_size,
+                                                csr_row_ptr_A,
+                                                &nnz_A,
+                                                0,
+                                                m + 1,
+                                                rocprim::plus<rocsparse_int>(),
+                                                stream));
     rocprim_max = std::max(rocprim_max, rocprim_size);
 
     // rocprim::radix_sort_pairs
     rocprim::double_buffer<rocsparse_int> buf(&nnz_A, &nnz_B);
-    RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(nullptr, rocprim_size, buf, buf, m, 0, 3, stream));
+    RETURN_IF_HIP_ERROR(
+        rocprim::radix_sort_pairs(nullptr, rocprim_size, buf, buf, m, 0, 3, stream));
     rocprim_max = std::max(rocprim_max, rocprim_size);
 
     *buffer_size = ((rocprim_max - 1) / 256 + 1) * 256;
@@ -147,28 +163,28 @@ rocsparse_status rocsparse_csrgemm_mult_buffer_size_template(rocsparse_handle ha
 }
 
 template <typename T>
-rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle handle,
-                                                        rocsparse_operation trans_A,
-                                                        rocsparse_operation trans_B,
-                                                        rocsparse_int m,
-                                                        rocsparse_int n,
-                                                        rocsparse_int k,
-                                                        const T* alpha,
+rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle          handle,
+                                                        rocsparse_operation       trans_A,
+                                                        rocsparse_operation       trans_B,
+                                                        rocsparse_int             m,
+                                                        rocsparse_int             n,
+                                                        rocsparse_int             k,
+                                                        const T*                  alpha,
                                                         const rocsparse_mat_descr descr_A,
-                                                        rocsparse_int nnz_A,
-                                                        const rocsparse_int* csr_row_ptr_A,
-                                                        const rocsparse_int* csr_col_ind_A,
+                                                        rocsparse_int             nnz_A,
+                                                        const rocsparse_int*      csr_row_ptr_A,
+                                                        const rocsparse_int*      csr_col_ind_A,
                                                         const rocsparse_mat_descr descr_B,
-                                                        rocsparse_int nnz_B,
-                                                        const rocsparse_int* csr_row_ptr_B,
-                                                        const rocsparse_int* csr_col_ind_B,
-                                                        const T* beta,
+                                                        rocsparse_int             nnz_B,
+                                                        const rocsparse_int*      csr_row_ptr_B,
+                                                        const rocsparse_int*      csr_col_ind_B,
+                                                        const T*                  beta,
                                                         const rocsparse_mat_descr descr_D,
-                                                        rocsparse_int nnz_D,
-                                                        const rocsparse_int* csr_row_ptr_D,
-                                                        const rocsparse_int* csr_col_ind_D,
-                                                        rocsparse_mat_info info,
-                                                        size_t* buffer_size)
+                                                        rocsparse_int             nnz_D,
+                                                        const rocsparse_int*      csr_row_ptr_D,
+                                                        const rocsparse_int*      csr_col_ind_D,
+                                                        rocsparse_mat_info        info,
+                                                        size_t*                   buffer_size)
 {
     // Check for valid handle and info structure
     if(handle == nullptr)
@@ -292,35 +308,35 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle handle,
 }
 
 template <typename T>
-rocsparse_status rocsparse_csrgemm_template(rocsparse_handle handle,
-                                            rocsparse_operation trans_A,
-                                            rocsparse_operation trans_B,
-                                            rocsparse_int m,
-                                            rocsparse_int n,
-                                            rocsparse_int k,
-                                            const T* alpha,
+rocsparse_status rocsparse_csrgemm_template(rocsparse_handle          handle,
+                                            rocsparse_operation       trans_A,
+                                            rocsparse_operation       trans_B,
+                                            rocsparse_int             m,
+                                            rocsparse_int             n,
+                                            rocsparse_int             k,
+                                            const T*                  alpha,
                                             const rocsparse_mat_descr descr_A,
-                                            rocsparse_int nnz_A,
-                                            const T* csr_val_A,
-                                            const rocsparse_int* csr_row_ptr_A,
-                                            const rocsparse_int* csr_col_ind_A,
+                                            rocsparse_int             nnz_A,
+                                            const T*                  csr_val_A,
+                                            const rocsparse_int*      csr_row_ptr_A,
+                                            const rocsparse_int*      csr_col_ind_A,
                                             const rocsparse_mat_descr descr_B,
-                                            rocsparse_int nnz_B,
-                                            const T* csr_val_B,
-                                            const rocsparse_int* csr_row_ptr_B,
-                                            const rocsparse_int* csr_col_ind_B,
-                                            const T* beta,
+                                            rocsparse_int             nnz_B,
+                                            const T*                  csr_val_B,
+                                            const rocsparse_int*      csr_row_ptr_B,
+                                            const rocsparse_int*      csr_col_ind_B,
+                                            const T*                  beta,
                                             const rocsparse_mat_descr descr_D,
-                                            rocsparse_int nnz_D,
-                                            const T* csr_val_D,
-                                            const rocsparse_int* csr_row_ptr_D,
-                                            const rocsparse_int* csr_col_ind_D,
+                                            rocsparse_int             nnz_D,
+                                            const T*                  csr_val_D,
+                                            const rocsparse_int*      csr_row_ptr_D,
+                                            const rocsparse_int*      csr_col_ind_D,
                                             const rocsparse_mat_descr descr_C,
-                                            T* csr_val_C,
-                                            const rocsparse_int* csr_row_ptr_C,
-                                            rocsparse_int* csr_col_ind_C,
-                                            const rocsparse_mat_info info,
-                                            void* temp_buffer)
+                                            T*                        csr_val_C,
+                                            const rocsparse_int*      csr_row_ptr_C,
+                                            rocsparse_int*            csr_col_ind_C,
+                                            const rocsparse_mat_info  info,
+                                            void*                     temp_buffer)
 {
     // Check for valid handle and info structure
     if(handle == nullptr)
@@ -370,7 +386,10 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle handle,
                   (const void*&)info,
                   (const void*&)temp_buffer);
 
-        log_bench(handle, "./rocsparse-bench -f csrgemm -r", replaceX<T>("X"), "--mtx <matrix.mtx>"); // TODO alpha
+        log_bench(handle,
+                  "./rocsparse-bench -f csrgemm -r",
+                  replaceX<T>("X"),
+                  "--mtx <matrix.mtx>"); // TODO alpha
     }
     else
     {
@@ -446,8 +465,9 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle handle,
     if(alpha != nullptr)
     {
         // Check valid pointers
-        if(descr_A == nullptr || csr_val_A == nullptr || csr_row_ptr_A == nullptr || csr_col_ind_A == nullptr ||
-           descr_B == nullptr || csr_val_B == nullptr || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr)
+        if(descr_A == nullptr || csr_val_A == nullptr || csr_row_ptr_A == nullptr
+           || csr_col_ind_A == nullptr || descr_B == nullptr || csr_val_B == nullptr
+           || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr)
         {
             return rocsparse_status_invalid_pointer;
         }
@@ -477,7 +497,8 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle handle,
     if(beta != nullptr)
     {
         // Check valid pointers
-        if(descr_D == nullptr || csr_val_D == nullptr || csr_row_ptr_D == nullptr || csr_col_ind_D == nullptr)
+        if(descr_D == nullptr || csr_val_D == nullptr || csr_row_ptr_D == nullptr
+           || csr_col_ind_D == nullptr)
         {
             return rocsparse_status_invalid_pointer;
         }

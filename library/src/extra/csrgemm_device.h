@@ -26,6 +26,7 @@
 #define CSRGEMM_DEVICE_H
 
 #include "common.h"
+#include "rocsparse.h"
 
 #include <hip/hip_runtime.h>
 
@@ -38,8 +39,8 @@ __global__ void csrgemm_intermediate_products(rocsparse_int m,
                                               const rocsparse_int* __restrict__ csr_row_ptr_D,
                                               rocsparse_int* __restrict__ int_prod,
                                               rocsparse_index_base idx_base_A,
-                                              bool mul,
-                                              bool add)
+                                              bool                 mul,
+                                              bool                 add)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -92,7 +93,8 @@ __global__ void csrgemm_intermediate_products(rocsparse_int m,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS>
-static __device__ __forceinline__ void csrgemm_group_reduce(rocsparse_int tid, rocsparse_int* __restrict__ data)
+static __device__ __forceinline__ void csrgemm_group_reduce(rocsparse_int tid,
+                                                            rocsparse_int* __restrict__ data)
 {
     // clang-format off
     if(BLOCKSIZE > 512 && tid < 512) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid + 512) * GROUPS + i]; __syncthreads();
@@ -181,7 +183,8 @@ __global__ void csrgemm_group_reduce_part3(rocsparse_int* __restrict__ group_siz
 
 // Hash operation to insert key into hash table
 template <unsigned int HASHVAL, unsigned int HASHSIZE>
-static __device__ __forceinline__ rocsparse_int insert_key(rocsparse_int key, rocsparse_int* __restrict__ table)
+static __device__ __forceinline__ rocsparse_int insert_key(rocsparse_int key,
+                                                           rocsparse_int* __restrict__ table)
 {
     rocsparse_int nins = 0;
     rocsparse_int hash = (key * HASHVAL) & (HASHSIZE - 1);
@@ -228,8 +231,8 @@ __global__ void csrgemm_nnz_wf_per_row(rocsparse_int m,
                                        rocsparse_index_base idx_base_A,
                                        rocsparse_index_base idx_base_B,
                                        rocsparse_index_base idx_base_D,
-                                       bool mul,
-                                       bool add)
+                                       bool                 mul,
+                                       bool                 add)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -329,8 +332,8 @@ __global__ void csrgemm_nnz_block_per_row(const rocsparse_int* __restrict__ offs
                                           rocsparse_index_base idx_base_A,
                                           rocsparse_index_base idx_base_B,
                                           rocsparse_index_base idx_base_D,
-                                          bool mul,
-                                          bool add)
+                                          bool                 mul,
+                                          bool                 add)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);

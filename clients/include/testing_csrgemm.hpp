@@ -25,13 +25,13 @@
 #ifndef TESTING_CSRGEMM_HPP
 #define TESTING_CSRGEMM_HPP
 
-#include "rocsparse_test_unique_ptr.hpp"
 #include "rocsparse.hpp"
-#include "utility.hpp"
+#include "rocsparse_test_unique_ptr.hpp"
 #include "unit.hpp"
+#include "utility.hpp"
 
-#include <string>
 #include <rocsparse.h>
+#include <string>
 
 using namespace rocsparse;
 using namespace rocsparse_test;
@@ -39,69 +39,67 @@ using namespace rocsparse_test;
 template <typename T>
 void testing_csrgemm_bad_arg(void)
 {
-    rocsparse_int M             = 100;
-    rocsparse_int N             = 100;
-    rocsparse_int K             = 100;
-    rocsparse_int nnz_A         = 100;
-    rocsparse_int nnz_B         = 100;
-    rocsparse_operation trans_A = rocsparse_operation_none;
-    rocsparse_operation trans_B = rocsparse_operation_none;
-    rocsparse_int safe_size     = 100;
-    rocsparse_status status;
+    rocsparse_int       M         = 100;
+    rocsparse_int       N         = 100;
+    rocsparse_int       K         = 100;
+    rocsparse_int       nnz_A     = 100;
+    rocsparse_int       nnz_B     = 100;
+    rocsparse_operation trans_A   = rocsparse_operation_none;
+    rocsparse_operation trans_B   = rocsparse_operation_none;
+    rocsparse_int       safe_size = 100;
+    rocsparse_status    status;
 
     T alpha = 1.0;
 
-    size_t size;
+    size_t        size;
     rocsparse_int nnz_C;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle handle = unique_ptr_handle->handle;
+    rocsparse_handle               handle = unique_ptr_handle->handle;
 
     std::unique_ptr<descr_struct> unique_ptr_descr_A(new descr_struct);
-    rocsparse_mat_descr descr_A = unique_ptr_descr_A->descr;
+    rocsparse_mat_descr           descr_A = unique_ptr_descr_A->descr;
 
     std::unique_ptr<descr_struct> unique_ptr_descr_B(new descr_struct);
-    rocsparse_mat_descr descr_B = unique_ptr_descr_B->descr;
+    rocsparse_mat_descr           descr_B = unique_ptr_descr_B->descr;
 
     std::unique_ptr<descr_struct> unique_ptr_descr_C(new descr_struct);
-    rocsparse_mat_descr descr_C = unique_ptr_descr_C->descr;
+    rocsparse_mat_descr           descr_C = unique_ptr_descr_C->descr;
 
     std::unique_ptr<mat_info_struct> unique_ptr_info(new mat_info_struct);
-    rocsparse_mat_info info = unique_ptr_info->info;
+    rocsparse_mat_info               info = unique_ptr_info->info;
 
-    auto dAptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dAcol_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dAval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dBptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dBcol_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dBval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dCptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dCcol_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dCval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dbuffer_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+    auto dAptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto dAcol_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto dAval_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+    auto dBptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto dBcol_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto dBval_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+    auto dCptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto dCcol_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto dCval_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+    auto dbuffer_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(char) * safe_size), device_free};
 
-    rocsparse_int* dAptr = (rocsparse_int*)dAptr_managed.get();
-    rocsparse_int* dAcol = (rocsparse_int*)dAcol_managed.get();
-    T* dAval             = (T*)dAval_managed.get();
-    rocsparse_int* dBptr = (rocsparse_int*)dBptr_managed.get();
-    rocsparse_int* dBcol = (rocsparse_int*)dBcol_managed.get();
-    T* dBval             = (T*)dBval_managed.get();
-    rocsparse_int* dCptr = (rocsparse_int*)dCptr_managed.get();
-    rocsparse_int* dCcol = (rocsparse_int*)dCcol_managed.get();
-    T* dCval             = (T*)dCval_managed.get();
-    void* dbuffer        = (void*)dbuffer_managed.get();
+    rocsparse_int* dAptr   = (rocsparse_int*)dAptr_managed.get();
+    rocsparse_int* dAcol   = (rocsparse_int*)dAcol_managed.get();
+    T*             dAval   = (T*)dAval_managed.get();
+    rocsparse_int* dBptr   = (rocsparse_int*)dBptr_managed.get();
+    rocsparse_int* dBcol   = (rocsparse_int*)dBcol_managed.get();
+    T*             dBval   = (T*)dBval_managed.get();
+    rocsparse_int* dCptr   = (rocsparse_int*)dCptr_managed.get();
+    rocsparse_int* dCcol   = (rocsparse_int*)dCcol_managed.get();
+    T*             dCval   = (T*)dCval_managed.get();
+    void*          dbuffer = (void*)dbuffer_managed.get();
 
-    if(!dAval || !dAptr || !dAcol ||
-       !dBval || !dBptr || !dBcol ||
-       !dCval || !dCptr || !dCcol ||
-       !dbuffer)
+    if(!dAval || !dAptr || !dAcol || !dBval || !dBptr || !dBcol || !dCval || !dCptr || !dCcol
+       || !dbuffer)
     {
         PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -115,268 +113,614 @@ void testing_csrgemm_bad_arg(void)
 
     // testing for(nullptr == handle)
     {
-        status = rocsparse_csrgemm_buffer_size((rocsparse_handle)nullptr,
-                                               trans_A, trans_B,
-                                               M, N, K, &alpha,
-                                               descr_A, nnz_A, dAptr, dAcol,
-                                               descr_B, nnz_B, dBptr, dBcol,
+        status = rocsparse_csrgemm_buffer_size((rocsparse_handle) nullptr,
+                                               trans_A,
+                                               trans_B,
+                                               M,
+                                               N,
+                                               K,
+                                               &alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               dAptr,
+                                               dAcol,
+                                               descr_B,
+                                               nnz_B,
+                                               dBptr,
+                                               dBcol,
                                                (T*)nullptr,
-                                               (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                               info, &size);
+                                               (rocsparse_mat_descr) nullptr,
+                                               0,
+                                               (rocsparse_int*)nullptr,
+                                               (rocsparse_int*)nullptr,
+                                               info,
+                                               &size);
         verify_rocsparse_status_invalid_handle(status);
     }
     // testing for(nullptr == alpha and nullptr == beta)
     {
         status = rocsparse_csrgemm_buffer_size(handle,
-                                               trans_A, trans_B,
-                                               M, N, K, (T*)nullptr,
-                                               descr_A, nnz_A, dAptr, dAcol,
-                                               descr_B, nnz_B, dBptr, dBcol,
+                                               trans_A,
+                                               trans_B,
+                                               M,
+                                               N,
+                                               K,
                                                (T*)nullptr,
-                                               (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                               info, &size);
+                                               descr_A,
+                                               nnz_A,
+                                               dAptr,
+                                               dAcol,
+                                               descr_B,
+                                               nnz_B,
+                                               dBptr,
+                                               dBcol,
+                                               (T*)nullptr,
+                                               (rocsparse_mat_descr) nullptr,
+                                               0,
+                                               (rocsparse_int*)nullptr,
+                                               (rocsparse_int*)nullptr,
+                                               info,
+                                               &size);
         verify_rocsparse_status_invalid_pointer(status, "Error: alpha and beta are nullptr");
     }
     // testing for(nullptr == descr_A)
     {
         status = rocsparse_csrgemm_buffer_size(handle,
-                                               trans_A, trans_B,
-                                               M, N, K, &alpha,
-                                               (rocsparse_mat_descr)nullptr, nnz_A, dAptr, dAcol,
-                                               descr_B, nnz_B, dBptr, dBcol,
+                                               trans_A,
+                                               trans_B,
+                                               M,
+                                               N,
+                                               K,
+                                               &alpha,
+                                               (rocsparse_mat_descr) nullptr,
+                                               nnz_A,
+                                               dAptr,
+                                               dAcol,
+                                               descr_B,
+                                               nnz_B,
+                                               dBptr,
+                                               dBcol,
                                                (T*)nullptr,
-                                               (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                               info, &size);
+                                               (rocsparse_mat_descr) nullptr,
+                                               0,
+                                               (rocsparse_int*)nullptr,
+                                               (rocsparse_int*)nullptr,
+                                               info,
+                                               &size);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr_A is nullptr");
     }
     // testing for(nullptr == dAptr)
     {
         status = rocsparse_csrgemm_buffer_size(handle,
-                                               trans_A, trans_B,
-                                               M, N, K, &alpha,
-                                               descr_A, nnz_A, (rocsparse_int*)nullptr, dAcol,
-                                               descr_B, nnz_B, dBptr, dBcol,
+                                               trans_A,
+                                               trans_B,
+                                               M,
+                                               N,
+                                               K,
+                                               &alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               (rocsparse_int*)nullptr,
+                                               dAcol,
+                                               descr_B,
+                                               nnz_B,
+                                               dBptr,
+                                               dBcol,
                                                (T*)nullptr,
-                                               (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                               info, &size);
+                                               (rocsparse_mat_descr) nullptr,
+                                               0,
+                                               (rocsparse_int*)nullptr,
+                                               (rocsparse_int*)nullptr,
+                                               info,
+                                               &size);
         verify_rocsparse_status_invalid_pointer(status, "Error: dAptr is nullptr");
     }
     // testing for(nullptr == dAcol)
     {
         status = rocsparse_csrgemm_buffer_size(handle,
-                                               trans_A, trans_B,
-                                               M, N, K, &alpha,
-                                               descr_A, nnz_A, dAptr, (rocsparse_int*)nullptr,
-                                               descr_B, nnz_B, dBptr, dBcol,
+                                               trans_A,
+                                               trans_B,
+                                               M,
+                                               N,
+                                               K,
+                                               &alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               dAptr,
+                                               (rocsparse_int*)nullptr,
+                                               descr_B,
+                                               nnz_B,
+                                               dBptr,
+                                               dBcol,
                                                (T*)nullptr,
-                                               (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                               info, &size);
+                                               (rocsparse_mat_descr) nullptr,
+                                               0,
+                                               (rocsparse_int*)nullptr,
+                                               (rocsparse_int*)nullptr,
+                                               info,
+                                               &size);
         verify_rocsparse_status_invalid_pointer(status, "Error: dAcol is nullptr");
     }
     // testing for(nullptr == descr_B)
     {
         status = rocsparse_csrgemm_buffer_size(handle,
-                                               trans_A, trans_B,
-                                               M, N, K, &alpha,
-                                               descr_A, nnz_A, dAptr, dAcol,
-                                               (rocsparse_mat_descr)nullptr, nnz_B, dBptr, dBcol,
+                                               trans_A,
+                                               trans_B,
+                                               M,
+                                               N,
+                                               K,
+                                               &alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               dAptr,
+                                               dAcol,
+                                               (rocsparse_mat_descr) nullptr,
+                                               nnz_B,
+                                               dBptr,
+                                               dBcol,
                                                (T*)nullptr,
-                                               (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                               info, &size);
+                                               (rocsparse_mat_descr) nullptr,
+                                               0,
+                                               (rocsparse_int*)nullptr,
+                                               (rocsparse_int*)nullptr,
+                                               info,
+                                               &size);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr_B is nullptr");
     }
     // testing for(nullptr == dBptr)
     {
         status = rocsparse_csrgemm_buffer_size(handle,
-                                               trans_A, trans_B,
-                                               M, N, K, &alpha,
-                                               descr_A, nnz_A, dAptr, dAcol,
-                                               descr_B, nnz_B, (rocsparse_int*)nullptr, dBcol,
+                                               trans_A,
+                                               trans_B,
+                                               M,
+                                               N,
+                                               K,
+                                               &alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               dAptr,
+                                               dAcol,
+                                               descr_B,
+                                               nnz_B,
+                                               (rocsparse_int*)nullptr,
+                                               dBcol,
                                                (T*)nullptr,
-                                               (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                               info, &size);
+                                               (rocsparse_mat_descr) nullptr,
+                                               0,
+                                               (rocsparse_int*)nullptr,
+                                               (rocsparse_int*)nullptr,
+                                               info,
+                                               &size);
         verify_rocsparse_status_invalid_pointer(status, "Error: dBptr is nullptr");
     }
     // testing for(nullptr == dBcol)
     {
         status = rocsparse_csrgemm_buffer_size(handle,
-                                               trans_A, trans_B,
-                                               M, N, K, &alpha,
-                                               descr_A, nnz_A, dAptr, dAcol,
-                                               descr_B, nnz_B, dBptr, (rocsparse_int*)nullptr,
+                                               trans_A,
+                                               trans_B,
+                                               M,
+                                               N,
+                                               K,
+                                               &alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               dAptr,
+                                               dAcol,
+                                               descr_B,
+                                               nnz_B,
+                                               dBptr,
+                                               (rocsparse_int*)nullptr,
                                                (T*)nullptr,
-                                               (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                               info, &size);
+                                               (rocsparse_mat_descr) nullptr,
+                                               0,
+                                               (rocsparse_int*)nullptr,
+                                               (rocsparse_int*)nullptr,
+                                               info,
+                                               &size);
         verify_rocsparse_status_invalid_pointer(status, "Error: dBcol is nullptr");
     }
     // testing for(nullptr == info)
     {
         status = rocsparse_csrgemm_buffer_size(handle,
-                                               trans_A, trans_B,
-                                               M, N, K, &alpha,
-                                               descr_A, nnz_A, dAptr, dAcol,
-                                               descr_B, nnz_B, dBptr, dBcol,
+                                               trans_A,
+                                               trans_B,
+                                               M,
+                                               N,
+                                               K,
+                                               &alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               dAptr,
+                                               dAcol,
+                                               descr_B,
+                                               nnz_B,
+                                               dBptr,
+                                               dBcol,
                                                (T*)nullptr,
-                                               (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                               (rocsparse_mat_info)nullptr, &size);
+                                               (rocsparse_mat_descr) nullptr,
+                                               0,
+                                               (rocsparse_int*)nullptr,
+                                               (rocsparse_int*)nullptr,
+                                               (rocsparse_mat_info) nullptr,
+                                               &size);
         verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
     }
     // testing for(nullptr == size)
     {
         status = rocsparse_csrgemm_buffer_size(handle,
-                                               trans_A, trans_B,
-                                               M, N, K, &alpha,
-                                               descr_A, nnz_A, dAptr, dAcol,
-                                               descr_B, nnz_B, dBptr, dBcol,
+                                               trans_A,
+                                               trans_B,
+                                               M,
+                                               N,
+                                               K,
+                                               &alpha,
+                                               descr_A,
+                                               nnz_A,
+                                               dAptr,
+                                               dAcol,
+                                               descr_B,
+                                               nnz_B,
+                                               dBptr,
+                                               dBcol,
                                                (T*)nullptr,
-                                               (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                               info, (size_t*)nullptr);
+                                               (rocsparse_mat_descr) nullptr,
+                                               0,
+                                               (rocsparse_int*)nullptr,
+                                               (rocsparse_int*)nullptr,
+                                               info,
+                                               (size_t*)nullptr);
         verify_rocsparse_status_invalid_pointer(status, "Error: size is nullptr");
     }
 
     // We need one successful call to create the info structure
     status = rocsparse_csrgemm_buffer_size(handle,
-                                           trans_A, trans_B,
-                                           M, N, K, &alpha,
-                                           descr_A, nnz_A, dAptr, dAcol,
-                                           descr_B, nnz_B, dBptr, dBcol,
+                                           trans_A,
+                                           trans_B,
+                                           M,
+                                           N,
+                                           K,
+                                           &alpha,
+                                           descr_A,
+                                           nnz_A,
+                                           dAptr,
+                                           dAcol,
+                                           descr_B,
+                                           nnz_B,
+                                           dBptr,
+                                           dBcol,
                                            (T*)nullptr,
-                                           (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                           info, &size);
+                                           (rocsparse_mat_descr) nullptr,
+                                           0,
+                                           (rocsparse_int*)nullptr,
+                                           (rocsparse_int*)nullptr,
+                                           info,
+                                           &size);
     verify_rocsparse_status_success(status, "Success");
 
     // testing rocsparse_csrgemm_nnz
 
     // testing for(nullptr == handle)
     {
-        status = rocsparse_csrgemm_nnz((rocsparse_handle)nullptr, trans_A, trans_B,
-                                       M, N, K,
-                                       descr_A, nnz_A, dAptr, dAcol,
-                                       descr_B, nnz_B, dBptr, dBcol,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       descr_C, dCptr, &nnz_C,
-                                       info, dbuffer);
+        status = rocsparse_csrgemm_nnz((rocsparse_handle) nullptr,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       descr_A,
+                                       nnz_A,
+                                       dAptr,
+                                       dAcol,
+                                       descr_B,
+                                       nnz_B,
+                                       dBptr,
+                                       dBcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_C,
+                                       dCptr,
+                                       &nnz_C,
+                                       info,
+                                       dbuffer);
         verify_rocsparse_status_invalid_handle(status);
     }
     // testing for(nullptr == descr_A)
     {
-        status = rocsparse_csrgemm_nnz(handle, trans_A, trans_B,
-                                       M, N, K,
-                                       (rocsparse_mat_descr)nullptr, nnz_A, dAptr, dAcol,
-                                       descr_B, nnz_B, dBptr, dBcol,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       descr_C, dCptr, &nnz_C,
-                                       info, dbuffer);
+        status = rocsparse_csrgemm_nnz(handle,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       (rocsparse_mat_descr) nullptr,
+                                       nnz_A,
+                                       dAptr,
+                                       dAcol,
+                                       descr_B,
+                                       nnz_B,
+                                       dBptr,
+                                       dBcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_C,
+                                       dCptr,
+                                       &nnz_C,
+                                       info,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr_A is nullptr");
     }
     // testing for(nullptr == dAptr)
     {
-        status = rocsparse_csrgemm_nnz(handle, trans_A, trans_B,
-                                       M, N, K,
-                                       descr_A, nnz_A, (rocsparse_int*)nullptr, dAcol,
-                                       descr_B, nnz_B, dBptr, dBcol,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       descr_C, dCptr, &nnz_C,
-                                       info, dbuffer);
+        status = rocsparse_csrgemm_nnz(handle,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       descr_A,
+                                       nnz_A,
+                                       (rocsparse_int*)nullptr,
+                                       dAcol,
+                                       descr_B,
+                                       nnz_B,
+                                       dBptr,
+                                       dBcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_C,
+                                       dCptr,
+                                       &nnz_C,
+                                       info,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dAptr is nullptr");
     }
     // testing for(nullptr == dAcol)
     {
-        status = rocsparse_csrgemm_nnz(handle, trans_A, trans_B,
-                                       M, N, K,
-                                       descr_A, nnz_A, dAptr, (rocsparse_int*)nullptr,
-                                       descr_B, nnz_B, dBptr, dBcol,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       descr_C, dCptr, &nnz_C,
-                                       info, dbuffer);
+        status = rocsparse_csrgemm_nnz(handle,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       descr_A,
+                                       nnz_A,
+                                       dAptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_B,
+                                       nnz_B,
+                                       dBptr,
+                                       dBcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_C,
+                                       dCptr,
+                                       &nnz_C,
+                                       info,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dAcol is nullptr");
     }
     // testing for(nullptr == descr_B)
     {
-        status = rocsparse_csrgemm_nnz(handle, trans_A, trans_B,
-                                       M, N, K,
-                                       descr_A, nnz_A, dAptr, dAcol,
-                                       (rocsparse_mat_descr)nullptr, nnz_B, dBptr, dBcol,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       descr_C, dCptr, &nnz_C,
-                                       info, dbuffer);
+        status = rocsparse_csrgemm_nnz(handle,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       descr_A,
+                                       nnz_A,
+                                       dAptr,
+                                       dAcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       nnz_B,
+                                       dBptr,
+                                       dBcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_C,
+                                       dCptr,
+                                       &nnz_C,
+                                       info,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr_B is nullptr");
     }
     // testing for(nullptr == dBptr)
     {
-        status = rocsparse_csrgemm_nnz(handle, trans_A, trans_B,
-                                       M, N, K,
-                                       descr_A, nnz_A, dAptr, dAcol,
-                                       descr_B, nnz_B, (rocsparse_int*)nullptr, dBcol,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       descr_C, dCptr, &nnz_C,
-                                       info, dbuffer);
+        status = rocsparse_csrgemm_nnz(handle,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       descr_A,
+                                       nnz_A,
+                                       dAptr,
+                                       dAcol,
+                                       descr_B,
+                                       nnz_B,
+                                       (rocsparse_int*)nullptr,
+                                       dBcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_C,
+                                       dCptr,
+                                       &nnz_C,
+                                       info,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dBptr is nullptr");
     }
     // testing for(nullptr == dBcol)
     {
-        status = rocsparse_csrgemm_nnz(handle, trans_A, trans_B,
-                                       M, N, K,
-                                       descr_A, nnz_A, dAptr, dAcol,
-                                       descr_B, nnz_B, dBptr, (rocsparse_int*)nullptr,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       descr_C, dCptr, &nnz_C,
-                                       info, dbuffer);
+        status = rocsparse_csrgemm_nnz(handle,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       descr_A,
+                                       nnz_A,
+                                       dAptr,
+                                       dAcol,
+                                       descr_B,
+                                       nnz_B,
+                                       dBptr,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_C,
+                                       dCptr,
+                                       &nnz_C,
+                                       info,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dBcol is nullptr");
     }
     // testing for(nullptr == descr_C)
     {
-        status = rocsparse_csrgemm_nnz(handle, trans_A, trans_B,
-                                       M, N, K,
-                                       descr_A, nnz_A, dAptr, dAcol,
-                                       descr_B, nnz_B, dBptr, dBcol,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       (rocsparse_mat_descr)nullptr, dCptr, &nnz_C,
-                                       info, dbuffer);
+        status = rocsparse_csrgemm_nnz(handle,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       descr_A,
+                                       nnz_A,
+                                       dAptr,
+                                       dAcol,
+                                       descr_B,
+                                       nnz_B,
+                                       dBptr,
+                                       dBcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_mat_descr) nullptr,
+                                       dCptr,
+                                       &nnz_C,
+                                       info,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr_C is nullptr");
     }
     // testing for(nullptr == dCptr)
     {
-        status = rocsparse_csrgemm_nnz(handle, trans_A, trans_B,
-                                       M, N, K,
-                                       descr_A, nnz_A, dAptr, dAcol,
-                                       descr_B, nnz_B, dBptr, dBcol,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       descr_C, (rocsparse_int*)nullptr, &nnz_C,
-                                       info, dbuffer);
+        status = rocsparse_csrgemm_nnz(handle,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       descr_A,
+                                       nnz_A,
+                                       dAptr,
+                                       dAcol,
+                                       descr_B,
+                                       nnz_B,
+                                       dBptr,
+                                       dBcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_C,
+                                       (rocsparse_int*)nullptr,
+                                       &nnz_C,
+                                       info,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dCptr is nullptr");
     }
     // testing for(nullptr == nnz_C)
     {
-        status = rocsparse_csrgemm_nnz(handle, trans_A, trans_B,
-                                       M, N, K,
-                                       descr_A, nnz_A, dAptr, dAcol,
-                                       descr_B, nnz_B, dBptr, dBcol,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       descr_C, dCptr, (rocsparse_int*)nullptr,
-                                       info, dbuffer);
+        status = rocsparse_csrgemm_nnz(handle,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       descr_A,
+                                       nnz_A,
+                                       dAptr,
+                                       dAcol,
+                                       descr_B,
+                                       nnz_B,
+                                       dBptr,
+                                       dBcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_C,
+                                       dCptr,
+                                       (rocsparse_int*)nullptr,
+                                       info,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: nnz_C is nullptr");
     }
     // testing for(nullptr == info)
     {
-        status = rocsparse_csrgemm_nnz(handle, trans_A, trans_B,
-                                       M, N, K,
-                                       descr_A, nnz_A, dAptr, dAcol,
-                                       descr_B, nnz_B, dBptr, dBcol,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       descr_C, dCptr, &nnz_C,
-                                       (rocsparse_mat_info)nullptr, dbuffer);
+        status = rocsparse_csrgemm_nnz(handle,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       descr_A,
+                                       nnz_A,
+                                       dAptr,
+                                       dAcol,
+                                       descr_B,
+                                       nnz_B,
+                                       dBptr,
+                                       dBcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_C,
+                                       dCptr,
+                                       &nnz_C,
+                                       (rocsparse_mat_info) nullptr,
+                                       dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
     }
     // testing for(nullptr == dbuffer)
     {
-        status = rocsparse_csrgemm_nnz(handle, trans_A, trans_B,
-                                       M, N, K,
-                                       descr_A, nnz_A, dAptr, dAcol,
-                                       descr_B, nnz_B, dBptr, dBcol,
-                                       (rocsparse_mat_descr)nullptr, 0, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                       descr_C, dCptr, &nnz_C,
-                                       info, nullptr);
+        status = rocsparse_csrgemm_nnz(handle,
+                                       trans_A,
+                                       trans_B,
+                                       M,
+                                       N,
+                                       K,
+                                       descr_A,
+                                       nnz_A,
+                                       dAptr,
+                                       dAcol,
+                                       descr_B,
+                                       nnz_B,
+                                       dBptr,
+                                       dBcol,
+                                       (rocsparse_mat_descr) nullptr,
+                                       0,
+                                       (rocsparse_int*)nullptr,
+                                       (rocsparse_int*)nullptr,
+                                       descr_C,
+                                       dCptr,
+                                       &nnz_C,
+                                       info,
+                                       nullptr);
         verify_rocsparse_status_invalid_pointer(status, "Error: dbuffer is nullptr");
     }
 
@@ -384,211 +728,547 @@ void testing_csrgemm_bad_arg(void)
 
     // testing for(nullptr == handle)
     {
-        status = rocsparse_csrgemm((rocsparse_handle)nullptr, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm((rocsparse_handle) nullptr,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   info, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_handle(status);
     }
     // testing for(nullptr == alpha && nullptr == beta)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, (T*)nullptr,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   info, dbuffer);
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
+                                   (T*)nullptr,
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: alpha and beta are nullptr");
     }
     // testing for(nullptr == descr_A)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   (rocsparse_mat_descr)nullptr, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   (rocsparse_mat_descr) nullptr,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   info, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr_A is nullptr");
     }
     // testing for(nullptr == dAval)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, (T*)nullptr, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   info, dbuffer);
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
+                                   (T*)nullptr,
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dAval is nullptr");
     }
     // testing for(nullptr == dAptr)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, (rocsparse_int*)nullptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   (rocsparse_int*)nullptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   info, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dAptr is nullptr");
     }
     // testing for(nullptr == dAcol)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, (rocsparse_int*)nullptr,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   info, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dAcol is nullptr");
     }
     // testing for(nullptr == descr_B)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   (rocsparse_mat_descr)nullptr, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   (rocsparse_mat_descr) nullptr,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   info, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr_B is nullptr");
     }
     // testing for(nullptr == dBval)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, (T*)nullptr, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   info, dbuffer);
+                                   dBptr,
+                                   dBcol,
+                                   (T*)nullptr,
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dBval is nullptr");
     }
     // testing for(nullptr == dBptr)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, (rocsparse_int*)nullptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   (rocsparse_int*)nullptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   info, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dBptr is nullptr");
     }
     // testing for(nullptr == dBcol)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, (rocsparse_int*)nullptr,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   (rocsparse_int*)nullptr,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   info, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dBcol is nullptr");
     }
     // testing for(nullptr == descr_C)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, dCval, dCptr, dCcol,
-                                   info, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_mat_descr) nullptr,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: descr_C is nullptr");
     }
     // testing for(nullptr == dCval)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, (T*)nullptr, dCptr, dCcol,
-                                   info, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   (T*)nullptr,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dCval is nullptr");
     }
     // testing for(nullptr == dCptr)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, (rocsparse_int*)nullptr, dCcol,
-                                   info, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   (rocsparse_int*)nullptr,
+                                   dCcol,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dCptr is nullptr");
     }
     // testing for(nullptr == dCcol)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, (rocsparse_int*)nullptr,
-                                   info, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   (rocsparse_int*)nullptr,
+                                   info,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: dCcol is nullptr");
     }
     // testing for(nullptr == info)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   (rocsparse_mat_info)nullptr, dbuffer);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   (rocsparse_mat_info) nullptr,
+                                   dbuffer);
         verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
     }
     // testing for(nullptr == dbuffer)
     {
-        status = rocsparse_csrgemm(handle, trans_A, trans_B,
-                                   M, N, K, &alpha,
-                                   descr_A, nnz_A, dAval, dAptr, dAcol,
-                                   descr_B, nnz_B, dBval, dBptr, dBcol,
+        status = rocsparse_csrgemm(handle,
+                                   trans_A,
+                                   trans_B,
+                                   M,
+                                   N,
+                                   K,
+                                   &alpha,
+                                   descr_A,
+                                   nnz_A,
+                                   dAval,
+                                   dAptr,
+                                   dAcol,
+                                   descr_B,
+                                   nnz_B,
+                                   dBval,
+                                   dBptr,
+                                   dBcol,
                                    (T*)nullptr,
-                                   (rocsparse_mat_descr)nullptr, 0, (T*)nullptr, (rocsparse_int*)nullptr, (rocsparse_int*)nullptr,
-                                   descr_C, dCval, dCptr, dCcol,
-                                   info, nullptr);
+                                   (rocsparse_mat_descr) nullptr,
+                                   0,
+                                   (T*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   (rocsparse_int*)nullptr,
+                                   descr_C,
+                                   dCval,
+                                   dCptr,
+                                   dCcol,
+                                   info,
+                                   nullptr);
         verify_rocsparse_status_invalid_pointer(status, "Error: dbuffer is nullptr");
     }
 }
 
 template <typename T>
-static rocsparse_int csrgemm_nnz(rocsparse_int m,
-                                 rocsparse_int n,
-                                 rocsparse_int k,
-                                 const T* alpha,
+static rocsparse_int csrgemm_nnz(rocsparse_int        m,
+                                 rocsparse_int        n,
+                                 rocsparse_int        k,
+                                 const T*             alpha,
                                  const rocsparse_int* csr_row_ptr_A,
                                  const rocsparse_int* csr_col_ind_A,
                                  const rocsparse_int* csr_row_ptr_B,
                                  const rocsparse_int* csr_col_ind_B,
-                                 const T* beta,
+                                 const T*             beta,
                                  const rocsparse_int* csr_row_ptr_D,
                                  const rocsparse_int* csr_col_ind_D,
-                                 rocsparse_int* csr_row_ptr_C,
+                                 rocsparse_int*       csr_row_ptr_C,
                                  rocsparse_index_base idx_base_A,
                                  rocsparse_index_base idx_base_B,
                                  rocsparse_index_base idx_base_C,
@@ -660,23 +1340,23 @@ static rocsparse_int csrgemm_nnz(rocsparse_int m,
 }
 
 template <typename T>
-static void csrgemm(rocsparse_int m,
-                    rocsparse_int n,
-                    rocsparse_int k,
-                    const T* alpha,
+static void csrgemm(rocsparse_int        m,
+                    rocsparse_int        n,
+                    rocsparse_int        k,
+                    const T*             alpha,
                     const rocsparse_int* csr_row_ptr_A,
                     const rocsparse_int* csr_col_ind_A,
-                    const T* csr_val_A,
+                    const T*             csr_val_A,
                     const rocsparse_int* csr_row_ptr_B,
                     const rocsparse_int* csr_col_ind_B,
-                    const T* csr_val_B,
-                    const T* beta,
+                    const T*             csr_val_B,
+                    const T*             beta,
                     const rocsparse_int* csr_row_ptr_D,
                     const rocsparse_int* csr_col_ind_D,
-                    const T* csr_val_D,
+                    const T*             csr_val_D,
                     const rocsparse_int* csr_row_ptr_C,
-                    rocsparse_int* csr_col_ind_C,
-                    T* csr_val_C,
+                    rocsparse_int*       csr_col_ind_C,
+                    T*                   csr_val_C,
                     rocsparse_index_base idx_base_A,
                     rocsparse_index_base idx_base_B,
                     rocsparse_index_base idx_base_C,
@@ -775,7 +1455,7 @@ static void csrgemm(rocsparse_int m,
                 {
                     // swap elements
                     rocsparse_int ind = csr_col_ind_C[jj];
-                    T val             = csr_val_C[jj];
+                    T             val = csr_val_C[jj];
 
                     csr_col_ind_C[jj] = csr_col_ind_C[jj + 1];
                     csr_val_C[jj]     = csr_val_C[jj + 1];
@@ -789,12 +1469,12 @@ static void csrgemm(rocsparse_int m,
 }
 
 template <typename T>
-static size_t csrgemm_flops(rocsparse_int m,
-                            const T* alpha,
+static size_t csrgemm_flops(rocsparse_int        m,
+                            const T*             alpha,
                             const rocsparse_int* csr_row_ptr_A,
                             const rocsparse_int* csr_col_ind_A,
                             const rocsparse_int* csr_row_ptr_B,
-                            const T* beta,
+                            const T*             beta,
                             const rocsparse_int* csr_row_ptr_D,
                             rocsparse_index_base idx_base_A)
 {
@@ -833,23 +1513,23 @@ static size_t csrgemm_flops(rocsparse_int m,
 template <typename T>
 rocsparse_status testing_csrgemm(Arguments argus)
 {
-    rocsparse_int safe_size         = 100;
-    rocsparse_int M                 = argus.M;
-    rocsparse_int N                 = argus.N;
-    rocsparse_int K                 = argus.K;
-    rocsparse_operation trans_A     = argus.transA;
-    rocsparse_operation trans_B     = argus.transB;
+    rocsparse_int        safe_size  = 100;
+    rocsparse_int        M          = argus.M;
+    rocsparse_int        N          = argus.N;
+    rocsparse_int        K          = argus.K;
+    rocsparse_operation  trans_A    = argus.transA;
+    rocsparse_operation  trans_B    = argus.transB;
     rocsparse_index_base idx_base_A = argus.idx_base;
     rocsparse_index_base idx_base_B = argus.idx_base2;
     rocsparse_index_base idx_base_C = argus.idx_base3;
     rocsparse_index_base idx_base_D = argus.idx_base4;
-    T alpha                         = argus.alpha;
-    std::string binfile             = "";
-    std::string filename            = "";
-    std::string rocalution          = "";
+    T                    alpha      = argus.alpha;
+    std::string          binfile    = "";
+    std::string          filename   = "";
+    std::string          rocalution = "";
 
     rocsparse_status status;
-    size_t size;
+    size_t           size;
 
     T* h_alpha = &alpha;
 
@@ -874,19 +1554,19 @@ rocsparse_status testing_csrgemm(Arguments argus)
     }
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
-    rocsparse_handle handle = test_handle->handle;
+    rocsparse_handle               handle = test_handle->handle;
 
     std::unique_ptr<descr_struct> test_descr_A(new descr_struct);
-    rocsparse_mat_descr descr_A = test_descr_A->descr;
+    rocsparse_mat_descr           descr_A = test_descr_A->descr;
 
     std::unique_ptr<descr_struct> test_descr_B(new descr_struct);
-    rocsparse_mat_descr descr_B = test_descr_B->descr;
+    rocsparse_mat_descr           descr_B = test_descr_B->descr;
 
     std::unique_ptr<descr_struct> test_descr_C(new descr_struct);
-    rocsparse_mat_descr descr_C = test_descr_C->descr;
+    rocsparse_mat_descr           descr_C = test_descr_C->descr;
 
     std::unique_ptr<mat_info_struct> test_info(new mat_info_struct);
-    rocsparse_mat_info info = test_info->info;
+    rocsparse_mat_info               info = test_info->info;
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_A, idx_base_A));
@@ -911,42 +1591,40 @@ rocsparse_status testing_csrgemm(Arguments argus)
     // Argument sanity check before allocating invalid memory
     // alpha != nullptr and beta == nullptr
     {
-        auto dAptr_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dAcol_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dAval_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto dBptr_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dBcol_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dBval_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto dCptr_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dCcol_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dCval_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto buffer_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+        auto dAptr_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto dAcol_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto dAval_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+        auto dBptr_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto dBcol_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto dBval_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+        auto dCptr_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto dCcol_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto dCval_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+        auto buffer_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(char) * safe_size), device_free};
 
-        rocsparse_int* dAptr = (rocsparse_int*)dAptr_managed.get();
-        rocsparse_int* dAcol = (rocsparse_int*)dAcol_managed.get();
-        T* dAval             = (T*)dAval_managed.get();
-        rocsparse_int* dBptr = (rocsparse_int*)dBptr_managed.get();
-        rocsparse_int* dBcol = (rocsparse_int*)dBcol_managed.get();
-        T* dBval             = (T*)dBval_managed.get();
-        rocsparse_int* dCptr = (rocsparse_int*)dCptr_managed.get();
-        rocsparse_int* dCcol = (rocsparse_int*)dCcol_managed.get();
-        T* dCval             = (T*)dCval_managed.get();
-        void* buffer         = (void*)buffer_managed.get();
+        rocsparse_int* dAptr  = (rocsparse_int*)dAptr_managed.get();
+        rocsparse_int* dAcol  = (rocsparse_int*)dAcol_managed.get();
+        T*             dAval  = (T*)dAval_managed.get();
+        rocsparse_int* dBptr  = (rocsparse_int*)dBptr_managed.get();
+        rocsparse_int* dBcol  = (rocsparse_int*)dBcol_managed.get();
+        T*             dBval  = (T*)dBval_managed.get();
+        rocsparse_int* dCptr  = (rocsparse_int*)dCptr_managed.get();
+        rocsparse_int* dCcol  = (rocsparse_int*)dCcol_managed.get();
+        T*             dCval  = (T*)dCval_managed.get();
+        void*          buffer = (void*)buffer_managed.get();
 
-        if(!dAval || !dAptr || !dAcol ||
-           !dBval || !dBptr || !dBcol ||
-           !dCval || !dCptr || !dCcol ||
-           !buffer)
+        if(!dAval || !dAptr || !dAcol || !dBval || !dBptr || !dBcol || !dCval || !dCptr || !dCcol
+           || !buffer)
         {
             verify_rocsparse_status_success(rocsparse_status_memory_error,
                                             "!dAptr || !dAcol || !dAval || "
@@ -984,11 +1662,13 @@ rocsparse_status testing_csrgemm(Arguments argus)
 
             if(M < 0 || N < 0 || K < 0 || nnz_A < 0 || nnz_B < 0)
             {
-                verify_rocsparse_status_invalid_size(status, "Error: M < 0 || N < 0 || K < 0 || nnz_A < 0 || nnz_B < 0");
+                verify_rocsparse_status_invalid_size(
+                    status, "Error: M < 0 || N < 0 || K < 0 || nnz_A < 0 || nnz_B < 0");
             }
             else
             {
-                verify_rocsparse_status_success(status, "M >= 0 && N >= 0 && K >= 0 && nnz_A >= 0 && nnz_B >= 0");
+                verify_rocsparse_status_success(
+                    status, "M >= 0 && N >= 0 && K >= 0 && nnz_A >= 0 && nnz_B >= 0");
             }
 
             status = rocsparse_csrgemm_nnz(handle,
@@ -1017,11 +1697,13 @@ rocsparse_status testing_csrgemm(Arguments argus)
 
             if(M < 0 || N < 0 || K < 0 || nnz_A < 0 || nnz_B < 0)
             {
-                verify_rocsparse_status_invalid_size(status, "Error: M < 0 || N < 0 || K < 0 || nnz_A < 0 || nnz_B < 0");
+                verify_rocsparse_status_invalid_size(
+                    status, "Error: M < 0 || N < 0 || K < 0 || nnz_A < 0 || nnz_B < 0");
             }
             else
             {
-                verify_rocsparse_status_success(status, "M >= 0 && N >= 0 && K >= 0 && nnz_A >= 0 && nnz_B >= 0");
+                verify_rocsparse_status_success(
+                    status, "M >= 0 && N >= 0 && K >= 0 && nnz_A >= 0 && nnz_B >= 0");
             }
 
             status = rocsparse_csrgemm(handle,
@@ -1056,11 +1738,13 @@ rocsparse_status testing_csrgemm(Arguments argus)
 
             if(M < 0 || N < 0 || K < 0 || nnz_A < 0 || nnz_B < 0)
             {
-                verify_rocsparse_status_invalid_size(status, "Error: M < 0 || N < 0 || K < 0 || nnz_A < 0 || nnz_B < 0");
+                verify_rocsparse_status_invalid_size(
+                    status, "Error: M < 0 || N < 0 || K < 0 || nnz_A < 0 || nnz_B < 0");
             }
             else
             {
-                verify_rocsparse_status_success(status, "M >= 0 && N >= 0 && K >= 0 && nnz_A >= 0 && nnz_B >= 0");
+                verify_rocsparse_status_success(
+                    status, "M >= 0 && N >= 0 && K >= 0 && nnz_A >= 0 && nnz_B >= 0");
             }
 
             return rocsparse_status_success;
@@ -1070,26 +1754,21 @@ rocsparse_status testing_csrgemm(Arguments argus)
     // Host structures
     std::vector<rocsparse_int> hcsr_row_ptr_A;
     std::vector<rocsparse_int> hcsr_col_ind_A;
-    std::vector<T> hcsr_val_A;
+    std::vector<T>             hcsr_val_A;
     std::vector<rocsparse_int> hcsr_row_ptr_B;
     std::vector<rocsparse_int> hcsr_col_ind_B;
-    std::vector<T> hcsr_val_B;
+    std::vector<T>             hcsr_val_B;
     std::vector<rocsparse_int> hcsr_row_ptr_D;
     std::vector<rocsparse_int> hcsr_col_ind_D;
-    std::vector<T> hcsr_val_D;
+    std::vector<T>             hcsr_val_D;
 
     // Initial Data on CPU
     srand(12345ULL);
     if(binfile != "")
     {
-        if(read_bin_matrix(binfile.c_str(),
-                           M,
-                           K,
-                           nnz_A,
-                           hcsr_row_ptr_A,
-                           hcsr_col_ind_A,
-                           hcsr_val_A,
-                           idx_base_A) != 0)
+        if(read_bin_matrix(
+               binfile.c_str(), M, K, nnz_A, hcsr_row_ptr_A, hcsr_col_ind_A, hcsr_val_A, idx_base_A)
+           != 0)
         {
             fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
             return rocsparse_status_internal_error;
@@ -1104,7 +1783,8 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                   hcsr_row_ptr_A,
                                   hcsr_col_ind_A,
                                   hcsr_val_A,
-                                  idx_base_A) != 0)
+                                  idx_base_A)
+           != 0)
         {
             fprintf(stderr, "Cannot open [read] %s\n", rocalution.c_str());
             return rocsparse_status_internal_error;
@@ -1129,7 +1809,8 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                hcoo_row_ind,
                                hcsr_col_ind_A,
                                hcsr_val_A,
-                               idx_base_A) != 0)
+                               idx_base_A)
+               != 0)
             {
                 fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
                 return rocsparse_status_internal_error;
@@ -1182,32 +1863,30 @@ rocsparse_status testing_csrgemm(Arguments argus)
     rocsparse_int safe_nnz_A = std::max(nnz_A, 1);
     rocsparse_int safe_nnz_B = std::max(nnz_B, 1);
 
-    auto dAptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (M + 1)), device_free};
-    auto dAcol_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_nnz_A), device_free};
-    auto dAval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_nnz_A), device_free};
-    auto dBptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (safe_K + 1)), device_free};
-    auto dBcol_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_nnz_B), device_free};
-    auto dBval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_nnz_B), device_free};
-    auto dCptr_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (M + 1)), device_free};
-    auto dalpha_managed = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
+    auto dAptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * (M + 1)), device_free};
+    auto dAcol_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_nnz_A), device_free};
+    auto dAval_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_nnz_A), device_free};
+    auto dBptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * (safe_K + 1)), device_free};
+    auto dBcol_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_nnz_B), device_free};
+    auto dBval_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_nnz_B), device_free};
+    auto dCptr_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * (M + 1)), device_free};
+    auto dalpha_managed = rocsparse_unique_ptr {device_malloc(sizeof(T)), device_free};
 
-    rocsparse_int* dAptr = (rocsparse_int*)dAptr_managed.get();
-    rocsparse_int* dAcol = (rocsparse_int*)dAcol_managed.get();
-    T* dAval             = (T*)dAval_managed.get();
-    rocsparse_int* dBptr = (rocsparse_int*)dBptr_managed.get();
-    rocsparse_int* dBcol = (rocsparse_int*)dBcol_managed.get();
-    T* dBval             = (T*)dBval_managed.get();
-    rocsparse_int* dCptr = (rocsparse_int*)dCptr_managed.get();
-    T* dalpha            = (T*)dalpha_managed.get();
+    rocsparse_int* dAptr  = (rocsparse_int*)dAptr_managed.get();
+    rocsparse_int* dAcol  = (rocsparse_int*)dAcol_managed.get();
+    T*             dAval  = (T*)dAval_managed.get();
+    rocsparse_int* dBptr  = (rocsparse_int*)dBptr_managed.get();
+    rocsparse_int* dBcol  = (rocsparse_int*)dBcol_managed.get();
+    T*             dBval  = (T*)dBval_managed.get();
+    rocsparse_int* dCptr  = (rocsparse_int*)dCptr_managed.get();
+    T*             dalpha = (T*)dalpha_managed.get();
 
-    if(!dAval || !dAptr || !dAcol ||
-       !dBval || !dBptr || !dBcol ||
-       !dCptr || !dalpha)
+    if(!dAval || !dAptr || !dAcol || !dBval || !dBptr || !dBcol || !dCptr || !dalpha)
     {
         verify_rocsparse_status_success(rocsparse_status_memory_error,
                                         "!dAval || !dAptr || !dAcol || "
@@ -1287,7 +1966,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
     }
 
     // Allocate buffer on the device
-    auto dbuffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * size), device_free};
+    auto dbuffer_managed = rocsparse_unique_ptr {device_malloc(sizeof(char) * size), device_free};
 
     void* dbuffer = (void*)dbuffer_managed.get();
 
@@ -1330,12 +2009,12 @@ rocsparse_status testing_csrgemm(Arguments argus)
     // Allocate result matrix
     rocsparse_int safe_nnz_C = std::max(hnnz_C_1, 1);
 
-    auto dCcol_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_nnz_C), device_free};
-    auto dCval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_nnz_C), device_free};
+    auto dCcol_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_nnz_C), device_free};
+    auto dCval_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_nnz_C), device_free};
 
     rocsparse_int* dCcol = (rocsparse_int*)dCcol_managed.get();
-    T* dCval             = (T*)dCval_managed.get();
+    T*             dCval = (T*)dCval_managed.get();
 
     if(!dCval || !dCcol)
     {
@@ -1346,8 +2025,8 @@ rocsparse_status testing_csrgemm(Arguments argus)
     if(argus.unit_check)
     {
         // rocsparse pointer mode device
-        auto dnnz_C_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int)), device_free};
+        auto dnnz_C_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int)), device_free};
         rocsparse_int* dnnz_C = (rocsparse_int*)dnnz_C_managed.get();
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
@@ -1404,7 +2083,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
         }
 
         std::vector<rocsparse_int> hcsr_col_ind_C_gold(nnz_C_gold);
-        std::vector<T> hcsr_val_C_gold(nnz_C_gold);
+        std::vector<T>             hcsr_val_C_gold(nnz_C_gold);
 
         csrgemm(M,
                 N,
@@ -1473,8 +2152,8 @@ rocsparse_status testing_csrgemm(Arguments argus)
         // Copy output from device to CPU
         std::vector<rocsparse_int> hcsr_row_ptr_C(M + 1);
         std::vector<rocsparse_int> hcsr_col_ind_C(nnz_C_gold);
-        std::vector<T> hcsr_val_C_1(nnz_C_gold);
-        std::vector<T> hcsr_val_C_2(nnz_C_gold);
+        std::vector<T>             hcsr_val_C_1(nnz_C_gold);
+        std::vector<T>             hcsr_val_C_2(nnz_C_gold);
 
         CHECK_HIP_ERROR(hipMemcpy(
             hcsr_row_ptr_C.data(), dCptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyDeviceToHost));
@@ -1524,9 +2203,9 @@ rocsparse_status testing_csrgemm(Arguments argus)
 
         // Check structure and entries of C
         unit_check_general(1, M + 1, 1, hcsr_row_ptr_C_gold.data(), hcsr_row_ptr_C.data());
-//        unit_check_general(1, nnz_C_gold, 1, hcsr_col_ind_C_gold.data(), hcsr_col_ind_C.data());
-//        unit_check_general(1, nnz_C_gold, 1, hcsr_val_C_gold.data(), hcsr_val_C_1.data());
-//        unit_check_general(1, nnz_C_gold, 1, hcsr_val_C_gold.data(), hcsr_val_C_2.data());
+        //        unit_check_general(1, nnz_C_gold, 1, hcsr_col_ind_C_gold.data(), hcsr_col_ind_C.data());
+        //        unit_check_general(1, nnz_C_gold, 1, hcsr_val_C_gold.data(), hcsr_val_C_1.data());
+        //        unit_check_general(1, nnz_C_gold, 1, hcsr_val_C_gold.data(), hcsr_val_C_2.data());
     }
 
     if(argus.timing)

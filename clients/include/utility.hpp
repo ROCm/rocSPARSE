@@ -978,15 +978,15 @@ rocsparse_int usolve(rocsparse_int        m,
 /* ============================================================================================ */
 /*! \brief  Transpose sparse matrix using CSR storage format. */
 template <typename T>
-void transpose(rocsparse_int m,
-               rocsparse_int n,
-               rocsparse_int nnz,
+void transpose(rocsparse_int        m,
+               rocsparse_int        n,
+               rocsparse_int        nnz,
                const rocsparse_int* csr_row_ptr_A,
                const rocsparse_int* csr_col_ind_A,
-               const T* csr_val_A,
-               rocsparse_int* csr_row_ptr_B,
-               rocsparse_int* csr_col_ind_B,
-               T* csr_val_B,
+               const T*             csr_val_A,
+               rocsparse_int*       csr_row_ptr_B,
+               rocsparse_int*       csr_col_ind_B,
+               T*                   csr_val_B,
                rocsparse_index_base idx_base_A,
                rocsparse_index_base idx_base_B)
 {

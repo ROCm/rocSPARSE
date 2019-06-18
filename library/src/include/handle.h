@@ -33,8 +33,8 @@
 #include <vector>
 
 /*! \brief typedefs to opaque info structs */
-typedef struct _rocsparse_csrmv_info* rocsparse_csrmv_info;
-typedef struct _rocsparse_csrtr_info* rocsparse_csrtr_info;
+typedef struct _rocsparse_csrmv_info*   rocsparse_csrmv_info;
+typedef struct _rocsparse_csrtr_info*   rocsparse_csrtr_info;
 typedef struct _rocsparse_csrgemm_info* rocsparse_csrgemm_info;
 
 /********************************************************************************
@@ -141,11 +141,11 @@ struct _rocsparse_hyb_mat
 struct _rocsparse_mat_info
 {
     // info structs
-    rocsparse_csrmv_info csrmv_info       = nullptr;
-    rocsparse_csrtr_info csrilu0_info     = nullptr;
-    rocsparse_csrtr_info csrsv_upper_info = nullptr;
-    rocsparse_csrtr_info csrsv_lower_info = nullptr;
-    rocsparse_csrgemm_info csrgemm_info   = nullptr;
+    rocsparse_csrmv_info   csrmv_info       = nullptr;
+    rocsparse_csrtr_info   csrilu0_info     = nullptr;
+    rocsparse_csrtr_info   csrsv_upper_info = nullptr;
+    rocsparse_csrtr_info   csrsv_lower_info = nullptr;
+    rocsparse_csrgemm_info csrgemm_info     = nullptr;
 };
 
 /********************************************************************************
