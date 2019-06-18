@@ -25,26 +25,26 @@
 #ifndef ROCSPARSE_CSRILU0_HPP
 #define ROCSPARSE_CSRILU0_HPP
 
+#include "../level2/rocsparse_csrsv.hpp"
+#include "csrilu0_device.h"
 #include "definitions.h"
 #include "rocsparse.h"
 #include "utility.h"
-#include "csrilu0_device.h"
-#include "../level2/rocsparse_csrsv.hpp"
 
 #include <hip/hip_runtime.h>
 
 template <typename T>
-rocsparse_status rocsparse_csrilu0_analysis_template(rocsparse_handle handle,
-                                                     rocsparse_int m,
-                                                     rocsparse_int nnz,
+rocsparse_status rocsparse_csrilu0_analysis_template(rocsparse_handle          handle,
+                                                     rocsparse_int             m,
+                                                     rocsparse_int             nnz,
                                                      const rocsparse_mat_descr descr,
-                                                     const T* csr_val,
-                                                     const rocsparse_int* csr_row_ptr,
-                                                     const rocsparse_int* csr_col_ind,
-                                                     rocsparse_mat_info info,
+                                                     const T*                  csr_val,
+                                                     const rocsparse_int*      csr_row_ptr,
+                                                     const rocsparse_int*      csr_col_ind,
+                                                     rocsparse_mat_info        info,
                                                      rocsparse_analysis_policy analysis,
-                                                     rocsparse_solve_policy solve,
-                                                     void* temp_buffer)
+                                                     rocsparse_solve_policy    solve,
+                                                     void*                     temp_buffer)
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -187,16 +187,16 @@ rocsparse_status rocsparse_csrilu0_analysis_template(rocsparse_handle handle,
 }
 
 template <typename T>
-rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
-                                            rocsparse_int m,
-                                            rocsparse_int nnz,
+rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             nnz,
                                             const rocsparse_mat_descr descr,
-                                            T* csr_val,
-                                            const rocsparse_int* csr_row_ptr,
-                                            const rocsparse_int* csr_col_ind,
-                                            rocsparse_mat_info info,
-                                            rocsparse_solve_policy policy,
-                                            void* temp_buffer)
+                                            T*                        csr_val,
+                                            const rocsparse_int*      csr_row_ptr,
+                                            const rocsparse_int*      csr_col_ind,
+                                            rocsparse_mat_info        info,
+                                            rocsparse_solve_policy    policy,
+                                            void*                     temp_buffer)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
@@ -268,6 +268,12 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
     else if(temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for analysis call
+    if(info->csrilu0_info == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

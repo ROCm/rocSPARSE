@@ -24,11 +24,11 @@
 #include "testing_axpyi.hpp"
 #include "utility.hpp"
 
-#include <rocsparse.h>
 #include <gtest/gtest.h>
+#include <rocsparse.h>
 #include <vector>
 
-typedef rocsparse_index_base base;
+typedef rocsparse_index_base               base;
 typedef std::tuple<int, int, double, base> axpyi_tuple;
 
 int axpyi_N_range[]   = {12000, 15332, 22031};
@@ -40,7 +40,7 @@ base axpyi_idx_base_range[] = {rocsparse_index_base_zero, rocsparse_index_base_o
 
 class parameterized_axpyi : public testing::TestWithParam<axpyi_tuple>
 {
-    protected:
+protected:
     parameterized_axpyi() {}
     virtual ~parameterized_axpyi() {}
     virtual void SetUp() {}
@@ -58,7 +58,10 @@ Arguments setup_axpyi_arguments(axpyi_tuple tup)
     return arg;
 }
 
-TEST(axpyi_bad_arg, axpyi_float) { testing_axpyi_bad_arg<float>(); }
+TEST(axpyi_bad_arg, axpyi_float)
+{
+    testing_axpyi_bad_arg<float>();
+}
 
 TEST_P(parameterized_axpyi, axpyi_float)
 {

@@ -23,7 +23,6 @@
 
 #include "definitions.h"
 #include "handle.h"
-#include "definitions.h"
 #include "rocsparse.h"
 #include "utility.h"
 
@@ -154,8 +153,8 @@ rocsparse_status rocsparse_get_version(rocsparse_handle handle, int* version)
     {
         return rocsparse_status_invalid_handle;
     }
-    *version =
-        ROCSPARSE_VERSION_MAJOR * 100000 + ROCSPARSE_VERSION_MINOR * 100 + ROCSPARSE_VERSION_PATCH;
+    *version = ROCSPARSE_VERSION_MAJOR * 100000 + ROCSPARSE_VERSION_MINOR * 100
+               + ROCSPARSE_VERSION_PATCH;
 
     log_trace(handle, "rocsparse_get_version", *version);
 
@@ -288,8 +287,8 @@ rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr, rocsparse_mat
     {
         return rocsparse_status_invalid_pointer;
     }
-    if(type != rocsparse_matrix_type_general && type != rocsparse_matrix_type_symmetric &&
-       type != rocsparse_matrix_type_hermitian)
+    if(type != rocsparse_matrix_type_general && type != rocsparse_matrix_type_symmetric
+       && type != rocsparse_matrix_type_hermitian)
     {
         return rocsparse_status_invalid_value;
     }

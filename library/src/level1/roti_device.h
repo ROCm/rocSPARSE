@@ -28,12 +28,12 @@
 #include <hip/hip_runtime.h>
 
 template <typename T>
-__device__ void roti_device(rocsparse_int nnz,
-                            T* x_val,
+__device__ void roti_device(rocsparse_int        nnz,
+                            T*                   x_val,
                             const rocsparse_int* x_ind,
-                            T* y,
-                            T c,
-                            T s,
+                            T*                   y,
+                            T                    c,
+                            T                    s,
                             rocsparse_index_base idx_base)
 {
     rocsparse_int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;

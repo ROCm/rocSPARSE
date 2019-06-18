@@ -25,28 +25,28 @@
 #ifndef TESTING_IDENTITY_HPP
 #define TESTING_IDENTITY_HPP
 
-#include "rocsparse_test_unique_ptr.hpp"
 #include "rocsparse.hpp"
-#include "utility.hpp"
+#include "rocsparse_test_unique_ptr.hpp"
 #include "unit.hpp"
+#include "utility.hpp"
 
-#include <rocsparse.h>
 #include <algorithm>
+#include <rocsparse.h>
 
 using namespace rocsparse;
 using namespace rocsparse_test;
 
 void testing_identity_bad_arg(void)
 {
-    rocsparse_int n         = 100;
-    rocsparse_int safe_size = 100;
+    rocsparse_int    n         = 100;
+    rocsparse_int    safe_size = 100;
     rocsparse_status status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle handle = unique_ptr_handle->handle;
+    rocsparse_handle               handle = unique_ptr_handle->handle;
 
-    auto p_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto p_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
 
     rocsparse_int* p = (rocsparse_int*)p_managed.get();
 
@@ -75,18 +75,18 @@ void testing_identity_bad_arg(void)
 
 rocsparse_status testing_identity(Arguments argus)
 {
-    rocsparse_int n         = argus.N;
-    rocsparse_int safe_size = 100;
+    rocsparse_int    n         = argus.N;
+    rocsparse_int    safe_size = 100;
     rocsparse_status status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle handle = unique_ptr_handle->handle;
+    rocsparse_handle               handle = unique_ptr_handle->handle;
 
     // Argument sanity check before allocating invalid memory
     if(n <= 0)
     {
-        auto p_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto p_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
 
         rocsparse_int* p = (rocsparse_int*)p_managed.get();
 
@@ -121,7 +121,7 @@ rocsparse_status testing_identity(Arguments argus)
     }
 
     // Allocate memory on the device
-    auto dp_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * n), device_free};
+    auto dp_managed = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * n), device_free};
 
     rocsparse_int* dp = (rocsparse_int*)dp_managed.get();
 

@@ -29,8 +29,8 @@
 #ifndef _ROCSPARSE_AUXILIARY_H_
 #define _ROCSPARSE_AUXILIARY_H_
 
-#include "rocsparse-types.h"
 #include "rocsparse-export.h"
+#include "rocsparse-types.h"
 
 #include <hip/hip_runtime_api.h>
 
@@ -150,7 +150,7 @@ rocsparse_status rocsparse_get_stream(rocsparse_handle handle, hipStream_t* stre
  *  \retval rocsparse_status_invalid_handle \p handle is invalid.
  */
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle handle,
+rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle       handle,
                                             rocsparse_pointer_mode pointer_mode);
 
 /*! \ingroup aux_module
@@ -170,7 +170,7 @@ rocsparse_status rocsparse_set_pointer_mode(rocsparse_handle handle,
  *  \retval rocsparse_status_invalid_handle \p handle is invalid.
  */
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle handle,
+rocsparse_status rocsparse_get_pointer_mode(rocsparse_handle        handle,
                                             rocsparse_pointer_mode* pointer_mode);
 
 /*! \ingroup aux_module

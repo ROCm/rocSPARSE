@@ -25,16 +25,17 @@
 #ifndef CSR2ELL_DEVICE_H
 #define CSR2ELL_DEVICE_H
 
-#include "handle.h"
 #include "common.h"
+#include "handle.h"
 
 #include <hip/hip_runtime.h>
 
 // Compute non-zero entries per CSR row and do a block reduction over the maximum
 // Store result in a workspace for final reduction on part2
 template <rocsparse_int NB>
-__global__ void
-ell_width_kernel_part1(rocsparse_int m, const rocsparse_int* csr_row_ptr, rocsparse_int* workspace)
+__global__ void ell_width_kernel_part1(rocsparse_int        m,
+                                       const rocsparse_int* csr_row_ptr,
+                                       rocsparse_int*       workspace)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -83,14 +84,14 @@ __global__ void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace
 
 // CSR to ELL format conversion kernel
 template <typename T>
-__global__ void csr2ell_kernel(rocsparse_int m,
-                               const T* csr_val,
+__global__ void csr2ell_kernel(rocsparse_int        m,
+                               const T*             csr_val,
                                const rocsparse_int* csr_row_ptr,
                                const rocsparse_int* csr_col_ind,
                                rocsparse_index_base csr_idx_base,
-                               rocsparse_int ell_width,
-                               rocsparse_int* ell_col_ind,
-                               T* ell_val,
+                               rocsparse_int        ell_width,
+                               rocsparse_int*       ell_col_ind,
+                               T*                   ell_val,
                                rocsparse_index_base ell_idx_base)
 {
     rocsparse_int ai = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;

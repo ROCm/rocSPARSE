@@ -27,10 +27,10 @@
 
 #include "rocsparse.h"
 
-#include <iostream>
 #include <fstream>
-#include <vector>
 #include <hip/hip_runtime_api.h>
+#include <iostream>
+#include <vector>
 
 /*! \brief typedefs to opaque info structs */
 typedef struct _rocsparse_csrmv_info* rocsparse_csrmv_info;
@@ -70,9 +70,9 @@ struct _rocsparse_handle
     rocsparse_layer_mode layer_mode;
     // device buffer
     size_t buffer_size;
-    void* buffer;
+    void*  buffer;
     // device one
-    float* sone;
+    float*  sone;
     double* done;
 
     // logging streams
@@ -119,16 +119,16 @@ struct _rocsparse_hyb_mat
     rocsparse_hyb_partition partition = rocsparse_hyb_partition_auto;
 
     // ELL matrix part
-    rocsparse_int ell_nnz      = 0;
-    rocsparse_int ell_width    = 0;
+    rocsparse_int  ell_nnz     = 0;
+    rocsparse_int  ell_width   = 0;
     rocsparse_int* ell_col_ind = nullptr;
-    void* ell_val              = nullptr;
+    void*          ell_val     = nullptr;
 
     // COO matrix part
-    rocsparse_int coo_nnz      = 0;
+    rocsparse_int  coo_nnz     = 0;
     rocsparse_int* coo_row_ind = nullptr;
     rocsparse_int* coo_col_ind = nullptr;
-    void* coo_val              = nullptr;
+    void*          coo_val     = nullptr;
 };
 
 /********************************************************************************
@@ -162,13 +162,13 @@ struct _rocsparse_csrmv_info
     unsigned long long* row_blocks = nullptr;
 
     // some data to verify correct execution
-    rocsparse_operation trans;
-    rocsparse_int m;
-    rocsparse_int n;
-    rocsparse_int nnz;
+    rocsparse_operation         trans;
+    rocsparse_int               m;
+    rocsparse_int               n;
+    rocsparse_int               nnz;
     const _rocsparse_mat_descr* descr;
-    const rocsparse_int* csr_row_ptr;
-    const rocsparse_int* csr_col_ind;
+    const rocsparse_int*        csr_row_ptr;
+    const rocsparse_int*        csr_col_ind;
 };
 
 /********************************************************************************
@@ -197,11 +197,11 @@ struct _rocsparse_csrtr_info
     rocsparse_int* zero_pivot = nullptr;
 
     // some data to verify correct execution
-    rocsparse_int m;
-    rocsparse_int nnz;
+    rocsparse_int               m;
+    rocsparse_int               nnz;
     const _rocsparse_mat_descr* descr;
-    const rocsparse_int* csr_row_ptr;
-    const rocsparse_int* csr_col_ind;
+    const rocsparse_int*        csr_row_ptr;
+    const rocsparse_int*        csr_col_ind;
 };
 
 /********************************************************************************

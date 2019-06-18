@@ -25,10 +25,10 @@
 #ifndef TESTING_SCTR_HPP
 #define TESTING_SCTR_HPP
 
-#include "rocsparse_test_unique_ptr.hpp"
 #include "rocsparse.hpp"
-#include "utility.hpp"
+#include "rocsparse_test_unique_ptr.hpp"
 #include "unit.hpp"
+#include "utility.hpp"
 
 #include <rocsparse.h>
 
@@ -42,19 +42,19 @@ void testing_sctr_bad_arg(void)
     rocsparse_int safe_size = 100;
 
     rocsparse_index_base idx_base = rocsparse_index_base_zero;
-    rocsparse_status status;
+    rocsparse_status     status;
 
     std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle handle = unique_ptr_handle->handle;
+    rocsparse_handle               handle = unique_ptr_handle->handle;
 
-    auto dx_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dx_ind_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dy_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+    auto dx_val_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+    auto dx_ind_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+    auto dy_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
 
-    T* dx_val             = (T*)dx_val_managed.get();
+    T*             dx_val = (T*)dx_val_managed.get();
     rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
-    T* dy                 = (T*)dy_managed.get();
+    T*             dy     = (T*)dy_managed.get();
 
     if(!dx_ind || !dx_val || !dy)
     {
@@ -95,27 +95,27 @@ void testing_sctr_bad_arg(void)
 template <typename T>
 rocsparse_status testing_sctr(Arguments argus)
 {
-    rocsparse_int N               = argus.N;
-    rocsparse_int nnz             = argus.nnz;
-    rocsparse_int safe_size       = 100;
-    rocsparse_index_base idx_base = argus.idx_base;
-    rocsparse_status status;
+    rocsparse_int        N         = argus.N;
+    rocsparse_int        nnz       = argus.nnz;
+    rocsparse_int        safe_size = 100;
+    rocsparse_index_base idx_base  = argus.idx_base;
+    rocsparse_status     status;
 
     std::unique_ptr<handle_struct> test_handle(new handle_struct);
-    rocsparse_handle handle = test_handle->handle;
+    rocsparse_handle               handle = test_handle->handle;
 
     // Argument sanity check before allocating invalid memory
     if(nnz <= 0)
     {
-        auto dx_ind_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dx_val_managed =
-            rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto dy_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+        auto dx_ind_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto dx_val_managed
+            = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+        auto dy_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
 
         rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
-        T* dx_val             = (T*)dx_val_managed.get();
-        T* dy                 = (T*)dy_managed.get();
+        T*             dx_val = (T*)dx_val_managed.get();
+        T*             dy     = (T*)dy_managed.get();
 
         if(!dx_ind || !dx_val || !dy)
         {
@@ -141,9 +141,9 @@ rocsparse_status testing_sctr(Arguments argus)
 
     // Host structures
     std::vector<rocsparse_int> hx_ind(nnz);
-    std::vector<T> hx_val(nnz);
-    std::vector<T> hy(N);
-    std::vector<T> hy_gold(N);
+    std::vector<T>             hx_val(nnz);
+    std::vector<T>             hy(N);
+    std::vector<T>             hy_gold(N);
 
     // Initial Data on CPU
     srand(12345ULL);
@@ -154,14 +154,14 @@ rocsparse_status testing_sctr(Arguments argus)
     hy_gold = hy;
 
     // allocate memory on device
-    auto dx_ind_managed =
-        rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dx_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dy_managed     = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
+    auto dx_ind_managed
+        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dx_val_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * nnz), device_free};
+    auto dy_managed     = rocsparse_unique_ptr {device_malloc(sizeof(T) * N), device_free};
 
     rocsparse_int* dx_ind = (rocsparse_int*)dx_ind_managed.get();
-    T* dx_val             = (T*)dx_val_managed.get();
-    T* dy                 = (T*)dy_managed.get();
+    T*             dx_val = (T*)dx_val_managed.get();
+    T*             dy     = (T*)dy_managed.get();
 
     if(!dx_ind || !dx_val || !dy)
     {
@@ -218,8 +218,8 @@ rocsparse_status testing_sctr(Arguments argus)
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
-        double bandwidth =
-            (sizeof(rocsparse_int) * nnz + sizeof(T) * 2.0 * nnz) / gpu_time_used / 1e3;
+        double bandwidth
+            = (sizeof(rocsparse_int) * nnz + sizeof(T) * 2.0 * nnz) / gpu_time_used / 1e3;
 
         printf("nnz\t\tGB/s\tusec\n");
         printf("%9d\t%0.2lf\t%0.2lf\n", nnz, bandwidth, gpu_time_used);

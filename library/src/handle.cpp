@@ -21,13 +21,13 @@
  *
  * ************************************************************************ */
 
-#include "definitions.h"
 #include "handle.h"
+#include "definitions.h"
 #include "logging.h"
 
 #include <hip/hip_runtime.h>
 
-__global__ void init_kernel(){};
+__global__ void init_kernel() {};
 
 /*******************************************************************************
  * constructor
@@ -75,7 +75,7 @@ _rocsparse_handle::_rocsparse_handle()
     THROW_IF_HIP_ERROR(hipMemset(sone, 0, sizeof(float)));
     THROW_IF_HIP_ERROR(hipMemset(done, 0, sizeof(double)));
 
-    float hsone  = 1.0f;
+    float  hsone = 1.0f;
     double hdone = 1.0;
 
     THROW_IF_HIP_ERROR(hipMemcpy(sone, &hsone, sizeof(float), hipMemcpyHostToDevice));
