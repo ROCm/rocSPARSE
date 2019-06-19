@@ -48,9 +48,9 @@ void testing_csr2coo_bad_arg(void)
     rocsparse_handle               handle = unique_ptr_handle->handle;
 
     auto csr_row_ptr_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
     auto coo_row_ind_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
 
     rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
     rocsparse_int* coo_row_ind = (rocsparse_int*)coo_row_ind_managed.get();
@@ -124,9 +124,9 @@ rocsparse_status testing_csr2coo(Arguments argus)
     if(m <= 0 || n <= 0 || nnz <= 0)
     {
         auto csr_row_ptr_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
         auto coo_row_ind_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
 
         rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
         rocsparse_int* coo_row_ind = (rocsparse_int*)coo_row_ind_managed.get();
@@ -205,9 +205,9 @@ rocsparse_status testing_csr2coo(Arguments argus)
 
     // Allocate memory on the device
     auto dcsr_row_ptr_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
     auto dcoo_row_ind_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
 
     rocsparse_int* dcsr_row_ptr = (rocsparse_int*)dcsr_row_ptr_managed.get();
     rocsparse_int* dcoo_row_ind = (rocsparse_int*)dcoo_row_ind_managed.get();
