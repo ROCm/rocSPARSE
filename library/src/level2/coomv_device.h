@@ -79,7 +79,7 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
 
     // Shared memory to hold row indices and values for segmented reduction
     __shared__ rocsparse_int shared_row[BLOCKSIZE];
-    __shared__ T shared_val[BLOCKSIZE];
+    __shared__ T             shared_val[BLOCKSIZE];
 
     // Initialize shared memory
     shared_row[tid] = -1;
@@ -222,7 +222,7 @@ __global__ void coomvn_general_block_reduce(rocsparse_int nnz,
 
     // Shared memory to hold row indices and values for segmented reduction
     __shared__ rocsparse_int shared_row[BLOCKSIZE];
-    __shared__ T shared_val[BLOCKSIZE];
+    __shared__ T             shared_val[BLOCKSIZE];
 
     // Loop over blocks that are subject for segmented reduction
     for(rocsparse_int i = tid; i < nnz; i += BLOCKSIZE)
