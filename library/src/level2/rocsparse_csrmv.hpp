@@ -65,8 +65,6 @@ static unsigned long long numThreadsForReduction(unsigned long long num_rows)
 {
 #if defined(__INTEL_COMPILER)
     return WG_SIZE >> (_bit_scan_reverse(num_rows - 1) + 1);
-#elif(defined(__HIP_PLATFORM_NVCC__))
-    return flp2(WG_SIZE / num_rows);
 #elif(defined(__clang__) && __has_builtin(__builtin_clz)) \
     || !defined(__clang) && defined(__GNUG__)             \
            && ((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 30202)

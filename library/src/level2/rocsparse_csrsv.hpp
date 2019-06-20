@@ -36,7 +36,7 @@
 #include <limits>
 
 #include <hip/hip_runtime.h>
-#include <hipcub/hipcub.hpp>
+#include <rocprim/rocprim.hpp>
 
 template <typename T>
 rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          handle,
@@ -139,16 +139,18 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
     // rocsparse_int workspace2
     *buffer_size += sizeof(int) * ((m - 1) / 256 + 1) * 256;
 
-    size_t                              hipcub_size = 0;
-    rocsparse_int*                      ptr         = reinterpret_cast<rocsparse_int*>(buffer_size);
-    int*                                ptr2        = reinterpret_cast<int*>(buffer_size);
-    hipcub::DoubleBuffer<rocsparse_int> dummy(ptr, ptr);
-    hipcub::DoubleBuffer<rocsparse_int> dummy2(ptr2, ptr2);
-    RETURN_IF_HIP_ERROR(
-        hipcub::DeviceRadixSort::SortPairs(nullptr, hipcub_size, dummy2, dummy, m, 0, 32, stream));
+    size_t         rocprim_size = 0;
+    rocsparse_int* ptr          = reinterpret_cast<rocsparse_int*>(buffer_size);
+    int*           ptr2         = reinterpret_cast<int*>(buffer_size);
 
-    // hipcub buffer
-    *buffer_size += hipcub_size;
+    rocprim::double_buffer<rocsparse_int> dummy(ptr, ptr);
+    rocprim::double_buffer<rocsparse_int> dummy2(ptr2, ptr2);
+
+    RETURN_IF_HIP_ERROR(
+        rocprim::radix_sort_pairs(nullptr, rocprim_size, dummy2, dummy, m, 0, 32, stream));
+
+    // rocprim buffer
+    *buffer_size += rocprim_size;
 
     return rocsparse_status_success;
 }
@@ -189,8 +191,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
     int* workspace2 = reinterpret_cast<int*>(ptr);
     ptr += sizeof(int) * ((m - 1) / 256 + 1) * 256;
 
-    // hipcub buffer
-    void* hipcub_buffer = reinterpret_cast<void*>(ptr);
+    // rocprim buffer
+    void* rocprim_buffer = reinterpret_cast<void*>(ptr);
 
     // Allocate buffer to hold diagonal entry point
     RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->csr_diag_ind, sizeof(rocsparse_int) * m));
@@ -293,23 +295,23 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
 
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, m, workspace));
 
-    size_t hipcub_size;
+    size_t rocprim_size;
 
     unsigned int startbit = 0;
     unsigned int endbit   = rocsparse_clz(m);
 
-    hipcub::DoubleBuffer<int>           keys(done_array, workspace2);
-    hipcub::DoubleBuffer<rocsparse_int> vals(workspace, info->row_map);
+    rocprim::double_buffer<int>           keys(done_array, workspace2);
+    rocprim::double_buffer<rocsparse_int> vals(workspace, info->row_map);
 
-    RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
-        nullptr, hipcub_size, keys, vals, m, startbit, endbit, stream));
-    RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
-        hipcub_buffer, hipcub_size, keys, vals, m, startbit, endbit, stream));
+    RETURN_IF_HIP_ERROR(
+        rocprim::radix_sort_pairs(nullptr, rocprim_size, keys, vals, m, startbit, endbit, stream));
+    RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
+        rocprim_buffer, rocprim_size, keys, vals, m, startbit, endbit, stream));
 
-    if(vals.Current() != info->row_map)
+    if(vals.current() != info->row_map)
     {
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->row_map,
-                                           vals.Current(),
+                                           vals.current(),
                                            sizeof(rocsparse_int) * m,
                                            hipMemcpyDeviceToDevice,
                                            stream));
