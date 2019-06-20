@@ -51,13 +51,13 @@ void testing_coosort_bad_arg(void)
     size_t buffer_size = 0;
 
     auto coo_row_ind_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
     auto coo_col_ind_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
     auto perm_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
     auto buffer_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(char) * safe_size), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
 
     rocsparse_int* coo_row_ind = (rocsparse_int*)coo_row_ind_managed.get();
     rocsparse_int* coo_col_ind = (rocsparse_int*)coo_col_ind_managed.get();
@@ -226,13 +226,13 @@ rocsparse_status testing_coosort(Arguments argus)
     if(m <= 0 || n <= 0 || nnz <= 0)
     {
         auto coo_row_ind_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
         auto coo_col_ind_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
         auto perm_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
         auto buffer_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(char) * safe_size), device_free};
+            = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
 
         rocsparse_int* coo_row_ind = (rocsparse_int*)coo_row_ind_managed.get();
         rocsparse_int* coo_col_ind = (rocsparse_int*)coo_col_ind_managed.get();
@@ -409,14 +409,14 @@ rocsparse_status testing_coosort(Arguments argus)
 
     // Allocate memory on the device
     auto dcoo_row_ind_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
     auto dcoo_col_ind_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dcoo_val_managed = rocsparse_unique_ptr {device_malloc(sizeof(float) * nnz), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dcoo_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(float) * nnz), device_free};
     auto dcoo_val_sorted_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(float) * nnz), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(float) * nnz), device_free};
     auto dperm_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
 
     rocsparse_int* dcoo_row_ind    = (rocsparse_int*)dcoo_row_ind_managed.get();
     rocsparse_int* dcoo_col_ind    = (rocsparse_int*)dcoo_col_ind_managed.get();
@@ -454,7 +454,7 @@ rocsparse_status testing_coosort(Arguments argus)
 
         // Allocate buffer on the device
         auto dbuffer_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(char) * buffer_size), device_free};
+            = rocsparse_unique_ptr{device_malloc(sizeof(char) * buffer_size), device_free};
 
         void* dbuffer = (void*)dbuffer_managed.get();
 
@@ -526,7 +526,7 @@ rocsparse_status testing_coosort(Arguments argus)
         rocsparse_coosort_buffer_size(handle, m, n, nnz, dcoo_row_ind, dcoo_col_ind, &buffer_size);
 
         auto dbuffer_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(char) * buffer_size), device_free};
+            = rocsparse_unique_ptr{device_malloc(sizeof(char) * buffer_size), device_free};
         void* dbuffer = (void*)dbuffer_managed.get();
 
         for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)

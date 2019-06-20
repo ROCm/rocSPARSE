@@ -73,8 +73,8 @@ void testing_hybmv_bad_arg(void)
     std::unique_ptr<hyb_struct> unique_ptr_hyb(new hyb_struct);
     rocsparse_hyb_mat           hyb = unique_ptr_hyb->hyb;
 
-    auto dx_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
-    auto dy_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+    auto dx_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+    auto dy_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
 
     T* dx = (T*)dx_managed.get();
     T* dy = (T*)dy_managed.get();
@@ -189,13 +189,12 @@ rocsparse_status testing_hybmv(Arguments argus)
     if(m <= 0 || n <= 0 || nnz <= 0)
     {
         auto dptr_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
         auto dcol_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dval_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
-        auto dx_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
-        auto dy_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * safe_size), device_free};
+            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+        auto dx_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+        auto dy_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
 
         rocsparse_int* dptr = (rocsparse_int*)dptr_managed.get();
         rocsparse_int* dcol = (rocsparse_int*)dcol_managed.get();
@@ -292,15 +291,15 @@ rocsparse_status testing_hybmv(Arguments argus)
 
     // allocate memory on device
     auto dptr_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
     auto dcol_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dval_managed    = rocsparse_unique_ptr {device_malloc(sizeof(T) * nnz), device_free};
-    auto dx_managed      = rocsparse_unique_ptr {device_malloc(sizeof(T) * n), device_free};
-    auto dy_1_managed    = rocsparse_unique_ptr {device_malloc(sizeof(T) * m), device_free};
-    auto dy_2_managed    = rocsparse_unique_ptr {device_malloc(sizeof(T) * m), device_free};
-    auto d_alpha_managed = rocsparse_unique_ptr {device_malloc(sizeof(T)), device_free};
-    auto d_beta_managed  = rocsparse_unique_ptr {device_malloc(sizeof(T)), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dval_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
+    auto dx_managed      = rocsparse_unique_ptr{device_malloc(sizeof(T) * n), device_free};
+    auto dy_1_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
+    auto dy_2_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
+    auto d_alpha_managed = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
+    auto d_beta_managed  = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
 
     rocsparse_int* dptr    = (rocsparse_int*)dptr_managed.get();
     rocsparse_int* dcol    = (rocsparse_int*)dcol_managed.get();

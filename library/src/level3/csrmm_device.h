@@ -56,7 +56,7 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
     rocsparse_int colC = col * ldc;
 
     __shared__ rocsparse_int shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
-    __shared__ T shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
+    __shared__ T             shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
     for(rocsparse_int row = gid / WF_SIZE; row < M; row += nwf)
     {
@@ -126,7 +126,7 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
     }
 
     __shared__ rocsparse_int shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
-    __shared__ T shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
+    __shared__ T             shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
     rocsparse_int row_start = csr_row_ptr[row] - idx_base;
     rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;

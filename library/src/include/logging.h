@@ -100,7 +100,7 @@ inline void open_log_stream(std::ostream** log_os,
 template <typename F, typename... Ts>
 void each_args(F f, Ts&... xs)
 {
-    (void)std::initializer_list<int> {((void)f(xs), 0)...};
+    (void)std::initializer_list<int>{((void)f(xs), 0)...};
 }
 
 /**
@@ -182,7 +182,7 @@ template <typename H, typename... Ts>
 void log_arguments(std::ostream& os, std::string& separator, H head, Ts&... xs)
 {
     os << "\n" << head;
-    each_args(log_arg {os, separator}, xs...);
+    each_args(log_arg{os, separator}, xs...);
 }
 
 /**
