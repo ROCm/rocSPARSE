@@ -77,12 +77,12 @@ rocsparse_status testing_csrilusv(Arguments argus)
 
     // Allocate memory on device
     auto dptr_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
     auto dcol_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dval_managed = rocsparse_unique_ptr {device_malloc(sizeof(T) * nnz), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
+    auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
     auto d_position_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int)), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int)), device_free};
 
     rocsparse_int* dptr       = (rocsparse_int*)dptr_managed.get();
     rocsparse_int* dcol       = (rocsparse_int*)dcol_managed.get();
@@ -109,7 +109,7 @@ rocsparse_status testing_csrilusv(Arguments argus)
         rocsparse_csrilu0_buffer_size(handle, m, nnz, descr_M, dval, dptr, dcol, info, &size));
 
     // Allocate buffer on the device
-    auto dbuffer_managed = rocsparse_unique_ptr {device_malloc(sizeof(char) * size), device_free};
+    auto dbuffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * size), device_free};
 
     void* dbuffer = (void*)dbuffer_managed.get();
 
@@ -239,12 +239,12 @@ rocsparse_status testing_csrilusv(Arguments argus)
     std::vector<T> hz_gold(m);
 
     // Allocate device memory
-    auto dx_managed      = rocsparse_unique_ptr {device_malloc(sizeof(T) * m), device_free};
-    auto dy_1_managed    = rocsparse_unique_ptr {device_malloc(sizeof(T) * m), device_free};
-    auto dy_2_managed    = rocsparse_unique_ptr {device_malloc(sizeof(T) * m), device_free};
-    auto dz_1_managed    = rocsparse_unique_ptr {device_malloc(sizeof(T) * m), device_free};
-    auto dz_2_managed    = rocsparse_unique_ptr {device_malloc(sizeof(T) * m), device_free};
-    auto d_alpha_managed = rocsparse_unique_ptr {device_malloc(sizeof(T)), device_free};
+    auto dx_managed      = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
+    auto dy_1_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
+    auto dy_2_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
+    auto dz_1_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
+    auto dz_2_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
+    auto d_alpha_managed = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
 
     T* dx      = (T*)dx_managed.get();
     T* dy_1    = (T*)dy_1_managed.get();
