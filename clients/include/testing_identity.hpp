@@ -46,7 +46,7 @@ void testing_identity_bad_arg(void)
     rocsparse_handle               handle = unique_ptr_handle->handle;
 
     auto p_managed
-        = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
 
     rocsparse_int* p = (rocsparse_int*)p_managed.get();
 
@@ -86,7 +86,7 @@ rocsparse_status testing_identity(Arguments argus)
     if(n <= 0)
     {
         auto p_managed
-            = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
+            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
 
         rocsparse_int* p = (rocsparse_int*)p_managed.get();
 
@@ -121,7 +121,7 @@ rocsparse_status testing_identity(Arguments argus)
     }
 
     // Allocate memory on the device
-    auto dp_managed = rocsparse_unique_ptr {device_malloc(sizeof(rocsparse_int) * n), device_free};
+    auto dp_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * n), device_free};
 
     rocsparse_int* dp = (rocsparse_int*)dp_managed.get();
 
