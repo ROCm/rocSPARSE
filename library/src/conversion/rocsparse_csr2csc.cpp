@@ -25,7 +25,7 @@
 #include "rocsparse_csr2csc.hpp"
 
 #include <hip/hip_runtime_api.h>
-#include <hipcub/hipcub.hpp>
+#include <rocprim/rocprim.hpp>
 
 /*
  * ===========================================================================
@@ -97,12 +97,13 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle     h
 
     hipStream_t stream = handle->stream;
 
-    // Determine hipcub buffer size
-    rocsparse_int*                      ptr = reinterpret_cast<rocsparse_int*>(buffer_size);
-    hipcub::DoubleBuffer<rocsparse_int> dummy(ptr, ptr);
+    // Determine rocprim buffer size
+    rocsparse_int* ptr = reinterpret_cast<rocsparse_int*>(buffer_size);
 
-    RETURN_IF_HIP_ERROR(hipcub::DeviceRadixSort::SortPairs(
-        nullptr, *buffer_size, dummy, dummy, nnz, 0, 32, stream));
+    rocprim::double_buffer<rocsparse_int> dummy(ptr, ptr);
+
+    RETURN_IF_HIP_ERROR(
+        rocprim::radix_sort_pairs(nullptr, *buffer_size, dummy, dummy, nnz, 0, 32, stream));
 
     *buffer_size = ((*buffer_size - 1) / 256 + 1) * 256;
 

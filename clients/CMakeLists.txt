@@ -49,11 +49,7 @@ if(NOT (CMAKE_CXX_COMPILER MATCHES ".*/hcc$" OR CMAKE_CXX_COMPILER MATCHES ".*/h
 endif()
 
 # Ignore hcc warning
-if(HIP_PLATFORM STREQUAL "nvcc")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xcompiler -Wall -Xcompiler -Wno-unused-command-line-argument")
-else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-command-line-argument")
-endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-command-line-argument")
 
 # This option only works for make/nmake and the ninja generators, but no reason it shouldn't be on all the time
 # This tells cmake to create a compile_commands.json file that can be used with clang tooling or vim
