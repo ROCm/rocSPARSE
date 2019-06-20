@@ -24,9 +24,6 @@
 # Find HIP package
 find_package(HIP 1.5.19211 REQUIRED) # ROCm 2.5
 
-# Find rocprim package
-find_package(rocprim 2.5.0 REQUIRED) # ROCm 2.5
-
 # Select toolchain
 if(HIP_COMPILER STREQUAL "clang")
   # Find HIPCC executable
