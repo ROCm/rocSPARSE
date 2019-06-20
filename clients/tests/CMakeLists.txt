@@ -125,14 +125,10 @@ else()
   target_link_libraries(rocsparse-test PRIVATE roc::rocsparse)
 endif()
 
-if(HIP_PLATFORM STREQUAL "nvcc")
-  target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES})
-else()
-  target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} ${hip_LIBRARIES})
+target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} ${hip_LIBRARIES})
 
-  foreach(amdgpu_target ${AMDGPU_TARGETS})
-    target_link_libraries(rocsparse-test PRIVATE --amdgpu-target=${amdgpu_target})
-  endforeach()
-endif()
+foreach(amdgpu_target ${AMDGPU_TARGETS})
+  target_link_libraries(rocsparse-test PRIVATE --amdgpu-target=${amdgpu_target})
+endforeach()
 
 add_test(rocsparse-test rocsparse-test)

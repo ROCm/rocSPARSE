@@ -16,7 +16,6 @@ function display_help()
   echo "    [-d|--dependencies] install build dependencies"
   echo "    [-c|--clients] build library clients too (combines with -i & -d)"
   echo "    [-g|--debug] -DCMAKE_BUILD_TYPE=Debug (default is =Release)"
-#  echo "    [--cuda] build library for cuda backend"
   echo "    [--hip-clang] build library for amdgpu backend using hip-clang"
 }
 
@@ -118,13 +117,6 @@ install_packages( )
   local library_dependencies_centos=( "epel-release" "make" "cmake3" "hip_hcc" "gcc-c++" "rpm-build" "numactl-libs" )
   local library_dependencies_fedora=( "make" "cmake" "hip_hcc" "gcc-c++" "libcxx-devel" "rpm-build" "numactl-libs" )
 
-  if [[ "${build_cuda}" == true ]]; then
-    # Ideally, this could be cuda-cusparse-dev, but the package name has a version number in it
-    library_dependencies_ubuntu+=( "cuda" )
-    library_dependencies_centos+=( "" ) # how to install cuda on centos?
-    library_dependencies_fedora+=( "" ) # how to install cuda on fedora?
-  fi
-
   local client_dependencies_ubuntu=( "libboost-program-options-dev" )
   local client_dependencies_centos=( "boost-devel" )
   local client_dependencies_fedora=( "boost-devel" )
@@ -197,7 +189,6 @@ install_package=false
 install_dependencies=false
 install_prefix=rocsparse-install
 build_clients=false
-build_cuda=false
 build_release=true
 build_hip_clang=false
 
@@ -238,9 +229,6 @@ while true; do
         shift ;;
     -g|--debug)
         build_release=false
-        shift ;;
-    --cuda)
-        build_cuda=true
         shift ;;
     --hip-clang)
         build_hip_clang=true
@@ -324,13 +312,11 @@ pushd .
 
   # compiler
   compiler="hipcc"
-  if [[ "${build_cuda}" == false ]]; then
-    if [[ "${build_hip_clang}" == true ]]; then
-      cmake_common_options="${cmake_common_options} -DHIP_COMPILER=clang"
-    else
-      compiler="hcc"
-      cmake_common_options="${cmake_common_options} -DHIP_COMPILER=hcc"
-    fi
+  if [[ "${build_hip_clang}" == true ]]; then
+    cmake_common_options="${cmake_common_options} -DHIP_COMPILER=clang"
+  else
+    compiler="hcc"
+    cmake_common_options="${cmake_common_options} -DHIP_COMPILER=hcc"
   fi
 
   # Build library with AMD toolchain because of existense of device kernels
