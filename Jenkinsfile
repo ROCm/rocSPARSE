@@ -99,10 +99,10 @@ rocSPARSECI:
                         LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test --gtest_output=xml --gtest_color=yes #--gtest_filter=*quick*:*pre_checkin*-*known_bug* #--gtest_filter=*checkin*
                     """
             }
+            
+            platform.runCommand(this, command)
+            junit "${project.paths.project_build_prefix}/build/release/clients/tests/*.xml"
         }
-        
-        platform.runCommand(this, command)
-        junit "${project.paths.project_build_prefix}/build/release/clients/tests/*.xml"
     }
 
     def packageCommand =
