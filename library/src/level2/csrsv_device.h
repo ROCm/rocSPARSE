@@ -134,11 +134,7 @@ __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
     // Determine maximum local depth within the wavefront
     rocsparse_wfreduce_max<WF_SIZE>(&local_max);
 
-#if defined(__HIP_PLATFORM_HCC__)
     if(lid == WF_SIZE - 1)
-#elif defined(__HIP_PLATFORM_NVCC__)
-    if(lid == 0)
-#endif
     {
         // Write the local "row is done" flag
         atomicOr(&local_done_array[wid], local_max + 1);
@@ -262,11 +258,7 @@ __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
     // Determine maximum local depth within the wavefront
     rocsparse_wfreduce_max<WF_SIZE>(&local_max);
 
-#if defined(__HIP_PLATFORM_HCC__)
     if(lid == WF_SIZE - 1)
-#elif defined(__HIP_PLATFORM_NVCC__)
-    if(lid == 0)
-#endif
     {
         // Write the local "row is done" flag
         atomicOr(&local_done_array[wid], local_max + 1);
@@ -416,11 +408,7 @@ __device__ void csrsv_device(rocsparse_int m,
         local_sum *= diagonal[wid];
     }
 
-#if defined(__HIP_PLATFORM_HCC__)
     if(lid == WF_SIZE - 1)
-#elif defined(__HIP_PLATFORM_NVCC__)
-    if(lid == 0)
-#endif
     {
         // Write the "row is done" flag and store the rows result in y
         rocsparse_nontemporal_store(local_sum, &y[row]);

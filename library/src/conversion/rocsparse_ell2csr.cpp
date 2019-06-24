@@ -29,7 +29,7 @@
 #include "utility.h"
 
 #include <hip/hip_runtime.h>
-#include <hipcub/hipcub.hpp>
+#include <rocprim/rocprim.hpp>
 
 /*
  * ===========================================================================
@@ -154,15 +154,20 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle          hand
     // Exclusive sum to obtain csr_row_ptr array and number of non-zero elements
     size_t temp_storage_bytes = 0;
 
-    // Obtain hipcub buffer size
-    RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(
-        nullptr, temp_storage_bytes, csr_row_ptr, csr_row_ptr, m + 1));
+    // Obtain rocprim buffer size
+    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
+                                                temp_storage_bytes,
+                                                csr_row_ptr,
+                                                csr_row_ptr,
+                                                m + 1,
+                                                rocprim::plus<rocsparse_int>(),
+                                                stream));
 
-    // Get hipcub buffer
+    // Get rocprim buffer
     bool  d_temp_alloc;
     void* d_temp_storage;
 
-    // Device buffer should be sufficient for hipcub in most cases
+    // Device buffer should be sufficient for rocprim in most cases
     if(handle->buffer_size >= temp_storage_bytes)
     {
         d_temp_storage = handle->buffer;
@@ -175,8 +180,13 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle          hand
     }
 
     // Perform actual inclusive sum
-    RETURN_IF_HIP_ERROR(hipcub::DeviceScan::InclusiveSum(
-        d_temp_storage, temp_storage_bytes, csr_row_ptr, csr_row_ptr, m + 1));
+    RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(d_temp_storage,
+                                                temp_storage_bytes,
+                                                csr_row_ptr,
+                                                csr_row_ptr,
+                                                m + 1,
+                                                rocprim::plus<rocsparse_int>(),
+                                                stream));
 
     // Extract and adjust nnz
     if(csr_descr->base == rocsparse_index_base_one)
@@ -212,7 +222,7 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle          hand
         }
     }
 
-    // Free hipcub buffer, if allocated
+    // Free rocprim buffer, if allocated
     if(d_temp_alloc == true)
     {
         RETURN_IF_HIP_ERROR(hipFree(d_temp_storage));

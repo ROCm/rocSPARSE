@@ -7,7 +7,7 @@ MAINTAINER Nico Trost
 ARG user_uid
 
 # Install dependent packages
-# Dependencies:
+# Dependencies: rocprim
 # * hcc-config.cmake: pkg-config
 # * rocsparse-test: googletest
 # * rocsparse-bench: libboost-program-options-dev
@@ -24,6 +24,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     pkg-config \
     libboost-program-options-dev \
     libnuma1 \
+    rocprim \
     && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
