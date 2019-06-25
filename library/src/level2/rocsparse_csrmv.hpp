@@ -382,13 +382,16 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
     // Create csrmv info
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrmv_info(&info->csrmv_info));
 
+    // Stream
+    hipStream_t stream = handle->stream;
+
     // row blocks size
     info->csrmv_info->size = 0;
 
     // Temporary arrays to hold device data
     std::vector<rocsparse_int> hptr(m + 1);
-    RETURN_IF_HIP_ERROR(hipMemcpy(
-        hptr.data(), csr_row_ptr, sizeof(rocsparse_int) * (m + 1), hipMemcpyDeviceToHost));
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+        hptr.data(), csr_row_ptr, sizeof(rocsparse_int) * (m + 1), hipMemcpyDeviceToHost, stream));
 
     // Determine row blocks array size
     ComputeRowBlocks((unsigned long long*)NULL, info->csrmv_info->size, hptr.data(), m, false);
@@ -405,10 +408,11 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
                                       sizeof(unsigned long long) * info->csrmv_info->size));
 
         // Copy row blocks information to device
-        RETURN_IF_HIP_ERROR(hipMemcpy(info->csrmv_info->row_blocks,
-                                      row_blocks.data(),
-                                      sizeof(unsigned long long) * info->csrmv_info->size,
-                                      hipMemcpyHostToDevice));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->csrmv_info->row_blocks,
+                                           row_blocks.data(),
+                                           sizeof(unsigned long long) * info->csrmv_info->size,
+                                           hipMemcpyHostToDevice,
+                                           stream));
     }
 
     // Store some pointers to verify correct execution
