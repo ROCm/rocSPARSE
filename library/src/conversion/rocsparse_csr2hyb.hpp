@@ -133,6 +133,9 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
         &csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
 
+    // Wait for host transfer to finish
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
     // Correct by index base
     csr_nnz -= descr->base;
 
@@ -226,6 +229,9 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
             &hyb->ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
 
+        // Wait for host transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
         RETURN_IF_HIP_ERROR(hipFree(workspace));
     }
 
@@ -310,6 +316,9 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
                                                sizeof(rocsparse_int),
                                                hipMemcpyDeviceToHost,
                                                stream));
+
+            // Wait for host transfer to finish
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
             hyb->coo_nnz -= descr->base;
         }

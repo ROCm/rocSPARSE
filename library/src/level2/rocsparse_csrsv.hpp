@@ -293,6 +293,9 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
         &info->max_nnz, d_max_nnz, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
 
+    // Wait for host transfer to finish
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, m, workspace));
 
     size_t rocprim_size;
