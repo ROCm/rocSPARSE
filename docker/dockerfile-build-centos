@@ -1,0 +1,52 @@
+# This Dockerfile provides a starting point for a ROCm installation of rocSPARSE.
+
+# Parameters related to building rocSPARSE
+ARG base_image
+
+FROM ${base_image}
+LABEL maintainer="nico.trost@amd.com"
+
+USER root
+ARG user_uid
+
+# Install dependent packages
+RUN yum install -y \
+    sudo \
+    rock-dkms \
+    centos-release-scl \
+    devtoolset-7 \
+    ca-certificates \
+    git \
+    gtest \
+    gtest-devel \
+    cmake3 \
+    make \
+    clang \
+    clang-devel \
+    gcc-c++ \
+    boost-devel \
+    pkgconfig \
+    numactl-libs \
+    rocprim
+
+RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
+    'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh
+
+# docker pipeline runs containers with particular uid
+# create a jenkins user with this specific uid so it can use sudo priviledges
+# Grant any member of sudo group password-less sudo privileges
+RUN useradd --create-home -u ${user_uid} -o -G video --shell /bin/bash jenkins && \
+    echo '%video ALL=(ALL) NOPASSWD:ALL' | tee /etc/sudoers.d/sudo-nopasswd && \
+    chmod 400 /etc/sudoers.d/sudo-nopasswd
+    
+ARG ROCSPARSE_SRC_ROOT=/usr/local/src/rocSPARSE
+
+# Clone rocsparse repo
+# Build client dependencies and install into /usr/local
+RUN mkdir -p ${ROCSPARSE_SRC_ROOT} && cd ${ROCSPARSE_SRC_ROOT} && \
+    git clone -b develop --depth=1 https://github.com/ROCmSoftwarePlatform/rocSPARSE . && \
+    mkdir -p build/deps && cd build/deps && \
+    cmake3 -DBUILD_BOOST=OFF ${ROCSPARSE_SRC_ROOT}/deps && \
+    make -j $(nproc) install && \
+    rm -rf ${ROCSPARSE_SRC_ROOT}
+    
