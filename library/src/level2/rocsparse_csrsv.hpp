@@ -208,6 +208,9 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
         info->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
 
+    // Wait for device transfer to finish
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
 // Run analysis
 #define CSRILU0_DIM 1024
     dim3 csrsv_blocks((handle->wavefront_size * m - 1) / CSRILU0_DIM + 1);
@@ -741,6 +744,9 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
         rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
             csrsv->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
+
+        // Wait for device transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     }
 
 #define CSRSV_DIM 1024

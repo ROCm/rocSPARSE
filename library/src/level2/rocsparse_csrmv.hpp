@@ -416,6 +416,9 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
                                            sizeof(unsigned long long) * info->csrmv_info->size,
                                            hipMemcpyHostToDevice,
                                            stream));
+
+        // Wait for device transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     }
 
     // Store some pointers to verify correct execution
