@@ -53,7 +53,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
                                                    const rocsparse_mat_descr descr_C,
                                                    rocsparse_int*            csr_row_ptr_C,
                                                    rocsparse_int*            nnz_C,
-                                                   const rocsparse_mat_info  info,
+                                                   const rocsparse_mat_info  info_C,
                                                    void*                     temp_buffer)
 {
     // Stream
@@ -61,11 +61,11 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 
     // Index base
     rocsparse_index_base base_A
-        = info->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
+        = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
     rocsparse_index_base base_B
-        = info->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
+        = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
     rocsparse_index_base base_D
-        = info->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
+        = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
 
     // Temporary buffer
     char* buffer = reinterpret_cast<char*>(temp_buffer);
@@ -89,8 +89,8 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
                        csr_row_ptr_D,
                        csr_row_ptr_C,
                        base_A,
-                       info->csrgemm_info->mul,
-                       info->csrgemm_info->add);
+                       info_C->csrgemm_info->mul,
+                       info_C->csrgemm_info->add);
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
 
@@ -263,8 +263,8 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
             base_A,
             base_B,
             base_D,
-            info->csrgemm_info->mul,
-            info->csrgemm_info->add);
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -295,8 +295,8 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
             base_A,
             base_B,
             base_D,
-            info->csrgemm_info->mul,
-            info->csrgemm_info->add);
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -326,8 +326,8 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
             base_A,
             base_B,
             base_D,
-            info->csrgemm_info->mul,
-            info->csrgemm_info->add);
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -357,8 +357,8 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
             base_A,
             base_B,
             base_D,
-            info->csrgemm_info->mul,
-            info->csrgemm_info->add);
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -388,8 +388,8 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
             base_A,
             base_B,
             base_D,
-            info->csrgemm_info->mul,
-            info->csrgemm_info->add);
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -419,8 +419,8 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
             base_A,
             base_B,
             base_D,
-            info->csrgemm_info->mul,
-            info->csrgemm_info->add);
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -450,8 +450,8 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
             base_A,
             base_B,
             base_D,
-            info->csrgemm_info->mul,
-            info->csrgemm_info->add);
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -524,11 +524,11 @@ static rocsparse_status rocsparse_csrgemm_nnz_mult(rocsparse_handle          han
                                                    const rocsparse_mat_descr descr_C,
                                                    rocsparse_int*            csr_row_ptr_C,
                                                    rocsparse_int*            nnz_C,
-                                                   const rocsparse_mat_info  info,
+                                                   const rocsparse_mat_info  info_C,
                                                    void*                     temp_buffer)
 {
     // Check for valid info structure
-    if(info->csrgemm_info == nullptr)
+    if(info_C->csrgemm_info == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -616,7 +616,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_mult(rocsparse_handle          han
                                       descr_C,
                                       csr_row_ptr_C,
                                       nnz_C,
-                                      info,
+                                      info_C,
                                       temp_buffer);
 }
 
@@ -641,7 +641,7 @@ extern "C" rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          hand
                                                   const rocsparse_mat_descr descr_C,
                                                   rocsparse_int*            csr_row_ptr_C,
                                                   rocsparse_int*            nnz_C,
-                                                  const rocsparse_mat_info  info,
+                                                  const rocsparse_mat_info  info_C,
                                                   void*                     temp_buffer)
 {
     // Check for valid handle and info structure
@@ -673,29 +673,29 @@ extern "C" rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          hand
               (const void*&)descr_C,
               (const void*&)csr_row_ptr_C,
               (const void*&)nnz_C,
-              (const void*&)info,
+              (const void*&)info_C,
               (const void*&)temp_buffer);
 
     // Check for valid rocsparse_mat_info
-    if(info == nullptr)
+    if(info_C == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
     // Check for valid rocsparse_csrgemm_info
-    if(info->csrgemm_info == nullptr)
+    if(info_C->csrgemm_info == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
     // Either mult, add or multadd need to be performed
-    if(info->csrgemm_info->mul == true && info->csrgemm_info->add == true)
+    if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == true)
     {
         // C = alpha * A * B + beta * D
         // TODO
         return rocsparse_status_not_implemented;
     }
-    else if(info->csrgemm_info->mul == true && info->csrgemm_info->add == false)
+    else if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == false)
     {
         // C = alpha * A * B
         return rocsparse_csrgemm_nnz_mult(handle,
@@ -715,10 +715,10 @@ extern "C" rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          hand
                                           descr_C,
                                           csr_row_ptr_C,
                                           nnz_C,
-                                          info,
+                                          info_C,
                                           temp_buffer);
     }
-    else if(info->csrgemm_info->mul == false && info->csrgemm_info->add == true)
+    else if(info_C->csrgemm_info->mul == false && info_C->csrgemm_info->add == true)
     {
         // C = beta * D
         // TODO
@@ -759,7 +759,7 @@ extern "C" rocsparse_status rocsparse_scsrgemm_buffer_size(rocsparse_handle     
                                                            rocsparse_int             nnz_D,
                                                            const rocsparse_int*      csr_row_ptr_D,
                                                            const rocsparse_int*      csr_col_ind_D,
-                                                           rocsparse_mat_info        info,
+                                                           rocsparse_mat_info        info_C,
                                                            size_t*                   buffer_size)
 {
     return rocsparse_csrgemm_buffer_size_template<float>(handle,
@@ -782,7 +782,7 @@ extern "C" rocsparse_status rocsparse_scsrgemm_buffer_size(rocsparse_handle     
                                                          nnz_D,
                                                          csr_row_ptr_D,
                                                          csr_col_ind_D,
-                                                         info,
+                                                         info_C,
                                                          buffer_size);
 }
 
@@ -806,7 +806,7 @@ extern "C" rocsparse_status rocsparse_dcsrgemm_buffer_size(rocsparse_handle     
                                                            rocsparse_int             nnz_D,
                                                            const rocsparse_int*      csr_row_ptr_D,
                                                            const rocsparse_int*      csr_col_ind_D,
-                                                           rocsparse_mat_info        info,
+                                                           rocsparse_mat_info        info_C,
                                                            size_t*                   buffer_size)
 {
     return rocsparse_csrgemm_buffer_size_template<double>(handle,
@@ -829,7 +829,7 @@ extern "C" rocsparse_status rocsparse_dcsrgemm_buffer_size(rocsparse_handle     
                                                           nnz_D,
                                                           csr_row_ptr_D,
                                                           csr_col_ind_D,
-                                                          info,
+                                                          info_C,
                                                           buffer_size);
 }
 
@@ -860,7 +860,7 @@ extern "C" rocsparse_status rocsparse_scsrgemm(rocsparse_handle          handle,
                                                float*                    csr_val_C,
                                                const rocsparse_int*      csr_row_ptr_C,
                                                rocsparse_int*            csr_col_ind_C,
-                                               const rocsparse_mat_info  info,
+                                               const rocsparse_mat_info  info_C,
                                                void*                     temp_buffer)
 {
     return rocsparse_csrgemm_template<float>(handle,
@@ -890,7 +890,7 @@ extern "C" rocsparse_status rocsparse_scsrgemm(rocsparse_handle          handle,
                                              csr_val_C,
                                              csr_row_ptr_C,
                                              csr_col_ind_C,
-                                             info,
+                                             info_C,
                                              temp_buffer);
 }
 
@@ -921,7 +921,7 @@ extern "C" rocsparse_status rocsparse_dcsrgemm(rocsparse_handle          handle,
                                                double*                   csr_val_C,
                                                const rocsparse_int*      csr_row_ptr_C,
                                                rocsparse_int*            csr_col_ind_C,
-                                               const rocsparse_mat_info  info,
+                                               const rocsparse_mat_info  info_C,
                                                void*                     temp_buffer)
 {
     return rocsparse_csrgemm_template<double>(handle,
@@ -951,6 +951,6 @@ extern "C" rocsparse_status rocsparse_dcsrgemm(rocsparse_handle          handle,
                                               csr_val_C,
                                               csr_row_ptr_C,
                                               csr_col_ind_C,
-                                              info,
+                                              info_C,
                                               temp_buffer);
 }
