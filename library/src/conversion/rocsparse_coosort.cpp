@@ -251,6 +251,9 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         RETURN_IF_HIP_ERROR(
             hipMemcpyAsync(&nsegm, work3, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
 
+        // Wait for host transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
         RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(
             nullptr, size, work4, work4, 0, nsegm + 1, rocprim::plus<rocsparse_int>(), stream));
         RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(
@@ -403,6 +406,9 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
         rocsparse_int nsegm;
         RETURN_IF_HIP_ERROR(
             hipMemcpyAsync(&nsegm, work3, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+
+        // Wait for host transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
         RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(
             nullptr, size, work4, work4, 0, nsegm + 1, rocprim::plus<rocsparse_int>(), stream));

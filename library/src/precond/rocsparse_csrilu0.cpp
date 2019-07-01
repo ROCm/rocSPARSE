@@ -239,6 +239,9 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   hand
                                            hipMemcpyDeviceToHost,
                                            stream));
 
+        // Wait for host transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
         if(pivot == std::numeric_limits<rocsparse_int>::max())
         {
             RETURN_IF_HIP_ERROR(hipMemsetAsync(position, 255, sizeof(rocsparse_int), stream));
