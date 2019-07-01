@@ -325,7 +325,7 @@ static __device__ __forceinline__ bool insert_key(rocsparse_int key,
 // Hash operation to insert pair into hash table
 template <typename T, unsigned int HASHVAL, unsigned int HASHSIZE>
 static __device__ __forceinline__ void insert_pair(rocsparse_int key,
-                                                   T val,
+                                                   T             val,
                                                    rocsparse_int* __restrict__ table,
                                                    T* __restrict__ data,
                                                    rocsparse_int empty)
@@ -380,7 +380,7 @@ static __device__ __forceinline__ void compress_hash(rocsparse_int tid,
     {
         // Get column and value from hash table
         rocsparse_int col_C = table[i];
-        T val_C = data[i];
+        T             val_C = data[i];
 
         // Check if we have a valid entry or not
         rocsparse_int entry = (col_C < empty) ? 1 : 0;
@@ -404,7 +404,7 @@ static __device__ __forceinline__ void compress_hash(rocsparse_int tid,
         if(col_C < empty)
         {
             table[idx] = col_C;
-            data[idx] = val_C;
+            data[idx]  = val_C;
         }
 
         // Wait for all threads to finish
@@ -709,11 +709,8 @@ __device__ void csrgemm_fill_wf_per_row_device(rocsparse_int m,
             for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
             {
                 // Insert key value pair into hash table
-                insert_pair<T, HASHVAL, HASHSIZE>(csr_col_ind_B[k] - idx_base_B,
-                                                  val_A * csr_val_B[k],
-                                                  table,
-                                                  data,
-                                                  nk);
+                insert_pair<T, HASHVAL, HASHSIZE>(
+                    csr_col_ind_B[k] - idx_base_B, val_A * csr_val_B[k], table, data, nk);
             }
         }
     }
@@ -729,11 +726,8 @@ __device__ void csrgemm_fill_wf_per_row_device(rocsparse_int m,
         for(rocsparse_int j = row_begin_D + lid; j < row_end_D; j += WFSIZE)
         {
             // Insert key value pair into hash table
-            insert_pair<T, HASHVAL, HASHSIZE>(csr_col_ind_D[j] - idx_base_D,
-                                              beta * csr_val_D[j],
-                                              table,
-                                              data,
-                                              nk);
+            insert_pair<T, HASHVAL, HASHSIZE>(
+                csr_col_ind_D[j] - idx_base_D, beta * csr_val_D[j], table, data, nk);
         }
     }
 
@@ -817,13 +811,13 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
 
     // Hash table in shared memory
     __shared__ rocsparse_int table[HASHSIZE];
-    __shared__ T data[HASHSIZE];
+    __shared__ T             data[HASHSIZE];
 
     // Initialize hash table
     for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
     {
         table[i] = nk;
-        data[i] = static_cast<T>(0);
+        data[i]  = static_cast<T>(0);
     }
 
     // Wait for all threads to finish initialization
@@ -854,11 +848,8 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
             for(rocsparse_int k = row_begin_B + lid; k < row_end_B; k += WFSIZE)
             {
                 // Insert key value pair into hash table
-                insert_pair<T, HASHVAL, HASHSIZE>(csr_col_ind_B[k] - idx_base_B,
-                                                  val_A * csr_val_B[k],
-                                                  table,
-                                                  data,
-                                                  nk);
+                insert_pair<T, HASHVAL, HASHSIZE>(
+                    csr_col_ind_B[k] - idx_base_B, val_A * csr_val_B[k], table, data, nk);
             }
         }
     }
@@ -874,11 +865,8 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
         for(rocsparse_int j = row_begin_D + wid; j < row_end_D; j += BLOCKSIZE / WFSIZE)
         {
             // Insert key value pair into hash table
-            insert_pair<T, HASHVAL, HASHSIZE>(csr_col_ind_D[j] - idx_base_D,
-                                              beta * csr_val_D[j],
-                                              table,
-                                              data,
-                                              nk);
+            insert_pair<T, HASHVAL, HASHSIZE>(
+                csr_col_ind_D[j] - idx_base_D, beta * csr_val_D[j], table, data, nk);
         }
     }
 
@@ -890,14 +878,14 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
 
     // Entry point into row of C
     rocsparse_int row_begin_C = csr_row_ptr_C[row] - idx_base_C;
-    rocsparse_int row_end_C = csr_row_ptr_C[row + 1] - idx_base_C;
-    rocsparse_int row_nnz = row_end_C - row_begin_C;
+    rocsparse_int row_end_C   = csr_row_ptr_C[row + 1] - idx_base_C;
+    rocsparse_int row_nnz     = row_end_C - row_begin_C;
 
     // Loop over all valid entries in hash table
     for(rocsparse_int i = hipThreadIdx_x; i < row_nnz; i += BLOCKSIZE)
     {
         rocsparse_int col_C = table[i];
-        T val_C = data[i];
+        T             val_C = data[i];
 
         // Index into C
         rocsparse_int idx_C = row_begin_C;
@@ -915,7 +903,7 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
 
         // Write column and accumulated value to the obtain position in C
         csr_col_ind_C[idx_C] = col_C + idx_base_C;
-        csr_val_C[idx_C] = val_C;
+        csr_val_C[idx_C]     = val_C;
     }
 }
 
