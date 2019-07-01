@@ -117,6 +117,9 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
         &int_max, csr_row_ptr_C + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
 
+    // Wait for host transfer to finish
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
     // Group offset buffer
     rocsparse_int* d_group_offset = reinterpret_cast<rocsparse_int*>(buffer);
     buffer += sizeof(rocsparse_int) * 256;
@@ -183,6 +186,9 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
                                            hipMemcpyDeviceToHost,
                                            stream));
 
+        // Wait for host transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
         // Permutation temporary arrays
         rocsparse_int* tmp_vals = reinterpret_cast<rocsparse_int*>(buffer);
         buffer += ((sizeof(rocsparse_int) * m - 1) / 256 + 1) * 256;
@@ -239,7 +245,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_SUB 4
 #define CSRGEMM_HASHSIZE 32
         hipLaunchKernelGGL(
-            (csrgemm_nnz_wf_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, 131>),
+            (csrgemm_nnz_wf_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
             dim3((h_group_size[0] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
             dim3(CSRGEMM_DIM),
             0,
@@ -271,7 +277,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_SUB 8
 #define CSRGEMM_HASHSIZE 64
         hipLaunchKernelGGL(
-            (csrgemm_nnz_wf_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, 257>),
+            (csrgemm_nnz_wf_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
             dim3((h_group_size[1] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
             dim3(CSRGEMM_DIM),
             0,
@@ -303,7 +309,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_SUB 8
 #define CSRGEMM_HASHSIZE 512
         hipLaunchKernelGGL(
-            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, 131>),
+            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
             dim3(h_group_size[2]),
             dim3(CSRGEMM_DIM),
             0,
@@ -334,7 +340,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_SUB 8
 #define CSRGEMM_HASHSIZE 1024
         hipLaunchKernelGGL(
-            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, 131>),
+            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
             dim3(h_group_size[3]),
             dim3(CSRGEMM_DIM),
             0,
@@ -365,7 +371,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_SUB 16
 #define CSRGEMM_HASHSIZE 2048
         hipLaunchKernelGGL(
-            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, 257>),
+            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
             dim3(h_group_size[4]),
             dim3(CSRGEMM_DIM),
             0,
@@ -396,7 +402,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_SUB 16
 #define CSRGEMM_HASHSIZE 4096
         hipLaunchKernelGGL(
-            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, 521>),
+            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
             dim3(h_group_size[5]),
             dim3(CSRGEMM_DIM),
             0,
@@ -427,7 +433,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_SUB 32
 #define CSRGEMM_HASHSIZE 8192
         hipLaunchKernelGGL(
-            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, 1031>),
+            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
             dim3(h_group_size[6]),
             dim3(CSRGEMM_DIM),
             0,
@@ -455,7 +461,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
     if(h_group_size[7] > 0)
     {
         printf("\n# int prod > 8192: %d ; exiting\n", h_group_size[7]);
-        return rocsparse_status_not_implemented;
+        exit(1);
     }
 
     // Exclusive sum to obtain row pointers of C
@@ -491,8 +497,8 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            nnz_C, csr_row_ptr_C + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(nnz_C, csr_row_ptr_C + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         // Adjust nnz by index base
         *nnz_C -= descr_C->base;

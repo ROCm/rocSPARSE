@@ -32,9 +32,236 @@
 #include "utility.h"
 
 #include <hip/hip_runtime.h>
-#include <rocprim/rocprim_hip.hpp>
+#include <rocprim/rocprim.hpp>
 
 #define CSRGEMM_MAXGROUPS 8
+#define CSRGEMM_HASH 79
+
+template <typename T,
+          unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int HASHSIZE,
+          unsigned int HASHVAL>
+__global__ void
+    csrgemm_fill_wf_per_row_host_pointer(rocsparse_int m,
+                                         rocsparse_int nk,
+                                         const rocsparse_int* __restrict__ offset,
+                                         const rocsparse_int* __restrict__ perm,
+                                         T alpha,
+                                         const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                         const rocsparse_int* __restrict__ csr_col_ind_A,
+                                         const T* __restrict__ csr_val_A,
+                                         const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                         const rocsparse_int* __restrict__ csr_col_ind_B,
+                                         const T* __restrict__ csr_val_B,
+                                         T beta,
+                                         const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                         const rocsparse_int* __restrict__ csr_col_ind_D,
+                                         const T* __restrict__ csr_val_D,
+                                         const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                         rocsparse_int* __restrict__ csr_col_ind_C,
+                                         T* __restrict__ csr_val_C,
+                                         rocsparse_index_base idx_base_A,
+                                         rocsparse_index_base idx_base_B,
+                                         rocsparse_index_base idx_base_C,
+                                         rocsparse_index_base idx_base_D,
+                                         bool                 mul,
+                                         bool                 add)
+{
+    csrgemm_fill_wf_per_row_device<T, BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(m,
+                                                                            nk,
+                                                                            offset,
+                                                                            perm,
+                                                                            alpha,
+                                                                            csr_row_ptr_A,
+                                                                            csr_col_ind_A,
+                                                                            csr_val_A,
+                                                                            csr_row_ptr_B,
+                                                                            csr_col_ind_B,
+                                                                            csr_val_B,
+                                                                            beta,
+                                                                            csr_row_ptr_D,
+                                                                            csr_col_ind_D,
+                                                                            csr_val_D,
+                                                                            csr_row_ptr_C,
+                                                                            csr_col_ind_C,
+                                                                            csr_val_C,
+                                                                            idx_base_A,
+                                                                            idx_base_B,
+                                                                            idx_base_C,
+                                                                            idx_base_D,
+                                                                            mul,
+                                                                            add);
+}
+
+template <typename T,
+          unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int HASHSIZE,
+          unsigned int HASHVAL>
+__global__ void
+    csrgemm_fill_wf_per_row_device_pointer(rocsparse_int m,
+                                           rocsparse_int nk,
+                                           const rocsparse_int* __restrict__ offset,
+                                           const rocsparse_int* __restrict__ perm,
+                                           const T* __restrict__ alpha,
+                                           const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                           const rocsparse_int* __restrict__ csr_col_ind_A,
+                                           const T* __restrict__ csr_val_A,
+                                           const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                           const rocsparse_int* __restrict__ csr_col_ind_B,
+                                           const T* __restrict__ csr_val_B,
+                                           const T* __restrict__ beta,
+                                           const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                           const rocsparse_int* __restrict__ csr_col_ind_D,
+                                           const T* __restrict__ csr_val_D,
+                                           const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                           rocsparse_int* __restrict__ csr_col_ind_C,
+                                           T* __restrict__ csr_val_C,
+                                           rocsparse_index_base idx_base_A,
+                                           rocsparse_index_base idx_base_B,
+                                           rocsparse_index_base idx_base_C,
+                                           rocsparse_index_base idx_base_D,
+                                           bool                 mul,
+                                           bool                 add)
+{
+    csrgemm_fill_wf_per_row_device<T, BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
+        m,
+        nk,
+        offset,
+        perm,
+        (mul == true) ? *alpha : static_cast<T>(0),
+        csr_row_ptr_A,
+        csr_col_ind_A,
+        csr_val_A,
+        csr_row_ptr_B,
+        csr_col_ind_B,
+        csr_val_B,
+        (add == true) ? *beta : static_cast<T>(0),
+        csr_row_ptr_D,
+        csr_col_ind_D,
+        csr_val_D,
+        csr_row_ptr_C,
+        csr_col_ind_C,
+        csr_val_C,
+        idx_base_A,
+        idx_base_B,
+        idx_base_C,
+        idx_base_D,
+        mul,
+        add);
+}
+
+template <typename T,
+          unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int HASHSIZE,
+          unsigned int HASHVAL>
+__global__ void
+    csrgemm_fill_block_per_row_host_pointer(rocsparse_int nk,
+                                            const rocsparse_int* __restrict__ offset,
+                                            const rocsparse_int* __restrict__ perm,
+                                            T alpha,
+                                            const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                            const rocsparse_int* __restrict__ csr_col_ind_A,
+                                            const T* __restrict__ csr_val_A,
+                                            const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                            const rocsparse_int* __restrict__ csr_col_ind_B,
+                                            const T* __restrict__ csr_val_B,
+                                            T beta,
+                                            const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                            const rocsparse_int* __restrict__ csr_col_ind_D,
+                                            const T* __restrict__ csr_val_D,
+                                            const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                            rocsparse_int* __restrict__ csr_col_ind_C,
+                                            T* __restrict__ csr_val_C,
+                                            rocsparse_index_base idx_base_A,
+                                            rocsparse_index_base idx_base_B,
+                                            rocsparse_index_base idx_base_C,
+                                            rocsparse_index_base idx_base_D,
+                                            bool                 mul,
+                                            bool                 add)
+{
+    csrgemm_fill_block_per_row_device<T, BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(nk,
+                                                                               offset,
+                                                                               perm,
+                                                                               alpha,
+                                                                               csr_row_ptr_A,
+                                                                               csr_col_ind_A,
+                                                                               csr_val_A,
+                                                                               csr_row_ptr_B,
+                                                                               csr_col_ind_B,
+                                                                               csr_val_B,
+                                                                               beta,
+                                                                               csr_row_ptr_D,
+                                                                               csr_col_ind_D,
+                                                                               csr_val_D,
+                                                                               csr_row_ptr_C,
+                                                                               csr_col_ind_C,
+                                                                               csr_val_C,
+                                                                               idx_base_A,
+                                                                               idx_base_B,
+                                                                               idx_base_C,
+                                                                               idx_base_D,
+                                                                               mul,
+                                                                               add);
+}
+
+template <typename T,
+          unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int HASHSIZE,
+          unsigned int HASHVAL>
+__global__ void
+    csrgemm_fill_block_per_row_device_pointer(rocsparse_int nk,
+                                              const rocsparse_int* __restrict__ offset,
+                                              const rocsparse_int* __restrict__ perm,
+                                              const T* __restrict__ alpha,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                              const rocsparse_int* __restrict__ csr_col_ind_A,
+                                              const T* __restrict__ csr_val_A,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                              const rocsparse_int* __restrict__ csr_col_ind_B,
+                                              const T* __restrict__ csr_val_B,
+                                              const T* __restrict__ beta,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                              const rocsparse_int* __restrict__ csr_col_ind_D,
+                                              const T* __restrict__ csr_val_D,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                              rocsparse_int* __restrict__ csr_col_ind_C,
+                                              T* __restrict__ csr_val_C,
+                                              rocsparse_index_base idx_base_A,
+                                              rocsparse_index_base idx_base_B,
+                                              rocsparse_index_base idx_base_C,
+                                              rocsparse_index_base idx_base_D,
+                                              bool                 mul,
+                                              bool                 add)
+{
+    csrgemm_fill_block_per_row_device<T, BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
+        nk,
+        offset,
+        perm,
+        (mul == true) ? *alpha : static_cast<T>(0),
+        csr_row_ptr_A,
+        csr_col_ind_A,
+        csr_val_A,
+        csr_row_ptr_B,
+        csr_col_ind_B,
+        csr_val_B,
+        (add == true) ? *beta : static_cast<T>(0),
+        csr_row_ptr_D,
+        csr_col_ind_D,
+        csr_val_D,
+        csr_row_ptr_C,
+        csr_col_ind_C,
+        csr_val_C,
+        idx_base_A,
+        idx_base_B,
+        idx_base_C,
+        idx_base_D,
+        mul,
+        add);
+}
 
 template <typename T>
 rocsparse_status rocsparse_csrgemm_mult_buffer_size_template(rocsparse_handle          handle,
@@ -342,6 +569,14 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
     // Stream
     hipStream_t stream = handle->stream;
 
+    // Index base
+    rocsparse_index_base base_A
+        = info->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
+    rocsparse_index_base base_B
+        = info->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
+    rocsparse_index_base base_D
+        = info->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
+
     // Temporary buffer
     char* buffer = reinterpret_cast<char*>(temp_buffer);
 
@@ -369,6 +604,9 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
     rocsparse_int nnz_max;
     RETURN_IF_HIP_ERROR(
         hipMemcpyAsync(&nnz_max, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+
+    // Wait for host transfer to finish
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
     // Group offset buffer
     rocsparse_int* d_group_offset = reinterpret_cast<rocsparse_int*>(buffer);
@@ -450,6 +688,9 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                            hipMemcpyDeviceToHost,
                                            stream));
 
+        // Wait for host transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
         // Create identity permutation for group access
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, m, tmp_perm));
 
@@ -477,7 +718,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
         h_group_size[0] = m;
         RETURN_IF_HIP_ERROR(hipMemsetAsync(d_group_offset, 0, sizeof(rocsparse_int), stream));
     }
-
+    /*
     printf("Group sizes:\n");
     printf("\t   0 -   16: %d\n", h_group_size[0]);
     printf("\t  17 -   32: %d\n", h_group_size[1]);
@@ -487,49 +728,633 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
     printf("\t1025 - 2048: %d\n", h_group_size[5]);
     printf("\t2049 - 4096: %d\n", h_group_size[6]);
     printf("\t4097 -  inf: %d\n", h_group_size[7]);
-
+*/
     // Compute columns and accumulate values for each group
 
-    // Group 0: 0 - 16 non-zeros per row
-    if(h_group_size[0] > 0)
+    // pointer mode device
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-    }
+        // Group 0: 0 - 16 non-zeros per row
+        if(h_group_size[0] > 0)
+        {
+#define CSRGEMM_DIM 256
+#define CSRGEMM_SUB 8
+#define CSRGEMM_HASHSIZE 16
+            hipLaunchKernelGGL((csrgemm_fill_wf_per_row_device_pointer<T,
+                                                                       CSRGEMM_DIM,
+                                                                       CSRGEMM_SUB,
+                                                                       CSRGEMM_HASHSIZE,
+                                                                       CSRGEMM_HASH>),
+                               dim3((h_group_size[0] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               h_group_size[0],
+                               std::max(k, n),
+                               &d_group_offset[0],
+                               d_perm,
+                               alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               beta,
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
 
-    // Group 1: 17 - 32 non-zeros per row
-    if(h_group_size[1] > 0)
-    {
-    }
+        // Group 1: 17 - 32 non-zeros per row
+        if(h_group_size[1] > 0)
+        {
+#define CSRGEMM_DIM 256
+#define CSRGEMM_SUB 16
+#define CSRGEMM_HASHSIZE 32
+            hipLaunchKernelGGL((csrgemm_fill_wf_per_row_device_pointer<T,
+                                                                       CSRGEMM_DIM,
+                                                                       CSRGEMM_SUB,
+                                                                       CSRGEMM_HASHSIZE,
+                                                                       CSRGEMM_HASH>),
+                               dim3((h_group_size[1] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               h_group_size[1],
+                               std::max(k, n),
+                               &d_group_offset[1],
+                               d_perm,
+                               alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               beta,
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
 
-    // Group 2: 33 - 256 non-zeros per row
-    if(h_group_size[2] > 0)
-    {
-    }
+        // Group 2: 33 - 256 non-zeros per row
+        if(h_group_size[2] > 0)
+        {
+#define CSRGEMM_DIM 128
+#define CSRGEMM_SUB 16
+#define CSRGEMM_HASHSIZE 256
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_device_pointer<T,
+                                                                          CSRGEMM_DIM,
+                                                                          CSRGEMM_SUB,
+                                                                          CSRGEMM_HASHSIZE,
+                                                                          CSRGEMM_HASH>),
+                               dim3(h_group_size[2]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               std::max(k, n),
+                               &d_group_offset[2],
+                               d_perm,
+                               alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               beta,
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
 
-    // Group 3: 257 - 512 non-zeros per row
-    if(h_group_size[3] > 0)
-    {
-    }
+        // Group 3: 257 - 512 non-zeros per row
+        if(h_group_size[3] > 0)
+        {
+#define CSRGEMM_DIM 256
+#define CSRGEMM_SUB 32
+#define CSRGEMM_HASHSIZE 512
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_device_pointer<T,
+                                                                          CSRGEMM_DIM,
+                                                                          CSRGEMM_SUB,
+                                                                          CSRGEMM_HASHSIZE,
+                                                                          CSRGEMM_HASH>),
+                               dim3(h_group_size[3]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               std::max(k, n),
+                               &d_group_offset[3],
+                               d_perm,
+                               alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               beta,
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
 
-    // Group 4: 513 - 1024 non-zeros per row
-    if(h_group_size[4] > 0)
-    {
-    }
+        // Group 4: 513 - 1024 non-zeros per row
+        if(h_group_size[4] > 0)
+        {
+#define CSRGEMM_DIM 512
+#define CSRGEMM_SUB 32
+#define CSRGEMM_HASHSIZE 1024
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_device_pointer<T,
+                                                                          CSRGEMM_DIM,
+                                                                          CSRGEMM_SUB,
+                                                                          CSRGEMM_HASHSIZE,
+                                                                          CSRGEMM_HASH>),
+                               dim3(h_group_size[4]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               std::max(k, n),
+                               &d_group_offset[4],
+                               d_perm,
+                               alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               beta,
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
 
-    // Group 5: 1025 - 2048 non-zeros per row
-    if(h_group_size[5] > 0)
-    {
-    }
+        // Group 5: 1025 - 2048 non-zeros per row
+        if(h_group_size[5] > 0)
+        {
+#define CSRGEMM_DIM 1024
+#define CSRGEMM_SUB 32
+#define CSRGEMM_HASHSIZE 2048
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_device_pointer<T,
+                                                                          CSRGEMM_DIM,
+                                                                          CSRGEMM_SUB,
+                                                                          CSRGEMM_HASHSIZE,
+                                                                          CSRGEMM_HASH>),
+                               dim3(h_group_size[5]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               std::max(k, n),
+                               &d_group_offset[5],
+                               d_perm,
+                               alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               beta,
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
 
-    // Group 6: 2049 - 4096 non-zeros per row
-    if(h_group_size[6] > 0)
-    {
-    }
+        // Group 6: 2049 - 4096 non-zeros per row
+        if(h_group_size[6] > 0)
+        {
+#define CSRGEMM_DIM 1024
+#define CSRGEMM_SUB 64
+#define CSRGEMM_HASHSIZE 4096
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_device_pointer<T,
+                                                                          CSRGEMM_DIM,
+                                                                          CSRGEMM_SUB,
+                                                                          CSRGEMM_HASHSIZE,
+                                                                          CSRGEMM_HASH>),
+                               dim3(h_group_size[6]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               std::max(k, n),
+                               &d_group_offset[6],
+                               d_perm,
+                               alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               beta,
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
 
-    // Group 7: more than 4096 non-zeros per row
-    if(h_group_size[7] > 0)
+        // Group 7: more than 4096 non-zeros per row
+        if(h_group_size[7] > 0)
+        {
+            printf("\n# max nnz > 4096: %d ; exiting\n", h_group_size[7]);
+            exit(1);
+        }
+    }
+    else
     {
-        printf("\n# max nnz > 4096: %d ; exiting\n", h_group_size[7]);
-        return rocsparse_status_not_implemented;
+        // Group 0: 0 - 16 non-zeros per row
+        if(h_group_size[0] > 0)
+        {
+#define CSRGEMM_DIM 256
+#define CSRGEMM_SUB 8
+#define CSRGEMM_HASHSIZE 16
+            hipLaunchKernelGGL((csrgemm_fill_wf_per_row_host_pointer<T,
+                                                                     CSRGEMM_DIM,
+                                                                     CSRGEMM_SUB,
+                                                                     CSRGEMM_HASHSIZE,
+                                                                     CSRGEMM_HASH>),
+                               dim3((h_group_size[0] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               h_group_size[0],
+                               std::max(k, n),
+                               &d_group_offset[0],
+                               d_perm,
+                               (info->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               (info->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
+
+        // Group 1: 17 - 32 non-zeros per row
+        if(h_group_size[1] > 0)
+        {
+#define CSRGEMM_DIM 256
+#define CSRGEMM_SUB 16
+#define CSRGEMM_HASHSIZE 32
+            hipLaunchKernelGGL((csrgemm_fill_wf_per_row_host_pointer<T,
+                                                                     CSRGEMM_DIM,
+                                                                     CSRGEMM_SUB,
+                                                                     CSRGEMM_HASHSIZE,
+                                                                     CSRGEMM_HASH>),
+                               dim3((h_group_size[1] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               h_group_size[1],
+                               std::max(k, n),
+                               &d_group_offset[1],
+                               d_perm,
+                               (info->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               (info->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
+
+        // Group 2: 33 - 256 non-zeros per row
+        if(h_group_size[2] > 0)
+        {
+#define CSRGEMM_DIM 128
+#define CSRGEMM_SUB 16
+#define CSRGEMM_HASHSIZE 256
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_host_pointer<T,
+                                                                        CSRGEMM_DIM,
+                                                                        CSRGEMM_SUB,
+                                                                        CSRGEMM_HASHSIZE,
+                                                                        CSRGEMM_HASH>),
+                               dim3(h_group_size[2]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               std::max(k, n),
+                               &d_group_offset[2],
+                               d_perm,
+                               (info->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               (info->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
+
+        // Group 3: 257 - 512 non-zeros per row
+        if(h_group_size[3] > 0)
+        {
+#define CSRGEMM_DIM 256
+#define CSRGEMM_SUB 32
+#define CSRGEMM_HASHSIZE 512
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_host_pointer<T,
+                                                                        CSRGEMM_DIM,
+                                                                        CSRGEMM_SUB,
+                                                                        CSRGEMM_HASHSIZE,
+                                                                        CSRGEMM_HASH>),
+                               dim3(h_group_size[3]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               std::max(k, n),
+                               &d_group_offset[3],
+                               d_perm,
+                               (info->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               (info->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
+
+        // Group 4: 513 - 1024 non-zeros per row
+        if(h_group_size[4] > 0)
+        {
+#define CSRGEMM_DIM 512
+#define CSRGEMM_SUB 32
+#define CSRGEMM_HASHSIZE 1024
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_host_pointer<T,
+                                                                        CSRGEMM_DIM,
+                                                                        CSRGEMM_SUB,
+                                                                        CSRGEMM_HASHSIZE,
+                                                                        CSRGEMM_HASH>),
+                               dim3(h_group_size[4]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               std::max(k, n),
+                               &d_group_offset[4],
+                               d_perm,
+                               (info->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               (info->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
+
+        // Group 5: 1025 - 2048 non-zeros per row
+        if(h_group_size[5] > 0)
+        {
+#define CSRGEMM_DIM 1024
+#define CSRGEMM_SUB 32
+#define CSRGEMM_HASHSIZE 2048
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_host_pointer<T,
+                                                                        CSRGEMM_DIM,
+                                                                        CSRGEMM_SUB,
+                                                                        CSRGEMM_HASHSIZE,
+                                                                        CSRGEMM_HASH>),
+                               dim3(h_group_size[5]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               std::max(k, n),
+                               &d_group_offset[5],
+                               d_perm,
+                               (info->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               (info->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
+
+        // Group 6: 2049 - 4096 non-zeros per row
+        if(h_group_size[6] > 0)
+        {
+#define CSRGEMM_DIM 1024
+#define CSRGEMM_SUB 64
+#define CSRGEMM_HASHSIZE 4096
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_host_pointer<T,
+                                                                        CSRGEMM_DIM,
+                                                                        CSRGEMM_SUB,
+                                                                        CSRGEMM_HASHSIZE,
+                                                                        CSRGEMM_HASH>),
+                               dim3(h_group_size[6]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               std::max(k, n),
+                               &d_group_offset[6],
+                               d_perm,
+                               (info->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               (info->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info->csrgemm_info->mul,
+                               info->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
+        }
+
+        // Group 7: more than 4096 non-zeros per row
+        if(h_group_size[7] > 0)
+        {
+            printf("\n# max nnz > 4096: %d ; exiting\n", h_group_size[7]);
+            exit(1);
+        }
     }
 
     return rocsparse_status_success;
