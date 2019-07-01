@@ -81,6 +81,9 @@ _rocsparse_handle::_rocsparse_handle()
     THROW_IF_HIP_ERROR(hipMemcpyAsync(sone, &hsone, sizeof(float), hipMemcpyHostToDevice, stream));
     THROW_IF_HIP_ERROR(hipMemcpyAsync(done, &hdone, sizeof(double), hipMemcpyHostToDevice, stream));
 
+    // Wait for device transfer to finish
+    THROW_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
     // Open log file
     if(layer_mode & rocsparse_layer_mode_log_trace)
     {

@@ -393,6 +393,9 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
         hptr.data(), csr_row_ptr, sizeof(rocsparse_int) * (m + 1), hipMemcpyDeviceToHost, stream));
 
+    // Wait for host transfer to finish
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
+
     // Determine row blocks array size
     ComputeRowBlocks((unsigned long long*)NULL, info->csrmv_info->size, hptr.data(), m, false);
 
@@ -413,6 +416,9 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
                                            sizeof(unsigned long long) * info->csrmv_info->size,
                                            hipMemcpyHostToDevice,
                                            stream));
+
+        // Wait for device transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     }
 
     // Store some pointers to verify correct execution
