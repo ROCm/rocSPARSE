@@ -303,8 +303,11 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle         
         // rocsparse_pointer_mode_device
         rocsparse_int pivot;
 
-        RETURN_IF_HIP_ERROR(
-            hipMemcpy(&pivot, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &pivot, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+
+        // Wait for host transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
         if(pivot == std::numeric_limits<rocsparse_int>::max())
         {
@@ -312,8 +315,11 @@ extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle         
         }
         else
         {
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                position, csrsv->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(position,
+                                               csrsv->zero_pivot,
+                                               sizeof(rocsparse_int),
+                                               hipMemcpyDeviceToDevice,
+                                               stream));
 
             return rocsparse_status_zero_pivot;
         }

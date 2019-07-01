@@ -125,10 +125,16 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_pointer;
     }
 
+    // Stream
+    hipStream_t stream = handle->stream;
+
     // Get number of CSR non-zeros
     rocsparse_int csr_nnz;
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(&csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+        &csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+
+    // Wait for host transfer to finish
+    RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
     // Correct by index base
     csr_nnz -= descr->base;
@@ -150,9 +156,6 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
             return rocsparse_status_invalid_value;
         }
     }
-
-    // Stream
-    hipStream_t stream = handle->stream;
 
     // Clear HYB structure if already allocated
     hyb->m         = m;
@@ -223,8 +226,11 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
                            blocks,
                            workspace);
         // Copy ell width back to host
-        RETURN_IF_HIP_ERROR(
-            hipMemcpy(&hyb->ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &hyb->ell_width, workspace, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+
+        // Wait for host transfer to finish
+        RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
         RETURN_IF_HIP_ERROR(hipFree(workspace));
     }
@@ -257,8 +263,11 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
         if(hyb->ell_nnz == 0)
         {
             hyb->coo_nnz = csr_nnz;
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                workspace, csr_row_ptr, sizeof(rocsparse_int) * (m + 1), hipMemcpyDeviceToDevice));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(workspace,
+                                               csr_row_ptr,
+                                               sizeof(rocsparse_int) * (m + 1),
+                                               hipMemcpyDeviceToDevice,
+                                               stream));
         }
         else
         {
@@ -302,8 +311,14 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
             RETURN_IF_HIP_ERROR(hipFree(d_temp_storage));
 
             // Obtain coo nnz from workspace
-            RETURN_IF_HIP_ERROR(hipMemcpy(
-                &hyb->coo_nnz, workspace + m, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(&hyb->coo_nnz,
+                                               workspace + m,
+                                               sizeof(rocsparse_int),
+                                               hipMemcpyDeviceToHost,
+                                               stream));
+
+            // Wait for host transfer to finish
+            RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
             hyb->coo_nnz -= descr->base;
         }
