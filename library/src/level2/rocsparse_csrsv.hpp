@@ -205,8 +205,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
 
     // Initialize zero pivot
     rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(info->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice));
+    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+        info->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
 
 // Run analysis
 #define CSRILU0_DIM 1024
@@ -736,8 +736,8 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
     if(descr->diag_type == rocsparse_diag_type_unit)
     {
         rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
-        RETURN_IF_HIP_ERROR(
-            hipMemcpy(csrsv->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            csrsv->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
     }
 
 #define CSRSV_DIM 1024
