@@ -32,12 +32,6 @@
 
 int main(int argc, char** argv)
 {
-    // Print version
-    char version[256];
-    query_version(version);
-
-    printf("rocSPARSE version: %s\n", version);
-
     // Get device id from command line
     int device_id = 0;
 
@@ -61,6 +55,12 @@ int main(int argc, char** argv)
     {
         set_device(device_id);
     }
+
+    // Print version
+    char version[256];
+    query_version(version);
+
+    printf("rocSPARSE version: %s\n", version);
 
     ::testing::InitGoogleTest(&argc, argv);
 
