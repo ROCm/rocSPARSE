@@ -17,6 +17,8 @@ RUN yum install -y \
     devtoolset-7 \
     ca-certificates \
     git \
+    gcc \
+    gcc-c++ \
     gtest \
     gtest-devel \
     cmake3 \
