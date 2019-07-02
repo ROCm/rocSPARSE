@@ -48,7 +48,7 @@ rocSPARSECI:
         
         if(platform.jenkinsLabel.contains('hip-clang'))
         {
-            def command = """#!/usr/bin/env bash
+            command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
                     LD_LIBRARY_PATH=/opt/rocm/hcc/lib CXX=/opt/rocm/bin/hipcc ${project.paths.build_command} --hip-clang
