@@ -32,7 +32,7 @@ rocSPARSECI:
     def rocsparse = new rocProject('rocsparse')
     // customize for project
     rocsparse.paths.build_command = './install.sh -c'
-    
+
     // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(['gfx900 && centos7', 'gfx906 && ubuntu', 'gfx900 && ubuntu && hip-clang', 'gfx906 && ubuntu && hip-clang'], rocsparse)
 
@@ -48,7 +48,7 @@ rocSPARSECI:
         
         if(platform.jenkinsLabel.contains('hip-clang'))
         {
-            command = """#!/usr/bin/env bash
+            def command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
                     LD_LIBRARY_PATH=/opt/rocm/hcc/lib CXX=/opt/rocm/bin/hipcc ${project.paths.build_command} --hip-clang
@@ -71,7 +71,7 @@ rocSPARSECI:
         platform, project->
 
         def command
-        
+
         if(platform.jenkinsLabel.contains('centos'))
         {
             if(auxiliary.isJobStartedByTimer())
@@ -112,7 +112,7 @@ rocSPARSECI:
                         LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test --gtest_output=xml --gtest_color=yes #--gtest_filter=*quick*:*pre_checkin*-*known_bug* #--gtest_filter=*checkin*
                     """
             }
-            
+
             platform.runCommand(this, command)
             junit "${project.paths.project_build_prefix}/build/release/clients/tests/*.xml"
         }
@@ -123,13 +123,13 @@ rocSPARSECI:
         platform, project->
 
         def command 
-        
+
         if(platform.jenkinsLabel.contains('centos'))
         {
             command = """
                     set -x
                     cd ${project.paths.project_build_prefix}/build/release
-                    sudo make package
+                    make package
                     rm -rf package && mkdir -p package
                     mv *.rpm package/
                     rpm -qlp package/*.rpm
