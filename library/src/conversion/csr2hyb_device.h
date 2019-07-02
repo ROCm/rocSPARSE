@@ -111,7 +111,7 @@ __global__ void csr2hyb_kernel(rocsparse_int        m,
     // Pad remaining ELL structure
     for(rocsparse_int aj = row_end - row_begin; aj < ell_width; ++aj)
     {
-        rocsparse_int idx = ELL_IND(ai, p++, m, ell_width);
+        rocsparse_int idx = ELL_IND(ai, aj, m, ell_width);
         ell_col_ind[idx]  = -1;
         ell_val[idx]      = static_cast<T>(0);
     }
