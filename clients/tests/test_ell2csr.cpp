@@ -52,7 +52,10 @@ std::string ell2csr_bin[] = {"rma10.bin",
                              "nos4.bin",
                              "nos5.bin",
                              "nos6.bin",
-                             "nos7.bin"};
+                             "nos7.bin",
+                             "amazon0312.bin",
+                             "sme3Dc.bin",
+                             "shipsec1.bin"};
 
 class parameterized_ell2csr : public testing::TestWithParam<ell2csr_tuple>
 {

@@ -50,7 +50,9 @@ std::string csrilu0_bin[] = {"rma10.bin",
                              "nos4.bin",
                              "nos5.bin",
                              "nos6.bin",
-                             "nos7.bin"};
+                             "nos7.bin",
+                             "amazon0312.bin",
+                             "sme3Dc.bin"};
 
 class parameterized_csrilu0 : public testing::TestWithParam<csrilu0_tuple>
 {
