@@ -463,7 +463,10 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_DIM 512
 #define CSRGEMM_SUB 16
 #define CSRGEMM_HASHSIZE 4096
-        hipLaunchKernelGGL((csrgemm_nnz_block_per_row_multipass<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
+        hipLaunchKernelGGL((csrgemm_nnz_block_per_row_multipass<CSRGEMM_DIM,
+                                                                CSRGEMM_SUB,
+                                                                CSRGEMM_HASHSIZE,
+                                                                CSRGEMM_HASH>),
                            dim3(h_group_size[7]),
                            dim3(CSRGEMM_DIM),
                            0,

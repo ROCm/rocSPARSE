@@ -786,7 +786,7 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
 
         // Each thread loads the new chunk beginning and end point
         chunk_begin = next_chunk;
-        chunk_end = chunk_begin + HASHSIZE;
+        chunk_end   = chunk_begin + HASHSIZE;
 
         // Wait for all threads to finish load from shared memory
         __syncthreads();
