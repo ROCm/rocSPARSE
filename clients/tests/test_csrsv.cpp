@@ -58,7 +58,9 @@ std::string csrsv_bin[] = {"rma10.bin",
                            "nos3.bin",
                            "nos4.bin",
                            "nos5.bin",
-                           "nos6.bin"};
+                           "nos6.bin",
+                           "amazon0312.bin",
+                           "sme3Dc.bin"};
 
 class parameterized_csrsv : public testing::TestWithParam<csrsv_tuple>
 {

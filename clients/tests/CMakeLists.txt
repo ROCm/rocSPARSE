@@ -23,6 +23,10 @@
 
 # Download some test matrices
 set(TEST_MATRICES
+  SNAP/amazon0312
+  Muite/Chebyshev4
+  FEMLAB/sme3Dc
+  Williams/webbase-1M
   Bova/rma10
   JGD_BIBD/bibd_22_8
   Williams/mac_econ_fwd500
@@ -37,6 +41,7 @@ set(TEST_MATRICES
   HB/nos5
   HB/nos6
   HB/nos7
+  DNVS/shipsec1
 )
 
 if(NOT TARGET rocsparse)
