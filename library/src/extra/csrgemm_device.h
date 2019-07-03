@@ -623,6 +623,182 @@ __global__ void csrgemm_nnz_block_per_row(const rocsparse_int* __restrict__ offs
     }
 }
 
+// Compute non-zero entries per row, where each row is processed by a single block.
+// Splitting row into several chunks such that we can use shared memory for hash tables.
+// Each row has at least 8193 intermediate products to compute.
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASHSIZE, unsigned int HASHVAL>
+__global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
+                                                    const rocsparse_int* __restrict__ offset,
+                                                    const rocsparse_int* __restrict__ perm,
+                                                    const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                                    const rocsparse_int* __restrict__ csr_col_ind_A,
+                                                    const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                                    const rocsparse_int* __restrict__ csr_col_ind_B,
+                                                    const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                                    const rocsparse_int* __restrict__ csr_col_ind_D,
+                                                    rocsparse_int* __restrict__ row_nnz,
+                                                    rocsparse_index_base idx_base_A,
+                                                    rocsparse_index_base idx_base_B,
+                                                    rocsparse_index_base idx_base_D,
+                                                    bool                 mul,
+                                                    bool                 add)
+{
+    // Lane id
+    rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+    // Wavefront id
+    rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+
+    // Each block processes a row (apply permutation)
+    rocsparse_int row = perm[hipBlockIdx_x + *offset];
+
+    // Hash table in shared memory
+    __shared__ rocsparse_int table[HASHSIZE];
+
+    // Shared memory to accumulate the non-zero entries of the row
+    __shared__ rocsparse_int nnz;
+
+    // Shared memory to determine the minimum of all column indices of B that exceed the
+    // current chunk
+    __shared__ rocsparse_int next_chunk;
+
+    // Begin of the current row chunk (this is the column index of the current row)
+    rocsparse_int chunk_begin = 0;
+    rocsparse_int chunk_end   = HASHSIZE;
+
+    // Initialize row nnz for the full row
+    if(hipThreadIdx_x == 0)
+    {
+        nnz = 0;
+    }
+
+    // Get row boundaries of the current row in A
+    rocsparse_int row_begin_A = (mul == true) ? csr_row_ptr_A[row] - idx_base_A : 0;
+    rocsparse_int row_end_A   = (mul == true) ? csr_row_ptr_A[row + 1] - idx_base_A : 0;
+
+    // Loop over the row chunks until the end of the row has been reached (which is
+    // the number of total columns)
+    while(chunk_begin < n)
+    {
+        // Initialize hash table
+        for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
+        {
+            table[i] = -1;
+        }
+
+        // Initialize row nnz for the current chunk
+        if(hipThreadIdx_x == 0)
+        {
+            next_chunk = n;
+        }
+
+        // Wait for all threads to finish initialization
+        __syncthreads();
+
+        // Initialize row nnz for the current chunk
+        rocsparse_int chunk_nnz = 0;
+
+        // Initialize the beginning of the next chunk
+        rocsparse_int min_col = n;
+
+        // alpha * A * B part
+        if(mul == true)
+        {
+            // Loop over columns of A in current row
+            for(rocsparse_int j = row_begin_A + wid; j < row_end_A; j += BLOCKSIZE / WFSIZE)
+            {
+                // Column of A in current row
+                rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+
+                // Loop over columns of B in row col_A
+                rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
+                rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
+
+                for(rocsparse_int k = row_begin_B + lid; k < row_end_B; k += WFSIZE)
+                {
+                    // Column of B in row col_A
+                    rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
+
+                    if(col_B >= chunk_begin && col_B < chunk_end)
+                    {
+                        // Count the actual insertions to obtain row nnz of C
+                        chunk_nnz += insert_key<HASHVAL, HASHSIZE>(col_B, table);
+                    }
+                    else if(col_B >= chunk_end)
+                    {
+                        // Store the first column index of B that exceeds the current chunk
+                        min_col = min(min_col, col_B);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // beta * D part
+        if(add == true)
+        {
+            // Get row boundaries of the current row in D
+            rocsparse_int row_begin_D = (add == true) ? csr_row_ptr_D[row] - idx_base_D : 0;
+            rocsparse_int row_end_D   = (add == true) ? csr_row_ptr_D[row + 1] - idx_base_D : 0;
+
+            // Loop over columns of D in current row and insert all columns of D into hash table
+            for(rocsparse_int j = row_begin_D + wid; j < row_end_D; j += BLOCKSIZE / WFSIZE)
+            {
+                // Column of D in current row
+                rocsparse_int col_D = csr_col_ind_D[j] - idx_base_D;
+
+                if(col_D >= chunk_begin && col_D < chunk_end)
+                {
+                    // Count the actual insertions to obtain row nnz of C
+                    chunk_nnz += insert_key<HASHVAL, HASHSIZE>(col_D, table);
+                }
+                else if(col_D >= chunk_end)
+                {
+                    // Store the first column index of D that exceeds the current chunk
+                    min_col = min(min_col, col_D);
+                    break;
+                }
+            }
+        }
+
+        // Gather wavefront-wide minimum for the next chunks starting column index
+        rocsparse_wfreduce_min<WFSIZE>(&min_col);
+
+        // Last thread in each wavefront finds block-wide minimum atomically
+        if(lid == WFSIZE - 1)
+        {
+            // Atomically determine the new chunks beginning (minimum column index of B
+            // that is larger than the current chunks end point)
+            atomicMin(&next_chunk, min_col);
+        }
+
+        // Gather wavefront-wide insertions into the hash table for the current chunk
+        rocsparse_wfreduce_sum<WFSIZE>(&chunk_nnz);
+
+        // Last thread in each wavefront accumulates block-wide nnz atomically
+        if(lid == WFSIZE - 1)
+        {
+            // Atomically add this chunks nnz to the total row nnz
+            atomicAdd(&nnz, chunk_nnz);
+        }
+
+        // Wait for atomics to be processed
+        __syncthreads();
+
+        // Each thread loads the new chunk beginning and end point
+        chunk_begin = next_chunk;
+        chunk_end = chunk_begin + HASHSIZE;
+
+        // Wait for all threads to finish load from shared memory
+        __syncthreads();
+    }
+
+    // Write accumulated total row nnz to global memory
+    if(hipThreadIdx_x == 0)
+    {
+        row_nnz[row] = nnz;
+    }
+}
+
 // Compute column entries and accumulate values, where each row is processed by a single wavefront
 template <typename T,
           unsigned int BLOCKSIZE,

@@ -460,8 +460,32 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
     // Group 7: more than 8192 intermediate products
     if(h_group_size[7] > 0)
     {
-        printf("\n# int prod > 8192: %d ; exiting\n", h_group_size[7]);
-        exit(1);
+#define CSRGEMM_DIM 512
+#define CSRGEMM_SUB 16
+#define CSRGEMM_HASHSIZE 4096
+        hipLaunchKernelGGL((csrgemm_nnz_block_per_row_multipass<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
+                           dim3(h_group_size[7]),
+                           dim3(CSRGEMM_DIM),
+                           0,
+                           stream,
+                           n,
+                           &d_group_offset[7],
+                           d_perm,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_row_ptr_D,
+                           csr_col_ind_D,
+                           csr_row_ptr_C,
+                           base_A,
+                           base_B,
+                           base_D,
+                           info_C->csrgemm_info->mul,
+                           info_C->csrgemm_info->add);
+#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
     }
 
     // Exclusive sum to obtain row pointers of C
