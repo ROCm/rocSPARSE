@@ -60,7 +60,12 @@ std::string hyb_bin[] = {"rma10.bin",
                          "nos4.bin",
                          "nos5.bin",
                          "nos6.bin",
-                         "nos7.bin"};
+                         "nos7.bin",
+                         "amazon0312.bin",
+                         "Chebyshev4.bin",
+                         "sme3Dc.bin",
+                         "webbase-1M.bin",
+                         "shipsec1.bin"};
 
 class parameterized_hybmv : public testing::TestWithParam<hybmv_tuple>
 {

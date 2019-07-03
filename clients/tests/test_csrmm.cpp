@@ -57,7 +57,10 @@ std::string csrmm_bin[] = {"rma10.bin",
                            "nos4.bin",
                            "nos5.bin",
                            "nos6.bin",
-                           "nos7.bin"};
+                           "nos7.bin",
+                           "amazon0312.bin",
+                           "sme3Dc.bin",
+                           "shipsec1.bin"};
 
 class parameterized_csrmm : public testing::TestWithParam<csrmm_tuple>
 {
