@@ -50,18 +50,23 @@ base csrgemm_idxbaseC_range[] = {rocsparse_index_base_zero, rocsparse_index_base
 trans csrgemm_transA_range[] = {rocsparse_operation_none};
 trans csrgemm_transB_range[] = {rocsparse_operation_none};
 
-std::string csrgemm_bin[] = { //"rma10.bin", // exceeding 8192 int max
-    "mac_econ_fwd500.bin",
-    "mc2depi.bin",
-    "scircuit.bin",
-    //"bmwcra_1.bin", // exceeding 8192 int max
-    "nos1.bin",
-    "nos2.bin",
-    "nos3.bin",
-    "nos4.bin",
-    "nos5.bin",
-    "nos6.bin",
-    "nos7.bin"};
+std::string csrgemm_bin[] = {"rma10.bin",
+                             "mac_econ_fwd500.bin",
+                             "mc2depi.bin",
+                             "scircuit.bin",
+                             "bmwcra_1.bin",
+                             "nos1.bin",
+                             "nos2.bin",
+                             "nos3.bin",
+                             "nos4.bin",
+                             "nos5.bin",
+                             "nos6.bin",
+                             "nos7.bin",
+//                             "amazon0312.bin",
+//                             "Chebyshev4.bin",
+                             "sme3Dc.bin",
+//                             "webbase-1M.bin",
+                             "shipsec1.bin"};
 
 class parameterized_csrgemm : public testing::TestWithParam<csrgemm_tuple>
 {
