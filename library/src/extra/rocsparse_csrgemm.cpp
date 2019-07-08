@@ -462,7 +462,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
     {
 #define CSRGEMM_DIM 512
 #define CSRGEMM_SUB 16
-#define CSRGEMM_HASHSIZE 4096
+#define CSRGEMM_CHUNKSIZE 8192
         rocsparse_int* workspace_B = nullptr;
 
         if(info_C->csrgemm_info->mul == true)
@@ -473,8 +473,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 
         hipLaunchKernelGGL((csrgemm_nnz_block_per_row_multipass<CSRGEMM_DIM,
                                                                 CSRGEMM_SUB,
-                                                                CSRGEMM_HASHSIZE,
-                                                                CSRGEMM_HASH>),
+                                                                CSRGEMM_CHUNKSIZE>),
                            dim3(h_group_size[7]),
                            dim3(CSRGEMM_DIM),
                            0,
@@ -500,7 +499,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
         {
             RETURN_IF_HIP_ERROR(hipFree(workspace_B));
         }
-#undef CSRGEMM_HASHSIZE
+#undef CSRGEMM_CHUNKSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
     }

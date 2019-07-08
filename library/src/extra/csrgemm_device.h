@@ -624,9 +624,10 @@ __global__ void csrgemm_nnz_block_per_row(const rocsparse_int* __restrict__ offs
 }
 
 // Compute non-zero entries per row, where each row is processed by a single block.
-// Splitting row into several chunks such that we can use shared memory for hash tables.
+// Splitting row into several chunks such that we can use shared memory to store whether
+// a column index is populated or not.
 // Each row has at least 8193 intermediate products to compute.
-template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASHSIZE, unsigned int HASHVAL>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int CHUNKSIZE>
 __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
                                                     const rocsparse_int* __restrict__ offset,
                                                     const rocsparse_int* __restrict__ perm,
@@ -652,8 +653,8 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
     // Each block processes a row (apply permutation)
     rocsparse_int row = perm[hipBlockIdx_x + *offset];
 
-    // Hash table in shared memory
-    __shared__ rocsparse_int table[HASHSIZE];
+    // Row nnz marker
+    __shared__ bool table[CHUNKSIZE];
 
     // Shared memory to accumulate the non-zero entries of the row
     __shared__ rocsparse_int nnz;
@@ -664,7 +665,7 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
 
     // Begin of the current row chunk (this is the column index of the current row)
     rocsparse_int chunk_begin = 0;
-    rocsparse_int chunk_end   = HASHSIZE;
+    rocsparse_int chunk_end   = CHUNKSIZE;
 
     // Initialize row nnz for the full row
     if(hipThreadIdx_x == 0)
@@ -680,10 +681,10 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
     // the number of total columns)
     while(chunk_begin < n)
     {
-        // Initialize hash table
-        for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
+        // Initialize row nnz table
+        for(int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
         {
-            table[i] = -1;
+            table[i] = false;
         }
 
         // Initialize row nnz for the current chunk
@@ -694,9 +695,6 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
 
         // Wait for all threads to finish initialization
         __syncthreads();
-
-        // Initialize row nnz for the current chunk
-        rocsparse_int chunk_nnz = 0;
 
         // Initialize the beginning of the next chunk
         rocsparse_int min_col = n;
@@ -726,8 +724,8 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
 
                     if(col_B >= chunk_begin && col_B < chunk_end)
                     {
-                        // Count the actual insertions to obtain row nnz of C
-                        chunk_nnz += insert_key<HASHVAL, HASHSIZE>(col_B, table);
+                        // Mark nnz table if entry at col_B
+                        table[col_B - chunk_begin] = true;
                     }
                     else if(col_B >= chunk_end)
                     {
@@ -767,8 +765,8 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
 
                 if(col_D >= chunk_begin && col_D < chunk_end)
                 {
-                    // Count the actual insertions to obtain row nnz of C
-                    chunk_nnz += insert_key<HASHVAL, HASHSIZE>(col_D, table);
+                    // Mark nnz table if entry at col_D
+                    table[col_D - chunk_begin] = true;
                 }
                 else if(col_D >= chunk_end)
                 {
@@ -790,7 +788,17 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
             atomicMin(&next_chunk, min_col);
         }
 
-        // Gather wavefront-wide insertions into the hash table for the current chunk
+        // Wait for all threads to finish row nnz operation
+        __syncthreads();
+
+        // Each thread loads its entry for the current chunk
+        rocsparse_int chunk_nnz = 0;
+        for(int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
+        {
+            chunk_nnz += (table[i] == true) ? 1 : 0;
+        }
+
+        // Gather wavefront-wide nnz for the current chunk
         rocsparse_wfreduce_sum<WFSIZE>(&chunk_nnz);
 
         // Last thread in each wavefront accumulates block-wide nnz atomically
@@ -805,7 +813,7 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
 
         // Each thread loads the new chunk beginning and end point
         chunk_begin = next_chunk;
-        chunk_end   = chunk_begin + HASHSIZE;
+        chunk_end   = chunk_begin + CHUNKSIZE;
 
         // Wait for all threads to finish load from shared memory
         __syncthreads();
