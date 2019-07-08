@@ -1352,7 +1352,8 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
         // Group 7: more than 4096 non-zeros per row
         if(h_group_size[7] > 0)
         {
-            printf("\n# max nnz > 4096: %d ; exiting\n", h_group_size[7]);
+            printf("\n# max nnz > 4096: %d\n", h_group_size[7]);
+            printf("max nnz = %d\n", nnz_max);
             exit(1);
         }
     }

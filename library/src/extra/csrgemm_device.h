@@ -637,6 +637,7 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
                                                     const rocsparse_int* __restrict__ csr_row_ptr_D,
                                                     const rocsparse_int* __restrict__ csr_col_ind_D,
                                                     rocsparse_int* __restrict__ row_nnz,
+                                                    rocsparse_int* __restrict__ workspace_B,
                                                     rocsparse_index_base idx_base_A,
                                                     rocsparse_index_base idx_base_B,
                                                     rocsparse_index_base idx_base_D,
@@ -710,10 +711,15 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
                 rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
 
                 // Loop over columns of B in row col_A
-                rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
-                rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
+                rocsparse_int row_begin_B
+                    = (chunk_begin == 0) ? csr_row_ptr_B[col_A] - idx_base_B : workspace_B[j];
+                rocsparse_int row_end_B = csr_row_ptr_B[col_A + 1] - idx_base_B;
 
-                for(rocsparse_int k = row_begin_B + lid; k < row_end_B; k += WFSIZE)
+                // Keep track of the first k where the column index of B is exceeding
+                // the current chunks end point
+                rocsparse_int next_k = row_begin_B + lid;
+
+                for(rocsparse_int k = next_k; k < row_end_B; k += WFSIZE)
                 {
                     // Column of B in row col_A
                     rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
@@ -725,10 +731,23 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
                     }
                     else if(col_B >= chunk_end)
                     {
+                        // If column index exceeds chunks end point, store k as starting
+                        // point of the columns of B for the next pass
+                        next_k = k;
+
                         // Store the first column index of B that exceeds the current chunk
                         min_col = min(min_col, col_B);
                         break;
                     }
+                }
+
+                // Obtain the minimum of all k that exceed the current chunks end point
+                rocsparse_wfreduce_min<WFSIZE>(&next_k);
+
+                // Store the minimum globally for the next chunk
+                if(lid == WFSIZE - 1)
+                {
+                    workspace_B[j] = next_k;
                 }
             }
         }
@@ -737,8 +756,8 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
         if(add == true)
         {
             // Get row boundaries of the current row in D
-            rocsparse_int row_begin_D = (add == true) ? csr_row_ptr_D[row] - idx_base_D : 0;
-            rocsparse_int row_end_D   = (add == true) ? csr_row_ptr_D[row + 1] - idx_base_D : 0;
+            rocsparse_int row_begin_D = csr_row_ptr_D[row] - idx_base_D;
+            rocsparse_int row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
 
             // Loop over columns of D in current row and insert all columns of D into hash table
             for(rocsparse_int j = row_begin_D + wid; j < row_end_D; j += BLOCKSIZE / WFSIZE)
