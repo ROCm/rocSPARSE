@@ -1913,8 +1913,88 @@ rocsparse_status rocsparse_zcsrmm(rocsparse_handle handle,
  *
  *  \details
  *  \p rocsparse_csrgemm_buffer_size returns the size of the temporary storage buffer
- *  that is required by rocsparse_scsrgemm() and rocsparse_dcsrgemm(). The temporary
- *  storage buffer must be allocated by the user.
+ *  that is required by rocsparse_csrgemm_nnz(), rocsparse_scsrgemm() and
+ *  rocsparse_dcsrgemm(). The temporary storage buffer must be allocated by the user.
+ *
+ *  \note
+ *  Currently, only \p trans_A == \p trans_B == \ref rocsparse_operation_none is
+ *  supported.
+ *  \note
+ *  Currently, only \ref rocsparse_matrix_type_general is supported.
+ *
+ *  @param[in]
+ *  handle          handle to the rocsparse library context queue.
+ *  @param[in]
+ *  trans_A         matrix \f$A\f$ operation type.
+ *  @param[in]
+ *  trans_B         matrix \f$B\f$ operation type.
+ *  @param[in]
+ *  m               number of rows of the sparse CSR matrix \f$op(A)\f$ and \f$C\f$.
+ *  @param[in]
+ *  n               number of columns of the sparse CSR matrix \f$op(B)\f$ and
+ *                  \f$C\f$.
+ *  @param[in]
+ *  k               number of columns of the sparse CSR matrix \f$op(A)\f$ and number of
+ *                  rows of the sparse CSR matrix \f$op(B)\f$.
+ *  @param[in]
+ *  alpha           scalar \f$\alpha\f$.
+ *  @param[in]
+ *  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currenty, only
+ *                  \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  nnz_A           number of non-zero entries of the sparse CSR matrix \f$A\f$.
+ *  @param[in]
+ *  csr_row_ptr_A   array of \p m+1 elements (\f$op(A) == A\f$, \p k+1 otherwise)
+ *                  that point to the start of every row of the sparse CSR matrix
+ *                  \f$op(A)\f$.
+ *  @param[in]
+ *  csr_col_ind_A   array of \p nnz_A elements containing the column indices of the
+ *                  sparse CSR matrix \f$A\f$.
+ *  @param[in]
+ *  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currenty, only
+ *                  \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  nnz_B           number of non-zero entries of the sparse CSR matrix \f$B\f$.
+ *  @param[in]
+ *  csr_row_ptr_B   array of \p k+1 elements (\f$op(B) == B\f$, \p m+1 otherwise)
+ *                  that point to the start of every row of the sparse CSR matrix
+ *                  \f$op(B)\f$.
+ *  @param[in]
+ *  csr_col_ind_B   array of \p nnz_B elements containing the column indices of the
+ *                  sparse CSR matrix \f$B\f$.
+ *  @param[in]
+ *  beta            scalar \f$\beta\f$.
+ *  @param[in]
+ *  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currenty, only
+ *                  \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  nnz_D           number of non-zero entries of the sparse CSR matrix \f$D\f$.
+ *  @param[in]
+ *  csr_row_ptr_D   array of \p m+1 elements that point to the start of every row of the
+ *                  sparse CSR matrix \f$D\f$.
+ *  @param[in]
+ *  csr_col_ind_D   array of \p nnz_D elements containing the column indices of the sparse
+ *                  CSR matrix \f$D\f$.
+ *  @param[inout]
+ *  info_C          structure that holds meta data for the sparse CSR matrix \f$C\f$.
+ *  @param[out]
+ *  buffer_size     number of bytes of the temporary storage buffer required by
+ *                  rocsparse_csrgemm_nnz(), rocsparse_scsrgemm() and
+ *                  rocsparse_dcsrgemm().
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval rocsparse_status_invalid_size \p m, \p n, \p k, \p nnz_A, \p nnz_B or
+ *          \p nnz_D is invalid.
+ *  \retval rocsparse_status_invalid_pointer \p alpha and \p beta are invalid,
+ *          \p descr_A, \p csr_row_ptr_A, \p csr_col_ind_A, \p descr_B,
+ *          \p csr_row_ptr_B or \p csr_col_ind_B are invalid if \p alpha is valid,
+ *          \p descr_D, \p csr_row_ptr_D or \p csr_col_ind_D is invalid if \p beta is
+ *          valid, \p info_C or \p buffer_size is invalid.
+ *  \retval rocsparse_status_not_implemented
+ *          \p trans_A != \ref rocsparse_operation_none,
+ *          \p trans_B != \ref rocsparse_operation_none, or
+ *          \p rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
 /**@{*/
 ROCSPARSE_EXPORT
@@ -2027,7 +2107,7 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle handle,
  *  The required buffer size can be obtained by rocsparse_scsrgemm_buffer_size() and
  *  rocsparse_dcsrgemm_buffer_size(), respectively.
  *
- *  The algorithm is based on the paper "High-performance and Memory-saving Sparse
+ *  The algorithm is derived from the paper "High-performance and Memory-saving Sparse
  *  General Matrix-Matrix Multiplication for NVIDIA Pascal GPU", by Nagasaka, Y.,
  *  Nukada, A., Matsuoka, S. in 2017 46th International Conference on Parallel Processing
  *  (ICPP) 101-110 \cite NAGASAKA
@@ -2035,6 +2115,89 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle handle,
  *  \note
  *  This function is non blocking and executed asynchronously with respect to the host.
  *  It may return before the actual computation has finished.
+ *  \note
+ *  Currently, only \p trans_A == \p trans_B == \ref rocsparse_operation_none is
+ *  supported.
+ *  \note
+ *  Currently, only \ref rocsparse_matrix_type_general is supported.
+ *
+ *  @param[in]
+ *  handle          handle to the rocsparse library context queue.
+ *  @param[in]
+ *  trans_A         matrix \f$A\f$ operation type.
+ *  @param[in]
+ *  trans_B         matrix \f$B\f$ operation type.
+ *  @param[in]
+ *  m               number of rows of the sparse CSR matrix \f$op(A)\f$ and \f$C\f$.
+ *  @param[in]
+ *  n               number of columns of the sparse CSR matrix \f$op(B)\f$ and
+ *                  \f$C\f$.
+ *  @param[in]
+ *  k               number of columns of the sparse CSR matrix \f$op(A)\f$ and number of
+ *                  rows of the sparse CSR matrix \f$op(B)\f$.
+ *  @param[in]
+ *  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currenty, only
+ *                  \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  nnz_A           number of non-zero entries of the sparse CSR matrix \f$A\f$.
+ *  @param[in]
+ *  csr_row_ptr_A   array of \p m+1 elements (\f$op(A) == A\f$, \p k+1 otherwise)
+ *                  that point to the start of every row of the sparse CSR matrix
+ *                  \f$op(A)\f$.
+ *  @param[in]
+ *  csr_col_ind_A   array of \p nnz_A elements containing the column indices of the
+ *                  sparse CSR matrix \f$A\f$.
+ *  @param[in]
+ *  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currenty, only
+ *                  \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  nnz_B           number of non-zero entries of the sparse CSR matrix \f$B\f$.
+ *  @param[in]
+ *  csr_row_ptr_B   array of \p k+1 elements (\f$op(B) == B\f$, \p m+1 otherwise)
+ *                  that point to the start of every row of the sparse CSR matrix
+ *                  \f$op(B)\f$.
+ *  @param[in]
+ *  csr_col_ind_B   array of \p nnz_B elements containing the column indices of the
+ *                  sparse CSR matrix \f$B\f$.
+ *  @param[in]
+ *  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currenty, only
+ *                  \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  nnz_D           number of non-zero entries of the sparse CSR matrix \f$D\f$.
+ *  @param[in]
+ *  csr_row_ptr_D   array of \p m+1 elements that point to the start of every row of the
+ *                  sparse CSR matrix \f$D\f$.
+ *  @param[in]
+ *  csr_col_ind_D   array of \p nnz_D elements containing the column indices of the sparse
+ *                  CSR matrix \f$D\f$.
+ *  @param[in]
+ *  descr_C         descriptor of the sparse CSR matrix \f$C\f$. Currenty, only
+ *                  \ref rocsparse_matrix_type_general is supported.
+ *  @param[out]
+ *  csr_row_ptr_C   array of \p m+1 elements that point to the start of every row of the
+ *                  sparse CSR matrix \f$C\f$.
+ *  @param[out]
+ *  nnz_C           pointer to the number of non-zero entries of the sparse CSR
+ *                  matrix \f$C\f$.
+ *  @param[in]
+ *  info_C          structure that holds meta data for the sparse CSR matrix \f$C\f$.
+ *  @param[in]
+ *  temp_buffer     temporary storage buffer allocated by the user, size is returned
+ *                  by rocsparse_scsrgemm_buffer_size() or
+ *                  rocsparse_dcsrgemm_buffer_size().
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval rocsparse_status_invalid_size \p m, \p n, \p k, \p nnz_A, \p nnz_B or
+ *          \p nnz_D is invalid.
+ *  \retval rocsparse_status_invalid_pointer \p descr_A, \p csr_row_ptr_A,
+ *          \p csr_col_ind_A, \p descr_B, \p csr_row_ptr_B, \p csr_col_ind_B,
+ *          \p descr_D, \p csr_row_ptr_D, \p csr_col_ind_D, \p descr_C,
+ *          \p csr_row_ptr_C, \p nnz_C, \p info_C or \p temp_buffer is invalid.
+ *  \retval rocsparse_status_not_implemented
+ *          \p trans_A != \ref rocsparse_operation_none,
+ *          \p trans_B != \ref rocsparse_operation_none, or
+ *          \p rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
@@ -2108,15 +2271,107 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
  *  \note \f$\alpha == beta == 0\f$ is invalid.
  *  \note Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
  *  \note Currently, only \p trans_B == \ref rocsparse_operation_none is supported.
+ *  \note Currently, only \ref rocsparse_matrix_type_general is supported.
+ *  \note This function is non blocking and executed asynchronously with respect to the
+ *        host. It may return before the actual computation has finished.
+ *
  *
  *  The algorithm is based on the paper "High-performance and Memory-saving Sparse
  *  General Matrix-Matrix Multiplication for NVIDIA Pascal GPU", by Nagasaka, Y.,
  *  Nukada, A., Matsuoka, S. in 2017 46th International Conference on Parallel Processing
  *  (ICPP) 101-110 \cite NAGASAKA
  *
- *  \note
- *  This function is non blocking and executed asynchronously with respect to the host.
- *  It may return before the actual computation has finished.
+ *  @param[in]
+ *  handle          handle to the rocsparse library context queue.
+ *  @param[in]
+ *  trans_A         matrix \f$A\f$ operation type.
+ *  @param[in]
+ *  trans_B         matrix \f$B\f$ operation type.
+ *  @param[in]
+ *  m               number of rows of the sparse CSR matrix \f$op(A)\f$ and \f$C\f$.
+ *  @param[in]
+ *  n               number of columns of the sparse CSR matrix \f$op(B)\f$ and
+ *                  \f$C\f$.
+ *  @param[in]
+ *  k               number of columns of the sparse CSR matrix \f$op(A)\f$ and number of
+ *                  rows of the sparse CSR matrix \f$op(B)\f$.
+ *  @param[in]
+ *  alpha           scalar \f$\alpha\f$.
+ *  @param[in]
+ *  descr_A         descriptor of the sparse CSR matrix \f$A\f$. Currenty, only
+ *                  \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  nnz_A           number of non-zero entries of the sparse CSR matrix \f$A\f$.
+ *  @param[in]
+ *  csr_val_A       array of \p nnz_A elements of the sparse CSR matrix \f$A\f$.
+ *  @param[in]
+ *  csr_row_ptr_A   array of \p m+1 elements (\f$op(A) == A\f$, \p k+1 otherwise)
+ *                  that point to the start of every row of the sparse CSR matrix
+ *                  \f$op(A)\f$.
+ *  @param[in]
+ *  csr_col_ind_A   array of \p nnz_A elements containing the column indices of the
+ *                  sparse CSR matrix \f$A\f$.
+ *  @param[in]
+ *  descr_B         descriptor of the sparse CSR matrix \f$B\f$. Currenty, only
+ *                  \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  nnz_B           number of non-zero entries of the sparse CSR matrix \f$B\f$.
+ *  @param[in]
+ *  csr_val_B       array of \p nnz_B elements of the sparse CSR matrix \f$B\f$.
+ *  @param[in]
+ *  csr_row_ptr_B   array of \p k+1 elements (\f$op(B) == B\f$, \p m+1 otherwise)
+ *                  that point to the start of every row of the sparse CSR matrix
+ *                  \f$op(B)\f$.
+ *  @param[in]
+ *  csr_col_ind_B   array of \p nnz_B elements containing the column indices of the
+ *                  sparse CSR matrix \f$B\f$.
+ *  @param[in]
+ *  beta            scalar \f$\beta\f$.
+ *  @param[in]
+ *  descr_D         descriptor of the sparse CSR matrix \f$D\f$. Currenty, only
+ *                  \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  nnz_D           number of non-zero entries of the sparse CSR matrix \f$D\f$.
+ *  @param[in]
+ *  csr_val_D       array of \p nnz_D elements of the sparse CSR matrix \f$D\f$.
+ *  @param[in]
+ *  csr_row_ptr_D   array of \p m+1 elements that point to the start of every row of the
+ *                  sparse CSR matrix \f$D\f$.
+ *  @param[in]
+ *  csr_col_ind_D   array of \p nnz_D elements containing the column indices of the
+ *                  sparse CSR matrix \f$D\f$.
+ *  @param[in]
+ *  descr_C         descriptor of the sparse CSR matrix \f$C\f$. Currenty, only
+ *                  \ref rocsparse_matrix_type_general is supported.
+ *  @param[out]
+ *  csr_val_C       array of \p nnz_C elements of the sparse CSR matrix \f$C\f$.
+ *  @param[in]
+ *  csr_row_ptr_C   array of \p m+1 elements that point to the start of every row of the
+ *                  sparse CSR matrix \f$C\f$.
+ *  @param[out]
+ *  csr_col_ind_C   array of \p nnz_C elements containing the column indices of the
+ *                  sparse CSR matrix \f$C\f$.
+ *  @param[in]
+ *  info_C          structure that holds meta data for the sparse CSR matrix \f$C\f$.
+ *  @param[in]
+ *  temp_buffer     temporary storage buffer allocated by the user, size is returned
+ *                  by rocsparse_scsrgemm_buffer_size() or
+ *                  rocsparse_dcsrgemm_buffer_size().
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval rocsparse_status_invalid_size \p m, \p n, \p k, \p nnz_A, \p nnz_B or
+ *          \p nnz_D is invalid.
+ *  \retval rocsparse_status_invalid_pointer \p alpha and \p beta are invalid,
+ *          \p descr_A, \p csr_val_A, \p csr_row_ptr_A, \p csr_col_ind_A, \p descr_B,
+ *          \p csr_val_B, \p csr_row_ptr_B or \p csr_col_ind_B are invalid if \p alpha
+ *          is valid, \p descr_D, \p csr_val_D, \p csr_row_ptr_D or \p csr_col_ind_D is
+ *          invalid if \p beta is valid, \p csr_val_C, \p csr_row_ptr_C,
+ *          \p csr_col_ind_C, \p info_C or \p temp_buffer is invalid.
+ *  \retval rocsparse_status_not_implemented
+ *          \p trans_A != \ref rocsparse_operation_none,
+ *          \p trans_B != \ref rocsparse_operation_none, or
+ *          \p rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  *
  *  \par Example
  *  This example multiplies two CSR matrices with a scalar alpha and adds the result to
