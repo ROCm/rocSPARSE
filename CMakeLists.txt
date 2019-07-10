@@ -75,6 +75,10 @@ include(cmake/Dependencies.cmake)
 rocm_setup_version(VERSION 1.1.10.0 NO_GIT_TAG_VERSION)
 set(rocsparse_SOVERSION 0)
 
+# Get the git tag version
+include(cmake/version.cmake)
+rocm_get_git_commit_id(rocsparse_VERSION_COMMIT_ID)
+
 # AMD targets
 set(AMDGPU_TARGETS gfx803;gfx900;gfx906 CACHE STRING "List of specific machine types for library to target")
 
