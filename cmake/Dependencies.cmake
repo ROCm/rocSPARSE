@@ -27,32 +27,42 @@
 find_package(Git REQUIRED)
 
 # Find rocprim package
-find_package(rocprim 2.5.0 REQUIRED) # ROCm 2.5
-
-# DownloadProject package
-include(cmake/DownloadProject/DownloadProject.cmake)
+find_package(rocprim 2.6.0 REQUIRED) # ROCm 2.6
 
 # Workaround until hcc & hip cmake modules fixes symlink logic in their config files.
 # (Thanks to rocBLAS devs for finding workaround for this problem!)
 list(APPEND CMAKE_PREFIX_PATH /opt/rocm/hcc /opt/rocm/hip /opt/rocm)
 
 # HIP configuration
-# Ignore hcc warning: argument unused during compilation: '-isystem /opt/rocm/hip/include'
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-command-line-argument")
-find_package(hcc REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH})
-find_package(HIP REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH})
+if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+  find_package(hcc 1.3.19242 REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH}) # ROCm 2.6
+  find_package(hip 1.5.19255 REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH}) # ROCm 2.6
+endif()
 
-# ROCm package
+# ROCm cmake package
+set(PROJECT_EXTERN_DIR ${CMAKE_CURRENT_BINARY_DIR}/extern)
 find_package(ROCM QUIET CONFIG PATHS ${CMAKE_PREFIX_PATH})
 if(NOT ROCM_FOUND)
   set(rocm_cmake_tag "master" CACHE STRING "rocm-cmake tag to download")
   file(DOWNLOAD https://github.com/RadeonOpenCompute/rocm-cmake/archive/${rocm_cmake_tag}.zip
-       ${CMAKE_CURRENT_BINARY_DIR}/rocm-cmake-${rocm_cmake_tag}.zip
-  )
-  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_BINARY_DIR}/rocm-cmake-${rocm_cmake_tag}.zip
-                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  )
-  find_package(ROCM REQUIRED CONFIG PATHS ${CMAKE_CURRENT_BINARY_DIR}/rocm-cmake-${rocm_cmake_tag})
+       ${PROJECT_EXTERN_DIR}/rocm-cmake-${rocm_cmake_tag}.zip STATUS status LOG log)
+
+  list(GET status 0 status_code)
+  list(GET status 1 status_string)
+
+  if(NOT status_code EQUAL 0)
+    message(FATAL_ERROR "error: downloading
+    'https://github.com/RadeonOpenCompute/rocm-cmake/archive/${rocm_cmake_tag}.zip' failed
+    status_code: ${status_code}
+    status_string: ${status_string}
+    log: ${log}
+    ")
+  endif()
+
+  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xzf ${PROJECT_EXTERN_DIR}/rocm-cmake-${rocm_cmake_tag}.zip
+                  WORKING_DIRECTORY ${PROJECT_EXTERN_DIR})
+
+  find_package(ROCM REQUIRED CONFIG PATHS ${PROJECT_EXTERN_DIR}/rocm-cmake-${rocm_cmake_tag})
 endif()
 
 include(ROCMSetupVersion)

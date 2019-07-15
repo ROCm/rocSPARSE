@@ -56,18 +56,19 @@ foreach(m ${TEST_MATRICES})
   list(GET sep_m 1 mat)
 
   # Download test matrices if not already downloaded
-  if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/matrices/${mat}.bin")
+  set(CMAKE_MATRICES_DIR ${PROJECT_BINARY_DIR}/matrices)
+  if(NOT EXISTS "${CMAKE_MATRICES_DIR}/${mat}.bin")
     message("  Downloading and extracting test matrix ${m}.tar.gz")
     file(DOWNLOAD http://www.cise.ufl.edu/research/sparse/MM/${m}.tar.gz
-         ${CMAKE_CURRENT_BINARY_DIR}/matrices/${mat}.tar.gz)
+         ${CMAKE_MATRICES_DIR}/${mat}.tar.gz)
     execute_process(COMMAND tar xf ${mat}.tar.gz
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
+                    WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
     execute_process(COMMAND mv ${mat}/${mat}.mtx .
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
+                    WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
     execute_process(COMMAND ${CONVERT} ${mat}.mtx ${mat}.bin
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
+                    WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
     execute_process(COMMAND rm ${mat}.tar.gz ${mat} ${mat}.mtx -rf
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/matrices)
+                    WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
   endif()
 endforeach()
 
@@ -121,7 +122,7 @@ target_include_directories(rocsparse-test
   SYSTEM
     PRIVATE
       $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
-      $<BUILD_INTERFACE:${hip_INCLUDE_DIRS}>
+      $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
 )
 
 if(NOT TARGET rocsparse)
@@ -130,10 +131,16 @@ else()
   target_link_libraries(rocsparse-test PRIVATE roc::rocsparse)
 endif()
 
-target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} ${hip_LIBRARIES})
+target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} Threads::Threads)
 
-foreach(amdgpu_target ${AMDGPU_TARGETS})
-  target_link_libraries(rocsparse-test PRIVATE --amdgpu-target=${amdgpu_target})
-endforeach()
+if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+  target_link_libraries(rocsparse-test PRIVATE ${HIP_LIBRARIES})
+else()
+  target_compile_definitions(rocsparse-test PRIVATE __HIP_PLATFORM_HCC__)
+  get_target_property(HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE)
+  target_link_libraries(rocsparse-test PRIVATE ${HIPHCC_LOCATION})
+endif()
+
+set_target_properties(rocsparse-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 
 add_test(rocsparse-test rocsparse-test)

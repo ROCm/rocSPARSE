@@ -25,6 +25,7 @@
 
 #include <gtest/gtest.h>
 #include <stdexcept>
+#include <hip/hip_runtime_api.h>
 
 /* =====================================================================
       Main function:

@@ -47,17 +47,14 @@ set(ROCSPARSE_CLIENTS_COMMON
 
 add_executable(rocsparse-bench client.cpp ${ROCSPARSE_CLIENTS_COMMON})
 
+# Internal header includes
 target_include_directories(rocsparse-bench
   PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
 )
 
-target_include_directories(rocsparse-bench
-  SYSTEM
-    PRIVATE
-      $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-      $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
-)
+# External header includes included as system files
+target_include_directories(rocsparse-bench SYSTEM PRIVATE $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
 
 target_link_libraries(rocsparse-bench PRIVATE ${Boost_LIBRARIES})
 
@@ -67,7 +64,12 @@ else()
   target_link_libraries(rocsparse-bench PRIVATE roc::rocsparse)
 endif()
 
-target_link_libraries(rocsparse-bench PRIVATE ${hip_LIBRARIES})
-foreach(amdgpu_target ${AMDGPU_TARGETS})
-  target_link_libraries(rocsparse-bench PRIVATE --amdgpu-target=${amdgpu_target})
-endforeach()
+if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+  target_link_libraries(rocsparse-bench PRIVATE ${HIP_LIBRARIES})
+else()
+  target_compile_definitions(rocsparse-bench PRIVATE __HIP_PLATFORM_HCC__)
+  get_target_property(HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE)
+  target_link_libraries(rocsparse-bench PRIVATE ${HIPHCC_LOCATION})
+endif( )
+
+set_target_properties(rocsparse-bench PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
