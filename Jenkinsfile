@@ -78,7 +78,7 @@ rocSPARSECI:
             {
                 command = """#!/usr/bin/env bash
                         set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/tests
+                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
                         LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsparse-test --gtest_output=xml --gtest_color=yes #--gtest_filter=*nightly*-*known_bug* #--gtest_filter=*nightly*
                     """
             }
@@ -86,7 +86,7 @@ rocSPARSECI:
             {
                 command = """#!/usr/bin/env bash
                         set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/tests
+                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
                         LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsparse-test --gtest_output=xml --gtest_color=yes #--gtest_filter=*quick*:*pre_checkin*-*known_bug* #--gtest_filter=*checkin*
                     """
             }
@@ -100,7 +100,7 @@ rocSPARSECI:
             {
                 command = """#!/usr/bin/env bash
                         set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/tests
+                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
                         LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test --gtest_output=xml --gtest_color=yes #--gtest_filter=*nightly*-*known_bug* #--gtest_filter=*nightly*
                     """
             }
@@ -108,7 +108,7 @@ rocSPARSECI:
             {
                 command = """#!/usr/bin/env bash
                         set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/tests
+                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
                         LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test --gtest_output=xml --gtest_color=yes #--gtest_filter=*quick*:*pre_checkin*-*known_bug* #--gtest_filter=*checkin*
                     """
             }

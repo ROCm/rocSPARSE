@@ -27,7 +27,7 @@
 find_package(Git REQUIRED)
 
 # Find rocprim package
-find_package(rocprim 2.6.0 REQUIRED) # ROCm 2.6
+find_package(rocprim 2.5.0 REQUIRED) # ROCm 2.5
 
 # Workaround until hcc & hip cmake modules fixes symlink logic in their config files.
 # (Thanks to rocBLAS devs for finding workaround for this problem!)
