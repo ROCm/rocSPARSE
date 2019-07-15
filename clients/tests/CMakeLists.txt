@@ -135,7 +135,7 @@ target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} Threads::Th
 
 if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
   target_link_libraries(rocsparse-test PRIVATE ${HIP_LIBRARIES})
-else()
+elseif(NOT CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
   target_compile_definitions(rocsparse-test PRIVATE __HIP_PLATFORM_HCC__)
   get_target_property(HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE)
   target_link_libraries(rocsparse-test PRIVATE ${HIPHCC_LOCATION})

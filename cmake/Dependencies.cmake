@@ -35,8 +35,8 @@ list(APPEND CMAKE_PREFIX_PATH /opt/rocm/hcc /opt/rocm/hip /opt/rocm)
 
 # HIP configuration
 if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
-  find_package(hcc 1.3.19242 REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH}) # ROCm 2.6
-  find_package(hip 1.5.19255 REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH}) # ROCm 2.6
+  find_package(hcc 1.3.19196 REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH}) # ROCm 2.5
+  find_package(hip 1.5.19211 REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH}) # ROCm 2.5
 endif()
 
 # ROCm cmake package

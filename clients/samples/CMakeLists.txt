@@ -46,7 +46,7 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
 
   if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
     target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${HIP_LIBRARIES})
-  else()
+  elseif(NOT CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
     target_compile_definitions(${EXAMPLE_TARGET} PRIVATE __HIP_PLATFORM_HCC__)
     target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${HIPHCC_LOCATION})
   endif()

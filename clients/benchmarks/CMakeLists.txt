@@ -66,7 +66,7 @@ endif()
 
 if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
   target_link_libraries(rocsparse-bench PRIVATE ${HIP_LIBRARIES})
-else()
+elseif(NOT CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
   target_compile_definitions(rocsparse-bench PRIVATE __HIP_PLATFORM_HCC__)
   get_target_property(HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE)
   target_link_libraries(rocsparse-bench PRIVATE ${HIPHCC_LOCATION})

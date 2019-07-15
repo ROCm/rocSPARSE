@@ -55,6 +55,11 @@ endif()
 list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
 find_package(HIP REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH})
 
+# Build flags
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 if(BUILD_CLIENTS_SAMPLES)
   add_subdirectory(samples)
 endif()
