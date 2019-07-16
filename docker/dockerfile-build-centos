@@ -51,6 +51,6 @@ ARG ROCSPARSE_SRC_ROOT=/usr/local/src/rocSPARSE
 RUN mkdir -p ${ROCSPARSE_SRC_ROOT} && cd ${ROCSPARSE_SRC_ROOT} && \
     git clone -b develop --depth=1 https://github.com/ROCmSoftwarePlatform/rocSPARSE . && \
     mkdir -p build/deps && cd build/deps && \
-    cmake3 ${ROCSPARSE_SRC_ROOT}/deps && \
+    cmake3 -DBUILD_BOOST=OFF ${ROCSPARSE_SRC_ROOT}/deps && \
     make -j $(nproc) install && \
     rm -rf ${ROCSPARSE_SRC_ROOT}
