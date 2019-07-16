@@ -43,9 +43,9 @@ rocSPARSECI:
         platform, project->
 
         project.paths.construct_build_prefix()
-        
+
         def command 
-        
+
         if(platform.jenkinsLabel.contains('hip-clang'))
         {
             command = """#!/usr/bin/env bash
