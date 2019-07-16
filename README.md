@@ -55,7 +55,7 @@ cd rocSPARSE; mkdir -p build/release; cd build/release
 #   BUILD_CLIENTS_SAMPLES    - build examples (ON)
 #   BUILD_VERBOSE            - verbose output (OFF)
 #   BUILD_SHARED_LIBS        - build rocSPARSE as a shared library (ON)
-cmake -DBUILD_CLIENTS_TESTS=ON ../..
+CXX=/opt/rocm/bin/hcc cmake -DBUILD_CLIENTS_TESTS=ON ../..
 
 # Build
 make
