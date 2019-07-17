@@ -44,7 +44,7 @@ rocSPARSECI:
 
         project.paths.construct_build_prefix()
 
-        def command 
+        def command
 
         if(platform.jenkinsLabel.contains('hip-clang'))
         {
@@ -56,7 +56,6 @@ rocSPARSECI:
         }
         else
         {
-
             command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
@@ -92,7 +91,7 @@ rocSPARSECI:
             }
 
             platform.runCommand(this, command)
-            junit "${project.paths.project_build_prefix}/build/release/clients/tests/*.xml"
+            junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
         }
         else
         {
@@ -114,7 +113,7 @@ rocSPARSECI:
             }
 
             platform.runCommand(this, command)
-            junit "${project.paths.project_build_prefix}/build/release/clients/tests/*.xml"
+            junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
         }
     }
 
