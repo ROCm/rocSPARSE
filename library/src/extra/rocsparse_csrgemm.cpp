@@ -471,29 +471,28 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
             RETURN_IF_HIP_ERROR(hipMalloc((void**)&workspace_B, sizeof(rocsparse_int) * nnz_A));
         }
 
-        hipLaunchKernelGGL((csrgemm_nnz_block_per_row_multipass<CSRGEMM_DIM,
-                                                                CSRGEMM_SUB,
-                                                                CSRGEMM_CHUNKSIZE>),
-                           dim3(h_group_size[7]),
-                           dim3(CSRGEMM_DIM),
-                           0,
-                           stream,
-                           n,
-                           &d_group_offset[7],
-                           d_perm,
-                           csr_row_ptr_A,
-                           csr_col_ind_A,
-                           csr_row_ptr_B,
-                           csr_col_ind_B,
-                           csr_row_ptr_D,
-                           csr_col_ind_D,
-                           csr_row_ptr_C,
-                           workspace_B,
-                           base_A,
-                           base_B,
-                           base_D,
-                           info_C->csrgemm_info->mul,
-                           info_C->csrgemm_info->add);
+        hipLaunchKernelGGL(
+            (csrgemm_nnz_block_per_row_multipass<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_CHUNKSIZE>),
+            dim3(h_group_size[7]),
+            dim3(CSRGEMM_DIM),
+            0,
+            stream,
+            n,
+            &d_group_offset[7],
+            d_perm,
+            csr_row_ptr_A,
+            csr_col_ind_A,
+            csr_row_ptr_B,
+            csr_col_ind_B,
+            csr_row_ptr_D,
+            csr_col_ind_D,
+            csr_row_ptr_C,
+            workspace_B,
+            base_A,
+            base_B,
+            base_D,
+            info_C->csrgemm_info->mul,
+            info_C->csrgemm_info->add);
 
         if(info_C->csrgemm_info->mul == true)
         {

@@ -361,9 +361,8 @@ static __device__ __forceinline__ void insert_pair(rocsparse_int key,
 }
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int HASHSIZE>
-static __device__ __forceinline__ void compress_hash(rocsparse_int* __restrict__ table,
-                                                     T* __restrict__ data,
-                                                     rocsparse_int empty)
+static __device__ __forceinline__ void
+    compress_hash(rocsparse_int* __restrict__ table, T* __restrict__ data, rocsparse_int empty)
 {
     // Offset into hash table
     rocsparse_int hash_offset = 0;
@@ -390,9 +389,15 @@ static __device__ __forceinline__ void compress_hash(rocsparse_int* __restrict__
         for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
         {
             __syncthreads();
-            if(hipThreadIdx_x >= j) tmp = table[i - j];
+            if(hipThreadIdx_x >= j)
+            {
+                tmp = table[i - j];
+            }
             __syncthreads();
-            if(hipThreadIdx_x >= j) table[i] += tmp;
+            if(hipThreadIdx_x >= j)
+            {
+                table[i] += tmp;
+            }
         }
 
         // Wait for all threads to finish the exclusive sum
@@ -1124,34 +1129,32 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
 // block. Splitting row into several chunks such that we can use shared memory to store
 // whether a column index is populated or not. Each row has at least 4097 non-zero
 // entries to compute.
-template <typename T,
-          unsigned int BLOCKSIZE,
-          unsigned int WFSIZE,
-          unsigned int CHUNKSIZE>
-__device__ void csrgemm_fill_block_per_row_multipass_device(rocsparse_int n,
-                                                            const rocsparse_int* __restrict__ offset,
-                                                            const rocsparse_int* __restrict__ perm,
-                                                            T alpha,
-                                                            const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                                            const rocsparse_int* __restrict__ csr_col_ind_A,
-                                                            const T* __restrict__ csr_val_A,
-                                                            const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                                            const rocsparse_int* __restrict__ csr_col_ind_B,
-                                                            const T* __restrict__ csr_val_B,
-                                                            T beta,
-                                                            const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                                            const rocsparse_int* __restrict__ csr_col_ind_D,
-                                                            const T* __restrict__ csr_val_D,
-                                                            const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                                            rocsparse_int* __restrict__ csr_col_ind_C,
-                                                            T* __restrict__ csr_val_C,
-                                                            rocsparse_int* __restrict__ workspace_B,
-                                                            rocsparse_index_base idx_base_A,
-                                                            rocsparse_index_base idx_base_B,
-                                                            rocsparse_index_base idx_base_C,
-                                                            rocsparse_index_base idx_base_D,
-                                                            bool                 mul,
-                                                            bool                 add)
+template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int CHUNKSIZE>
+__device__ void
+    csrgemm_fill_block_per_row_multipass_device(rocsparse_int n,
+                                                const rocsparse_int* __restrict__ offset,
+                                                const rocsparse_int* __restrict__ perm,
+                                                T alpha,
+                                                const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                                const rocsparse_int* __restrict__ csr_col_ind_A,
+                                                const T* __restrict__ csr_val_A,
+                                                const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                                const rocsparse_int* __restrict__ csr_col_ind_B,
+                                                const T* __restrict__ csr_val_B,
+                                                T beta,
+                                                const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                                const rocsparse_int* __restrict__ csr_col_ind_D,
+                                                const T* __restrict__ csr_val_D,
+                                                const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                                rocsparse_int* __restrict__ csr_col_ind_C,
+                                                T* __restrict__ csr_val_C,
+                                                rocsparse_int* __restrict__ workspace_B,
+                                                rocsparse_index_base idx_base_A,
+                                                rocsparse_index_base idx_base_B,
+                                                rocsparse_index_base idx_base_C,
+                                                rocsparse_index_base idx_base_D,
+                                                bool                 mul,
+                                                bool                 add)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -1163,7 +1166,7 @@ __device__ void csrgemm_fill_block_per_row_multipass_device(rocsparse_int n,
 
     // Row entry marker and value accumulator
     __shared__ bool table[CHUNKSIZE];
-    __shared__ T data[CHUNKSIZE];
+    __shared__ T    data[CHUNKSIZE];
 
     // Shared memory to determine the minimum of all column indices of B that exceed the
     // current chunk
@@ -1188,7 +1191,7 @@ __device__ void csrgemm_fill_block_per_row_multipass_device(rocsparse_int n,
         for(int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
         {
             table[i] = 0;
-            data[i] = static_cast<T>(0);
+            data[i]  = static_cast<T>(0);
         }
 
         // Initialize next chunk column index
@@ -1287,7 +1290,7 @@ __device__ void csrgemm_fill_block_per_row_multipass_device(rocsparse_int n,
             // Each thread loads its marker and value to know whether it has to process a
             // non-zero entry or not
             bool has_nnz = table[i];
-            T value = data[i];
+            T    value   = data[i];
 
             // Each thread obtains a bit mask of all wavefront-wide non-zero entries
             // to compute its wavefront-wide non-zero offset in C
@@ -1299,7 +1302,8 @@ __device__ void csrgemm_fill_block_per_row_multipass_device(rocsparse_int n,
             // Obtain the lane mask, where all bits lesser equal the lane id are set to 1
             // e.g. for lane id 7, lanemask_le = 0b11111111
             // HIP implements only __lanemask_lt() unfortunately ...
-            unsigned long long lanemask_le = UINT64_MAX >> (sizeof(unsigned long long) * CHAR_BIT - (__lane_id() + 1));
+            unsigned long long lanemask_le
+                = UINT64_MAX >> (sizeof(unsigned long long) * CHAR_BIT - (__lane_id() + 1));
 
             // Compute the intra wavefront offset of the lane id by bitwise AND with the lane mask
             int offset = __popcll(lanemask_le & mask);
@@ -1332,7 +1336,7 @@ __device__ void csrgemm_fill_block_per_row_multipass_device(rocsparse_int n,
             if(has_nnz)
             {
                 csr_col_ind_C[idx] = i + chunk_begin + idx_base_C;
-                csr_val_C[idx] = value;
+                csr_val_C[idx]     = value;
             }
 
             // Last thread in block writes the block-wide offset into C such that all subsequent
