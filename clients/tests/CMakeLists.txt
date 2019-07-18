@@ -113,6 +113,8 @@ add_executable(rocsparse-test ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMM
 
 target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
 
+target_compile_options(rocsparse-test PRIVATE ${OpenMP_CXX_FLAGS})
+
 target_include_directories(rocsparse-test
   PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
@@ -131,7 +133,7 @@ else()
   target_link_libraries(rocsparse-test PRIVATE roc::rocsparse)
 endif()
 
-target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} ${hip_LIBRARIES})
+target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} ${hip_LIBRARIES} ${OpenMP_CXX_FLAGS})
 
 foreach(amdgpu_target ${AMDGPU_TARGETS})
   target_link_libraries(rocsparse-test PRIVATE --amdgpu-target=${amdgpu_target})

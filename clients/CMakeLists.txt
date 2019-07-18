@@ -62,6 +62,9 @@ endif()
 # Hip headers required of all clients; clients use hip to allocate device memory
 find_package(HIP REQUIRED CONFIG PATHS /opt/rocm)
 
+# If OpenMP is available, we can use it to speed up some tests
+find_package(OpenMP QUIET)
+
 if(BUILD_CLIENTS_SAMPLES)
   add_subdirectory(samples)
 endif()

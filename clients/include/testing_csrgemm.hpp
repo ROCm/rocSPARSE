@@ -33,6 +33,10 @@
 #include <rocsparse.h>
 #include <string>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 using namespace rocsparse;
 using namespace rocsparse_test;
 
@@ -1274,16 +1278,32 @@ static rocsparse_int csrgemm_nnz(rocsparse_int        m,
                                  rocsparse_index_base idx_base_C,
                                  rocsparse_index_base idx_base_D)
 {
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+{
     std::vector<rocsparse_int> nnz(n, -1);
+
+#ifdef _OPENMP
+    int nthreads = omp_get_num_threads();
+    int tid      = omp_get_thread_num();
+#else
+    int nthreads = 1;
+    int tid      = 0;
+#endif
+
+    rocsparse_int rows_per_thread = (m + nthreads - 1) / nthreads;
+    rocsparse_int chunk_begin     = rows_per_thread * tid;
+    rocsparse_int chunk_end       = std::min(chunk_begin + rows_per_thread, m);
 
     // Index base
     csr_row_ptr_C[0] = idx_base_C;
 
     // Loop over rows of A
-    for(rocsparse_int i = 0; i < m; ++i)
+    for(rocsparse_int i = chunk_begin; i < chunk_end; ++i)
     {
         // Initialize csr row pointer with previous row offset
-        csr_row_ptr_C[i + 1] = csr_row_ptr_C[i];
+        csr_row_ptr_C[i + 1] = 0;
 
         if(alpha)
         {
@@ -1335,6 +1355,13 @@ static rocsparse_int csrgemm_nnz(rocsparse_int        m,
             }
         }
     }
+    }
+
+    // Scan to obtain row offsets
+    for(rocsparse_int i = 0; i < m; ++i)
+    {
+        csr_row_ptr_C[i + 1] += csr_row_ptr_C[i];
+    }
 
     return csr_row_ptr_C[m] - idx_base_C;
 }
@@ -1362,10 +1389,26 @@ static void csrgemm(rocsparse_int        m,
                     rocsparse_index_base idx_base_C,
                     rocsparse_index_base idx_base_D)
 {
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    {
     std::vector<rocsparse_int> nnz(n, -1);
 
+#ifdef _OPENMP
+    int nthreads = omp_get_num_threads();
+    int tid      = omp_get_thread_num();
+#else
+    int nthreads = 1;
+    int tid      = 0;
+#endif
+
+    rocsparse_int rows_per_thread = (m + nthreads - 1) / nthreads;
+    rocsparse_int chunk_begin     = rows_per_thread * tid;
+    rocsparse_int chunk_end       = std::min(chunk_begin + rows_per_thread, m);
+
     // Loop over rows of A
-    for(rocsparse_int i = 0; i < m; ++i)
+    for(rocsparse_int i = chunk_begin; i < chunk_end; ++i)
     {
         rocsparse_int row_begin_C = csr_row_ptr_C[i] - idx_base_C;
         rocsparse_int row_end_C   = row_begin_C;
@@ -1440,30 +1483,42 @@ static void csrgemm(rocsparse_int        m,
             }
         }
     }
+    }
 
-    // Sort column indices within each row
+    rocsparse_int nnz = csr_row_ptr_C[m] - idx_base_C;
+
+    std::vector<rocsparse_int> col(nnz);
+    std::vector<T> val(nnz);
+
+    memcpy(col.data(), csr_col_ind_C, sizeof(rocsparse_int) * nnz);
+    memcpy(val.data(), csr_val_C, sizeof(T) * nnz);
+
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
     for(rocsparse_int i = 0; i < m; ++i)
     {
         rocsparse_int row_begin = csr_row_ptr_C[i] - idx_base_C;
         rocsparse_int row_end   = csr_row_ptr_C[i + 1] - idx_base_C;
+        rocsparse_int row_nnz   = row_end - row_begin;
 
-        for(rocsparse_int j = row_begin; j < row_end; ++j)
+        std::vector<rocsparse_int> perm(row_nnz);
+        for(rocsparse_int j = 0; j < row_nnz; ++j)
         {
-            for(rocsparse_int jj = row_begin; jj < row_end - 1; ++jj)
-            {
-                if(csr_col_ind_C[jj] > csr_col_ind_C[jj + 1])
-                {
-                    // swap elements
-                    rocsparse_int ind = csr_col_ind_C[jj];
-                    T             val = csr_val_C[jj];
+            perm[j] = j;
+        }
 
-                    csr_col_ind_C[jj] = csr_col_ind_C[jj + 1];
-                    csr_val_C[jj]     = csr_val_C[jj + 1];
+        rocsparse_int* col_entry = &col[row_begin];
+        T* val_entry = &val[row_begin];
 
-                    csr_col_ind_C[jj + 1] = ind;
-                    csr_val_C[jj + 1]     = val;
-                }
-            }
+        std::sort(perm.begin(), perm.end(), [&](const int& a, const int& b) {
+            return col_entry[a] <= col_entry[b];
+        });
+
+        for(rocsparse_int j = 0; j < row_nnz; ++j)
+        {
+            csr_col_ind_C[row_begin + j] = col_entry[perm[j]];
+            csr_val_C[row_begin + j] = val_entry[perm[j]];
         }
     }
 }
