@@ -1281,80 +1281,80 @@ static rocsparse_int csrgemm_nnz(rocsparse_int        m,
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-{
-    std::vector<rocsparse_int> nnz(n, -1);
+    {
+        std::vector<rocsparse_int> nnz(n, -1);
 
 #ifdef _OPENMP
-    int nthreads = omp_get_num_threads();
-    int tid      = omp_get_thread_num();
+        int nthreads = omp_get_num_threads();
+        int tid      = omp_get_thread_num();
 #else
-    int nthreads = 1;
-    int tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
-    rocsparse_int rows_per_thread = (m + nthreads - 1) / nthreads;
-    rocsparse_int chunk_begin     = rows_per_thread * tid;
-    rocsparse_int chunk_end       = std::min(chunk_begin + rows_per_thread, m);
+        rocsparse_int rows_per_thread = (m + nthreads - 1) / nthreads;
+        rocsparse_int chunk_begin     = rows_per_thread * tid;
+        rocsparse_int chunk_end       = std::min(chunk_begin + rows_per_thread, m);
 
-    // Index base
-    csr_row_ptr_C[0] = idx_base_C;
+        // Index base
+        csr_row_ptr_C[0] = idx_base_C;
 
-    // Loop over rows of A
-    for(rocsparse_int i = chunk_begin; i < chunk_end; ++i)
-    {
-        // Initialize csr row pointer with previous row offset
-        csr_row_ptr_C[i + 1] = 0;
-
-        if(alpha)
+        // Loop over rows of A
+        for(rocsparse_int i = chunk_begin; i < chunk_end; ++i)
         {
-            rocsparse_int row_begin_A = csr_row_ptr_A[i] - idx_base_A;
-            rocsparse_int row_end_A   = csr_row_ptr_A[i + 1] - idx_base_A;
+            // Initialize csr row pointer with previous row offset
+            csr_row_ptr_C[i + 1] = 0;
 
-            // Loop over columns of A
-            for(rocsparse_int j = row_begin_A; j < row_end_A; ++j)
+            if(alpha)
             {
-                // Current column of A
-                rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+                rocsparse_int row_begin_A = csr_row_ptr_A[i] - idx_base_A;
+                rocsparse_int row_end_A   = csr_row_ptr_A[i + 1] - idx_base_A;
 
-                rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
-                rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
-
-                // Loop over columns of B in row col_A
-                for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
+                // Loop over columns of A
+                for(rocsparse_int j = row_begin_A; j < row_end_A; ++j)
                 {
-                    // Current column of B
-                    rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
+                    // Current column of A
+                    rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+
+                    rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
+                    rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
+
+                    // Loop over columns of B in row col_A
+                    for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
+                    {
+                        // Current column of B
+                        rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
+
+                        // Check if a new nnz is generated
+                        if(nnz[col_B] != i)
+                        {
+                            nnz[col_B] = i;
+                            ++csr_row_ptr_C[i + 1];
+                        }
+                    }
+                }
+            }
+
+            // Add nnz of D if beta != 0
+            if(beta)
+            {
+                rocsparse_int row_begin_D = csr_row_ptr_D[i] - idx_base_D;
+                rocsparse_int row_end_D   = csr_row_ptr_D[i + 1] - idx_base_D;
+
+                // Loop over columns of D
+                for(rocsparse_int j = row_begin_D; j < row_end_D; ++j)
+                {
+                    rocsparse_int col_D = csr_col_ind_D[j] - idx_base_D;
 
                     // Check if a new nnz is generated
-                    if(nnz[col_B] != i)
+                    if(nnz[col_D] != i)
                     {
-                        nnz[col_B] = i;
+                        nnz[col_D] = i;
                         ++csr_row_ptr_C[i + 1];
                     }
                 }
             }
         }
-
-        // Add nnz of D if beta != 0
-        if(beta)
-        {
-            rocsparse_int row_begin_D = csr_row_ptr_D[i] - idx_base_D;
-            rocsparse_int row_end_D   = csr_row_ptr_D[i + 1] - idx_base_D;
-
-            // Loop over columns of D
-            for(rocsparse_int j = row_begin_D; j < row_end_D; ++j)
-            {
-                rocsparse_int col_D = csr_col_ind_D[j] - idx_base_D;
-
-                // Check if a new nnz is generated
-                if(nnz[col_D] != i)
-                {
-                    nnz[col_D] = i;
-                    ++csr_row_ptr_C[i + 1];
-                }
-            }
-        }
-    }
     }
 
     // Scan to obtain row offsets
@@ -1393,102 +1393,102 @@ static void csrgemm(rocsparse_int        m,
 #pragma omp parallel
 #endif
     {
-    std::vector<rocsparse_int> nnz(n, -1);
+        std::vector<rocsparse_int> nnz(n, -1);
 
 #ifdef _OPENMP
-    int nthreads = omp_get_num_threads();
-    int tid      = omp_get_thread_num();
+        int nthreads = omp_get_num_threads();
+        int tid      = omp_get_thread_num();
 #else
-    int nthreads = 1;
-    int tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
-    rocsparse_int rows_per_thread = (m + nthreads - 1) / nthreads;
-    rocsparse_int chunk_begin     = rows_per_thread * tid;
-    rocsparse_int chunk_end       = std::min(chunk_begin + rows_per_thread, m);
+        rocsparse_int rows_per_thread = (m + nthreads - 1) / nthreads;
+        rocsparse_int chunk_begin     = rows_per_thread * tid;
+        rocsparse_int chunk_end       = std::min(chunk_begin + rows_per_thread, m);
 
-    // Loop over rows of A
-    for(rocsparse_int i = chunk_begin; i < chunk_end; ++i)
-    {
-        rocsparse_int row_begin_C = csr_row_ptr_C[i] - idx_base_C;
-        rocsparse_int row_end_C   = row_begin_C;
-
-        if(alpha)
+        // Loop over rows of A
+        for(rocsparse_int i = chunk_begin; i < chunk_end; ++i)
         {
-            rocsparse_int row_begin_A = csr_row_ptr_A[i] - idx_base_A;
-            rocsparse_int row_end_A   = csr_row_ptr_A[i + 1] - idx_base_A;
+            rocsparse_int row_begin_C = csr_row_ptr_C[i] - idx_base_C;
+            rocsparse_int row_end_C   = row_begin_C;
 
-            // Loop over columns of A
-            for(rocsparse_int j = row_begin_A; j < row_end_A; ++j)
+            if(alpha)
             {
-                // Current column of A
-                rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
-                // Current value of A
-                T val_A = *alpha * csr_val_A[j];
+                rocsparse_int row_begin_A = csr_row_ptr_A[i] - idx_base_A;
+                rocsparse_int row_end_A   = csr_row_ptr_A[i + 1] - idx_base_A;
 
-                rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
-                rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
-
-                // Loop over columns of B in row col_A
-                for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
+                // Loop over columns of A
+                for(rocsparse_int j = row_begin_A; j < row_end_A; ++j)
                 {
-                    // Current column of B
-                    rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
-                    // Current value of B
-                    T val_B = csr_val_B[k];
+                    // Current column of A
+                    rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+                    // Current value of A
+                    T val_A = *alpha * csr_val_A[j];
 
-                    // Check if a new nnz is generated or if the product is appended
-                    if(nnz[col_B] < row_begin_C)
+                    rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
+                    rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
+
+                    // Loop over columns of B in row col_A
+                    for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
                     {
-                        nnz[col_B]               = row_end_C;
-                        csr_col_ind_C[row_end_C] = col_B + idx_base_C;
-                        csr_val_C[row_end_C]     = val_A * val_B;
+                        // Current column of B
+                        rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
+                        // Current value of B
+                        T val_B = csr_val_B[k];
+
+                        // Check if a new nnz is generated or if the product is appended
+                        if(nnz[col_B] < row_begin_C)
+                        {
+                            nnz[col_B]               = row_end_C;
+                            csr_col_ind_C[row_end_C] = col_B + idx_base_C;
+                            csr_val_C[row_end_C]     = val_A * val_B;
+                            ++row_end_C;
+                        }
+                        else
+                        {
+                            csr_val_C[nnz[col_B]] += val_A * val_B;
+                        }
+                    }
+                }
+            }
+
+            // Add nnz of D if beta != 0
+            if(beta)
+            {
+                rocsparse_int row_begin_D = csr_row_ptr_D[i] - idx_base_D;
+                rocsparse_int row_end_D   = csr_row_ptr_D[i + 1] - idx_base_D;
+
+                // Loop over columns of D
+                for(rocsparse_int j = row_begin_D; j < row_end_D; ++j)
+                {
+                    // Current column of D
+                    rocsparse_int col_D = csr_col_ind_D[j] - idx_base_D;
+                    // Current value of D
+                    T val_D = *beta * csr_val_D[j];
+
+                    // Check if a new nnz is generated or if the value is added
+                    if(nnz[col_D] < row_begin_C)
+                    {
+                        nnz[col_D] = row_end_C;
+
+                        csr_col_ind_C[row_end_C] = col_D + idx_base_D;
+                        csr_val_C[row_end_C]     = val_D;
                         ++row_end_C;
                     }
                     else
                     {
-                        csr_val_C[nnz[col_B]] += val_A * val_B;
+                        csr_val_C[nnz[col_D]] += val_D;
                     }
                 }
             }
         }
-
-        // Add nnz of D if beta != 0
-        if(beta)
-        {
-            rocsparse_int row_begin_D = csr_row_ptr_D[i] - idx_base_D;
-            rocsparse_int row_end_D   = csr_row_ptr_D[i + 1] - idx_base_D;
-
-            // Loop over columns of D
-            for(rocsparse_int j = row_begin_D; j < row_end_D; ++j)
-            {
-                // Current column of D
-                rocsparse_int col_D = csr_col_ind_D[j] - idx_base_D;
-                // Current value of D
-                T val_D = *beta * csr_val_D[j];
-
-                // Check if a new nnz is generated or if the value is added
-                if(nnz[col_D] < row_begin_C)
-                {
-                    nnz[col_D] = row_end_C;
-
-                    csr_col_ind_C[row_end_C] = col_D + idx_base_D;
-                    csr_val_C[row_end_C]     = val_D;
-                    ++row_end_C;
-                }
-                else
-                {
-                    csr_val_C[nnz[col_D]] += val_D;
-                }
-            }
-        }
-    }
     }
 
     rocsparse_int nnz = csr_row_ptr_C[m] - idx_base_C;
 
     std::vector<rocsparse_int> col(nnz);
-    std::vector<T> val(nnz);
+    std::vector<T>             val(nnz);
 
     memcpy(col.data(), csr_col_ind_C, sizeof(rocsparse_int) * nnz);
     memcpy(val.data(), csr_val_C, sizeof(T) * nnz);
@@ -1509,7 +1509,7 @@ static void csrgemm(rocsparse_int        m,
         }
 
         rocsparse_int* col_entry = &col[row_begin];
-        T* val_entry = &val[row_begin];
+        T*             val_entry = &val[row_begin];
 
         std::sort(perm.begin(), perm.end(), [&](const int& a, const int& b) {
             return col_entry[a] <= col_entry[b];
@@ -1518,7 +1518,7 @@ static void csrgemm(rocsparse_int        m,
         for(rocsparse_int j = 0; j < row_nnz; ++j)
         {
             csr_col_ind_C[row_begin + j] = col_entry[perm[j]];
-            csr_val_C[row_begin + j] = val_entry[perm[j]];
+            csr_val_C[row_begin + j]     = val_entry[perm[j]];
         }
     }
 }
