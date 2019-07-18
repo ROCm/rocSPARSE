@@ -105,28 +105,6 @@ __device__ __forceinline__ void rocsparse_blockreduce_min(int i, T* data)
     if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = min(data[i], data[i +   1]); } __syncthreads(); }
 }
 
-// Block inclusive sum kernel
-template <typename T, unsigned int BLOCKSIZE>
-__device__ __forceinline__ void rocsparse_blockscan_incl_sum(int i, T* value)
-{
-    __shared__ T data[BLOCKSIZE];
-
-    data[i] = *value;
-
-    __syncthreads();
-
-    rocsparse_int tmp;
-    for(int j = 1; j < hipBlockDim_x; j <<= 1)
-    {
-        if(i >= j) tmp = data[i - j];
-        __syncthreads();
-        if(i >= j) data[i] += tmp;
-        __syncthreads();
-    }
-
-    *value = data[i];
-}
-
 // DPP-based wavefront reduction maximum
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)

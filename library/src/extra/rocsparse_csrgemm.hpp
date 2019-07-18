@@ -263,6 +263,119 @@ __global__ void
         add);
 }
 
+template <typename T,
+          unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int CHUNKSIZE>
+__global__ void
+    csrgemm_fill_block_per_row_multipass_host_pointer(rocsparse_int n,
+                                                      const rocsparse_int* __restrict__ offset,
+                                                      const rocsparse_int* __restrict__ perm,
+                                                      T alpha,
+                                                      const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                                      const rocsparse_int* __restrict__ csr_col_ind_A,
+                                                      const T* __restrict__ csr_val_A,
+                                                      const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                                      const rocsparse_int* __restrict__ csr_col_ind_B,
+                                                      const T* __restrict__ csr_val_B,
+                                                      T beta,
+                                                      const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                                      const rocsparse_int* __restrict__ csr_col_ind_D,
+                                                      const T* __restrict__ csr_val_D,
+                                                      const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                                      rocsparse_int* __restrict__ csr_col_ind_C,
+                                                      T* __restrict__ csr_val_C,
+                                                      rocsparse_int* __restrict__ workspace_B,
+                                                      rocsparse_index_base idx_base_A,
+                                                      rocsparse_index_base idx_base_B,
+                                                      rocsparse_index_base idx_base_C,
+                                                      rocsparse_index_base idx_base_D,
+                                                      bool                 mul,
+                                                      bool                 add)
+{
+    csrgemm_fill_block_per_row_multipass_device<T, BLOCKSIZE, WFSIZE, CHUNKSIZE>(n,
+                                                                               offset,
+                                                                               perm,
+                                                                               alpha,
+                                                                               csr_row_ptr_A,
+                                                                               csr_col_ind_A,
+                                                                               csr_val_A,
+                                                                               csr_row_ptr_B,
+                                                                               csr_col_ind_B,
+                                                                               csr_val_B,
+                                                                               beta,
+                                                                               csr_row_ptr_D,
+                                                                               csr_col_ind_D,
+                                                                               csr_val_D,
+                                                                               csr_row_ptr_C,
+                                                                               csr_col_ind_C,
+                                                                               csr_val_C,
+                                                                               workspace_B,
+                                                                               idx_base_A,
+                                                                               idx_base_B,
+                                                                               idx_base_C,
+                                                                               idx_base_D,
+                                                                               mul,
+                                                                               add);
+}
+
+template <typename T,
+          unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int CHUNKSIZE>
+__global__ void
+    csrgemm_fill_block_per_row_multipass_device_pointer(rocsparse_int n,
+                                              const rocsparse_int* __restrict__ offset,
+                                              const rocsparse_int* __restrict__ perm,
+                                              const T* __restrict__ alpha,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                              const rocsparse_int* __restrict__ csr_col_ind_A,
+                                              const T* __restrict__ csr_val_A,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                              const rocsparse_int* __restrict__ csr_col_ind_B,
+                                              const T* __restrict__ csr_val_B,
+                                              const T* __restrict__ beta,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                              const rocsparse_int* __restrict__ csr_col_ind_D,
+                                              const T* __restrict__ csr_val_D,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                              rocsparse_int* __restrict__ csr_col_ind_C,
+                                              T* __restrict__ csr_val_C,
+                                              rocsparse_int* __restrict__ workspace_B,
+                                              rocsparse_index_base idx_base_A,
+                                              rocsparse_index_base idx_base_B,
+                                              rocsparse_index_base idx_base_C,
+                                              rocsparse_index_base idx_base_D,
+                                              bool                 mul,
+                                              bool                 add)
+{
+    csrgemm_fill_block_per_row_multipass_device<T, BLOCKSIZE, WFSIZE, CHUNKSIZE>(
+        n,
+        offset,
+        perm,
+        (mul == true) ? *alpha : static_cast<T>(0),
+        csr_row_ptr_A,
+        csr_col_ind_A,
+        csr_val_A,
+        csr_row_ptr_B,
+        csr_col_ind_B,
+        csr_val_B,
+        (add == true) ? *beta : static_cast<T>(0),
+        csr_row_ptr_D,
+        csr_col_ind_D,
+        csr_val_D,
+        csr_row_ptr_C,
+        csr_col_ind_C,
+        csr_val_C,
+        workspace_B,
+        idx_base_A,
+        idx_base_B,
+        idx_base_C,
+        idx_base_D,
+        mul,
+        add);
+}
+
 template <typename T>
 rocsparse_status rocsparse_csrgemm_mult_buffer_size_template(rocsparse_handle          handle,
                                                              rocsparse_operation       trans_A,
@@ -718,7 +831,8 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
         h_group_size[0] = m;
         RETURN_IF_HIP_ERROR(hipMemsetAsync(d_group_offset, 0, sizeof(rocsparse_int), stream));
     }
-    /*
+
+/*
     printf("Group sizes:\n");
     printf("\t   0 -   16: %d\n", h_group_size[0]);
     printf("\t  17 -   32: %d\n", h_group_size[1]);
@@ -729,6 +843,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
     printf("\t2049 - 4096: %d\n", h_group_size[6]);
     printf("\t4097 -  inf: %d\n", h_group_size[7]);
 */
+
     // Compute columns and accumulate values for each group
 
     // pointer mode device
@@ -1040,8 +1155,57 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
         // Group 7: more than 4096 non-zeros per row
         if(h_group_size[7] > 0)
         {
-            printf("\n# max nnz > 4096: %d ; exiting\n", h_group_size[7]);
-            exit(1);
+#define CSRGEMM_DIM 256
+#define CSRGEMM_SUB 8
+#define CSRGEMM_CHUNKSIZE 2048
+            rocsparse_int* workspace_B = nullptr;
+
+            if(info_C->csrgemm_info->mul == true)
+            {
+                // Allocate additional buffer for C = alpha * A * B
+                RETURN_IF_HIP_ERROR(hipMalloc((void**)&workspace_B, sizeof(rocsparse_int) * nnz_A));
+            }
+
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_multipass_device_pointer<T,
+                                                                                  CSRGEMM_DIM,
+                                                                                  CSRGEMM_SUB,
+                                                                                  CSRGEMM_CHUNKSIZE>),
+                               dim3(h_group_size[7]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               n,
+                               &d_group_offset[7],
+                               d_perm,
+                               alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               beta,
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               workspace_B,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info_C->csrgemm_info->mul,
+                               info_C->csrgemm_info->add);
+
+            if(info_C->csrgemm_info->mul == true)
+            {
+                RETURN_IF_HIP_ERROR(hipFree(workspace_B));
+            }
+#undef CSRGEMM_CHUNKSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
         }
     }
     else
@@ -1352,9 +1516,57 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
         // Group 7: more than 4096 non-zeros per row
         if(h_group_size[7] > 0)
         {
-            printf("\n# max nnz > 4096: %d\n", h_group_size[7]);
-            printf("max nnz = %d\n", nnz_max);
-            exit(1);
+#define CSRGEMM_DIM 256
+#define CSRGEMM_SUB 8
+#define CSRGEMM_CHUNKSIZE 2048
+            rocsparse_int* workspace_B = nullptr;
+
+            if(info_C->csrgemm_info->mul == true)
+            {
+                // Allocate additional buffer for C = alpha * A * B
+                RETURN_IF_HIP_ERROR(hipMalloc((void**)&workspace_B, sizeof(rocsparse_int) * nnz_A));
+            }
+
+            hipLaunchKernelGGL((csrgemm_fill_block_per_row_multipass_host_pointer<T,
+                                                                                  CSRGEMM_DIM,
+                                                                                  CSRGEMM_SUB,
+                                                                                  CSRGEMM_CHUNKSIZE>),
+                               dim3(h_group_size[7]),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               n,
+                               &d_group_offset[7],
+                               d_perm,
+                               (info_C->csrgemm_info->mul == true) ? *alpha : static_cast<T>(0),
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               (info_C->csrgemm_info->add == true) ? *beta : static_cast<T>(0),
+                               csr_row_ptr_D,
+                               csr_col_ind_D,
+                               csr_val_D,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               workspace_B,
+                               base_A,
+                               base_B,
+                               descr_C->base,
+                               base_D,
+                               info_C->csrgemm_info->mul,
+                               info_C->csrgemm_info->add);
+
+            if(info_C->csrgemm_info->mul == true)
+            {
+                RETURN_IF_HIP_ERROR(hipFree(workspace_B));
+            }
+#undef CSRGEMM_CHUNKSIZE
+#undef CSRGEMM_SUB
+#undef CSRGEMM_DIM
         }
     }
 

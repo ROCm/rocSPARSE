@@ -361,44 +361,54 @@ static __device__ __forceinline__ void insert_pair(rocsparse_int key,
 }
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int HASHSIZE>
-static __device__ __forceinline__ void compress_hash(rocsparse_int tid,
-                                                     rocsparse_int* __restrict__ table,
+static __device__ __forceinline__ void compress_hash(rocsparse_int* __restrict__ table,
                                                      T* __restrict__ data,
                                                      rocsparse_int empty)
 {
-    // Intra-block scan offset
-    __shared__ rocsparse_int scan_offset;
-
-    // Initialize scan offset with zero
-    if(tid == 0)
-    {
-        scan_offset = 0;
-    }
+    // Offset into hash table
+    rocsparse_int hash_offset = 0;
 
     // Loop over the hash table, each thread processes an entry
-    for(int i = tid; i < HASHSIZE; i += hipBlockDim_x)
+    for(int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
     {
         // Get column and value from hash table
         rocsparse_int col_C = table[i];
         T             val_C = data[i];
 
         // Check if we have a valid entry or not
-        rocsparse_int entry = (col_C < empty) ? 1 : 0;
+        table[i] = (col_C < empty) ? 1 : 0;
 
-        // Inclusive sum to obtain the new position in the hash table
-        rocsparse_blockscan_incl_sum<rocsparse_int, BLOCKSIZE>(tid, &entry);
+        // Add the number of already processed valid entries to
+        // the first entry to shift the exclusive sum
+        if(hipThreadIdx_x == 0)
+        {
+            table[i] += hash_offset;
+        }
 
-        // Zero based indexing, shifted by offset
-        rocsparse_int idx = entry - 1 + scan_offset;
+        // Exclusive sum to obtain the new position in the hash table
+        rocsparse_int tmp;
+        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
+        {
+            __syncthreads();
+            if(hipThreadIdx_x >= j) tmp = table[i - j];
+            __syncthreads();
+            if(hipThreadIdx_x >= j) table[i] += tmp;
+        }
 
-        // Wait for all threads to finish the load
+        // Wait for all threads to finish the exclusive sum
         __syncthreads();
 
+        // Zero based indexing
+        rocsparse_int idx = table[i] - 1;
+
         // Obtain number of valid entries from previous pass
-        if(tid == hipBlockDim_x - 1)
+        if(hipThreadIdx_x == 0)
         {
-            scan_offset = entry;
+            hash_offset = table[i + BLOCKSIZE - 1];
         }
+
+        // Wait for thread 0 to load shift value
+        __syncthreads();
 
         // If current column is valid, move it to the new position
         if(col_C < empty)
@@ -687,7 +697,7 @@ __global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
             table[i] = false;
         }
 
-        // Initialize row nnz for the current chunk
+        // Initialize next chunk column index
         if(hipThreadIdx_x == 0)
         {
             next_chunk = n;
@@ -1077,7 +1087,7 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
     __syncthreads();
 
     // Compress hash table, such that valid entries come first
-    compress_hash<T, BLOCKSIZE, HASHSIZE>(hipThreadIdx_x, table, data, nk);
+    compress_hash<T, BLOCKSIZE, HASHSIZE>(table, data, nk);
 
     // Entry point into row of C
     rocsparse_int row_begin_C = csr_row_ptr_C[row] - idx_base_C;
@@ -1107,6 +1117,244 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
         // Write column and accumulated value to the obtain position in C
         csr_col_ind_C[idx_C] = col_C + idx_base_C;
         csr_val_C[idx_C]     = val_C;
+    }
+}
+
+// Compute column entries and accumulate values, where each row is processed by a single
+// block. Splitting row into several chunks such that we can use shared memory to store
+// whether a column index is populated or not. Each row has at least 4097 non-zero
+// entries to compute.
+template <typename T,
+          unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int CHUNKSIZE>
+__device__ void csrgemm_fill_block_per_row_multipass_device(rocsparse_int n,
+                                                            const rocsparse_int* __restrict__ offset,
+                                                            const rocsparse_int* __restrict__ perm,
+                                                            T alpha,
+                                                            const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                                            const rocsparse_int* __restrict__ csr_col_ind_A,
+                                                            const T* __restrict__ csr_val_A,
+                                                            const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                                            const rocsparse_int* __restrict__ csr_col_ind_B,
+                                                            const T* __restrict__ csr_val_B,
+                                                            T beta,
+                                                            const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                                            const rocsparse_int* __restrict__ csr_col_ind_D,
+                                                            const T* __restrict__ csr_val_D,
+                                                            const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                                            rocsparse_int* __restrict__ csr_col_ind_C,
+                                                            T* __restrict__ csr_val_C,
+                                                            rocsparse_int* __restrict__ workspace_B,
+                                                            rocsparse_index_base idx_base_A,
+                                                            rocsparse_index_base idx_base_B,
+                                                            rocsparse_index_base idx_base_C,
+                                                            rocsparse_index_base idx_base_D,
+                                                            bool                 mul,
+                                                            bool                 add)
+{
+    // Lane id
+    rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+    // Wavefront id
+    rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+
+    // Each block processes a row (apply permutation)
+    rocsparse_int row = perm[hipBlockIdx_x + *offset];
+
+    // Row entry marker and value accumulator
+    __shared__ bool table[CHUNKSIZE];
+    __shared__ T data[CHUNKSIZE];
+
+    // Shared memory to determine the minimum of all column indices of B that exceed the
+    // current chunk
+    __shared__ rocsparse_int next_chunk;
+
+    // Begin of the current row chunk (this is the column index of the current row)
+    rocsparse_int chunk_begin = 0;
+    rocsparse_int chunk_end   = CHUNKSIZE;
+
+    // Get row boundaries of the current row in A
+    rocsparse_int row_begin_A = (mul == true) ? csr_row_ptr_A[row] - idx_base_A : 0;
+    rocsparse_int row_end_A   = (mul == true) ? csr_row_ptr_A[row + 1] - idx_base_A : 0;
+
+    // Entry point into columns of C
+    rocsparse_int row_begin_C = csr_row_ptr_C[row] - idx_base_C;
+
+    // Loop over the row chunks until the end of the row has been reached (which is
+    // the number of total columns)
+    while(chunk_begin < n)
+    {
+        // Initialize row nnz table and accumulator
+        for(int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
+        {
+            table[i] = 0;
+            data[i] = static_cast<T>(0);
+        }
+
+        // Initialize next chunk column index
+        if(hipThreadIdx_x == 0)
+        {
+            next_chunk = n;
+        }
+
+        // Wait for all threads to finish initialization
+        __syncthreads();
+
+        // Initialize the beginning of the next chunk
+        rocsparse_int min_col = n;
+
+        // alpha * A * B part
+        if(mul == true)
+        {
+            // Loop over columns of A in current row
+            for(rocsparse_int j = row_begin_A + wid; j < row_end_A; j += BLOCKSIZE / WFSIZE)
+            {
+                // Column of A in current row
+                rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+
+                // Value of A in current row
+                T val_A = alpha * csr_val_A[j];
+
+                // Loop over columns of B in row col_A
+                rocsparse_int row_begin_B
+                    = (chunk_begin == 0) ? csr_row_ptr_B[col_A] - idx_base_B : workspace_B[j];
+                rocsparse_int row_end_B = csr_row_ptr_B[col_A + 1] - idx_base_B;
+
+                // Keep track of the first k where the column index of B is exceeding
+                // the current chunks end point
+                rocsparse_int next_k = row_begin_B + lid;
+
+                // Loop over columns of B in row col_A
+                for(rocsparse_int k = next_k; k < row_end_B; k += WFSIZE)
+                {
+                    // Column of B in row col_A
+                    rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
+
+                    if(col_B >= chunk_begin && col_B < chunk_end)
+                    {
+                        // Mark nnz table if entry at col_B
+                        table[col_B - chunk_begin] = 1;
+
+                        // Atomically accumulate the intermediate products
+                        atomicAdd(&data[col_B - chunk_begin], val_A * csr_val_B[k]);
+                    }
+                    else if(col_B >= chunk_end)
+                    {
+                        // If column index exceeds chunks end point, store k as starting
+                        // point of the columns of B for the next pass
+                        next_k = k;
+
+                        // Store the first column index of B that exceeds the current chunk
+                        min_col = min(min_col, col_B);
+                        break;
+                    }
+                }
+
+                // Obtain the minimum of all k that exceed the current chunks end point
+                rocsparse_wfreduce_min<WFSIZE>(&next_k);
+
+                // Store the minimum globally for the next chunk
+                if(lid == WFSIZE - 1)
+                {
+                    workspace_B[j] = next_k;
+                }
+            }
+        }
+
+        // Gather wavefront-wide minimum for the next chunks starting column index
+        rocsparse_wfreduce_min<WFSIZE>(&min_col);
+
+        // Last thread in each wavefront finds block-wide minimum atomically
+        if(lid == WFSIZE - 1)
+        {
+            // Atomically determine the new chunks beginning (minimum column index of B
+            // that is larger than the current chunks end point)
+            atomicMin(&next_chunk, min_col);
+        }
+
+        // Wait for all threads to finish
+        __syncthreads();
+
+        // We can re-use the shared memory to communicate the scan offsets of each
+        // wavefront
+        int* scan_offsets = reinterpret_cast<int*>(data);
+
+        // "Pseudo compress" the table array such that we can copy the values over into C
+        // In fact, we do an exclusive scan to obtain the index where each non-zero has
+        // to be copied to
+        for(int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
+        {
+            // Each thread loads its marker and value to know whether it has to process a
+            // non-zero entry or not
+            bool has_nnz = table[i];
+            T value = data[i];
+
+            // Each thread obtains a bit mask of all wavefront-wide non-zero entries
+            // to compute its wavefront-wide non-zero offset in C
+            unsigned long long mask = __ballot(has_nnz == true);
+
+            // The number of bits set to 1 is the amount of wavefront-wide non-zeros
+            int nnz = __popcll(mask);
+
+            // Obtain the lane mask, where all bits lesser equal the lane id are set to 1
+            // e.g. for lane id 7, lanemask_le = 0b11111111
+            // HIP implements only __lanemask_lt() unfortunately ...
+            unsigned long long lanemask_le = UINT64_MAX >> (sizeof(unsigned long long) * CHAR_BIT - (__lane_id() + 1));
+
+            // Compute the intra wavefront offset of the lane id by bitwise AND with the lane mask
+            int offset = __popcll(lanemask_le & mask);
+
+            // Need to sync here to make sure reading from data array has finished
+            __syncthreads();
+
+            // Each wavefront writes its offset / nnz into shared memory so we can compute the
+            // scan offset
+            scan_offsets[hipThreadIdx_x / warpSize] = nnz;
+
+            // Wait for all wavefronts to finish writing
+            __syncthreads();
+
+            // Each thread accumulates the offset of all previous wavefronts to obtain its
+            // offset into C
+            for(unsigned int j = 0; j < BLOCKSIZE / warpSize - 1; ++j)
+            {
+                if(hipThreadIdx_x >= (j + 1) * warpSize)
+                {
+                    offset += scan_offsets[j];
+                }
+            }
+
+            // Offset into C depends on all previously added non-zeros and need to be shifted by
+            // 1 (zero-based indexing)
+            rocsparse_int idx = row_begin_C + offset - 1;
+
+            // Only threads with a non-zero value write to C
+            if(has_nnz)
+            {
+                csr_col_ind_C[idx] = i + chunk_begin + idx_base_C;
+                csr_val_C[idx] = value;
+            }
+
+            // Last thread in block writes the block-wide offset into C such that all subsequent
+            // entries are shifted by this offset
+            if(hipThreadIdx_x == BLOCKSIZE - 1)
+            {
+                scan_offsets[BLOCKSIZE / warpSize - 1] = offset;
+            }
+
+            // Wait for last thread in block to finish writing
+            __syncthreads();
+
+            // Each thread reads the block-wide offset and adds it to its local offset into C
+            row_begin_C += scan_offsets[BLOCKSIZE / warpSize - 1];
+        }
+
+        // Each thread loads the new chunk beginning and end point
+        chunk_begin = next_chunk;
+        chunk_end   = chunk_begin + CHUNKSIZE;
+
+        // Wait for all threads to finish load from shared memory
+        __syncthreads();
     }
 }
 
