@@ -43,9 +43,9 @@ rocSPARSECI:
         platform, project->
 
         project.paths.construct_build_prefix()
-        
-        def command 
-        
+
+        def command
+
         if(platform.jenkinsLabel.contains('hip-clang'))
         {
             command = """#!/usr/bin/env bash
@@ -56,7 +56,6 @@ rocSPARSECI:
         }
         else
         {
-
             command = """#!/usr/bin/env bash
                     set -x
                     cd ${project.paths.project_build_prefix}
@@ -78,7 +77,7 @@ rocSPARSECI:
             {
                 command = """#!/usr/bin/env bash
                         set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/tests
+                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
                         LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsparse-test --gtest_output=xml --gtest_color=yes #--gtest_filter=*nightly*-*known_bug* #--gtest_filter=*nightly*
                     """
             }
@@ -86,13 +85,13 @@ rocSPARSECI:
             {
                 command = """#!/usr/bin/env bash
                         set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/tests
+                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
                         LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsparse-test --gtest_output=xml --gtest_color=yes #--gtest_filter=*quick*:*pre_checkin*-*known_bug* #--gtest_filter=*checkin*
                     """
             }
 
             platform.runCommand(this, command)
-            junit "${project.paths.project_build_prefix}/build/release/clients/tests/*.xml"
+            junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
         }
         else
         {
@@ -100,7 +99,7 @@ rocSPARSECI:
             {
                 command = """#!/usr/bin/env bash
                         set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/tests
+                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
                         LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test --gtest_output=xml --gtest_color=yes #--gtest_filter=*nightly*-*known_bug* #--gtest_filter=*nightly*
                     """
             }
@@ -108,13 +107,13 @@ rocSPARSECI:
             {
                 command = """#!/usr/bin/env bash
                         set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/tests
+                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
                         LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test --gtest_output=xml --gtest_color=yes #--gtest_filter=*quick*:*pre_checkin*-*known_bug* #--gtest_filter=*checkin*
                     """
             }
 
             platform.runCommand(this, command)
-            junit "${project.paths.project_build_prefix}/build/release/clients/tests/*.xml"
+            junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
         }
     }
 
