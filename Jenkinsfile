@@ -29,7 +29,7 @@ import java.nio.file.Path;
 rocSPARSECI:
 {
 
-    def rocsparse = new rocProject('rocsparse')
+    def rocsparse = new rocProject('rocSPARSE')
     // customize for project
     rocsparse.paths.build_command = './install.sh -c'
 
