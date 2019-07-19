@@ -276,7 +276,7 @@ if [[ "${install_dependencies}" == true ]]; then
   pushd .
     printf "\033[32mBuilding \033[33mgoogletest\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
     mkdir -p ${build_dir}/deps && cd ${build_dir}/deps
-    ${cmake_executable} -DBUILD_BOOST=OFF ../../deps
+    ${cmake_executable} ../../deps
     make -j$(nproc)
     elevate_if_not_root make install
   popd
@@ -307,20 +307,17 @@ pushd .
     cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_SAMPLES=ON -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON"
   fi
 
-  # cpack
-  cmake_common_options="${cmake_common_options} -DCPACK_SET_DESTDIR=OFF -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm"
-
-  # compiler
-  compiler="hipcc"
+  compiler="hcc"
   if [[ "${build_hip_clang}" == true ]]; then
-    cmake_common_options="${cmake_common_options} -DHIP_COMPILER=clang"
-  else
-    compiler="hcc"
-    cmake_common_options="${cmake_common_options} -DHIP_COMPILER=hcc"
+    compiler="hipcc"
   fi
 
   # Build library with AMD toolchain because of existense of device kernels
-  CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCMAKE_INSTALL_PREFIX=rocsparse-install ../..
+  if [[ "${build_clients}" == true ]]; then
+    CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=rocsparse-install -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm ../..
+  else
+    CXX=${compiler} ${cmake_executable} ${cmake_common_options} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=rocsparse-install -DCPACK_PACKAGING_INSTALL_PREFIX=/opt/rocm ../..
+  fi
   check_exit_code
 
   make -j$(nproc) install

@@ -1,5 +1,3 @@
-# This Dockerfile provides a starting point for a ROCm installation of rocSPARSE.
-
 # Parameters related to building rocSPARSE
 ARG base_image
 
@@ -9,6 +7,11 @@ LABEL maintainer="nico.trost@amd.com"
 ARG user_uid
 
 # Install dependent packages
+# Dependencies: rocprim
+# * hcc-config.cmake: pkgconfig
+# * rocsparse-test: gtest gtest-devel
+# * rocsparse-bench: boost-devel
+# * libhsakmt.so: numactl-libs
 RUN yum install -y \
     sudo \
     rock-dkms \
@@ -16,17 +19,20 @@ RUN yum install -y \
     devtoolset-7 \
     ca-certificates \
     git \
-    gtest \
-    gtest-devel \
     cmake3 \
     make \
     clang \
     clang-devel \
     gcc-c++ \
-    boost-devel \
+    gtest-devel \
+    gtest \
     pkgconfig \
+    rocprim \
+    libcxx-devel \
+    boost-devel \
     numactl-libs \
-    rocprim
+    rpm-build \
+    deltarpm
 
 RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
     'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh

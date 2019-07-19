@@ -7,7 +7,7 @@ The latest rocSPARSE documentation and API description can be found [here][].
 ## Requirements
 * Git
 * CMake (3.5 or later)
-* AMD [ROCm] 1.9 platform
+* AMD [ROCm] 2.5 platform
 
 Optional:
 * [GTest][]
@@ -35,6 +35,7 @@ cd rocSPARSE
 #   -d|--dependencies - install build dependencies
 #   -c|--clients      - build library clients too (combines with -i & -d)
 #   -g|--debug        - build with debug flag
+#   --hip-clang       - build library for amdgpu backend using hip-clang
 ./install.sh -dci
 ```
 
@@ -54,7 +55,7 @@ cd rocSPARSE; mkdir -p build/release; cd build/release
 #   BUILD_CLIENTS_SAMPLES    - build examples (ON)
 #   BUILD_VERBOSE            - verbose output (OFF)
 #   BUILD_SHARED_LIBS        - build rocSPARSE as a shared library (ON)
-cmake -DBUILD_CLIENTS_TESTS=ON ../..
+CXX=/opt/rocm/bin/hcc cmake -DBUILD_CLIENTS_TESTS=ON ../..
 
 # Build
 make
@@ -70,7 +71,7 @@ To run unit tests, rocSPARSE has to be built with option -DBUILD_CLIENTS_TESTS=O
 cd rocSPARSE; cd build/release
 
 # Run all tests
-./clients/tests/rocsparse-test
+./clients/staging/rocsparse-test
 ```
 
 ## Benchmarks
@@ -80,7 +81,7 @@ To run benchmarks, rocSPARSE has to be built with option -DBUILD_CLIENTS_BENCHMA
 cd rocSPARSE/build/release
 
 # Run benchmark, e.g.
-./clients/benchmarks/rocsparse-bench -f hybmv --laplacian-dim 2000 -i 200
+./clients/staging/rocsparse-bench -f hybmv --laplacian-dim 2000 -i 200
 ```
 
 ## Support
