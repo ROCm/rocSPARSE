@@ -25,7 +25,7 @@
 # This script can be invoked manually by the user with 'cmake -P'
 
 # The ROCm platform requires Ubuntu 16.04 or Fedora 24, which has cmake 3.5
-cmake_minimum_required( VERSION 3.5 )
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake )
 
@@ -44,19 +44,7 @@ endif()
 # The superbuild does not build anything itself; all compiling is done in external projects
 project( rocsparse-dependencies NONE )
 
-option( BUILD_BOOST "Download and build boost library" ON )
 option( BUILD_GTEST "Download and build googletest library" ON )
-# option( BUILD_VERBOSE "Print helpful build debug information" OFF )
-
-# if( BUILD_VERBOSE )
-#   message( STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}" )
-#   message( STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}" )
-#   message( STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}" )
-#   message( STATUS "CMAKE_CURRENT_SOURCE_DIR: ${CMAKE_CURRENT_SOURCE_DIR}" )
-#   message( STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}" )
-#   message( STATUS "CMAKE_CURRENT_LIST_DIR: ${CMAKE_CURRENT_LIST_DIR}" )
-#   message( STATUS "CMAKE_CURRENT_LIST_FILE: ${CMAKE_CURRENT_LIST_FILE}" )
-# endif( )
 
 # This module scrapes the CMakeCache.txt file and attempts to get all the cli options the user specified to cmake invocation
 include( get-cli-arguments )
@@ -69,13 +57,6 @@ if( BUILD_GTEST )
   set( gtest_custom_target COMMAND cd ${GTEST_BINARY_ROOT}$<SEMICOLON> ${CMAKE_COMMAND} --build . --target install )
 endif( )
 
-if( BUILD_BOOST )
-  include( external-boost )
-
-  list( APPEND rocsparse_dependencies boost )
-  set( boost_custom_target COMMAND cd ${BOOST_BINARY_ROOT}$<SEMICOLON> ${Boost.Command} install )
-endif( )
-
 # POLICY CMP0037 - "Target names should not be reserved and should match a validity pattern"
 # Familiar target names like 'install' should be OK at the super-build level
 if( POLICY CMP0037 )
@@ -83,7 +64,6 @@ if( POLICY CMP0037 )
 endif( )
 
 add_custom_target( install
-  ${boost_custom_target}
   ${gtest_custom_target}
   DEPENDS ${rocsparse_dependencies}
 )

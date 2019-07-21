@@ -21,6 +21,10 @@
 #
 # ########################################################################
 
+# This option only works for make/nmake and the ninja generators, but no reason it shouldn't be on all the time
+# This tells cmake to create a compile_commands.json file that can be used with clang tooling or vim
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Print verbose compiler flags
 if(BUILD_VERBOSE)
   include(../cmake/Verbose.cmake)
@@ -29,7 +33,6 @@ endif()
 # Configure a header file to pass the rocSPARSE version
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse-version.h.in"
                "${PROJECT_BINARY_DIR}/include/rocsparse-version.h"
-               @ONLY
 )
 
 # Public rocSPARSE headers
@@ -39,8 +42,15 @@ set(rocsparse_headers_public
   include/rocsparse-types.h
   include/rocsparse.h
   ${PROJECT_BINARY_DIR}/include/rocsparse-version.h
-  ${PROJECT_BINARY_DIR}/include/rocsparse-export.h
 )
+
+source_group("Header Files\\Public" FILES ${rocsparse_headers_public})
+
+include(GNUInstallDirs)
+
+set(BIN_INSTALL_DIR ${CMAKE_INSTALL_BINDIR})
+set(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
 
 # Include sources
 include(src/CMakeLists.txt)
@@ -56,16 +66,14 @@ foreach(target ${AMDGPU_TARGETS})
 endforeach()
 
 # Target link libraries
-target_link_libraries(rocsparse PRIVATE hip::device)
-foreach(target ${AMDGPU_TARGETS})
-  target_link_libraries(rocsparse PRIVATE --amdgpu-target=${target})
-endforeach()
+if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+  target_link_libraries(rocsparse PRIVATE hip::device)
+endif()
 
 # Target include directories
 target_include_directories(rocsparse
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/include>
                                    $<BUILD_INTERFACE:${ROCPRIM_INCLUDE_DIRS}>
-                                   $<BUILD_INTERFACE:${HIPCUB_INCLUDE_DIRS}>
                            PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
                                    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
                                    $<INSTALL_INTERFACE:include>
