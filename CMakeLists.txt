@@ -86,7 +86,7 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 include(cmake/Dependencies.cmake)
 
 # Setup version
-set(VERSION_STRING "1.1.10.")
+set(VERSION_STRING "1.1.11.")
 # Check if BUILD_NUMBER if defined in a Jenkins environment
 if($ENV{BUILD_NUMBER})
   string(CONCAT BUILD_VERSION ${VERSION_STRING} $ENV{BUILD_NUMBER})
