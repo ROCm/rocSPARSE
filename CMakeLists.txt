@@ -86,7 +86,7 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 include(cmake/Dependencies.cmake)
 
 # Setup version
-set(VERSION_STRING "1.1.10.")
+set(VERSION_STRING "1.1.11.")
 # Check if BUILD_NUMBER if defined in a Jenkins environment
 if($ENV{BUILD_NUMBER})
   string(CONCAT BUILD_VERSION ${VERSION_STRING} $ENV{BUILD_NUMBER})
@@ -95,6 +95,10 @@ else()
 endif()
 rocm_setup_version(VERSION ${BUILD_VERSION} NO_GIT_TAG_VERSION)
 set(rocsparse_SOVERSION 0)
+
+# Get the git tag version
+include(cmake/version.cmake)
+rocm_get_git_commit_id(rocsparse_VERSION_COMMIT_ID)
 
 # AMD targets
 set(AMDGPU_TARGETS gfx803;gfx900;gfx906 CACHE STRING "List of specific machine types for library to target")
