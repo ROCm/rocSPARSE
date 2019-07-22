@@ -2,7 +2,7 @@
 ARG base_image
 
 FROM ${base_image}
-LABEL maintainer="andrew.chapman@amd.com"
+LABEL maintainer="nico.trost@amd.com"
 
 # Copy the rpm package of rocsparse into the container from host
 COPY *.rpm /tmp/

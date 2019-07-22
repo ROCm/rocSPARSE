@@ -42,7 +42,7 @@ analysis csrilusv_analysis_range[]
 std::string csrilusv_bin[] = {"mac_econ_fwd500.bin",
                               "mc2depi.bin",
                               "scircuit.bin",
-                              "bmwcra_1.bin",
+//                              "bmwcra_1.bin",
                               "nos1.bin",
                               "nos3.bin",
                               "nos4.bin",
@@ -84,7 +84,7 @@ Arguments setup_csrilusv_arguments(csrilusv_bin_tuple tup)
     }
 
     // Matrices are stored at the same path in matrices directory
-    arg.filename = std::string(path_exe) + "matrices/" + bin_file;
+    arg.filename = std::string(path_exe) + "../matrices/" + bin_file;
 
     return arg;
 }

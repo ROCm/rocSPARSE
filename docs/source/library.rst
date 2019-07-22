@@ -244,7 +244,7 @@ rocSPARSE with dependencies and client can be built using the following commands
 
   # Install googletest
   mkdir -p build/release/deps ; cd build/release/deps
-  cmake -DBUILD_BOOST=OFF ../../../deps
+  cmake ../../../deps
   sudo make -j$(nproc) install
 
   # Change to build directory

@@ -22,7 +22,7 @@
 # ########################################################################
 
 # The ROCm platform requires Ubuntu 16.04 or Fedora 24, which has cmake 3.5
-cmake_minimum_required( VERSION 3.5 )
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 # Consider removing this in the future
 # This should appear before the project command, because it does not use FORCE
@@ -43,14 +43,6 @@ project(rocsparse-clients LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-# Check for compiler
-if(NOT (CMAKE_CXX_COMPILER MATCHES ".*/hcc$" OR CMAKE_CXX_COMPILER MATCHES ".*/hipcc$"))
-  message(FATAL_ERROR "'hcc' or 'clang' must be used as C++ compiler.")
-endif()
-
-# Ignore hcc warning
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-command-line-argument")
-
 # This option only works for make/nmake and the ninja generators, but no reason it shouldn't be on all the time
 # This tells cmake to create a compile_commands.json file that can be used with clang tooling or vim
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -60,7 +52,13 @@ if(NOT TARGET rocsparse)
 endif()
 
 # Hip headers required of all clients; clients use hip to allocate device memory
-find_package(HIP REQUIRED CONFIG PATHS /opt/rocm)
+list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
+find_package(HIP REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH})
+
+# Build flags
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # If OpenMP is available, we can use it to speed up some tests
 find_package(OpenMP QUIET)

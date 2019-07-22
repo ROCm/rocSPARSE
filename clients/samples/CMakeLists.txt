@@ -21,35 +21,40 @@
 #
 # ########################################################################
 
-set(ROCSPARSE_CLIENTS_COMMON
-  ../common/utility.cpp
-)
+get_target_property(HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE)
+
+set(ROCSPARSE_CLIENTS_COMMON ../common/utility.cpp)
 
 # Function to add rocsparse examples
 function(add_rocsparse_example EXAMPLE_SOURCE)
   get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SOURCE} NAME_WE)
   add_executable(${EXAMPLE_TARGET} ${EXAMPLE_SOURCE} ${ROCSPARSE_CLIENTS_COMMON})
 
+  # rocSPARSE headers
   target_include_directories(${EXAMPLE_TARGET}
     PRIVATE
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
+      $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
   )
 
+  # rocSPARSE library
   if(NOT TARGET rocsparse)
     target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${ROCSPARSE_LIBRARIES})
   else()
     target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse)
   endif()
 
-  target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${hip_LIBRARIES})
-  foreach(amdgpu_target ${AMDGPU_TARGETS})
-    target_link_libraries(${EXAMPLE_TARGET} PRIVATE --amdgpu-target=${amdgpu_target})
-  endforeach()
+  if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+    target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${HIP_LIBRARIES})
+    foreach(target ${AMDGPU_TARGETS})
+      target_link_libraries(${EXAMPLE_TARGET} PRIVATE --amdgpu-target=${target})
+    endforeach()
+  elseif(NOT CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
+    target_compile_definitions(${EXAMPLE_TARGET} PRIVATE __HIP_PLATFORM_HCC__)
+    target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${HIPHCC_LOCATION})
+  endif()
 
-  set_target_properties(${EXAMPLE_TARGET}
-    PROPERTIES
-      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/example"
-  )
+  set_target_properties(${EXAMPLE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 endfunction()
 
 # Examples
