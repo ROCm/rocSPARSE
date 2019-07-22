@@ -72,8 +72,8 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 include(cmake/Dependencies.cmake)
 
 # Setup version
-rocm_setup_version(VERSION 1.1.10.0 NO_GIT_TAG_VERSION)
-set(rocsparse_SOVERSION 0)
+rocm_setup_version(VERSION 1.1.10)
+set(rocsparse_SOVERSION 0.1)
 
 # AMD targets
 set(AMDGPU_TARGETS gfx803;gfx900;gfx906 CACHE STRING "List of specific machine types for library to target")
