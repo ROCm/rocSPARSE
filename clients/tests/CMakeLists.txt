@@ -134,6 +134,8 @@ else()
   target_link_libraries(rocsparse-test PRIVATE roc::rocsparse)
 endif()
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} ${OpenMP_CXX_FLAGS} Threads::Threads)
 
 if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")

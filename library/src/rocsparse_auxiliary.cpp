@@ -28,6 +28,9 @@
 
 #include <hip/hip_runtime_api.h>
 
+#define TO_STR2(x) #x
+#define TO_STR(x) TO_STR2(x)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -172,7 +175,14 @@ rocsparse_status rocsparse_get_git_rev(rocsparse_handle handle, char* rev)
         return rocsparse_status_invalid_handle;
     }
 
-    strcpy(rev, ROCSPARSE_GIT_REVISION);
+    if(rev == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    static constexpr char v[] = TO_STR(ROCSPARSE_VERSION_COMMIT_ID);
+
+    memcpy(rev, v, sizeof(v));
 
     log_trace(handle, "rocsparse_get_git_rev", rev);
 
