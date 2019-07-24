@@ -245,7 +245,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_SUB 4
 #define CSRGEMM_HASHSIZE 32
         hipLaunchKernelGGL(
-            (csrgemm_nnz_wf_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
+            (csrgemm_nnz_wf_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_NNZ_HASH>),
             dim3((h_group_size[0] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
             dim3(CSRGEMM_DIM),
             0,
@@ -277,7 +277,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_SUB 8
 #define CSRGEMM_HASHSIZE 64
         hipLaunchKernelGGL(
-            (csrgemm_nnz_wf_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
+            (csrgemm_nnz_wf_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_NNZ_HASH>),
             dim3((h_group_size[1] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
             dim3(CSRGEMM_DIM),
             0,
@@ -308,26 +308,28 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_DIM 128
 #define CSRGEMM_SUB 8
 #define CSRGEMM_HASHSIZE 512
-        hipLaunchKernelGGL(
-            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
-            dim3(h_group_size[2]),
-            dim3(CSRGEMM_DIM),
-            0,
-            stream,
-            &d_group_offset[2],
-            d_perm,
-            csr_row_ptr_A,
-            csr_col_ind_A,
-            csr_row_ptr_B,
-            csr_col_ind_B,
-            csr_row_ptr_D,
-            csr_col_ind_D,
-            csr_row_ptr_C,
-            base_A,
-            base_B,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+        hipLaunchKernelGGL((csrgemm_nnz_block_per_row<CSRGEMM_DIM,
+                                                      CSRGEMM_SUB,
+                                                      CSRGEMM_HASHSIZE,
+                                                      CSRGEMM_NNZ_HASH>),
+                           dim3(h_group_size[2]),
+                           dim3(CSRGEMM_DIM),
+                           0,
+                           stream,
+                           &d_group_offset[2],
+                           d_perm,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_row_ptr_D,
+                           csr_col_ind_D,
+                           csr_row_ptr_C,
+                           base_A,
+                           base_B,
+                           base_D,
+                           info_C->csrgemm_info->mul,
+                           info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -339,26 +341,28 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_DIM 128
 #define CSRGEMM_SUB 8
 #define CSRGEMM_HASHSIZE 1024
-        hipLaunchKernelGGL(
-            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
-            dim3(h_group_size[3]),
-            dim3(CSRGEMM_DIM),
-            0,
-            stream,
-            &d_group_offset[3],
-            d_perm,
-            csr_row_ptr_A,
-            csr_col_ind_A,
-            csr_row_ptr_B,
-            csr_col_ind_B,
-            csr_row_ptr_D,
-            csr_col_ind_D,
-            csr_row_ptr_C,
-            base_A,
-            base_B,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+        hipLaunchKernelGGL((csrgemm_nnz_block_per_row<CSRGEMM_DIM,
+                                                      CSRGEMM_SUB,
+                                                      CSRGEMM_HASHSIZE,
+                                                      CSRGEMM_NNZ_HASH>),
+                           dim3(h_group_size[3]),
+                           dim3(CSRGEMM_DIM),
+                           0,
+                           stream,
+                           &d_group_offset[3],
+                           d_perm,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_row_ptr_D,
+                           csr_col_ind_D,
+                           csr_row_ptr_C,
+                           base_A,
+                           base_B,
+                           base_D,
+                           info_C->csrgemm_info->mul,
+                           info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -370,26 +374,28 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_DIM 256
 #define CSRGEMM_SUB 16
 #define CSRGEMM_HASHSIZE 2048
-        hipLaunchKernelGGL(
-            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
-            dim3(h_group_size[4]),
-            dim3(CSRGEMM_DIM),
-            0,
-            stream,
-            &d_group_offset[4],
-            d_perm,
-            csr_row_ptr_A,
-            csr_col_ind_A,
-            csr_row_ptr_B,
-            csr_col_ind_B,
-            csr_row_ptr_D,
-            csr_col_ind_D,
-            csr_row_ptr_C,
-            base_A,
-            base_B,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+        hipLaunchKernelGGL((csrgemm_nnz_block_per_row<CSRGEMM_DIM,
+                                                      CSRGEMM_SUB,
+                                                      CSRGEMM_HASHSIZE,
+                                                      CSRGEMM_NNZ_HASH>),
+                           dim3(h_group_size[4]),
+                           dim3(CSRGEMM_DIM),
+                           0,
+                           stream,
+                           &d_group_offset[4],
+                           d_perm,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_row_ptr_D,
+                           csr_col_ind_D,
+                           csr_row_ptr_C,
+                           base_A,
+                           base_B,
+                           base_D,
+                           info_C->csrgemm_info->mul,
+                           info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -401,26 +407,28 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_DIM 512
 #define CSRGEMM_SUB 16
 #define CSRGEMM_HASHSIZE 4096
-        hipLaunchKernelGGL(
-            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
-            dim3(h_group_size[5]),
-            dim3(CSRGEMM_DIM),
-            0,
-            stream,
-            &d_group_offset[5],
-            d_perm,
-            csr_row_ptr_A,
-            csr_col_ind_A,
-            csr_row_ptr_B,
-            csr_col_ind_B,
-            csr_row_ptr_D,
-            csr_col_ind_D,
-            csr_row_ptr_C,
-            base_A,
-            base_B,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+        hipLaunchKernelGGL((csrgemm_nnz_block_per_row<CSRGEMM_DIM,
+                                                      CSRGEMM_SUB,
+                                                      CSRGEMM_HASHSIZE,
+                                                      CSRGEMM_NNZ_HASH>),
+                           dim3(h_group_size[5]),
+                           dim3(CSRGEMM_DIM),
+                           0,
+                           stream,
+                           &d_group_offset[5],
+                           d_perm,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_row_ptr_D,
+                           csr_col_ind_D,
+                           csr_row_ptr_C,
+                           base_A,
+                           base_B,
+                           base_D,
+                           info_C->csrgemm_info->mul,
+                           info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -432,26 +440,28 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
 #define CSRGEMM_DIM 1024
 #define CSRGEMM_SUB 32
 #define CSRGEMM_HASHSIZE 8192
-        hipLaunchKernelGGL(
-            (csrgemm_nnz_block_per_row<CSRGEMM_DIM, CSRGEMM_SUB, CSRGEMM_HASHSIZE, CSRGEMM_HASH>),
-            dim3(h_group_size[6]),
-            dim3(CSRGEMM_DIM),
-            0,
-            stream,
-            &d_group_offset[6],
-            d_perm,
-            csr_row_ptr_A,
-            csr_col_ind_A,
-            csr_row_ptr_B,
-            csr_col_ind_B,
-            csr_row_ptr_D,
-            csr_col_ind_D,
-            csr_row_ptr_C,
-            base_A,
-            base_B,
-            base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+        hipLaunchKernelGGL((csrgemm_nnz_block_per_row<CSRGEMM_DIM,
+                                                      CSRGEMM_SUB,
+                                                      CSRGEMM_HASHSIZE,
+                                                      CSRGEMM_NNZ_HASH>),
+                           dim3(h_group_size[6]),
+                           dim3(CSRGEMM_DIM),
+                           0,
+                           stream,
+                           &d_group_offset[6],
+                           d_perm,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_row_ptr_D,
+                           csr_col_ind_D,
+                           csr_row_ptr_C,
+                           base_A,
+                           base_B,
+                           base_D,
+                           info_C->csrgemm_info->mul,
+                           info_C->csrgemm_info->add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -462,7 +472,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
     {
 #define CSRGEMM_DIM 512
 #define CSRGEMM_SUB 16
-#define CSRGEMM_CHUNKSIZE 8192
+#define CSRGEMM_CHUNKSIZE 2048
         rocsparse_int* workspace_B = nullptr;
 
         if(info_C->csrgemm_info->mul == true)

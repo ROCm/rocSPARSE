@@ -35,7 +35,8 @@
 #include <rocprim/rocprim.hpp>
 
 #define CSRGEMM_MAXGROUPS 8
-#define CSRGEMM_HASH 79
+#define CSRGEMM_NNZ_HASH 79
+#define CSRGEMM_FLL_HASH 137
 
 template <typename T,
           unsigned int BLOCKSIZE,
@@ -157,8 +158,7 @@ template <typename T,
           unsigned int WFSIZE,
           unsigned int HASHSIZE,
           unsigned int HASHVAL>
-__attribute__((amdgpu_flat_work_group_size(128, 1024)))
-__global__ void
+__attribute__((amdgpu_flat_work_group_size(128, 1024))) __global__ void
     csrgemm_fill_block_per_row_host_pointer(rocsparse_int nk,
                                             const rocsparse_int* __restrict__ offset,
                                             const rocsparse_int* __restrict__ perm,
@@ -213,8 +213,7 @@ template <typename T,
           unsigned int WFSIZE,
           unsigned int HASHSIZE,
           unsigned int HASHVAL>
-__attribute__((amdgpu_flat_work_group_size(128, 1024)))
-__global__ void
+__attribute__((amdgpu_flat_work_group_size(128, 1024))) __global__ void
     csrgemm_fill_block_per_row_device_pointer(rocsparse_int nk,
                                               const rocsparse_int* __restrict__ offset,
                                               const rocsparse_int* __restrict__ perm,
@@ -266,32 +265,32 @@ __global__ void
 }
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int CHUNKSIZE>
-__attribute__((amdgpu_flat_work_group_size(128, 1024)))
-__global__ void csrgemm_fill_block_per_row_multipass_host_pointer(
-    rocsparse_int n,
-    const rocsparse_int* __restrict__ offset,
-    const rocsparse_int* __restrict__ perm,
-    T alpha,
-    const rocsparse_int* __restrict__ csr_row_ptr_A,
-    const rocsparse_int* __restrict__ csr_col_ind_A,
-    const T* __restrict__ csr_val_A,
-    const rocsparse_int* __restrict__ csr_row_ptr_B,
-    const rocsparse_int* __restrict__ csr_col_ind_B,
-    const T* __restrict__ csr_val_B,
-    T beta,
-    const rocsparse_int* __restrict__ csr_row_ptr_D,
-    const rocsparse_int* __restrict__ csr_col_ind_D,
-    const T* __restrict__ csr_val_D,
-    const rocsparse_int* __restrict__ csr_row_ptr_C,
-    rocsparse_int* __restrict__ csr_col_ind_C,
-    T* __restrict__ csr_val_C,
-    rocsparse_int* __restrict__ workspace_B,
-    rocsparse_index_base idx_base_A,
-    rocsparse_index_base idx_base_B,
-    rocsparse_index_base idx_base_C,
-    rocsparse_index_base idx_base_D,
-    bool                 mul,
-    bool                 add)
+__attribute__((amdgpu_flat_work_group_size(128, 1024))) __global__ void
+    csrgemm_fill_block_per_row_multipass_host_pointer(
+        rocsparse_int n,
+        const rocsparse_int* __restrict__ offset,
+        const rocsparse_int* __restrict__ perm,
+        T alpha,
+        const rocsparse_int* __restrict__ csr_row_ptr_A,
+        const rocsparse_int* __restrict__ csr_col_ind_A,
+        const T* __restrict__ csr_val_A,
+        const rocsparse_int* __restrict__ csr_row_ptr_B,
+        const rocsparse_int* __restrict__ csr_col_ind_B,
+        const T* __restrict__ csr_val_B,
+        T beta,
+        const rocsparse_int* __restrict__ csr_row_ptr_D,
+        const rocsparse_int* __restrict__ csr_col_ind_D,
+        const T* __restrict__ csr_val_D,
+        const rocsparse_int* __restrict__ csr_row_ptr_C,
+        rocsparse_int* __restrict__ csr_col_ind_C,
+        T* __restrict__ csr_val_C,
+        rocsparse_int* __restrict__ workspace_B,
+        rocsparse_index_base idx_base_A,
+        rocsparse_index_base idx_base_B,
+        rocsparse_index_base idx_base_C,
+        rocsparse_index_base idx_base_D,
+        bool                 mul,
+        bool                 add)
 {
     csrgemm_fill_block_per_row_multipass_device<T, BLOCKSIZE, WFSIZE, CHUNKSIZE>(n,
                                                                                  offset,
@@ -320,32 +319,32 @@ __global__ void csrgemm_fill_block_per_row_multipass_host_pointer(
 }
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int CHUNKSIZE>
-__attribute__((amdgpu_flat_work_group_size(128, 1024)))
-__global__ void csrgemm_fill_block_per_row_multipass_device_pointer(
-    rocsparse_int n,
-    const rocsparse_int* __restrict__ offset,
-    const rocsparse_int* __restrict__ perm,
-    const T* __restrict__ alpha,
-    const rocsparse_int* __restrict__ csr_row_ptr_A,
-    const rocsparse_int* __restrict__ csr_col_ind_A,
-    const T* __restrict__ csr_val_A,
-    const rocsparse_int* __restrict__ csr_row_ptr_B,
-    const rocsparse_int* __restrict__ csr_col_ind_B,
-    const T* __restrict__ csr_val_B,
-    const T* __restrict__ beta,
-    const rocsparse_int* __restrict__ csr_row_ptr_D,
-    const rocsparse_int* __restrict__ csr_col_ind_D,
-    const T* __restrict__ csr_val_D,
-    const rocsparse_int* __restrict__ csr_row_ptr_C,
-    rocsparse_int* __restrict__ csr_col_ind_C,
-    T* __restrict__ csr_val_C,
-    rocsparse_int* __restrict__ workspace_B,
-    rocsparse_index_base idx_base_A,
-    rocsparse_index_base idx_base_B,
-    rocsparse_index_base idx_base_C,
-    rocsparse_index_base idx_base_D,
-    bool                 mul,
-    bool                 add)
+__attribute__((amdgpu_flat_work_group_size(128, 1024))) __global__ void
+    csrgemm_fill_block_per_row_multipass_device_pointer(
+        rocsparse_int n,
+        const rocsparse_int* __restrict__ offset,
+        const rocsparse_int* __restrict__ perm,
+        const T* __restrict__ alpha,
+        const rocsparse_int* __restrict__ csr_row_ptr_A,
+        const rocsparse_int* __restrict__ csr_col_ind_A,
+        const T* __restrict__ csr_val_A,
+        const rocsparse_int* __restrict__ csr_row_ptr_B,
+        const rocsparse_int* __restrict__ csr_col_ind_B,
+        const T* __restrict__ csr_val_B,
+        const T* __restrict__ beta,
+        const rocsparse_int* __restrict__ csr_row_ptr_D,
+        const rocsparse_int* __restrict__ csr_col_ind_D,
+        const T* __restrict__ csr_val_D,
+        const rocsparse_int* __restrict__ csr_row_ptr_C,
+        rocsparse_int* __restrict__ csr_col_ind_C,
+        T* __restrict__ csr_val_C,
+        rocsparse_int* __restrict__ workspace_B,
+        rocsparse_index_base idx_base_A,
+        rocsparse_index_base idx_base_B,
+        rocsparse_index_base idx_base_C,
+        rocsparse_index_base idx_base_D,
+        bool                 mul,
+        bool                 add)
 {
     csrgemm_fill_block_per_row_multipass_device<T, BLOCKSIZE, WFSIZE, CHUNKSIZE>(
         n,
@@ -857,7 +856,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                        CSRGEMM_DIM,
                                                                        CSRGEMM_SUB,
                                                                        CSRGEMM_HASHSIZE,
-                                                                       CSRGEMM_HASH>),
+                                                                       CSRGEMM_FLL_HASH>),
                                dim3((h_group_size[0] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -901,7 +900,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                        CSRGEMM_DIM,
                                                                        CSRGEMM_SUB,
                                                                        CSRGEMM_HASHSIZE,
-                                                                       CSRGEMM_HASH>),
+                                                                       CSRGEMM_FLL_HASH>),
                                dim3((h_group_size[1] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -945,7 +944,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                           CSRGEMM_DIM,
                                                                           CSRGEMM_SUB,
                                                                           CSRGEMM_HASHSIZE,
-                                                                          CSRGEMM_HASH>),
+                                                                          CSRGEMM_FLL_HASH>),
                                dim3(h_group_size[2]),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -988,7 +987,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                           CSRGEMM_DIM,
                                                                           CSRGEMM_SUB,
                                                                           CSRGEMM_HASHSIZE,
-                                                                          CSRGEMM_HASH>),
+                                                                          CSRGEMM_FLL_HASH>),
                                dim3(h_group_size[3]),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -1031,7 +1030,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                           CSRGEMM_DIM,
                                                                           CSRGEMM_SUB,
                                                                           CSRGEMM_HASHSIZE,
-                                                                          CSRGEMM_HASH>),
+                                                                          CSRGEMM_FLL_HASH>),
                                dim3(h_group_size[4]),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -1074,7 +1073,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                           CSRGEMM_DIM,
                                                                           CSRGEMM_SUB,
                                                                           CSRGEMM_HASHSIZE,
-                                                                          CSRGEMM_HASH>),
+                                                                          CSRGEMM_FLL_HASH>),
                                dim3(h_group_size[5]),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -1117,7 +1116,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                           CSRGEMM_DIM,
                                                                           CSRGEMM_SUB,
                                                                           CSRGEMM_HASHSIZE,
-                                                                          CSRGEMM_HASH>),
+                                                                          CSRGEMM_FLL_HASH>),
                                dim3(h_group_size[6]),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -1153,7 +1152,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
         // Group 7: more than 4096 non-zeros per row
         if(h_group_size[7] > 0)
         {
-#define CSRGEMM_DIM 1024
+#define CSRGEMM_DIM 512
 #define CSRGEMM_SUB 16
 #define CSRGEMM_CHUNKSIZE 2048
             rocsparse_int* workspace_B = nullptr;
@@ -1219,7 +1218,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                      CSRGEMM_DIM,
                                                                      CSRGEMM_SUB,
                                                                      CSRGEMM_HASHSIZE,
-                                                                     CSRGEMM_HASH>),
+                                                                     CSRGEMM_FLL_HASH>),
                                dim3((h_group_size[0] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -1263,7 +1262,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                      CSRGEMM_DIM,
                                                                      CSRGEMM_SUB,
                                                                      CSRGEMM_HASHSIZE,
-                                                                     CSRGEMM_HASH>),
+                                                                     CSRGEMM_FLL_HASH>),
                                dim3((h_group_size[1] - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -1307,7 +1306,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                         CSRGEMM_DIM,
                                                                         CSRGEMM_SUB,
                                                                         CSRGEMM_HASHSIZE,
-                                                                        CSRGEMM_HASH>),
+                                                                        CSRGEMM_FLL_HASH>),
                                dim3(h_group_size[2]),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -1350,7 +1349,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                         CSRGEMM_DIM,
                                                                         CSRGEMM_SUB,
                                                                         CSRGEMM_HASHSIZE,
-                                                                        CSRGEMM_HASH>),
+                                                                        CSRGEMM_FLL_HASH>),
                                dim3(h_group_size[3]),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -1393,7 +1392,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                         CSRGEMM_DIM,
                                                                         CSRGEMM_SUB,
                                                                         CSRGEMM_HASHSIZE,
-                                                                        CSRGEMM_HASH>),
+                                                                        CSRGEMM_FLL_HASH>),
                                dim3(h_group_size[4]),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -1436,7 +1435,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                         CSRGEMM_DIM,
                                                                         CSRGEMM_SUB,
                                                                         CSRGEMM_HASHSIZE,
-                                                                        CSRGEMM_HASH>),
+                                                                        CSRGEMM_FLL_HASH>),
                                dim3(h_group_size[5]),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -1479,7 +1478,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
                                                                         CSRGEMM_DIM,
                                                                         CSRGEMM_SUB,
                                                                         CSRGEMM_HASHSIZE,
-                                                                        CSRGEMM_HASH>),
+                                                                        CSRGEMM_FLL_HASH>),
                                dim3(h_group_size[6]),
                                dim3(CSRGEMM_DIM),
                                0,
@@ -1515,7 +1514,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
         // Group 7: more than 4096 non-zeros per row
         if(h_group_size[7] > 0)
         {
-#define CSRGEMM_DIM 1024
+#define CSRGEMM_DIM 512
 #define CSRGEMM_SUB 16
 #define CSRGEMM_CHUNKSIZE 2048
             rocsparse_int* workspace_B = nullptr;
