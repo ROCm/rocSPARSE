@@ -85,7 +85,7 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 include(cmake/Dependencies.cmake)
 
 # Setup version
-rocm_setup_version(VERSION 1.1.12)
+rocm_setup_version(VERSION 1.1.13)
 set(rocsparse_SOVERSION 0.1)
 
 # AMD targets
