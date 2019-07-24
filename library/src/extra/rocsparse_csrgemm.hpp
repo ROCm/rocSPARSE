@@ -157,6 +157,7 @@ template <typename T,
           unsigned int WFSIZE,
           unsigned int HASHSIZE,
           unsigned int HASHVAL>
+__attribute__((amdgpu_flat_work_group_size(128, 1024)))
 __global__ void
     csrgemm_fill_block_per_row_host_pointer(rocsparse_int nk,
                                             const rocsparse_int* __restrict__ offset,
@@ -212,6 +213,7 @@ template <typename T,
           unsigned int WFSIZE,
           unsigned int HASHSIZE,
           unsigned int HASHVAL>
+__attribute__((amdgpu_flat_work_group_size(128, 1024)))
 __global__ void
     csrgemm_fill_block_per_row_device_pointer(rocsparse_int nk,
                                               const rocsparse_int* __restrict__ offset,
@@ -264,6 +266,7 @@ __global__ void
 }
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int CHUNKSIZE>
+__attribute__((amdgpu_flat_work_group_size(128, 1024)))
 __global__ void csrgemm_fill_block_per_row_multipass_host_pointer(
     rocsparse_int n,
     const rocsparse_int* __restrict__ offset,
@@ -317,6 +320,7 @@ __global__ void csrgemm_fill_block_per_row_multipass_host_pointer(
 }
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int CHUNKSIZE>
+__attribute__((amdgpu_flat_work_group_size(128, 1024)))
 __global__ void csrgemm_fill_block_per_row_multipass_device_pointer(
     rocsparse_int n,
     const rocsparse_int* __restrict__ offset,
@@ -1149,8 +1153,8 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
         // Group 7: more than 4096 non-zeros per row
         if(h_group_size[7] > 0)
         {
-#define CSRGEMM_DIM 256
-#define CSRGEMM_SUB 8
+#define CSRGEMM_DIM 1024
+#define CSRGEMM_SUB 16
 #define CSRGEMM_CHUNKSIZE 2048
             rocsparse_int* workspace_B = nullptr;
 
@@ -1511,8 +1515,8 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
         // Group 7: more than 4096 non-zeros per row
         if(h_group_size[7] > 0)
         {
-#define CSRGEMM_DIM 256
-#define CSRGEMM_SUB 8
+#define CSRGEMM_DIM 1024
+#define CSRGEMM_SUB 16
 #define CSRGEMM_CHUNKSIZE 2048
             rocsparse_int* workspace_B = nullptr;
 

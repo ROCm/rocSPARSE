@@ -360,73 +360,6 @@ static __device__ __forceinline__ void insert_pair(rocsparse_int key,
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int HASHSIZE>
-static __device__ __forceinline__ void
-    compress_hash(rocsparse_int* __restrict__ table, T* __restrict__ data, rocsparse_int empty)
-{
-    // Offset into hash table
-    rocsparse_int hash_offset = 0;
-
-    // Loop over the hash table, each thread processes an entry
-    for(int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
-    {
-        // Get column and value from hash table
-        rocsparse_int col_C = table[i];
-        T             val_C = data[i];
-
-        // Check if we have a valid entry or not
-        table[i] = (col_C < empty) ? 1 : 0;
-
-        // Add the number of already processed valid entries to
-        // the first entry to shift the exclusive sum
-        if(hipThreadIdx_x == 0)
-        {
-            table[i] += hash_offset;
-        }
-
-        // Exclusive sum to obtain the new position in the hash table
-        rocsparse_int tmp;
-        for(unsigned int j = 1; j < BLOCKSIZE; j <<= 1)
-        {
-            __syncthreads();
-            if(hipThreadIdx_x >= j)
-            {
-                tmp = table[i - j];
-            }
-            __syncthreads();
-            if(hipThreadIdx_x >= j)
-            {
-                table[i] += tmp;
-            }
-        }
-
-        // Wait for all threads to finish the exclusive sum
-        __syncthreads();
-
-        // Zero based indexing
-        rocsparse_int idx = table[i] - 1;
-
-        // Obtain number of valid entries from previous pass
-        if(hipThreadIdx_x == 0)
-        {
-            hash_offset = table[i + BLOCKSIZE - 1];
-        }
-
-        // Wait for thread 0 to load shift value
-        __syncthreads();
-
-        // If current column is valid, move it to the new position
-        if(col_C < empty)
-        {
-            table[idx] = col_C;
-            data[idx]  = val_C;
-        }
-
-        // Wait for all threads to finish
-        __syncthreads();
-    }
-}
-
 // Compute non-zero entries per row, where each row is processed by a single wavefront
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASHSIZE, unsigned int HASHVAL>
 __global__ void csrgemm_nnz_wf_per_row(rocsparse_int m,
@@ -1092,7 +1025,80 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
     __syncthreads();
 
     // Compress hash table, such that valid entries come first
-    compress_hash<T, BLOCKSIZE, HASHSIZE>(table, data, nk);
+    __shared__ rocsparse_int scan_offsets[BLOCKSIZE / warpSize + 1];
+
+    // Offset into hash table
+    rocsparse_int hash_offset = 0;
+
+    // Loop over the hash table
+    for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
+    {
+        // Get column and value from hash table
+        rocsparse_int col_C = table[i];
+        T val_C = data[i];
+
+        // Boolean to store if thread owns a non-zero element
+        bool has_nnz = col_C < nk;
+
+        // Each thread obtains a bit mask of all wavefront-wide non-zero entries
+        // to compute its wavefront-wide non-zero offset
+        unsigned long long mask = __ballot(has_nnz);
+
+        // The number of bits set to 1 is the amount of wavefront-wide non-zeros
+        int nnz = __popcll(mask);
+
+        // Obtain the lane mask, where all bits lesser equal the lane id are set to 1
+        // e.g. for lane id 7, lanemask_le = 0b11111111
+        // HIP implements only __lanemask_lt() unfortunately ...
+        unsigned long long lanemask_le
+            = UINT64_MAX >> (sizeof(unsigned long long) * CHAR_BIT - (__lane_id() + 1));
+
+        // Compute the intra wavefront offset of the lane id by bitwise AND with the lane mask
+        int offset = __popcll(lanemask_le & mask);
+
+        // Need to sync here to make sure reading from data array has finished
+        __syncthreads();
+
+        // Each wavefront writes its offset / nnz into shared memory so we can compute the
+        // scan offset
+        scan_offsets[hipThreadIdx_x / warpSize] = nnz;
+
+        // Wait for all wavefronts to finish writing
+        __syncthreads();
+
+        // Each thread accumulates the offset of all previous wavefronts to obtain its offset
+        for(unsigned int j = 1; j < hipBlockDim_x / warpSize; ++j)
+        {
+            if(hipThreadIdx_x >= j * warpSize)
+            {
+                offset += scan_offsets[j - 1];
+            }
+        }
+
+        // Offset depends on all previously added non-zeros and need to be shifted by
+        // 1 (zero-based indexing)
+        rocsparse_int idx = hash_offset + offset - 1;
+
+        // Only threads with a non-zero value write their values
+        if(has_nnz)
+        {
+            table[idx] = col_C;
+            data[idx] = val_C;
+        }
+
+        // Last thread in block writes the block-wide offset such that all subsequent
+        // entries are shifted by this offset
+        if(hipThreadIdx_x == hipBlockDim_x - 1)
+        {
+            scan_offsets[hipBlockDim_x / warpSize - 1] = offset;
+        }
+
+        // Wait for last thread in block to finish writing
+        __syncthreads();
+
+        // Each thread reads the block-wide offset and adds it to its local offset
+        hash_offset += scan_offsets[hipBlockDim_x / warpSize - 1];
+    }
 
     // Entry point into row of C
     rocsparse_int row_begin_C = csr_row_ptr_C[row] - idx_base_C;
