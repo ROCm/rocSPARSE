@@ -98,6 +98,12 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
         return rocsparse_status_invalid_size;
     }
 
+    // Check for valid buffer_size pointer
+    if(buffer_size == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Quick return if possible
     if(m == 0 || nnz == 0)
     {
@@ -116,10 +122,6 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
         return rocsparse_status_invalid_pointer;
     }
     else if(csr_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(buffer_size == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
