@@ -27,7 +27,7 @@
 find_package(Git REQUIRED)
 
 # Find rocprim package
-find_package(rocprim 2.5.0 REQUIRED) # ROCm 2.5
+find_package(rocprim REQUIRED)
 
 # DownloadProject package
 include(cmake/DownloadProject/DownloadProject.cmake)

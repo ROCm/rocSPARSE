@@ -22,7 +22,7 @@
 # ########################################################################
 
 # Find HIP package
-find_package(HIP 1.5.19211 REQUIRED) # ROCm 2.5
+find_package(HIP REQUIRED)
 
 # Select toolchain
 if(HIP_COMPILER STREQUAL "clang")
