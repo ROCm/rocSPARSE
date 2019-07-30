@@ -85,7 +85,8 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle     h
     // Quick return if possible
     if(m == 0 || n == 0 || nnz == 0)
     {
-        *buffer_size = 0;
+        // Do not return 0 as buffer size
+        *buffer_size = 4;
         return rocsparse_status_success;
     }
 

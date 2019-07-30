@@ -369,7 +369,7 @@ rocsparse_status testing_csr2csc(Arguments argus)
         {
             verify_rocsparse_status_success(status, "m >= 0 && n >= 0 && nnz >= 0");
 
-            // Buffer size should be zero
+            // Buffer size should be 4
             size_t four = 4;
             unit_check_general(1, 1, 1, &four, &size);
         }
