@@ -146,12 +146,12 @@ TEST_P(parameterized_csrilu0_bin, csrilu0_bin_double)
     EXPECT_EQ(status, rocsparse_status_success);
 }
 
-INSTANTIATE_TEST_CASE_P(csrilu0,
+INSTANTIATE_TEST_CASE_P(DISABLED_csrilu0,
                         parameterized_csrilu0,
                         testing::Combine(testing::ValuesIn(csrilu0_M_range),
                                          testing::ValuesIn(csrilu0_idxbase_range)));
 
-INSTANTIATE_TEST_CASE_P(csrilu0_bin,
+INSTANTIATE_TEST_CASE_P(DISABLED_csrilu0_bin,
                         parameterized_csrilu0_bin,
                         testing::Combine(testing::ValuesIn(csrilu0_idxbase_range),
                                          testing::ValuesIn(csrilu0_bin)));
