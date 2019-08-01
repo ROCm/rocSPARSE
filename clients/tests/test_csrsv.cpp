@@ -162,7 +162,7 @@ TEST_P(parameterized_csrsv_bin, csrsv_bin_double)
     EXPECT_EQ(status, rocsparse_status_success);
 }
 
-INSTANTIATE_TEST_CASE_P(csrsv,
+INSTANTIATE_TEST_CASE_P(DISABLED_csrsv,
                         parameterized_csrsv,
                         testing::Combine(testing::ValuesIn(csrsv_M_range),
                                          testing::ValuesIn(csrsv_alpha_range),
@@ -171,7 +171,7 @@ INSTANTIATE_TEST_CASE_P(csrsv,
                                          testing::ValuesIn(csrsv_diag_range),
                                          testing::ValuesIn(csrsv_fill_range)));
 
-INSTANTIATE_TEST_CASE_P(csrsv_bin,
+INSTANTIATE_TEST_CASE_P(DISABLED_csrsv_bin,
                         parameterized_csrsv_bin,
                         testing::Combine(testing::ValuesIn(csrsv_alpha_range),
                                          testing::ValuesIn(csrsv_idxbase_range),
