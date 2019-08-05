@@ -34,7 +34,7 @@ rocSPARSECI:
     rocsparse.paths.build_command = './install.sh -c'
 
     // Define test architectures, optional rocm version argument is available
-    def nodes = new dockerNodes(['gfx900 && centos7', 'gfx906 && ubuntu', 'gfx900 && ubuntu && hip-clang', 'gfx906 && ubuntu && hip-clang'], rocsparse)
+    def nodes = new dockerNodes(['gfx900 && centos7', 'gfx906 && centos7', 'gfx900 && ubuntu', 'gfx906 && ubuntu'], rocsparse)
 
     boolean formatCheck = true
 
