@@ -83,7 +83,7 @@ target_include_directories(rocsparse
 )
 
 # Target properties
-set_target_properties(rocsparse PROPERTIES VERSION ${rocsparse_VERSION} SOVERSION ${rocsparse_SOVERSION})
+rocm_set_soversion(rocsparse ${rocsparse_SOVERSION})
 set_target_properties(rocsparse PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON)
 set_target_properties(rocsparse PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")

@@ -21,6 +21,7 @@
 #
 # ########################################################################
 
+# The ROCm platform requires at least Ubuntu 16.04 or Fedora 24, which have cmake 3.5
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 # Consider removing this in the future
@@ -32,10 +33,7 @@ else()
 endif()
 
 # CMake modules
-list(APPEND CMAKE_MODULE_PATH
-     ${CMAKE_CURRENT_SOURCE_DIR}/cmake
-     /opt/rocm/hip/cmake
-)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake /opt/rocm/hip/cmake)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -52,13 +50,14 @@ endif()
 # rocSPARSE project
 project(rocsparse LANGUAGES CXX)
 
-# Determine if CXX Compiler is hcc, hip-clang or nvcc
+# Determine if CXX Compiler is hcc or hip-clang
 execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--version" OUTPUT_VARIABLE CXX_OUTPUT
                 OUTPUT_STRIP_TRAILING_WHITESPACE
                 ERROR_STRIP_TRAILING_WHITESPACE)
 string(REGEX MATCH "[A-Za-z]* ?clang version" TMP_CXX_VERSION ${CXX_OUTPUT})
 string(REGEX MATCH "[A-Za-z]+" CXX_VERSION_STRING ${TMP_CXX_VERSION})
 
+# Print compiler information
 if(CXX_VERSION_STRING MATCHES "clang")
   message(STATUS "Using hip-clang to build for amdgpu backend")
 elseif(CXX_VERSION_STRING MATCHES "HCC")
@@ -86,16 +85,16 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 include(cmake/Dependencies.cmake)
 
 # Setup version
-set(VERSION_STRING "1.2.0")
-rocm_setup_version( VERSION ${VERSION_STRING} )
+rocm_setup_version(VERSION 1.2.0)
 set(rocsparse_SOVERSION 0.1)
 
 # AMD targets
-set(AMDGPU_TARGETS gfx803;gfx900;gfx906 CACHE STRING "List of specific machine types for library to target")
+set(AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target")
 
 # rocSPARSE library
 add_subdirectory(library)
 
+# Trigger client builds if selected
 if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   add_subdirectory(clients)
 endif()

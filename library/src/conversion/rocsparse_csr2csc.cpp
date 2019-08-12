@@ -73,6 +73,12 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle     h
         return rocsparse_status_invalid_size;
     }
 
+    // Check buffer size argument
+    if(buffer_size == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Quick return if possible
     if(m == 0 || n == 0 || nnz == 0)
     {
@@ -87,10 +93,6 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle     h
         return rocsparse_status_invalid_pointer;
     }
     else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(buffer_size == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
