@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1035,7 +1035,7 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
     {
         // Get column and value from hash table
         rocsparse_int col_C = table[i];
-        T val_C = data[i];
+        T             val_C = data[i];
 
         // Boolean to store if thread owns a non-zero element
         bool has_nnz = col_C < nk;
@@ -1083,7 +1083,7 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
         if(has_nnz)
         {
             table[idx] = col_C;
-            data[idx] = val_C;
+            data[idx]  = val_C;
         }
 
         // Last thread in block writes the block-wide offset such that all subsequent
@@ -1326,11 +1326,11 @@ __device__ void
 
             // Each thread accumulates the offset of all previous wavefronts to obtain its
             // offset into C
-            for(unsigned int j = 0; j < BLOCKSIZE / warpSize - 1; ++j)
+            for(unsigned int j = 1; j < BLOCKSIZE / warpSize; ++j)
             {
-                if(hipThreadIdx_x >= (j + 1) * warpSize)
+                if(hipThreadIdx_x >= j * warpSize)
                 {
-                    offset += scan_offsets[j];
+                    offset += scan_offsets[j - 1];
                 }
             }
 
@@ -1347,7 +1347,7 @@ __device__ void
 
             // Last thread in block writes the block-wide offset into C such that all subsequent
             // entries are shifted by this offset
-            if(hipThreadIdx_x == BLOCKSIZE - 1)
+            if(hipThreadIdx_x == hipBlockDim_x - 1)
             {
                 scan_offsets[BLOCKSIZE / warpSize - 1] = offset;
             }
