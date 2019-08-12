@@ -1030,7 +1030,7 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
     // Offset into hash table
     rocsparse_int hash_offset = 0;
 
-    // Loop over the hash table
+    // Loop over the hash table and do the compression
     for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
     {
         // Get column and value from hash table
