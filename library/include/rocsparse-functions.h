@@ -1917,6 +1917,12 @@ rocsparse_status rocsparse_zcsrmm(rocsparse_handle handle,
  *  rocsparse_dcsrgemm(). The temporary storage buffer must be allocated by the user.
  *
  *  \note
+ *  Please note, that for matrix products with more than 4096 non-zero entries per row,
+ *  additional temporary storage buffer is allocated by the algorithm.
+ *  \note
+ *  Please note, that for matrix products with more than 8192 intermediate products per
+ *  row, additional temporary storage buffer is allocated by the algorithm.
+ *  \note
  *  Currently, only \p trans_A == \p trans_B == \ref rocsparse_operation_none is
  *  supported.
  *  \note
@@ -2116,6 +2122,9 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle handle,
  *  This function is non blocking and executed asynchronously with respect to the host.
  *  It may return before the actual computation has finished.
  *  \note
+ *  Please note, that for matrix products with more than 8192 intermediate products per
+ *  row, additional temporary storage buffer is allocated by the algorithm.
+ *  \note
  *  Currently, only \p trans_A == \p trans_B == \ref rocsparse_operation_none is
  *  supported.
  *  \note
@@ -2194,6 +2203,8 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle handle,
  *          \p csr_col_ind_A, \p descr_B, \p csr_row_ptr_B, \p csr_col_ind_B,
  *          \p descr_D, \p csr_row_ptr_D, \p csr_col_ind_D, \p descr_C,
  *          \p csr_row_ptr_C, \p nnz_C, \p info_C or \p temp_buffer is invalid.
+ *  \retval rocsparse_status_memory_error additional buffer for long rows could not be
+ *          allocated.
  *  \retval rocsparse_status_not_implemented
  *          \p trans_A != \ref rocsparse_operation_none,
  *          \p trans_B != \ref rocsparse_operation_none, or
@@ -2274,7 +2285,8 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
  *  \note Currently, only \ref rocsparse_matrix_type_general is supported.
  *  \note This function is non blocking and executed asynchronously with respect to the
  *        host. It may return before the actual computation has finished.
- *
+ *  \note Please note, that for matrix products with more than 4096 non-zero entries per
+ *  row, additional temporary storage buffer is allocated by the algorithm.
  *
  *  The algorithm is based on the paper "High-performance and Memory-saving Sparse
  *  General Matrix-Matrix Multiplication for NVIDIA Pascal GPU", by Nagasaka, Y.,
@@ -2368,6 +2380,8 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
  *          is valid, \p descr_D, \p csr_val_D, \p csr_row_ptr_D or \p csr_col_ind_D is
  *          invalid if \p beta is valid, \p csr_val_C, \p csr_row_ptr_C,
  *          \p csr_col_ind_C, \p info_C or \p temp_buffer is invalid.
+ *  \retval rocsparse_status_memory_error additional buffer for long rows could not be
+ *          allocated.
  *  \retval rocsparse_status_not_implemented
  *          \p trans_A != \ref rocsparse_operation_none,
  *          \p trans_B != \ref rocsparse_operation_none, or
