@@ -227,18 +227,6 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
         RETURN_IF_HIP_ERROR(hipMemsetAsync(d_group_offset, 0, sizeof(rocsparse_int), stream));
     }
 
-    /*
-    printf("Group sizes:\n");
-    printf("\t   0 -   32: %d\n", h_group_size[0]);
-    printf("\t  33 -   64: %d\n", h_group_size[1]);
-    printf("\t  65 -  512: %d\n", h_group_size[2]);
-    printf("\t 513 - 1024: %d\n", h_group_size[3]);
-    printf("\t1025 - 2048: %d\n", h_group_size[4]);
-    printf("\t2049 - 4096: %d\n", h_group_size[5]);
-    printf("\t4097 - 8192: %d\n", h_group_size[6]);
-    printf("\t8193 -  inf: %d\n", h_group_size[7]);
-*/
-
     // Compute non-zero entries per row for each group
 
     // Group 0: 0 - 32 intermediate products

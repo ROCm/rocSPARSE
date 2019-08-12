@@ -829,18 +829,6 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
         RETURN_IF_HIP_ERROR(hipMemsetAsync(d_group_offset, 0, sizeof(rocsparse_int), stream));
     }
 
-    /*
-    printf("Group sizes:\n");
-    printf("\t   0 -   16: %d\n", h_group_size[0]);
-    printf("\t  17 -   32: %d\n", h_group_size[1]);
-    printf("\t  33 -  256: %d\n", h_group_size[2]);
-    printf("\t 257 -  512: %d\n", h_group_size[3]);
-    printf("\t 513 - 1024: %d\n", h_group_size[4]);
-    printf("\t1025 - 2048: %d\n", h_group_size[5]);
-    printf("\t2049 - 4096: %d\n", h_group_size[6]);
-    printf("\t4097 -  inf: %d\n", h_group_size[7]);
-*/
-
     // Compute columns and accumulate values for each group
 
     // pointer mode device
@@ -1765,7 +1753,11 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle          handle,
         log_bench(handle,
                   "./rocsparse-bench -f csrgemm -r",
                   replaceX<T>("X"),
-                  "--mtx <matrix.mtx>"); // TODO alpha
+                  "--mtx <matrix.mtx> ",
+                  "--alpha",
+                  *alpha,
+                  "--beta",
+                  *beta);
     }
     else
     {
