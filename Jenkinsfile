@@ -129,7 +129,7 @@ rocSPARSECI:
                     set -x
                     cd ${project.paths.project_build_prefix}/build/release
                     make package
-                    rm -rf package && mkdir -p package
+                    mkdir -p package
                     mv *.rpm package/
                     rpm -qlp package/*.rpm
                 """
@@ -147,7 +147,7 @@ rocSPARSECI:
                     set -x
                     cd ${project.paths.project_build_prefix}/build/release
                     make package
-                    rm -rf package && mkdir -p package
+                    mkdir -p package
                     mv *.deb package/
                     dpkg -c package/*.deb
                 """
