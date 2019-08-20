@@ -100,6 +100,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_csrsort.cpp
   test_coosort.cpp
   test_csrilusv.cpp
+  test_csrgemm.cpp
 )
 
 set(ROCSPARSE_CLIENTS_COMMON
@@ -112,6 +113,10 @@ set(ROCSPARSE_CLIENTS_COMMON
 add_executable(rocsparse-test ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON})
 
 target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
+
+if(OPENMP_FOUND)
+  target_compile_options(rocsparse-test PRIVATE ${OpenMP_CXX_FLAGS})
+endif()
 
 target_include_directories(rocsparse-test
   PRIVATE
@@ -134,6 +139,10 @@ endif()
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} Threads::Threads)
+
+if(OPENMP_FOUND)
+  target_link_libraries(rocsparse-test PRIVATE ${OpenMP_CXX_FLAGS})
+endif()
 
 if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
   target_link_libraries(rocsparse-test PRIVATE ${HIP_LIBRARIES})

@@ -42,6 +42,9 @@
 // Level3
 #include "testing_csrmm.hpp"
 
+// Extra
+#include "testing_csrgemm.hpp"
+
 // Preconditioner
 #include "testing_csrilu0.hpp"
 
@@ -117,6 +120,7 @@ int main(int argc, char* argv[])
          "  Level1: axpyi, doti, gthr, gthrz, roti, sctr\n"
          "  Level2: coomv, csrmv, csrsv, ellmv, hybmv\n"
          "  Level3: csrmm\n"
+         "  Extra: csrgemm\n"
          "  Preconditioner: csrilu0\n"
          "  Conversion: csr2coo, csr2csc, csr2ell,\n"
          "              csr2hyb, coo2csr, ell2csr\n"
@@ -261,6 +265,13 @@ int main(int argc, char* argv[])
             testing_csrmm<float>(argus);
         else if(precision == 'd')
             testing_csrmm<double>(argus);
+    }
+    else if(function == "csrgemm")
+    {
+        if(precision == 's')
+            testing_csrgemm<float>(argus);
+        else if(precision == 'd')
+            testing_csrgemm<double>(argus);
     }
     else if(function == "csrilu0")
     {
