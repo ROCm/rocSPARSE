@@ -509,6 +509,12 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsv_lower_info));
     }
 
+    // Clear csrgemm info struct
+    if(info->csrgemm_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrgemm_info(info->csrgemm_info));
+    }
+
     // Destruct
     try
     {

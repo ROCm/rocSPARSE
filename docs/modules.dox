@@ -61,6 +61,13 @@
  *  and multiple vectors in dense format that can also be seen as a dense matrix.
  */
 
+/*! \defgroup extra_module SPARSE Extra routines
+ *  \brief This module holds all sparse extra routines.
+ *
+ *  \details
+ *  The sparse extra routines describe operations that manipulate sparse matrices.
+ */
+
 /*! \defgroup precond_module SPARSE Preconditioners
  *  \brief This module holds all sparse preconditioners.
  *
