@@ -151,7 +151,6 @@ rocSPARSECI:
                     mkdir -p package
                     mv *.deb package/
                     mv clients/*.deb package/
-                    dpkg -c package/*.deb
                 """
 
             platform.runCommand(this, command)
