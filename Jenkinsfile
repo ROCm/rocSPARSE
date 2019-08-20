@@ -147,8 +147,10 @@ rocSPARSECI:
                     set -x
                     cd ${project.paths.project_build_prefix}/build/release
                     make package
+                    make package_clients
                     mkdir -p package
                     mv *.deb package/
+                    mv clients/*.deb package/
                     dpkg -c package/*.deb
                 """
 
