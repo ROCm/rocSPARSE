@@ -25,6 +25,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include "rocsparse.h"
+
 #include <hip/hip_runtime.h>
 
 // clang-format off
@@ -87,7 +89,23 @@ __device__ __forceinline__ void rocsparse_blockreduce_max(int i, T* data)
     if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = max(data[i], data[i +   1]); } __syncthreads(); }
 }
 
-// DPP-based wavefront reduction combination of sum and max
+// Block reduce kernel computing blockwide minimum entry
+template <typename T, unsigned int BLOCKSIZE>
+__device__ __forceinline__ void rocsparse_blockreduce_min(int i, T* data)
+{
+    if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = min(data[i], data[i + 512]); } __syncthreads(); }
+    if(BLOCKSIZE > 256) { if(i < 256 && i + 256 < BLOCKSIZE) { data[i] = min(data[i], data[i + 256]); } __syncthreads(); }
+    if(BLOCKSIZE > 128) { if(i < 128 && i + 128 < BLOCKSIZE) { data[i] = min(data[i], data[i + 128]); } __syncthreads(); }
+    if(BLOCKSIZE >  64) { if(i <  64 && i +  64 < BLOCKSIZE) { data[i] = min(data[i], data[i +  64]); } __syncthreads(); }
+    if(BLOCKSIZE >  32) { if(i <  32 && i +  32 < BLOCKSIZE) { data[i] = min(data[i], data[i +  32]); } __syncthreads(); }
+    if(BLOCKSIZE >  16) { if(i <  16 && i +  16 < BLOCKSIZE) { data[i] = min(data[i], data[i +  16]); } __syncthreads(); }
+    if(BLOCKSIZE >   8) { if(i <   8 && i +   8 < BLOCKSIZE) { data[i] = min(data[i], data[i +   8]); } __syncthreads(); }
+    if(BLOCKSIZE >   4) { if(i <   4 && i +   4 < BLOCKSIZE) { data[i] = min(data[i], data[i +   4]); } __syncthreads(); }
+    if(BLOCKSIZE >   2) { if(i <   2 && i +   2 < BLOCKSIZE) { data[i] = min(data[i], data[i +   2]); } __syncthreads(); }
+    if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = min(data[i], data[i +   1]); } __syncthreads(); }
+}
+
+// DPP-based wavefront reduction maximum
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
 {
@@ -97,6 +115,30 @@ __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
     if(WFSIZE >  8) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x118, 0xf, 0xc, 0));
     if(WFSIZE > 16) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x142, 0xa, 0xf, 0));
     if(WFSIZE > 32) *maximum = max(*maximum, __hip_move_dpp(*maximum, 0x143, 0xc, 0xf, 0));
+}
+
+// DPP-based wavefront reduction minimum
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void rocsparse_wfreduce_min(int* minimum)
+{
+    if(WFSIZE >  1) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x111, 0xf, 0xf, 0));
+    if(WFSIZE >  2) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x112, 0xf, 0xf, 0));
+    if(WFSIZE >  4) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x114, 0xf, 0xe, 0));
+    if(WFSIZE >  8) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x118, 0xf, 0xc, 0));
+    if(WFSIZE > 16) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x142, 0xa, 0xf, 0));
+    if(WFSIZE > 32) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x143, 0xc, 0xf, 0));
+}
+
+// DPP-based wavefront reduction sum
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void rocsparse_wfreduce_sum(int* sum)
+{
+    if(WFSIZE >  1) *sum += __hip_move_dpp(*sum, 0x111, 0xf, 0xf, 0);
+    if(WFSIZE >  2) *sum += __hip_move_dpp(*sum, 0x112, 0xf, 0xf, 0);
+    if(WFSIZE >  4) *sum += __hip_move_dpp(*sum, 0x114, 0xf, 0xe, 0);
+    if(WFSIZE >  8) *sum += __hip_move_dpp(*sum, 0x118, 0xf, 0xc, 0);
+    if(WFSIZE > 16) *sum += __hip_move_dpp(*sum, 0x142, 0xa, 0xf, 0);
+    if(WFSIZE > 32) *sum += __hip_move_dpp(*sum, 0x143, 0xc, 0xf, 0);
 }
 
 // DPP-based float wavefront reduction sum

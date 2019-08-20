@@ -33,8 +33,9 @@
 #include <vector>
 
 /*! \brief typedefs to opaque info structs */
-typedef struct _rocsparse_csrmv_info* rocsparse_csrmv_info;
-typedef struct _rocsparse_csrtr_info* rocsparse_csrtr_info;
+typedef struct _rocsparse_csrmv_info*   rocsparse_csrmv_info;
+typedef struct _rocsparse_csrtr_info*   rocsparse_csrtr_info;
+typedef struct _rocsparse_csrgemm_info* rocsparse_csrgemm_info;
 
 /********************************************************************************
  * \brief rocsparse_handle is a structure holding the rocsparse library context.
@@ -140,10 +141,11 @@ struct _rocsparse_hyb_mat
 struct _rocsparse_mat_info
 {
     // info structs
-    rocsparse_csrmv_info csrmv_info       = nullptr;
-    rocsparse_csrtr_info csrilu0_info     = nullptr;
-    rocsparse_csrtr_info csrsv_upper_info = nullptr;
-    rocsparse_csrtr_info csrsv_lower_info = nullptr;
+    rocsparse_csrmv_info   csrmv_info       = nullptr;
+    rocsparse_csrtr_info   csrilu0_info     = nullptr;
+    rocsparse_csrtr_info   csrsv_upper_info = nullptr;
+    rocsparse_csrtr_info   csrsv_lower_info = nullptr;
+    rocsparse_csrgemm_info csrgemm_info     = nullptr;
 };
 
 /********************************************************************************
@@ -214,6 +216,33 @@ rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info);
  * \brief Destroy csrmv info.
  *******************************************************************************/
 rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info);
+
+/********************************************************************************
+ * \brief rocsparse_csrgemm_info is a structure holding the rocsparse csrgemm
+ * info data gathered during csrgemm_buffer_size. It must be initialized using
+ * the rocsparse_create_csrgemm_info() routine. It should be destroyed at the
+ * end using rocsparse_destroy_csrgemm_info().
+ *******************************************************************************/
+struct _rocsparse_csrgemm_info
+{
+    // Perform alpha * A * B
+    bool mul = true;
+    // Perform beta * D
+    bool add = true;
+};
+
+/********************************************************************************
+ * \brief rocsparse_csrgemm_info is a structure holding the rocsparse csrgemm
+ * info data gathered during csrgemm_buffer_size. It must be initialized using
+ * the rocsparse_create_csrgemm_info() routine. It should be destroyed at the
+ * end using rocsparse_destroy_csrgemm_info().
+ *******************************************************************************/
+rocsparse_status rocsparse_create_csrgemm_info(rocsparse_csrgemm_info* info);
+
+/********************************************************************************
+ * \brief Destroy csrgemm info.
+ *******************************************************************************/
+rocsparse_status rocsparse_destroy_csrgemm_info(rocsparse_csrgemm_info info);
 
 /********************************************************************************
  * \brief ELL format indexing

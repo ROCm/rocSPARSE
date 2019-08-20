@@ -60,6 +60,9 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# If OpenMP is available, we can use it to speed up some tests
+find_package(OpenMP QUIET)
+
 if(BUILD_CLIENTS_SAMPLES)
   add_subdirectory(samples)
 endif()

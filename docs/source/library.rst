@@ -19,6 +19,7 @@ rocSPARSE is a library that contains basic linear algebra subroutines for sparse
 * :ref:`rocsparse_level1_functions_` describe operations between a vector in sparse format and a vector in dense format.
 * :ref:`rocsparse_level2_functions_` describe operations between a matrix in sparse format and a vector in dense format.
 * :ref:`rocsparse_level3_functions_` describe operations between a matrix in sparse format and multiple vectors in dense format.
+* :ref:`rocsparse_extra_functions_` describe operations that manipulate sparse matrices.
 * :ref:`rocsparse_precond_functions_` describe manipulations on a matrix in sparse format to obtain a preconditioner.
 * :ref:`rocsparse_conversion_functions_` describe operations on a matrix in sparse format to obtain a different matrix format.
 
@@ -777,7 +778,7 @@ rocsparse_csrsv_solve()
 .. doxygenfunction:: rocsparse_dcsrsv_solve
 
 rocsparse_csrsv_clear()
-********************************
+***********************
 
 .. doxygenfunction:: rocsparse_csrsv_clear
 
@@ -791,11 +792,39 @@ This module holds all sparse level 3 routines.
 The sparse level 3 routines describe operations between a matrix in sparse format and multiple vectors in dense format that can also be seen as a dense matrix.
 
 rocsparse_csrmm()
-*********************
+*****************
 
 .. doxygenfunction:: rocsparse_scsrmm
   :outline:
 .. doxygenfunction:: rocsparse_dcsrmm
+
+.. _rocsparse_extra_functions_:
+
+Sparse Extra Functions
+----------------------
+
+This module holds all sparse extra routines.
+
+The sparse extra routines describe operations that manipulate sparse matrices.
+
+rocsparse_csrgemm_buffer_size()
+*******************************
+
+.. doxygenfunction:: rocsparse_scsrgemm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrgemm_buffer_size
+
+rocsparse_csrgemm_nnz()
+***********************
+
+.. doxygenfunction:: rocsparse_csrgemm_nnz
+
+rocsparse_csrgemm()
+*******************
+
+.. doxygenfunction:: rocsparse_scsrgemm
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrgemm
 
 .. _rocsparse_precond_functions_:
 
@@ -928,3 +957,7 @@ rocsparse_coosort_by_column()
 *****************************
 
 .. doxygenfunction:: rocsparse_coosort_by_column
+
+Bibliography
+------------
+.. bibliography:: references.bib
