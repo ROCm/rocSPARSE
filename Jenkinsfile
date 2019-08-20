@@ -12,7 +12,7 @@ import com.amd.docker.*
 // Mostly generated from snippet generator 'properties; set job properties'
 // Time-based triggers added to execute nightly tests, eg '30 2 * * *' means 2:30 AM
 properties([
-    pipelineTriggers([cron('0 22 * * *'), [$class: 'PeriodicFolderTrigger', interval: '5m']]),
+    pipelineTriggers([cron('0 23 * * *'), [$class: 'PeriodicFolderTrigger', interval: '5m']]),
     buildDiscarder(logRotator(
       artifactDaysToKeepStr: '',
       artifactNumToKeepStr: '',
@@ -129,7 +129,7 @@ rocSPARSECI:
                     set -x
                     cd ${project.paths.project_build_prefix}/build/release
                     make package
-                    rm -rf package && mkdir -p package
+                    mkdir -p package
                     mv *.rpm package/
                     rpm -qlp package/*.rpm
                 """
@@ -147,7 +147,7 @@ rocSPARSECI:
                     set -x
                     cd ${project.paths.project_build_prefix}/build/release
                     make package
-                    rm -rf package && mkdir -p package
+                    mkdir -p package
                     mv *.deb package/
                     dpkg -c package/*.deb
                 """
