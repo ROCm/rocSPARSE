@@ -104,7 +104,7 @@ install_zypper_packages( )
   for package in "${package_dependencies[@]}"; do
     if [[ $(rpm -q ${package} &> /dev/null; echo $? ) -ne 0 ]]; then
       printf "\033[32mInstalling \033[33m${package}\033[32m from distro package manager\033[0m\n"
-      elevate_if_not_root zypper -y --nogpgcheck install ${package}
+      elevate_if_not_root zypper -n --nogpgcheck install ${package}
     fi
   done
 }
@@ -365,7 +365,7 @@ pushd .
         elevate_if_not_root dnf install rocsparse-*.rpm
       ;;
       sles)
-        elevate_if_not_root zypper -y install rocsparse-*.rpm
+        elevate_if_not_root zypper -n --nogpg-checks install rocsparse-*.rpm
       ;;
     esac
 
