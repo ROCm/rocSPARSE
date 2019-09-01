@@ -12,7 +12,7 @@ ARG user_uid
 # * rocsparse-test: gtest gtest-devel
 # * rocsparse-bench: boost-devel
 # * libhsakmt.so: numactl-libs
-RUN zypper -y update && zypper install -y \
+RUN zypper -n update && zypper -n install \
     sudo \
     rock-dkms \
     ca-certificates \
