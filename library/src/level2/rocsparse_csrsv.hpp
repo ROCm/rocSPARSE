@@ -88,6 +88,12 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
         return rocsparse_status_not_implemented;
     }
 
+    // Check operation type
+    if(trans != rocsparse_operation_none)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     // Check sizes
     if(m < 0)
     {
@@ -378,6 +384,12 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
               analysis,
               (const void*&)temp_buffer);
 
+    // Check operation type
+    if(trans != rocsparse_operation_none)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     // Check index base
     if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
     {
@@ -658,6 +670,12 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
                   (const void*&)y,
                   policy,
                   (const void*&)temp_buffer);
+    }
+
+    // Check operation type
+    if(trans != rocsparse_operation_none)
+    {
+        return rocsparse_status_not_implemented;
     }
 
     // Check index base
