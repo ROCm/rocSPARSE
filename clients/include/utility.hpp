@@ -439,7 +439,16 @@ rocsparse_int read_mtx_matrix(const char*                 filename,
     // Read dimensions
     rocsparse_int snnz;
 
-    sscanf(line, "%d %d %d", &nrow, &ncol, &snnz);
+    int inrow;
+    int incol;
+    int innz;
+
+    sscanf(line, "%d %d %d", &inrow, &incol, &innz);
+
+    nrow = static_cast<rocsparse_int>(inrow);
+    ncol = static_cast<rocsparse_int>(incol);
+    snnz = static_cast<rocsparse_int>(innz);
+
     nnz = symm ? (snnz - nrow) * 2 + nrow : snnz;
 
     std::vector<rocsparse_int> unsorted_row(nnz);

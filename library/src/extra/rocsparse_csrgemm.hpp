@@ -487,14 +487,14 @@ rocsparse_status rocsparse_csrgemm_mult_buffer_size_template(rocsparse_handle   
     *buffer_size = ((rocprim_max - 1) / 256 + 1) * 256;
 
     // Group arrays
-    *buffer_size += sizeof(int) * 256 * CSRGEMM_MAXGROUPS;
-    *buffer_size += sizeof(int) * 256;
-    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
+    *buffer_size += sizeof(rocsparse_int) * 256 * CSRGEMM_MAXGROUPS;
+    *buffer_size += sizeof(rocsparse_int) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * m - 1) / 256 + 1) * 256;
 
     // Permutation arrays
-    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
-    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
-    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * m - 1) / 256 + 1) * 256;
 
     return rocsparse_status_success;
 }

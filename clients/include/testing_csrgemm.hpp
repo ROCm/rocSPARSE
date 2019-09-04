@@ -1988,6 +1988,12 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                         info,
                                                         &size));
 
+    // Buffer size must be greater than 4
+    if(size < 4)
+    {
+        return rocsparse_status_memory_error;
+    }
+
     if(argus.unit_check)
     {
         // Obtain csrgemm buffer size
