@@ -365,7 +365,7 @@ pushd .
         elevate_if_not_root dnf install rocsparse-*.rpm
       ;;
       sles)
-        elevate_if_not_root zypper -n --nogpg-checks install rocsparse-*.rpm
+        elevate_if_not_root zypper -n --nogpgcheck install rocsparse-*.rpm
       ;;
     esac
 
