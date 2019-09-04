@@ -30,12 +30,12 @@
 #include <unistd.h>
 #include <vector>
 
-typedef rocsparse_index_base                                base;
-typedef std::tuple<int, int, double, double, base, bool>    csrmv_tuple;
-typedef std::tuple<double, double, base, std::string, bool> csrmv_bin_tuple;
+typedef rocsparse_index_base                                                 base;
+typedef std::tuple<rocsparse_int, rocsparse_int, double, double, base, bool> csrmv_tuple;
+typedef std::tuple<double, double, base, std::string, bool>                  csrmv_bin_tuple;
 
-int csr_M_range[] = {-1, 0, 500, 7111};
-int csr_N_range[] = {-3, 0, 842, 4441};
+rocsparse_int csr_M_range[] = {-1, 0, 500, 7111};
+rocsparse_int csr_N_range[] = {-3, 0, 842, 4441};
 
 std::vector<double> csr_alpha_range = {2.0, 3.0};
 std::vector<double> csr_beta_range  = {0.0, 1.0};

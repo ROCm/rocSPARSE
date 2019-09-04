@@ -28,14 +28,15 @@
 #include <rocsparse.h>
 #include <string>
 
-typedef rocsparse_index_base                                             base;
-typedef rocsparse_operation                                              trans;
-typedef std::tuple<int, int, int, double, double, base, trans, trans>    csrmm_tuple;
-typedef std::tuple<int, double, double, base, trans, trans, std::string> csrmm_bin_tuple;
+typedef rocsparse_index_base base;
+typedef rocsparse_operation  trans;
+typedef std::tuple<rocsparse_int, rocsparse_int, rocsparse_int, double, double, base, trans, trans>
+                                                                                   csrmm_tuple;
+typedef std::tuple<rocsparse_int, double, double, base, trans, trans, std::string> csrmm_bin_tuple;
 
-int csrmm_M_range[] = {-1, 0, 42, 511, 3521};
-int csrmm_N_range[] = {-1, 0, 13, 33, 64, 73};
-int csrmm_K_range[] = {-1, 0, 50, 254, 1942};
+rocsparse_int csrmm_M_range[] = {-1, 0, 42, 511, 3521};
+rocsparse_int csrmm_N_range[] = {-1, 0, 13, 33, 64, 73};
+rocsparse_int csrmm_K_range[] = {-1, 0, 50, 254, 1942};
 
 double csrmm_alpha_range[] = {-1.0, 0.0, 3.3};
 double csrmm_beta_range[]  = {-0.3, 0.0, 1.0};

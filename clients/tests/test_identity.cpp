@@ -28,9 +28,9 @@
 #include <rocsparse.h>
 #include <vector>
 
-int identity_N_range[] = {-3, 0, 33, 242, 623, 1000};
+rocsparse_int identity_N_range[] = {-3, 0, 33, 242, 623, 1000};
 
-class parameterized_identity : public testing::TestWithParam<int>
+class parameterized_identity : public testing::TestWithParam<rocsparse_int>
 {
 protected:
     parameterized_identity() {}
@@ -39,7 +39,7 @@ protected:
     virtual void TearDown() {}
 };
 
-Arguments setup_identity_arguments(int n)
+Arguments setup_identity_arguments(rocsparse_int n)
 {
     Arguments arg;
     arg.N      = n;

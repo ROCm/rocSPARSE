@@ -28,11 +28,11 @@
 #include <rocsparse.h>
 #include <vector>
 
-typedef rocsparse_index_base       base;
-typedef std::tuple<int, int, base> gthr_tuple;
+typedef rocsparse_index_base                           base;
+typedef std::tuple<rocsparse_int, rocsparse_int, base> gthr_tuple;
 
-int gthr_N_range[]   = {12000, 15332, 22031};
-int gthr_nnz_range[] = {-1, 0, 5, 10, 500, 1000, 7111, 10000};
+rocsparse_int gthr_N_range[]   = {12000, 15332, 22031};
+rocsparse_int gthr_nnz_range[] = {-1, 0, 5, 10, 500, 1000, 7111, 10000};
 
 base gthr_idx_base_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 

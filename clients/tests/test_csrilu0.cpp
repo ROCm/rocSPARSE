@@ -30,11 +30,11 @@
 #include <unistd.h>
 #include <vector>
 
-typedef rocsparse_index_base          base;
-typedef std::tuple<int, base>         csrilu0_tuple;
-typedef std::tuple<base, std::string> csrilu0_bin_tuple;
+typedef rocsparse_index_base            base;
+typedef std::tuple<rocsparse_int, base> csrilu0_tuple;
+typedef std::tuple<base, std::string>   csrilu0_bin_tuple;
 
-int csrilu0_M_range[] = {-1, 0, 50, 647};
+rocsparse_int csrilu0_M_range[] = {-1, 0, 50, 647};
 
 base csrilu0_idxbase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 
