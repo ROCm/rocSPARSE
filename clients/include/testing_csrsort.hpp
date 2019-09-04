@@ -438,8 +438,8 @@ rocsparse_status testing_csrsort(Arguments argus)
 
     if(argus.timing)
     {
-        rocsparse_int number_cold_calls = 2;
-        rocsparse_int number_hot_calls  = argus.iters;
+        int number_cold_calls = 2;
+        int number_hot_calls  = argus.iters;
 
         // Allocate buffer for csrsort
         rocsparse_csrsort_buffer_size(handle, m, n, nnz, dcsr_row_ptr, dcsr_col_ind, &buffer_size);
@@ -448,7 +448,7 @@ rocsparse_status testing_csrsort(Arguments argus)
             = rocsparse_unique_ptr{device_malloc(sizeof(char) * buffer_size), device_free};
         void* dbuffer = (void*)dbuffer_managed.get();
 
-        for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
+        for(int iter = 0; iter < number_cold_calls; ++iter)
         {
             rocsparse_csrsort(
                 handle, m, n, nnz, descr, dcsr_row_ptr, dcsr_col_ind, nullptr, dbuffer);
@@ -456,7 +456,7 @@ rocsparse_status testing_csrsort(Arguments argus)
 
         double gpu_time_used = get_time_us();
 
-        for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
+        for(int iter = 0; iter < number_hot_calls; ++iter)
         {
             rocsparse_csrsort(
                 handle, m, n, nnz, descr, dcsr_row_ptr, dcsr_col_ind, nullptr, dbuffer);
