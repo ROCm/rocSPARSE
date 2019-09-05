@@ -234,14 +234,14 @@ rocsparse_status testing_axpyi(Arguments argus)
         int number_hot_calls  = argus.iters;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-        for(rocsparse_int iter = 0; iter < number_cold_calls; iter++)
+        for(int iter = 0; iter < number_cold_calls; iter++)
         {
             rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy_1, idx_base);
         }
 
         double gpu_time_used = get_time_us(); // in microseconds
 
-        for(rocsparse_int iter = 0; iter < number_hot_calls; iter++)
+        for(int iter = 0; iter < number_hot_calls; iter++)
         {
             rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy_1, idx_base);
         }

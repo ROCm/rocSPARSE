@@ -29,11 +29,12 @@
 #include <string>
 #include <vector>
 
-typedef std::tuple<int, int, rocsparse_operation, int, rocsparse_index_base>    coosort_tuple;
+typedef std::tuple<rocsparse_int, rocsparse_int, rocsparse_operation, int, rocsparse_index_base>
+                                                                                coosort_tuple;
 typedef std::tuple<rocsparse_operation, int, rocsparse_index_base, std::string> coosort_bin_tuple;
 
-int                  coosort_M_range[] = {-1, 0, 10, 500, 3872, 10000};
-int                  coosort_N_range[] = {-3, 0, 33, 242, 1623, 10000};
+rocsparse_int        coosort_M_range[] = {-1, 0, 10, 500, 3872, 10000};
+rocsparse_int        coosort_N_range[] = {-3, 0, 33, 242, 1623, 10000};
 rocsparse_operation  coosort_trans[]   = {rocsparse_operation_none, rocsparse_operation_transpose};
 int                  coosort_perm[]    = {0, 1};
 rocsparse_index_base coosort_base[]    = {rocsparse_index_base_zero, rocsparse_index_base_one};
