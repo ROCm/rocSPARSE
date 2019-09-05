@@ -57,6 +57,11 @@ __device__ __forceinline__ int rocsparse_atomic_load(const int* ptr, int memorde
 
 __device__ __forceinline__ void rocsparse_atomic_store(int* ptr, int val, int memorder) { __atomic_store_n(ptr, val, memorder); }
 
+__device__ __forceinline__ int64_t atomicMin(int64_t* ptr, int64_t val) { return atomicMin((unsigned long long*)ptr, val); }
+__device__ __forceinline__ int64_t atomicMax(int64_t* ptr, int64_t val) { return atomicMax((unsigned long long*)ptr, val); }
+__device__ __forceinline__ int64_t atomicAdd(int64_t* ptr, int64_t val) { return atomicAdd((unsigned long long*)ptr, val); }
+__device__ __forceinline__ int64_t atomicCAS(int64_t* ptr, int64_t cmp, int64_t val) { return atomicCAS((unsigned long long*)ptr, cmp, val); }
+
 // Block reduce kernel computing block sum
 template <typename T, unsigned int BLOCKSIZE>
 __device__ __forceinline__ void rocsparse_blockreduce_sum(int i, T* data)
@@ -129,6 +134,64 @@ __device__ __forceinline__ void rocsparse_wfreduce_min(int* minimum)
     if(WFSIZE > 32) *minimum = min(*minimum, __hip_move_dpp(*minimum, 0x143, 0xc, 0xf, 0));
 }
 
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void rocsparse_wfreduce_min(int64_t* minimum)
+{
+    typedef union i64_b32
+    {
+        int64_t i64;
+        uint32_t b32[2];
+    } i64_b32_t;
+
+    i64_b32_t upper_min;
+    i64_b32_t temp_min;
+    temp_min.i64 = *minimum;
+
+    if(WFSIZE > 1)
+    {
+        upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x111, 0xf, 0xf, false);
+        upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x111, 0xf, 0xf, false);
+        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+    }
+
+    if(WFSIZE > 2)
+    {
+        upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x112, 0xf, 0xf, false);
+        upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x112, 0xf, 0xf, false);
+        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+    }
+
+    if(WFSIZE > 4)
+    {
+        upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x114, 0xf, 0xe, false);
+        upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x114, 0xf, 0xe, false);
+        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+    }
+
+    if(WFSIZE > 8)
+    {
+        upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x118, 0xf, 0xc, false);
+        upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x118, 0xf, 0xc, false);
+        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+    }
+
+    if(WFSIZE > 16)
+    {
+        upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x142, 0xa, 0xf, false);
+        upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x142, 0xa, 0xf, false);
+        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+    }
+
+    if(WFSIZE > 32)
+    {
+        upper_min.b32[0] = __hip_move_dpp(temp_min.b32[0], 0x143, 0xc, 0xf, false);
+        upper_min.b32[1] = __hip_move_dpp(temp_min.b32[1], 0x143, 0xc, 0xf, false);
+        temp_min.i64 = min(temp_min.i64, upper_min.i64);
+    }
+
+    *minimum = temp_min.i64;
+}
+
 // DPP-based wavefront reduction sum
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void rocsparse_wfreduce_sum(int* sum)
@@ -139,6 +202,64 @@ __device__ __forceinline__ void rocsparse_wfreduce_sum(int* sum)
     if(WFSIZE >  8) *sum += __hip_move_dpp(*sum, 0x118, 0xf, 0xc, 0);
     if(WFSIZE > 16) *sum += __hip_move_dpp(*sum, 0x142, 0xa, 0xf, 0);
     if(WFSIZE > 32) *sum += __hip_move_dpp(*sum, 0x143, 0xc, 0xf, 0);
+}
+
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void rocsparse_wfreduce_sum(int64_t* sum)
+{
+    typedef union i64_b32
+    {
+        int64_t i64;
+        uint32_t b32[2];
+    } i64_b32_t;
+
+    i64_b32_t upper_sum;
+    i64_b32_t temp_sum;
+    temp_sum.i64 = *sum;
+
+    if(WFSIZE > 1)
+    {
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x111, 0xf, 0xf, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x111, 0xf, 0xf, false);
+        temp_sum.i64 += upper_sum.i64;
+    }
+
+    if(WFSIZE > 2)
+    {
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x112, 0xf, 0xf, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x112, 0xf, 0xf, false);
+        temp_sum.i64 += upper_sum.i64;
+    }
+
+    if(WFSIZE > 4)
+    {
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x114, 0xf, 0xe, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x114, 0xf, 0xe, false);
+        temp_sum.i64 += upper_sum.i64;
+    }
+
+    if(WFSIZE > 8)
+    {
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x118, 0xf, 0xc, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x118, 0xf, 0xc, false);
+        temp_sum.i64 += upper_sum.i64;
+    }
+
+    if(WFSIZE > 16)
+    {
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x142, 0xa, 0xf, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x142, 0xa, 0xf, false);
+        temp_sum.i64 += upper_sum.i64;
+    }
+
+    if(WFSIZE > 32)
+    {
+        upper_sum.b32[0] = __hip_move_dpp(temp_sum.b32[0], 0x143, 0xc, 0xf, false);
+        upper_sum.b32[1] = __hip_move_dpp(temp_sum.b32[1], 0x143, 0xc, 0xf, false);
+        temp_sum.i64 += upper_sum.i64;
+    }
+
+    *sum = temp_sum.i64;
 }
 
 // DPP-based float wavefront reduction sum
