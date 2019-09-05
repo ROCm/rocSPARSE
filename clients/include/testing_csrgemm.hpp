@@ -1285,11 +1285,11 @@ static rocsparse_int csrgemm_nnz(rocsparse_int        m,
         std::vector<rocsparse_int> nnz(n, -1);
 
 #ifdef _OPENMP
-        int nthreads = omp_get_num_threads();
-        int tid      = omp_get_thread_num();
+        rocsparse_int nthreads = omp_get_num_threads();
+        rocsparse_int tid      = omp_get_thread_num();
 #else
-        int nthreads = 1;
-        int tid      = 0;
+        rocsparse_int nthreads = 1;
+        rocsparse_int tid      = 0;
 #endif
 
         rocsparse_int rows_per_thread = (m + nthreads - 1) / nthreads;
@@ -1396,11 +1396,11 @@ static void csrgemm(rocsparse_int        m,
         std::vector<rocsparse_int> nnz(n, -1);
 
 #ifdef _OPENMP
-        int nthreads = omp_get_num_threads();
-        int tid      = omp_get_thread_num();
+        rocsparse_int nthreads = omp_get_num_threads();
+        rocsparse_int tid      = omp_get_thread_num();
 #else
-        int nthreads = 1;
-        int tid      = 0;
+        rocsparse_int nthreads = 1;
+        rocsparse_int tid      = 0;
 #endif
 
         rocsparse_int rows_per_thread = (m + nthreads - 1) / nthreads;
@@ -1511,7 +1511,7 @@ static void csrgemm(rocsparse_int        m,
         rocsparse_int* col_entry = &col[row_begin];
         T*             val_entry = &val[row_begin];
 
-        std::sort(perm.begin(), perm.end(), [&](const int& a, const int& b) {
+        std::sort(perm.begin(), perm.end(), [&](const rocsparse_int& a, const rocsparse_int& b) {
             return col_entry[a] <= col_entry[b];
         });
 
@@ -1914,9 +1914,10 @@ rocsparse_status testing_csrgemm(Arguments argus)
               idx_base_B);
 
     // Allocate memory on device
-    rocsparse_int safe_K     = std::max(K, 1);
-    rocsparse_int safe_nnz_A = std::max(nnz_A, 1);
-    rocsparse_int safe_nnz_B = std::max(nnz_B, 1);
+    rocsparse_int one        = 1;
+    rocsparse_int safe_K     = std::max(K, one);
+    rocsparse_int safe_nnz_A = std::max(nnz_A, one);
+    rocsparse_int safe_nnz_B = std::max(nnz_B, one);
 
     auto dAptr_managed
         = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (M + 1)), device_free};
@@ -1986,6 +1987,12 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                         nullptr,
                                                         info,
                                                         &size));
+
+    // Buffer size must be greater than 4
+    if(size < 4)
+    {
+        return rocsparse_status_memory_error;
+    }
 
     if(argus.unit_check)
     {
@@ -2062,7 +2069,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                 dbuffer));
 
     // Allocate result matrix
-    rocsparse_int safe_nnz_C = std::max(hnnz_C_1, 1);
+    rocsparse_int safe_nnz_C = std::max(hnnz_C_1, one);
 
     auto dCcol_managed
         = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_nnz_C), device_free};

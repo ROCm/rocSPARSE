@@ -33,15 +33,17 @@
 typedef rocsparse_index_base base;
 typedef rocsparse_operation  trans;
 
-typedef std::tuple<int, int, int, double, base, base, base, trans, trans> csrgemm_tuple;
-typedef std::tuple<double, base, base, base, trans, trans, std::string>   csrgemm_bin_tuple;
+typedef std::
+    tuple<rocsparse_int, rocsparse_int, rocsparse_int, double, base, base, base, trans, trans>
+                                                                        csrgemm_tuple;
+typedef std::tuple<double, base, base, base, trans, trans, std::string> csrgemm_bin_tuple;
 
 double csrgemm_alpha_range[] = {0.0, 2.7};
 //double csrgemm_beta_range[] = {0.0, 1.3};
 
-int csrgemm_M_range[] = {-1, 0, 50, 647, 1799};
-int csrgemm_N_range[] = {-1, 0, 13, 523, 3712};
-int csrgemm_K_range[] = {-1, 0, 50, 254, 1942};
+rocsparse_int csrgemm_M_range[] = {-1, 0, 50, 647, 1799};
+rocsparse_int csrgemm_N_range[] = {-1, 0, 13, 523, 3712};
+rocsparse_int csrgemm_K_range[] = {-1, 0, 50, 254, 1942};
 
 base csrgemm_idxbaseA_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
 base csrgemm_idxbaseB_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};

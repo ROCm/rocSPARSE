@@ -251,13 +251,13 @@ rocsparse_status testing_coo2csr(Arguments argus)
         double cpu_time_used = get_time_us();
 
         // coo2csr on host
-        for(int i = 0; i < nnz; ++i)
+        for(rocsparse_int i = 0; i < nnz; ++i)
         {
             ++hcsr_row_ptr_gold[hcoo_row_ind[i] + 1 - idx_base];
         }
 
         hcsr_row_ptr_gold[0] = idx_base;
-        for(int i = 0; i < m; ++i)
+        for(rocsparse_int i = 0; i < m; ++i)
         {
             hcsr_row_ptr_gold[i + 1] += hcsr_row_ptr_gold[i];
         }
@@ -270,17 +270,17 @@ rocsparse_status testing_coo2csr(Arguments argus)
 
     if(argus.timing)
     {
-        rocsparse_int number_cold_calls = 2;
-        rocsparse_int number_hot_calls  = argus.iters;
+        int number_cold_calls = 2;
+        int number_hot_calls  = argus.iters;
 
-        for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
+        for(int iter = 0; iter < number_cold_calls; ++iter)
         {
             rocsparse_coo2csr(handle, dcoo_row_ind, nnz, m, dcsr_row_ptr, idx_base);
         }
 
         double gpu_time_used = get_time_us();
 
-        for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
+        for(int iter = 0; iter < number_hot_calls; ++iter)
         {
             rocsparse_coo2csr(handle, dcoo_row_ind, nnz, m, dcsr_row_ptr, idx_base);
         }

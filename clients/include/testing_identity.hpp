@@ -144,17 +144,17 @@ rocsparse_status testing_identity(Arguments argus)
 
     if(argus.timing)
     {
-        rocsparse_int number_cold_calls = 2;
-        rocsparse_int number_hot_calls  = argus.iters;
+        int number_cold_calls = 2;
+        int number_hot_calls  = argus.iters;
 
-        for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
+        for(int iter = 0; iter < number_cold_calls; ++iter)
         {
             rocsparse_create_identity_permutation(handle, n, dp);
         }
 
         double gpu_time_used = get_time_us();
 
-        for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
+        for(int iter = 0; iter < number_hot_calls; ++iter)
         {
             rocsparse_create_identity_permutation(handle, n, dp);
         }

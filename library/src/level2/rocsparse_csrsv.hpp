@@ -152,7 +152,7 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
     int*           ptr2         = reinterpret_cast<int*>(buffer_size);
 
     rocprim::double_buffer<rocsparse_int> dummy(ptr, ptr);
-    rocprim::double_buffer<rocsparse_int> dummy2(ptr2, ptr2);
+    rocprim::double_buffer<int>           dummy2(ptr2, ptr2);
 
     RETURN_IF_HIP_ERROR(
         rocprim::radix_sort_pairs(nullptr, rocprim_size, dummy2, dummy, m, 0, 32, stream));

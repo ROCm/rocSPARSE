@@ -29,12 +29,13 @@
 #include <string>
 #include <vector>
 
-typedef std::tuple<int, int, rocsparse_index_base, rocsparse_hyb_partition, int> csr2hyb_tuple;
+typedef std::tuple<rocsparse_int, rocsparse_int, rocsparse_index_base, rocsparse_hyb_partition, int>
+    csr2hyb_tuple;
 typedef std::tuple<rocsparse_index_base, rocsparse_hyb_partition, int, std::string>
     csr2hyb_bin_tuple;
 
-int csr2hyb_M_range[] = {-1, 0, 10, 500, 872, 1000};
-int csr2hyb_N_range[] = {-3, 0, 33, 242, 623, 1000};
+rocsparse_int csr2hyb_M_range[] = {-1, 0, 10, 500, 872, 1000};
+rocsparse_int csr2hyb_N_range[] = {-3, 0, 33, 242, 623, 1000};
 
 rocsparse_index_base csr2hyb_idx_base_range[]
     = {rocsparse_index_base_zero, rocsparse_index_base_one};

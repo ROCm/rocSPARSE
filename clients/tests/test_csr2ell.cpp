@@ -29,11 +29,12 @@
 #include <string>
 #include <vector>
 
-typedef std::tuple<int, int, rocsparse_index_base, rocsparse_index_base>    csr2ell_tuple;
+typedef std::tuple<rocsparse_int, rocsparse_int, rocsparse_index_base, rocsparse_index_base>
+                                                                            csr2ell_tuple;
 typedef std::tuple<rocsparse_index_base, rocsparse_index_base, std::string> csr2ell_bin_tuple;
 
-int csr2ell_M_range[] = {-1, 0, 10, 500, 872, 1000};
-int csr2ell_N_range[] = {-3, 0, 33, 242, 623, 1000};
+rocsparse_int csr2ell_M_range[] = {-1, 0, 10, 500, 872, 1000};
+rocsparse_int csr2ell_N_range[] = {-3, 0, 33, 242, 623, 1000};
 
 rocsparse_index_base csr2ell_csr_base_range[]
     = {rocsparse_index_base_zero, rocsparse_index_base_one};
