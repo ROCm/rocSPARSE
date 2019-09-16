@@ -2,13 +2,13 @@
 ARG base_image
 
 FROM ${base_image}
-LABEL maintainer="nico.trost@amd.com"
+LABEL maintainer="rocsparse-maintainer@amd.com"
 
 # Copy the rpm package of rocsparse into the container from host
 COPY *.rpm /tmp/
 
 # Install the rpm package, and print out contents of expected changed locations
-RUN zypper -n update && zypper -n install \
+RUN zypper -n update && zypper -n --no-gpg-checks install \
     /tmp/rocsparse-*.rpm \
   && rm -f /tmp/*.rpm \
   && zypper -n clean -all \
