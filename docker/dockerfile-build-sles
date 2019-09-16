@@ -2,13 +2,13 @@
 ARG base_image
 
 FROM ${base_image}
-LABEL maintainer="nico.trost@amd.com"
+LABEL maintainer="rocsparse-maintainer@amd.com"
 
 ARG user_uid
 
 # Install dependent packages
 # Dependencies: rocprim
-# * hcc-config.cmake: pkgconfig
+# * hcc-config.cmake: pkg-config
 # * rocsparse-test: gtest gtest-devel
 # * rocsparse-bench: boost-devel
 # * libhsakmt.so: numactl-libs
