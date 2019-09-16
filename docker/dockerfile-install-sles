@@ -8,7 +8,8 @@ LABEL maintainer="rocsparse-maintainer@amd.com"
 COPY *.rpm /tmp/
 
 # Install the rpm package, and print out contents of expected changed locations
-RUN zypper -n update && zypper -n --no-gpg-checks install \
+RUN zypper refresh
+RUN zypper -n --no-gpg-checks install \
     /tmp/rocsparse-*.rpm \
   && rm -f /tmp/*.rpm \
   && zypper -n clean -all \
