@@ -330,12 +330,12 @@ rocsparse_status testing_hybmv(Arguments argus)
     CHECK_HIP_ERROR(hipMemcpy(d_beta, &h_beta, sizeof(T), hipMemcpyHostToDevice));
 
     // ELL width limit
-    rocsparse_int width_limit = (2 * nnz - 1) / m + 1;
+    rocsparse_int width_limit = 2 * (nnz - 1) / m + 1;
 
     // Limit ELL user width
     if(part == rocsparse_hyb_partition_user)
     {
-        user_ell_width = user_ell_width * nnz / m;
+        user_ell_width = user_ell_width * (nnz / m);
         user_ell_width = std::min(width_limit, user_ell_width);
     }
 
@@ -357,6 +357,8 @@ rocsparse_status testing_hybmv(Arguments argus)
             return rocsparse_status_success;
         }
     }
+
+    CHECK_ROCSPARSE_ERROR(status);
 
     if(argus.unit_check)
     {
@@ -494,7 +496,7 @@ rocsparse_status testing_hybmv(Arguments argus)
 
         // Convert to miliseconds per call
         gpu_time_used     = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
-        size_t flops      = (h_alpha != 1.0) ? 3.0 * nnz : 2.0 * nnz;
+        size_t flops      = (h_alpha != 1.0) ? 3.0 * (double)nnz : 2.0 * (double)nnz;
         flops             = (h_beta != 0.0) ? flops + m : flops;
         double gpu_gflops = flops / gpu_time_used / 1e6;
         size_t ell_mem    = dhyb->ell_nnz * (sizeof(rocsparse_int) + sizeof(T));
