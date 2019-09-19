@@ -31,6 +31,8 @@
 #include "utility.hpp"
 
 #include <algorithm>
+#include <iomanip>
+#include <iostream>
 #include <rocsparse.h>
 #include <string>
 
@@ -545,9 +547,15 @@ rocsparse_status testing_coosort(Arguments argus)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
 
-        printf("m\t\tn\t\tnnz\t\tmsec\n");
-        printf("%8d\t%8d\t%9d\t%0.2lf\n", m, n, nnz, gpu_time_used);
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed);
+        std::cout.setf(std::ios::left);
+        std::cout << std::setw(12) << "m" << std::setw(12) << "n" << std::setw(12) << "nnz"
+                  << std::setw(12) << "msec" << std::endl;
+        std::cout << std::setw(12) << m << std::setw(12) << n << std::setw(12) << nnz
+                  << std::setw(12) << gpu_time_used << std::endl;
     }
+
     return rocsparse_status_success;
 }
 

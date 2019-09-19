@@ -32,6 +32,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
+#include <iostream>
 #include <limits>
 #include <rocsparse.h>
 #include <string>

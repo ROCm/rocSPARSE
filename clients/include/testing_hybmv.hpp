@@ -30,6 +30,8 @@
 #include "unit.hpp"
 #include "utility.hpp"
 
+#include <iomanip>
+#include <iostream>
 #include <rocsparse.h>
 #include <string>
 
@@ -505,16 +507,16 @@ rocsparse_status testing_hybmv(Arguments argus)
         memtrans          = (h_beta != 0.0) ? memtrans + m : memtrans;
         double bandwidth  = memtrans / gpu_time_used / 1e6;
 
-        printf("m\t\tn\t\tnnz\t\talpha\tbeta\tGFlops\tGB/s\tmsec\n");
-        printf("%8d\t%8d\t%9d\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\n",
-               m,
-               n,
-               dhyb->ell_nnz + dhyb->coo_nnz,
-               h_alpha,
-               h_beta,
-               gpu_gflops,
-               bandwidth,
-               gpu_time_used);
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed);
+        std::cout.setf(std::ios::left);
+        std::cout << std::setw(12) << "m" << std::setw(12) << "n" << std::setw(12) << "nnz"
+                  << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12)
+                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12) << "msec" << std::endl;
+        std::cout << std::setw(12) << m << std::setw(12) << n << std::setw(12)
+                  << dhyb->ell_nnz + dhyb->coo_nnz << std::setw(12) << h_alpha << std::setw(12)
+                  << h_beta << std::setw(12) << gpu_gflops << std::setw(12) << bandwidth
+                  << std::setw(12) << gpu_time_used << std::endl;
     }
 
     return rocsparse_status_success;
