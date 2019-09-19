@@ -85,7 +85,7 @@ static inline __device__ T sum2_reduce(
 {
     if(max_size > reduc_size)
     {
-        cur_sum += partial[lid + reduc_size];
+        cur_sum = cur_sum + partial[lid + reduc_size];
         __syncthreads();
         partial[lid] = cur_sum;
     }
@@ -240,7 +240,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
                     local_cur_val < local_last_val;
                     local_cur_val += numThreadsForRed)
                 {
-                    temp_sum += partialSums[local_cur_val];
+                    temp_sum = temp_sum + partialSums[local_cur_val];
                 }
             }
             __syncthreads();
@@ -287,7 +287,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
                 for(rocsparse_int local_cur_val = local_first_val; local_cur_val < local_last_val;
                     ++local_cur_val)
                 {
-                    temp_sum += partialSums[local_cur_val];
+                    temp_sum = temp_sum + partialSums[local_cur_val];
                 }
 
                 // After you've done the reduction into the temp_sum register,
