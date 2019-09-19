@@ -142,7 +142,7 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
             break;
         }
 
-        csr_val[j] = local_val /= diag_val;
+        csr_val[j] = local_val = local_val / diag_val;
 
         // Loop over the row the current column index depends on
         // Each lane processes one entry
@@ -251,7 +251,7 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
             break;
         }
 
-        csr_val[j] = local_val /= diag_val;
+        csr_val[j] = local_val = local_val / diag_val;
 
         // Loop over the row the current column index depends on
         // Each lane processes one entry

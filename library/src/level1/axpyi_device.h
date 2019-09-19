@@ -43,7 +43,8 @@ __device__ void axpyi_device(rocsparse_int        nnz,
         return;
     }
 
-    y[x_ind[idx] - idx_base] += alpha * x_val[idx];
+    rocsparse_int i = x_ind[idx] - idx_base;
+    y[i]            = fma(alpha, x_val[idx], y[i]);
 }
 
 #endif // AXPYI_DEVICE_H
