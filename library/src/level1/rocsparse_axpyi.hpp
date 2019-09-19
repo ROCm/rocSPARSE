@@ -162,7 +162,7 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
     }
     else
     {
-        if(*alpha == 0.0)
+        if(*alpha == static_cast<T>(0))
         {
             return rocsparse_status_success;
         }
