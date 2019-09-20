@@ -30,6 +30,8 @@
 #include "unit.hpp"
 #include "utility.hpp"
 
+#include <iomanip>
+#include <iostream>
 #include <rocsparse.h>
 #include <string>
 
@@ -2414,19 +2416,17 @@ rocsparse_status testing_csrgemm(Arguments argus)
         double bandwidth = (data_A + data_B + data_C) / gpu_time_used / 1e6;
 
         // Output
-        printf("m\t\tn\t\tk\t\tnnz_A\t\tnnz_B\t\tnnz_C\t\talpha\tbeta\tGFlop/s\tGB/s\tmsec\n");
-        printf("%8d\t%8d\t%8d\t%9d\t%9d\t%9d\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\n",
-               M,
-               N,
-               K,
-               nnz_A,
-               nnz_B,
-               hnnz_C_1,
-               *h_alpha,
-               0.0,
-               gflops,
-               bandwidth,
-               gpu_time_used);
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed);
+        std::cout.setf(std::ios::left);
+        std::cout << std::setw(12) << "m" << std::setw(12) << "n" << std::setw(12) << "k"
+                  << std::setw(12) << "nnz_A" << std::setw(12) << "nnz_B" << std::setw(12)
+                  << "nnz_C" << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12)
+                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12) << "msec" << std::endl;
+        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << K << std::setw(12)
+                  << nnz_A << std::setw(12) << nnz_B << std::setw(12) << hnnz_C_1 << std::setw(12)
+                  << *h_alpha << std::setw(12) << 0.0 << std::setw(12) << gflops << std::setw(12)
+                  << bandwidth << std::setw(12) << gpu_time_used << std::endl;
     }
 
     return rocsparse_status_success;

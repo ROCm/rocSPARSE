@@ -31,6 +31,8 @@
 #include "utility.hpp"
 
 #include <cmath>
+#include <iomanip>
+#include <iostream>
 #include <rocsparse.h>
 #include <string>
 
@@ -633,8 +635,13 @@ rocsparse_status testing_csrilu0(Arguments argus)
         size_t flt_data  = (nnz + nnz) * sizeof(T);
         double bandwidth = (int_data + flt_data) / gpu_time_used / 1e6;
 
-        printf("m\t\tnnz\t\tGB/s\tmsec\n");
-        printf("%8d\t%9d\t%0.2lf\t%0.2lf\n", m, nnz, bandwidth, gpu_time_used);
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed);
+        std::cout.setf(std::ios::left);
+        std::cout << std::setw(12) << "m" << std::setw(12) << "nnz" << std::setw(12) << "GB/s"
+                  << std::setw(12) << "msec" << std::endl;
+        std::cout << std::setw(12) << m << std::setw(12) << nnz << std::setw(12) << bandwidth
+                  << std::setw(12) << gpu_time_used << std::endl;
     }
 
     CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_clear(handle, info));

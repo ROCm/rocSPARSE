@@ -30,6 +30,8 @@
 #include "unit.hpp"
 #include "utility.hpp"
 
+#include <iomanip>
+#include <iostream>
 #include <rocsparse.h>
 
 using namespace rocsparse;
@@ -221,9 +223,15 @@ rocsparse_status testing_sctr(Arguments argus)
         double bandwidth
             = (sizeof(rocsparse_int) * nnz + sizeof(T) * 2.0 * nnz) / gpu_time_used / 1e3;
 
-        printf("nnz\t\tGB/s\tusec\n");
-        printf("%9d\t%0.2lf\t%0.2lf\n", nnz, bandwidth, gpu_time_used);
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed);
+        std::cout.setf(std::ios::left);
+        std::cout << std::setw(12) << "nnz" << std::setw(12) << "GB/s" << std::setw(12) << "usec"
+                  << std::endl;
+        std::cout << std::setw(12) << nnz << std::setw(12) << bandwidth << std::setw(12)
+                  << gpu_time_used << std::endl;
     }
+
     return rocsparse_status_success;
 }
 
