@@ -23,6 +23,8 @@
 
 #include "utility.hpp"
 
+#include <iomanip>
+#include <iostream>
 #include <rocsparse.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -166,16 +168,16 @@ int main(int argc, char* argv[])
         = static_cast<double>(sizeof(double) * (4 * m + nnz) + sizeof(rocsparse_int) * (2 * nnz))
           / time / 1e6;
     double gflops = static_cast<double>(3 * nnz) / time / 1e6;
-    printf("m\t\tn\t\tnnz\t\talpha\tbeta\tGFlops\tGB/s\tusec\n");
-    printf("%8d\t%8d\t%9d\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\n",
-           m,
-           n,
-           nnz,
-           halpha,
-           hbeta,
-           gflops,
-           bandwidth,
-           time);
+
+    std::cout.precision(2);
+    std::cout.setf(std::ios::fixed);
+    std::cout.setf(std::ios::left);
+    std::cout << std::setw(12) << "m" << std::setw(12) << "n" << std::setw(12) << "nnz"
+              << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12) << "GFlop/s"
+              << std::setw(12) << "GB/s" << std::setw(12) << "msec" << std::endl;
+    std::cout << std::setw(12) << m << std::setw(12) << n << std::setw(12) << nnz << std::setw(12)
+              << halpha << std::setw(12) << hbeta << std::setw(12) << gflops << std::setw(12)
+              << bandwidth << std::setw(12) << time << std::endl;
 
     // Clear up on device
     hipFree(dArow);
