@@ -64,19 +64,19 @@ std::string csrgemm_b_bin[] = {"rma10.bin",
 class parameterized_csrgemm_b : public testing::TestWithParam<csrgemm_b_tuple>
 {
 protected:
-    parameterized_csrgemm_b() { }
-    virtual ~parameterized_csrgemm_b() { }
-    virtual void SetUp() { }
-    virtual void TearDown() { }
+    parameterized_csrgemm_b() {}
+    virtual ~parameterized_csrgemm_b() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
 class parameterized_csrgemm_b_bin : public testing::TestWithParam<csrgemm_b_bin_tuple>
 {
 protected:
-    parameterized_csrgemm_b_bin() { }
-    virtual ~parameterized_csrgemm_b_bin() { }
-    virtual void SetUp() { }
-    virtual void TearDown() { }
+    parameterized_csrgemm_b_bin() {}
+    virtual ~parameterized_csrgemm_b_bin() {}
+    virtual void SetUp() {}
+    virtual void TearDown() {}
 };
 
 Arguments setup_csrgemm_b_arguments(csrgemm_b_tuple tup)
