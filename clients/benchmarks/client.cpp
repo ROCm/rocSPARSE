@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
          "Validate GPU results with CPU? 0 = No, 1 = Yes (default: No)")
 
         ("iters,i",
-         po::value<rocsparse_int>(&argus.iters)->default_value(10),
+         po::value<int>(&argus.iters)->default_value(10),
          "Iterations to run inside timing loop")
 
         ("device,d",

@@ -7,7 +7,7 @@ The latest rocSPARSE documentation and API description can be found [here][].
 ## Requirements
 * Git
 * CMake (3.5 or later)
-* AMD [ROCm] 2.5 platform
+* AMD [ROCm] 2.5 platform or later
 
 Optional:
 * [GTest][]
