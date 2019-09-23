@@ -30,6 +30,8 @@
 #include "unit.hpp"
 #include "utility.hpp"
 
+#include <iomanip>
+#include <iostream>
 #include <rocsparse.h>
 
 using namespace rocsparse;
@@ -201,14 +203,14 @@ rocsparse_status testing_gthr(Arguments argus)
         int number_hot_calls  = argus.iters;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-        for(rocsparse_int iter = 0; iter < number_cold_calls; iter++)
+        for(int iter = 0; iter < number_cold_calls; iter++)
         {
             rocsparse_gthr(handle, nnz, dy, dx_val, dx_ind, idx_base);
         }
 
         double gpu_time_used = get_time_us(); // in microseconds
 
-        for(rocsparse_int iter = 0; iter < number_hot_calls; iter++)
+        for(int iter = 0; iter < number_hot_calls; iter++)
         {
             rocsparse_gthr(handle, nnz, dy, dx_val, dx_ind, idx_base);
         }
@@ -217,9 +219,15 @@ rocsparse_status testing_gthr(Arguments argus)
         double bandwidth
             = (sizeof(rocsparse_int) * nnz + sizeof(T) * 2.0 * nnz) / gpu_time_used / 1e3;
 
-        printf("nnz\t\tGB/s\tusec\n");
-        printf("%9d\t%0.2lf\t%0.2lf\n", nnz, bandwidth, gpu_time_used);
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed);
+        std::cout.setf(std::ios::left);
+        std::cout << std::setw(12) << "nnz" << std::setw(12) << "GB/s" << std::setw(12) << "usec"
+                  << std::endl;
+        std::cout << std::setw(12) << nnz << std::setw(12) << bandwidth << std::setw(12)
+                  << gpu_time_used << std::endl;
     }
+
     return rocsparse_status_success;
 }
 

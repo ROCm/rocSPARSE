@@ -40,7 +40,7 @@ __device__ void coomv_scale_device(rocsparse_int size, T beta, T* __restrict__ d
         return;
     }
 
-    data[gid] *= beta;
+    data[gid] = data[gid] * beta;
 }
 
 // Implementation motivated by papers 'Efficient Sparse Matrix-Vector Multiplication on CUDA',
@@ -125,11 +125,11 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
             rocsparse_int prevrow = shared_row[tid + WF_SIZE - 1];
             if(row == prevrow)
             {
-                val += shared_val[tid + WF_SIZE - 1];
+                val = val + shared_val[tid + WF_SIZE - 1];
             }
             else if(prevrow >= 0)
             {
-                y[prevrow] += shared_val[tid + WF_SIZE - 1];
+                y[prevrow] = y[prevrow] + shared_val[tid + WF_SIZE - 1];
             }
         }
 
@@ -149,7 +149,7 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
             {
                 if(row == shared_row[tid - j])
                 {
-                    val += shared_val[tid - j];
+                    val = val + shared_val[tid - j];
                 }
             }
             __syncthreads();
@@ -165,7 +165,7 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
         {
             if(row != shared_row[tid + 1] && row >= 0)
             {
-                y[row] += val;
+                y[row] = y[row] + val;
             }
         }
 
@@ -200,7 +200,7 @@ static __device__ void segmented_blockreduce(const rocsparse_int* rows, T* vals)
         }
         __syncthreads();
 
-        vals[tid] += val;
+        vals[tid] = vals[tid] + val;
         __syncthreads();
     }
 }
@@ -240,7 +240,7 @@ __global__ void coomvn_general_block_reduce(rocsparse_int nnz,
         rocsparse_int row = shared_row[tid];
         if(row != shared_row[tid + 1] && row >= 0)
         {
-            y[row] += shared_val[tid];
+            y[row] = y[row] + shared_val[tid];
         }
 
         __syncthreads();

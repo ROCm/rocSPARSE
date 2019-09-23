@@ -405,7 +405,7 @@ __device__ void csrsv_device(rocsparse_int m,
     // For unit diagonal, this would be multiplication with one
     if(diag_type == rocsparse_diag_type_non_unit)
     {
-        local_sum *= diagonal[wid];
+        local_sum = local_sum * diagonal[wid];
     }
 
     if(lid == WF_SIZE - 1)

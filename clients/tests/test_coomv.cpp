@@ -29,12 +29,12 @@
 #include <string>
 #include <vector>
 
-typedef rocsparse_index_base                          base;
-typedef std::tuple<int, int, double, double, base>    coomv_tuple;
-typedef std::tuple<double, double, base, std::string> coomv_bin_tuple;
+typedef rocsparse_index_base                                           base;
+typedef std::tuple<rocsparse_int, rocsparse_int, double, double, base> coomv_tuple;
+typedef std::tuple<double, double, base, std::string>                  coomv_bin_tuple;
 
-int coo_M_range[] = {-1, 0, 10, 500, 7111, 10000};
-int coo_N_range[] = {-3, 0, 33, 842, 4441, 10000};
+rocsparse_int coo_M_range[] = {-1, 0, 10, 500, 7111, 10000};
+rocsparse_int coo_N_range[] = {-3, 0, 33, 842, 4441, 10000};
 
 std::vector<double> coo_alpha_range = {2.0, 3.0};
 std::vector<double> coo_beta_range  = {0.0, 0.67, 1.0};

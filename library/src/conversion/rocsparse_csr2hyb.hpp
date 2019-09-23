@@ -140,7 +140,7 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
     csr_nnz -= descr->base;
 
     // Maximum ELL row width allowed
-    rocsparse_int max_row_nnz = (2 * csr_nnz - 1) / m + 1;
+    rocsparse_int max_row_nnz = 2 * (csr_nnz - 1) / m + 1;
 
     // Check user_ell_width
     if(partition_type == rocsparse_hyb_partition_user)

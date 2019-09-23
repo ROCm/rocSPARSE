@@ -35,10 +35,10 @@ typedef rocsparse_operation  op;
 typedef rocsparse_diag_type  diag;
 typedef rocsparse_fill_mode  fill;
 
-typedef std::tuple<int, double, base, op, diag, fill>         csrsv_tuple;
-typedef std::tuple<double, base, op, diag, fill, std::string> csrsv_bin_tuple;
+typedef std::tuple<rocsparse_int, double, base, op, diag, fill> csrsv_tuple;
+typedef std::tuple<double, base, op, diag, fill, std::string>   csrsv_bin_tuple;
 
-int csrsv_M_range[] = {-1, 0, 50, 647};
+rocsparse_int csrsv_M_range[] = {-1, 0, 50, 647};
 
 double csrsv_alpha_range[] = {1.0, 2.3, -3.7};
 

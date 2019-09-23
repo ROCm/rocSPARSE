@@ -34,7 +34,7 @@ rocSPARSECI:
     rocsparse.paths.build_command = './install.sh -c'
 
     // Define test architectures, optional rocm version argument is available
-    def nodes = new dockerNodes(['gfx900 && centos7', 'gfx906 && centos7', 'gfx900 && ubuntu', 'gfx906 && ubuntu'], rocsparse)
+    def nodes = new dockerNodes(['gfx900 && centos7', 'gfx906 && centos7', 'gfx900 && ubuntu', 'gfx906 && ubuntu', 'gfx906 && sles'], rocsparse)
 
     boolean formatCheck = true
 
@@ -54,6 +54,14 @@ rocSPARSECI:
                     LD_LIBRARY_PATH=/opt/rocm/hcc/lib CXX=/opt/rocm/bin/hipcc ${project.paths.build_command} --hip-clang
                 """
         }
+        else if(platform.jenkinsLabel.contains('sles'))
+        {
+            command = """#!/usr/bin/env bash
+                    set -x
+                    cd ${project.paths.project_build_prefix}
+                    LD_LIBRARY_PATH=/opt/rocm/hcc/lib CXX=/opt/rocm/bin/hipcc sudo ${project.paths.build_command}
+                """
+        }
         else
         {
             command = """#!/usr/bin/env bash
@@ -71,7 +79,7 @@ rocSPARSECI:
 
         def command
 
-        if(platform.jenkinsLabel.contains('centos'))
+        if(platform.jenkinsLabel.contains('centos') || platform.jenkinsLabel.contains('sles'))
         {
             if(auxiliary.isJobStartedByTimer())
             {
@@ -121,7 +129,7 @@ rocSPARSECI:
     {
         platform, project->
 
-        def command 
+        def command
 
         if(platform.jenkinsLabel.contains('centos'))
         {
@@ -135,9 +143,9 @@ rocSPARSECI:
                 """
 
             platform.runCommand(this, command)
-            platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/release/package/*.rpm""")        
+            platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/release/package/*.rpm""")
         }
-        else if(platform.jenkinsLabel.contains('hip-clang'))
+        else if(platform.jenkinsLabel.contains('hip-clang') || platform.jenkinsLabel.contains('sles'))
         {
             packageCommand = null
         }

@@ -31,6 +31,8 @@
 #include "utility.hpp"
 
 #include <algorithm>
+#include <iomanip>
+#include <iostream>
 #include <rocsparse.h>
 
 using namespace rocsparse;
@@ -144,17 +146,17 @@ rocsparse_status testing_identity(Arguments argus)
 
     if(argus.timing)
     {
-        rocsparse_int number_cold_calls = 2;
-        rocsparse_int number_hot_calls  = argus.iters;
+        int number_cold_calls = 2;
+        int number_hot_calls  = argus.iters;
 
-        for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
+        for(int iter = 0; iter < number_cold_calls; ++iter)
         {
             rocsparse_create_identity_permutation(handle, n, dp);
         }
 
         double gpu_time_used = get_time_us();
 
-        for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
+        for(int iter = 0; iter < number_hot_calls; ++iter)
         {
             rocsparse_create_identity_permutation(handle, n, dp);
         }
@@ -163,9 +165,15 @@ rocsparse_status testing_identity(Arguments argus)
 
         double bandwidth = sizeof(rocsparse_int) * n / gpu_time_used / 1e6;
 
-        printf("n\t\tGB/s\tmsec\n");
-        printf("%8d\t%0.2lf\t%0.2lf\n", n, bandwidth, gpu_time_used);
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed);
+        std::cout.setf(std::ios::left);
+        std::cout << std::setw(12) << "n" << std::setw(12) << "GB/s" << std::setw(12) << "msec"
+                  << std::endl;
+        std::cout << std::setw(12) << n << std::setw(12) << bandwidth << std::setw(12)
+                  << gpu_time_used << std::endl;
     }
+
     return rocsparse_status_success;
 }
 

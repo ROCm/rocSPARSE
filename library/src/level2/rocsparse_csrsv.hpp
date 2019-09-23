@@ -88,6 +88,12 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
         return rocsparse_status_not_implemented;
     }
 
+    // Check operation type
+    if(trans != rocsparse_operation_none)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     // Check sizes
     if(m < 0)
     {
@@ -146,7 +152,7 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
     int*           ptr2         = reinterpret_cast<int*>(buffer_size);
 
     rocprim::double_buffer<rocsparse_int> dummy(ptr, ptr);
-    rocprim::double_buffer<rocsparse_int> dummy2(ptr2, ptr2);
+    rocprim::double_buffer<int>           dummy2(ptr2, ptr2);
 
     RETURN_IF_HIP_ERROR(
         rocprim::radix_sort_pairs(nullptr, rocprim_size, dummy2, dummy, m, 0, 32, stream));
@@ -377,6 +383,12 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
               solve,
               analysis,
               (const void*&)temp_buffer);
+
+    // Check operation type
+    if(trans != rocsparse_operation_none)
+    {
+        return rocsparse_status_not_implemented;
+    }
 
     // Check index base
     if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
@@ -658,6 +670,12 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
                   (const void*&)y,
                   policy,
                   (const void*&)temp_buffer);
+    }
+
+    // Check operation type
+    if(trans != rocsparse_operation_none)
+    {
+        return rocsparse_status_not_implemented;
     }
 
     // Check index base

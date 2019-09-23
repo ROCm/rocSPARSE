@@ -32,6 +32,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
+#include <iostream>
 #include <limits>
 #include <rocsparse.h>
 #include <string>
@@ -938,14 +940,15 @@ rocsparse_status testing_csrsv(Arguments argus)
         size_t flt_data  = (nnz + m + m) * sizeof(T);
         double bandwidth = (int_data + flt_data) / gpu_time_used / 1e6;
 
-        printf("m\t\tnnz\t\talpha\tGFlops\tGB/s\tmsec\n");
-        printf("%8d\t%9d\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\n",
-               m,
-               nnz,
-               h_alpha,
-               gpu_gflops,
-               bandwidth,
-               gpu_time_used);
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed);
+        std::cout.setf(std::ios::left);
+        std::cout << std::setw(12) << "m" << std::setw(12) << "nnz" << std::setw(12) << "alpha"
+                  << std::setw(12) << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12)
+                  << "msec" << std::endl;
+        std::cout << std::setw(12) << m << std::setw(12) << nnz << std::setw(12) << h_alpha
+                  << std::setw(12) << gpu_gflops << std::setw(12) << bandwidth << std::setw(12)
+                  << gpu_time_used << std::endl;
     }
 
     CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_clear(handle, descr, info));

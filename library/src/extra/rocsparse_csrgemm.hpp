@@ -487,14 +487,14 @@ rocsparse_status rocsparse_csrgemm_mult_buffer_size_template(rocsparse_handle   
     *buffer_size = ((rocprim_max - 1) / 256 + 1) * 256;
 
     // Group arrays
-    *buffer_size += sizeof(int) * 256 * CSRGEMM_MAXGROUPS;
-    *buffer_size += sizeof(int) * 256;
-    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
+    *buffer_size += sizeof(rocsparse_int) * 256 * CSRGEMM_MAXGROUPS;
+    *buffer_size += sizeof(rocsparse_int) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * m - 1) / 256 + 1) * 256;
 
     // Permutation arrays
-    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
-    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
-    *buffer_size += ((sizeof(int) * m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * m - 1) / 256 + 1) * 256;
+    *buffer_size += ((sizeof(rocsparse_int) * m - 1) / 256 + 1) * 256;
 
     return rocsparse_status_success;
 }
@@ -1094,6 +1094,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
 #undef CSRGEMM_DIM
         }
 
+#ifndef rocsparse_ILP64
         // Group 6: 2049 - 4096 non-zeros per row
         if(h_group_size[6] > 0)
         {
@@ -1136,6 +1137,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
         }
+#endif
 
         // Group 7: more than 4096 non-zeros per row
         if(h_group_size[7] > 0)
@@ -1456,6 +1458,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
 #undef CSRGEMM_DIM
         }
 
+#ifndef rocsparse_ILP64
         // Group 6: 2049 - 4096 non-zeros per row
         if(h_group_size[6] > 0)
         {
@@ -1498,6 +1501,7 @@ rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle          handl
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
         }
+#endif
 
         // Group 7: more than 4096 non-zeros per row
         if(h_group_size[7] > 0)

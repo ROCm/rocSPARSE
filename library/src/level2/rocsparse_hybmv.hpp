@@ -248,13 +248,13 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle          handle,
             }
             else
             {
-                if(*alpha == 0.0 && *beta == 1.0)
+                if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
                 {
                     return rocsparse_status_success;
                 }
 
                 // Beta is applied by ELL part, IF ell_nnz > 0
-                T coo_beta = (hyb->ell_nnz > 0) ? 1.0 : *beta;
+                T coo_beta = (hyb->ell_nnz > 0) ? static_cast<T>(1) : *beta;
 
                 RETURN_IF_ROCSPARSE_ERROR(rocsparse_coomv_template(handle,
                                                                    trans,

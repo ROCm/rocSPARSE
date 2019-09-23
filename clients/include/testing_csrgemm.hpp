@@ -30,6 +30,8 @@
 #include "unit.hpp"
 #include "utility.hpp"
 
+#include <iomanip>
+#include <iostream>
 #include <rocsparse.h>
 #include <string>
 
@@ -1285,11 +1287,11 @@ static rocsparse_int csrgemm_nnz(rocsparse_int        m,
         std::vector<rocsparse_int> nnz(n, -1);
 
 #ifdef _OPENMP
-        int nthreads = omp_get_num_threads();
-        int tid      = omp_get_thread_num();
+        rocsparse_int nthreads = omp_get_num_threads();
+        rocsparse_int tid      = omp_get_thread_num();
 #else
-        int nthreads = 1;
-        int tid      = 0;
+        rocsparse_int nthreads = 1;
+        rocsparse_int tid      = 0;
 #endif
 
         rocsparse_int rows_per_thread = (m + nthreads - 1) / nthreads;
@@ -1396,11 +1398,11 @@ static void csrgemm(rocsparse_int        m,
         std::vector<rocsparse_int> nnz(n, -1);
 
 #ifdef _OPENMP
-        int nthreads = omp_get_num_threads();
-        int tid      = omp_get_thread_num();
+        rocsparse_int nthreads = omp_get_num_threads();
+        rocsparse_int tid      = omp_get_thread_num();
 #else
-        int nthreads = 1;
-        int tid      = 0;
+        rocsparse_int nthreads = 1;
+        rocsparse_int tid      = 0;
 #endif
 
         rocsparse_int rows_per_thread = (m + nthreads - 1) / nthreads;
@@ -1511,7 +1513,7 @@ static void csrgemm(rocsparse_int        m,
         rocsparse_int* col_entry = &col[row_begin];
         T*             val_entry = &val[row_begin];
 
-        std::sort(perm.begin(), perm.end(), [&](const int& a, const int& b) {
+        std::sort(perm.begin(), perm.end(), [&](const rocsparse_int& a, const rocsparse_int& b) {
             return col_entry[a] <= col_entry[b];
         });
 
@@ -1914,9 +1916,10 @@ rocsparse_status testing_csrgemm(Arguments argus)
               idx_base_B);
 
     // Allocate memory on device
-    rocsparse_int safe_K     = std::max(K, 1);
-    rocsparse_int safe_nnz_A = std::max(nnz_A, 1);
-    rocsparse_int safe_nnz_B = std::max(nnz_B, 1);
+    rocsparse_int one        = 1;
+    rocsparse_int safe_K     = std::max(K, one);
+    rocsparse_int safe_nnz_A = std::max(nnz_A, one);
+    rocsparse_int safe_nnz_B = std::max(nnz_B, one);
 
     auto dAptr_managed
         = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (M + 1)), device_free};
@@ -1986,6 +1989,12 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                         nullptr,
                                                         info,
                                                         &size));
+
+    // Buffer size must be greater than 4
+    if(size < 4)
+    {
+        return rocsparse_status_memory_error;
+    }
 
     if(argus.unit_check)
     {
@@ -2062,7 +2071,7 @@ rocsparse_status testing_csrgemm(Arguments argus)
                                                 dbuffer));
 
     // Allocate result matrix
-    rocsparse_int safe_nnz_C = std::max(hnnz_C_1, 1);
+    rocsparse_int safe_nnz_C = std::max(hnnz_C_1, one);
 
     auto dCcol_managed
         = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_nnz_C), device_free};
@@ -2407,19 +2416,17 @@ rocsparse_status testing_csrgemm(Arguments argus)
         double bandwidth = (data_A + data_B + data_C) / gpu_time_used / 1e6;
 
         // Output
-        printf("m\t\tn\t\tk\t\tnnz_A\t\tnnz_B\t\tnnz_C\t\talpha\tbeta\tGFlop/s\tGB/s\tmsec\n");
-        printf("%8d\t%8d\t%8d\t%9d\t%9d\t%9d\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\t%0.2lf\n",
-               M,
-               N,
-               K,
-               nnz_A,
-               nnz_B,
-               hnnz_C_1,
-               *h_alpha,
-               0.0,
-               gflops,
-               bandwidth,
-               gpu_time_used);
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed);
+        std::cout.setf(std::ios::left);
+        std::cout << std::setw(12) << "m" << std::setw(12) << "n" << std::setw(12) << "k"
+                  << std::setw(12) << "nnz_A" << std::setw(12) << "nnz_B" << std::setw(12)
+                  << "nnz_C" << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12)
+                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12) << "msec" << std::endl;
+        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << K << std::setw(12)
+                  << nnz_A << std::setw(12) << nnz_B << std::setw(12) << hnnz_C_1 << std::setw(12)
+                  << *h_alpha << std::setw(12) << 0.0 << std::setw(12) << gflops << std::setw(12)
+                  << bandwidth << std::setw(12) << gpu_time_used << std::endl;
     }
 
     return rocsparse_status_success;

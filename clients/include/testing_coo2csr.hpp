@@ -31,6 +31,8 @@
 #include "utility.hpp"
 
 #include <algorithm>
+#include <iomanip>
+#include <iostream>
 #include <rocsparse.h>
 #include <string>
 
@@ -251,13 +253,13 @@ rocsparse_status testing_coo2csr(Arguments argus)
         double cpu_time_used = get_time_us();
 
         // coo2csr on host
-        for(int i = 0; i < nnz; ++i)
+        for(rocsparse_int i = 0; i < nnz; ++i)
         {
             ++hcsr_row_ptr_gold[hcoo_row_ind[i] + 1 - idx_base];
         }
 
         hcsr_row_ptr_gold[0] = idx_base;
-        for(int i = 0; i < m; ++i)
+        for(rocsparse_int i = 0; i < m; ++i)
         {
             hcsr_row_ptr_gold[i + 1] += hcsr_row_ptr_gold[i];
         }
@@ -270,17 +272,17 @@ rocsparse_status testing_coo2csr(Arguments argus)
 
     if(argus.timing)
     {
-        rocsparse_int number_cold_calls = 2;
-        rocsparse_int number_hot_calls  = argus.iters;
+        int number_cold_calls = 2;
+        int number_hot_calls  = argus.iters;
 
-        for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
+        for(int iter = 0; iter < number_cold_calls; ++iter)
         {
             rocsparse_coo2csr(handle, dcoo_row_ind, nnz, m, dcsr_row_ptr, idx_base);
         }
 
         double gpu_time_used = get_time_us();
 
-        for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
+        for(int iter = 0; iter < number_hot_calls; ++iter)
         {
             rocsparse_coo2csr(handle, dcoo_row_ind, nnz, m, dcsr_row_ptr, idx_base);
         }
@@ -289,9 +291,15 @@ rocsparse_status testing_coo2csr(Arguments argus)
 
         double bandwidth = sizeof(rocsparse_int) * (nnz + m + 1) / gpu_time_used / 1e6;
 
-        printf("m\t\tn\t\tnnz\t\tGB/s\tmsec\n");
-        printf("%8d\t%8d\t%9d\t%0.2lf\t%0.2lf\n", m, n, nnz, bandwidth, gpu_time_used);
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed);
+        std::cout.setf(std::ios::left);
+        std::cout << std::setw(12) << "m" << std::setw(12) << "n" << std::setw(12) << "nnz"
+                  << std::setw(12) << "GB/s" << std::setw(12) << "msec" << std::endl;
+        std::cout << std::setw(12) << m << std::setw(12) << n << std::setw(12) << nnz
+                  << std::setw(12) << bandwidth << std::setw(12) << gpu_time_used << std::endl;
     }
+
     return rocsparse_status_success;
 }
 

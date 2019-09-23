@@ -8,10 +8,11 @@ LABEL maintainer="rocsparse-maintainer@amd.com"
 COPY *.rpm /tmp/
 
 # Install the rpm package, and print out contents of expected changed locations
-RUN yum -y update && yum install -y\
+RUN zypper refresh
+RUN zypper -n --no-gpg-checks install \
     /tmp/rocsparse-*.rpm \
   && rm -f /tmp/*.rpm \
-  && yum -y clean all \
+  && zypper -n clean -all \
   && rm -rf /var/lib/apt/lists/* \
   && printf "ls -la /etc/ld.so.conf.d/\n" && ls -la /etc/ld.so.conf.d/ \
   && printf "ls -la /opt/rocm/include\n" && ls -la /opt/rocm/include \
