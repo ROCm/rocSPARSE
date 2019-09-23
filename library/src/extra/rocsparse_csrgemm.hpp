@@ -500,6 +500,63 @@ rocsparse_status rocsparse_csrgemm_mult_buffer_size_template(rocsparse_handle   
 }
 
 template <typename T>
+rocsparse_status rocsparse_csrgemm_scal_buffer_size_template(rocsparse_handle          handle,
+                                                             rocsparse_int             m,
+                                                             rocsparse_int             n,
+                                                             const T*                  beta,
+                                                             const rocsparse_mat_descr descr_D,
+                                                             rocsparse_int             nnz_D,
+                                                             const rocsparse_int* csr_row_ptr_D,
+                                                             const rocsparse_int* csr_col_ind_D,
+                                                             rocsparse_mat_info   info_C,
+                                                             size_t*              buffer_size)
+{
+    // Check for valid handle and info structure
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+    else if(info_C == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(info_C->csrgemm_info == nullptr)
+    {
+        return rocsparse_status_internal_error;
+    }
+
+    // Check valid sizes
+    if(m < 0 || n < 0 || nnz_D < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check valid pointers
+    if(descr_D == nullptr || csr_row_ptr_D == nullptr || csr_col_ind_D == nullptr
+       || buffer_size == nullptr || beta == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check index base
+    if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check matrix type
+    if(descr_D->type != rocsparse_matrix_type_general)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
+    // No buffer requirements for matrix scaling
+    *buffer_size = 4;
+
+    return rocsparse_status_success;
+}
+
+template <typename T>
 rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle          handle,
                                                         rocsparse_operation       trans_A,
                                                         rocsparse_operation       trans_B,
@@ -631,10 +688,8 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
     else if(alpha == nullptr && beta != nullptr)
     {
         // alpha == nullptr && beta != nullptr
-
-        // TODO
-        // RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrgeam_buffer_size_template<T>(...);
-        return rocsparse_status_not_implemented;
+        return rocsparse_csrgemm_scal_buffer_size_template<T>(
+            handle, m, n, beta, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D, info_C, buffer_size);
     }
     else
     {
@@ -1684,6 +1739,137 @@ rocsparse_status rocsparse_csrgemm_mult_template(rocsparse_handle          handl
 }
 
 template <typename T>
+__global__ void csrgemm_copy_scale_host_pointer(rocsparse_int size,
+                                                T             alpha,
+                                                const T* __restrict__ in,
+                                                T* __restrict__ out)
+{
+    csrgemm_copy_scale_device(size, alpha, in, out);
+}
+
+template <typename T>
+__global__ void csrgemm_copy_scale_device_pointer(rocsparse_int size,
+                                                  const T* __restrict__ alpha,
+                                                  const T* __restrict__ in,
+                                                  T* __restrict__ out)
+{
+    csrgemm_copy_scale_device(size, *alpha, in, out);
+}
+
+template <typename T>
+rocsparse_status rocsparse_csrgemm_scal_template(rocsparse_handle          handle,
+                                                 rocsparse_int             m,
+                                                 rocsparse_int             n,
+                                                 const T*                  beta,
+                                                 const rocsparse_mat_descr descr_D,
+                                                 rocsparse_int             nnz_D,
+                                                 const T*                  csr_val_D,
+                                                 const rocsparse_int*      csr_row_ptr_D,
+                                                 const rocsparse_int*      csr_col_ind_D,
+                                                 const rocsparse_mat_descr descr_C,
+                                                 T*                        csr_val_C,
+                                                 const rocsparse_int*      csr_row_ptr_C,
+                                                 rocsparse_int*            csr_col_ind_C,
+                                                 const rocsparse_mat_info  info_C,
+                                                 void*                     temp_buffer)
+{
+    // Check for valid info structure
+    if(info_C->csrgemm_info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check valid sizes
+    if(m < 0 || n < 0 || nnz_D < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check valid pointers
+    if(descr_D == nullptr || csr_val_D == nullptr || csr_row_ptr_D == nullptr
+       || csr_col_ind_D == nullptr || descr_C == nullptr || csr_val_C == nullptr
+       || csr_row_ptr_C == nullptr || csr_col_ind_C == nullptr || temp_buffer == nullptr
+       || beta == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check index base
+    if(descr_C->base != rocsparse_index_base_zero && descr_C->base != rocsparse_index_base_one)
+    {
+        return rocsparse_status_invalid_value;
+    }
+    if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check matrix type
+    if(descr_C->type != rocsparse_matrix_type_general)
+    {
+        return rocsparse_status_not_implemented;
+    }
+    if(descr_D->type != rocsparse_matrix_type_general)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
+    // Quick return if possible
+    if(m == 0 || n == 0 || nnz_D == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    // Stream
+    hipStream_t stream = handle->stream;
+
+    // Copy column entries
+#define CSRGEMM_DIM 1024
+    dim3 csrgemm_blocks((nnz_D - 1) / CSRGEMM_DIM + 1);
+    dim3 csrgemm_threads(CSRGEMM_DIM);
+
+    hipLaunchKernelGGL((csrgemm_copy),
+                       csrgemm_blocks,
+                       csrgemm_threads,
+                       0,
+                       stream,
+                       nnz_D,
+                       csr_col_ind_D,
+                       csr_col_ind_C,
+                       descr_D->base,
+                       descr_C->base);
+
+    // Scale the matrix
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        hipLaunchKernelGGL((csrgemm_copy_scale_device_pointer),
+                           csrgemm_blocks,
+                           csrgemm_threads,
+                           0,
+                           stream,
+                           nnz_D,
+                           beta,
+                           csr_val_D,
+                           csr_val_C);
+    }
+    else
+    {
+        hipLaunchKernelGGL((csrgemm_copy_scale_host_pointer),
+                           csrgemm_blocks,
+                           csrgemm_threads,
+                           0,
+                           stream,
+                           nnz_D,
+                           *beta,
+                           csr_val_D,
+                           csr_val_C);
+    }
+#undef CSRGEMM_DIM
+
+    return rocsparse_status_success;
+}
+
+template <typename T>
 rocsparse_status rocsparse_csrgemm_template(rocsparse_handle          handle,
                                             rocsparse_operation       trans_A,
                                             rocsparse_operation       trans_B,
@@ -1852,8 +2038,21 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle          handle,
     else if(info_C->csrgemm_info->mul == false && info_C->csrgemm_info->add == true)
     {
         // C = beta * D
-        // TODO
-        return rocsparse_status_not_implemented;
+        return rocsparse_csrgemm_scal_template<T>(handle,
+                                                  m,
+                                                  n,
+                                                  beta,
+                                                  descr_D,
+                                                  nnz_D,
+                                                  csr_val_D,
+                                                  csr_row_ptr_D,
+                                                  csr_col_ind_D,
+                                                  descr_C,
+                                                  csr_val_C,
+                                                  csr_row_ptr_C,
+                                                  csr_col_ind_C,
+                                                  info_C,
+                                                  temp_buffer);
     }
     else
     {

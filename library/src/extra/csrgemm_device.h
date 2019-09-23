@@ -30,6 +30,37 @@
 
 #include <hip/hip_runtime.h>
 
+// Copy an array
+__global__ void csrgemm_copy(rocsparse_int size,
+                             const rocsparse_int* __restrict__ in,
+                             rocsparse_int* __restrict__ out,
+                             rocsparse_index_base idx_base_in,
+                             rocsparse_index_base idx_base_out)
+{
+    rocsparse_int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(idx >= size)
+    {
+        return;
+    }
+
+    out[idx] = in[idx] - idx_base_in + idx_base_out;
+}
+
+// Copy and scale an array
+template <typename T>
+__device__ void csrgemm_copy_scale_device(rocsparse_int size, T alpha, const T* in, T* out)
+{
+    rocsparse_int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(idx >= size)
+    {
+        return;
+    }
+
+    out[idx] = alpha * in[idx];
+}
+
 // Compute number of intermediate products of each row
 template <unsigned int WFSIZE>
 __global__ void csrgemm_intermediate_products(rocsparse_int m,
