@@ -35,4 +35,4 @@
 #include "rocsparse-types.h"
 #include "rocsparse-version.h"
 
-#endif // _ROCSPARSE_H_
+#endif /* _ROCSPARSE_H_ */

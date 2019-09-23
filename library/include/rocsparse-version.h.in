@@ -29,11 +29,11 @@
 #ifndef _ROCSPARSE_VERSION_H_
 #define _ROCSPARSE_VERSION_H_
 
-// clang-format off
+/* clang-format off */
 #define ROCSPARSE_VERSION_MAJOR     @rocsparse_VERSION_MAJOR@
 #define ROCSPARSE_VERSION_MINOR     @rocsparse_VERSION_MINOR@
 #define ROCSPARSE_VERSION_PATCH     @rocsparse_VERSION_PATCH@
 #define ROCSPARSE_VERSION_TWEAK     @rocsparse_VERSION_TWEAK@
-// clang-format on
+/* clang-format on */
 
-#endif // _ROCSPARSE_VERSION_H_
+#endif /* _ROCSPARSE_VERSION_H_ */
