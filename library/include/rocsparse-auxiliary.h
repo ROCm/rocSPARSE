@@ -32,8 +32,6 @@
 #include "rocsparse-export.h"
 #include "rocsparse-types.h"
 
-#include <hip/hip_runtime_api.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
