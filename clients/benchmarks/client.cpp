@@ -56,6 +56,7 @@
 #include "testing_csr2ell.hpp"
 #include "testing_csr2hyb.hpp"
 #include "testing_csrsort.hpp"
+#include "testing_cscsort.hpp"
 #include "testing_ell2csr.hpp"
 #include "testing_identity.hpp"
 
@@ -124,7 +125,7 @@ int main(int argc, char* argv[])
          "  Preconditioner: csrilu0\n"
          "  Conversion: csr2coo, csr2csc, csr2ell,\n"
          "              csr2hyb, coo2csr, ell2csr\n"
-         "  Sorting: csrsort, coosort\n"
+         "  Sorting: cscsort, csrsort, coosort\n"
          "  Misc: identity")
 
         ("precision,r",
@@ -319,6 +320,10 @@ int main(int argc, char* argv[])
     else if(function == "csrsort")
     {
         testing_csrsort(argus);
+    }
+    else if(function == "cscsort")
+    {
+        testing_cscsort(argus);
     }
     else if(function == "coosort")
     {

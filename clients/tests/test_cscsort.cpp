@@ -29,11 +29,11 @@
 #include <string>
 #include <vector>
 
-typedef std::tuple<int, int, int, rocsparse_index_base>    cscsort_tuple;
-typedef std::tuple<int, rocsparse_index_base, std::string> cscsort_bin_tuple;
+typedef std::tuple<rocsparse_int, rocsparse_int, int, rocsparse_index_base> cscsort_tuple;
+typedef std::tuple<int, rocsparse_index_base, std::string>                  cscsort_bin_tuple;
 
-int                  cscsort_M_range[] = {-1, 0, 10, 500, 872, 1000};
-int                  cscsort_N_range[] = {-3, 0, 33, 242, 623, 1000};
+rocsparse_int        cscsort_M_range[] = {-1, 0, 10, 500, 872, 1000};
+rocsparse_int        cscsort_N_range[] = {-3, 0, 33, 242, 623, 1000};
 int                  cscsort_perm[]    = {0, 1};
 rocsparse_index_base cscsort_base[]    = {rocsparse_index_base_zero, rocsparse_index_base_one};
 

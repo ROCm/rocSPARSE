@@ -31,6 +31,8 @@
 #include "utility.hpp"
 
 #include <algorithm>
+#include <iomanip>
+#include <iostream>
 #include <rocsparse.h>
 #include <string>
 
@@ -236,9 +238,9 @@ rocsparse_status testing_cscsort(Arguments argus)
         {
             verify_rocsparse_status_success(status, "m >= 0 && n >= 0 && nnz >= 0");
 
-            // Buffer size should be zero
-            size_t zero = 0;
-            unit_check_general(1, 1, 1, &zero, &buffer_size);
+            // Buffer size should be 4
+            size_t four = 4;
+            unit_check_general(1, 1, 1, &four, &buffer_size);
         }
 
         status
@@ -438,8 +440,8 @@ rocsparse_status testing_cscsort(Arguments argus)
 
     if(argus.timing)
     {
-        rocsparse_int number_cold_calls = 2;
-        rocsparse_int number_hot_calls  = argus.iters;
+        int number_cold_calls = 2;
+        int number_hot_calls  = argus.iters;
 
         // Allocate buffer for cscsort
         rocsparse_cscsort_buffer_size(handle, m, n, nnz, dcsc_col_ptr, dcsc_row_ind, &buffer_size);
@@ -448,7 +450,7 @@ rocsparse_status testing_cscsort(Arguments argus)
             = rocsparse_unique_ptr{device_malloc(sizeof(char) * buffer_size), device_free};
         void* dbuffer = (void*)dbuffer_managed.get();
 
-        for(rocsparse_int iter = 0; iter < number_cold_calls; ++iter)
+        for(int iter = 0; iter < number_cold_calls; ++iter)
         {
             rocsparse_cscsort(
                 handle, m, n, nnz, descr, dcsc_col_ptr, dcsc_row_ind, nullptr, dbuffer);
@@ -456,7 +458,7 @@ rocsparse_status testing_cscsort(Arguments argus)
 
         double gpu_time_used = get_time_us();
 
-        for(rocsparse_int iter = 0; iter < number_hot_calls; ++iter)
+        for(int iter = 0; iter < number_hot_calls; ++iter)
         {
             rocsparse_cscsort(
                 handle, m, n, nnz, descr, dcsc_col_ptr, dcsc_row_ind, nullptr, dbuffer);
@@ -464,9 +466,15 @@ rocsparse_status testing_cscsort(Arguments argus)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
 
-        printf("m\t\tn\t\tnnz\t\tmsec\n");
-        printf("%8d\t%8d\t%9d\t%0.2lf\n", m, n, nnz, gpu_time_used);
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed);
+        std::cout.setf(std::ios::left);
+        std::cout << std::setw(12) << "m" << std::setw(12) << "n" << std::setw(12) << "nnz"
+                  << std::setw(12) << "msec" << std::endl;
+        std::cout << std::setw(12) << m << std::setw(12) << n << std::setw(12) << nnz
+                  << std::setw(12) << gpu_time_used << std::endl;
     }
+
     return rocsparse_status_success;
 }
 
