@@ -29,6 +29,7 @@
 #ifndef _ROCSPARSE_TYPES_H_
 #define _ROCSPARSE_TYPES_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 /*! \ingroup types_module
@@ -39,6 +40,9 @@ typedef int64_t rocsparse_int;
 #else
 typedef int32_t rocsparse_int;
 #endif
+
+/* Forward declaration of hipStream_t */
+typedef struct ihipStream_t* hipStream_t;
 
 /*! \ingroup types_module
  *  \brief Handle to the rocSPARSE library context queue.
@@ -273,4 +277,4 @@ typedef enum rocsparse_status_
 }
 #endif
 
-#endif // _ROCSPARSE_TYPES_H_
+#endif /* _ROCSPARSE_TYPES_H_ */

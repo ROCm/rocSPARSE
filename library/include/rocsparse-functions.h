@@ -4726,4 +4726,4 @@ rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,
 }
 #endif
 
-#endif // _ROCSPARSE_FUNCTIONS_H_
+#endif /* _ROCSPARSE_FUNCTIONS_H_ */
