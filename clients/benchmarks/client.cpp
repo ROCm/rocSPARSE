@@ -51,12 +51,12 @@
 // Conversion
 #include "testing_coo2csr.hpp"
 #include "testing_coosort.hpp"
+#include "testing_cscsort.hpp"
 #include "testing_csr2coo.hpp"
 #include "testing_csr2csc.hpp"
 #include "testing_csr2ell.hpp"
 #include "testing_csr2hyb.hpp"
 #include "testing_csrsort.hpp"
-#include "testing_cscsort.hpp"
 #include "testing_ell2csr.hpp"
 #include "testing_identity.hpp"
 
