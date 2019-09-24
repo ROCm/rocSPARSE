@@ -43,7 +43,8 @@
 #include "testing_csrmm.hpp"
 
 // Extra
-#include "testing_csrgemm.hpp"
+#include "testing_csrgemm_a.hpp"
+#include "testing_csrgemm_b.hpp"
 
 // Preconditioner
 #include "testing_csrilu0.hpp"
@@ -268,10 +269,20 @@ int main(int argc, char* argv[])
     }
     else if(function == "csrgemm")
     {
-        if(precision == 's')
-            testing_csrgemm<float>(argus);
-        else if(precision == 'd')
-            testing_csrgemm<double>(argus);
+        if(argus.alpha != 0.0 && argus.beta == 0.0)
+        {
+            if(precision == 's')
+                testing_csrgemm_a<float>(argus);
+            else if(precision == 'd')
+                testing_csrgemm_a<double>(argus);
+        }
+        else if(argus.alpha == 0.0 && argus.beta != 0.0)
+        {
+            if(precision == 's')
+                testing_csrgemm_b<float>(argus);
+            else if(precision == 'd')
+                testing_csrgemm_b<double>(argus);
+        }
     }
     else if(function == "csrilu0")
     {
