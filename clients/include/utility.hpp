@@ -359,8 +359,12 @@ rocsparse_int read_mtx_matrix(const char*                 filename,
                               std::vector<T>&             val,
                               rocsparse_index_base        idx_base)
 {
-    printf("Reading matrix %s...", filename);
-    fflush(stdout);
+    const char* env = getenv("GTEST_LISTENER");
+    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
+    {
+        printf("Reading matrix %s...", filename);
+        fflush(stdout);
+    }
 
     FILE* f = fopen(filename, "r");
     if(!f)
@@ -544,8 +548,11 @@ rocsparse_int read_mtx_matrix(const char*                 filename,
         val[i] = unsorted_val[perm[i]];
     }
 
-    printf("done.\n");
-    fflush(stdout);
+    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
+    {
+        printf("done.\n");
+        fflush(stdout);
+    }
 
     return 0;
 }
@@ -562,8 +569,12 @@ rocsparse_int read_bin_matrix(const char*                 filename,
                               std::vector<T>&             val,
                               rocsparse_index_base        idx_base)
 {
-    printf("Reading matrix %s...", filename);
-    fflush(stdout);
+    const char* env = getenv("GTEST_LISTENER");
+    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
+    {
+        printf("Reading matrix %s...", filename);
+        fflush(stdout);
+    }
 
     FILE* f = fopen(filename, "rb");
     if(!f)
@@ -624,8 +635,11 @@ rocsparse_int read_bin_matrix(const char*                 filename,
         }
     }
 
-    printf("done.\n");
-    fflush(stdout);
+    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
+    {
+        printf("done.\n");
+        fflush(stdout);
+    }
 
     return 0;
 }
@@ -642,8 +656,12 @@ rocsparse_int read_rocalution_matrix(const char*                 filename,
                                      std::vector<T>&             val,
                                      rocsparse_index_base        idx_base)
 {
-    printf("Reading matrix %s...", filename);
-    fflush(stdout);
+    const char* env = getenv("GTEST_LISTENER");
+    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
+    {
+        printf("Reading matrix %s...", filename);
+        fflush(stdout);
+    }
 
     std::ifstream in(filename, std::ios::in | std::ios::binary);
     if(!in.is_open())
@@ -713,8 +731,11 @@ rocsparse_int read_rocalution_matrix(const char*                 filename,
         }
     }
 
-    printf("done.\n");
-    fflush(stdout);
+    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
+    {
+        printf("done.\n");
+        fflush(stdout);
+    }
 
     return 0;
 }
