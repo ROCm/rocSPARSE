@@ -660,6 +660,90 @@ static rocsparse_status rocsparse_csrgemm_nnz_mult(rocsparse_handle          han
                                       temp_buffer);
 }
 
+static rocsparse_status rocsparse_csrgemm_nnz_scal(rocsparse_handle          handle,
+                                                   rocsparse_int             m,
+                                                   rocsparse_int             n,
+                                                   const rocsparse_mat_descr descr_D,
+                                                   rocsparse_int             nnz_D,
+                                                   const rocsparse_int*      csr_row_ptr_D,
+                                                   const rocsparse_int*      csr_col_ind_D,
+                                                   const rocsparse_mat_descr descr_C,
+                                                   rocsparse_int*            csr_row_ptr_C,
+                                                   rocsparse_int*            nnz_C,
+                                                   const rocsparse_mat_info  info_C,
+                                                   void*                     temp_buffer)
+{
+    // Check for valid info structure
+    if(info_C->csrgemm_info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check valid sizes
+    if(m < 0 || n < 0 || nnz_D < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check valid pointers
+    if(descr_D == nullptr || csr_row_ptr_D == nullptr || csr_col_ind_D == nullptr
+       || descr_C == nullptr || csr_row_ptr_C == nullptr || nnz_C == nullptr
+       || temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check index base
+    if(descr_C->base != rocsparse_index_base_zero && descr_C->base != rocsparse_index_base_one)
+    {
+        return rocsparse_status_invalid_value;
+    }
+    if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check matrix type
+    if(descr_C->type != rocsparse_matrix_type_general)
+    {
+        return rocsparse_status_not_implemented;
+    }
+    if(descr_D->type != rocsparse_matrix_type_general)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
+    // Stream
+    hipStream_t stream = handle->stream;
+
+    // When scaling a matrix, nnz of C will always be equal to nnz of D
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        RETURN_IF_HIP_ERROR(
+            hipMemcpyAsync(nnz_C, &nnz_D, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
+    }
+    else
+    {
+        *nnz_C = nnz_D;
+    }
+
+    // Copy row pointers
+#define CSRGEMM_DIM 1024
+    hipLaunchKernelGGL((csrgemm_copy),
+                       dim3(m / CSRGEMM_DIM + 1),
+                       dim3(CSRGEMM_DIM),
+                       0,
+                       stream,
+                       m + 1,
+                       csr_row_ptr_D,
+                       csr_row_ptr_C,
+                       descr_D->base,
+                       descr_C->base);
+#undef CSRGEMM_DIM
+
+    return rocsparse_status_success;
+}
+
 extern "C" rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
                                                   rocsparse_operation       trans_A,
                                                   rocsparse_operation       trans_B,
@@ -761,8 +845,18 @@ extern "C" rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          hand
     else if(info_C->csrgemm_info->mul == false && info_C->csrgemm_info->add == true)
     {
         // C = beta * D
-        // TODO
-        return rocsparse_status_not_implemented;
+        return rocsparse_csrgemm_nnz_scal(handle,
+                                          m,
+                                          n,
+                                          descr_D,
+                                          nnz_D,
+                                          csr_row_ptr_D,
+                                          csr_col_ind_D,
+                                          descr_C,
+                                          csr_row_ptr_C,
+                                          nnz_C,
+                                          info_C,
+                                          temp_buffer);
     }
     else
     {
