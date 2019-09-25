@@ -943,6 +943,16 @@ rocsparse_csrsort()
 
 .. doxygenfunction:: rocsparse_csrsort
 
+rocsparse_cscsort_buffer_size()
+*******************************
+
+.. doxygenfunction:: rocsparse_cscsort_buffer_size
+
+rocsparse_cscsort()
+*******************
+
+.. doxygenfunction:: rocsparse_cscsort
+
 rocsparse_coosort_buffer_size()
 *******************************
 

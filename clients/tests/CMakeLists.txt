@@ -98,6 +98,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_ell2csr.cpp
   test_identity.cpp
   test_csrsort.cpp
+  test_cscsort.cpp
   test_coosort.cpp
   test_csrilusv.cpp
   test_csrgemm_a.cpp
