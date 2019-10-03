@@ -135,7 +135,7 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
             if(lid == 0)
             {
                 // We are looking for the first zero pivot
-                atomicMin(zero_pivot, local_col);
+                atomicMin(zero_pivot, local_col + idx_base);
             }
 
             // Skip this row if it has a zero pivot
@@ -244,7 +244,7 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
             if(lid == 0)
             {
                 // We are looking for the first zero pivot
-                atomicMin(zero_pivot, local_col);
+                atomicMin(zero_pivot, local_col + idx_base);
             }
 
             // Skip this row if it has a zero pivot
