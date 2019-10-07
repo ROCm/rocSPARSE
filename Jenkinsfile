@@ -78,7 +78,7 @@ rocSPARSECI:
         platform, project->
 
         String sudo = auxiliary.sudo(platform.jenkinsLabel)
-	def gfilter = auxiliary.isJobStartedByTimer() ? "*nightly*" : "*checkin*"
+        def gfilter = auxiliary.isJobStartedByTimer() ? "*nightly*" : "*checkin*"
         def command = """#!/usr/bin/env bash
                         set -x
                         cd ${project.paths.project_build_prefix}/build/release/clients/staging
