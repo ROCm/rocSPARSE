@@ -16,6 +16,7 @@ RUN zypper refresh
 RUN zypper -n --no-gpg-checks install \
     sudo \
 #    rock-dkms \
+    comgr \
     ca-certificates \
     git \
     cmake \
