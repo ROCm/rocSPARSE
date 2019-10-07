@@ -80,7 +80,8 @@ namespace
         static std::string name_suffix(const Arguments& arg)
         {
             return RocSPARSE_TestName<doti>{} << rocsparse_datatype2string(arg.compute_type) << '_'
-                                              << arg.M << '_' << arg.nnz;
+                                              << arg.M << '_' << arg.nnz << '_'
+                                              << rocsparse_indexbase2string(arg.baseA);
         }
     };
 

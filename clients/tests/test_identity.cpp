@@ -79,7 +79,7 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            return RocSPARSE_TestName<identity>{} << arg.M;
+            return RocSPARSE_TestName<identity>{} << arg.N;
         }
     };
 

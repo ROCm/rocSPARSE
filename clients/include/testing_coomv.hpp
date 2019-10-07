@@ -208,7 +208,7 @@ void testing_coomv(const Arguments& arg)
     rocsparse_matrix_init mat       = arg.matrix;
     bool                  full_rank = false;
     std::string           filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
     T h_alpha = arg.get_alpha<T>();
     T h_beta  = arg.get_beta<T>();

@@ -429,7 +429,7 @@ void testing_csrsv(const Arguments& arg)
     rocsparse_matrix_init     mat       = arg.matrix;
     bool                      full_rank = true;
     std::string               filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
     T h_alpha = arg.get_alpha<T>();
 

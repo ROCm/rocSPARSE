@@ -229,7 +229,7 @@ void testing_csr2csc(const Arguments& arg)
     rocsparse_action      action    = arg.action;
     bool                  full_rank = false;
     std::string           filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
     // Create rocsparse handle
     rocsparse_local_handle handle;

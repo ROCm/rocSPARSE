@@ -161,7 +161,7 @@ void testing_csr2hyb(const Arguments& arg)
     rocsparse_int           user_ell_width = arg.algo;
     bool                    full_rank      = false;
     std::string             filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
     // Create rocsparse handle
     rocsparse_local_handle handle;

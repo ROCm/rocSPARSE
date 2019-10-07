@@ -109,7 +109,7 @@ void testing_hybmv(const Arguments& arg)
     rocsparse_int           user_ell_width = arg.algo;
     bool                    full_rank      = false;
     std::string             filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
     T h_alpha = arg.get_alpha<T>();
     T h_beta  = arg.get_beta<T>();

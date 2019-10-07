@@ -36,16 +36,16 @@ Tests:
   spol: [rocsparse_solve_policy_auto]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mac_econ_fwd500.csr,
-             mc2depi.csr,
-             scircuit.csr,
-             bmwcra_1.csr,
-             nos1.csr,
-             nos2.csr,
-             nos3.csr,
-             nos4.csr,
-             nos5.csr,
-             nos6.csr,
-             nos7.csr,
-             amazon0312.csr,
-             sme3Dc.csr]
+  filename: [mac_econ_fwd500,
+             mc2depi,
+             scircuit,
+             bmwcra_1,
+             nos1,
+             nos2,
+             nos3,
+             nos4,
+             nos5,
+             nos6,
+             nos7,
+             amazon0312,
+             sme3Dc]

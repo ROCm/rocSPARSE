@@ -126,7 +126,7 @@ void testing_coosort(const Arguments& arg)
     rocsparse_matrix_init mat       = arg.matrix;
     bool                  full_rank = false;
     std::string           filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
