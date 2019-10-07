@@ -25,6 +25,10 @@
 #ifndef ROCSPARSE_HOST_HPP
 #define ROCSPARSE_HOST_HPP
 
+#include "rocsparse_test.hpp"
+
+#include <algorithm>
+#include <cmath>
 #include <hip/hip_runtime_api.h>
 #include <rocsparse.h>
 #include <vector>

@@ -25,9 +25,11 @@
 #ifndef ROCSPARSE_INIT_HPP
 #define ROCSPARSE_INIT_HPP
 
+#include "rocsparse_datatype2string.hpp"
 #include "rocsparse_host.hpp"
 #include "rocsparse_random.hpp"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <rocsparse.h>
