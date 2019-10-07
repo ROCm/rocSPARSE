@@ -79,20 +79,19 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            if(arg.matrix == rocsparse_matrix_file_rocalution ||
-               arg.matrix == rocsparse_matrix_file_mtx)
+            if(arg.matrix == rocsparse_matrix_file_rocalution
+               || arg.matrix == rocsparse_matrix_file_mtx)
             {
-                return RocSPARSE_TestName<coomv>{} << rocsparse_datatype2string(arg.compute_type) << '_'
-                                                   << arg.alpha << '_' << arg.beta << '_'
-                                                   << rocsparse_operation2string(arg.transA) << '_'
-                                                   << rocsparse_indexbase2string(arg.baseA) << '_'
-                                                   << rocsparse_matrix2string(arg.matrix) << '_'
-                                                   << arg.filename;
+                return RocSPARSE_TestName<coomv>{}
+                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.alpha << '_'
+                       << arg.beta << '_' << rocsparse_operation2string(arg.transA) << '_'
+                       << rocsparse_indexbase2string(arg.baseA) << '_'
+                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
             }
             else
             {
-                return RocSPARSE_TestName<coomv>{} << rocsparse_datatype2string(arg.compute_type) << '_'
-                                                   << arg.M << '_' << arg.N << '_'
+                return RocSPARSE_TestName<coomv>{} << rocsparse_datatype2string(arg.compute_type)
+                                                   << '_' << arg.M << '_' << arg.N << '_'
                                                    << arg.alpha << '_' << arg.beta << '_'
                                                    << rocsparse_operation2string(arg.transA) << '_'
                                                    << rocsparse_indexbase2string(arg.baseA) << '_'

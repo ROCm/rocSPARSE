@@ -79,27 +79,24 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            if(arg.matrix == rocsparse_matrix_file_rocalution ||
-               arg.matrix == rocsparse_matrix_file_mtx)
+            if(arg.matrix == rocsparse_matrix_file_rocalution
+               || arg.matrix == rocsparse_matrix_file_mtx)
             {
                 return RocSPARSE_TestName<csrsv>{}
-                       << "DISABLED_" << rocsparse_datatype2string(arg.compute_type)
-                       << '_' << arg.alpha << '_'
-                       << rocsparse_operation2string(arg.transA) << '_'
+                       << "DISABLED_" << rocsparse_datatype2string(arg.compute_type) << '_'
+                       << arg.alpha << '_' << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_diagtype2string(arg.diag) << '_'
                        << rocsparse_fillmode2string(arg.uplo) << '_'
                        << rocsparse_analysis2string(arg.apol) << '_'
                        << rocsparse_solve2string(arg.spol) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_'
-                       << arg.filename;
+                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
             }
             else
             {
                 return RocSPARSE_TestName<csrsv>{}
                        << "DISABLED_" << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M
-                       << '_' << arg.alpha << '_'
-                       << rocsparse_operation2string(arg.transA) << '_'
+                       << '_' << arg.alpha << '_' << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_diagtype2string(arg.diag) << '_'
                        << rocsparse_fillmode2string(arg.uplo) << '_'
                        << rocsparse_analysis2string(arg.apol) << '_'

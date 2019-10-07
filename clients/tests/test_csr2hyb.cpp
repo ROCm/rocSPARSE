@@ -79,22 +79,20 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            if(arg.matrix == rocsparse_matrix_file_rocalution ||
-               arg.matrix == rocsparse_matrix_file_mtx)
+            if(arg.matrix == rocsparse_matrix_file_rocalution
+               || arg.matrix == rocsparse_matrix_file_mtx)
             {
                 return RocSPARSE_TestName<csr2hyb>{}
                        << rocsparse_datatype2string(arg.compute_type) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_partition2string(arg.part) << '_' << arg.algo << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_'
-                       << arg.filename;
+                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
             }
             else
             {
                 return RocSPARSE_TestName<csr2hyb>{}
-                       << rocsparse_datatype2string(arg.compute_type) << '_'
-                       << arg.M << '_' << arg.N << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
+                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
+                       << arg.N << '_' << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_partition2string(arg.part) << '_' << arg.algo << '_'
                        << rocsparse_matrix2string(arg.matrix);
             }

@@ -79,8 +79,8 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            if(arg.matrix == rocsparse_matrix_file_rocalution ||
-               arg.matrix == rocsparse_matrix_file_mtx)
+            if(arg.matrix == rocsparse_matrix_file_rocalution
+               || arg.matrix == rocsparse_matrix_file_mtx)
             {
                 return RocSPARSE_TestName<csr2coo>{} << rocsparse_indexbase2string(arg.baseA) << '_'
                                                      << rocsparse_matrix2string(arg.matrix) << '_'

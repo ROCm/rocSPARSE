@@ -48,7 +48,7 @@ void testing_csrilusv(const Arguments& arg)
     rocsparse_index_base      base      = arg.baseA;
     rocsparse_matrix_init     mat       = arg.matrix;
     bool                      full_rank = true;
-    std::string               filename  = rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+    std::string filename = rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
