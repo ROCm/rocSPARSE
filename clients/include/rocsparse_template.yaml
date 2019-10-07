@@ -1,0 +1,77 @@
+# ########################################################################
+# Copyright (c) 2019 Advanced Micro Devices, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# ########################################################################
+
+# Template used to process YAML from log files
+---
+include: rocsparse_common.yaml
+
+Functions:
+  rocsparse_saxpyi: { function: axpyi, <<: *single_precision }
+  rocsparse_daxpyi: { function: axpyi, <<: *double_precision }
+  rocsparse_sdoti: { function: doti, <<: *single_precision }
+  rocsparse_ddoti: { function: doti, <<: *double_precision }
+  rocsparse_sgthr: { function: gthr, <<: *single_precision }
+  rocsparse_dgthr: { function: gthr, <<: *double_precision }
+  rocsparse_sgthrz: { function: gthrz, <<: *single_precision }
+  rocsparse_dgthrz: { function: gthrz, <<: *double_precision }
+  rocsparse_sroti: { function: roti, <<: *single_precision }
+  rocsparse_droti: { function: roti, <<: *double_precision }
+  rocsparse_ssctr: { function: sctr, <<: *single_precision }
+  rocsparse_dsctr: { function: sctr, <<: *double_precision }
+
+  rocsparse_scoomv: { function: coomv, <<: *single_precision }
+  rocsparse_dcoomv: { function: coomv, <<: *double_precision }
+  rocsparse_scsrmv: { function: csrmv, <<: *single_precision }
+  rocsparse_dcsrmv: { function: csrmv, <<: *double_precision }
+  rocsparse_scsrsv_solve: { function: csrsv_solve, <<: *single_precision }
+  rocsparse_dcsrsv_solve: { function: csrsv_solve, <<: *double_precision }
+  rocsparse_sellmv: { function: ellmv, <<: *single_precision }
+  rocsparse_dellmv: { function: ellmv, <<: *double_precision }
+  rocsparse_shybmv: { function: hybmv, <<: *single_precision }
+  rocsparse_dhybmv: { function: hybmv, <<: *double_precision }
+
+  rocsparse_scsrmm: { function: csrmm, <<: *single_precision }
+  rocsparse_dcsrmm: { function: csrmm, <<: *double_precision }
+
+  rocsparse_scsrgemm: { function: csrgemm, <<: *single_precision }
+  rocsparse_dcsrgemm: { function: csrgemm, <<: *double_precision }
+
+  rocsparse_scsrilu0: { function: csrilu0, <<: *single_precision }
+  rocsparse_dcsrilu0: { function: csrilu0, <<: *double_precision }
+
+  rocsparse_csr2coo: { function: csr2coo }
+  rocsparse_coo2csr: { function: coo2csr }
+  rocsparse_scsr2csc: { function: csr2csc, <<: *single_precision }
+  rocsparse_dcsr2csc: { function: csr2csc, <<: *double_precision }
+  rocsparse_scsr2ell: { function: csr2ell, <<: *single_precision }
+  rocsparse_dcsr2ell: { function: csr2ell, <<: *double_precision }
+  rocsparse_sell2csr: { function: ell2csr, <<: *single_precision }
+  rocsparse_dell2csr: { function: ell2csr, <<: *double_precision }
+  rocsparse_scsr2hyb: { function: csr2hyb, <<: *single_precision }
+  rocsparse_dcsr2hyb: { function: csr2hyb, <<: *double_precision }
+  rocsparse_create_identity_permutation: { function: rocsparse_create_identity_permutation }
+  rocsparse_csrsort: { function: csrsort }
+  rocsparse_cscsort: { function: cscsort }
+  rocsparse_coosort_by_row: { function: coosort }
+  rocsparse_coosort_by_column: { function: coosort }
+Tests:

@@ -1,0 +1,77 @@
+# ########################################################################
+# Copyright (c) 2019 Advanced Micro Devices, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# ########################################################################
+
+---
+include: rocsparse_common.yaml
+include: known_bugs.yaml
+
+Definitions:
+  - &M_N_range
+    - { M:  -1, N:  -1 }
+    - { M:   0, N:   0 }
+    - { M:  50, N:  50 }
+    - { M: 647, N: 647 }
+
+Tests:
+- name: csrilu0_bad_arg
+  category: pre_checkin
+  function: csrilu0_bad_arg
+  precision: *single_double_precisions
+
+- name: csrilu0
+  category: quick
+  function: csrilu0
+  precision: *single_double_precisions
+  M_N: *M_N_range
+  transA: [rocsparse_operation_none]
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+
+- name: csrilu0_file
+  category: quick
+  function: csrilu0
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  transA: [rocsparse_operation_none]
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [rma10.csr,
+             mac_econ_fwd500.csr,
+             mc2depi.csr,
+             scircuit.csr,
+             ASIC_320k.csr,
+             bmwcra_1.csr,
+             nos1.csr,
+             nos2.csr,
+             nos3.csr,
+             nos4.csr,
+             nos5.csr,
+             nos6.csr,
+             nos7.csr,
+             amazon0312.csr,
+             sme3Dc.csr]

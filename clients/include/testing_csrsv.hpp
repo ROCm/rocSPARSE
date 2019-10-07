@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,935 +25,810 @@
 #ifndef TESTING_CSRSV_HPP
 #define TESTING_CSRSV_HPP
 
-#include "rocsparse.hpp"
-#include "rocsparse_test_unique_ptr.hpp"
-#include "unit.hpp"
+#include <rocsparse.hpp>
+
+#include "flops.hpp"
+#include "gbyte.hpp"
+#include "rocsparse_check.hpp"
+#include "rocsparse_host.hpp"
+#include "rocsparse_init.hpp"
+#include "rocsparse_math.hpp"
+#include "rocsparse_random.hpp"
+#include "rocsparse_test.hpp"
+#include "rocsparse_vector.hpp"
 #include "utility.hpp"
 
-#include <algorithm>
-#include <cmath>
-#include <iomanip>
-#include <iostream>
-#include <limits>
-#include <rocsparse.h>
-#include <string>
-
-using namespace rocsparse;
-using namespace rocsparse_test;
-
 template <typename T>
-void testing_csrsv_bad_arg(void)
+void testing_csrsv_bad_arg(const Arguments& arg)
 {
-    rocsparse_int             m         = 100;
-    rocsparse_int             nnz       = 100;
-    rocsparse_int             safe_size = 100;
-    T                         h_alpha   = 0.6;
-    rocsparse_operation       transA    = rocsparse_operation_none;
-    rocsparse_analysis_policy analysis  = rocsparse_analysis_policy_reuse;
-    rocsparse_solve_policy    solve     = rocsparse_solve_policy_auto;
-    rocsparse_status          status;
+    static const size_t safe_size = 100;
 
-    std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle               handle = unique_ptr_handle->handle;
+    T h_alpha = 0.6;
 
-    std::unique_ptr<descr_struct> unique_ptr_descr(new descr_struct);
-    rocsparse_mat_descr           descr = unique_ptr_descr->descr;
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
-    std::unique_ptr<mat_info_struct> unique_ptr_mat_info(new mat_info_struct);
-    rocsparse_mat_info               info = unique_ptr_mat_info->info;
+    // Create matrix descriptor
+    rocsparse_local_mat_descr descr;
 
-    auto dptr_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dcol_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dx_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dy_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dbuffer_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+    // Create matrix info
+    rocsparse_local_mat_info info;
 
-    rocsparse_int* dptr    = (rocsparse_int*)dptr_managed.get();
-    rocsparse_int* dcol    = (rocsparse_int*)dcol_managed.get();
-    T*             dval    = (T*)dval_managed.get();
-    T*             dx      = (T*)dx_managed.get();
-    T*             dy      = (T*)dy_managed.get();
-    void*          dbuffer = (void*)dbuffer_managed.get();
+    // Allocate memory on device
+    device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
+    device_vector<rocsparse_int> dcsr_col_ind(safe_size);
+    device_vector<T>             dcsr_val(safe_size);
+    device_vector<T>             dx(safe_size);
+    device_vector<T>             dy(safe_size);
+    device_vector<T>             dbuffer(safe_size);
 
-    if(!dval || !dptr || !dcol || !dx || !dy || !dbuffer)
+    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dx || !dy || !dbuffer)
     {
-        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
-    // testing rocsparse_csrsv_buffer_size
-    size_t size;
+    // Test rocsparse_csrsv_buffer_size()
+    size_t buffer_size;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_buffer_size<T>(nullptr,
+                                                           rocsparse_operation_none,
+                                                           safe_size,
+                                                           safe_size,
+                                                           descr,
+                                                           dcsr_val,
+                                                           dcsr_row_ptr,
+                                                           dcsr_col_ind,
+                                                           info,
+                                                           &buffer_size),
+                            rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_buffer_size<T>(handle,
+                                                           rocsparse_operation_none,
+                                                           safe_size,
+                                                           safe_size,
+                                                           nullptr,
+                                                           dcsr_val,
+                                                           dcsr_row_ptr,
+                                                           dcsr_col_ind,
+                                                           info,
+                                                           &buffer_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_buffer_size<T>(handle,
+                                                           rocsparse_operation_none,
+                                                           safe_size,
+                                                           safe_size,
+                                                           descr,
+                                                           nullptr,
+                                                           dcsr_row_ptr,
+                                                           dcsr_col_ind,
+                                                           info,
+                                                           &buffer_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_buffer_size<T>(handle,
+                                                           rocsparse_operation_none,
+                                                           safe_size,
+                                                           safe_size,
+                                                           descr,
+                                                           dcsr_val,
+                                                           nullptr,
+                                                           dcsr_col_ind,
+                                                           info,
+                                                           &buffer_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_buffer_size<T>(handle,
+                                                           rocsparse_operation_none,
+                                                           safe_size,
+                                                           safe_size,
+                                                           descr,
+                                                           dcsr_val,
+                                                           dcsr_row_ptr,
+                                                           nullptr,
+                                                           info,
+                                                           &buffer_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_buffer_size<T>(handle,
+                                                           rocsparse_operation_none,
+                                                           safe_size,
+                                                           safe_size,
+                                                           descr,
+                                                           dcsr_val,
+                                                           dcsr_row_ptr,
+                                                           dcsr_col_ind,
+                                                           nullptr,
+                                                           &buffer_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_buffer_size<T>(handle,
+                                                           rocsparse_operation_none,
+                                                           safe_size,
+                                                           safe_size,
+                                                           descr,
+                                                           dcsr_val,
+                                                           dcsr_row_ptr,
+                                                           dcsr_col_ind,
+                                                           info,
+                                                           nullptr),
+                            rocsparse_status_invalid_pointer);
 
-    // testing for(nullptr == dptr)
-    {
-        rocsparse_int* dptr_null = nullptr;
+    // Test rocsparse_csrsv_analysis()
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_analysis<T>(nullptr,
+                                                        rocsparse_operation_none,
+                                                        safe_size,
+                                                        safe_size,
+                                                        descr,
+                                                        dcsr_val,
+                                                        dcsr_row_ptr,
+                                                        dcsr_col_ind,
+                                                        info,
+                                                        rocsparse_analysis_policy_reuse,
+                                                        rocsparse_solve_policy_auto,
+                                                        dbuffer),
+                            rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_analysis<T>(handle,
+                                                        rocsparse_operation_none,
+                                                        safe_size,
+                                                        safe_size,
+                                                        nullptr,
+                                                        dcsr_val,
+                                                        dcsr_row_ptr,
+                                                        dcsr_col_ind,
+                                                        info,
+                                                        rocsparse_analysis_policy_reuse,
+                                                        rocsparse_solve_policy_auto,
+                                                        dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_analysis<T>(handle,
+                                                        rocsparse_operation_none,
+                                                        safe_size,
+                                                        safe_size,
+                                                        descr,
+                                                        nullptr,
+                                                        dcsr_row_ptr,
+                                                        dcsr_col_ind,
+                                                        info,
+                                                        rocsparse_analysis_policy_reuse,
+                                                        rocsparse_solve_policy_auto,
+                                                        dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_analysis<T>(handle,
+                                                        rocsparse_operation_none,
+                                                        safe_size,
+                                                        safe_size,
+                                                        descr,
+                                                        dcsr_val,
+                                                        nullptr,
+                                                        dcsr_col_ind,
+                                                        info,
+                                                        rocsparse_analysis_policy_reuse,
+                                                        rocsparse_solve_policy_auto,
+                                                        dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_analysis<T>(handle,
+                                                        rocsparse_operation_none,
+                                                        safe_size,
+                                                        safe_size,
+                                                        descr,
+                                                        dcsr_val,
+                                                        dcsr_row_ptr,
+                                                        nullptr,
+                                                        info,
+                                                        rocsparse_analysis_policy_reuse,
+                                                        rocsparse_solve_policy_auto,
+                                                        dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_analysis<T>(handle,
+                                                        rocsparse_operation_none,
+                                                        safe_size,
+                                                        safe_size,
+                                                        descr,
+                                                        dcsr_val,
+                                                        dcsr_row_ptr,
+                                                        dcsr_col_ind,
+                                                        nullptr,
+                                                        rocsparse_analysis_policy_reuse,
+                                                        rocsparse_solve_policy_auto,
+                                                        dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_analysis<T>(handle,
+                                                        rocsparse_operation_none,
+                                                        safe_size,
+                                                        safe_size,
+                                                        descr,
+                                                        dcsr_val,
+                                                        dcsr_row_ptr,
+                                                        dcsr_col_ind,
+                                                        info,
+                                                        rocsparse_analysis_policy_reuse,
+                                                        rocsparse_solve_policy_auto,
+                                                        nullptr),
+                            rocsparse_status_invalid_pointer);
 
-        status = rocsparse_csrsv_buffer_size(
-            handle, transA, m, nnz, descr, dval, dptr_null, dcol, info, &size);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
-    }
-    // testing for(nullptr == dcol)
-    {
-        rocsparse_int* dcol_null = nullptr;
+    // Test rocsparse_csrsv_solve()
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(nullptr,
+                                                     rocsparse_operation_none,
+                                                     safe_size,
+                                                     safe_size,
+                                                     &h_alpha,
+                                                     descr,
+                                                     dcsr_val,
+                                                     dcsr_row_ptr,
+                                                     dcsr_col_ind,
+                                                     info,
+                                                     dx,
+                                                     dy,
+                                                     rocsparse_solve_policy_auto,
+                                                     dbuffer),
+                            rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(handle,
+                                                     rocsparse_operation_none,
+                                                     safe_size,
+                                                     safe_size,
+                                                     nullptr,
+                                                     descr,
+                                                     dcsr_val,
+                                                     dcsr_row_ptr,
+                                                     dcsr_col_ind,
+                                                     info,
+                                                     dx,
+                                                     dy,
+                                                     rocsparse_solve_policy_auto,
+                                                     dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(handle,
+                                                     rocsparse_operation_none,
+                                                     safe_size,
+                                                     safe_size,
+                                                     &h_alpha,
+                                                     nullptr,
+                                                     dcsr_val,
+                                                     dcsr_row_ptr,
+                                                     dcsr_col_ind,
+                                                     info,
+                                                     dx,
+                                                     dy,
+                                                     rocsparse_solve_policy_auto,
+                                                     dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(handle,
+                                                     rocsparse_operation_none,
+                                                     safe_size,
+                                                     safe_size,
+                                                     &h_alpha,
+                                                     descr,
+                                                     nullptr,
+                                                     dcsr_row_ptr,
+                                                     dcsr_col_ind,
+                                                     info,
+                                                     dx,
+                                                     dy,
+                                                     rocsparse_solve_policy_auto,
+                                                     dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(handle,
+                                                     rocsparse_operation_none,
+                                                     safe_size,
+                                                     safe_size,
+                                                     &h_alpha,
+                                                     descr,
+                                                     dcsr_val,
+                                                     nullptr,
+                                                     dcsr_col_ind,
+                                                     info,
+                                                     dx,
+                                                     dy,
+                                                     rocsparse_solve_policy_auto,
+                                                     dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(handle,
+                                                     rocsparse_operation_none,
+                                                     safe_size,
+                                                     safe_size,
+                                                     &h_alpha,
+                                                     descr,
+                                                     dcsr_val,
+                                                     dcsr_row_ptr,
+                                                     nullptr,
+                                                     info,
+                                                     dx,
+                                                     dy,
+                                                     rocsparse_solve_policy_auto,
+                                                     dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(handle,
+                                                     rocsparse_operation_none,
+                                                     safe_size,
+                                                     safe_size,
+                                                     &h_alpha,
+                                                     descr,
+                                                     dcsr_val,
+                                                     dcsr_row_ptr,
+                                                     dcsr_col_ind,
+                                                     nullptr,
+                                                     dx,
+                                                     dy,
+                                                     rocsparse_solve_policy_auto,
+                                                     dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(handle,
+                                                     rocsparse_operation_none,
+                                                     safe_size,
+                                                     safe_size,
+                                                     &h_alpha,
+                                                     descr,
+                                                     dcsr_val,
+                                                     dcsr_row_ptr,
+                                                     dcsr_col_ind,
+                                                     info,
+                                                     nullptr,
+                                                     dy,
+                                                     rocsparse_solve_policy_auto,
+                                                     dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(handle,
+                                                     rocsparse_operation_none,
+                                                     safe_size,
+                                                     safe_size,
+                                                     &h_alpha,
+                                                     descr,
+                                                     dcsr_val,
+                                                     dcsr_row_ptr,
+                                                     dcsr_col_ind,
+                                                     info,
+                                                     dx,
+                                                     nullptr,
+                                                     rocsparse_solve_policy_auto,
+                                                     dbuffer),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(handle,
+                                                     rocsparse_operation_none,
+                                                     safe_size,
+                                                     safe_size,
+                                                     &h_alpha,
+                                                     descr,
+                                                     dcsr_val,
+                                                     dcsr_row_ptr,
+                                                     dcsr_col_ind,
+                                                     info,
+                                                     dx,
+                                                     dy,
+                                                     rocsparse_solve_policy_auto,
+                                                     nullptr),
+                            rocsparse_status_invalid_pointer);
 
-        status = rocsparse_csrsv_buffer_size(
-            handle, transA, m, nnz, descr, dval, dptr, dcol_null, info, &size);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
-    }
-    // testing for(nullptr == dval)
-    {
-        T* dval_null = nullptr;
-
-        status = rocsparse_csrsv_buffer_size(
-            handle, transA, m, nnz, descr, dval_null, dptr, dcol, info, &size);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
-    }
-    // testing for(nullptr == buffer_size)
-    {
-        size_t* size_null = nullptr;
-
-        status = rocsparse_csrsv_buffer_size(
-            handle, transA, m, nnz, descr, dval, dptr, dcol, info, size_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: size is nullptr");
-    }
-    // testing for(nullptr == descr)
-    {
-        rocsparse_mat_descr descr_null = nullptr;
-
-        status = rocsparse_csrsv_buffer_size(
-            handle, transA, m, nnz, descr_null, dval, dptr, dcol, info, &size);
-        verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
-    }
-    // testing for(nullptr == info)
-    {
-        rocsparse_mat_info info_null = nullptr;
-
-        status = rocsparse_csrsv_buffer_size(
-            handle, transA, m, nnz, descr, dval, dptr, dcol, info_null, &size);
-        verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
-    }
-    // testing for(nullptr == handle)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_csrsv_buffer_size(
-            handle_null, transA, m, nnz, descr, dval, dptr, dcol, info, &size);
-        verify_rocsparse_status_invalid_handle(status);
-    }
-
-    // testing rocsparse_csrsv_analysis
-
-    // testing for(nullptr == dptr)
-    {
-        rocsparse_int* dptr_null = nullptr;
-
-        status = rocsparse_csrsv_analysis(
-            handle, transA, m, nnz, descr, dval, dptr_null, dcol, info, analysis, solve, dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
-    }
-    // testing for(nullptr == dcol)
-    {
-        rocsparse_int* dcol_null = nullptr;
-
-        status = rocsparse_csrsv_analysis(
-            handle, transA, m, nnz, descr, dval, dptr, dcol_null, info, analysis, solve, dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
-    }
-    // testing for(nullptr == dval)
-    {
-        T* dval_null = nullptr;
-
-        status = rocsparse_csrsv_analysis(
-            handle, transA, m, nnz, descr, dval_null, dptr, dcol, info, analysis, solve, dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
-    }
-    // testing for(nullptr == dbuffer)
-    {
-        void* dbuffer_null = nullptr;
-
-        status = rocsparse_csrsv_analysis(
-            handle, transA, m, nnz, descr, dval, dptr, dcol, info, analysis, solve, dbuffer_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dbuffer is nullptr");
-    }
-    // testing for(nullptr == descr)
-    {
-        rocsparse_mat_descr descr_null = nullptr;
-
-        status = rocsparse_csrsv_analysis(
-            handle, transA, m, nnz, descr_null, dval, dptr, dcol, info, analysis, solve, dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
-    }
-    // testing for(nullptr == info)
-    {
-        rocsparse_mat_info info_null = nullptr;
-
-        status = rocsparse_csrsv_analysis(
-            handle, transA, m, nnz, descr, dval, dptr, dcol, info_null, analysis, solve, dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
-    }
-    // testing for(nullptr == handle)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_csrsv_analysis(
-            handle_null, transA, m, nnz, descr, dval, dptr, dcol, info, analysis, solve, dbuffer);
-        verify_rocsparse_status_invalid_handle(status);
-    }
-
-    // testing rocsparse_csrsv
-
-    // testing for(nullptr == dptr)
-    {
-        rocsparse_int* dptr_null = nullptr;
-
-        status = rocsparse_csrsv_solve(handle,
-                                       transA,
-                                       m,
-                                       nnz,
-                                       &h_alpha,
-                                       descr,
-                                       dval,
-                                       dptr_null,
-                                       dcol,
-                                       info,
-                                       dx,
-                                       dy,
-                                       solve,
-                                       dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
-    }
-    // testing for(nullptr == dcol)
-    {
-        rocsparse_int* dcol_null = nullptr;
-
-        status = rocsparse_csrsv_solve(handle,
-                                       transA,
-                                       m,
-                                       nnz,
-                                       &h_alpha,
-                                       descr,
-                                       dval,
-                                       dptr,
-                                       dcol_null,
-                                       info,
-                                       dx,
-                                       dy,
-                                       solve,
-                                       dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
-    }
-    // testing for(nullptr == dval)
-    {
-        T* dval_null = nullptr;
-
-        status = rocsparse_csrsv_solve(handle,
-                                       transA,
-                                       m,
-                                       nnz,
-                                       &h_alpha,
-                                       descr,
-                                       dval_null,
-                                       dptr,
-                                       dcol,
-                                       info,
-                                       dx,
-                                       dy,
-                                       solve,
-                                       dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
-    }
-    // testing for(nullptr == dx)
-    {
-        T* dx_null = nullptr;
-
-        status = rocsparse_csrsv_solve(handle,
-                                       transA,
-                                       m,
-                                       nnz,
-                                       &h_alpha,
-                                       descr,
-                                       dval,
-                                       dptr,
-                                       dcol,
-                                       info,
-                                       dx_null,
-                                       dy,
-                                       solve,
-                                       dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dx is nullptr");
-    }
-    // testing for(nullptr == dy)
-    {
-        T* dy_null = nullptr;
-
-        status = rocsparse_csrsv_solve(handle,
-                                       transA,
-                                       m,
-                                       nnz,
-                                       &h_alpha,
-                                       descr,
-                                       dval,
-                                       dptr,
-                                       dcol,
-                                       info,
-                                       dx,
-                                       dy_null,
-                                       solve,
-                                       dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dy is nullptr");
-    }
-    // testing for(nullptr == d_alpha)
-    {
-        T* d_alpha_null = nullptr;
-
-        status = rocsparse_csrsv_solve(handle,
-                                       transA,
-                                       m,
-                                       nnz,
-                                       d_alpha_null,
-                                       descr,
-                                       dval,
-                                       dptr,
-                                       dcol,
-                                       info,
-                                       dx,
-                                       dy,
-                                       solve,
-                                       dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
-    }
-    // testing for(nullptr == dbuffer)
-    {
-        void* dbuffer_null = nullptr;
-
-        status = rocsparse_csrsv_solve(handle,
-                                       transA,
-                                       m,
-                                       nnz,
-                                       &h_alpha,
-                                       descr,
-                                       dval,
-                                       dptr,
-                                       dcol,
-                                       info,
-                                       dx,
-                                       dy,
-                                       solve,
-                                       dbuffer_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dbuffer is nullptr");
-    }
-    // testing for(nullptr == descr)
-    {
-        rocsparse_mat_descr descr_null = nullptr;
-
-        status = rocsparse_csrsv_solve(handle,
-                                       transA,
-                                       m,
-                                       nnz,
-                                       &h_alpha,
-                                       descr_null,
-                                       dval,
-                                       dptr,
-                                       dcol,
-                                       info,
-                                       dx,
-                                       dy,
-                                       solve,
-                                       dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
-    }
-    // testing for(nullptr == info)
-    {
-        rocsparse_mat_info info_null = nullptr;
-
-        status = rocsparse_csrsv_solve(handle,
-                                       transA,
-                                       m,
-                                       nnz,
-                                       &h_alpha,
-                                       descr,
-                                       dval,
-                                       dptr,
-                                       dcol,
-                                       info_null,
-                                       dx,
-                                       dy,
-                                       solve,
-                                       dbuffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
-    }
-    // testing for(nullptr == handle)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_csrsv_solve(handle_null,
-                                       transA,
-                                       m,
-                                       nnz,
-                                       &h_alpha,
-                                       descr,
-                                       dval,
-                                       dptr,
-                                       dcol,
-                                       info,
-                                       dx,
-                                       dy,
-                                       solve,
-                                       dbuffer);
-        verify_rocsparse_status_invalid_handle(status);
-    }
-
-    // testing rocsparse_csrsv_zero_pivot
+    // Test rocsparse_csrsv_zero_pivot()
     rocsparse_int position;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(nullptr, descr, info, &position),
+                            rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descr, nullptr, &position),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descr, info, nullptr),
+                            rocsparse_status_invalid_pointer);
 
-    // testing for(nullptr == position)
-    {
-        rocsparse_int* position_null = nullptr;
-
-        status = rocsparse_csrsv_zero_pivot(handle, descr, info, position_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: position is nullptr");
-    }
-    // testing for(nullptr == info)
-    {
-        rocsparse_mat_info info_null = nullptr;
-
-        status = rocsparse_csrsv_zero_pivot(handle, descr, info_null, &position);
-        verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
-    }
-    // testing for(nullptr == handle)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_csrsv_zero_pivot(handle_null, descr, info, &position);
-        verify_rocsparse_status_invalid_handle(status);
-    }
-
-    // testing rocsparse_csrsv_clear
-
-    // testing for(nullptr == descr)
-    {
-        rocsparse_mat_descr descr_null = nullptr;
-
-        status = rocsparse_csrsv_clear(handle, descr_null, info);
-        verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
-    }
-    // testing for(nullptr == info)
-    {
-        rocsparse_mat_info info_null = nullptr;
-
-        status = rocsparse_csrsv_clear(handle, descr, info_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: info is nullptr");
-    }
-    // testing for(nullptr == handle)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_csrsv_clear(handle_null, descr, info);
-        verify_rocsparse_status_invalid_handle(status);
-    }
+    // Test rocsparse_csrsv_clear()
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_clear(nullptr, descr, info),
+                            rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_clear(handle, nullptr, info),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_clear(handle, descr, nullptr),
+                            rocsparse_status_invalid_pointer);
 }
 
 template <typename T>
-rocsparse_status testing_csrsv(Arguments argus)
+void testing_csrsv(const Arguments& arg)
 {
-    rocsparse_int        safe_size  = 100;
-    rocsparse_int        m          = argus.M;
-    rocsparse_int        n          = argus.M;
-    rocsparse_index_base idx_base   = argus.idx_base;
-    rocsparse_operation  trans      = argus.transA;
-    rocsparse_diag_type  diag_type  = argus.diag_type;
-    rocsparse_fill_mode  fill_mode  = argus.fill_mode;
-    T                    h_alpha    = argus.alpha;
-    std::string          binfile    = "";
-    std::string          filename   = "";
-    std::string          rocalution = "";
-    rocsparse_status     status;
-    size_t               size;
+    rocsparse_int             M         = arg.M;
+    rocsparse_int             N         = arg.N;
+    rocsparse_int             K         = arg.K;
+    rocsparse_int             dim_x     = arg.dimx;
+    rocsparse_int             dim_y     = arg.dimy;
+    rocsparse_int             dim_z     = arg.dimz;
+    rocsparse_operation       trans     = arg.transA;
+    rocsparse_diag_type       diag      = arg.diag;
+    rocsparse_fill_mode       uplo      = arg.uplo;
+    rocsparse_analysis_policy apol      = arg.apol;
+    rocsparse_solve_policy    spol      = arg.spol;
+    rocsparse_index_base      base      = arg.baseA;
+    rocsparse_matrix_init     mat       = arg.matrix;
+    bool                      full_rank = true;
+    std::string               filename  = rocsparse_exepath() + "../matrices/" + arg.filename;
 
-    // When in testing mode, M == N == -99 indicates that we are testing with a real
-    // matrix from cise.ufl.edu
-    if(m == -99 && argus.timing == 0)
-    {
-        binfile = argus.filename;
-        m       = safe_size;
-    }
+    T h_alpha = arg.get_alpha<T>();
 
-    if(argus.timing == 1)
-    {
-        if(argus.rocalution != "")
-        {
-            rocalution = argus.rocalution;
-        }
-        else if(argus.filename != "")
-        {
-            filename = argus.filename;
-        }
-    }
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
-    std::unique_ptr<handle_struct> test_handle(new handle_struct);
-    rocsparse_handle               handle = test_handle->handle;
+    // Create matrix descriptor
+    rocsparse_local_mat_descr descr;
 
-    std::unique_ptr<descr_struct> test_descr(new descr_struct);
-    rocsparse_mat_descr           descr = test_descr->descr;
-
-    std::unique_ptr<mat_info_struct> unique_ptr_mat_info(new mat_info_struct);
-    rocsparse_mat_info               info = unique_ptr_mat_info->info;
-
-    // Set matrix index base
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, idx_base));
+    // Create matrix info
+    rocsparse_local_mat_info info;
 
     // Set matrix diag type
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(descr, diag_type));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(descr, diag));
 
     // Set matrix fill mode
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_fill_mode(descr, fill_mode));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_fill_mode(descr, uplo));
 
-    // Determine number of non-zero elements
-    double scale = 0.02;
-    if(m > 1000)
-    {
-        scale = 2.0 / m;
-    }
-    rocsparse_int nnz = m * scale * m;
+    // Set matrix index base
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
     // Argument sanity check before allocating invalid memory
-    if(m <= 0 || nnz <= 0)
+    if(M <= 0)
     {
-        auto dptr_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dcol_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto dx_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto dy_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto buffer_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+        static const size_t safe_size = 100;
+        size_t              buffer_size;
+        rocsparse_int       pivot;
 
-        rocsparse_int* dptr   = (rocsparse_int*)dptr_managed.get();
-        rocsparse_int* dcol   = (rocsparse_int*)dcol_managed.get();
-        T*             dval   = (T*)dval_managed.get();
-        T*             dx     = (T*)dx_managed.get();
-        T*             dy     = (T*)dy_managed.get();
-        void*          buffer = (void*)buffer_managed.get();
+        // Allocate memory on device
+        device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
+        device_vector<rocsparse_int> dcsr_col_ind(safe_size);
+        device_vector<T>             dcsr_val(safe_size);
+        device_vector<T>             dx(safe_size);
+        device_vector<T>             dy(safe_size);
+        device_vector<T>             dbuffer(safe_size);
 
-        if(!dval || !dptr || !dcol || !dx || !dy || !buffer)
+        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dx || !dy || !dbuffer)
         {
-            verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                            "!dptr || !dcol || !dval || "
-                                            "!dx || !dy || !buffer");
-            return rocsparse_status_memory_error;
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
         }
 
-        // Test rocsparse_csrsv_buffer_size
-        status = rocsparse_csrsv_buffer_size(
-            handle, trans, m, nnz, descr, dval, dptr, dcol, info, &size);
-
-        if(m < 0 || nnz < 0)
-        {
-            verify_rocsparse_status_invalid_size(status, "Error: m < 0 || nnz < 0");
-        }
-        else
-        {
-            verify_rocsparse_status_success(status, "m >= 0 && nnz >= 0");
-        }
-
-        // Test rocsparse_csrsv_analysis
-        status = rocsparse_csrsv_analysis(handle,
-                                          trans,
-                                          m,
-                                          nnz,
-                                          descr,
-                                          dval,
-                                          dptr,
-                                          dcol,
-                                          info,
-                                          rocsparse_analysis_policy_reuse,
-                                          rocsparse_solve_policy_auto,
-                                          buffer);
-
-        if(m < 0 || nnz < 0)
-        {
-            verify_rocsparse_status_invalid_size(status, "Error: m < 0 || nnz < 0");
-        }
-        else
-        {
-            verify_rocsparse_status_success(status, "m >= 0 && nnz >= 0");
-        }
-
-        // Test rocsparse_csrsv_solve
-        status = rocsparse_csrsv_solve(handle,
-                                       trans,
-                                       m,
-                                       nnz,
-                                       &h_alpha,
-                                       descr,
-                                       dval,
-                                       dptr,
-                                       dcol,
-                                       info,
-                                       dx,
-                                       dy,
-                                       rocsparse_solve_policy_auto,
-                                       buffer);
-
-        if(m < 0 || nnz < 0)
-        {
-            verify_rocsparse_status_invalid_size(status, "Error: m < 0 || nnz < 0");
-        }
-        else
-        {
-            verify_rocsparse_status_success(status, "m >= 0 && nnz >= 0");
-        }
-
-        // Test rocsparse_csrsv_zero_pivot
-        rocsparse_int zero_pivot;
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_zero_pivot(handle, descr, info, &zero_pivot));
-
-        // Zero pivot should be -1
-        rocsparse_int res = -1;
-        unit_check_general(1, 1, 1, &res, &zero_pivot);
-
-        // Test rocsparse_csrsv_clear
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_clear(handle, descr, info));
-
-        return rocsparse_status_success;
-    }
-
-    // Host structures
-    std::vector<rocsparse_int> hcsr_row_ptr;
-    std::vector<rocsparse_int> hcsr_col_ind;
-    std::vector<T>             hcsr_val;
-
-    // Initial Data on CPU
-    srand(12345ULL);
-    if(binfile != "")
-    {
-        if(read_bin_matrix(
-               binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base)
-           != 0)
-        {
-            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
-            return rocsparse_status_internal_error;
-        }
-    }
-    else if(rocalution != "")
-    {
-        if(read_rocalution_matrix(
-               rocalution.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base)
-           != 0)
-        {
-            fprintf(stderr, "Cannot open [read] %s\n", rocalution.c_str());
-            return rocsparse_status_internal_error;
-        }
-    }
-    else if(argus.laplacian)
-    {
-        m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base);
-        nnz   = hcsr_row_ptr[m];
-    }
-    else
-    {
-        std::vector<rocsparse_int> hcoo_row_ind;
-
-        if(filename != "")
-        {
-            if(read_mtx_matrix(
-                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, idx_base)
-               != 0)
-            {
-                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
-                return rocsparse_status_internal_error;
-            }
-        }
-        else
-        {
-            gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, idx_base);
-        }
-
-        // Convert COO to CSR
-        hcsr_row_ptr.resize(m + 1, 0);
-        for(rocsparse_int i = 0; i < nnz; ++i)
-        {
-            ++hcsr_row_ptr[hcoo_row_ind[i] + 1 - idx_base];
-        }
-
-        hcsr_row_ptr[0] = idx_base;
-        for(rocsparse_int i = 0; i < m; ++i)
-        {
-            hcsr_row_ptr[i + 1] += hcsr_row_ptr[i];
-        }
-    }
-
-    std::vector<T> hx(m);
-    std::vector<T> hy_1(n);
-    std::vector<T> hy_2(n);
-    std::vector<T> hy_gold(n);
-
-    rocsparse_init<T>(hx, 1, m);
-
-    // Allocate memory on device
-    auto dptr_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
-    auto dcol_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dval_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dx_managed      = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
-    auto dy_1_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * n), device_free};
-    auto dy_2_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * n), device_free};
-    auto d_alpha_managed = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
-    auto d_position_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int)), device_free};
-
-    rocsparse_int* dptr       = (rocsparse_int*)dptr_managed.get();
-    rocsparse_int* dcol       = (rocsparse_int*)dcol_managed.get();
-    T*             dval       = (T*)dval_managed.get();
-    T*             dx         = (T*)dx_managed.get();
-    T*             dy_1       = (T*)dy_1_managed.get();
-    T*             dy_2       = (T*)dy_2_managed.get();
-    T*             d_alpha    = (T*)d_alpha_managed.get();
-    rocsparse_int* d_position = (rocsparse_int*)d_position_managed.get();
-
-    if(!dval || !dptr || !dcol || !dx || !dy_1 || !dy_2 || !d_alpha || !d_position)
-    {
-        verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                        "!dval || !dptr || !dcol || !dx || "
-                                        "!dy_1 || !dy_2 || !d_alpha || !d_position");
-        return rocsparse_status_memory_error;
-    }
-
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dptr, hcsr_row_ptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(
-        hipMemcpy(dcol, hcsr_col_ind.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dval, hcsr_val.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dx, hx.data(), sizeof(T) * m, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dy_1, hy_1.data(), sizeof(T) * n, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
-
-    // Obtain csrsv buffer size
-    CHECK_ROCSPARSE_ERROR(
-        rocsparse_csrsv_buffer_size(handle, trans, m, nnz, descr, dval, dptr, dcol, info, &size));
-
-    // Allocate buffer on the device
-    auto dbuffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * size), device_free};
-
-    void* dbuffer = (void*)dbuffer_managed.get();
-
-    if(!dbuffer)
-    {
-        verify_rocsparse_status_success(rocsparse_status_memory_error, "!dbuffer");
-        return rocsparse_status_memory_error;
-    }
-
-    // csrsv analysis
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis(handle,
-                                                   trans,
-                                                   m,
-                                                   nnz,
-                                                   descr,
-                                                   dval,
-                                                   dptr,
-                                                   dcol,
-                                                   info,
-                                                   rocsparse_analysis_policy_reuse,
-                                                   rocsparse_solve_policy_auto,
-                                                   dbuffer));
-
-    if(argus.unit_check)
-    {
-        CHECK_HIP_ERROR(hipMemcpy(dy_2, hy_2.data(), sizeof(T) * n, hipMemcpyHostToDevice));
-
-        // ROCSPARSE pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve(handle,
-                                                    trans,
-                                                    m,
-                                                    nnz,
-                                                    &h_alpha,
-                                                    descr,
-                                                    dval,
-                                                    dptr,
-                                                    dcol,
-                                                    info,
-                                                    dx,
-                                                    dy_1,
-                                                    rocsparse_solve_policy_auto,
-                                                    dbuffer));
 
-        rocsparse_int    hposition_1;
-        rocsparse_status pivot_status_1;
-        pivot_status_1 = rocsparse_csrsv_zero_pivot(handle, descr, info, &hposition_1);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_buffer_size<T>(handle,
+                                                               trans,
+                                                               M,
+                                                               safe_size,
+                                                               descr,
+                                                               dcsr_val,
+                                                               dcsr_row_ptr,
+                                                               dcsr_col_ind,
+                                                               info,
+                                                               &buffer_size),
+                                (M < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_analysis<T>(handle,
+                                                            trans,
+                                                            M,
+                                                            safe_size,
+                                                            descr,
+                                                            dcsr_val,
+                                                            dcsr_row_ptr,
+                                                            dcsr_col_ind,
+                                                            info,
+                                                            apol,
+                                                            spol,
+                                                            dbuffer),
+                                (M < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(handle,
+                                                         trans,
+                                                         M,
+                                                         safe_size,
+                                                         &h_alpha,
+                                                         descr,
+                                                         dcsr_val,
+                                                         dcsr_row_ptr,
+                                                         dcsr_col_ind,
+                                                         info,
+                                                         dx,
+                                                         dy,
+                                                         spol,
+                                                         dbuffer),
+                                (M < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descr, info, &pivot),
+                                rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_clear(handle, descr, info),
+                                rocsparse_status_success);
 
-        // ROCSPARSE pointer mode device
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve(handle,
-                                                    trans,
-                                                    m,
-                                                    nnz,
-                                                    d_alpha,
-                                                    descr,
-                                                    dval,
-                                                    dptr,
-                                                    dcol,
-                                                    info,
-                                                    dx,
-                                                    dy_2,
-                                                    rocsparse_solve_policy_auto,
-                                                    dbuffer));
-
-        rocsparse_status pivot_status_2;
-        pivot_status_2 = rocsparse_csrsv_zero_pivot(handle, descr, info, d_position);
-
-        // Copy output from device to CPU
-        rocsparse_int hposition_2;
-        CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * n, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hy_2.data(), dy_2, sizeof(T) * n, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(&hposition_2, d_position, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-
-        // Host csrsv
-        hipDeviceProp_t prop;
-        hipGetDeviceProperties(&prop, 0);
-
-        double cpu_time_used = get_time_us();
-
-        rocsparse_int position_gold;
-        if(fill_mode == rocsparse_fill_mode_lower)
-        {
-            position_gold = lsolve(m,
-                                   hcsr_row_ptr.data(),
-                                   hcsr_col_ind.data(),
-                                   hcsr_val.data(),
-                                   h_alpha,
-                                   hx.data(),
-                                   hy_gold.data(),
-                                   idx_base,
-                                   diag_type,
-                                   prop.warpSize);
-        }
-        else
-        {
-            position_gold = usolve(m,
-                                   hcsr_row_ptr.data(),
-                                   hcsr_col_ind.data(),
-                                   hcsr_val.data(),
-                                   h_alpha,
-                                   hx.data(),
-                                   hy_gold.data(),
-                                   idx_base,
-                                   diag_type,
-                                   prop.warpSize);
-        }
-
-        cpu_time_used = get_time_us() - cpu_time_used;
-
-        unit_check_general(1, 1, 1, &position_gold, &hposition_1);
-        unit_check_general(1, 1, 1, &position_gold, &hposition_2);
-
-        if(hposition_1 != -1)
-        {
-            verify_rocsparse_status_zero_pivot(pivot_status_1,
-                                               "expected rocsparse_status_zero_pivot");
-            return rocsparse_status_success;
-        }
-
-        if(hposition_2 != -1)
-        {
-            verify_rocsparse_status_zero_pivot(pivot_status_2,
-                                               "expected rocsparse_status_zero_pivot");
-            return rocsparse_status_success;
-        }
-
-        unit_check_near(1, n, 1, hy_gold.data(), hy_1.data());
-        unit_check_near(1, n, 1, hy_gold.data(), hy_2.data());
+        return;
     }
 
-    if(argus.timing)
+    // Allocate host memory for matrix
+    host_vector<rocsparse_int> hcsr_row_ptr;
+    host_vector<rocsparse_int> hcsr_col_ind;
+    host_vector<T>             hcsr_val;
+
+    rocsparse_seedrand();
+
+    // Sample matrix
+    rocsparse_int nnz;
+    rocsparse_init_csr_matrix(hcsr_row_ptr,
+                              hcsr_col_ind,
+                              hcsr_val,
+                              M,
+                              N,
+                              K,
+                              dim_x,
+                              dim_y,
+                              dim_z,
+                              nnz,
+                              base,
+                              mat,
+                              filename.c_str(),
+                              false,
+                              full_rank);
+
+    // Allocate host memory for vectors
+    host_vector<T>             hx(N);
+    host_vector<T>             hy_1(M);
+    host_vector<T>             hy_2(M);
+    host_vector<T>             hy_gold(M);
+    host_vector<rocsparse_int> h_analysis_pivot_1(1);
+    host_vector<rocsparse_int> h_analysis_pivot_2(1);
+    host_vector<rocsparse_int> h_analysis_pivot_gold(1);
+    host_vector<rocsparse_int> h_solve_pivot_1(1);
+    host_vector<rocsparse_int> h_solve_pivot_2(1);
+    host_vector<rocsparse_int> h_solve_pivot_gold(1);
+
+    // Initialize data on CPU
+    rocsparse_init<T>(hx, 1, N, 1);
+
+    // Allocate device memory
+    device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
+    device_vector<rocsparse_int> dcsr_col_ind(nnz);
+    device_vector<T>             dcsr_val(nnz);
+    device_vector<T>             dx(N);
+    device_vector<T>             dy_1(M);
+    device_vector<T>             dy_2(M);
+    device_vector<T>             d_alpha(1);
+    device_vector<rocsparse_int> d_analysis_pivot_2(1);
+    device_vector<rocsparse_int> d_solve_pivot_2(1);
+
+    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dx || !dy_1 || !dy_2 || !d_alpha
+       || !d_analysis_pivot_2 || !d_solve_pivot_2)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
+    // Copy data from CPU to device
+    CHECK_HIP_ERROR(hipMemcpy(
+        dcsr_row_ptr, hcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(
+        hipMemcpy(dcsr_col_ind, hcsr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dx, hx, sizeof(T) * N, hipMemcpyHostToDevice));
+
+    // Obtain required buffer size
+    size_t buffer_size;
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size<T>(
+        handle, trans, M, nnz, descr, dcsr_val, dcsr_row_ptr, dcsr_col_ind, info, &buffer_size));
+
+    void* dbuffer;
+    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+
+    if(arg.unit_check)
+    {
+        rocsparse_status status_analysis_1;
+        rocsparse_status status_analysis_2;
+        rocsparse_status status_solve_1;
+        rocsparse_status status_solve_2;
+
+        // Copy data from CPU to device
+        CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
+
+        // Perform analysis step
+
+        // Pointer mode host
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(handle,
+                                                          trans,
+                                                          M,
+                                                          nnz,
+                                                          descr,
+                                                          dcsr_val,
+                                                          dcsr_row_ptr,
+                                                          dcsr_col_ind,
+                                                          info,
+                                                          apol,
+                                                          spol,
+                                                          dbuffer));
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descr, info, h_analysis_pivot_1),
+                                (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                              : rocsparse_status_success);
+
+        // Pointer mode device
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(handle,
+                                                          trans,
+                                                          M,
+                                                          nnz,
+                                                          descr,
+                                                          dcsr_val,
+                                                          dcsr_row_ptr,
+                                                          dcsr_col_ind,
+                                                          info,
+                                                          apol,
+                                                          spol,
+                                                          dbuffer));
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descr, info, d_analysis_pivot_2),
+                                (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                              : rocsparse_status_success);
+
+        // Perform solve step
+
+        // Pointer mode host
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve<T>(handle,
+                                                       trans,
+                                                       M,
+                                                       nnz,
+                                                       &h_alpha,
+                                                       descr,
+                                                       dcsr_val,
+                                                       dcsr_row_ptr,
+                                                       dcsr_col_ind,
+                                                       info,
+                                                       dx,
+                                                       dy_1,
+                                                       spol,
+                                                       dbuffer));
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descr, info, h_solve_pivot_1),
+                                (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                           : rocsparse_status_success);
+
+        // Pointer mode device
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve<T>(handle,
+                                                       trans,
+                                                       M,
+                                                       nnz,
+                                                       d_alpha,
+                                                       descr,
+                                                       dcsr_val,
+                                                       dcsr_row_ptr,
+                                                       dcsr_col_ind,
+                                                       info,
+                                                       dx,
+                                                       dy_2,
+                                                       spol,
+                                                       dbuffer));
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descr, info, d_solve_pivot_2),
+                                (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                           : rocsparse_status_success);
+
+        // Copy output to host
+        CHECK_HIP_ERROR(hipMemcpy(hy_1, dy_1, sizeof(T) * M, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(
+            hipMemcpy(h_analysis_pivot_2, d_analysis_pivot_2, sizeof(T), hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(
+            hipMemcpy(h_solve_pivot_2, d_solve_pivot_2, sizeof(T), hipMemcpyDeviceToHost));
+
+        // CPU csrsv
+        host_csrsv<T>(M,
+                      h_alpha,
+                      hcsr_row_ptr,
+                      hcsr_col_ind,
+                      hcsr_val,
+                      hx,
+                      hy_gold,
+                      diag,
+                      uplo,
+                      base,
+                      h_analysis_pivot_gold,
+                      h_solve_pivot_gold);
+
+        // Check pivots
+        unit_check_general<rocsparse_int>(1, 1, 1, h_analysis_pivot_gold, h_analysis_pivot_1);
+        unit_check_general<rocsparse_int>(1, 1, 1, h_analysis_pivot_gold, h_analysis_pivot_2);
+        unit_check_general<rocsparse_int>(1, 1, 1, h_solve_pivot_gold, h_solve_pivot_1);
+        unit_check_general<rocsparse_int>(1, 1, 1, h_solve_pivot_gold, h_solve_pivot_2);
+
+        // Check solution vector if no pivot has been found
+        if(h_analysis_pivot_gold[0] == -1 && h_solve_pivot_gold[0] == -1)
+        {
+            near_check_general<T>(1, M, 1, hy_gold, hy_1);
+            near_check_general<T>(1, M, 1, hy_gold, hy_2);
+        }
+    }
+
+    if(arg.timing)
     {
         int number_cold_calls = 2;
-        int number_hot_calls  = argus.iters;
+        int number_hot_calls  = 100;
+
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-        for(int iter = 0; iter < number_cold_calls; iter++)
+        // Warm up
+        for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_csrsv_solve(handle,
-                                  trans,
-                                  m,
-                                  nnz,
-                                  &h_alpha,
-                                  descr,
-                                  dval,
-                                  dptr,
-                                  dcol,
-                                  info,
-                                  dx,
-                                  dy_1,
-                                  rocsparse_solve_policy_auto,
-                                  dbuffer);
+            rocsparse_csrsv_analysis<T>(handle,
+                                        trans,
+                                        M,
+                                        nnz,
+                                        descr,
+                                        dcsr_val,
+                                        dcsr_row_ptr,
+                                        dcsr_col_ind,
+                                        info,
+                                        apol,
+                                        spol,
+                                        dbuffer);
+            rocsparse_csrsv_solve<T>(handle,
+                                     trans,
+                                     M,
+                                     nnz,
+                                     &h_alpha,
+                                     descr,
+                                     dcsr_val,
+                                     dcsr_row_ptr,
+                                     dcsr_col_ind,
+                                     info,
+                                     dx,
+                                     dy_1,
+                                     spol,
+                                     dbuffer);
+            rocsparse_csrsv_clear(handle, descr, info);
         }
 
-        double gpu_time_used = get_time_us(); // in microseconds
+        double gpu_analysis_time_used = get_time_us();
 
-        for(int iter = 0; iter < number_hot_calls; iter++)
+        rocsparse_csrsv_analysis<T>(handle,
+                                    trans,
+                                    M,
+                                    nnz,
+                                    descr,
+                                    dcsr_val,
+                                    dcsr_row_ptr,
+                                    dcsr_col_ind,
+                                    info,
+                                    apol,
+                                    spol,
+                                    dbuffer);
+
+        gpu_analysis_time_used = get_time_us() - gpu_analysis_time_used;
+
+        double gpu_solve_time_used = get_time_us();
+
+        // Performance run
+        for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_csrsv_solve(handle,
-                                  trans,
-                                  m,
-                                  nnz,
-                                  &h_alpha,
-                                  descr,
-                                  dval,
-                                  dptr,
-                                  dcol,
-                                  info,
-                                  dx,
-                                  dy_1,
-                                  rocsparse_solve_policy_auto,
-                                  dbuffer);
+            rocsparse_csrsv_solve<T>(handle,
+                                     trans,
+                                     M,
+                                     nnz,
+                                     &h_alpha,
+                                     descr,
+                                     dcsr_val,
+                                     dcsr_row_ptr,
+                                     dcsr_col_ind,
+                                     info,
+                                     dx,
+                                     dy_1,
+                                     spol,
+                                     dbuffer);
         }
 
-        // Convert to miliseconds per call
-        gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
+        gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
 
-        // GFlops
-        size_t flops = 2 * nnz;
-
-        if(h_alpha != 1.0)
-        {
-            flops += m;
-        }
-
-        if(diag_type == rocsparse_diag_type_non_unit)
-        {
-            flops += m;
-        }
-
-        double gpu_gflops = flops / gpu_time_used / 1e6;
-
-        // Bandwidth
-        size_t int_data  = (m + 1 + nnz) * sizeof(rocsparse_int);
-        size_t flt_data  = (nnz + m + m) * sizeof(T);
-        double bandwidth = (int_data + flt_data) / gpu_time_used / 1e6;
+        double gpu_gflops = csrsv_gflop_count<T>(M, nnz, diag) / gpu_solve_time_used * 1e6;
+        double gpu_gbyte  = csrsv_gbyte_count<T>(M, nnz) / gpu_solve_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
-        std::cout << std::setw(12) << "m" << std::setw(12) << "nnz" << std::setw(12) << "alpha"
-                  << std::setw(12) << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12)
-                  << "msec" << std::endl;
-        std::cout << std::setw(12) << m << std::setw(12) << nnz << std::setw(12) << h_alpha
-                  << std::setw(12) << gpu_gflops << std::setw(12) << bandwidth << std::setw(12)
-                  << gpu_time_used << std::endl;
+
+        std::cout << std::setw(12) << "M" << std::setw(12) << "nnz" << std::setw(12) << "alpha"
+                  << std::setw(12) << "pivot" << std::setw(16) << "operation" << std::setw(12)
+                  << "diag type" << std::setw(12) << "fill mode" << std::setw(16)
+                  << "analysis policy" << std::setw(16) << "solve policy" << std::setw(12)
+                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(16) << "analysis msec"
+                  << std::setw(16) << "solve msec" << std::endl;
+
+        std::cout << std::setw(12) << M << std::setw(12) << nnz << std::setw(12) << h_alpha
+                  << std::setw(12) << std::min(h_analysis_pivot_gold[0], h_solve_pivot_gold[0])
+                  << std::setw(16) << rocsparse_operation2string(trans) << std::setw(12)
+                  << rocsparse_diagtype2string(diag) << std::setw(12)
+                  << rocsparse_fillmode2string(uplo) << std::setw(16)
+                  << rocsparse_analysis2string(apol) << std::setw(16)
+                  << rocsparse_solve2string(spol) << std::setw(12) << gpu_gflops << std::setw(12)
+                  << gpu_gbyte << std::setw(16) << gpu_analysis_time_used / 1e3 << std::setw(16)
+                  << gpu_solve_time_used / 1e3 << std::endl;
     }
 
+    // Clear csrsv meta data
     CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_clear(handle, descr, info));
 
-    return rocsparse_status_success;
+    // Free buffer
+    CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
 #endif // TESTING_CSRSV_HPP

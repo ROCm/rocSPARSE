@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,263 +21,188 @@
  *
  * ************************************************************************ */
 
+/*! \file
+ *  \brief rocsparse.hpp exposes C++ templated Sparse Linear Algebra interface with only
+ *  the precision templated.
+ */
+
 #pragma once
-#ifndef _ROCSPARSE_HPP_
-#define _ROCSPARSE_HPP_
+#ifndef ROCSPARSE_HPP
+#define ROCSPARSE_HPP
 
 #include <rocsparse.h>
 
-namespace rocsparse
-{
-
-    template <typename T>
-    rocsparse_status rocsparse_axpyi(rocsparse_handle     handle,
-                                     rocsparse_int        nnz,
-                                     const T*             alpha,
-                                     const T*             x_val,
-                                     const rocsparse_int* x_ind,
-                                     T*                   y,
-                                     rocsparse_index_base idx_base);
-
-    template <typename T>
-    rocsparse_status rocsparse_doti(rocsparse_handle     handle,
+/*
+ * ===========================================================================
+ *    level 1 SPARSE
+ * ===========================================================================
+ */
+// axpyi
+template <typename T>
+rocsparse_status (*rocsparse_axpyi)(rocsparse_handle     handle,
                                     rocsparse_int        nnz,
-                                    const T*             x_val,
+                                    const T*             alpha,
+                                    const T*             x_vec,
                                     const rocsparse_int* x_ind,
-                                    const T*             y,
-                                    T*                   result,
+                                    T*                   y,
                                     rocsparse_index_base idx_base);
 
-    template <typename T>
-    rocsparse_status rocsparse_gthr(rocsparse_handle     handle,
+template <>
+static constexpr auto rocsparse_axpyi<float> = rocsparse_saxpyi;
+
+template <>
+static constexpr auto rocsparse_axpyi<double> = rocsparse_daxpyi;
+
+// doti
+template <typename T>
+rocsparse_status (*rocsparse_doti)(rocsparse_handle     handle,
+                                   rocsparse_int        nnz,
+                                   const T*             x_val,
+                                   const rocsparse_int* x_ind,
+                                   const T*             y,
+                                   T*                   result,
+                                   rocsparse_index_base idx_base);
+
+template <>
+static constexpr auto rocsparse_doti<float> = rocsparse_sdoti;
+
+template <>
+static constexpr auto rocsparse_doti<double> = rocsparse_ddoti;
+
+// gthr
+template <typename T>
+rocsparse_status (*rocsparse_gthr)(rocsparse_handle     handle,
+                                   rocsparse_int        nnz,
+                                   const T*             y,
+                                   T*                   x_val,
+                                   const rocsparse_int* x_ind,
+                                   rocsparse_index_base idx_base);
+
+template <>
+static constexpr auto rocsparse_gthr<float> = rocsparse_sgthr;
+
+template <>
+static constexpr auto rocsparse_gthr<double> = rocsparse_dgthr;
+
+// gthrz
+template <typename T>
+rocsparse_status (*rocsparse_gthrz)(rocsparse_handle     handle,
                                     rocsparse_int        nnz,
                                     const T*             y,
                                     T*                   x_val,
                                     const rocsparse_int* x_ind,
                                     rocsparse_index_base idx_base);
 
-    template <typename T>
-    rocsparse_status rocsparse_gthrz(rocsparse_handle     handle,
-                                     rocsparse_int        nnz,
-                                     T*                   y,
-                                     T*                   x_val,
-                                     const rocsparse_int* x_ind,
-                                     rocsparse_index_base idx_base);
+template <>
+static constexpr auto rocsparse_gthrz<float> = rocsparse_sgthrz;
 
-    template <typename T>
-    rocsparse_status rocsparse_roti(rocsparse_handle     handle,
-                                    rocsparse_int        nnz,
-                                    T*                   x_val,
-                                    const rocsparse_int* x_ind,
-                                    T*                   y,
-                                    const T*             c,
-                                    const T*             s,
-                                    rocsparse_index_base idx_base);
+template <>
+static constexpr auto rocsparse_gthrz<double> = rocsparse_dgthrz;
 
-    template <typename T>
-    rocsparse_status rocsparse_sctr(rocsparse_handle     handle,
-                                    rocsparse_int        nnz,
-                                    const T*             x_val,
-                                    const rocsparse_int* x_ind,
-                                    T*                   y,
-                                    rocsparse_index_base idx_base);
+// roti
+template <typename T>
+rocsparse_status (*rocsparse_roti)(rocsparse_handle     handle,
+                                   rocsparse_int        nnz,
+                                   T*                   x_val,
+                                   const rocsparse_int* x_ind,
+                                   T*                   y,
+                                   const T*             c,
+                                   const T*             s,
+                                   rocsparse_index_base idx_base);
 
-    template <typename T>
-    rocsparse_status rocsparse_coomv(rocsparse_handle          handle,
-                                     rocsparse_operation       trans,
-                                     rocsparse_int             m,
-                                     rocsparse_int             n,
-                                     rocsparse_int             nnz,
-                                     const T*                  alpha,
-                                     const rocsparse_mat_descr descr,
-                                     const T*                  coo_val,
-                                     const rocsparse_int*      coo_row_ind,
-                                     const rocsparse_int*      coo_col_ind,
-                                     const T*                  x,
-                                     const T*                  beta,
-                                     T*                        y);
+template <>
+static constexpr auto rocsparse_roti<float> = rocsparse_sroti;
 
-    template <typename T>
-    rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle          handle,
-                                              rocsparse_operation       trans,
-                                              rocsparse_int             m,
-                                              rocsparse_int             n,
-                                              rocsparse_int             nnz,
-                                              const rocsparse_mat_descr descr,
-                                              const T*                  csr_val,
-                                              const rocsparse_int*      csr_row_ptr,
-                                              const rocsparse_int*      csr_col_ind,
-                                              rocsparse_mat_info        info);
+template <>
+static constexpr auto rocsparse_roti<double> = rocsparse_droti;
 
-    template <typename T>
-    rocsparse_status rocsparse_csrmv(rocsparse_handle          handle,
-                                     rocsparse_operation       trans,
-                                     rocsparse_int             m,
-                                     rocsparse_int             n,
-                                     rocsparse_int             nnz,
-                                     const T*                  alpha,
-                                     const rocsparse_mat_descr descr,
-                                     const T*                  csr_val,
-                                     const rocsparse_int*      csr_row_ptr,
-                                     const rocsparse_int*      csr_col_ind,
-                                     rocsparse_mat_info        info,
-                                     const T*                  x,
-                                     const T*                  beta,
-                                     T*                        y);
+// sctr
+template <typename T>
+rocsparse_status (*rocsparse_sctr)(rocsparse_handle     handle,
+                                   rocsparse_int        nnz,
+                                   const T*             x_val,
+                                   const rocsparse_int* x_ind,
+                                   T*                   y,
+                                   rocsparse_index_base idx_base);
 
-    template <typename T>
-    rocsparse_status rocsparse_csrsv_buffer_size(rocsparse_handle          handle,
-                                                 rocsparse_operation       trans,
-                                                 rocsparse_int             m,
-                                                 rocsparse_int             nnz,
-                                                 const rocsparse_mat_descr descr,
-                                                 const T*                  csr_val,
-                                                 const rocsparse_int*      csr_row_ptr,
-                                                 const rocsparse_int*      csr_col_ind,
-                                                 rocsparse_mat_info        info,
-                                                 size_t*                   buffer_size);
+template <>
+static constexpr auto rocsparse_sctr<float> = rocsparse_ssctr;
 
-    template <typename T>
-    rocsparse_status rocsparse_csrsv_analysis(rocsparse_handle          handle,
-                                              rocsparse_operation       trans,
-                                              rocsparse_int             m,
-                                              rocsparse_int             nnz,
-                                              const rocsparse_mat_descr descr,
-                                              const T*                  csr_val,
-                                              const rocsparse_int*      csr_row_ptr,
-                                              const rocsparse_int*      csr_col_ind,
-                                              rocsparse_mat_info        info,
-                                              rocsparse_analysis_policy analysis,
-                                              rocsparse_solve_policy    solve,
-                                              void*                     temp_buffer);
+template <>
+static constexpr auto rocsparse_sctr<double> = rocsparse_dsctr;
 
-    template <typename T>
-    rocsparse_status rocsparse_csrsv_solve(rocsparse_handle          handle,
-                                           rocsparse_operation       trans,
-                                           rocsparse_int             m,
-                                           rocsparse_int             nnz,
-                                           const T*                  alpha,
-                                           const rocsparse_mat_descr descr,
-                                           const T*                  csr_val,
-                                           const rocsparse_int*      csr_row_ptr,
-                                           const rocsparse_int*      csr_col_ind,
-                                           rocsparse_mat_info        info,
-                                           const T*                  x,
-                                           T*                        y,
-                                           rocsparse_solve_policy    policy,
-                                           void*                     temp_buffer);
+/*
+ * ===========================================================================
+ *    level 2 SPARSE
+ * ===========================================================================
+ */
+// coomv
+template <typename T>
+rocsparse_status (*rocsparse_coomv)(rocsparse_handle          handle,
+                                    rocsparse_operation       trans,
+                                    rocsparse_int             m,
+                                    rocsparse_int             n,
+                                    rocsparse_int             nnz,
+                                    const T*                  alpha,
+                                    const rocsparse_mat_descr descr,
+                                    const T*                  coo_val,
+                                    const rocsparse_int*      coo_row_ind,
+                                    const rocsparse_int*      coo_col_ind,
+                                    const T*                  x,
+                                    const T*                  beta,
+                                    T*                        y);
 
-    template <typename T>
-    rocsparse_status rocsparse_ellmv(rocsparse_handle          handle,
-                                     rocsparse_operation       trans,
-                                     rocsparse_int             m,
-                                     rocsparse_int             n,
-                                     const T*                  alpha,
-                                     const rocsparse_mat_descr descr,
-                                     const T*                  ell_val,
-                                     const rocsparse_int*      ell_col_ind,
-                                     rocsparse_int             ell_width,
-                                     const T*                  x,
-                                     const T*                  beta,
-                                     T*                        y);
+template <>
+static constexpr auto rocsparse_coomv<float> = rocsparse_scoomv;
 
-    template <typename T>
-    rocsparse_status rocsparse_hybmv(rocsparse_handle          handle,
-                                     rocsparse_operation       trans,
-                                     const T*                  alpha,
-                                     const rocsparse_mat_descr descr,
-                                     const rocsparse_hyb_mat   hyb,
-                                     const T*                  x,
-                                     const T*                  beta,
-                                     T*                        y);
+template <>
+static constexpr auto rocsparse_coomv<double> = rocsparse_dcoomv;
 
-    template <typename T>
-    rocsparse_status rocsparse_csrmm(rocsparse_handle          handle,
-                                     rocsparse_operation       trans_A,
-                                     rocsparse_operation       trans_B,
-                                     rocsparse_int             m,
-                                     rocsparse_int             n,
-                                     rocsparse_int             k,
-                                     rocsparse_int             nnz,
-                                     const T*                  alpha,
-                                     const rocsparse_mat_descr descr,
-                                     const T*                  csr_val,
-                                     const rocsparse_int*      csr_row_ptr,
-                                     const rocsparse_int*      csr_col_ind,
-                                     const T*                  B,
-                                     rocsparse_int             ldb,
-                                     const T*                  beta,
-                                     T*                        C,
-                                     rocsparse_int             ldc);
+// csrmv
+template <typename T>
+rocsparse_status (*rocsparse_csrmv_analysis)(rocsparse_handle          handle,
+                                             rocsparse_operation       trans,
+                                             rocsparse_int             m,
+                                             rocsparse_int             n,
+                                             rocsparse_int             nnz,
+                                             const rocsparse_mat_descr descr,
+                                             const T*                  csr_val,
+                                             const rocsparse_int*      csr_row_ptr,
+                                             const rocsparse_int*      csr_col_ind,
+                                             rocsparse_mat_info        info);
 
-    template <typename T>
-    rocsparse_status rocsparse_csrgemm_buffer_size(rocsparse_handle          handle,
-                                                   rocsparse_operation       trans_A,
-                                                   rocsparse_operation       trans_B,
-                                                   rocsparse_int             m,
-                                                   rocsparse_int             n,
-                                                   rocsparse_int             k,
-                                                   const T*                  alpha,
-                                                   const rocsparse_mat_descr descr_A,
-                                                   rocsparse_int             nnz_A,
-                                                   const rocsparse_int*      csr_row_ptr_A,
-                                                   const rocsparse_int*      csr_col_ind_A,
-                                                   const rocsparse_mat_descr descr_B,
-                                                   rocsparse_int             nnz_B,
-                                                   const rocsparse_int*      csr_row_ptr_B,
-                                                   const rocsparse_int*      csr_col_ind_B,
-                                                   const T*                  beta,
-                                                   const rocsparse_mat_descr descr_D,
-                                                   rocsparse_int             nnz_D,
-                                                   const rocsparse_int*      csr_row_ptr_D,
-                                                   const rocsparse_int*      csr_col_ind_D,
-                                                   rocsparse_mat_info        info,
-                                                   size_t*                   buffer_size);
+template <>
+static constexpr auto rocsparse_csrmv_analysis<float> = rocsparse_scsrmv_analysis;
 
-    template <typename T>
-    rocsparse_status rocsparse_csrgemm(rocsparse_handle          handle,
-                                       rocsparse_operation       trans_A,
-                                       rocsparse_operation       trans_B,
-                                       rocsparse_int             m,
-                                       rocsparse_int             n,
-                                       rocsparse_int             k,
-                                       const T*                  alpha,
-                                       const rocsparse_mat_descr descr_A,
-                                       rocsparse_int             nnz_A,
-                                       const T*                  csr_val_A,
-                                       const rocsparse_int*      csr_row_ptr_A,
-                                       const rocsparse_int*      csr_col_ind_A,
-                                       const rocsparse_mat_descr descr_B,
-                                       rocsparse_int             nnz_B,
-                                       const T*                  csr_val_B,
-                                       const rocsparse_int*      csr_row_ptr_B,
-                                       const rocsparse_int*      csr_col_ind_B,
-                                       const T*                  beta,
-                                       const rocsparse_mat_descr descr_D,
-                                       rocsparse_int             nnz_D,
-                                       const T*                  csr_val_D,
-                                       const rocsparse_int*      csr_row_ptr_D,
-                                       const rocsparse_int*      csr_col_ind_D,
-                                       const rocsparse_mat_descr descr_C,
-                                       T*                        csr_val_C,
-                                       const rocsparse_int*      csr_row_ptr_C,
-                                       rocsparse_int*            csr_col_ind_C,
-                                       const rocsparse_mat_info  info,
-                                       void*                     temp_buffer);
+template <>
+static constexpr auto rocsparse_csrmv_analysis<double> = rocsparse_dcsrmv_analysis;
 
-    template <typename T>
-    rocsparse_status rocsparse_csrilu0_buffer_size(rocsparse_handle          handle,
-                                                   rocsparse_int             m,
-                                                   rocsparse_int             nnz,
-                                                   const rocsparse_mat_descr descr,
-                                                   const T*                  csr_val,
-                                                   const rocsparse_int*      csr_row_ptr,
-                                                   const rocsparse_int*      csr_col_ind,
-                                                   rocsparse_mat_info        info,
-                                                   size_t*                   buffer_size);
+template <typename T>
+rocsparse_status (*rocsparse_csrmv)(rocsparse_handle          handle,
+                                    rocsparse_operation       trans,
+                                    rocsparse_int             m,
+                                    rocsparse_int             n,
+                                    rocsparse_int             nnz,
+                                    const T*                  alpha,
+                                    const rocsparse_mat_descr descr,
+                                    const T*                  csr_val,
+                                    const rocsparse_int*      csr_row_ptr,
+                                    const rocsparse_int*      csr_col_ind,
+                                    rocsparse_mat_info        info,
+                                    const T*                  x,
+                                    const T*                  beta,
+                                    T*                        y);
 
-    template <typename T>
-    rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle          handle,
+template <>
+static constexpr auto rocsparse_csrmv<float> = rocsparse_scsrmv;
+
+template <>
+static constexpr auto rocsparse_csrmv<double> = rocsparse_dcsrmv;
+
+// csrsv
+template <typename T>
+rocsparse_status (*rocsparse_csrsv_buffer_size)(rocsparse_handle          handle,
+                                                rocsparse_operation       trans,
                                                 rocsparse_int             m,
                                                 rocsparse_int             nnz,
                                                 const rocsparse_mat_descr descr,
@@ -285,74 +210,341 @@ namespace rocsparse
                                                 const rocsparse_int*      csr_row_ptr,
                                                 const rocsparse_int*      csr_col_ind,
                                                 rocsparse_mat_info        info,
-                                                rocsparse_analysis_policy analysis,
-                                                rocsparse_solve_policy    solve,
-                                                void*                     temp_buffer);
+                                                size_t*                   buffer_size);
 
-    template <typename T>
-    rocsparse_status rocsparse_csrilu0(rocsparse_handle          handle,
-                                       rocsparse_int             m,
-                                       rocsparse_int             nnz,
-                                       const rocsparse_mat_descr descr,
-                                       T*                        csr_val,
-                                       const rocsparse_int*      csr_row_ptr,
-                                       const rocsparse_int*      csr_col_ind,
-                                       rocsparse_mat_info        info,
-                                       rocsparse_solve_policy    policy,
-                                       void*                     temp_buffer);
+template <>
+static constexpr auto rocsparse_csrsv_buffer_size<float> = rocsparse_scsrsv_buffer_size;
 
-    template <typename T>
-    rocsparse_status rocsparse_csr2csc(rocsparse_handle     handle,
-                                       rocsparse_int        m,
-                                       rocsparse_int        n,
-                                       rocsparse_int        nnz,
-                                       const T*             csr_val,
-                                       const rocsparse_int* csr_row_ptr,
-                                       const rocsparse_int* csr_col_ind,
-                                       T*                   csc_val,
-                                       rocsparse_int*       csc_row_ind,
-                                       rocsparse_int*       csc_col_ptr,
-                                       rocsparse_action     copy_values,
-                                       rocsparse_index_base idx_base,
-                                       void*                temp_buffer);
+template <>
+static constexpr auto rocsparse_csrsv_buffer_size<double> = rocsparse_dcsrsv_buffer_size;
 
-    template <typename T>
-    rocsparse_status rocsparse_csr2ell(rocsparse_handle          handle,
-                                       rocsparse_int             m,
-                                       const rocsparse_mat_descr csr_descr,
-                                       const T*                  csr_val,
-                                       const rocsparse_int*      csr_row_ptr,
-                                       const rocsparse_int*      csr_col_ind,
-                                       const rocsparse_mat_descr ell_descr,
-                                       rocsparse_int             ell_width,
-                                       T*                        ell_val,
-                                       rocsparse_int*            ell_col_ind);
+template <typename T>
+rocsparse_status (*rocsparse_csrsv_analysis)(rocsparse_handle          handle,
+                                             rocsparse_operation       trans,
+                                             rocsparse_int             m,
+                                             rocsparse_int             nnz,
+                                             const rocsparse_mat_descr descr,
+                                             const T*                  csr_val,
+                                             const rocsparse_int*      csr_row_ptr,
+                                             const rocsparse_int*      csr_col_ind,
+                                             rocsparse_mat_info        info,
+                                             rocsparse_analysis_policy analysis,
+                                             rocsparse_solve_policy    solve,
+                                             void*                     temp_buffer);
 
-    template <typename T>
-    rocsparse_status rocsparse_csr2hyb(rocsparse_handle          handle,
-                                       rocsparse_int             m,
-                                       rocsparse_int             n,
-                                       const rocsparse_mat_descr descr,
-                                       const T*                  csr_val,
-                                       const rocsparse_int*      csr_row_ptr,
-                                       const rocsparse_int*      csr_col_ind,
-                                       rocsparse_hyb_mat         hyb,
-                                       rocsparse_int             user_ell_width,
-                                       rocsparse_hyb_partition   partition_type);
+template <>
+static constexpr auto rocsparse_csrsv_analysis<float> = rocsparse_scsrsv_analysis;
 
-    template <typename T>
-    rocsparse_status rocsparse_ell2csr(rocsparse_handle          handle,
-                                       rocsparse_int             m,
-                                       rocsparse_int             n,
-                                       const rocsparse_mat_descr ell_descr,
-                                       rocsparse_int             ell_width,
-                                       const T*                  ell_val,
-                                       const rocsparse_int*      ell_col_ind,
-                                       const rocsparse_mat_descr csr_descr,
-                                       T*                        csr_val,
-                                       const rocsparse_int*      csr_row_ptr,
-                                       rocsparse_int*            csr_col_ind);
+template <>
+static constexpr auto rocsparse_csrsv_analysis<double> = rocsparse_dcsrsv_analysis;
 
-} // namespace rocsparse
+template <typename T>
+rocsparse_status (*rocsparse_csrsv_solve)(rocsparse_handle          handle,
+                                          rocsparse_operation       trans,
+                                          rocsparse_int             m,
+                                          rocsparse_int             nnz,
+                                          const T*                  alpha,
+                                          const rocsparse_mat_descr descr,
+                                          const T*                  csr_val,
+                                          const rocsparse_int*      csr_row_ptr,
+                                          const rocsparse_int*      csr_col_ind,
+                                          rocsparse_mat_info        info,
+                                          const T*                  x,
+                                          T*                        y,
+                                          rocsparse_solve_policy    policy,
+                                          void*                     temp_buffer);
 
-#endif // _ROCSPARSE_HPP_
+template <>
+static constexpr auto rocsparse_csrsv_solve<float> = rocsparse_scsrsv_solve;
+
+template <>
+static constexpr auto rocsparse_csrsv_solve<double> = rocsparse_dcsrsv_solve;
+
+// ellmv
+template <typename T>
+rocsparse_status (*rocsparse_ellmv)(rocsparse_handle          handle,
+                                    rocsparse_operation       trans,
+                                    rocsparse_int             m,
+                                    rocsparse_int             n,
+                                    const T*                  alpha,
+                                    const rocsparse_mat_descr descr,
+                                    const T*                  ell_val,
+                                    const rocsparse_int*      ell_col_ind,
+                                    rocsparse_int             ell_width,
+                                    const T*                  x,
+                                    const T*                  beta,
+                                    T*                        y);
+
+template <>
+static constexpr auto rocsparse_ellmv<float> = rocsparse_sellmv;
+
+template <>
+static constexpr auto rocsparse_ellmv<double> = rocsparse_dellmv;
+
+// hybmv
+template <typename T>
+rocsparse_status (*rocsparse_hybmv)(rocsparse_handle          handle,
+                                    rocsparse_operation       trans,
+                                    const T*                  alpha,
+                                    const rocsparse_mat_descr descr,
+                                    const rocsparse_hyb_mat   hyb,
+                                    const T*                  x,
+                                    const T*                  beta,
+                                    T*                        y);
+
+template <>
+static constexpr auto rocsparse_hybmv<float> = rocsparse_shybmv;
+
+template <>
+static constexpr auto rocsparse_hybmv<double> = rocsparse_dhybmv;
+
+/*
+ * ===========================================================================
+ *    level 3 SPARSE
+ * ===========================================================================
+ */
+// csrmm
+template <typename T>
+rocsparse_status (*rocsparse_csrmm)(rocsparse_handle          handle,
+                                    rocsparse_operation       trans_A,
+                                    rocsparse_operation       trans_B,
+                                    rocsparse_int             m,
+                                    rocsparse_int             n,
+                                    rocsparse_int             k,
+                                    rocsparse_int             nnz,
+                                    const T*                  alpha,
+                                    const rocsparse_mat_descr descr,
+                                    const T*                  csr_val,
+                                    const rocsparse_int*      csr_row_ptr,
+                                    const rocsparse_int*      csr_col_ind,
+                                    const T*                  B,
+                                    rocsparse_int             ldb,
+                                    const T*                  beta,
+                                    T*                        C,
+                                    rocsparse_int             ldc);
+
+template <>
+static constexpr auto rocsparse_csrmm<float> = rocsparse_scsrmm;
+
+template <>
+static constexpr auto rocsparse_csrmm<double> = rocsparse_dcsrmm;
+
+/*
+ * ===========================================================================
+ *    extra SPARSE
+ * ===========================================================================
+ */
+// csrgemm
+template <typename T>
+rocsparse_status (*rocsparse_csrgemm_buffer_size)(rocsparse_handle          handle,
+                                                  rocsparse_operation       trans_A,
+                                                  rocsparse_operation       trans_B,
+                                                  rocsparse_int             m,
+                                                  rocsparse_int             n,
+                                                  rocsparse_int             k,
+                                                  const T*                  alpha,
+                                                  const rocsparse_mat_descr descr_A,
+                                                  rocsparse_int             nnz_A,
+                                                  const rocsparse_int*      csr_row_ptr_A,
+                                                  const rocsparse_int*      csr_col_ind_A,
+                                                  const rocsparse_mat_descr descr_B,
+                                                  rocsparse_int             nnz_B,
+                                                  const rocsparse_int*      csr_row_ptr_B,
+                                                  const rocsparse_int*      csr_col_ind_B,
+                                                  const T*                  beta,
+                                                  const rocsparse_mat_descr descr_D,
+                                                  rocsparse_int             nnz_D,
+                                                  const rocsparse_int*      csr_row_ptr_D,
+                                                  const rocsparse_int*      csr_col_ind_D,
+                                                  rocsparse_mat_info        info_C,
+                                                  size_t*                   buffer_size);
+
+template <>
+static constexpr auto rocsparse_csrgemm_buffer_size<float> = rocsparse_scsrgemm_buffer_size;
+
+template <>
+static constexpr auto rocsparse_csrgemm_buffer_size<double> = rocsparse_dcsrgemm_buffer_size;
+
+template <typename T>
+rocsparse_status (*rocsparse_csrgemm)(rocsparse_handle          handle,
+                                      rocsparse_operation       trans_A,
+                                      rocsparse_operation       trans_B,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      rocsparse_int             k,
+                                      const T*                  alpha,
+                                      const rocsparse_mat_descr descr_A,
+                                      rocsparse_int             nnz_A,
+                                      const T*                  csr_val_A,
+                                      const rocsparse_int*      csr_row_ptr_A,
+                                      const rocsparse_int*      csr_col_ind_A,
+                                      const rocsparse_mat_descr descr_B,
+                                      rocsparse_int             nnz_B,
+                                      const T*                  csr_val_B,
+                                      const rocsparse_int*      csr_row_ptr_B,
+                                      const rocsparse_int*      csr_col_ind_B,
+                                      const T*                  beta,
+                                      const rocsparse_mat_descr descr_D,
+                                      rocsparse_int             nnz_D,
+                                      const T*                  csr_val_D,
+                                      const rocsparse_int*      csr_row_ptr_D,
+                                      const rocsparse_int*      csr_col_ind_D,
+                                      const rocsparse_mat_descr descr_C,
+                                      T*                        csr_val_C,
+                                      const rocsparse_int*      csr_row_ptr_C,
+                                      rocsparse_int*            csr_col_ind_C,
+                                      const rocsparse_mat_info  info_C,
+                                      void*                     temp_buffer);
+
+template <>
+static constexpr auto rocsparse_csrgemm<float> = rocsparse_scsrgemm;
+
+template <>
+static constexpr auto rocsparse_csrgemm<double> = rocsparse_dcsrgemm;
+
+/*
+ * ===========================================================================
+ *    precond SPARSE
+ * ===========================================================================
+ */
+// csrilu0
+template <typename T>
+rocsparse_status (*rocsparse_csrilu0_buffer_size)(rocsparse_handle          handle,
+                                                  rocsparse_int             m,
+                                                  rocsparse_int             nnz,
+                                                  const rocsparse_mat_descr descr,
+                                                  const T*                  csr_val,
+                                                  const rocsparse_int*      csr_row_ptr,
+                                                  const rocsparse_int*      csr_col_ind,
+                                                  rocsparse_mat_info        info,
+                                                  size_t*                   buffer_size);
+
+template <>
+static constexpr auto rocsparse_csrilu0_buffer_size<float> = rocsparse_scsrilu0_buffer_size;
+
+template <>
+static constexpr auto rocsparse_csrilu0_buffer_size<double> = rocsparse_dcsrilu0_buffer_size;
+
+template <typename T>
+rocsparse_status (*rocsparse_csrilu0_analysis)(rocsparse_handle          handle,
+                                               rocsparse_int             m,
+                                               rocsparse_int             nnz,
+                                               const rocsparse_mat_descr descr,
+                                               const T*                  csr_val,
+                                               const rocsparse_int*      csr_row_ptr,
+                                               const rocsparse_int*      csr_col_ind,
+                                               rocsparse_mat_info        info,
+                                               rocsparse_analysis_policy analysis,
+                                               rocsparse_solve_policy    solve,
+                                               void*                     temp_buffer);
+
+template <>
+static constexpr auto rocsparse_csrilu0_analysis<float> = rocsparse_scsrilu0_analysis;
+
+template <>
+static constexpr auto rocsparse_csrilu0_analysis<double> = rocsparse_dcsrilu0_analysis;
+
+template <typename T>
+rocsparse_status (*rocsparse_csrilu0)(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      rocsparse_int             nnz,
+                                      const rocsparse_mat_descr descr,
+                                      T*                        csr_val,
+                                      const rocsparse_int*      csr_row_ptr,
+                                      const rocsparse_int*      csr_col_ind,
+                                      rocsparse_mat_info        info,
+                                      rocsparse_solve_policy    policy,
+                                      void*                     temp_buffer);
+
+template <>
+static constexpr auto rocsparse_csrilu0<float> = rocsparse_scsrilu0;
+
+template <>
+static constexpr auto rocsparse_csrilu0<double> = rocsparse_dcsrilu0;
+
+/*
+ * ===========================================================================
+ *    conversion SPARSE
+ * ===========================================================================
+ */
+// csr2csc
+template <typename T>
+rocsparse_status (*rocsparse_csr2csc)(rocsparse_handle     handle,
+                                      rocsparse_int        m,
+                                      rocsparse_int        n,
+                                      rocsparse_int        nnz,
+                                      const T*             csr_val,
+                                      const rocsparse_int* csr_row_ptr,
+                                      const rocsparse_int* csr_col_ind,
+                                      T*                   csc_val,
+                                      rocsparse_int*       csc_row_ind,
+                                      rocsparse_int*       csc_col_ptr,
+                                      rocsparse_action     copy_values,
+                                      rocsparse_index_base idx_base,
+                                      void*                temp_buffer);
+
+template <>
+static constexpr auto rocsparse_csr2csc<float> = rocsparse_scsr2csc;
+
+template <>
+static constexpr auto rocsparse_csr2csc<double> = rocsparse_dcsr2csc;
+
+// csr2ell
+template <typename T>
+rocsparse_status (*rocsparse_csr2ell)(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      const rocsparse_mat_descr csr_descr,
+                                      const T*                  csr_val,
+                                      const rocsparse_int*      csr_row_ptr,
+                                      const rocsparse_int*      csr_col_ind,
+                                      const rocsparse_mat_descr ell_descr,
+                                      rocsparse_int             ell_width,
+                                      T*                        ell_val,
+                                      rocsparse_int*            ell_col_ind);
+
+template <>
+static constexpr auto rocsparse_csr2ell<float> = rocsparse_scsr2ell;
+
+template <>
+static constexpr auto rocsparse_csr2ell<double> = rocsparse_dcsr2ell;
+
+// csr2hyb
+template <typename T>
+rocsparse_status (*rocsparse_csr2hyb)(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      const rocsparse_mat_descr descr,
+                                      const T*                  csr_val,
+                                      const rocsparse_int*      csr_row_ptr,
+                                      const rocsparse_int*      csr_col_ind,
+                                      rocsparse_hyb_mat         hyb,
+                                      rocsparse_int             user_ell_width,
+                                      rocsparse_hyb_partition   partition_type);
+
+template <>
+static constexpr auto rocsparse_csr2hyb<float> = rocsparse_scsr2hyb;
+
+template <>
+static constexpr auto rocsparse_csr2hyb<double> = rocsparse_dcsr2hyb;
+
+// ell2csr
+template <typename T>
+rocsparse_status (*rocsparse_ell2csr)(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      const rocsparse_mat_descr ell_descr,
+                                      rocsparse_int             ell_width,
+                                      const T*                  ell_val,
+                                      const rocsparse_int*      ell_col_ind,
+                                      const rocsparse_mat_descr csr_descr,
+                                      T*                        csr_val,
+                                      const rocsparse_int*      csr_row_ptr,
+                                      rocsparse_int*            csr_col_ind);
+
+template <>
+static constexpr auto rocsparse_ell2csr<float> = rocsparse_sell2csr;
+
+template <>
+static constexpr auto rocsparse_ell2csr<double> = rocsparse_dell2csr;
+
+#endif // ROCSPARSE_HPP

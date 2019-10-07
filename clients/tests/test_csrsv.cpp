@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,161 +21,74 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_data.hpp"
+#include "rocsparse_datatype2string.hpp"
+#include "rocsparse_test.hpp"
 #include "testing_csrsv.hpp"
-#include "utility.hpp"
+#include "type_dispatch.hpp"
 
-#include <gtest/gtest.h>
-#include <rocsparse.h>
-#include <string>
-#include <unistd.h>
-#include <vector>
+#include <cctype>
+#include <cstring>
+#include <type_traits>
 
-typedef rocsparse_index_base base;
-typedef rocsparse_operation  op;
-typedef rocsparse_diag_type  diag;
-typedef rocsparse_fill_mode  fill;
-
-typedef std::tuple<rocsparse_int, double, base, op, diag, fill> csrsv_tuple;
-typedef std::tuple<double, base, op, diag, fill, std::string>   csrsv_bin_tuple;
-
-rocsparse_int csrsv_M_range[] = {-1, 0, 50, 647};
-
-double csrsv_alpha_range[] = {1.0, 2.3, -3.7};
-
-base csrsv_idxbase_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
-op   csrsv_op_range[]      = {rocsparse_operation_none};
-diag csrsv_diag_range[]    = {rocsparse_diag_type_non_unit};
-fill csrsv_fill_range[]    = {rocsparse_fill_mode_lower, rocsparse_fill_mode_upper};
-
-std::string csrsv_bin[] = {"rma10.bin",
-                           "mac_econ_fwd500.bin",
-                           "mc2depi.bin",
-                           "scircuit.bin",
-                           "ASIC_320k.bin",
-                           "bmwcra_1.bin",
-                           "nos1.bin",
-                           "nos2.bin",
-                           "nos3.bin",
-                           "nos4.bin",
-                           "nos5.bin",
-                           "nos6.bin",
-                           "amazon0312.bin",
-                           "sme3Dc.bin"};
-
-class parameterized_csrsv : public testing::TestWithParam<csrsv_tuple>
+namespace
 {
-protected:
-    parameterized_csrsv() {}
-    virtual ~parameterized_csrsv() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
-};
-
-class parameterized_csrsv_bin : public testing::TestWithParam<csrsv_bin_tuple>
-{
-protected:
-    parameterized_csrsv_bin() {}
-    virtual ~parameterized_csrsv_bin() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
-};
-
-Arguments setup_csrsv_arguments(csrsv_tuple tup)
-{
-    Arguments arg;
-    arg.M         = std::get<0>(tup);
-    arg.alpha     = std::get<1>(tup);
-    arg.idx_base  = std::get<2>(tup);
-    arg.transA    = std::get<3>(tup);
-    arg.diag_type = std::get<4>(tup);
-    arg.fill_mode = std::get<5>(tup);
-    arg.timing    = 0;
-    return arg;
-}
-
-Arguments setup_csrsv_arguments(csrsv_bin_tuple tup)
-{
-    Arguments arg;
-    arg.M         = -99;
-    arg.alpha     = std::get<0>(tup);
-    arg.idx_base  = std::get<1>(tup);
-    arg.transA    = std::get<2>(tup);
-    arg.diag_type = std::get<3>(tup);
-    arg.fill_mode = std::get<4>(tup);
-    arg.timing    = 0;
-
-    // Determine absolute path of test matrix
-    std::string bin_file = std::get<5>(tup);
-
-    // Get current executables absolute path
-    char    path_exe[PATH_MAX];
-    ssize_t len = readlink("/proc/self/exe", path_exe, sizeof(path_exe) - 1);
-    if(len < 14)
+    // By default, this test does not apply to any types.
+    // The unnamed second parameter is used for enable_if below.
+    template <typename, typename = void>
+    struct csrsv_testing : rocsparse_test_invalid
     {
-        path_exe[0] = '\0';
-    }
-    else
+    };
+
+    // When the condition in the second argument is satisfied, the type combination
+    // is valid. When the condition is false, this specialization does not apply.
+    template <typename T>
+    struct csrsv_testing<
+        T,
+        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}>::type>
     {
-        path_exe[len - 14] = '\0';
+        explicit operator bool()
+        {
+            return true;
+        }
+        void operator()(const Arguments& arg)
+        {
+            if(!strcmp(arg.function, "csrsv"))
+                testing_csrsv<T>(arg);
+            else if(!strcmp(arg.function, "csrsv_bad_arg"))
+                testing_csrsv_bad_arg<T>(arg);
+            else
+                FAIL() << "Internal error: Test called with unknown function: " << arg.function;
+        }
+    };
+
+    struct csrsv : RocSPARSE_Test<csrsv, csrsv_testing>
+    {
+        // Filter for which types apply to this suite
+        static bool type_filter(const Arguments& arg)
+        {
+            return rocsparse_simple_dispatch<type_filter_functor>(arg);
+        }
+
+        // Filter for which functions apply to this suite
+        static bool function_filter(const Arguments& arg)
+        {
+            return !strcmp(arg.function, "csrsv") || !strcmp(arg.function, "csrsv_bad_arg");
+        }
+
+        // Google Test name suffix based on parameters
+        static std::string name_suffix(const Arguments& arg)
+        {
+            return RocSPARSE_TestName<csrsv>{}
+                   << "DISABLED_" << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M
+                   << '_' << arg.alpha << '_' << rocsparse_matrix2string(arg.matrix);
+        }
+    };
+
+    TEST_P(csrsv, level2)
+    {
+        rocsparse_simple_dispatch<csrsv_testing>(GetParam());
     }
+    INSTANTIATE_TEST_CATEGORIES(csrsv);
 
-    // Matrices are stored at the same path in matrices directory
-    arg.filename = std::string(path_exe) + "../matrices/" + bin_file;
-
-    return arg;
-}
-
-TEST(csrsv_bad_arg, csrsv_float)
-{
-    testing_csrsv_bad_arg<float>();
-}
-
-TEST_P(parameterized_csrsv, csrsv_float)
-{
-    Arguments arg = setup_csrsv_arguments(GetParam());
-
-    rocsparse_status status = testing_csrsv<float>(arg);
-    EXPECT_EQ(status, rocsparse_status_success);
-}
-
-TEST_P(parameterized_csrsv, csrsv_double)
-{
-    Arguments arg = setup_csrsv_arguments(GetParam());
-
-    rocsparse_status status = testing_csrsv<double>(arg);
-    EXPECT_EQ(status, rocsparse_status_success);
-}
-
-TEST_P(parameterized_csrsv_bin, csrsv_bin_float)
-{
-    Arguments arg = setup_csrsv_arguments(GetParam());
-
-    rocsparse_status status = testing_csrsv<float>(arg);
-    EXPECT_EQ(status, rocsparse_status_success);
-}
-
-TEST_P(parameterized_csrsv_bin, csrsv_bin_double)
-{
-    Arguments arg = setup_csrsv_arguments(GetParam());
-
-    rocsparse_status status = testing_csrsv<double>(arg);
-    EXPECT_EQ(status, rocsparse_status_success);
-}
-
-INSTANTIATE_TEST_CASE_P(DISABLED_csrsv,
-                        parameterized_csrsv,
-                        testing::Combine(testing::ValuesIn(csrsv_M_range),
-                                         testing::ValuesIn(csrsv_alpha_range),
-                                         testing::ValuesIn(csrsv_idxbase_range),
-                                         testing::ValuesIn(csrsv_op_range),
-                                         testing::ValuesIn(csrsv_diag_range),
-                                         testing::ValuesIn(csrsv_fill_range)));
-
-INSTANTIATE_TEST_CASE_P(DISABLED_csrsv_bin,
-                        parameterized_csrsv_bin,
-                        testing::Combine(testing::ValuesIn(csrsv_alpha_range),
-                                         testing::ValuesIn(csrsv_idxbase_range),
-                                         testing::ValuesIn(csrsv_op_range),
-                                         testing::ValuesIn(csrsv_diag_range),
-                                         testing::ValuesIn(csrsv_fill_range),
-                                         testing::ValuesIn(csrsv_bin)));
+} // namespace

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,244 +25,193 @@
 #ifndef TESTING_AXPYI_HPP
 #define TESTING_AXPYI_HPP
 
-#include "rocsparse.hpp"
-#include "rocsparse_test_unique_ptr.hpp"
-#include "unit.hpp"
+#include <rocsparse.hpp>
+
+#include "flops.hpp"
+#include "gbyte.hpp"
+#include "rocsparse_check.hpp"
+#include "rocsparse_host.hpp"
+#include "rocsparse_init.hpp"
+#include "rocsparse_math.hpp"
+#include "rocsparse_random.hpp"
+#include "rocsparse_test.hpp"
+#include "rocsparse_vector.hpp"
 #include "utility.hpp"
 
-#include <iomanip>
-#include <iostream>
-#include <rocsparse.h>
-
-using namespace rocsparse;
-using namespace rocsparse_test;
-
 template <typename T>
-void testing_axpyi_bad_arg(void)
+void testing_axpyi_bad_arg(const Arguments& arg)
 {
-    rocsparse_int nnz       = 100;
-    rocsparse_int safe_size = 100;
-    T             alpha     = 0.6;
+    static const size_t safe_size = 100;
 
-    rocsparse_index_base idx_base = rocsparse_index_base_zero;
-    rocsparse_status     status;
+    T h_alpha = 0.6;
 
-    std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle               handle = unique_ptr_handle->handle;
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
-    auto dxVal_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dxInd_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dy_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+    // Allocate memory on device
+    device_vector<rocsparse_int> dx_ind(safe_size);
+    device_vector<T>             dx_val(safe_size);
+    device_vector<T>             dy(safe_size);
 
-    T*             dxVal = (T*)dxVal_managed.get();
-    rocsparse_int* dxInd = (rocsparse_int*)dxInd_managed.get();
-    T*             dy    = (T*)dy_managed.get();
-
-    if(!dxInd || !dxVal || !dy)
+    if(!dx_ind || !dx_val || !dy)
     {
-        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
-    // testing for(nullptr == dxInd)
-    {
-        rocsparse_int* dxInd_null = nullptr;
-
-        status = rocsparse_axpyi(handle, nnz, &alpha, dxVal, dxInd_null, dy, idx_base);
-        verify_rocsparse_status_invalid_pointer(status, "Error: xInd is nullptr");
-    }
-    // testing for(nullptr == dxVal)
-    {
-        T* dxVal_null = nullptr;
-
-        status = rocsparse_axpyi(handle, nnz, &alpha, dxVal_null, dxInd, dy, idx_base);
-        verify_rocsparse_status_invalid_pointer(status, "Error: xVal is nullptr");
-    }
-    // testing for(nullptr == dy)
-    {
-        T* dy_null = nullptr;
-
-        status = rocsparse_axpyi(handle, nnz, &alpha, dxVal, dxInd, dy_null, idx_base);
-        verify_rocsparse_status_invalid_pointer(status, "Error: y is nullptr");
-    }
-    // testing for(nullptr == d_alpha)
-    {
-        T* d_alpha_null = nullptr;
-
-        status = rocsparse_axpyi(handle, nnz, d_alpha_null, dxVal, dxInd, dy, idx_base);
-        verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
-    }
-    // testing for(nullptr == handle)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_axpyi(handle_null, nnz, &alpha, dxVal, dxInd, dy, idx_base);
-        verify_rocsparse_status_invalid_handle(status);
-    }
+    // Test rocsparse_axpyi()
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_axpyi<T>(
+            nullptr, safe_size, &h_alpha, dx_val, dx_ind, dy, rocsparse_index_base_zero),
+        rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_axpyi<T>(
+            handle, safe_size, nullptr, dx_val, dx_ind, dy, rocsparse_index_base_zero),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_axpyi<T>(
+            handle, safe_size, &h_alpha, nullptr, dx_ind, dy, rocsparse_index_base_zero),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_axpyi<T>(
+            handle, safe_size, &h_alpha, dx_val, nullptr, dy, rocsparse_index_base_zero),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_axpyi<T>(
+            handle, safe_size, &h_alpha, dx_val, dx_ind, nullptr, rocsparse_index_base_zero),
+        rocsparse_status_invalid_pointer);
 }
 
 template <typename T>
-rocsparse_status testing_axpyi(Arguments argus)
+void testing_axpyi(const Arguments& arg)
 {
-    rocsparse_int        N         = argus.N;
-    rocsparse_int        nnz       = argus.nnz;
-    rocsparse_int        safe_size = 100;
-    T                    h_alpha   = argus.alpha;
-    rocsparse_index_base idx_base  = argus.idx_base;
-    rocsparse_status     status;
+    rocsparse_int        M    = arg.M;
+    rocsparse_int        nnz  = arg.nnz;
+    rocsparse_index_base base = arg.baseA;
 
-    std::unique_ptr<handle_struct> test_handle(new handle_struct);
-    rocsparse_handle               handle = test_handle->handle;
+    T h_alpha = arg.get_alpha<T>();
+
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
     // Argument sanity check before allocating invalid memory
     if(nnz <= 0)
     {
-        auto dxInd_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dxVal_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto dy_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+        static const size_t safe_size = 100;
 
-        rocsparse_int* dxInd = (rocsparse_int*)dxInd_managed.get();
-        T*             dxVal = (T*)dxVal_managed.get();
-        T*             dy    = (T*)dy_managed.get();
+        // Allocate memory on device
+        device_vector<rocsparse_int> dx_ind(safe_size);
+        device_vector<T>             dx_val(safe_size);
+        device_vector<T>             dy(safe_size);
 
-        if(!dxInd || !dxVal || !dy)
+        if(!dx_ind || !dx_val || !dy)
         {
-            verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                            "!dxInd || !dxVal || !dy");
-            return rocsparse_status_memory_error;
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
         }
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        status = rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy, idx_base);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_axpyi<T>(handle, nnz, &h_alpha, dx_val, dx_ind, dy, base),
+                                nnz < 0 ? rocsparse_status_invalid_size : rocsparse_status_success);
 
-        if(nnz < 0)
-        {
-            verify_rocsparse_status_invalid_size(status, "Error: nnz < 0");
-        }
-        else
-        {
-            verify_rocsparse_status_success(status, "nnz == 0");
-        }
-
-        return rocsparse_status_success;
+        return;
     }
 
-    // Host structures
-    std::vector<rocsparse_int> hxInd(nnz);
-    std::vector<T>             hxVal(nnz);
-    std::vector<T>             hy_1(N);
-    std::vector<T>             hy_2(N);
-    std::vector<T>             hy_gold(N);
+    // Allocate host memory
+    host_vector<rocsparse_int> hx_ind(nnz);
+    host_vector<T>             hx_val(nnz);
+    host_vector<T>             hy_1(M);
+    host_vector<T>             hy_2(M);
+    host_vector<T>             hy_gold(M);
 
-    // Initial Data on CPU
-    srand(12345ULL);
-    rocsparse_init_index(hxInd.data(), nnz, 1, N);
-    rocsparse_init<T>(hxVal, 1, nnz);
-    rocsparse_init<T>(hy_1, 1, N);
-
-    // copy vector is easy in STL; hy_gold = hx: save a copy in hy_gold which will be output of CPU
+    // Initialize data on CPU
+    rocsparse_seedrand();
+    rocsparse_init_index(hx_ind, nnz, 1, M);
+    rocsparse_init<T>(hx_val, 1, nnz, 1);
+    rocsparse_init<T>(hy_1, 1, M, 1);
     hy_2    = hy_1;
     hy_gold = hy_1;
 
-    // allocate memory on device
-    auto dxInd_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dxVal_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dy_1_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
-    auto dy_2_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * N), device_free};
-    auto d_alpha_managed = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
+    // Allocate device memory
+    device_vector<rocsparse_int> dx_ind(nnz);
+    device_vector<T>             dx_val(nnz);
+    device_vector<T>             dy_1(M);
+    device_vector<T>             dy_2(M);
+    device_vector<T>             d_alpha(1);
 
-    rocsparse_int* dxInd   = (rocsparse_int*)dxInd_managed.get();
-    T*             dxVal   = (T*)dxVal_managed.get();
-    T*             dy_1    = (T*)dy_1_managed.get();
-    T*             dy_2    = (T*)dy_2_managed.get();
-    T*             d_alpha = (T*)d_alpha_managed.get();
-
-    if(!dxInd || !dxVal || !dy_1 || !dy_2 || !d_alpha)
+    if(!dx_ind || !dx_val || !dy_1 || !dy_2 || !d_alpha)
     {
-        verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                        "!dxInd || !dxVal || !dy_1 || !dy_2 || !d_alpha");
-        return rocsparse_status_memory_error;
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
     }
 
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(
-        hipMemcpy(dxInd, hxInd.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dxVal, hxVal.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dy_1, hy_1.data(), sizeof(T) * N, hipMemcpyHostToDevice));
+    // Copy data from CPU to device
+    CHECK_HIP_ERROR(hipMemcpy(dx_ind, hx_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dx_val, hx_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dy_1, hy_1, sizeof(T) * M, hipMemcpyHostToDevice));
 
-    if(argus.unit_check)
+    if(arg.unit_check)
     {
-        CHECK_HIP_ERROR(hipMemcpy(dy_2, hy_2.data(), sizeof(T) * N, hipMemcpyHostToDevice));
+        // Copy data from CPU to device
+        CHECK_HIP_ERROR(hipMemcpy(dy_2, hy_2, sizeof(T) * M, hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
 
-        // ROCSPARSE pointer mode host
+        // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy_1, idx_base));
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_axpyi<T>(handle, nnz, &h_alpha, dx_val, dx_ind, dy_1, base));
 
-        // ROCSPARSE pointer mode device
+        // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_axpyi(handle, nnz, d_alpha, dxVal, dxInd, dy_2, idx_base));
+        CHECK_ROCSPARSE_ERROR(rocsparse_axpyi<T>(handle, nnz, d_alpha, dx_val, dx_ind, dy_2, base));
 
-        // copy output from device to CPU
-        CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * N, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hy_2.data(), dy_2, sizeof(T) * N, hipMemcpyDeviceToHost));
+        // Copy output to host
+        CHECK_HIP_ERROR(hipMemcpy(hy_1, dy_1, sizeof(T) * M, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
 
-        // CPU
-        double cpu_time_used = get_time_us();
+        // CPU axpyi
+        host_axpyi<T>(nnz, h_alpha, hx_val, hx_ind, hy_gold, base);
 
-        for(rocsparse_int i = 0; i < nnz; ++i)
-        {
-            hy_gold[hxInd[i] - idx_base] += h_alpha * hxVal[i];
-        }
-
-        cpu_time_used = get_time_us() - cpu_time_used;
-
-        // enable unit check, notice unit check is not invasive, but norm check is,
-        // unit check and norm check can not be interchanged their order
-        if(argus.unit_check)
-        {
-            unit_check_general(1, N, 1, hy_gold.data(), hy_1.data());
-            unit_check_general(1, N, 1, hy_gold.data(), hy_2.data());
-        }
+        unit_check_general<T>(1, M, 1, hy_gold, hy_1);
+        unit_check_general<T>(1, M, 1, hy_gold, hy_2);
     }
 
-    if(argus.timing)
+    if(arg.timing)
     {
         int number_cold_calls = 2;
-        int number_hot_calls  = argus.iters;
+        int number_hot_calls  = 100;
+
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-        for(int iter = 0; iter < number_cold_calls; iter++)
+        // Warm up
+        for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy_1, idx_base);
+            rocsparse_axpyi<T>(handle, nnz, &h_alpha, dx_val, dx_ind, dy_1, base);
         }
 
-        double gpu_time_used = get_time_us(); // in microseconds
+        double gpu_time_used = get_time_us();
 
-        for(int iter = 0; iter < number_hot_calls; iter++)
+        // Performance run
+        for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_axpyi(handle, nnz, &h_alpha, dxVal, dxInd, dy_1, idx_base);
+            rocsparse_axpyi<T>(handle, nnz, &h_alpha, dx_val, dx_ind, dy_1, base);
         }
 
-        gpu_time_used     = (get_time_us() - gpu_time_used) / number_hot_calls;
-        double gpu_gflops = (2.0 * nnz) / 1e9 / gpu_time_used * 1e6 * 1;
-        double bandwidth
-            = (sizeof(rocsparse_int) * nnz + (sizeof(T) * (nnz + N))) / gpu_time_used / 1e3;
+        gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
+
+        double gpu_gflops = axpyi_gflop_count<T>(nnz) / gpu_time_used * 1e6;
+        double gpu_gbyte  = axpyi_gbyte_count<T>(nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
+
         std::cout << std::setw(12) << "nnz" << std::setw(12) << "alpha" << std::setw(12)
                   << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12) << "usec" << std::endl;
-        std::cout << std::setw(12) << nnz << std::setw(12) << h_alpha << std::setw(12) << gpu_gflops
-                  << std::setw(12) << bandwidth << std::setw(12) << gpu_time_used << std::endl;
-    }
 
-    return rocsparse_status_success;
+        std::cout << std::setw(12) << nnz << std::setw(12) << h_alpha << std::setw(12) << gpu_gflops
+                  << std::setw(12) << gpu_gbyte << std::setw(12) << gpu_time_used << std::endl;
+    }
 }
 
 #endif // TESTING_AXPYI_HPP

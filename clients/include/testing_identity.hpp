@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,156 +25,131 @@
 #ifndef TESTING_IDENTITY_HPP
 #define TESTING_IDENTITY_HPP
 
-#include "rocsparse.hpp"
-#include "rocsparse_test_unique_ptr.hpp"
-#include "unit.hpp"
+#include <rocsparse.hpp>
+
+#include "gbyte.hpp"
+#include "rocsparse_check.hpp"
+#include "rocsparse_host.hpp"
+#include "rocsparse_init.hpp"
+#include "rocsparse_math.hpp"
+#include "rocsparse_random.hpp"
+#include "rocsparse_test.hpp"
+#include "rocsparse_vector.hpp"
 #include "utility.hpp"
 
-#include <algorithm>
-#include <iomanip>
-#include <iostream>
-#include <rocsparse.h>
-
-using namespace rocsparse;
-using namespace rocsparse_test;
-
-void testing_identity_bad_arg(void)
+template <typename T>
+void testing_identity_bad_arg(const Arguments& arg)
 {
-    rocsparse_int    n         = 100;
-    rocsparse_int    safe_size = 100;
-    rocsparse_status status;
+    static const size_t safe_size = 100;
 
-    std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle               handle = unique_ptr_handle->handle;
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
-    auto p_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-
-    rocsparse_int* p = (rocsparse_int*)p_managed.get();
-
-    if(!p)
-    {
-        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Testing for (p == nullptr)
-    {
-        rocsparse_int* p_null = nullptr;
-
-        status = rocsparse_create_identity_permutation(handle, n, p_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: p is nullptr");
-    }
-
-    // Testing for(handle == nullptr)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_create_identity_permutation(handle_null, n, p);
-        verify_rocsparse_status_invalid_handle(status);
-    }
-}
-
-rocsparse_status testing_identity(Arguments argus)
-{
-    rocsparse_int    n         = argus.N;
-    rocsparse_int    safe_size = 100;
-    rocsparse_status status;
-
-    std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle               handle = unique_ptr_handle->handle;
-
-    // Argument sanity check before allocating invalid memory
-    if(n <= 0)
-    {
-        auto p_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-
-        rocsparse_int* p = (rocsparse_int*)p_managed.get();
-
-        if(!p)
-        {
-            verify_rocsparse_status_success(rocsparse_status_memory_error, "!p");
-            return rocsparse_status_memory_error;
-        }
-
-        status = rocsparse_create_identity_permutation(handle, n, p);
-
-        if(n < 0)
-        {
-            verify_rocsparse_status_invalid_size(status, "Error: n < 0");
-        }
-        else
-        {
-            verify_rocsparse_status_success(status, "n >= 0");
-        }
-
-        return rocsparse_status_success;
-    }
-
-    // Host structures
-    std::vector<rocsparse_int> hp(n);
-    std::vector<rocsparse_int> hp_gold(n);
-
-    // create_identity_permutation on host
-    for(rocsparse_int i = 0; i < n; ++i)
-    {
-        hp_gold[i] = i;
-    }
-
-    // Allocate memory on the device
-    auto dp_managed = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * n), device_free};
-
-    rocsparse_int* dp = (rocsparse_int*)dp_managed.get();
+    // Allocate memory on device
+    device_vector<rocsparse_int> dp(safe_size);
 
     if(!dp)
     {
-        verify_rocsparse_status_success(rocsparse_status_memory_error, "!p");
-        return rocsparse_status_memory_error;
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
     }
 
-    if(argus.unit_check)
+    // Test rocsparse_create_identity_permutation()
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_identity_permutation(nullptr, safe_size, dp),
+                            rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_identity_permutation(handle, safe_size, nullptr),
+                            rocsparse_status_invalid_pointer);
+}
+
+template <typename T>
+void testing_identity(const Arguments& arg)
+{
+    rocsparse_int N = arg.N;
+
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
+
+    // Argument sanity check before allocating invalid memory
+    if(N <= 0)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, n, dp));
+        static const size_t safe_size = 100;
 
-        // Copy output from device to host
-        CHECK_HIP_ERROR(hipMemcpy(hp.data(), dp, sizeof(rocsparse_int) * n, hipMemcpyDeviceToHost));
+        // Allocate memory on device
+        device_vector<rocsparse_int> dp(safe_size);
 
-        // Unit check
-        unit_check_general(1, n, 1, hp_gold.data(), hp.data());
+        if(!dp)
+        {
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
+        }
+
+        EXPECT_ROCSPARSE_STATUS(rocsparse_create_identity_permutation(handle, N, dp),
+                                (N < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
+
+        return;
     }
 
-    if(argus.timing)
+    // Allocate host memory
+    host_vector<rocsparse_int> hp(N);
+    host_vector<rocsparse_int> hp_gold(N);
+
+    // Allocate device memory
+    device_vector<rocsparse_int> dp(N);
+
+    if(!dp)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
+    if(arg.unit_check)
+    {
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, N, dp));
+
+        // Copy output to host
+        CHECK_HIP_ERROR(hipMemcpy(hp, dp, sizeof(rocsparse_int) * N, hipMemcpyDeviceToHost));
+
+        // CPU identity
+        for(rocsparse_int i = 0; i < N; ++i)
+        {
+            hp_gold[i] = i;
+        }
+
+        unit_check_general<rocsparse_int>(1, N, 1, hp_gold, hp);
+    }
+
+    if(arg.timing)
     {
         int number_cold_calls = 2;
-        int number_hot_calls  = argus.iters;
+        int number_hot_calls  = 100;
 
+        // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_create_identity_permutation(handle, n, dp);
+            rocsparse_create_identity_permutation(handle, N, dp);
         }
 
         double gpu_time_used = get_time_us();
 
+        // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_create_identity_permutation(handle, n, dp);
+            rocsparse_create_identity_permutation(handle, N, dp);
         }
 
-        gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
+        gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double bandwidth = sizeof(rocsparse_int) * n / gpu_time_used / 1e6;
+        double gpu_gbyte = identity_gbyte_count<T>(N) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
-        std::cout << std::setw(12) << "n" << std::setw(12) << "GB/s" << std::setw(12) << "msec"
+
+        std::cout << std::setw(12) << "N" << std::setw(12) << "GB/s" << std::setw(12) << "usec"
                   << std::endl;
-        std::cout << std::setw(12) << n << std::setw(12) << bandwidth << std::setw(12)
+        std::cout << std::setw(12) << N << std::setw(12) << gpu_gbyte << std::setw(12)
                   << gpu_time_used << std::endl;
     }
-
-    return rocsparse_status_success;
 }
 
 #endif // TESTING_IDENTITY_HPP

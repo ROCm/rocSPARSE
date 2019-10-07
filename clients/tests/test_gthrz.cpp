@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,63 +21,73 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_data.hpp"
+#include "rocsparse_datatype2string.hpp"
+#include "rocsparse_test.hpp"
 #include "testing_gthrz.hpp"
-#include "utility.hpp"
+#include "type_dispatch.hpp"
 
-#include <gtest/gtest.h>
-#include <rocsparse.h>
-#include <vector>
+#include <cctype>
+#include <cstring>
+#include <type_traits>
 
-typedef rocsparse_index_base                           base;
-typedef std::tuple<rocsparse_int, rocsparse_int, base> gthrz_tuple;
-
-rocsparse_int gthrz_N_range[]   = {12000, 15332, 22031};
-rocsparse_int gthrz_nnz_range[] = {-1, 0, 5, 10, 500, 1000, 7111, 10000};
-
-base gthrz_idx_base_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
-
-class parameterized_gthrz : public testing::TestWithParam<gthrz_tuple>
+namespace
 {
-protected:
-    parameterized_gthrz() {}
-    virtual ~parameterized_gthrz() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
-};
+    // By default, this test does not apply to any types.
+    // The unnamed second parameter is used for enable_if below.
+    template <typename, typename = void>
+    struct gthrz_testing : rocsparse_test_invalid
+    {
+    };
 
-Arguments setup_gthrz_arguments(gthrz_tuple tup)
-{
-    Arguments arg;
-    arg.N        = std::get<0>(tup);
-    arg.nnz      = std::get<1>(tup);
-    arg.idx_base = std::get<2>(tup);
-    arg.timing   = 0;
-    return arg;
-}
+    // When the condition in the second argument is satisfied, the type combination
+    // is valid. When the condition is false, this specialization does not apply.
+    template <typename T>
+    struct gthrz_testing<
+        T,
+        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}>::type>
+    {
+        explicit operator bool()
+        {
+            return true;
+        }
+        void operator()(const Arguments& arg)
+        {
+            if(!strcmp(arg.function, "gthrz"))
+                testing_gthrz<T>(arg);
+            else if(!strcmp(arg.function, "gthrz_bad_arg"))
+                testing_gthrz_bad_arg<T>(arg);
+            else
+                FAIL() << "Internal error: Test called with unknown function: " << arg.function;
+        }
+    };
 
-TEST(gthrz_bad_arg, gthrz_float)
-{
-    testing_gthrz_bad_arg<float>();
-}
+    struct gthrz : RocSPARSE_Test<gthrz, gthrz_testing>
+    {
+        // Filter for which types apply to this suite
+        static bool type_filter(const Arguments& arg)
+        {
+            return rocsparse_simple_dispatch<type_filter_functor>(arg);
+        }
 
-TEST_P(parameterized_gthrz, gthrz_float)
-{
-    Arguments arg = setup_gthrz_arguments(GetParam());
+        // Filter for which functions apply to this suite
+        static bool function_filter(const Arguments& arg)
+        {
+            return !strcmp(arg.function, "gthrz") || !strcmp(arg.function, "gthrz_bad_arg");
+        }
 
-    rocsparse_status status = testing_gthrz<float>(arg);
-    EXPECT_EQ(status, rocsparse_status_success);
-}
+        // Google Test name suffix based on parameters
+        static std::string name_suffix(const Arguments& arg)
+        {
+            return RocSPARSE_TestName<gthrz>{} << rocsparse_datatype2string(arg.compute_type) << '_'
+                                               << arg.M << '_' << arg.nnz;
+        }
+    };
 
-TEST_P(parameterized_gthrz, gthrz_double)
-{
-    Arguments arg = setup_gthrz_arguments(GetParam());
+    TEST_P(gthrz, level1)
+    {
+        rocsparse_simple_dispatch<gthrz_testing>(GetParam());
+    }
+    INSTANTIATE_TEST_CATEGORIES(gthrz);
 
-    rocsparse_status status = testing_gthrz<double>(arg);
-    EXPECT_EQ(status, rocsparse_status_success);
-}
-
-INSTANTIATE_TEST_CASE_P(gthrz,
-                        parameterized_gthrz,
-                        testing::Combine(testing::ValuesIn(gthrz_N_range),
-                                         testing::ValuesIn(gthrz_nnz_range),
-                                         testing::ValuesIn(gthrz_idx_base_range)));
+} // namespace

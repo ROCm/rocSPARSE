@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,67 +21,73 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_data.hpp"
+#include "rocsparse_datatype2string.hpp"
+#include "rocsparse_test.hpp"
 #include "testing_axpyi.hpp"
-#include "utility.hpp"
+#include "type_dispatch.hpp"
 
-#include <gtest/gtest.h>
-#include <rocsparse.h>
-#include <vector>
+#include <cctype>
+#include <cstring>
+#include <type_traits>
 
-typedef rocsparse_index_base                                   base;
-typedef std::tuple<rocsparse_int, rocsparse_int, double, base> axpyi_tuple;
-
-rocsparse_int axpyi_N_range[]   = {12000, 15332, 22031};
-rocsparse_int axpyi_nnz_range[] = {-1, 0, 5, 10, 500, 1000, 7111, 10000};
-
-std::vector<double> axpyi_alpha_range = {1.0, 0.0};
-
-base axpyi_idx_base_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
-
-class parameterized_axpyi : public testing::TestWithParam<axpyi_tuple>
+namespace
 {
-protected:
-    parameterized_axpyi() {}
-    virtual ~parameterized_axpyi() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
-};
+    // By default, this test does not apply to any types.
+    // The unnamed second parameter is used for enable_if below.
+    template <typename, typename = void>
+    struct axpyi_testing : rocsparse_test_invalid
+    {
+    };
 
-Arguments setup_axpyi_arguments(axpyi_tuple tup)
-{
-    Arguments arg;
-    arg.N        = std::get<0>(tup);
-    arg.nnz      = std::get<1>(tup);
-    arg.alpha    = std::get<2>(tup);
-    arg.idx_base = std::get<3>(tup);
-    arg.timing   = 0;
-    return arg;
-}
+    // When the condition in the second argument is satisfied, the type combination
+    // is valid. When the condition is false, this specialization does not apply.
+    template <typename T>
+    struct axpyi_testing<
+        T,
+        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}>::type>
+    {
+        explicit operator bool()
+        {
+            return true;
+        }
+        void operator()(const Arguments& arg)
+        {
+            if(!strcmp(arg.function, "axpyi"))
+                testing_axpyi<T>(arg);
+            else if(!strcmp(arg.function, "axpyi_bad_arg"))
+                testing_axpyi_bad_arg<T>(arg);
+            else
+                FAIL() << "Internal error: Test called with unknown function: " << arg.function;
+        }
+    };
 
-TEST(axpyi_bad_arg, axpyi_float)
-{
-    testing_axpyi_bad_arg<float>();
-}
+    struct axpyi : RocSPARSE_Test<axpyi, axpyi_testing>
+    {
+        // Filter for which types apply to this suite
+        static bool type_filter(const Arguments& arg)
+        {
+            return rocsparse_simple_dispatch<type_filter_functor>(arg);
+        }
 
-TEST_P(parameterized_axpyi, axpyi_float)
-{
-    Arguments arg = setup_axpyi_arguments(GetParam());
+        // Filter for which functions apply to this suite
+        static bool function_filter(const Arguments& arg)
+        {
+            return !strcmp(arg.function, "axpyi") || !strcmp(arg.function, "axpyi_bad_arg");
+        }
 
-    rocsparse_status status = testing_axpyi<float>(arg);
-    EXPECT_EQ(status, rocsparse_status_success);
-}
+        // Google Test name suffix based on parameters
+        static std::string name_suffix(const Arguments& arg)
+        {
+            return RocSPARSE_TestName<axpyi>{} << rocsparse_datatype2string(arg.compute_type) << '_'
+                                               << arg.M << '_' << arg.nnz << '_' << arg.alpha;
+        }
+    };
 
-TEST_P(parameterized_axpyi, axpyi_double)
-{
-    Arguments arg = setup_axpyi_arguments(GetParam());
+    TEST_P(axpyi, level1)
+    {
+        rocsparse_simple_dispatch<axpyi_testing>(GetParam());
+    }
+    INSTANTIATE_TEST_CATEGORIES(axpyi);
 
-    rocsparse_status status = testing_axpyi<double>(arg);
-    EXPECT_EQ(status, rocsparse_status_success);
-}
-
-INSTANTIATE_TEST_CASE_P(axpyi,
-                        parameterized_axpyi,
-                        testing::Combine(testing::ValuesIn(axpyi_N_range),
-                                         testing::ValuesIn(axpyi_nnz_range),
-                                         testing::ValuesIn(axpyi_alpha_range),
-                                         testing::ValuesIn(axpyi_idx_base_range)));
+} // namespace

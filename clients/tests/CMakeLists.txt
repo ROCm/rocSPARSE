@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018 Advanced Micro Devices, Inc.
+# Copyright (c) 2019 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ foreach(m ${TEST_MATRICES})
 
   # Download test matrices if not already downloaded
   set(CMAKE_MATRICES_DIR ${PROJECT_BINARY_DIR}/matrices)
-  if(NOT EXISTS "${CMAKE_MATRICES_DIR}/${mat}.bin")
+  if(NOT EXISTS "${CMAKE_MATRICES_DIR}/${mat}.csr")
     message("  Downloading and extracting test matrix ${m}.tar.gz")
     file(DOWNLOAD http://www.cise.ufl.edu/research/sparse/MM/${m}.tar.gz
          ${CMAKE_MATRICES_DIR}/${mat}.tar.gz)
@@ -65,18 +65,17 @@ foreach(m ${TEST_MATRICES})
                     WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
     execute_process(COMMAND mv ${mat}/${mat}.mtx .
                     WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
-    execute_process(COMMAND ${CONVERT} ${mat}.mtx ${mat}.bin
+    execute_process(COMMAND ${CONVERT} ${mat}.mtx ${mat}.csr
                     WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
     execute_process(COMMAND rm ${mat}.tar.gz ${mat} ${mat}.mtx -rf
                     WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
   endif()
 endforeach()
 
-
 find_package(GTest REQUIRED)
 
 set(ROCSPARSE_TEST_SOURCES
-  rocsparse_gtest_main.cpp
+  rocsparse_test_main.cpp
   test_axpyi.cpp
   test_doti.cpp
   test_gthr.cpp
@@ -89,6 +88,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_ellmv.cpp
   test_hybmv.cpp
   test_csrmm.cpp
+  test_csrgemm.cpp
   test_csrilu0.cpp
   test_csr2coo.cpp
   test_csr2csc.cpp
@@ -100,16 +100,11 @@ set(ROCSPARSE_TEST_SOURCES
   test_csrsort.cpp
   test_cscsort.cpp
   test_coosort.cpp
-  test_csrilusv.cpp
-  test_csrgemm_a.cpp
-  test_csrgemm_b.cpp
 )
 
 set(ROCSPARSE_CLIENTS_COMMON
-  ../common/arg_check.cpp
-  ../common/unit.cpp
   ../common/utility.cpp
-  ../common/rocsparse_template_specialization.cpp
+  ../common/rocsparse_parse_data.cpp
 )
 
 add_executable(rocsparse-test ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON})
@@ -130,6 +125,7 @@ target_include_directories(rocsparse-test
     PRIVATE
       $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
       $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
+#      $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
 )
 
 if(NOT TARGET rocsparse)
@@ -140,23 +136,48 @@ endif()
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} Threads::Threads)
+target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} Threads::Threads) #${Boost_LIBRARIES})
 
 if(OPENMP_FOUND)
   target_link_libraries(rocsparse-test PRIVATE ${OpenMP_CXX_FLAGS})
 endif()
 
+target_compile_definitions(rocsparse-test PRIVATE __HIP_PLATFORM_HCC__)
+get_target_property(HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE)
+target_link_libraries(rocsparse-test PRIVATE ${HIPHCC_LOCATION})
+
+
+
+#set(Boost_USE_MULTITHREADED ON)
+#set(Boost_DETAILED_FAILURE_MSG ON)
+#set(Boost_ADDITIONAL_VERSIONS 1.65.1 1.65)
+#set(Boost_USE_STATIC_LIBS OFF)
+
+#find_package(Boost COMPONENTS program_options)
+
+#if( NOT Boost_FOUND )
+#  message( STATUS "Dynamic boost libraries not found. Attempting to find static libraries " )
+#  set( Boost_USE_STATIC_LIBS ON )
+#  find_package( Boost COMPONENTS program_options )
+
+#  if( NOT Boost_FOUND )
+#    message( FATAL_ERROR "boost is a required dependency and is not found;  try adding boost path to CMAKE_PREFIX_PATH" )
+#  endif( )
+#endif( )
+
+
+set(ROCSPARSE_TEST_DATA "${PROJECT_BINARY_DIR}/staging/rocsparse_test.data")
+add_custom_command(OUTPUT "${ROCSPARSE_TEST_DATA}"
+                   COMMAND ../common/rocsparse_gentest.py -I ../include rocsparse_test.yaml -o "${ROCSPARSE_TEST_DATA}"
+                   DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml test_axpyi.yaml test_doti.yaml test_gthr.yaml test_gthrz.yaml test_roti.yaml test_sctr.yaml test_coomv.yaml test_csrmv.yaml test_csrsv.yaml test_ellmv.yaml test_hybmv.yaml test_csrmm.yaml test_csrgemm.yaml test_csrilu0.yaml test_csr2coo.yaml test_csr2csc.yaml test_csr2ell.yaml test_csr2hyb.yaml test_coo2csr.yaml test_ell2csr.yaml test_identity.yaml test_csrsort.yaml test_cscsort.yaml test_coosort.yaml
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+add_custom_target(rocsparse-test-data
+                  DEPENDS "${ROCSPARSE_TEST_DATA}" )
+
+add_dependencies(rocsparse-test rocsparse-test-data rocsparse-common)
+
 if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
-  target_link_libraries(rocsparse-test PRIVATE ${HIP_LIBRARIES})
-  foreach(target ${AMDGPU_TARGETS})
-    target_link_libraries(rocsparse-test PRIVATE --amdgpu-target=${target})
-  endforeach()
-elseif(NOT CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
-  target_compile_definitions(rocsparse-test PRIVATE __HIP_PLATFORM_HCC__)
-  get_target_property(HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE)
-  target_link_libraries(rocsparse-test PRIVATE ${HIPHCC_LOCATION})
+  target_include_directories(rocsparse-test PRIVATE /opt/rocm/hsa/include)
 endif()
 
 set_target_properties(rocsparse-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
-
-add_test(rocsparse-test rocsparse-test)

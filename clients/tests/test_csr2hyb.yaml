@@ -1,0 +1,73 @@
+# ########################################################################
+# Copyright (c) 2019 Advanced Micro Devices, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# ########################################################################
+
+---
+include: rocsparse_common.yaml
+include: known_bugs.yaml
+
+Tests:
+- name: csr2hyb_bad_arg
+  category: pre_checkin
+  function: csr2hyb_bad_arg
+  precision: *single_double_precisions
+
+- name: csr2hyb
+  category: quick
+  function: csr2hyb
+  precision: *single_double_precisions
+  M: [-1, 0, 10, 500, 872, 1000]
+  N: [-3, 0, 33, 242, 623, 1000]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
+  algo: [-33, -1, 0, 2147483647]
+  matrix: [rocsparse_matrix_random]
+
+- name: csr2hyb_file
+  category: quick
+  function: csr2hyb
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
+  algo: [-33, -1, 0, 2147483647]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [rma10.csr,
+             mac_econ_fwd500.csr,
+             bibd_22_8.csr,
+             mc2depi.csr,
+             scircuit.csr,
+             ASIC_320k.csr,
+             bmwcra_1.csr,
+             nos1.csr,
+             nos2.csr,
+             nos3.csr,
+             nos4.csr,
+             nos5.csr,
+             nos6.csr,
+             nos7.csr,
+             amazon0312.csr,
+             Chebyshev4.csr,
+             sme3Dc.csr,
+             webbase-1M.csr,
+             shipsec1.csr]

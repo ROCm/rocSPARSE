@@ -1,0 +1,82 @@
+# ########################################################################
+# Copyright (c) 2019 Advanced Micro Devices, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+# ########################################################################
+
+---
+include: rocsparse_common.yaml
+include: known_bugs.yaml
+
+Definitions:
+  - &alpha_beta_range
+    - { alpha:   2.0, beta:  0.0  }
+    - { alpha:   2.0, beta:  0.67 }
+    - { alpha:   2.0, beta:  1.0  }
+    - { alpha:   3.0, beta:  0.0  }
+    - { alpha:   3.0, beta:  0.67 }
+    - { alpha:   3.0, beta:  1.0  }
+
+Tests:
+- name: coomv_bad_arg
+  category: pre_checkin
+  function: coomv_bad_arg
+  precision: *single_double_precisions
+
+- name: coomv
+  category: quick
+  function: coomv
+  precision: *single_double_precisions
+  M: [-1, 0, 10, 500, 7111, 10000]
+  N: [-3, 0, 33, 842, 4441, 10000]
+  alpha_beta: *alpha_beta_range
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+
+- name: coomv_file
+  category: quick
+  function: coomv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [rma10.csr,
+             mac_econ_fwd500.csr,
+             bibd_22_8.csr,
+             mc2depi.csr,
+             scircuit.csr,
+             ASIC_320k.csr,
+             bmwcra_1.csr,
+             nos1.csr,
+             nos2.csr,
+             nos3.csr,
+             nos4.csr,
+             nos5.csr,
+             nos6.csr,
+             nos7.csr,
+             amazon0312.csr,
+             Chebyshev4.csr,
+             sme3Dc.csr,
+             webbase-1M.csr,
+             shipsec1.csr]

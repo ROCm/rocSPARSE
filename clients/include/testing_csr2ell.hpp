@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,626 +25,391 @@
 #ifndef TESTING_CSR2ELL_HPP
 #define TESTING_CSR2ELL_HPP
 
-#include "rocsparse.hpp"
-#include "rocsparse_test_unique_ptr.hpp"
-#include "unit.hpp"
+#include <rocsparse.hpp>
+
+#include "gbyte.hpp"
+#include "rocsparse_check.hpp"
+#include "rocsparse_host.hpp"
+#include "rocsparse_init.hpp"
+#include "rocsparse_math.hpp"
+#include "rocsparse_random.hpp"
+#include "rocsparse_test.hpp"
+#include "rocsparse_vector.hpp"
 #include "utility.hpp"
 
-#include <algorithm>
-#include <iomanip>
-#include <iostream>
-#include <rocsparse.h>
-#include <string>
-
-using namespace rocsparse;
-using namespace rocsparse_test;
-
-#define ELL_IND_ROW(i, el, m, width) (el) * (m) + (i)
-#define ELL_IND_EL(i, el, m, width) (el) + (width) * (i)
-#define ELL_IND(i, el, m, width) ELL_IND_ROW(i, el, m, width)
-
 template <typename T>
-void testing_csr2ell_bad_arg(void)
+void testing_csr2ell_bad_arg(const Arguments& arg)
 {
-    rocsparse_int    m         = 100;
-    rocsparse_int    safe_size = 100;
-    rocsparse_status status;
+    static const size_t safe_size = 100;
 
-    std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle               handle = unique_ptr_handle->handle;
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
-    std::unique_ptr<descr_struct> unique_ptr_csr_descr(new descr_struct);
-    rocsparse_mat_descr           csr_descr = unique_ptr_csr_descr->descr;
+    // Create matrix descriptor for CSR matrix
+    rocsparse_local_mat_descr descrA;
 
-    std::unique_ptr<descr_struct> unique_ptr_ell_descr(new descr_struct);
-    rocsparse_mat_descr           ell_descr = unique_ptr_ell_descr->descr;
+    // Create matrix descriptor for ELL matrix
+    rocsparse_local_mat_descr descrB;
 
-    auto csr_row_ptr_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto csr_col_ind_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto csr_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+    // Allocate memory on device
+    device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
+    device_vector<rocsparse_int> dcsr_col_ind(safe_size);
+    device_vector<T>             dcsr_val(safe_size);
+    device_vector<rocsparse_int> dell_col_ind(safe_size);
+    device_vector<T>             dell_val(safe_size);
 
-    rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
-    rocsparse_int* csr_col_ind = (rocsparse_int*)csr_col_ind_managed.get();
-    T*             csr_val     = (T*)csr_val_managed.get();
-
-    if(!csr_row_ptr || !csr_col_ind || !csr_val)
+    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dell_col_ind || !dell_val)
     {
-        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
-    // CSR to ELL conversion is a two step process - test both functions for bad arguments
-
-    // Step 1: Determine number of non-zero elements of ELL storage format
+    // Test rocsparse_csr2ell_width()
     rocsparse_int ell_width;
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csr2ell_width(nullptr, safe_size, descrA, dcsr_row_ptr, descrB, &ell_width),
+        rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csr2ell_width(handle, safe_size, nullptr, dcsr_row_ptr, descrB, &ell_width),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csr2ell_width(handle, safe_size, descrA, nullptr, descrB, &ell_width),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csr2ell_width(handle, safe_size, descrA, dcsr_row_ptr, nullptr, &ell_width),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csr2ell_width(handle, safe_size, descrA, dcsr_row_ptr, descrB, nullptr),
+        rocsparse_status_invalid_pointer);
 
-    // Testing for (csr_row_ptr == nullptr)
-    {
-        rocsparse_int* csr_row_ptr_null = nullptr;
-
-        status = rocsparse_csr2ell_width(
-            handle, m, csr_descr, csr_row_ptr_null, ell_descr, &ell_width);
-        verify_rocsparse_status_invalid_pointer(status, "Error: csr_row_ptr is nullptr");
-    }
-
-    // Testing for (ell_widht == nullptr)
-    {
-        rocsparse_int* ell_width_null = nullptr;
-
-        status
-            = rocsparse_csr2ell_width(handle, m, csr_descr, csr_row_ptr, ell_descr, ell_width_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: ell_width is nullptr");
-    }
-
-    // Testing for (csr_descr == nullptr)
-    {
-        rocsparse_mat_descr csr_descr_null = nullptr;
-
-        status = rocsparse_csr2ell_width(
-            handle, m, csr_descr_null, csr_row_ptr, ell_descr, &ell_width);
-        verify_rocsparse_status_invalid_pointer(status, "Error: csr_descr is nullptr");
-    }
-
-    // Testing for (ell_descr == nullptr)
-    {
-        rocsparse_mat_descr ell_descr_null = nullptr;
-
-        status = rocsparse_csr2ell_width(
-            handle, m, csr_descr, csr_row_ptr, ell_descr_null, &ell_width);
-        verify_rocsparse_status_invalid_pointer(status, "Error: ell_descr is nullptr");
-    }
-
-    // Testing for (handle == nullptr)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_csr2ell_width(
-            handle_null, m, csr_descr, csr_row_ptr, ell_descr, &ell_width);
-        verify_rocsparse_status_invalid_handle(status);
-    }
-
-    // Allocate memory for ELL storage format
-    auto ell_col_ind_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto ell_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-
-    rocsparse_int* ell_col_ind = (rocsparse_int*)ell_col_ind_managed.get();
-    T*             ell_val     = (T*)ell_val_managed.get();
-
-    if(!ell_col_ind || !ell_val)
-    {
-        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Step 2: Perform the actual conversion
-
-    // Set ell_width to some valid value, to avoid invalid_size status
-    ell_width = 10;
-
-    // Testing for (csr_row_ptr == nullptr)
-    {
-        rocsparse_int* csr_row_ptr_null = nullptr;
-
-        status = rocsparse_csr2ell(handle,
-                                   m,
-                                   csr_descr,
-                                   csr_val,
-                                   csr_row_ptr_null,
-                                   csr_col_ind,
-                                   ell_descr,
-                                   ell_width,
-                                   ell_val,
-                                   ell_col_ind);
-        verify_rocsparse_status_invalid_pointer(status, "Error: csr_row_ptr is nullptr");
-    }
-
-    // Testing for (csr_col_ind == nullptr)
-    {
-        rocsparse_int* csr_col_ind_null = nullptr;
-
-        status = rocsparse_csr2ell(handle,
-                                   m,
-                                   csr_descr,
-                                   csr_val,
-                                   csr_row_ptr,
-                                   csr_col_ind_null,
-                                   ell_descr,
-                                   ell_width,
-                                   ell_val,
-                                   ell_col_ind);
-        verify_rocsparse_status_invalid_pointer(status, "Error: csr_col_ind is nullptr");
-    }
-
-    // Testing for (csr_val == nullptr)
-    {
-        T* csr_val_null = nullptr;
-
-        status = rocsparse_csr2ell(handle,
-                                   m,
-                                   csr_descr,
-                                   csr_val_null,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   ell_descr,
-                                   ell_width,
-                                   ell_val,
-                                   ell_col_ind);
-        verify_rocsparse_status_invalid_pointer(status, "Error: csr_val is nullptr");
-    }
-
-    // Testing for (ell_col_ind == nullptr)
-    {
-        rocsparse_int* ell_col_ind_null = nullptr;
-
-        status = rocsparse_csr2ell(handle,
-                                   m,
-                                   csr_descr,
-                                   csr_val,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   ell_descr,
-                                   ell_width,
-                                   ell_val,
-                                   ell_col_ind_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: ell_col_ind is nullptr");
-    }
-
-    // Testing for (ell_val == nullptr)
-    {
-        T* ell_val_null = nullptr;
-
-        status = rocsparse_csr2ell(handle,
-                                   m,
-                                   csr_descr,
-                                   csr_val,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   ell_descr,
-                                   ell_width,
-                                   ell_val_null,
-                                   ell_col_ind);
-        verify_rocsparse_status_invalid_pointer(status, "Error: ell_val is nullptr");
-    }
-
-    // Testing for (csr_descr == nullptr)
-    {
-        rocsparse_mat_descr csr_descr_null = nullptr;
-
-        status = rocsparse_csr2ell(handle,
-                                   m,
-                                   csr_descr_null,
-                                   csr_val,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   ell_descr,
-                                   ell_width,
-                                   ell_val,
-                                   ell_col_ind);
-        verify_rocsparse_status_invalid_pointer(status, "Error: csr_descr is nullptr");
-    }
-
-    // Testing for (ell_descr == nullptr)
-    {
-        rocsparse_mat_descr ell_descr_null = nullptr;
-
-        status = rocsparse_csr2ell(handle,
-                                   m,
-                                   csr_descr,
-                                   csr_val,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   ell_descr_null,
-                                   ell_width,
-                                   ell_val,
-                                   ell_col_ind);
-        verify_rocsparse_status_invalid_pointer(status, "Error: ell_descr is nullptr");
-    }
-
-    // Testing for (handle == nullptr)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_csr2ell(handle_null,
-                                   m,
-                                   csr_descr,
-                                   csr_val,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   ell_descr,
-                                   ell_width,
-                                   ell_val,
-                                   ell_col_ind);
-        verify_rocsparse_status_invalid_handle(status);
-    }
+    // Test rocsparse_csr2ell()
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(nullptr,
+                                                 safe_size,
+                                                 descrA,
+                                                 dcsr_val,
+                                                 dcsr_row_ptr,
+                                                 dcsr_col_ind,
+                                                 descrB,
+                                                 safe_size,
+                                                 dell_val,
+                                                 dell_col_ind),
+                            rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
+                                                 safe_size,
+                                                 nullptr,
+                                                 dcsr_val,
+                                                 dcsr_row_ptr,
+                                                 dcsr_col_ind,
+                                                 descrB,
+                                                 safe_size,
+                                                 dell_val,
+                                                 dell_col_ind),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
+                                                 safe_size,
+                                                 descrA,
+                                                 nullptr,
+                                                 dcsr_row_ptr,
+                                                 dcsr_col_ind,
+                                                 descrB,
+                                                 safe_size,
+                                                 dell_val,
+                                                 dell_col_ind),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
+                                                 safe_size,
+                                                 descrA,
+                                                 dcsr_val,
+                                                 nullptr,
+                                                 dcsr_col_ind,
+                                                 descrB,
+                                                 safe_size,
+                                                 dell_val,
+                                                 dell_col_ind),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
+                                                 safe_size,
+                                                 descrA,
+                                                 dcsr_val,
+                                                 dcsr_row_ptr,
+                                                 nullptr,
+                                                 descrB,
+                                                 safe_size,
+                                                 dell_val,
+                                                 dell_col_ind),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
+                                                 safe_size,
+                                                 descrA,
+                                                 dcsr_val,
+                                                 dcsr_row_ptr,
+                                                 dcsr_col_ind,
+                                                 nullptr,
+                                                 safe_size,
+                                                 dell_val,
+                                                 dell_col_ind),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
+                                                 safe_size,
+                                                 descrA,
+                                                 dcsr_val,
+                                                 dcsr_row_ptr,
+                                                 dcsr_col_ind,
+                                                 descrB,
+                                                 safe_size,
+                                                 nullptr,
+                                                 dell_col_ind),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
+                                                 safe_size,
+                                                 descrA,
+                                                 dcsr_val,
+                                                 dcsr_row_ptr,
+                                                 dcsr_col_ind,
+                                                 descrB,
+                                                 safe_size,
+                                                 dell_val,
+                                                 nullptr),
+                            rocsparse_status_invalid_pointer);
 }
 
 template <typename T>
-rocsparse_status testing_csr2ell(Arguments argus)
+void testing_csr2ell(const Arguments& arg)
 {
-    rocsparse_int        m         = argus.M;
-    rocsparse_int        n         = argus.N;
-    rocsparse_int        safe_size = 100;
-    rocsparse_index_base csr_base  = argus.idx_base;
-    rocsparse_index_base ell_base  = argus.idx_base2;
-    std::string          binfile   = "";
-    std::string          filename  = "";
-    rocsparse_status     status;
+    rocsparse_int         M         = arg.M;
+    rocsparse_int         N         = arg.N;
+    rocsparse_int         K         = arg.K;
+    rocsparse_int         dim_x     = arg.dimx;
+    rocsparse_int         dim_y     = arg.dimy;
+    rocsparse_int         dim_z     = arg.dimz;
+    rocsparse_index_base  baseA     = arg.baseA;
+    rocsparse_index_base  baseB     = arg.baseB;
+    rocsparse_matrix_init mat       = arg.matrix;
+    bool                  full_rank = false;
+    std::string           filename  = rocsparse_exepath() + "../matrices/" + arg.filename;
 
-    // When in testing mode, M == N == -99 indicates that we are testing with a real
-    // matrix from cise.ufl.edu
-    if(m == -99 && n == -99 && argus.timing == 0)
-    {
-        binfile = argus.filename;
-        m = n = safe_size;
-    }
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
-    if(argus.timing == 1)
-    {
-        filename = argus.filename;
-    }
+    // Create matrix descriptor for CSR matrix
+    rocsparse_local_mat_descr descrA;
 
-    double scale = 0.02;
-    if(m > 1000 || n > 1000)
-    {
-        scale = 2.0 / std::max(m, n);
-    }
-    rocsparse_int nnz = m * scale * n;
+    // Create matrix descriptor for ELL matrix
+    rocsparse_local_mat_descr descrB;
 
-    std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle               handle = unique_ptr_handle->handle;
-
-    std::unique_ptr<descr_struct> unique_ptr_csr_descr(new descr_struct);
-    rocsparse_mat_descr           csr_descr = unique_ptr_csr_descr->descr;
-
-    // Set CSR matrix index base
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr, csr_base));
-
-    std::unique_ptr<descr_struct> unique_ptr_ell_descr(new descr_struct);
-    rocsparse_mat_descr           ell_descr = unique_ptr_ell_descr->descr;
-
-    // Set ELL matrix index base
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(ell_descr, ell_base));
+    // Set matrix index base
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descrA, baseA));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descrB, baseB));
 
     // Argument sanity check before allocating invalid memory
-    if(m <= 0 || n <= 0 || nnz <= 0)
+    if(M <= 0 || N <= 0)
     {
-        auto csr_row_ptr_managed
-            = (m > 0) ? rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)),
-                                             device_free}
-                      : rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size),
-                                             device_free};
-        auto csr_col_ind_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto csr_val_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+        static const size_t safe_size = 100;
+        size_t              ptr_size  = std::max(safe_size, static_cast<size_t>(M + 1));
 
-        rocsparse_int* csr_row_ptr = (rocsparse_int*)csr_row_ptr_managed.get();
-        rocsparse_int* csr_col_ind = (rocsparse_int*)csr_col_ind_managed.get();
-        T*             csr_val     = (T*)csr_val_managed.get();
+        // Allocate memory on device
+        device_vector<rocsparse_int> dcsr_row_ptr(ptr_size);
+        device_vector<rocsparse_int> dcsr_col_ind(safe_size);
+        device_vector<T>             dcsr_val(safe_size);
+        device_vector<rocsparse_int> dell_col_ind(safe_size);
+        device_vector<T>             dell_val(safe_size);
 
-        if(!csr_row_ptr || !csr_col_ind || !csr_val)
+        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dell_col_ind || !dell_val)
         {
-            verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                            "!csr_row_ptr || !csr_col_ind || !csr_val");
-            return rocsparse_status_memory_error;
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
         }
 
-        // To obtain valid input, csr_row_ptr need to be 0 (because either m, n or nnz is 0)
-        hipMemset(csr_row_ptr, 0, sizeof(rocsparse_int) * ((m > 0) ? (m + 1) : safe_size));
+        // Need to initialize csr_row_ptr with 0
+        CHECK_HIP_ERROR(hipMemset(dcsr_row_ptr, 0, sizeof(rocsparse_int) * ptr_size));
 
-        // Step 1
         rocsparse_int ell_width;
-        status = rocsparse_csr2ell_width(handle, m, csr_descr, csr_row_ptr, ell_descr, &ell_width);
 
-        if(m < 0)
-        {
-            verify_rocsparse_status_invalid_size(status, "Error: m < 0");
-        }
-        else
-        {
-            verify_rocsparse_status_success(status, "m >= 0");
-        }
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width),
+            (M < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
+                                                     M,
+                                                     descrA,
+                                                     dcsr_val,
+                                                     dcsr_row_ptr,
+                                                     dcsr_col_ind,
+                                                     descrB,
+                                                     ell_width,
+                                                     dell_val,
+                                                     dell_col_ind),
+                                (M < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
 
-        auto ell_col_ind_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto ell_val_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-
-        rocsparse_int* ell_col_ind = (rocsparse_int*)ell_col_ind_managed.get();
-        T*             ell_val     = (T*)ell_val_managed.get();
-
-        if(!ell_col_ind || !ell_val)
-        {
-            verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                            "!ell_col_ind || !ell_val");
-            return rocsparse_status_memory_error;
-        }
-
-        // Step 2
-        status = rocsparse_csr2ell(handle,
-                                   m,
-                                   csr_descr,
-                                   csr_val,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   ell_descr,
-                                   0,
-                                   ell_val,
-                                   ell_col_ind);
-
-        if(m < 0)
-        {
-            verify_rocsparse_status_invalid_size(status, "Error: m < 0");
-        }
-        else
-        {
-            verify_rocsparse_status_success(status, "m >= 0");
-        }
-
-        return rocsparse_status_success;
+        return;
     }
 
-    // For testing, assemble a COO matrix and convert it to CSR first (on host)
+    // Allocate host memory for matrix
+    host_vector<rocsparse_int> hcsr_row_ptr;
+    host_vector<rocsparse_int> hcsr_col_ind;
+    host_vector<T>             hcsr_val;
+    host_vector<rocsparse_int> hell_col_ind;
+    host_vector<T>             hell_val;
+    host_vector<rocsparse_int> hell_col_ind_gold;
+    host_vector<T>             hell_val_gold;
 
-    // Host structures
-    std::vector<rocsparse_int> hcsr_row_ptr;
-    std::vector<rocsparse_int> hcoo_row_ind;
-    std::vector<rocsparse_int> hcsr_col_ind;
-    std::vector<T>             hcsr_val;
+    rocsparse_seedrand();
 
-    // Sample initial COO matrix on CPU
-    srand(12345ULL);
-    if(binfile != "")
-    {
-        if(read_bin_matrix(
-               binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, csr_base)
-           != 0)
-        {
-            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
-            return rocsparse_status_internal_error;
-        }
-    }
-    else if(argus.laplacian)
-    {
-        m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcsr_col_ind, hcsr_val, csr_base);
-        nnz   = hcsr_row_ptr[m];
-    }
-    else
-    {
-        if(filename != "")
-        {
-            if(read_mtx_matrix(
-                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, csr_base)
-               != 0)
-            {
-                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
-                return rocsparse_status_internal_error;
-            }
-        }
-        else
-        {
-            gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcsr_col_ind, hcsr_val, csr_base);
-        }
+    // Sample matrix
+    rocsparse_int nnz;
+    rocsparse_init_csr_matrix(hcsr_row_ptr,
+                              hcsr_col_ind,
+                              hcsr_val,
+                              M,
+                              N,
+                              K,
+                              dim_x,
+                              dim_y,
+                              dim_z,
+                              nnz,
+                              baseA,
+                              mat,
+                              filename.c_str(),
+                              false,
+                              full_rank);
 
-        // Convert COO to CSR
-        hcsr_row_ptr.resize(m + 1, 0);
-        for(rocsparse_int i = 0; i < nnz; ++i)
-        {
-            ++hcsr_row_ptr[hcoo_row_ind[i] + 1 - csr_base];
-        }
-
-        hcsr_row_ptr[0] = csr_base;
-        for(rocsparse_int i = 0; i < m; ++i)
-        {
-            hcsr_row_ptr[i + 1] += hcsr_row_ptr[i];
-        }
-    }
-
-    // Allocate memory on the device
-    auto dcsr_row_ptr_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
-    auto dcsr_col_ind_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dcsr_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-
-    rocsparse_int* dcsr_row_ptr = (rocsparse_int*)dcsr_row_ptr_managed.get();
-    rocsparse_int* dcsr_col_ind = (rocsparse_int*)dcsr_col_ind_managed.get();
-    T*             dcsr_val     = (T*)dcsr_val_managed.get();
+    // Allocate device memory
+    device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
+    device_vector<rocsparse_int> dcsr_col_ind(nnz);
+    device_vector<T>             dcsr_val(nnz);
 
     if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
     {
-        verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                        "!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val");
-        return rocsparse_status_memory_error;
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
     }
 
-    // Copy data from host to device
+    // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_col_ind, hcsr_col_ind.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
+        dcsr_row_ptr, hcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(
+        hipMemcpy(dcsr_col_ind, hcsr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
 
-    // Host csr2ell conversion
-    rocsparse_int ell_width_gold = 0;
-
-    // Determine max nnz per row
-    for(rocsparse_int i = 0; i < m; ++i)
+    if(arg.unit_check)
     {
-        rocsparse_int row_nnz = hcsr_row_ptr[i + 1] - hcsr_row_ptr[i];
-        ell_width_gold        = (row_nnz > ell_width_gold) ? row_nnz : ell_width_gold;
-    }
-
-    rocsparse_int ell_nnz_gold = ell_width_gold * m;
-
-    // Allocate host memory
-    std::vector<rocsparse_int> hell_col_ind_gold(ell_nnz_gold);
-    std::vector<T>             hell_val_gold(ell_nnz_gold);
-
-    // Fill ELL structures
-    for(rocsparse_int i = 0; i < m; ++i)
-    {
-        rocsparse_int p = 0;
-        for(rocsparse_int j = hcsr_row_ptr[i] - csr_base; j < hcsr_row_ptr[i + 1] - csr_base; ++j)
-        {
-            if(p >= ell_width_gold)
-            {
-                break;
-            }
-
-            rocsparse_int idx      = ELL_IND(i, p++, m, ell_width_gold);
-            hell_col_ind_gold[idx] = hcsr_col_ind[j] - csr_base + ell_base;
-            hell_val_gold[idx]     = hcsr_val[j];
-        }
-        for(rocsparse_int j = hcsr_row_ptr[i + 1] - hcsr_row_ptr[i]; j < ell_width_gold; ++j)
-        {
-            rocsparse_int idx      = ELL_IND(i, p++, m, ell_width_gold);
-            hell_col_ind_gold[idx] = -1;
-            hell_val_gold[idx]     = static_cast<T>(0);
-        }
-    }
-
-    // Allocate verification structures
-    std::vector<rocsparse_int> hell_col_ind(ell_nnz_gold);
-    std::vector<T>             hell_val(ell_nnz_gold);
-    rocsparse_int              ell_width;
-
-    if(argus.unit_check)
-    {
+        // Obtain ELL width
+        rocsparse_int ell_width;
         CHECK_ROCSPARSE_ERROR(
-            rocsparse_csr2ell_width(handle, m, csr_descr, dcsr_row_ptr, ell_descr, &ell_width));
+            rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width));
 
-        rocsparse_int ell_nnz = ell_width * m;
+        // Allocate device memory
+        rocsparse_int ell_nnz = ell_width * M;
 
-        // Check if ELL width does match
-        unit_check_general(1, 1, 1, &ell_width_gold, &ell_width);
-        unit_check_general(1, 1, 1, &ell_nnz_gold, &ell_nnz);
+        device_vector<rocsparse_int> dell_col_ind(ell_nnz);
+        device_vector<T>             dell_val(ell_nnz);
 
-        // Allocate ELL device memory
-        auto dell_col_ind_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * ell_nnz), device_free};
-        auto dell_val_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(T) * ell_nnz), device_free};
+        // Perform ELL conversion
+        CHECK_ROCSPARSE_ERROR(rocsparse_csr2ell<T>(handle,
+                                                   M,
+                                                   descrA,
+                                                   dcsr_val,
+                                                   dcsr_row_ptr,
+                                                   dcsr_col_ind,
+                                                   descrB,
+                                                   ell_width,
+                                                   dell_val,
+                                                   dell_col_ind));
 
-        rocsparse_int* dell_col_ind = (rocsparse_int*)dell_col_ind_managed.get();
-        T*             dell_val     = (T*)dell_val_managed.get();
+        // Copy output to host
+        hell_col_ind.resize(ell_nnz);
+        hell_val.resize(ell_nnz);
 
-        // Perform actual ELL conversion
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2ell(handle,
-                                                m,
-                                                csr_descr,
-                                                dcsr_val,
-                                                dcsr_row_ptr,
-                                                dcsr_col_ind,
-                                                ell_descr,
-                                                ell_width,
-                                                dell_val,
-                                                dell_col_ind));
+        CHECK_HIP_ERROR(hipMemcpy(
+            hell_col_ind, dell_col_ind, sizeof(rocsparse_int) * ell_nnz, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hell_val, dell_val, sizeof(T) * ell_nnz, hipMemcpyDeviceToHost));
 
-        CHECK_HIP_ERROR(hipMemcpy(hell_col_ind.data(),
-                                  dell_col_ind,
-                                  sizeof(rocsparse_int) * ell_nnz,
-                                  hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(hell_val.data(), dell_val, sizeof(T) * ell_nnz, hipMemcpyDeviceToHost));
+        // CPU csr2ell
+        rocsparse_int ell_width_gold;
+        host_csr_to_ell<T>(M,
+                           hcsr_row_ptr,
+                           hcsr_col_ind,
+                           hcsr_val,
+                           hell_col_ind_gold,
+                           hell_val_gold,
+                           ell_width_gold,
+                           baseA,
+                           baseB);
 
-        // Unit check
-        unit_check_general(1, ell_nnz, 1, hell_col_ind_gold.data(), hell_col_ind.data());
-        unit_check_general(1, ell_nnz, 1, hell_val_gold.data(), hell_val.data());
+        unit_check_general<rocsparse_int>(1, 1, 1, &ell_width_gold, &ell_width);
+        unit_check_general<rocsparse_int>(1, ell_nnz, 1, hell_col_ind_gold, hell_col_ind);
+        unit_check_general<T>(1, ell_nnz, 1, hell_val_gold, hell_val);
     }
 
-    if(argus.timing)
+    if(arg.timing)
     {
         int number_cold_calls = 2;
-        int number_hot_calls  = argus.iters;
+        int number_hot_calls  = 100;
 
+        rocsparse_int ell_width;
+        rocsparse_int ell_nnz;
+
+        // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_csr2ell_width(handle, m, csr_descr, dcsr_row_ptr, ell_descr, &ell_width);
-            rocsparse_int ell_nnz = ell_width * m;
+            rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width);
 
-            auto dell_col_ind_managed
-                = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * ell_nnz), device_free};
-            auto dell_val_managed
-                = rocsparse_unique_ptr{device_malloc(sizeof(T) * ell_nnz), device_free};
+            ell_nnz = ell_width * M;
 
-            rocsparse_int* dell_col_ind = (rocsparse_int*)dell_col_ind_managed.get();
-            T*             dell_val     = (T*)dell_val_managed.get();
+            device_vector<rocsparse_int> dell_col_ind(ell_nnz);
+            device_vector<T>             dell_val(ell_nnz);
 
-            rocsparse_csr2ell(handle,
-                              m,
-                              csr_descr,
-                              dcsr_val,
-                              dcsr_row_ptr,
-                              dcsr_col_ind,
-                              ell_descr,
-                              ell_width,
-                              dell_val,
-                              dell_col_ind);
+            rocsparse_csr2ell<T>(handle,
+                                 M,
+                                 descrA,
+                                 dcsr_val,
+                                 dcsr_row_ptr,
+                                 dcsr_col_ind,
+                                 descrB,
+                                 ell_width,
+                                 dell_val,
+                                 dell_col_ind);
         }
 
         double gpu_time_used = get_time_us();
 
+        // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_csr2ell_width(handle, m, csr_descr, dcsr_row_ptr, ell_descr, &ell_width);
-            rocsparse_int ell_nnz = ell_width * m;
+            rocsparse_csr2ell_width(handle, M, descrA, dcsr_row_ptr, descrB, &ell_width);
 
-            auto dell_col_ind_managed
-                = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * ell_nnz), device_free};
-            auto dell_val_managed
-                = rocsparse_unique_ptr{device_malloc(sizeof(T) * ell_nnz), device_free};
+            ell_nnz = ell_width * M;
 
-            rocsparse_int* dell_col_ind = (rocsparse_int*)dell_col_ind_managed.get();
-            T*             dell_val     = (T*)dell_val_managed.get();
+            device_vector<rocsparse_int> dell_col_ind(ell_nnz);
+            device_vector<T>             dell_val(ell_nnz);
 
-            rocsparse_csr2ell(handle,
-                              m,
-                              csr_descr,
-                              dcsr_val,
-                              dcsr_row_ptr,
-                              dcsr_col_ind,
-                              ell_descr,
-                              ell_width,
-                              dell_val,
-                              dell_col_ind);
+            rocsparse_csr2ell<T>(handle,
+                                 M,
+                                 descrA,
+                                 dcsr_val,
+                                 dcsr_row_ptr,
+                                 dcsr_col_ind,
+                                 descrB,
+                                 ell_width,
+                                 dell_val,
+                                 dell_col_ind);
         }
 
-        gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
+        gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
+
+        double gpu_gbyte = csr2ell_gbyte_count<T>(M, nnz, ell_nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
-        std::cout << std::setw(12) << "m" << std::setw(12) << "n" << std::setw(12) << "nnz"
-                  << std::setw(12) << "msec" << std::endl;
-        std::cout << std::setw(12) << m << std::setw(12) << n << std::setw(12) << nnz
-                  << std::setw(12) << gpu_time_used << std::endl;
-    }
 
-    return rocsparse_status_success;
+        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "ELL width"
+                  << std::setw(12) << "ELL nnz" << std::setw(12) << "GB/s" << std::setw(12)
+                  << "msec" << std::endl;
+
+        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << ell_width
+                  << std::setw(12) << ell_nnz << std::setw(12) << gpu_gbyte << std::setw(12)
+                  << gpu_time_used / 1e3 << std::endl;
+    }
 }
 
 #endif // TESTING_CSR2ELL_HPP

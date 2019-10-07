@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,32 +22,46 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef UNIT_HPP
-#define UNIT_HPP
+#ifndef ROCSPARSE_MATH_HPP
+#define ROCSPARSE_MATH_HPP
 
+#include <cmath>
 #include <rocsparse.h>
 
-/* =====================================================================
-
-    Google Unit check: ASSERT_EQ( elementof(A), elementof(B))
-
-   =================================================================== */
-
-/*!\file
- * \brief compares two results (usually, CPU and GPU results); provides Google Unit check.
- */
-
-/* ========================================Gtest Unit Check
- * ==================================================== */
-
-/*! \brief Template: gtest unit compare two matrices float/double/complex */
-// Do not put a wrapper over ASSERT_FLOAT_EQ, since assert exit the current function NOT the test
-// case
-// a wrapper will cause the loop keep going
+/* =================================================================================== */
+/*! \brief  returns true if value is NaN */
 template <typename T>
-void unit_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, T* hCPU, T* hGPU);
+inline bool rocsparse_isnan(T)
+{
+    return false;
+}
 
+inline bool rocsparse_isnan(double arg)
+{
+    return std::isnan(arg);
+}
+
+inline bool rocsparse_isnan(float arg)
+{
+    return std::isnan(arg);
+}
+
+/* =================================================================================== */
+/*! \brief  returns true if value is inf */
 template <typename T>
-void unit_check_near(rocsparse_int M, rocsparse_int N, rocsparse_int lda, T* hCPU, T* hGPU);
+inline bool rocsparse_isinf(T)
+{
+    return false;
+}
 
-#endif // UNIT_HPP
+inline bool rocsparse_isinf(double arg)
+{
+    return std::isinf(arg);
+}
+
+inline bool rocsparse_isinf(float arg)
+{
+    return std::isinf(arg);
+}
+
+#endif // ROCSPARSE_MATH_HPP
