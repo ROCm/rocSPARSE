@@ -100,6 +100,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_csrsort.cpp
   test_cscsort.cpp
   test_coosort.cpp
+  test_csrilusv.cpp
 )
 
 set(ROCSPARSE_CLIENTS_COMMON
@@ -169,7 +170,7 @@ target_link_libraries(rocsparse-test PRIVATE ${HIPHCC_LOCATION})
 set(ROCSPARSE_TEST_DATA "${PROJECT_BINARY_DIR}/staging/rocsparse_test.data")
 add_custom_command(OUTPUT "${ROCSPARSE_TEST_DATA}"
                    COMMAND ../common/rocsparse_gentest.py -I ../include rocsparse_test.yaml -o "${ROCSPARSE_TEST_DATA}"
-                   DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml test_axpyi.yaml test_doti.yaml test_gthr.yaml test_gthrz.yaml test_roti.yaml test_sctr.yaml test_coomv.yaml test_csrmv.yaml test_csrsv.yaml test_ellmv.yaml test_hybmv.yaml test_csrmm.yaml test_csrgemm.yaml test_csrilu0.yaml test_csr2coo.yaml test_csr2csc.yaml test_csr2ell.yaml test_csr2hyb.yaml test_coo2csr.yaml test_ell2csr.yaml test_identity.yaml test_csrsort.yaml test_cscsort.yaml test_coosort.yaml
+                   DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml test_axpyi.yaml test_doti.yaml test_gthr.yaml test_gthrz.yaml test_roti.yaml test_sctr.yaml test_coomv.yaml test_csrmv.yaml test_csrsv.yaml test_ellmv.yaml test_hybmv.yaml test_csrmm.yaml test_csrgemm.yaml test_csrilu0.yaml test_csr2coo.yaml test_csr2csc.yaml test_csr2ell.yaml test_csr2hyb.yaml test_coo2csr.yaml test_ell2csr.yaml test_identity.yaml test_csrsort.yaml test_cscsort.yaml test_coosort.yaml test_csrilusv.yaml
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 add_custom_target(rocsparse-test-data
                   DEPENDS "${ROCSPARSE_TEST_DATA}" )

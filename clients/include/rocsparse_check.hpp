@@ -78,6 +78,13 @@ inline void unit_check_general(
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_EQ);
 }
 
+template <>
+inline void unit_check_general(
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, size_t* hCPU, size_t* hGPU)
+{
+    UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_EQ);
+}
+
 template <typename T>
 void near_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, T* hCPU, T* hGPU);
 

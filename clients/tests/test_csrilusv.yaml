@@ -21,28 +21,31 @@
 #
 # ########################################################################
 
-include: test_axpyi.yaml
-include: test_doti.yaml
-include: test_gthr.yaml
-include: test_gthrz.yaml
-include: test_roti.yaml
-include: test_sctr.yaml
-include: test_coomv.yaml
-include: test_csrmv.yaml
-include: test_csrsv.yaml
-include: test_ellmv.yaml
-include: test_hybmv.yaml
-include: test_csrmm.yaml
-include: test_csrgemm.yaml
-include: test_csrilu0.yaml
-include: test_csr2coo.yaml
-include: test_csr2csc.yaml
-include: test_csr2ell.yaml
-include: test_csr2hyb.yaml
-include: test_coo2csr.yaml
-include: test_ell2csr.yaml
-include: test_identity.yaml
-include: test_csrsort.yaml
-include: test_cscsort.yaml
-include: test_coosort.yaml
-include: test_csrilusv.yaml
+---
+include: rocsparse_common.yaml
+include: known_bugs.yaml
+
+Tests:
+- name: csrilusv_file
+  category: quick
+  function: csrilusv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mac_econ_fwd500.csr,
+             mc2depi.csr,
+             scircuit.csr,
+             bmwcra_1.csr,
+             nos1.csr,
+             nos2.csr,
+             nos3.csr,
+             nos4.csr,
+             nos5.csr,
+             nos6.csr,
+             nos7.csr,
+             amazon0312.csr,
+             sme3Dc.csr]
