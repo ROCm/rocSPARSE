@@ -28,6 +28,7 @@
 #include "rocsparse_host.hpp"
 #include "rocsparse_random.hpp"
 
+#include <fstream>
 #include <iostream>
 #include <rocsparse.h>
 #include <vector>

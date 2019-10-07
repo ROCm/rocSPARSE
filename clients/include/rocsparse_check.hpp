@@ -34,9 +34,29 @@
 #include "rocsparse_math.hpp"
 
 #ifndef GOOGLE_TEST
-#define ASSERT_TRUE(cond) assert(cond);
-#define UNIT_ASSERT_EQ(state1, state2) assert(state1 == state2);
-#define ASSERT_NEAR(state1, state2, eps) assert(std::abs(state1 - state2) < eps);
+#define ASSERT_TRUE(cond)                                      \
+    do                                                         \
+    {                                                          \
+        if(!cond)                                              \
+        {                                                      \
+            std::cerr << "ASSERT_TRUE() failed." << std::endl; \
+            exit(EXIT_FAILURE);                                \
+        }                                                      \
+    } while(0)
+
+#define ASSERT_EQ(state1, state2)                                                              \
+    do                                                                                         \
+    {                                                                                          \
+        if(state1 != state2)                                                                   \
+        {                                                                                      \
+            std::cerr.precision(16);                                                           \
+            std::cerr << "ASSERT_EQ(" << state1 << ", " << state2 << ") failed." << std::endl; \
+            exit(EXIT_FAILURE);                                                                \
+        }                                                                                      \
+    } while(0)
+
+#define ASSERT_FLOAT_EQ ASSERT_EQ
+#define ASSERT_DOUBLE_EQ ASSERT_EQ
 #endif
 
 #define UNIT_CHECK(M, N, lda, hCPU, hGPU, UNIT_ASSERT_EQ)                 \
@@ -112,7 +132,14 @@ inline void near_check_general(
                 ASSERT_NEAR(hCPU[i + j * lda], hGPU[i + j * lda], compare_val);
             }
 #else
-            assert(std::abs(hCPU[i + j * lda] - hGPU[i + j * lda]) < compare_val);
+            if(std::abs(hCPU[i + j * lda] - hGPU[i + j * lda]) >= compare_val)
+            {
+                std::cerr.precision(12);
+                std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
+                          << ") failed: " << std::abs(hCPU[i + j * lda] - hGPU[i + j * lda])
+                          << " exceeds compare_val " << compare_val << std::endl;
+                exit(EXIT_FAILURE);
+            }
 #endif
         }
     }
@@ -142,7 +169,14 @@ inline void near_check_general(
                 ASSERT_NEAR(hCPU[i + j * lda], hGPU[i + j * lda], compare_val);
             }
 #else
-            assert(std::abs(hCPU[i + j * lda] - hGPU[i + j * lda]) < compare_val);
+            if(std::abs(hCPU[i + j * lda] - hGPU[i + j * lda]) >= compare_val)
+            {
+                std::cerr.precision(16);
+                std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
+                          << ") failed: " << std::abs(hCPU[i + j * lda] - hGPU[i + j * lda])
+                          << " exceeds compare_val " << compare_val << std::endl;
+                exit(EXIT_FAILURE);
+            }
 #endif
         }
     }

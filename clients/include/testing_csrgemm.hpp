@@ -2249,7 +2249,8 @@ void testing_csrgemm(const Arguments& arg)
     rocsparse_index_base  baseD     = arg.baseD;
     rocsparse_matrix_init mat       = arg.matrix;
     bool                  full_rank = false;
-    std::string           filename  = rocsparse_exepath() + "../matrices/" + arg.filename;
+    std::string           filename
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
 
     T h_alpha = arg.get_alpha<T>();
     T h_beta  = arg.get_beta<T>();
@@ -2485,7 +2486,7 @@ void testing_csrgemm(const Arguments& arg)
                                   baseA,
                                   mat,
                                   filename.c_str(),
-                                  true,
+                                  arg.timing ? false : true,
                                   full_rank);
         rocsparse_init_csr_matrix(hcsr_row_ptr_B,
                                   hcsr_col_ind_B,
@@ -2500,7 +2501,7 @@ void testing_csrgemm(const Arguments& arg)
                                   baseB,
                                   rocsparse_matrix_random,
                                   filename.c_str(),
-                                  true,
+                                  arg.timing ? false : true,
                                   full_rank);
     }
     else if(scenario == 3)
@@ -2519,7 +2520,7 @@ void testing_csrgemm(const Arguments& arg)
                                   baseD,
                                   mat,
                                   filename.c_str(),
-                                  true,
+                                  arg.timing ? false : true,
                                   full_rank);
     }
 
@@ -2991,7 +2992,8 @@ void testing_csrgemm(const Arguments& arg)
                   << std::setw(12) << "nnz_B" << std::setw(12) << "nnz_C" << std::setw(12)
                   << "nnz_D" << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12)
                   << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(16) << "nnz msec"
-                  << std::setw(16) << "gemm msec" << std::endl;
+                  << std::setw(16) << "gemm msec" << std::setw(12) << "iter" << std::setw(12)
+                  << "verified" << std::endl;
 
         std::cout << std::setw(12) << rocsparse_operation2string(transA) << std::setw(12)
                   << rocsparse_operation2string(transB) << std::setw(12) << M << std::setw(12) << N
@@ -3015,7 +3017,8 @@ void testing_csrgemm(const Arguments& arg)
         }
         std::cout << std::setw(12) << gpu_gflops << std::setw(12) << gpu_gbyte << std::setw(16)
                   << gpu_analysis_time_used / 1e3 << std::setw(16) << gpu_solve_time_used / 1e3
-                  << std::endl;
+                  << std::setw(12) << number_hot_calls << std::setw(12)
+                  << (arg.unit_check ? "yes" : "no") << std::endl;
     }
 
     // Free buffer

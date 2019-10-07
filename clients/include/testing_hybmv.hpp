@@ -108,7 +108,8 @@ void testing_hybmv(const Arguments& arg)
     rocsparse_hyb_partition part           = arg.part;
     rocsparse_int           user_ell_width = arg.algo;
     bool                    full_rank      = false;
-    std::string             filename       = rocsparse_exepath() + "../matrices/" + arg.filename;
+    std::string             filename
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
 
     T h_alpha = arg.get_alpha<T>();
     T h_beta  = arg.get_beta<T>();
@@ -169,7 +170,7 @@ void testing_hybmv(const Arguments& arg)
                               base,
                               mat,
                               filename.c_str(),
-                              true,
+                              arg.timing ? false : true,
                               full_rank);
 
     // Allocate host memory for vectors
@@ -306,7 +307,8 @@ void testing_hybmv(const Arguments& arg)
         {
             std::cout << std::setw(12) << "width";
         }
-        std::cout << std::setw(12) << "GFlop/s" << std::setw(12) << "msec" << std::endl;
+        std::cout << std::setw(12) << "GFlop/s" << std::setw(12) << "msec" << std::setw(12)
+                  << "iter" << std::setw(12) << "verified" << std::endl;
 
         std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << nnz
                   << std::setw(12) << h_alpha << std::setw(12) << h_beta << std::setw(12)
@@ -316,7 +318,8 @@ void testing_hybmv(const Arguments& arg)
             std::cout << std::setw(12) << user_ell_width;
         }
         std::cout << std::setw(12) << gpu_gflops << std::setw(12) << gpu_time_used / 1e3
-                  << std::endl;
+                  << std::setw(12) << number_hot_calls << std::setw(12)
+                  << (arg.unit_check ? "yes" : "no") << std::endl;
     }
 }
 

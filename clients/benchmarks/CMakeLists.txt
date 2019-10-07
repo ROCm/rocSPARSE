@@ -39,10 +39,7 @@ if(NOT Boost_FOUND)
 endif()
 
 set(ROCSPARSE_CLIENTS_COMMON
-  ../common/arg_check.cpp
-  ../common/unit.cpp
   ../common/utility.cpp
-  ../common/rocsparse_template_specialization.cpp
 )
 
 add_executable(rocsparse-bench client.cpp ${ROCSPARSE_CLIENTS_COMMON})

@@ -199,7 +199,7 @@ int main(int argc, char** argv)
     }
 
     // Set device
-    if(hipSetDevice(dev) != hipSuccess)
+    if(hipSetDevice(dev) != hipSuccess || dev >= devs)
     {
         std::cerr << "Error: cannot set device ID " << dev << std::endl;
         return -1;

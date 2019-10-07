@@ -160,7 +160,8 @@ void testing_csr2hyb(const Arguments& arg)
     rocsparse_hyb_partition part           = arg.part;
     rocsparse_int           user_ell_width = arg.algo;
     bool                    full_rank      = false;
-    std::string             filename       = rocsparse_exepath() + "../matrices/" + arg.filename;
+    std::string             filename
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -433,11 +434,12 @@ void testing_csr2hyb(const Arguments& arg)
 
         std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "ELL nnz"
                   << std::setw(12) << "COO nnz" << std::setw(12) << "GB/s" << std::setw(12)
-                  << "msec" << std::endl;
+                  << "msec" << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
 
         std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << ell_nnz
                   << std::setw(12) << coo_nnz << std::setw(12) << gpu_gbyte << std::setw(12)
-                  << gpu_time_used / 1e3 << std::endl;
+                  << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls << std::setw(12)
+                  << (arg.unit_check ? "yes" : "no") << std::endl;
     }
 }
 

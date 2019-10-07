@@ -239,14 +239,13 @@ void testing_csrmm(const Arguments& arg)
     rocsparse_int         dim_x     = arg.dimx;
     rocsparse_int         dim_y     = arg.dimy;
     rocsparse_int         dim_z     = arg.dimz;
-    rocsparse_int         ldb       = arg.ldb;
-    rocsparse_int         ldc       = arg.ldc;
     rocsparse_operation   transA    = arg.transA;
     rocsparse_operation   transB    = arg.transB;
     rocsparse_index_base  base      = arg.baseA;
     rocsparse_matrix_init mat       = arg.matrix;
     bool                  full_rank = false;
-    std::string           filename  = rocsparse_exepath() + "../matrices/" + arg.filename;
+    std::string           filename
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
 
     T h_alpha = arg.get_alpha<T>();
     T h_beta  = arg.get_beta<T>();
@@ -292,10 +291,10 @@ void testing_csrmm(const Arguments& arg)
                                                    dcsr_row_ptr,
                                                    dcsr_col_ind,
                                                    dB,
-                                                   ldb,
+                                                   safe_size,
                                                    &h_beta,
                                                    dC,
-                                                   ldc),
+                                                   safe_size),
                                 (M < 0 || N < 0 || K < 0) ? rocsparse_status_invalid_size
                                                           : rocsparse_status_success);
 
@@ -328,8 +327,9 @@ void testing_csrmm(const Arguments& arg)
                               full_rank);
 
     // Some matrix properties
-    ldb = (transB == rocsparse_operation_none) ? (transA == rocsparse_operation_none ? K : M) : N;
-    ldc = (transA == rocsparse_operation_none) ? M : K;
+    rocsparse_int ldb
+        = (transB == rocsparse_operation_none) ? (transA == rocsparse_operation_none ? K : M) : N;
+    rocsparse_int ldc = (transA == rocsparse_operation_none) ? M : K;
 
     rocsparse_int ncol_B = (transB == rocsparse_operation_none ? N : K);
     rocsparse_int nnz_B  = ldb * ncol_B;
@@ -510,14 +510,16 @@ void testing_csrmm(const Arguments& arg)
                   << std::setw(12) << "transA" << std::setw(12) << "transB" << std::setw(12)
                   << "nnz_A" << std::setw(12) << "nnz_B" << std::setw(12) << "nnz_C"
                   << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12)
-                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12) << "msec" << std::endl;
+                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12) << "msec"
+                  << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
 
         std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << K << std::setw(12)
                   << rocsparse_operation2string(transA) << std::setw(12)
                   << rocsparse_operation2string(transB) << std::setw(12) << nnz_A << std::setw(12)
                   << nnz_B << std::setw(12) << nnz_C << std::setw(12) << h_alpha << std::setw(12)
                   << h_beta << std::setw(12) << gpu_gflops << std::setw(12) << gpu_gbyte
-                  << std::setw(12) << gpu_time_used / 1e3 << std::endl;
+                  << std::setw(12) << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls
+                  << std::setw(12) << (arg.unit_check ? "yes" : "no") << std::endl;
     }
 }
 

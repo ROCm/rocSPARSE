@@ -144,7 +144,8 @@ void testing_cscsort(const Arguments& arg)
     rocsparse_index_base  base      = arg.baseA;
     rocsparse_matrix_init mat       = arg.matrix;
     bool                  full_rank = false;
-    std::string           filename  = rocsparse_exepath() + "../matrices/" + arg.filename;
+    std::string           filename
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -338,11 +339,12 @@ void testing_cscsort(const Arguments& arg)
 
         std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "nnz"
                   << std::setw(12) << "permute" << std::setw(12) << "GB/s" << std::setw(12)
-                  << "msec" << std::endl;
+                  << "msec" << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
 
         std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << nnz
                   << std::setw(12) << (permute ? "yes" : "no") << std::setw(12) << gpu_gbyte
-                  << std::setw(12) << gpu_time_used / 1e3 << std::endl;
+                  << std::setw(12) << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls
+                  << std::setw(12) << (arg.unit_check ? "yes" : "no") << std::endl;
     }
 
     // Clear buffer

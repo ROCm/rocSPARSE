@@ -51,11 +51,6 @@ struct Arguments
     rocsparse_int dimy;
     rocsparse_int dimz;
 
-    rocsparse_int lda;
-    rocsparse_int ldb;
-    rocsparse_int ldc;
-    rocsparse_int ldd;
-
     rocsparse_datatype compute_type;
 
     double alpha;
@@ -133,10 +128,6 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(dimx);
         ROCSPARSE_FORMAT_CHECK(dimy);
         ROCSPARSE_FORMAT_CHECK(dimz);
-        ROCSPARSE_FORMAT_CHECK(lda);
-        ROCSPARSE_FORMAT_CHECK(ldb);
-        ROCSPARSE_FORMAT_CHECK(ldc);
-        ROCSPARSE_FORMAT_CHECK(ldd);
         ROCSPARSE_FORMAT_CHECK(compute_type);
         ROCSPARSE_FORMAT_CHECK(alpha);
         ROCSPARSE_FORMAT_CHECK(alphai);
@@ -269,10 +260,6 @@ private:
         print("dim_x", arg.dimx);
         print("dim_y", arg.dimy);
         print("dim_z", arg.dimz);
-        print("lda", arg.lda);
-        print("ldb", arg.ldb);
-        print("ldc", arg.ldc);
-        print("ldd", arg.ldd);
         print("alpha", arg.alpha);
         print("alphai", arg.alphai);
         print("beta", arg.beta);

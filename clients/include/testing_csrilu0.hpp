@@ -332,7 +332,8 @@ void testing_csrilu0(const Arguments& arg)
     rocsparse_index_base      base      = arg.baseA;
     rocsparse_matrix_init     mat       = arg.matrix;
     bool                      full_rank = true;
-    std::string               filename  = rocsparse_exepath() + "../matrices/" + arg.filename;
+    std::string               filename
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename;
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -427,7 +428,7 @@ void testing_csrilu0(const Arguments& arg)
                               base,
                               mat,
                               filename.c_str(),
-                              true,
+                              arg.timing ? false : true,
                               full_rank);
 
     // Allocate host memory for vectors
@@ -628,14 +629,16 @@ void testing_csrilu0(const Arguments& arg)
         std::cout << std::setw(12) << "M" << std::setw(12) << "nnz" << std::setw(12) << "pivot"
                   << std::setw(16) << "analysis policy" << std::setw(16) << "solve policy"
                   << std::setw(12) << "GB/s" << std::setw(16) << "analysis msec" << std::setw(16)
-                  << "solve msec" << std::endl;
+                  << "solve msec" << std::setw(12) << "iter" << std::setw(12) << "verified"
+                  << std::endl;
 
         std::cout << std::setw(12) << M << std::setw(12) << nnz << std::setw(12)
                   << std::min(h_analysis_pivot_gold[0], h_solve_pivot_gold[0]) << std::setw(16)
                   << rocsparse_analysis2string(apol) << std::setw(16)
                   << rocsparse_solve2string(spol) << std::setw(12) << gpu_gbyte << std::setw(16)
                   << gpu_analysis_time_used / 1e3 << std::setw(16) << gpu_solve_time_used / 1e3
-                  << std::endl;
+                  << std::setw(12) << number_hot_calls << std::setw(12)
+                  << (arg.unit_check ? "yes" : "no") << std::endl;
     }
 
     // Clear csrilu0 meta data
