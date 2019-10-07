@@ -716,6 +716,21 @@ static rocsparse_status rocsparse_csrgemm_nnz_scal(rocsparse_handle          han
     // Stream
     hipStream_t stream = handle->stream;
 
+    // Quick return if possible
+    if(m == 0 || n == 0 || nnz_D == 0)
+    {
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(nnz_C, 0, sizeof(rocsparse_int), stream));
+        }
+        else
+        {
+            *nnz_C = 0;
+        }
+
+        return rocsparse_status_success;
+    }
+
     // When scaling a matrix, nnz of C will always be equal to nnz of D
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
