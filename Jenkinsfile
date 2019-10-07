@@ -77,52 +77,16 @@ rocSPARSECI:
     {
         platform, project->
 
-        def command
+        String sudo = auxiliary.sudo(platform.jenkinsLabel)
+	def gfilter = auxiliary.isJobStartedByTimer() ? "*nightly*" : "*checkin*"
+        def command = """#!/usr/bin/env bash
+                        set -x
+                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
+                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsparse-test --gtest_also_run_disabled_tests --gtest_output=xml --gtest_color=yes #--gtest_filter=${gfilter}-*known_bug*
+                    """
 
-        if(platform.jenkinsLabel.contains('centos') || platform.jenkinsLabel.contains('sles'))
-        {
-            if(auxiliary.isJobStartedByTimer())
-            {
-                command = """#!/usr/bin/env bash
-                        set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
-                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsparse-test --gtest_also_run_disabled_tests --gtest_output=xml --gtest_color=yes #--gtest_filter=*nightly*-*known_bug* #--gtest_filter=*nightly*
-                    """
-            }
-            else
-            {
-                command = """#!/usr/bin/env bash
-                        set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
-                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG sudo ./rocsparse-test --gtest_also_run_disabled_tests --gtest_output=xml --gtest_color=yes #--gtest_filter=*quick*:*pre_checkin*-*known_bug* #--gtest_filter=*checkin*
-                    """
-            }
-
-            platform.runCommand(this, command)
-            junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
-        }
-        else
-        {
-            if(auxiliary.isJobStartedByTimer())
-            {
-                command = """#!/usr/bin/env bash
-                        set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
-                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test --gtest_also_run_disabled_tests --gtest_output=xml --gtest_color=yes #--gtest_filter=*nightly*-*known_bug* #--gtest_filter=*nightly*
-                    """
-            }
-            else
-            {
-                command = """#!/usr/bin/env bash
-                        set -x
-                        cd ${project.paths.project_build_prefix}/build/release/clients/staging
-                        LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test --gtest_also_run_disabled_tests --gtest_output=xml --gtest_color=yes #--gtest_filter=*quick*:*pre_checkin*-*known_bug* #--gtest_filter=*checkin*
-                    """
-            }
-
-            platform.runCommand(this, command)
-            junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
-        }
+        platform.runCommand(this, command)
+        junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
     }
 
     def packageCommand =
