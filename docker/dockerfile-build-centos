@@ -27,6 +27,8 @@ RUN yum install -y \
     gtest-devel \
     gtest \
     pkgconfig \
+    python36 \
+    PyYAML \
     rocprim \
     libcxx-devel \
     boost-devel \
@@ -36,6 +38,8 @@ RUN yum install -y \
 
 RUN echo '#!/bin/bash' | tee /etc/profile.d/devtoolset7.sh && echo \
     'source scl_source enable devtoolset-7' >>/etc/profile.d/devtoolset7.sh
+
+RUN pip3 install pyyaml
 
 # docker pipeline runs containers with particular uid
 # create a jenkins user with this specific uid so it can use sudo priviledges
