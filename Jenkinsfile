@@ -34,7 +34,7 @@ rocSPARSECI:
     rocsparse.paths.build_command = './install.sh -c'
 
     // Define test architectures, optional rocm version argument is available
-    def nodes = new dockerNodes(['gfx900 && centos7', 'gfx906 && centos7', 'gfx900 && ubuntu', 'gfx906 && ubuntu', 'gfx906 && sles'], rocsparse)
+    def nodes = new dockerNodes(['gfx900 && centos7', 'gfx906 && centos7', 'gfx900 && ubuntu', 'gfx906 && ubuntu', 'gfx906 && sles', 'gfx908 && centos7'], rocsparse)
 
     boolean formatCheck = true
 
@@ -79,10 +79,11 @@ rocSPARSECI:
 
         String sudo = auxiliary.sudo(platform.jenkinsLabel)
         def gfilter = auxiliary.isJobStartedByTimer() ? "*nightly*" : "*checkin*"
+        def distest = platform.jenkinsLabel.contains('gfx908') ? "" : "--gtest_also_run_disabled_tests"
         def command = """#!/usr/bin/env bash
                         set -x
                         cd ${project.paths.project_build_prefix}/build/release/clients/staging
-                        ${sudo} LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test --gtest_also_run_disabled_tests --gtest_output=xml --gtest_color=yes #--gtest_filter=${gfilter}-*known_bug*
+                        ${sudo} LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test ${distest} --gtest_output=xml --gtest_color=yes #--gtest_filter=${gfilter}-*known_bug*
                     """
 
         platform.runCommand(this, command)
