@@ -424,7 +424,7 @@ void testing_ell2csr(const Arguments& arg)
     if(arg.timing)
     {
         int number_cold_calls = 2;
-        int number_hot_calls  = 100;
+        int number_hot_calls  = arg.iters;
 
         rocsparse_int csr_nnz;
 

@@ -344,7 +344,7 @@ void testing_csr2ell(const Arguments& arg)
     if(arg.timing)
     {
         int number_cold_calls = 2;
-        int number_hot_calls  = 100;
+        int number_hot_calls  = arg.iters;
 
         rocsparse_int ell_width;
         rocsparse_int ell_nnz;

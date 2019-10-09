@@ -121,7 +121,7 @@ void testing_identity(const Arguments& arg)
     if(arg.timing)
     {
         int number_cold_calls = 2;
-        int number_hot_calls  = 100;
+        int number_hot_calls  = arg.iters;
 
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
