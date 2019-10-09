@@ -34,6 +34,7 @@
 #include <iostream>
 #include <rocsparse.h>
 #include <vector>
+#include <cstdio>
 
 /* ==================================================================================== */
 /*! \brief  matrix/vector initialization: */
@@ -267,7 +268,7 @@ inline void rocsparse_init_csr_laplace2d(std::vector<rocsparse_int>& row_ptr,
                                          rocsparse_int&              M,
                                          rocsparse_int&              N,
                                          rocsparse_int&              nnz,
-                                         rocsparse_index_base        idx_base)
+                                         rocsparse_index_base        base)
 {
     // Do nothing
     if(dim_x == 0 || dim_y == 0)
@@ -285,8 +286,8 @@ inline void rocsparse_init_csr_laplace2d(std::vector<rocsparse_int>& row_ptr,
     col_ind.resize(nnz_mat);
     val.resize(nnz_mat);
 
-    nnz        = idx_base;
-    row_ptr[0] = idx_base;
+    nnz        = base;
+    row_ptr[0] = base;
 
     // Fill local arrays
 #ifdef _OPENMP
@@ -308,8 +309,8 @@ inline void rocsparse_init_csr_laplace2d(std::vector<rocsparse_int>& row_ptr,
                         {
                             rocsparse_int col = row + sy * dim_x + sx;
 
-                            col_ind[nnz - idx_base] = col + idx_base;
-                            val[nnz - idx_base]     = (col == row) ? 8.0 : -1.0;
+                            col_ind[nnz - base] = col + base;
+                            val[nnz - base]     = (col == row) ? 8.0 : -1.0;
 
                             ++nnz;
                         }
@@ -322,7 +323,7 @@ inline void rocsparse_init_csr_laplace2d(std::vector<rocsparse_int>& row_ptr,
     }
 
     // Adjust nnz by index base
-    nnz -= idx_base;
+    nnz -= base;
 }
 
 /* ==================================================================================== */
@@ -359,7 +360,7 @@ inline void rocsparse_init_csr_laplace3d(std::vector<rocsparse_int>& row_ptr,
                                          rocsparse_int&              M,
                                          rocsparse_int&              N,
                                          rocsparse_int&              nnz,
-                                         rocsparse_index_base        idx_base)
+                                         rocsparse_index_base        base)
 {
     // Do nothing
     if(dim_x == 0 || dim_y == 0 || dim_z == 0)
@@ -377,8 +378,8 @@ inline void rocsparse_init_csr_laplace3d(std::vector<rocsparse_int>& row_ptr,
     col_ind.resize(nnz_mat);
     val.resize(nnz_mat);
 
-    nnz        = idx_base;
-    row_ptr[0] = idx_base;
+    nnz        = base;
+    row_ptr[0] = base;
 
     // Fill local arrays
 #ifdef _OPENMP
@@ -407,8 +408,8 @@ inline void rocsparse_init_csr_laplace3d(std::vector<rocsparse_int>& row_ptr,
                                         rocsparse_int col
                                             = row + sz * dim_x * dim_y + sy * dim_x + sx;
 
-                                        col_ind[nnz - idx_base] = col + idx_base;
-                                        val[nnz - idx_base]     = (col == row) ? 26.0 : -1.0;
+                                        col_ind[nnz - base] = col + base;
+                                        val[nnz - base]     = (col == row) ? 26.0 : -1.0;
 
                                         ++nnz;
                                     }
@@ -424,7 +425,7 @@ inline void rocsparse_init_csr_laplace3d(std::vector<rocsparse_int>& row_ptr,
     }
 
     // Adjust nnz by index base
-    nnz -= idx_base;
+    nnz -= base;
 }
 
 /* ==================================================================================== */
@@ -448,6 +449,234 @@ inline void rocsparse_init_coo_laplace3d(std::vector<rocsparse_int>& row_ind,
 
     // Convert to COO
     host_csr_to_coo(M, nnz, row_ptr, row_ind, base);
+}
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from mtx file in COO format */
+template <typename T>
+inline void rocsparse_init_coo_mtx(const char* filename,
+                                   std::vector<rocsparse_int>& coo_row_ind,
+                                   std::vector<rocsparse_int>& coo_col_ind,
+                                   std::vector<T>&             coo_val,
+                                   rocsparse_int&              M,
+                                   rocsparse_int&              N,
+                                   rocsparse_int&              nnz,
+                                   rocsparse_index_base        base)
+{
+    const char* env = getenv("GTEST_LISTENER");
+    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
+    {
+        std::cout << "Reading matrix " << filename << " ... ";
+    }
+
+    FILE* f = fopen(filename, "r");
+    if(!f)
+    {
+        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+    }
+
+    char line[1024];
+
+    // Check for banner
+    if(!fgets(line, 1024, f))
+    {
+        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+    }
+
+    char banner[16];
+    char array[16];
+    char coord[16];
+    char data[16];
+    char type[16];
+
+    // Extract banner
+    if(sscanf(line, "%s %s %s %s %s", banner, array, coord, data, type) != 5)
+    {
+        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+    }
+
+    // Convert to lower case
+    for(char* p = array; *p != '\0'; *p = tolower(*p), p++)
+        ;
+    for(char* p = coord; *p != '\0'; *p = tolower(*p), p++)
+        ;
+    for(char* p = data; *p != '\0'; *p = tolower(*p), p++)
+        ;
+    for(char* p = type; *p != '\0'; *p = tolower(*p), p++)
+        ;
+
+    // Check banner
+    if(strncmp(line, "%%MatrixMarket", 14) != 0)
+    {
+        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+    }
+
+    // Check array type
+    if(strcmp(array, "matrix") != 0)
+    {
+        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+    }
+
+    // Check coord
+    if(strcmp(coord, "coordinate") != 0)
+    {
+        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+    }
+
+    // Check data
+    if(strcmp(data, "real") != 0 && strcmp(data, "integer") != 0 && strcmp(data, "pattern") != 0)
+    {
+        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+    }
+
+    // Check type
+    if(strcmp(type, "general") != 0 && strcmp(type, "symmetric") != 0)
+    {
+        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+    }
+
+    // Symmetric flag
+    rocsparse_int symm = !strcmp(type, "symmetric");
+
+    // Skip comments
+    while(fgets(line, 1024, f))
+    {
+        if(line[0] != '%')
+        {
+            break;
+        }
+    }
+
+    // Read dimensions
+    rocsparse_int snnz;
+
+    int inrow;
+    int incol;
+    int innz;
+
+    sscanf(line, "%d %d %d", &inrow, &incol, &innz);
+
+    M = static_cast<rocsparse_int>(inrow);
+    N = static_cast<rocsparse_int>(incol);
+    snnz = static_cast<rocsparse_int>(innz);
+
+    nnz = symm ? (snnz - M) * 2 + M : snnz;
+
+    std::vector<rocsparse_int> unsorted_row(nnz);
+    std::vector<rocsparse_int> unsorted_col(nnz);
+    std::vector<T>             unsorted_val(nnz);
+
+    // Read entries
+    rocsparse_int idx = 0;
+    while(fgets(line, 1024, f))
+    {
+        if(idx >= nnz)
+        {
+            CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+        }
+
+        rocsparse_int irow;
+        rocsparse_int icol;
+        T             ival;
+
+        std::istringstream ss(line);
+
+        if(!strcmp(data, "pattern"))
+        {
+            ss >> irow >> icol;
+            ival = static_cast<T>(1);
+        }
+        else
+        {
+            ss >> irow >> icol >> ival;
+        }
+
+        if(base == rocsparse_index_base_zero)
+        {
+            --irow;
+            --icol;
+        }
+
+        unsorted_row[idx] = irow;
+        unsorted_col[idx] = icol;
+        unsorted_val[idx] = ival;
+
+        ++idx;
+
+        if(symm && irow != icol)
+        {
+            if(idx >= nnz)
+            {
+                CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+            }
+
+            unsorted_row[idx] = icol;
+            unsorted_col[idx] = irow;
+            unsorted_val[idx] = ival;
+            ++idx;
+        }
+    }
+    fclose(f);
+
+    coo_row_ind.resize(nnz);
+    coo_col_ind.resize(nnz);
+    coo_val.resize(nnz);
+
+    // Sort by row and column index
+    std::vector<rocsparse_int> perm(nnz);
+    for(rocsparse_int i = 0; i < nnz; ++i)
+    {
+        perm[i] = i;
+    }
+
+    std::sort(perm.begin(), perm.end(), [&](const rocsparse_int& a, const rocsparse_int& b) {
+        if(unsorted_row[a] < unsorted_row[b])
+        {
+            return true;
+        }
+        else if(unsorted_row[a] == unsorted_row[b])
+        {
+            return (unsorted_col[a] < unsorted_col[b]);
+        }
+        else
+        {
+            return false;
+        }
+    });
+
+    for(rocsparse_int i = 0; i < nnz; ++i)
+    {
+        coo_row_ind[i] = unsorted_row[perm[i]];
+        coo_col_ind[i] = unsorted_col[perm[i]];
+        coo_val[i] = unsorted_val[perm[i]];
+    }
+
+    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
+    {
+        std::cout << "done." << std::endl;
+    }
+}
+
+/* ==================================================================================== */
+/*! \brief  Read matrix from mtx file in CSR format */
+template <typename T>
+inline void rocsparse_init_csr_mtx(const char*                 filename,
+                                   std::vector<rocsparse_int>& csr_row_ptr,
+                                   std::vector<rocsparse_int>& csr_col_ind,
+                                   std::vector<T>&             csr_val,
+                                   rocsparse_int&              M,
+                                   rocsparse_int&              N,
+                                   rocsparse_int&              nnz,
+                                   rocsparse_index_base        base)
+{
+    std::vector<rocsparse_int> coo_row_ind;
+
+    // Read COO matrix
+    rocsparse_init_coo_mtx(filename, coo_row_ind, csr_col_ind, csr_val, M, N, nnz, base);
+
+    // Convert to CSR
+    csr_row_ptr.resize(M + 1);
+    host_coo_to_csr(M, nnz, coo_row_ind, csr_row_ptr, base);
 }
 
 /* ==================================================================================== */
@@ -671,6 +900,10 @@ inline void rocsparse_init_csr_matrix(std::vector<rocsparse_int>& csr_row_ptr,
         rocsparse_init_csr_rocalution(
             filename, csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base, toint);
     }
+    else if(matrix == rocsparse_matrix_file_mtx)
+    {
+        rocsparse_init_csr_mtx(filename, csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base);
+    }
 }
 
 /* ==================================================================================== */
@@ -711,6 +944,10 @@ inline void rocsparse_init_coo_matrix(std::vector<rocsparse_int>& coo_row_ind,
     {
         rocsparse_init_coo_rocalution(
             filename, coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base, toint);
+    }
+    else if(matrix == rocsparse_matrix_file_mtx)
+    {
+        rocsparse_init_coo_mtx(filename, coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base);
     }
 }
 
