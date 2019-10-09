@@ -145,10 +145,6 @@ target_include_directories(rocsparse-test
       $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
 )
 
-#if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
-#  target_include_directories(rocsparse-test PRIVATE /opt/rocm/hsa/include)
-#endif()
-
 # OpenMP cmake fix for cmake <= 3.9
 if(OPENMP_FOUND)
   if(NOT TARGET OpenMP::OpenMP_CXX)
