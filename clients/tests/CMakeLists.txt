@@ -131,11 +131,13 @@ add_executable(rocsparse-test ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMM
 # Set GOOGLE_TEST definition
 target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
 
+# Internal header includes
 target_include_directories(rocsparse-test
   PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
 )
 
+# External header includes included as system files
 target_include_directories(rocsparse-test
   SYSTEM
     PRIVATE

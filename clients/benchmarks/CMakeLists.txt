@@ -25,24 +25,30 @@ set(Boost_USE_MULTITHREADED ON)
 set(Boost_DETAILED_FAILURE_MSG ON)
 set(Boost_ADDITIONAL_VERSIONS 1.65.1 1.65)
 set(Boost_USE_STATIC_LIBS OFF)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 
+find_package(Threads REQUIRED)
 find_package(Boost COMPONENTS program_options)
 
 if(NOT Boost_FOUND)
-  message(STATUS "Dynamic boost libraries not found. Attempting to find static libraries")
+  message(STATUS "Dynamic boost libraries not found. Attempting to find static libraries...")
   set(Boost_USE_STATIC_LIBS ON)
   find_package(Boost COMPONENTS program_options)
 
   if(NOT Boost_FOUND)
-    message(FATAL_ERROR "boost is a required dependency and is not found;  try adding boost path to CMAKE_PREFIX_PATH")
+    message(FATAL_ERROR "boost is a required dependency and is not found; try adding boost path to CMAKE_PREFIX_PATH")
   endif()
 endif()
+
+set(ROCSPARSE_BENCHMARK_SOURCES
+  client.cpp
+)
 
 set(ROCSPARSE_CLIENTS_COMMON
   ../common/utility.cpp
 )
 
-add_executable(rocsparse-bench client.cpp ${ROCSPARSE_CLIENTS_COMMON})
+add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENTS_COMMON})
 
 # Internal header includes
 target_include_directories(rocsparse-bench
@@ -50,26 +56,29 @@ target_include_directories(rocsparse-bench
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
 )
 
-# External header includes included as system files
-target_include_directories(rocsparse-bench SYSTEM PRIVATE $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>)
+# OpenMP cmake fix for cmake <= 3.9
+if(OPENMP_FOUND)
+  if(NOT TARGET OpenMP::OpenMP_CXX)
+    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+    set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+    set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+  endif()
+endif()
 
-target_link_libraries(rocsparse-bench PRIVATE ${Boost_LIBRARIES})
-
+# Add rocsparse target
 if(NOT TARGET rocsparse)
   target_link_libraries(rocsparse-bench PRIVATE ${ROCSPARSE_LIBRARIES})
 else()
   target_link_libraries(rocsparse-bench PRIVATE roc::rocsparse)
 endif()
 
-if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
-  target_link_libraries(rocsparse-bench PRIVATE ${HIP_LIBRARIES})
-  foreach(target ${AMDGPU_TARGETS})
-    target_link_libraries(rocsparse-bench PRIVATE --amdgpu-target=${target})
-  endforeach()
-elseif(NOT CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
-  target_compile_definitions(rocsparse-bench PRIVATE __HIP_PLATFORM_HCC__)
-  get_target_property(HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE)
-  target_link_libraries(rocsparse-bench PRIVATE ${HIPHCC_LOCATION})
-endif( )
+# Add hip host and boost target
+target_link_libraries(rocsparse-bench PRIVATE hip::host Boost::program_options)
 
+# Add OpenMP
+if(OPENMP_FOUND)
+  target_link_libraries(rocsparse-bench PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
+# Set benchmark output directory
 set_target_properties(rocsparse-bench PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
