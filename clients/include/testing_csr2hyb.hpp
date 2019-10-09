@@ -389,16 +389,16 @@ void testing_csr2hyb(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_csr2hyb<T>(handle,
-                                 M,
-                                 N,
-                                 descr,
-                                 dcsr_val,
-                                 dcsr_row_ptr,
-                                 dcsr_col_ind,
-                                 hyb,
-                                 user_ell_width,
-                                 part);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csr2hyb<T>(handle,
+                                                       M,
+                                                       N,
+                                                       descr,
+                                                       dcsr_val,
+                                                       dcsr_row_ptr,
+                                                       dcsr_col_ind,
+                                                       hyb,
+                                                       user_ell_width,
+                                                       part));
         }
 
         double gpu_time_used = get_time_us();
@@ -406,16 +406,16 @@ void testing_csr2hyb(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_csr2hyb<T>(handle,
-                                 M,
-                                 N,
-                                 descr,
-                                 dcsr_val,
-                                 dcsr_row_ptr,
-                                 dcsr_col_ind,
-                                 hyb,
-                                 user_ell_width,
-                                 part);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csr2hyb<T>(handle,
+                                                       M,
+                                                       N,
+                                                       descr,
+                                                       dcsr_val,
+                                                       dcsr_row_ptr,
+                                                       dcsr_col_ind,
+                                                       hyb,
+                                                       user_ell_width,
+                                                       part));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

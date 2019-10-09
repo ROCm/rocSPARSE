@@ -186,7 +186,8 @@ void testing_axpyi(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_axpyi<T>(handle, nnz, &h_alpha, dx_val, dx_ind, dy_1, base);
+            CHECK_ROCSPARSE_ERROR(
+                rocsparse_axpyi<T>(handle, nnz, &h_alpha, dx_val, dx_ind, dy_1, base));
         }
 
         double gpu_time_used = get_time_us();
@@ -194,7 +195,8 @@ void testing_axpyi(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_axpyi<T>(handle, nnz, &h_alpha, dx_val, dx_ind, dy_1, base);
+            CHECK_ROCSPARSE_ERROR(
+                rocsparse_axpyi<T>(handle, nnz, &h_alpha, dx_val, dx_ind, dy_1, base));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
@@ -206,14 +208,14 @@ void testing_axpyi(const Arguments& arg)
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
 
-        std::cout << std::setw(12) << "nnz" << std::setw(12) << "alpha" << std::setw(12)
-                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12) << "usec"
-                  << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
+        std::cout << std::setw(12) << "M" << std::setw(12) << "nnz" << std::setw(12) << "alpha"
+                  << std::setw(12) << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12)
+                  << "usec" << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
 
-        std::cout << std::setw(12) << nnz << std::setw(12) << h_alpha << std::setw(12) << gpu_gflops
-                  << std::setw(12) << gpu_gbyte << std::setw(12) << gpu_time_used << std::setw(12)
-                  << number_hot_calls << std::setw(12) << (arg.unit_check ? "yes" : "no")
-                  << std::endl;
+        std::cout << std::setw(12) << M << std::setw(12) << nnz << std::setw(12) << h_alpha
+                  << std::setw(12) << gpu_gflops << std::setw(12) << gpu_gbyte << std::setw(12)
+                  << gpu_time_used << std::setw(12) << number_hot_calls << std::setw(12)
+                  << (arg.unit_check ? "yes" : "no") << std::endl;
     }
 }
 

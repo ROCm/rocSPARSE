@@ -63,7 +63,6 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <rocsparse.h>
-#include <stdio.h>
 
 namespace po = boost::program_options;
 
@@ -125,8 +124,8 @@ int main(int argc, char* argv[])
 
         ("laplacian-dim",
          po::value<std::vector<rocsparse_int> >(&laplace)->multitoken(), "assemble "
-         "laplacian matrix for 2D unit square with dimension <dim>. This will override "
-         "parameters -m, -n, -z and --mtx.")
+         "laplacian matrix with dimensions <dimx dimy dimz>. dimz is optional. This "
+         "will override parameters -m, -n, -z and --mtx.")
 
         ("alpha", 
           po::value<double>(&arg.alpha)->default_value(1.0), "specifies the scalar alpha")
@@ -224,7 +223,7 @@ int main(int argc, char* argv[])
 
     if(precision != 's' && precision != 'd')
     {
-        fprintf(stderr, "Invalid value for --precision\n");
+        std::cerr << "Invalid value for --precision" << std::endl;
         return -1;
     }
 
@@ -367,7 +366,7 @@ int main(int argc, char* argv[])
      */
     if(arg.M < 0 || arg.N < 0)
     {
-        fprintf(stderr, "Invalid dimension\n");
+        std::cerr << "Invalid dimension" << std::endl;
         return -1;
     }
 
@@ -525,7 +524,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        fprintf(stderr, "Invalid value for --function\n");
+        std::cerr << "Invalid value for --function" << std::endl;
         return -1;
     }
     return 0;

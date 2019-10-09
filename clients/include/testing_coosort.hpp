@@ -324,25 +324,25 @@ void testing_coosort(const Arguments& arg)
         {
             if(by_row)
             {
-                rocsparse_coosort_by_row(handle,
-                                         M,
-                                         N,
-                                         nnz,
-                                         dcoo_row_ind,
-                                         dcoo_col_ind,
-                                         permute ? dperm : nullptr,
-                                         dbuffer);
+                CHECK_ROCSPARSE_ERROR(rocsparse_coosort_by_row(handle,
+                                                               M,
+                                                               N,
+                                                               nnz,
+                                                               dcoo_row_ind,
+                                                               dcoo_col_ind,
+                                                               permute ? dperm : nullptr,
+                                                               dbuffer));
             }
             else
             {
-                rocsparse_coosort_by_column(handle,
-                                            M,
-                                            N,
-                                            nnz,
-                                            dcoo_row_ind,
-                                            dcoo_col_ind,
-                                            permute ? dperm : nullptr,
-                                            dbuffer);
+                CHECK_ROCSPARSE_ERROR(rocsparse_coosort_by_column(handle,
+                                                                  M,
+                                                                  N,
+                                                                  nnz,
+                                                                  dcoo_row_ind,
+                                                                  dcoo_col_ind,
+                                                                  permute ? dperm : nullptr,
+                                                                  dbuffer));
             }
         }
 

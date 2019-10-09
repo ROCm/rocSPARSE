@@ -176,7 +176,7 @@ void testing_gthrz(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_gthrz<T>(handle, nnz, dy_1, dx_val_1, dx_ind, base);
+            CHECK_ROCSPARSE_ERROR(rocsparse_gthrz<T>(handle, nnz, dy_1, dx_val_1, dx_ind, base));
         }
 
         double gpu_time_used = get_time_us();
@@ -184,7 +184,7 @@ void testing_gthrz(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_gthrz<T>(handle, nnz, dy_1, dx_val_1, dx_ind, base);
+            CHECK_ROCSPARSE_ERROR(rocsparse_gthrz<T>(handle, nnz, dy_1, dx_val_1, dx_ind, base));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

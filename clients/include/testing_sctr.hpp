@@ -170,7 +170,7 @@ void testing_sctr(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_sctr<T>(handle, nnz, dx_val, dx_ind, dy_1, base);
+            CHECK_ROCSPARSE_ERROR(rocsparse_sctr<T>(handle, nnz, dx_val, dx_ind, dy_1, base));
         }
 
         double gpu_time_used = get_time_us();
@@ -178,7 +178,7 @@ void testing_sctr(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_sctr<T>(handle, nnz, dx_val, dx_ind, dy_1, base);
+            CHECK_ROCSPARSE_ERROR(rocsparse_sctr<T>(handle, nnz, dx_val, dx_ind, dy_1, base));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

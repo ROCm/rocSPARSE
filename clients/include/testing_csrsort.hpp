@@ -302,15 +302,15 @@ void testing_csrsort(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_csrsort(handle,
-                              M,
-                              N,
-                              nnz,
-                              descr,
-                              dcsr_row_ptr,
-                              dcsr_col_ind,
-                              permute ? dperm : nullptr,
-                              dbuffer);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrsort(handle,
+                                                    M,
+                                                    N,
+                                                    nnz,
+                                                    descr,
+                                                    dcsr_row_ptr,
+                                                    dcsr_col_ind,
+                                                    permute ? dperm : nullptr,
+                                                    dbuffer));
         }
 
         double gpu_time_used = get_time_us();
@@ -318,15 +318,15 @@ void testing_csrsort(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_csrsort(handle,
-                              M,
-                              N,
-                              nnz,
-                              descr,
-                              dcsr_row_ptr,
-                              dcsr_col_ind,
-                              permute ? dperm : nullptr,
-                              dbuffer);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrsort(handle,
+                                                    M,
+                                                    N,
+                                                    nnz,
+                                                    descr,
+                                                    dcsr_row_ptr,
+                                                    dcsr_col_ind,
+                                                    permute ? dperm : nullptr,
+                                                    dbuffer));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

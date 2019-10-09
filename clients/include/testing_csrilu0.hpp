@@ -577,35 +577,43 @@ void testing_csrilu0(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_csrilu0_analysis<T>(handle,
-                                          M,
-                                          nnz,
-                                          descr,
-                                          dcsr_val_1,
-                                          dcsr_row_ptr,
-                                          dcsr_col_ind,
-                                          info,
-                                          apol,
-                                          spol,
-                                          dbuffer);
-            rocsparse_csrilu0<T>(
-                handle, M, nnz, descr, dcsr_val_1, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer);
-            rocsparse_csrilu0_clear(handle, info);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis<T>(handle,
+                                                                M,
+                                                                nnz,
+                                                                descr,
+                                                                dcsr_val_1,
+                                                                dcsr_row_ptr,
+                                                                dcsr_col_ind,
+                                                                info,
+                                                                apol,
+                                                                spol,
+                                                                dbuffer));
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0<T>(handle,
+                                                       M,
+                                                       nnz,
+                                                       descr,
+                                                       dcsr_val_1,
+                                                       dcsr_row_ptr,
+                                                       dcsr_col_ind,
+                                                       info,
+                                                       spol,
+                                                       dbuffer));
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_clear(handle, info));
         }
 
         double gpu_analysis_time_used = get_time_us();
 
-        rocsparse_csrilu0_analysis<T>(handle,
-                                      M,
-                                      nnz,
-                                      descr,
-                                      dcsr_val_1,
-                                      dcsr_row_ptr,
-                                      dcsr_col_ind,
-                                      info,
-                                      apol,
-                                      spol,
-                                      dbuffer);
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis<T>(handle,
+                                                            M,
+                                                            nnz,
+                                                            descr,
+                                                            dcsr_val_1,
+                                                            dcsr_row_ptr,
+                                                            dcsr_col_ind,
+                                                            info,
+                                                            apol,
+                                                            spol,
+                                                            dbuffer));
 
         gpu_analysis_time_used = get_time_us() - gpu_analysis_time_used;
 
@@ -614,8 +622,16 @@ void testing_csrilu0(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_csrilu0<T>(
-                handle, M, nnz, descr, dcsr_val_1, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0<T>(handle,
+                                                       M,
+                                                       nnz,
+                                                       descr,
+                                                       dcsr_val_1,
+                                                       dcsr_row_ptr,
+                                                       dcsr_col_ind,
+                                                       info,
+                                                       spol,
+                                                       dbuffer));
         }
 
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;

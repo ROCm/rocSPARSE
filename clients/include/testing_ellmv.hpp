@@ -353,18 +353,18 @@ void testing_ellmv(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_ellmv<T>(handle,
-                               trans,
-                               M,
-                               N,
-                               &h_alpha,
-                               descr,
-                               dell_val,
-                               dell_col_ind,
-                               ell_width,
-                               dx,
-                               &h_beta,
-                               dy_1);
+            CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<T>(handle,
+                                                     trans,
+                                                     M,
+                                                     N,
+                                                     &h_alpha,
+                                                     descr,
+                                                     dell_val,
+                                                     dell_col_ind,
+                                                     ell_width,
+                                                     dx,
+                                                     &h_beta,
+                                                     dy_1));
         }
 
         double gpu_time_used = get_time_us();
@@ -372,18 +372,18 @@ void testing_ellmv(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_ellmv<T>(handle,
-                               trans,
-                               M,
-                               N,
-                               &h_alpha,
-                               descr,
-                               dell_val,
-                               dell_col_ind,
-                               ell_width,
-                               dx,
-                               &h_beta,
-                               dy_1);
+            CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<T>(handle,
+                                                     trans,
+                                                     M,
+                                                     N,
+                                                     &h_alpha,
+                                                     descr,
+                                                     dell_val,
+                                                     dell_col_ind,
+                                                     ell_width,
+                                                     dx,
+                                                     &h_beta,
+                                                     dy_1));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

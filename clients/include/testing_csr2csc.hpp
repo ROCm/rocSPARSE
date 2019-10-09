@@ -395,19 +395,19 @@ void testing_csr2csc(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_csr2csc<T>(handle,
-                                 M,
-                                 N,
-                                 nnz,
-                                 dcsr_val,
-                                 dcsr_row_ptr,
-                                 dcsr_col_ind,
-                                 dcsc_val,
-                                 dcsc_row_ind,
-                                 dcsc_col_ptr,
-                                 action,
-                                 base,
-                                 dbuffer);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csr2csc<T>(handle,
+                                                       M,
+                                                       N,
+                                                       nnz,
+                                                       dcsr_val,
+                                                       dcsr_row_ptr,
+                                                       dcsr_col_ind,
+                                                       dcsc_val,
+                                                       dcsc_row_ind,
+                                                       dcsc_col_ptr,
+                                                       action,
+                                                       base,
+                                                       dbuffer));
         }
 
         double gpu_time_used = get_time_us();
@@ -415,19 +415,19 @@ void testing_csr2csc(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_csr2csc<T>(handle,
-                                 M,
-                                 N,
-                                 nnz,
-                                 dcsr_val,
-                                 dcsr_row_ptr,
-                                 dcsr_col_ind,
-                                 dcsc_val,
-                                 dcsc_row_ind,
-                                 dcsc_col_ptr,
-                                 action,
-                                 base,
-                                 dbuffer);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csr2csc<T>(handle,
+                                                       M,
+                                                       N,
+                                                       nnz,
+                                                       dcsr_val,
+                                                       dcsr_row_ptr,
+                                                       dcsr_col_ind,
+                                                       dcsc_val,
+                                                       dcsc_row_ind,
+                                                       dcsc_col_ptr,
+                                                       action,
+                                                       base,
+                                                       dbuffer));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

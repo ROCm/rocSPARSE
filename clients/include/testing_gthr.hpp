@@ -164,7 +164,7 @@ void testing_gthr(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_gthr<T>(handle, nnz, dy, dx_val_1, dx_ind, base);
+            CHECK_ROCSPARSE_ERROR(rocsparse_gthr<T>(handle, nnz, dy, dx_val_1, dx_ind, base));
         }
 
         double gpu_time_used = get_time_us();
@@ -172,7 +172,7 @@ void testing_gthr(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_gthr<T>(handle, nnz, dy, dx_val_1, dx_ind, base);
+            CHECK_ROCSPARSE_ERROR(rocsparse_gthr<T>(handle, nnz, dy, dx_val_1, dx_ind, base));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

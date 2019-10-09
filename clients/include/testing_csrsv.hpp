@@ -731,49 +731,49 @@ void testing_csrsv(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_csrsv_analysis<T>(handle,
-                                        trans,
-                                        M,
-                                        nnz,
-                                        descr,
-                                        dcsr_val,
-                                        dcsr_row_ptr,
-                                        dcsr_col_ind,
-                                        info,
-                                        apol,
-                                        spol,
-                                        dbuffer);
-            rocsparse_csrsv_solve<T>(handle,
-                                     trans,
-                                     M,
-                                     nnz,
-                                     &h_alpha,
-                                     descr,
-                                     dcsr_val,
-                                     dcsr_row_ptr,
-                                     dcsr_col_ind,
-                                     info,
-                                     dx,
-                                     dy_1,
-                                     spol,
-                                     dbuffer);
-            rocsparse_csrsv_clear(handle, descr, info);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(handle,
+                                                              trans,
+                                                              M,
+                                                              nnz,
+                                                              descr,
+                                                              dcsr_val,
+                                                              dcsr_row_ptr,
+                                                              dcsr_col_ind,
+                                                              info,
+                                                              apol,
+                                                              spol,
+                                                              dbuffer));
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve<T>(handle,
+                                                           trans,
+                                                           M,
+                                                           nnz,
+                                                           &h_alpha,
+                                                           descr,
+                                                           dcsr_val,
+                                                           dcsr_row_ptr,
+                                                           dcsr_col_ind,
+                                                           info,
+                                                           dx,
+                                                           dy_1,
+                                                           spol,
+                                                           dbuffer));
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_clear(handle, descr, info));
         }
 
         double gpu_analysis_time_used = get_time_us();
 
-        rocsparse_csrsv_analysis<T>(handle,
-                                    trans,
-                                    M,
-                                    nnz,
-                                    descr,
-                                    dcsr_val,
-                                    dcsr_row_ptr,
-                                    dcsr_col_ind,
-                                    info,
-                                    apol,
-                                    spol,
-                                    dbuffer);
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(handle,
+                                                          trans,
+                                                          M,
+                                                          nnz,
+                                                          descr,
+                                                          dcsr_val,
+                                                          dcsr_row_ptr,
+                                                          dcsr_col_ind,
+                                                          info,
+                                                          apol,
+                                                          spol,
+                                                          dbuffer));
 
         gpu_analysis_time_used = get_time_us() - gpu_analysis_time_used;
 
@@ -782,20 +782,20 @@ void testing_csrsv(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_csrsv_solve<T>(handle,
-                                     trans,
-                                     M,
-                                     nnz,
-                                     &h_alpha,
-                                     descr,
-                                     dcsr_val,
-                                     dcsr_row_ptr,
-                                     dcsr_col_ind,
-                                     info,
-                                     dx,
-                                     dy_1,
-                                     spol,
-                                     dbuffer);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve<T>(handle,
+                                                           trans,
+                                                           M,
+                                                           nnz,
+                                                           &h_alpha,
+                                                           descr,
+                                                           dcsr_val,
+                                                           dcsr_row_ptr,
+                                                           dcsr_col_ind,
+                                                           info,
+                                                           dx,
+                                                           dy_1,
+                                                           spol,
+                                                           dbuffer));
         }
 
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;

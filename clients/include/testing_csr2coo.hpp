@@ -174,7 +174,8 @@ void testing_csr2coo(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_csr2coo(handle, dcsr_row_ptr, nnz, M, dcoo_row_ind, base);
+            CHECK_ROCSPARSE_ERROR(
+                rocsparse_csr2coo(handle, dcsr_row_ptr, nnz, M, dcoo_row_ind, base));
         }
 
         double gpu_time_used = get_time_us();
@@ -182,7 +183,8 @@ void testing_csr2coo(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_csr2coo(handle, dcsr_row_ptr, nnz, M, dcoo_row_ind, base);
+            CHECK_ROCSPARSE_ERROR(
+                rocsparse_csr2coo(handle, dcsr_row_ptr, nnz, M, dcoo_row_ind, base));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

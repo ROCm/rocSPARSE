@@ -431,23 +431,23 @@ void testing_ell2csr(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_ell2csr_nnz(
-                handle, M, N, descrA, ell_width, dell_col_ind, descrB, dcsr_row_ptr, &csr_nnz);
+            CHECK_ROCSPARSE_ERROR(rocsparse_ell2csr_nnz(
+                handle, M, N, descrA, ell_width, dell_col_ind, descrB, dcsr_row_ptr, &csr_nnz));
 
             device_vector<rocsparse_int> dcsr_col_ind(csr_nnz);
             device_vector<T>             dcsr_val(csr_nnz);
 
-            rocsparse_ell2csr<T>(handle,
-                                 M,
-                                 N,
-                                 descrA,
-                                 ell_width,
-                                 dell_val,
-                                 dell_col_ind,
-                                 descrB,
-                                 dcsr_val,
-                                 dcsr_row_ptr,
-                                 dcsr_col_ind);
+            CHECK_ROCSPARSE_ERROR(rocsparse_ell2csr<T>(handle,
+                                                       M,
+                                                       N,
+                                                       descrA,
+                                                       ell_width,
+                                                       dell_val,
+                                                       dell_col_ind,
+                                                       descrB,
+                                                       dcsr_val,
+                                                       dcsr_row_ptr,
+                                                       dcsr_col_ind));
         }
 
         double gpu_time_used = get_time_us();
@@ -455,23 +455,23 @@ void testing_ell2csr(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_ell2csr_nnz(
-                handle, M, N, descrA, ell_width, dell_col_ind, descrB, dcsr_row_ptr, &csr_nnz);
+            CHECK_ROCSPARSE_ERROR(rocsparse_ell2csr_nnz(
+                handle, M, N, descrA, ell_width, dell_col_ind, descrB, dcsr_row_ptr, &csr_nnz));
 
             device_vector<rocsparse_int> dcsr_col_ind(csr_nnz);
             device_vector<T>             dcsr_val(csr_nnz);
 
-            rocsparse_ell2csr<T>(handle,
-                                 M,
-                                 N,
-                                 descrA,
-                                 ell_width,
-                                 dell_val,
-                                 dell_col_ind,
-                                 descrB,
-                                 dcsr_val,
-                                 dcsr_row_ptr,
-                                 dcsr_col_ind);
+            CHECK_ROCSPARSE_ERROR(rocsparse_ell2csr<T>(handle,
+                                                       M,
+                                                       N,
+                                                       descrA,
+                                                       ell_width,
+                                                       dell_val,
+                                                       dell_col_ind,
+                                                       descrB,
+                                                       dcsr_val,
+                                                       dcsr_row_ptr,
+                                                       dcsr_col_ind));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
