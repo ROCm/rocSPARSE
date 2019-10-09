@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,70 +21,74 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_data.hpp"
+#include "rocsparse_datatype2string.hpp"
+#include "rocsparse_test.hpp"
 #include "testing_roti.hpp"
-#include "utility.hpp"
+#include "type_dispatch.hpp"
 
-#include <gtest/gtest.h>
-#include <rocsparse.h>
-#include <vector>
+#include <cctype>
+#include <cstring>
+#include <type_traits>
 
-typedef rocsparse_index_base                                           base;
-typedef std::tuple<rocsparse_int, rocsparse_int, double, double, base> roti_tuple;
-
-rocsparse_int roti_N_range[]   = {12000, 15332, 22031};
-rocsparse_int roti_nnz_range[] = {-1, 0, 5, 10, 500, 1000, 7111, 10000};
-
-double roti_c_range[] = {-2.0, 0.0, 1.0};
-double roti_s_range[] = {-3.0, 0.0, 4.0};
-
-base roti_idx_base_range[] = {rocsparse_index_base_zero, rocsparse_index_base_one};
-
-class parameterized_roti : public testing::TestWithParam<roti_tuple>
+namespace
 {
-protected:
-    parameterized_roti() {}
-    virtual ~parameterized_roti() {}
-    virtual void SetUp() {}
-    virtual void TearDown() {}
-};
+    // By default, this test does not apply to any types.
+    // The unnamed second parameter is used for enable_if below.
+    template <typename, typename = void>
+    struct roti_testing : rocsparse_test_invalid
+    {
+    };
 
-Arguments setup_roti_arguments(roti_tuple tup)
-{
-    Arguments arg;
-    arg.N        = std::get<0>(tup);
-    arg.nnz      = std::get<1>(tup);
-    arg.alpha    = std::get<2>(tup);
-    arg.beta     = std::get<3>(tup);
-    arg.idx_base = std::get<4>(tup);
-    arg.timing   = 0;
-    return arg;
-}
+    // When the condition in the second argument is satisfied, the type combination
+    // is valid. When the condition is false, this specialization does not apply.
+    template <typename T>
+    struct roti_testing<
+        T,
+        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}>::type>
+    {
+        explicit operator bool()
+        {
+            return true;
+        }
+        void operator()(const Arguments& arg)
+        {
+            if(!strcmp(arg.function, "roti"))
+                testing_roti<T>(arg);
+            else if(!strcmp(arg.function, "roti_bad_arg"))
+                testing_roti_bad_arg<T>(arg);
+            else
+                FAIL() << "Internal error: Test called with unknown function: " << arg.function;
+        }
+    };
 
-TEST(roti_bad_arg, roti_float)
-{
-    testing_roti_bad_arg<float>();
-}
+    struct roti : RocSPARSE_Test<roti, roti_testing>
+    {
+        // Filter for which types apply to this suite
+        static bool type_filter(const Arguments& arg)
+        {
+            return rocsparse_simple_dispatch<type_filter_functor>(arg);
+        }
 
-TEST_P(parameterized_roti, roti_float)
-{
-    Arguments arg = setup_roti_arguments(GetParam());
+        // Filter for which functions apply to this suite
+        static bool function_filter(const Arguments& arg)
+        {
+            return !strcmp(arg.function, "roti") || !strcmp(arg.function, "roti_bad_arg");
+        }
 
-    rocsparse_status status = testing_roti<float>(arg);
-    EXPECT_EQ(status, rocsparse_status_success);
-}
+        // Google Test name suffix based on parameters
+        static std::string name_suffix(const Arguments& arg)
+        {
+            return RocSPARSE_TestName<roti>{} << rocsparse_datatype2string(arg.compute_type) << '_'
+                                              << arg.M << '_' << arg.nnz << '_'
+                                              << rocsparse_indexbase2string(arg.baseA);
+        }
+    };
 
-TEST_P(parameterized_roti, roti_double)
-{
-    Arguments arg = setup_roti_arguments(GetParam());
+    TEST_P(roti, level1)
+    {
+        rocsparse_simple_dispatch<roti_testing>(GetParam());
+    }
+    INSTANTIATE_TEST_CATEGORIES(roti);
 
-    rocsparse_status status = testing_roti<double>(arg);
-    EXPECT_EQ(status, rocsparse_status_success);
-}
-
-INSTANTIATE_TEST_CASE_P(roti,
-                        parameterized_roti,
-                        testing::Combine(testing::ValuesIn(roti_N_range),
-                                         testing::ValuesIn(roti_nnz_range),
-                                         testing::ValuesIn(roti_c_range),
-                                         testing::ValuesIn(roti_s_range),
-                                         testing::ValuesIn(roti_idx_base_range)));
+} // namespace

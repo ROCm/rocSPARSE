@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,21 +22,12 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ARG_CHECK_HPP
-#define ARG_CHECK_HPP
+#ifndef ROCSPARSE_PARSE_DATA_HPP
+#define ROCSPARSE_PARSE_DATA_HPP
 
-#include <rocsparse.h>
+#include <string>
 
-void verify_rocsparse_status_invalid_pointer(rocsparse_status status, const char* message);
+// Parse --data and --yaml command-line arguments
+bool rocsparse_parse_data(int& argc, char** argv, const std::string& default_file = "");
 
-void verify_rocsparse_status_invalid_size(rocsparse_status status, const char* message);
-
-void verify_rocsparse_status_invalid_value(rocsparse_status status, const char* message);
-
-void verify_rocsparse_status_zero_pivot(rocsparse_status status, const char* message);
-
-void verify_rocsparse_status_invalid_handle(rocsparse_status status);
-
-void verify_rocsparse_status_success(rocsparse_status status, const char* message);
-
-#endif // ARG_CHECK_HPP
+#endif // ROCSPARSE_PARSE_DATA_HPP

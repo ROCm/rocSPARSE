@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,416 +25,474 @@
 #ifndef TESTING_CSRILUSV_HPP
 #define TESTING_CSRILUSV_HPP
 
-#include "rocsparse.hpp"
-#include "rocsparse_test_unique_ptr.hpp"
-#include "unit.hpp"
+#include <rocsparse.hpp>
+
+#include "rocsparse_check.hpp"
+#include "rocsparse_host.hpp"
+#include "rocsparse_init.hpp"
+#include "rocsparse_test.hpp"
+#include "rocsparse_vector.hpp"
 #include "utility.hpp"
 
-#include <algorithm>
-#include <cmath>
-#include <iomanip>
-#include <iostream>
-#include <limits>
-#include <rocsparse.h>
-#include <string>
-
-using namespace rocsparse;
-using namespace rocsparse_test;
-
 template <typename T>
-rocsparse_status testing_csrilusv(Arguments argus)
+void testing_csrilusv(const Arguments& arg)
 {
-    rocsparse_index_base      idx_base = argus.idx_base;
-    rocsparse_analysis_policy analysis = argus.analysis;
+    rocsparse_int             M         = arg.M;
+    rocsparse_int             N         = arg.N;
+    rocsparse_int             K         = arg.K;
+    rocsparse_int             dim_x     = arg.dimx;
+    rocsparse_int             dim_y     = arg.dimy;
+    rocsparse_int             dim_z     = arg.dimz;
+    rocsparse_analysis_policy apol      = arg.apol;
+    rocsparse_solve_policy    spol      = arg.spol;
+    rocsparse_index_base      base      = arg.baseA;
+    rocsparse_matrix_init     mat       = arg.matrix;
+    bool                      full_rank = true;
+    std::string filename = rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
-    std::unique_ptr<handle_struct> test_handle(new handle_struct);
-    rocsparse_handle               handle = test_handle->handle;
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
-    std::unique_ptr<descr_struct> test_descr_M(new descr_struct);
-    rocsparse_mat_descr           descr_M = test_descr_M->descr;
+    // Create matrix descriptor
+    rocsparse_local_mat_descr descrM;
 
-    std::unique_ptr<mat_info_struct> unique_ptr_mat_info(new mat_info_struct);
-    rocsparse_mat_info               info = unique_ptr_mat_info->info;
+    // Create matrix info
+    rocsparse_local_mat_info info;
 
-    // Initialize the matrix descriptor
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_M, idx_base));
+    // Set matrix index base
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descrM, base));
 
-    // Host structures
-    std::vector<rocsparse_int> hcsr_row_ptr;
-    std::vector<rocsparse_int> hcsr_col_ind;
-    std::vector<T>             hcsr_val;
+    // Allocate host memory for matrix
+    host_vector<rocsparse_int> hcsr_row_ptr;
+    host_vector<rocsparse_int> hcsr_col_ind;
+    host_vector<T>             hcsr_val_gold;
+    host_vector<rocsparse_int> h_struct_pivot_gold(1);
+    host_vector<rocsparse_int> h_struct_pivot_1(1);
+    host_vector<rocsparse_int> h_struct_pivot_2(1);
+    host_vector<rocsparse_int> h_numeric_pivot_gold(1);
+    host_vector<rocsparse_int> h_numeric_pivot_L_gold(1);
+    host_vector<rocsparse_int> h_numeric_pivot_U_gold(1);
+    host_vector<rocsparse_int> h_numeric_pivot_1(1);
+    host_vector<rocsparse_int> h_numeric_pivot_2(1);
+    host_vector<rocsparse_int> h_numeric_pivot_L_1(1);
+    host_vector<rocsparse_int> h_numeric_pivot_L_2(1);
+    host_vector<rocsparse_int> h_numeric_pivot_U_1(1);
+    host_vector<rocsparse_int> h_numeric_pivot_U_2(1);
 
-    // Initial Data on CPU
-    rocsparse_int m;
-    rocsparse_int n;
+    rocsparse_seedrand();
+
+    // Sample matrix
     rocsparse_int nnz;
-
-    if(read_bin_matrix(
-           argus.filename.c_str(), m, n, nnz, hcsr_row_ptr, hcsr_col_ind, hcsr_val, idx_base)
-       != 0)
-    {
-        fprintf(stderr, "Cannot open [read] %s\n", argus.filename.c_str());
-        return rocsparse_status_internal_error;
-    }
-
-    // Allocate memory on device
-    auto dptr_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (m + 1)), device_free};
-    auto dcol_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto d_position_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int)), device_free};
-
-    rocsparse_int* dptr       = (rocsparse_int*)dptr_managed.get();
-    rocsparse_int* dcol       = (rocsparse_int*)dcol_managed.get();
-    T*             dval       = (T*)dval_managed.get();
-    rocsparse_int* d_position = (rocsparse_int*)d_position_managed.get();
-
-    if(!dval || !dptr || !dcol || !d_position)
-    {
-        verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                        "!dval || !dptr || !dcol || !d_position");
-        return rocsparse_status_memory_error;
-    }
-
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dptr, hcsr_row_ptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(
-        hipMemcpy(dcol, hcsr_col_ind.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dval, hcsr_val.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
-
-    // Obtain csrilu0 buffer size
-    size_t size;
-    CHECK_ROCSPARSE_ERROR(
-        rocsparse_csrilu0_buffer_size(handle, m, nnz, descr_M, dval, dptr, dcol, info, &size));
-
-    // Allocate buffer on the device
-    auto dbuffer_managed = rocsparse_unique_ptr{device_malloc(sizeof(char) * size), device_free};
-
-    void* dbuffer = (void*)dbuffer_managed.get();
-
-    if(!dbuffer)
-    {
-        verify_rocsparse_status_success(rocsparse_status_memory_error, "!dbuffer");
-        return rocsparse_status_memory_error;
-    }
-
-    // csrilu0 analysis
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis(handle,
-                                                     m,
-                                                     nnz,
-                                                     descr_M,
-                                                     dval,
-                                                     dptr,
-                                                     dcol,
-                                                     info,
-                                                     analysis,
-                                                     rocsparse_solve_policy_auto,
-                                                     dbuffer));
-
-    // Compute incomplete LU factorization
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0(
-        handle, m, nnz, descr_M, dval, dptr, dcol, info, rocsparse_solve_policy_auto, dbuffer));
-
-    // Check for zero pivot
-    rocsparse_int    hposition_1, hposition_2;
-    rocsparse_status pivot_status_1, pivot_status_2;
-
-    // Host pointer mode
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-    pivot_status_1 = rocsparse_csrilu0_zero_pivot(handle, info, &hposition_1);
-
-    // device pointer mode
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-    pivot_status_2 = rocsparse_csrilu0_zero_pivot(handle, info, d_position);
-
-    // Copy output to CPU
-    std::vector<T> iluresult(nnz);
-    CHECK_HIP_ERROR(hipMemcpy(iluresult.data(), dval, sizeof(T) * nnz, hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(
-        hipMemcpy(&hposition_2, d_position, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-
-    // Compute host reference csrilu0
-    rocsparse_int position_gold
-        = csrilu0(m, hcsr_row_ptr.data(), hcsr_col_ind.data(), hcsr_val.data(), idx_base);
-
-    // Check zero pivot results
-    unit_check_general(1, 1, 1, &position_gold, &hposition_1);
-    unit_check_general(1, 1, 1, &position_gold, &hposition_2);
-
-    // If zero pivot was found, do not go further
-    if(hposition_1 != -1)
-    {
-        verify_rocsparse_status_zero_pivot(pivot_status_1, "expected rocsparse_status_zero_pivot");
-        return rocsparse_status_success;
-    }
-
-    if(hposition_2 != -1)
-    {
-        verify_rocsparse_status_zero_pivot(pivot_status_2, "expected rocsparse_status_zero_pivot");
-        return rocsparse_status_success;
-    }
-
-    // Check csrilu0 factorization
-    unit_check_general(1, nnz, 1, hcsr_val.data(), iluresult.data());
-
-    // Create matrix descriptors for csrsv
-    std::unique_ptr<descr_struct> test_descr_L(new descr_struct);
-    rocsparse_mat_descr           descr_L = test_descr_L->descr;
-
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_L, idx_base));
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_fill_mode(descr_L, rocsparse_fill_mode_lower));
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(descr_L, rocsparse_diag_type_unit));
-
-    std::unique_ptr<descr_struct> test_descr_U(new descr_struct);
-    rocsparse_mat_descr           descr_U = test_descr_U->descr;
-
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_U, idx_base));
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_fill_mode(descr_U, rocsparse_fill_mode_upper));
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(descr_U, rocsparse_diag_type_non_unit));
-
-    // Obtain csrsv buffer sizes
-    size_t size_lower, size_upper;
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size(
-        handle, rocsparse_operation_none, m, nnz, descr_L, dval, dptr, dcol, info, &size_lower));
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size(
-        handle, rocsparse_operation_none, m, nnz, descr_U, dval, dptr, dcol, info, &size_upper));
-
-    // Sizes should match with csrilu0
-    unit_check_general(1, 1, 1, &size, &size_lower);
-    unit_check_general(1, 1, 1, &size, &size_upper);
-
-    // csrsv analysis
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis(handle,
-                                                   rocsparse_operation_none,
-                                                   m,
-                                                   nnz,
-                                                   descr_L,
-                                                   dval,
-                                                   dptr,
-                                                   dcol,
-                                                   info,
-                                                   analysis,
-                                                   rocsparse_solve_policy_auto,
-                                                   dbuffer));
-
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis(handle,
-                                                   rocsparse_operation_none,
-                                                   m,
-                                                   nnz,
-                                                   descr_U,
-                                                   dval,
-                                                   dptr,
-                                                   dcol,
-                                                   info,
-                                                   analysis,
-                                                   rocsparse_solve_policy_auto,
-                                                   dbuffer));
-
-    // Initialize some more structures required for Lz = x
-    T h_alpha = static_cast<T>(1);
-
-    std::vector<T> hx(m, static_cast<T>(1));
-    std::vector<T> hy_gold(m);
-    std::vector<T> hz_gold(m);
+    rocsparse_init_csr_matrix(hcsr_row_ptr,
+                              hcsr_col_ind,
+                              hcsr_val_gold,
+                              M,
+                              N,
+                              K,
+                              dim_x,
+                              dim_y,
+                              dim_z,
+                              nnz,
+                              base,
+                              mat,
+                              filename.c_str(),
+                              true,
+                              full_rank);
 
     // Allocate device memory
-    auto dx_managed      = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
-    auto dy_1_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
-    auto dy_2_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
-    auto dz_1_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
-    auto dz_2_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T) * m), device_free};
-    auto d_alpha_managed = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
+    device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
+    device_vector<rocsparse_int> dcsr_col_ind(nnz);
+    device_vector<T>             dcsr_val(nnz);
+    device_vector<rocsparse_int> d_struct_pivot_2(1);
+    device_vector<rocsparse_int> d_numeric_pivot_2(1);
+    device_vector<rocsparse_int> d_numeric_pivot_L_2(1);
+    device_vector<rocsparse_int> d_numeric_pivot_U_2(1);
 
-    T* dx      = (T*)dx_managed.get();
-    T* dy_1    = (T*)dy_1_managed.get();
-    T* dy_2    = (T*)dy_2_managed.get();
-    T* dz_1    = (T*)dz_1_managed.get();
-    T* dz_2    = (T*)dz_2_managed.get();
-    T* d_alpha = (T*)d_alpha_managed.get();
-
-    if(!dx || !dy_1 || !dy_2 || !dz_1 || !dz_2 || !d_alpha)
+    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
     {
-        verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                        "!dx || !dy_1 || !dy_2 || !dz_1 || "
-                                        "!dz_2 || !d_alpha");
-        return rocsparse_status_memory_error;
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
     }
 
     // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(dx, hx.data(), sizeof(T) * m, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(
+        dcsr_row_ptr, hcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(
+        hipMemcpy(dcsr_col_ind, hcsr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val_gold, sizeof(T) * nnz, hipMemcpyHostToDevice));
+
+    // Compute reference incomplete LU factorization on host
+    host_csrilu0<T>(M,
+                    hcsr_row_ptr,
+                    hcsr_col_ind,
+                    hcsr_val_gold,
+                    base,
+                    h_struct_pivot_gold,
+                    h_numeric_pivot_gold);
+
+    // Obtain csrilu0 buffer size
+    size_t buffer_size;
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_buffer_size<T>(
+        handle, M, nnz, descrM, dcsr_val, dcsr_row_ptr, dcsr_col_ind, info, &buffer_size));
+
+    // Allocate buffer
+    void* dbuffer;
+    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+
+    // csrilu0 analysis
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis<T>(
+        handle, M, nnz, descrM, dcsr_val, dcsr_row_ptr, dcsr_col_ind, info, apol, spol, dbuffer));
+
+    // Check for structural zero pivot using host pointer mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, h_struct_pivot_1),
+                            (h_struct_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
+                                                           : rocsparse_status_success);
+
+    // Check for structural zero pivot using device pointer mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, d_struct_pivot_2),
+                            (h_struct_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
+                                                           : rocsparse_status_success);
+
+    // Copy output to CPU
+    CHECK_HIP_ERROR(hipMemcpy(
+        h_struct_pivot_2, d_struct_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+    // Check pivot results
+    unit_check_general<rocsparse_int>(1, 1, 1, h_struct_pivot_gold, h_struct_pivot_1);
+    unit_check_general<rocsparse_int>(1, 1, 1, h_struct_pivot_gold, h_struct_pivot_2);
+
+    // If structural pivot has been found, we are done
+    if(h_struct_pivot_gold[0] != -1)
+    {
+        return;
+    }
+
+    // csrilu0
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0<T>(
+        handle, M, nnz, descrM, dcsr_val, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
+
+    // Check for numerical zero pivot using host pointer mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, h_numeric_pivot_1),
+                            (h_numeric_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
+                                                            : rocsparse_status_success);
+
+    // Check for structural zero pivot using device pointer mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, d_numeric_pivot_2),
+                            (h_numeric_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
+                                                            : rocsparse_status_success);
+
+    // Copy output to CPU
+    host_vector<T> hcsr_val(nnz);
+    CHECK_HIP_ERROR(hipMemcpy(
+        h_numeric_pivot_2, d_numeric_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(hcsr_val, dcsr_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
+
+    // Check pivot results
+    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_gold, h_numeric_pivot_1);
+    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_gold, h_numeric_pivot_2);
+
+    // If numerical pivot has been found, we are done
+    if(h_numeric_pivot_gold[0] != -1)
+    {
+        return;
+    }
+
+    // Check ILU factorization
+    near_check_general<T>(1, nnz, 1, hcsr_val_gold, hcsr_val);
+
+    // Create matrix descriptors for csrsv
+    rocsparse_local_mat_descr descrL;
+    rocsparse_local_mat_descr descrU;
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descrL, base));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descrU, base));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_fill_mode(descrL, rocsparse_fill_mode_lower));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_fill_mode(descrU, rocsparse_fill_mode_upper));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(descrL, rocsparse_diag_type_unit));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(descrU, rocsparse_diag_type_non_unit));
+
+    // Initialize structures for csrsv
+    T h_alpha = static_cast<T>(1);
+
+    host_vector<T> hx(N, static_cast<T>(1));
+    host_vector<T> hy_1(M);
+    host_vector<T> hy_2(M);
+    host_vector<T> hy_gold(M);
+    host_vector<T> hz_1(M);
+    host_vector<T> hz_2(M);
+    host_vector<T> hz_gold(M);
+
+    // Allocate device memory
+    device_vector<T> dx(N);
+    device_vector<T> dy_1(M);
+    device_vector<T> dy_2(M);
+    device_vector<T> dz_1(M);
+    device_vector<T> dz_2(M);
+    device_vector<T> d_alpha(1);
+
+    if(!dx || !dy_1 || !dy_2 || !dz_1 || !dz_2 || !d_alpha)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
+    // Copy data from CPU to device
+    CHECK_HIP_ERROR(hipMemcpy(dx, hx, sizeof(T) * N, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
 
-    // Solve Lz = x
+    // Compute reference solution on host
+    host_csrsv<T>(M,
+                  h_alpha,
+                  hcsr_row_ptr,
+                  hcsr_col_ind,
+                  hcsr_val_gold,
+                  hx,
+                  hz_gold,
+                  rocsparse_diag_type_unit,
+                  rocsparse_fill_mode_lower,
+                  base,
+                  h_struct_pivot_gold,
+                  h_numeric_pivot_L_gold);
+    host_csrsv<T>(M,
+                  h_alpha,
+                  hcsr_row_ptr,
+                  hcsr_col_ind,
+                  hcsr_val_gold,
+                  hz_gold,
+                  hy_gold,
+                  rocsparse_diag_type_non_unit,
+                  rocsparse_fill_mode_upper,
+                  base,
+                  h_struct_pivot_gold,
+                  h_numeric_pivot_U_gold);
 
-    // host pointer mode
+    // Obtain csrsv buffer sizes
+    size_t buffer_size_l;
+    size_t buffer_size_u;
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size<T>(handle,
+                                                         rocsparse_operation_none,
+                                                         M,
+                                                         nnz,
+                                                         descrL,
+                                                         dcsr_val,
+                                                         dcsr_row_ptr,
+                                                         dcsr_col_ind,
+                                                         info,
+                                                         &buffer_size_l));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size<T>(handle,
+                                                         rocsparse_operation_none,
+                                                         M,
+                                                         nnz,
+                                                         descrU,
+                                                         dcsr_val,
+                                                         dcsr_row_ptr,
+                                                         dcsr_col_ind,
+                                                         info,
+                                                         &buffer_size_u));
+
+    // Buffer sizes should match with csrilu0 buffer size
+    unit_check_general<size_t>(1, 1, 1, &buffer_size, &buffer_size_l);
+    unit_check_general<size_t>(1, 1, 1, &buffer_size, &buffer_size_u);
+
+    // csrsv analysis
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(handle,
+                                                      rocsparse_operation_none,
+                                                      M,
+                                                      nnz,
+                                                      descrL,
+                                                      dcsr_val,
+                                                      dcsr_row_ptr,
+                                                      dcsr_col_ind,
+                                                      info,
+                                                      apol,
+                                                      spol,
+                                                      dbuffer));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(handle,
+                                                      rocsparse_operation_none,
+                                                      M,
+                                                      nnz,
+                                                      descrU,
+                                                      dcsr_val,
+                                                      dcsr_row_ptr,
+                                                      dcsr_col_ind,
+                                                      info,
+                                                      apol,
+                                                      spol,
+                                                      dbuffer));
+
+    // Lower part uses unit diagonal, structural pivot not possible
+
+    // Check upper part for structural zero pivot using host pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve(handle,
-                                                rocsparse_operation_none,
-                                                m,
-                                                nnz,
-                                                &h_alpha,
-                                                descr_L,
-                                                dval,
-                                                dptr,
-                                                dcol,
-                                                info,
-                                                dx,
-                                                dz_1,
-                                                rocsparse_solve_policy_auto,
-                                                dbuffer));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descrU, info, h_struct_pivot_1),
+                            (h_struct_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
+                                                           : rocsparse_status_success);
 
-    // Check for zero pivot
-    pivot_status_1 = rocsparse_csrsv_zero_pivot(handle, descr_L, info, &hposition_1);
-
-    // device pointer mode
+    // Check upper part for structural zero pivot using device pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve(handle,
-                                                rocsparse_operation_none,
-                                                m,
-                                                nnz,
-                                                d_alpha,
-                                                descr_L,
-                                                dval,
-                                                dptr,
-                                                dcol,
-                                                info,
-                                                dx,
-                                                dz_2,
-                                                rocsparse_solve_policy_auto,
-                                                dbuffer));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descrU, info, d_struct_pivot_2),
+                            (h_struct_pivot_gold[0] != -1) ? rocsparse_status_zero_pivot
+                                                           : rocsparse_status_success);
 
-    // Check for zero pivot
-    pivot_status_2 = rocsparse_csrsv_zero_pivot(handle, descr_L, info, d_position);
+    // Copy output to CPU
+    CHECK_HIP_ERROR(hipMemcpy(
+        h_struct_pivot_2, d_struct_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
-    // Host csrsv
-    hipDeviceProp_t prop;
-    hipGetDeviceProperties(&prop, 0);
+    // Check pivots
+    unit_check_general<rocsparse_int>(1, 1, 1, h_struct_pivot_gold, h_struct_pivot_1);
+    unit_check_general<rocsparse_int>(1, 1, 1, h_struct_pivot_gold, h_struct_pivot_2);
 
-    position_gold = lsolve(m,
-                           hcsr_row_ptr.data(),
-                           hcsr_col_ind.data(),
-                           hcsr_val.data(),
-                           h_alpha,
-                           hx.data(),
-                           hz_gold.data(),
-                           idx_base,
-                           rocsparse_diag_type_unit,
-                           prop.warpSize);
-
-    // Check zero pivot results
-    unit_check_general(1, 1, 1, &position_gold, &hposition_1);
-    unit_check_general(1, 1, 1, &position_gold, &hposition_2);
-
-    // If zero pivot was found, do not go further
-    if(hposition_1 != -1)
+    // If structural pivot has been found, we are done
+    if(h_struct_pivot_gold[0] != -1)
     {
-        verify_rocsparse_status_zero_pivot(pivot_status_1, "expected rocsparse_status_zero_pivot");
-        return rocsparse_status_success;
+        return;
     }
 
-    if(hposition_2 != -1)
+    // Solve Lz = x (= 1)
+
+    // Host pointer mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve<T>(handle,
+                                                   rocsparse_operation_none,
+                                                   M,
+                                                   nnz,
+                                                   &h_alpha,
+                                                   descrL,
+                                                   dcsr_val,
+                                                   dcsr_row_ptr,
+                                                   dcsr_col_ind,
+                                                   info,
+                                                   dx,
+                                                   dz_1,
+                                                   spol,
+                                                   dbuffer));
+
+    // Check for numerical zero pivot using host pointer mode
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descrL, info, h_numeric_pivot_L_1),
+                            (h_numeric_pivot_L_gold[0] != -1) ? rocsparse_status_zero_pivot
+                                                              : rocsparse_status_success);
+
+    // Device pointer mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve<T>(handle,
+                                                   rocsparse_operation_none,
+                                                   M,
+                                                   nnz,
+                                                   d_alpha,
+                                                   descrL,
+                                                   dcsr_val,
+                                                   dcsr_row_ptr,
+                                                   dcsr_col_ind,
+                                                   info,
+                                                   dx,
+                                                   dz_2,
+                                                   spol,
+                                                   dbuffer));
+
+    // Check for numerical zero pivot using device pointer mode
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descrL, info, d_numeric_pivot_L_2),
+                            (h_numeric_pivot_L_gold[0] != -1) ? rocsparse_status_zero_pivot
+                                                              : rocsparse_status_success);
+
+    // Copy output to CPU
+    CHECK_HIP_ERROR(hipMemcpy(
+        h_numeric_pivot_L_2, d_numeric_pivot_L_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(hz_1, dz_1, sizeof(T) * M, hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(hz_2, dz_2, sizeof(T) * M, hipMemcpyDeviceToHost));
+
+    // Check pivot results
+    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_L_gold, h_numeric_pivot_L_1);
+    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_L_gold, h_numeric_pivot_L_2);
+
+    // If numerical pivot has been found, we are done
+    if(h_numeric_pivot_L_gold[0] != -1)
     {
-        verify_rocsparse_status_zero_pivot(pivot_status_2, "expected rocsparse_status_zero_pivot");
-        return rocsparse_status_success;
+        return;
     }
-
-    // Copy output from device to CPU
-    std::vector<T> hz_1(m);
-    std::vector<T> hz_2(m);
-
-    CHECK_HIP_ERROR(hipMemcpy(hz_1.data(), dz_1, sizeof(T) * m, hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(hz_2.data(), dz_2, sizeof(T) * m, hipMemcpyDeviceToHost));
 
     // Check z
-    unit_check_general(1, m, 1, hz_gold.data(), hz_1.data());
-    unit_check_general(1, m, 1, hz_gold.data(), hz_2.data());
+    near_check_general<T>(1, M, 1, hz_gold, hz_1);
+    near_check_general<T>(1, M, 1, hz_gold, hz_2);
 
     // Solve Uy = z
 
-    // host pointer mode
+    // Host pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve(handle,
-                                                rocsparse_operation_none,
-                                                m,
-                                                nnz,
-                                                &h_alpha,
-                                                descr_U,
-                                                dval,
-                                                dptr,
-                                                dcol,
-                                                info,
-                                                dz_1,
-                                                dy_1,
-                                                rocsparse_solve_policy_auto,
-                                                dbuffer));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve<T>(handle,
+                                                   rocsparse_operation_none,
+                                                   M,
+                                                   nnz,
+                                                   &h_alpha,
+                                                   descrU,
+                                                   dcsr_val,
+                                                   dcsr_row_ptr,
+                                                   dcsr_col_ind,
+                                                   info,
+                                                   dz_1,
+                                                   dy_1,
+                                                   spol,
+                                                   dbuffer));
 
-    // Check for zero pivot
-    pivot_status_1 = rocsparse_csrsv_zero_pivot(handle, descr_U, info, &hposition_1);
+    // Check for numerical zero pivot using host pointer mode
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descrU, info, h_numeric_pivot_U_1),
+                            (h_numeric_pivot_U_gold[0] != -1) ? rocsparse_status_zero_pivot
+                                                              : rocsparse_status_success);
 
-    // device pointer mode
+    // Device pointer mode
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve(handle,
-                                                rocsparse_operation_none,
-                                                m,
-                                                nnz,
-                                                d_alpha,
-                                                descr_U,
-                                                dval,
-                                                dptr,
-                                                dcol,
-                                                info,
-                                                dz_2,
-                                                dy_2,
-                                                rocsparse_solve_policy_auto,
-                                                dbuffer));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve<T>(handle,
+                                                   rocsparse_operation_none,
+                                                   M,
+                                                   nnz,
+                                                   d_alpha,
+                                                   descrU,
+                                                   dcsr_val,
+                                                   dcsr_row_ptr,
+                                                   dcsr_col_ind,
+                                                   info,
+                                                   dz_2,
+                                                   dy_2,
+                                                   spol,
+                                                   dbuffer));
 
-    // Check for zero pivot
-    pivot_status_2 = rocsparse_csrsv_zero_pivot(handle, descr_U, info, d_position);
+    // Check for numerical zero pivot using device pointer mode
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descrU, info, d_numeric_pivot_U_2),
+                            (h_numeric_pivot_U_gold[0] != -1) ? rocsparse_status_zero_pivot
+                                                              : rocsparse_status_success);
 
-    // Host csrsv
-    position_gold = usolve(m,
-                           hcsr_row_ptr.data(),
-                           hcsr_col_ind.data(),
-                           hcsr_val.data(),
-                           h_alpha,
-                           hz_gold.data(),
-                           hy_gold.data(),
-                           idx_base,
-                           rocsparse_diag_type_non_unit,
-                           prop.warpSize);
+    // Copy output to CPU
+    CHECK_HIP_ERROR(hipMemcpy(
+        h_numeric_pivot_U_2, d_numeric_pivot_U_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(hy_1, dy_1, sizeof(T) * M, hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
 
-    // Check zero pivot results
-    unit_check_general(1, 1, 1, &position_gold, &hposition_1);
-    unit_check_general(1, 1, 1, &position_gold, &hposition_2);
+    // Check pivot and y
+    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_U_gold, h_numeric_pivot_U_1);
+    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_U_gold, h_numeric_pivot_U_2);
 
-    // If zero pivot was found, do not go further
-    if(hposition_1 != -1)
+    // If numerical pivot has been found, we are done
+    if(h_numeric_pivot_U_gold[0] != -1)
     {
-        verify_rocsparse_status_zero_pivot(pivot_status_1, "expected rocsparse_status_zero_pivot");
-        return rocsparse_status_success;
+        return;
     }
 
-    if(hposition_2 != -1)
-    {
-        verify_rocsparse_status_zero_pivot(pivot_status_2, "expected rocsparse_status_zero_pivot");
-        return rocsparse_status_success;
-    }
+    // Check y
+    near_check_general<T>(1, M, 1, hy_gold, hy_1);
+    near_check_general<T>(1, M, 1, hy_gold, hy_2);
 
-    // Copy output from device to CPU
-    std::vector<T> hy_1(m);
-    std::vector<T> hy_2(m);
+    // Clear csrsv meta data
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_clear(handle, descrL, info));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_clear(handle, descrU, info));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_clear(handle, info));
 
-    CHECK_HIP_ERROR(hipMemcpy(hy_1.data(), dy_1, sizeof(T) * m, hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(hy_2.data(), dy_2, sizeof(T) * m, hipMemcpyDeviceToHost));
-
-    // Check z
-    unit_check_near(1, m, 1, hy_gold.data(), hy_1.data());
-    unit_check_near(1, m, 1, hy_gold.data(), hy_2.data());
-
-    return rocsparse_status_success;
+    // Free buffer
+    CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
-#endif // TESTING_CSRILUSOLVE_HPP
+#endif // TESTING_CSRILUSV_HPP

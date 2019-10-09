@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018 Advanced Micro Devices, Inc.
+# Copyright (c) 2019 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -55,8 +55,20 @@ endif()
 list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
 find_package(HIP REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH})
 
+# Determine if CXX Compiler is hcc or hip-clang
+execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--version" OUTPUT_VARIABLE CXX_OUTPUT
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_STRIP_TRAILING_WHITESPACE)
+string(REGEX MATCH "[A-Za-z]* ?clang version" TMP_CXX_VERSION ${CXX_OUTPUT})
+string(REGEX MATCH "[A-Za-z]+" CXX_VERSION_STRING ${TMP_CXX_VERSION})
+
+# Print compiler information
+if(NOT CXX_VERSION_STRING MATCHES "clang" AND NOT CXX_VERSION_STRING MATCHES "HCC")
+  message(FATAL_ERROR "'hcc' or 'hipcc' compiler required to compile for ROCm platform.")
+endif()
+
 # Build flags
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -75,6 +87,26 @@ if(BUILD_CLIENTS_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif()
+
+set(ROCSPARSE_COMMON "${PROJECT_BINARY_DIR}/staging/rocsparse_common.yaml")
+add_custom_command(OUTPUT "${ROCSPARSE_COMMON}"
+                   COMMAND ${CMAKE_COMMAND} -E copy include/rocsparse_common.yaml "${ROCSPARSE_COMMON}"
+                   DEPENDS include/rocsparse_common.yaml
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
+set(ROCSPARSE_TEMPLATE "${PROJECT_BINARY_DIR}/staging/rocsparse_template.yaml")
+add_custom_command(OUTPUT "${ROCSPARSE_TEMPLATE}"
+                   COMMAND ${CMAKE_COMMAND} -E copy include/rocsparse_template.yaml "${ROCSPARSE_TEMPLATE}"
+                   DEPENDS include/rocsparse_template.yaml
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
+set(ROCSPARSE_GENTEST "${PROJECT_BINARY_DIR}/staging/rocsparse_gentest.py")
+add_custom_command(OUTPUT "${ROCSPARSE_GENTEST}"
+                   COMMAND ${CMAKE_COMMAND} -E copy common/rocsparse_gentest.py "${ROCSPARSE_GENTEST}"
+                   DEPENDS common/rocsparse_gentest.py
+                   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+
+add_custom_target(rocsparse-common DEPENDS "${ROCSPARSE_COMMON}" "${ROCSPARSE_TEMPLATE}" "${ROCSPARSE_GENTEST}")
 
 # Client packaging
 include(../cmake/Packaging.cmake)

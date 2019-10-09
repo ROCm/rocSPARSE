@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,538 +25,349 @@
 #ifndef TESTING_COOSORT_HPP
 #define TESTING_COOSORT_HPP
 
-#include "rocsparse.hpp"
-#include "rocsparse_test_unique_ptr.hpp"
-#include "unit.hpp"
+#include <rocsparse.hpp>
+
+#include "gbyte.hpp"
+#include "rocsparse_check.hpp"
+#include "rocsparse_host.hpp"
+#include "rocsparse_init.hpp"
+#include "rocsparse_math.hpp"
+#include "rocsparse_random.hpp"
+#include "rocsparse_test.hpp"
+#include "rocsparse_vector.hpp"
 #include "utility.hpp"
 
-#include <algorithm>
-#include <iomanip>
-#include <iostream>
-#include <rocsparse.h>
-#include <string>
-
-using namespace rocsparse;
-using namespace rocsparse_test;
-
-void testing_coosort_bad_arg(void)
+template <typename T>
+void testing_coosort_bad_arg(const Arguments& arg)
 {
-    rocsparse_int    m         = 100;
-    rocsparse_int    n         = 100;
-    rocsparse_int    nnz       = 100;
-    rocsparse_int    safe_size = 100;
-    rocsparse_status status;
+    static const size_t safe_size = 100;
 
-    std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle               handle = unique_ptr_handle->handle;
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
-    size_t buffer_size = 0;
+    // Allocate memory on device
+    device_vector<rocsparse_int> dcoo_row_ind(safe_size);
+    device_vector<rocsparse_int> dcoo_col_ind(safe_size);
+    device_vector<rocsparse_int> dbuffer(safe_size);
 
-    auto coo_row_ind_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto coo_col_ind_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto perm_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto buffer_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
-
-    rocsparse_int* coo_row_ind = (rocsparse_int*)coo_row_ind_managed.get();
-    rocsparse_int* coo_col_ind = (rocsparse_int*)coo_col_ind_managed.get();
-    rocsparse_int* perm        = (rocsparse_int*)perm_managed.get();
-    void*          buffer      = (void*)buffer_managed.get();
-
-    if(!coo_row_ind || !coo_col_ind || !perm || !buffer)
+    if(!dcoo_row_ind || !dcoo_col_ind || !dbuffer)
     {
-        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
-    // Testing coosort_buffer_size for bad args
+    // Test rocsparse_coosort_buffer_size()
+    size_t buffer_size;
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_buffer_size(
+            nullptr, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, &buffer_size),
+        rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_buffer_size(
+            handle, safe_size, safe_size, safe_size, nullptr, dcoo_col_ind, &buffer_size),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_buffer_size(
+            handle, safe_size, safe_size, safe_size, dcoo_row_ind, nullptr, &buffer_size),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_buffer_size(
+            handle, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, nullptr),
+        rocsparse_status_invalid_pointer);
 
-    // Testing for (coo_row_ind == nullptr)
-    {
-        rocsparse_int* coo_row_ind_null = nullptr;
+    // Test rocsparse_coosort_by_row()
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_by_row(
+            nullptr, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, nullptr, dbuffer),
+        rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_by_row(
+            handle, safe_size, safe_size, safe_size, nullptr, dcoo_col_ind, nullptr, dbuffer),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_by_row(
+            handle, safe_size, safe_size, safe_size, dcoo_row_ind, nullptr, nullptr, dbuffer),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_by_row(
+            handle, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, nullptr, nullptr),
+        rocsparse_status_invalid_pointer);
 
-        status = rocsparse_coosort_buffer_size(
-            handle, m, n, nnz, coo_row_ind_null, coo_col_ind, &buffer_size);
-        verify_rocsparse_status_invalid_pointer(status, "Error: coo_row_ind is nullptr");
-    }
-
-    // Testing for (coo_col_ind == nullptr)
-    {
-        rocsparse_int* coo_col_ind_null = nullptr;
-
-        status = rocsparse_coosort_buffer_size(
-            handle, m, n, nnz, coo_row_ind, coo_col_ind_null, &buffer_size);
-        verify_rocsparse_status_invalid_pointer(status, "Error: coo_col_ind is nullptr");
-    }
-
-    // Testing for (buffer_size == nullptr)
-    {
-        size_t* buffer_size_null = nullptr;
-
-        status = rocsparse_coosort_buffer_size(
-            handle, m, n, nnz, coo_row_ind, coo_col_ind, buffer_size_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: buffer_size is nullptr");
-    }
-
-    // Testing for (handle == nullptr)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_coosort_buffer_size(
-            handle_null, m, n, nnz, coo_row_ind, coo_col_ind, &buffer_size);
-        verify_rocsparse_status_invalid_handle(status);
-    }
-
-    // Testing coosort_by_row for bad args
-
-    // Testing for (coo_row_ind == nullptr)
-    {
-        rocsparse_int* coo_row_ind_null = nullptr;
-
-        status = rocsparse_coosort_by_row(
-            handle, m, n, nnz, coo_row_ind_null, coo_col_ind, perm, buffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: coo_row_ind is nullptr");
-    }
-
-    // Testing for (coo_col_ind == nullptr)
-    {
-        rocsparse_int* coo_col_ind_null = nullptr;
-
-        status = rocsparse_coosort_by_row(
-            handle, m, n, nnz, coo_row_ind, coo_col_ind_null, perm, buffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: coo_col_ind is nullptr");
-    }
-
-    // Testing for (buffer == nullptr)
-    {
-        rocsparse_int* buffer_null = nullptr;
-
-        status = rocsparse_coosort_by_row(
-            handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, buffer_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: buffer is nullptr");
-    }
-
-    // Testing for (handle == nullptr)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_coosort_by_row(
-            handle_null, m, n, nnz, coo_row_ind, coo_col_ind, perm, buffer);
-        verify_rocsparse_status_invalid_handle(status);
-    }
-
-    // Testing coosort_by_column for bad args
-
-    // Testing for (coo_row_ind == nullptr)
-    {
-        rocsparse_int* coo_row_ind_null = nullptr;
-
-        status = rocsparse_coosort_by_column(
-            handle, m, n, nnz, coo_row_ind_null, coo_col_ind, perm, buffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: coo_row_ind is nullptr");
-    }
-
-    // Testing for (coo_col_ind == nullptr)
-    {
-        rocsparse_int* coo_col_ind_null = nullptr;
-
-        status = rocsparse_coosort_by_column(
-            handle, m, n, nnz, coo_row_ind, coo_col_ind_null, perm, buffer);
-        verify_rocsparse_status_invalid_pointer(status, "Error: coo_col_ind is nullptr");
-    }
-
-    // Testing for (buffer == nullptr)
-    {
-        rocsparse_int* buffer_null = nullptr;
-
-        status = rocsparse_coosort_by_column(
-            handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, buffer_null);
-        verify_rocsparse_status_invalid_pointer(status, "Error: buffer is nullptr");
-    }
-
-    // Testing for (handle == nullptr)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_coosort_by_column(
-            handle_null, m, n, nnz, coo_row_ind, coo_col_ind, perm, buffer);
-        verify_rocsparse_status_invalid_handle(status);
-    }
+    // Test rocsparse_coosort_by_column()
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_by_column(
+            nullptr, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, nullptr, dbuffer),
+        rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_by_column(
+            handle, safe_size, safe_size, safe_size, nullptr, dcoo_col_ind, nullptr, dbuffer),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_by_column(
+            handle, safe_size, safe_size, safe_size, dcoo_row_ind, nullptr, nullptr, dbuffer),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_coosort_by_column(
+            handle, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, nullptr, nullptr),
+        rocsparse_status_invalid_pointer);
 }
 
-rocsparse_status testing_coosort(Arguments argus)
+template <typename T>
+void testing_coosort(const Arguments& arg)
 {
-    rocsparse_int        m         = argus.M;
-    rocsparse_int        n         = argus.N;
-    rocsparse_int        safe_size = 100;
-    rocsparse_int        by_row    = argus.transA == rocsparse_operation_none;
-    rocsparse_int        permute   = argus.temp;
-    rocsparse_index_base idx_base  = argus.idx_base;
-    std::string          binfile   = "";
-    std::string          filename  = "";
-    rocsparse_status     status;
+    rocsparse_int         M         = arg.M;
+    rocsparse_int         N         = arg.N;
+    rocsparse_int         K         = arg.K;
+    rocsparse_int         dim_x     = arg.dimx;
+    rocsparse_int         dim_y     = arg.dimy;
+    rocsparse_int         dim_z     = arg.dimz;
+    bool                  permute   = arg.algo;
+    bool                  by_row    = arg.transA == rocsparse_operation_none;
+    rocsparse_matrix_init mat       = arg.matrix;
+    bool                  full_rank = false;
+    std::string           filename
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
-    // When in testing mode, M == N == -99 indicates that we are testing with a real
-    // matrix from cise.ufl.edu
-    if(m == -99 && n == -99 && argus.timing == 0)
-    {
-        binfile = argus.filename;
-        m = n = safe_size;
-    }
-
-    if(argus.timing == 1)
-    {
-        filename = argus.filename;
-    }
-
-    size_t buffer_size = 0;
-
-    double scale = 0.02;
-    if(m > 1000 || n > 1000)
-    {
-        scale = 2.0 / std::max(m, n);
-    }
-    rocsparse_int nnz = m * scale * n;
-
-    std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle               handle = unique_ptr_handle->handle;
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
     // Argument sanity check before allocating invalid memory
-    if(m <= 0 || n <= 0 || nnz <= 0)
+    if(M <= 0 || N <= 0)
     {
-        auto coo_row_ind_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto coo_col_ind_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto perm_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto buffer_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(char) * safe_size), device_free};
+        static const size_t safe_size = 100;
 
-        rocsparse_int* coo_row_ind = (rocsparse_int*)coo_row_ind_managed.get();
-        rocsparse_int* coo_col_ind = (rocsparse_int*)coo_col_ind_managed.get();
-        rocsparse_int* perm        = (rocsparse_int*)perm_managed.get();
-        void*          buffer      = (void*)buffer_managed.get();
+        // Allocate memory on device
+        device_vector<rocsparse_int> dcoo_row_ind(safe_size);
+        device_vector<rocsparse_int> dcoo_col_ind(safe_size);
+        device_vector<rocsparse_int> dbuffer(safe_size);
 
-        if(!coo_row_ind || !coo_col_ind || !perm || !buffer)
+        if(!dcoo_row_ind || !dcoo_col_ind || !dbuffer)
         {
-            verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                            "!coo_row_ind || !coo_col_ind || !perm || !buffer");
-            return rocsparse_status_memory_error;
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
         }
 
-        status = rocsparse_coosort_buffer_size(
-            handle, m, n, nnz, coo_row_ind, coo_col_ind, &buffer_size);
-
-        if(m < 0 || n < 0 || nnz < 0)
-        {
-            verify_rocsparse_status_invalid_size(status, "Error: m < 0 || n < 0 || nnz < 0");
-        }
-        else
-        {
-            verify_rocsparse_status_success(status, "m >= 0 && n >= 0 && nnz >= 0");
-
-            // Buffer size should be 4
-            size_t four = 4;
-            unit_check_general(1, 1, 1, &four, &buffer_size);
-        }
+        size_t buffer_size;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_coosort_buffer_size(
+                                    handle, M, N, 0, dcoo_row_ind, dcoo_col_ind, &buffer_size),
+                                (M < 0 || N < 0) ? rocsparse_status_invalid_size
+                                                 : rocsparse_status_success);
 
         if(by_row)
         {
-            status = rocsparse_coosort_by_row(
-                handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, buffer);
+            EXPECT_ROCSPARSE_STATUS(
+                rocsparse_coosort_by_row(
+                    handle, M, N, 0, dcoo_row_ind, dcoo_col_ind, nullptr, dbuffer),
+                (M < 0 || N < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
         }
         else
         {
-            status = rocsparse_coosort_by_column(
-                handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, buffer);
+            EXPECT_ROCSPARSE_STATUS(
+                rocsparse_coosort_by_column(
+                    handle, M, N, 0, dcoo_row_ind, dcoo_col_ind, nullptr, dbuffer),
+                (M < 0 || N < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
         }
 
-        if(m < 0 || n < 0 || nnz < 0)
-        {
-            verify_rocsparse_status_invalid_size(status, "Error: m < 0 || n < 0 || nnz < 0");
-        }
-        else
-        {
-            verify_rocsparse_status_success(status, "m >= 0 && n >= 0 && nnz >= 0");
-        }
-
-        return rocsparse_status_success;
+        return;
     }
 
-    // For testing, assemble a COO matrix and convert it to CSR first (on host)
+    // Allocate host memory for COO matrix
+    host_vector<rocsparse_int> hcoo_row_ind;
+    host_vector<rocsparse_int> hcoo_col_ind;
+    host_vector<T>             hcoo_val;
+    host_vector<rocsparse_int> hcoo_row_ind_gold;
+    host_vector<rocsparse_int> hcoo_col_ind_gold;
+    host_vector<T>             hcoo_val_gold;
 
-    // Host structures
-    std::vector<rocsparse_int> hcoo_row_ind;
-    std::vector<rocsparse_int> hcoo_col_ind;
-    std::vector<float>         hcoo_val;
+    rocsparse_seedrand();
 
-    // Sample initial COO matrix on CPU
-    srand(12345ULL);
-    if(binfile != "")
-    {
-        std::vector<rocsparse_int> hcsr_row_ptr;
-        if(read_bin_matrix(
-               binfile.c_str(), m, n, nnz, hcsr_row_ptr, hcoo_col_ind, hcoo_val, idx_base)
-           != 0)
-        {
-            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
-            return rocsparse_status_internal_error;
-        }
+    // Sample matrix
+    rocsparse_int nnz;
+    rocsparse_init_coo_matrix(hcoo_row_ind,
+                              hcoo_col_ind,
+                              hcoo_val,
+                              M,
+                              N,
+                              K,
+                              dim_x,
+                              dim_y,
+                              dim_z,
+                              nnz,
+                              rocsparse_index_base_zero,
+                              mat,
+                              filename.c_str(),
+                              false,
+                              full_rank);
 
-        // Convert CSR to COO
-        hcoo_row_ind.resize(nnz);
-        for(rocsparse_int i = 0; i < m; ++i)
-        {
-            for(rocsparse_int j = hcsr_row_ptr[i]; j < hcsr_row_ptr[i + 1]; ++j)
-            {
-                hcoo_row_ind[j - idx_base] = i + idx_base;
-            }
-        }
-    }
-    else if(argus.laplacian)
-    {
-        std::vector<rocsparse_int> hcsr_row_ptr;
-        m = n = gen_2d_laplacian(argus.laplacian, hcsr_row_ptr, hcoo_col_ind, hcoo_val, idx_base);
-        nnz   = hcsr_row_ptr[m];
-
-        // Convert CSR to COO
-        hcoo_row_ind.resize(nnz);
-        for(rocsparse_int i = 0; i < m; ++i)
-        {
-            for(rocsparse_int j = hcsr_row_ptr[i]; j < hcsr_row_ptr[i + 1]; ++j)
-            {
-                hcoo_row_ind[j - idx_base] = i + idx_base;
-            }
-        }
-    }
-    else
-    {
-        if(filename != "")
-        {
-            if(read_mtx_matrix(
-                   filename.c_str(), m, n, nnz, hcoo_row_ind, hcoo_col_ind, hcoo_val, idx_base)
-               != 0)
-            {
-                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
-                return rocsparse_status_internal_error;
-            }
-        }
-        else
-        {
-            gen_matrix_coo(m, n, nnz, hcoo_row_ind, hcoo_col_ind, hcoo_val, idx_base);
-        }
-    }
-
-    // Unsort COO columns
-    std::vector<rocsparse_int> hcoo_row_ind_unsorted(nnz);
-    std::vector<rocsparse_int> hcoo_col_ind_unsorted(nnz);
-    std::vector<float>         hcoo_val_unsorted(nnz);
-
-    hcoo_row_ind_unsorted = hcoo_row_ind;
-    hcoo_col_ind_unsorted = hcoo_col_ind;
-    hcoo_val_unsorted     = hcoo_val;
+    // Unsort COO matrix
+    host_vector<rocsparse_int> hperm(nnz);
+    hcoo_row_ind_gold = hcoo_row_ind;
+    hcoo_col_ind_gold = hcoo_col_ind;
+    hcoo_val_gold     = hcoo_val;
 
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
         rocsparse_int rng = rand() % nnz;
 
-        rocsparse_int temp_row = hcoo_row_ind_unsorted[i];
-        rocsparse_int temp_col = hcoo_col_ind_unsorted[i];
-        float         temp_val = hcoo_val_unsorted[i];
-
-        hcoo_row_ind_unsorted[i] = hcoo_row_ind_unsorted[rng];
-        hcoo_col_ind_unsorted[i] = hcoo_col_ind_unsorted[rng];
-        hcoo_val_unsorted[i]     = hcoo_val_unsorted[rng];
-
-        hcoo_row_ind_unsorted[rng] = temp_row;
-        hcoo_col_ind_unsorted[rng] = temp_col;
-        hcoo_val_unsorted[rng]     = temp_val;
+        std::swap(hcoo_row_ind[i], hcoo_row_ind[rng]);
+        std::swap(hcoo_col_ind[i], hcoo_col_ind[rng]);
+        std::swap(hcoo_val[i], hcoo_val[rng]);
     }
 
-    // If coosort by column, sort host arrays by column
-    if(!by_row)
+    // Allocate device memory
+    device_vector<rocsparse_int> dcoo_row_ind(nnz);
+    device_vector<rocsparse_int> dcoo_col_ind(nnz);
+    device_vector<T>             dcoo_val(nnz);
+    device_vector<rocsparse_int> dperm(nnz);
+
+    if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dperm)
     {
-        std::vector<rocsparse_int> hperm(nnz);
-        for(rocsparse_int i = 0; i < nnz; ++i)
-        {
-            hperm[i] = i;
-        }
-
-        std::sort(hperm.begin(), hperm.end(), [&](const rocsparse_int& a, const rocsparse_int& b) {
-            if(hcoo_col_ind_unsorted[a] < hcoo_col_ind_unsorted[b])
-            {
-                return true;
-            }
-            else if(hcoo_col_ind_unsorted[a] == hcoo_col_ind_unsorted[b])
-            {
-                return (hcoo_row_ind_unsorted[a] < hcoo_row_ind_unsorted[b]);
-            }
-            else
-            {
-                return false;
-            }
-        });
-
-        for(rocsparse_int i = 0; i < nnz; ++i)
-        {
-            hcoo_row_ind[i] = hcoo_row_ind_unsorted[hperm[i]];
-            hcoo_col_ind[i] = hcoo_col_ind_unsorted[hperm[i]];
-            hcoo_val[i]     = hcoo_val_unsorted[hperm[i]];
-        }
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
     }
 
-    // Allocate memory on the device
-    auto dcoo_row_ind_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dcoo_col_ind_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dcoo_val_managed = rocsparse_unique_ptr{device_malloc(sizeof(float) * nnz), device_free};
-    auto dcoo_val_sorted_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(float) * nnz), device_free};
-    auto dperm_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-
-    rocsparse_int* dcoo_row_ind    = (rocsparse_int*)dcoo_row_ind_managed.get();
-    rocsparse_int* dcoo_col_ind    = (rocsparse_int*)dcoo_col_ind_managed.get();
-    float*         dcoo_val        = (float*)dcoo_val_managed.get();
-    float*         dcoo_val_sorted = (float*)dcoo_val_sorted_managed.get();
-
-    // Set permutation vector, if asked for
-    rocsparse_int* dperm = permute ? (rocsparse_int*)dperm_managed.get() : nullptr;
-
-    if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dcoo_val_sorted || (permute && !dperm))
-    {
-        verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                        "!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || "
-                                        "!dcoo_val_sorted || (permute && !dperm)");
-        return rocsparse_status_memory_error;
-    }
-
-    // Copy data from host to device
-    CHECK_HIP_ERROR(hipMemcpy(dcoo_row_ind,
-                              hcoo_row_ind_unsorted.data(),
-                              sizeof(rocsparse_int) * nnz,
-                              hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcoo_col_ind,
-                              hcoo_col_ind_unsorted.data(),
-                              sizeof(rocsparse_int) * nnz,
-                              hipMemcpyHostToDevice));
+    // Copy data from CPU to device
     CHECK_HIP_ERROR(
-        hipMemcpy(dcoo_val, hcoo_val_unsorted.data(), sizeof(float) * nnz, hipMemcpyHostToDevice));
+        hipMemcpy(dcoo_row_ind, hcoo_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(
+        hipMemcpy(dcoo_col_ind, hcoo_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcoo_val, hcoo_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
 
-    if(argus.unit_check)
+    // Obtain buffer size
+    size_t buffer_size;
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_coosort_buffer_size(handle, M, N, nnz, dcoo_row_ind, dcoo_col_ind, &buffer_size));
+
+    // Allocate buffer
+    void* dbuffer;
+    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+
+    if(arg.unit_check)
     {
-        // Obtain buffer size
-        CHECK_ROCSPARSE_ERROR(rocsparse_coosort_buffer_size(
-            handle, m, n, nnz, dcoo_row_ind, dcoo_col_ind, &buffer_size));
+        // Create permutation vector
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, nnz, dperm));
 
-        // Allocate buffer on the device
-        auto dbuffer_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(char) * buffer_size), device_free};
-
-        void* dbuffer = (void*)dbuffer_managed.get();
-
-        if(!dbuffer)
-        {
-            verify_rocsparse_status_success(rocsparse_status_memory_error, "!dbuffer");
-            return rocsparse_status_memory_error;
-        }
-
-        if(permute)
-        {
-            // Initialize perm with identity permutation
-            CHECK_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, nnz, dperm));
-        }
-
-        // Sort CSR columns
+        // Sort COO matrix
         if(by_row)
         {
             CHECK_ROCSPARSE_ERROR(rocsparse_coosort_by_row(
-                handle, m, n, nnz, dcoo_row_ind, dcoo_col_ind, dperm, dbuffer));
+                handle, M, N, nnz, dcoo_row_ind, dcoo_col_ind, permute ? dperm : nullptr, dbuffer));
         }
         else
         {
             CHECK_ROCSPARSE_ERROR(rocsparse_coosort_by_column(
-                handle, m, n, nnz, dcoo_row_ind, dcoo_col_ind, dperm, dbuffer));
+                handle, M, N, nnz, dcoo_row_ind, dcoo_col_ind, permute ? dperm : nullptr, dbuffer));
+
+            // Sort host COO structure by column
+            host_coosort_by_column<T>(M, nnz, hcoo_row_ind_gold, hcoo_col_ind_gold, hcoo_val_gold);
         }
 
+        // Copy output to host
+        CHECK_HIP_ERROR(hipMemcpy(
+            hcoo_row_ind, dcoo_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(
+            hcoo_col_ind, dcoo_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
+
+        unit_check_general<rocsparse_int>(1, nnz, 1, hcoo_row_ind_gold, hcoo_row_ind);
+        unit_check_general<rocsparse_int>(1, nnz, 1, hcoo_col_ind_gold, hcoo_col_ind);
+
+        // Permute, copy and check values, if requested
         if(permute)
         {
-            // Sort CSR values
-            CHECK_ROCSPARSE_ERROR(rocsparse_sgthr(
+            device_vector<T> dcoo_val_sorted(nnz);
+
+            CHECK_ROCSPARSE_ERROR(rocsparse_gthr<T>(
                 handle, nnz, dcoo_val, dcoo_val_sorted, dperm, rocsparse_index_base_zero));
-        }
+            CHECK_HIP_ERROR(
+                hipMemcpy(hcoo_val, dcoo_val_sorted, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
-        // Copy output from device to host
-        CHECK_HIP_ERROR(hipMemcpy(hcoo_row_ind_unsorted.data(),
-                                  dcoo_row_ind,
-                                  sizeof(rocsparse_int) * nnz,
-                                  hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hcoo_col_ind_unsorted.data(),
-                                  dcoo_col_ind,
-                                  sizeof(rocsparse_int) * nnz,
-                                  hipMemcpyDeviceToHost));
-
-        if(permute)
-        {
-            CHECK_HIP_ERROR(hipMemcpy(hcoo_val_unsorted.data(),
-                                      dcoo_val_sorted,
-                                      sizeof(float) * nnz,
-                                      hipMemcpyDeviceToHost));
-        }
-
-        // Unit check
-        unit_check_general(1, nnz, 1, hcoo_row_ind.data(), hcoo_row_ind_unsorted.data());
-        unit_check_general(1, nnz, 1, hcoo_col_ind.data(), hcoo_col_ind_unsorted.data());
-
-        if(permute)
-        {
-            unit_check_general(1, nnz, 1, hcoo_val.data(), hcoo_val_unsorted.data());
+            unit_check_general<T>(1, nnz, 1, hcoo_val_gold, hcoo_val);
         }
     }
 
-    if(argus.timing)
+    if(arg.timing)
     {
         int number_cold_calls = 2;
-        int number_hot_calls  = argus.iters;
+        int number_hot_calls  = arg.iters;
 
-        // Allocate buffer for coosort
-        rocsparse_coosort_buffer_size(handle, m, n, nnz, dcoo_row_ind, dcoo_col_ind, &buffer_size);
-
-        auto dbuffer_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(char) * buffer_size), device_free};
-        void* dbuffer = (void*)dbuffer_managed.get();
-
+        // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_coosort_by_row(
-                handle, m, n, nnz, dcoo_row_ind, dcoo_col_ind, nullptr, dbuffer);
+            if(by_row)
+            {
+                rocsparse_coosort_by_row(handle,
+                                         M,
+                                         N,
+                                         nnz,
+                                         dcoo_row_ind,
+                                         dcoo_col_ind,
+                                         permute ? dperm : nullptr,
+                                         dbuffer);
+            }
+            else
+            {
+                rocsparse_coosort_by_column(handle,
+                                            M,
+                                            N,
+                                            nnz,
+                                            dcoo_row_ind,
+                                            dcoo_col_ind,
+                                            permute ? dperm : nullptr,
+                                            dbuffer);
+            }
         }
 
         double gpu_time_used = get_time_us();
 
+        // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_coosort_by_row(
-                handle, m, n, nnz, dcoo_row_ind, dcoo_col_ind, nullptr, dbuffer);
+            if(by_row)
+            {
+                CHECK_ROCSPARSE_ERROR(rocsparse_coosort_by_row(handle,
+                                                               M,
+                                                               N,
+                                                               nnz,
+                                                               dcoo_row_ind,
+                                                               dcoo_col_ind,
+                                                               permute ? dperm : nullptr,
+                                                               dbuffer));
+            }
+            else
+            {
+                CHECK_ROCSPARSE_ERROR(rocsparse_coosort_by_column(handle,
+                                                                  M,
+                                                                  N,
+                                                                  nnz,
+                                                                  dcoo_row_ind,
+                                                                  dcoo_col_ind,
+                                                                  permute ? dperm : nullptr,
+                                                                  dbuffer));
+            }
         }
 
-        gpu_time_used = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
+        gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
+
+        double gpu_gbyte = coosort_gbyte_count<T>(nnz, permute) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
-        std::cout << std::setw(12) << "m" << std::setw(12) << "n" << std::setw(12) << "nnz"
-                  << std::setw(12) << "msec" << std::endl;
-        std::cout << std::setw(12) << m << std::setw(12) << n << std::setw(12) << nnz
-                  << std::setw(12) << gpu_time_used << std::endl;
+
+        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "nnz"
+                  << std::setw(12) << "permute" << std::setw(12) << "dir" << std::setw(12) << "GB/s"
+                  << std::setw(12) << "msec" << std::setw(12) << "iter" << std::setw(12)
+                  << "verified" << std::endl;
+
+        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << nnz
+                  << std::setw(12) << (permute ? "yes" : "no") << std::setw(12)
+                  << (by_row ? "row" : "column") << std::setw(12) << gpu_gbyte << std::setw(12)
+                  << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls << std::setw(12)
+                  << (arg.unit_check ? "yes" : "no") << std::endl;
     }
 
-    return rocsparse_status_success;
+    // Clear buffer
+    CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
 #endif // TESTING_COOSORT_HPP

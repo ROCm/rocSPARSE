@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,661 +25,502 @@
 #ifndef TESTING_CSRMM_HPP
 #define TESTING_CSRMM_HPP
 
-#include "rocsparse.hpp"
-#include "rocsparse_test_unique_ptr.hpp"
-#include "unit.hpp"
+#include <rocsparse.hpp>
+
+#include "flops.hpp"
+#include "gbyte.hpp"
+#include "rocsparse_check.hpp"
+#include "rocsparse_host.hpp"
+#include "rocsparse_init.hpp"
+#include "rocsparse_math.hpp"
+#include "rocsparse_random.hpp"
+#include "rocsparse_test.hpp"
+#include "rocsparse_vector.hpp"
 #include "utility.hpp"
 
-#include <iomanip>
-#include <iostream>
-#include <rocsparse.h>
-#include <string>
-
-using namespace rocsparse;
-using namespace rocsparse_test;
-
 template <typename T>
-void testing_csrmm_bad_arg(void)
+void testing_csrmm_bad_arg(const Arguments& arg)
 {
+    static const size_t safe_size = 100;
 
-    rocsparse_int       N         = 100;
-    rocsparse_int       M         = 100;
-    rocsparse_int       K         = 100;
-    rocsparse_int       ldb       = 100;
-    rocsparse_int       ldc       = 100;
-    rocsparse_int       nnz       = 100;
-    rocsparse_int       safe_size = 100;
-    T                   alpha     = 0.6;
-    T                   beta      = 0.2;
-    rocsparse_operation transA    = rocsparse_operation_none;
-    rocsparse_operation transB    = rocsparse_operation_none;
-    rocsparse_status    status;
+    T h_alpha = 0.6;
+    T h_beta  = 0.1;
 
-    std::unique_ptr<handle_struct> unique_ptr_handle(new handle_struct);
-    rocsparse_handle               handle = unique_ptr_handle->handle;
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
-    std::unique_ptr<descr_struct> unique_ptr_descr(new descr_struct);
-    rocsparse_mat_descr           descr = unique_ptr_descr->descr;
+    // Create matrix descriptor
+    rocsparse_local_mat_descr descr;
 
-    auto dptr_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dcol_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-    auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dB_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-    auto dC_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+    // Allocate memory on device
+    device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
+    device_vector<rocsparse_int> dcsr_col_ind(safe_size);
+    device_vector<T>             dcsr_val(safe_size);
+    device_vector<T>             dB(safe_size);
+    device_vector<T>             dC(safe_size);
 
-    rocsparse_int* dptr = (rocsparse_int*)dptr_managed.get();
-    rocsparse_int* dcol = (rocsparse_int*)dcol_managed.get();
-    T*             dval = (T*)dval_managed.get();
-    T*             dB   = (T*)dB_managed.get();
-    T*             dC   = (T*)dC_managed.get();
-
-    if(!dval || !dptr || !dcol || !dB || !dC)
+    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC)
     {
-        PRINT_IF_HIP_ERROR(hipErrorOutOfMemory);
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
-    // testing for(nullptr == dptr)
-    {
-        rocsparse_int* dptr_null = nullptr;
-
-        status = rocsparse_csrmm(handle,
-                                 transA,
-                                 transB,
-                                 M,
-                                 N,
-                                 K,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr_null,
-                                 dcol,
-                                 dB,
-                                 ldb,
-                                 &beta,
-                                 dC,
-                                 ldc);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dptr is nullptr");
-    }
-    // testing for(nullptr == dcol)
-    {
-        rocsparse_int* dcol_null = nullptr;
-
-        status = rocsparse_csrmm(handle,
-                                 transA,
-                                 transB,
-                                 M,
-                                 N,
-                                 K,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol_null,
-                                 dB,
-                                 ldb,
-                                 &beta,
-                                 dC,
-                                 ldc);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dcol is nullptr");
-    }
-    // testing for(nullptr == dval)
-    {
-        T* dval_null = nullptr;
-
-        status = rocsparse_csrmm(handle,
-                                 transA,
-                                 transB,
-                                 M,
-                                 N,
-                                 K,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval_null,
-                                 dptr,
-                                 dcol,
-                                 dB,
-                                 ldb,
-                                 &beta,
-                                 dC,
-                                 ldc);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dval is nullptr");
-    }
-    // testing for(nullptr == dB)
-    {
-        T* dB_null = nullptr;
-
-        status = rocsparse_csrmm(handle,
-                                 transA,
-                                 transB,
-                                 M,
-                                 N,
-                                 K,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 dB_null,
-                                 ldb,
-                                 &beta,
-                                 dC,
-                                 ldc);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dB is nullptr");
-    }
-    // testing for(nullptr == dC)
-    {
-        T* dC_null = nullptr;
-
-        status = rocsparse_csrmm(handle,
-                                 transA,
-                                 transB,
-                                 M,
-                                 N,
-                                 K,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 dB,
-                                 ldb,
-                                 &beta,
-                                 dC_null,
-                                 ldc);
-        verify_rocsparse_status_invalid_pointer(status, "Error: dC is nullptr");
-    }
-    // testing for(nullptr == d_alpha)
-    {
-        T* d_alpha_null = nullptr;
-
-        status = rocsparse_csrmm(handle,
-                                 transA,
-                                 transB,
-                                 M,
-                                 N,
-                                 K,
-                                 nnz,
-                                 d_alpha_null,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 dB,
-                                 ldb,
-                                 &beta,
-                                 dC,
-                                 ldc);
-        verify_rocsparse_status_invalid_pointer(status, "Error: alpha is nullptr");
-    }
-    // testing for(nullptr == d_beta)
-    {
-        T* d_beta_null = nullptr;
-
-        status = rocsparse_csrmm(handle,
-                                 transA,
-                                 transB,
-                                 M,
-                                 N,
-                                 K,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 dB,
-                                 ldb,
-                                 d_beta_null,
-                                 dC,
-                                 ldc);
-        verify_rocsparse_status_invalid_pointer(status, "Error: beta is nullptr");
-    }
-    // testing for(nullptr == descr)
-    {
-        rocsparse_mat_descr descr_null = nullptr;
-
-        status = rocsparse_csrmm(handle,
-                                 transA,
-                                 transB,
-                                 M,
-                                 N,
-                                 K,
-                                 nnz,
-                                 &alpha,
-                                 descr_null,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 dB,
-                                 ldb,
-                                 &beta,
-                                 dC,
-                                 ldc);
-        verify_rocsparse_status_invalid_pointer(status, "Error: descr is nullptr");
-    }
-    // testing for(nullptr == handle)
-    {
-        rocsparse_handle handle_null = nullptr;
-
-        status = rocsparse_csrmm(handle_null,
-                                 transA,
-                                 transB,
-                                 M,
-                                 N,
-                                 K,
-                                 nnz,
-                                 &alpha,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 dB,
-                                 ldb,
-                                 &beta,
-                                 dC,
-                                 ldc);
-        verify_rocsparse_status_invalid_handle(status);
-    }
+    // Test rocsparse_csrmm()
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(nullptr,
+                                               rocsparse_operation_none,
+                                               rocsparse_operation_none,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               &h_alpha,
+                                               descr,
+                                               dcsr_val,
+                                               dcsr_row_ptr,
+                                               dcsr_col_ind,
+                                               dB,
+                                               safe_size,
+                                               &h_beta,
+                                               dC,
+                                               safe_size),
+                            rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(handle,
+                                               rocsparse_operation_none,
+                                               rocsparse_operation_none,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               nullptr,
+                                               descr,
+                                               dcsr_val,
+                                               dcsr_row_ptr,
+                                               dcsr_col_ind,
+                                               dB,
+                                               safe_size,
+                                               &h_beta,
+                                               dC,
+                                               safe_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(handle,
+                                               rocsparse_operation_none,
+                                               rocsparse_operation_none,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               &h_alpha,
+                                               nullptr,
+                                               dcsr_val,
+                                               dcsr_row_ptr,
+                                               dcsr_col_ind,
+                                               dB,
+                                               safe_size,
+                                               &h_beta,
+                                               dC,
+                                               safe_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(handle,
+                                               rocsparse_operation_none,
+                                               rocsparse_operation_none,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               &h_alpha,
+                                               descr,
+                                               nullptr,
+                                               dcsr_row_ptr,
+                                               dcsr_col_ind,
+                                               dB,
+                                               safe_size,
+                                               &h_beta,
+                                               dC,
+                                               safe_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(handle,
+                                               rocsparse_operation_none,
+                                               rocsparse_operation_none,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               &h_alpha,
+                                               descr,
+                                               dcsr_val,
+                                               nullptr,
+                                               dcsr_col_ind,
+                                               dB,
+                                               safe_size,
+                                               &h_beta,
+                                               dC,
+                                               safe_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(handle,
+                                               rocsparse_operation_none,
+                                               rocsparse_operation_none,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               &h_alpha,
+                                               descr,
+                                               dcsr_val,
+                                               dcsr_row_ptr,
+                                               nullptr,
+                                               dB,
+                                               safe_size,
+                                               &h_beta,
+                                               dC,
+                                               safe_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(handle,
+                                               rocsparse_operation_none,
+                                               rocsparse_operation_none,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               &h_alpha,
+                                               descr,
+                                               dcsr_val,
+                                               dcsr_row_ptr,
+                                               dcsr_col_ind,
+                                               nullptr,
+                                               safe_size,
+                                               &h_beta,
+                                               dC,
+                                               safe_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(handle,
+                                               rocsparse_operation_none,
+                                               rocsparse_operation_none,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               &h_alpha,
+                                               descr,
+                                               dcsr_val,
+                                               dcsr_row_ptr,
+                                               dcsr_col_ind,
+                                               dB,
+                                               safe_size,
+                                               nullptr,
+                                               dC,
+                                               safe_size),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(handle,
+                                               rocsparse_operation_none,
+                                               rocsparse_operation_none,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               safe_size,
+                                               &h_alpha,
+                                               descr,
+                                               dcsr_val,
+                                               dcsr_row_ptr,
+                                               dcsr_col_ind,
+                                               dB,
+                                               safe_size,
+                                               &h_beta,
+                                               nullptr,
+                                               safe_size),
+                            rocsparse_status_invalid_pointer);
 }
 
 template <typename T>
-rocsparse_status testing_csrmm(Arguments argus)
+void testing_csrmm(const Arguments& arg)
 {
-    rocsparse_int        safe_size = 100;
-    rocsparse_int        M         = argus.M;
-    rocsparse_int        N         = argus.N;
-    rocsparse_int        K         = argus.K;
-    rocsparse_int        ldb       = argus.ldb;
-    rocsparse_int        ldc       = argus.ldc;
-    T                    h_alpha   = argus.alpha;
-    T                    h_beta    = argus.beta;
-    rocsparse_operation  transA    = argus.transA;
-    rocsparse_operation  transB    = argus.transB;
-    rocsparse_index_base idx_base  = argus.idx_base;
-    std::string          binfile   = "";
-    std::string          filename  = "";
-    rocsparse_status     status;
+    rocsparse_int         M         = arg.M;
+    rocsparse_int         N         = arg.N;
+    rocsparse_int         K         = arg.K;
+    rocsparse_int         dim_x     = arg.dimx;
+    rocsparse_int         dim_y     = arg.dimy;
+    rocsparse_int         dim_z     = arg.dimz;
+    rocsparse_operation   transA    = arg.transA;
+    rocsparse_operation   transB    = arg.transB;
+    rocsparse_index_base  base      = arg.baseA;
+    rocsparse_matrix_init mat       = arg.matrix;
+    bool                  full_rank = false;
+    std::string           filename
+        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
-    // When in testing mode, M == N == -99 indicates that we are testing with a real
-    // matrix from cise.ufl.edu
-    if(M == -99 && K == -99 && argus.timing == 0)
-    {
-        binfile = argus.filename;
-        M = K = safe_size;
-    }
+    T h_alpha = arg.get_alpha<T>();
+    T h_beta  = arg.get_beta<T>();
 
-    if(argus.timing == 1)
-    {
-        filename = argus.filename;
-    }
+    // Create rocsparse handle
+    rocsparse_local_handle handle;
 
-    std::unique_ptr<handle_struct> test_handle(new handle_struct);
-    rocsparse_handle               handle = test_handle->handle;
-
-    std::unique_ptr<descr_struct> test_descr(new descr_struct);
-    rocsparse_mat_descr           descr = test_descr->descr;
+    // Create matrix descriptor
+    rocsparse_local_mat_descr descr;
 
     // Set matrix index base
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, idx_base));
-
-    // Determine number of non-zero elements
-    double scale = 0.02;
-    if(M > 1000 || K > 1000)
-    {
-        scale = 2.0 / std::max(M, K);
-    }
-    rocsparse_int nnz = M * scale * K;
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
     // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || K <= 0 || nnz <= 0)
+    if(M <= 0 || N <= 0 || K <= 0)
     {
-        auto dptr_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dcol_managed
-            = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * safe_size), device_free};
-        auto dval_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto dB_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
-        auto dC_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T) * safe_size), device_free};
+        static const size_t safe_size = 100;
 
-        rocsparse_int* dptr = (rocsparse_int*)dptr_managed.get();
-        rocsparse_int* dcol = (rocsparse_int*)dcol_managed.get();
-        T*             dval = (T*)dval_managed.get();
-        T*             dB   = (T*)dB_managed.get();
-        T*             dC   = (T*)dC_managed.get();
+        // Allocate memory on device
+        device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
+        device_vector<rocsparse_int> dcsr_col_ind(safe_size);
+        device_vector<T>             dcsr_val(safe_size);
+        device_vector<T>             dB(safe_size);
+        device_vector<T>             dC(safe_size);
 
-        if(!dval || !dptr || !dcol || !dB || !dC)
+        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC)
         {
-            verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                            "!dptr || !dcol || !dval || !dB || !dC");
-            return rocsparse_status_memory_error;
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
         }
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        status = rocsparse_csrmm(handle,
-                                 transA,
-                                 transB,
-                                 M,
-                                 N,
-                                 K,
-                                 nnz,
-                                 &h_alpha,
-                                 descr,
-                                 dval,
-                                 dptr,
-                                 dcol,
-                                 dB,
-                                 ldb,
-                                 &h_beta,
-                                 dC,
-                                 ldc);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(handle,
+                                                   transA,
+                                                   transB,
+                                                   M,
+                                                   N,
+                                                   K,
+                                                   safe_size,
+                                                   &h_alpha,
+                                                   descr,
+                                                   dcsr_val,
+                                                   dcsr_row_ptr,
+                                                   dcsr_col_ind,
+                                                   dB,
+                                                   safe_size,
+                                                   &h_beta,
+                                                   dC,
+                                                   safe_size),
+                                (M < 0 || N < 0 || K < 0) ? rocsparse_status_invalid_size
+                                                          : rocsparse_status_success);
 
-        if(M < 0 || N < 0 || K < 0 || nnz < 0)
-        {
-            verify_rocsparse_status_invalid_size(status,
-                                                 "Error: M < 0 || N < 0 || K < 0 || nnz < 0");
-        }
-        else
-        {
-            verify_rocsparse_status_success(status, "M >= 0 && N >= 0 && K >= 0 && nnz >= 0");
-        }
-
-        return rocsparse_status_success;
+        return;
     }
 
-    // Initialize random seed
-    srand(12345ULL);
+    // Allocate host memory for matrix
+    host_vector<rocsparse_int> hcsr_row_ptr;
+    host_vector<rocsparse_int> hcsr_col_ind;
+    host_vector<T>             hcsr_val;
 
-    // Host structures - CSR matrix A
-    std::vector<rocsparse_int> hcsr_row_ptrA;
-    std::vector<rocsparse_int> hcsr_col_indA;
-    std::vector<T>             hcsr_valA;
+    rocsparse_seedrand();
 
-    // Initial Data on CPU
-    if(binfile != "")
-    {
-        if(read_bin_matrix(
-               binfile.c_str(), M, K, nnz, hcsr_row_ptrA, hcsr_col_indA, hcsr_valA, idx_base)
-           != 0)
-        {
-            fprintf(stderr, "Cannot open [read] %s\n", binfile.c_str());
-            return rocsparse_status_internal_error;
-        }
-    }
-    else if(argus.laplacian)
-    {
-        M = K
-            = gen_2d_laplacian(argus.laplacian, hcsr_row_ptrA, hcsr_col_indA, hcsr_valA, idx_base);
-        nnz = hcsr_row_ptrA[M];
-    }
-    else
-    {
-        std::vector<rocsparse_int> hcoo_row_indA;
+    // Sample matrix
+    rocsparse_int nnz_A;
+    rocsparse_init_csr_matrix(hcsr_row_ptr,
+                              hcsr_col_ind,
+                              hcsr_val,
+                              M,
+                              K,
+                              N,
+                              dim_x,
+                              dim_y,
+                              dim_z,
+                              nnz_A,
+                              base,
+                              mat,
+                              filename.c_str(),
+                              false,
+                              full_rank);
 
-        if(filename != "")
-        {
-            if(read_mtx_matrix(
-                   filename.c_str(), M, K, nnz, hcoo_row_indA, hcsr_col_indA, hcsr_valA, idx_base)
-               != 0)
-            {
-                fprintf(stderr, "Cannot open [read] %s\n", filename.c_str());
-                return rocsparse_status_internal_error;
-            }
-        }
-        else
-        {
-            gen_matrix_coo(M, K, nnz, hcoo_row_indA, hcsr_col_indA, hcsr_valA, idx_base);
-        }
+    // Some matrix properties
+    rocsparse_int ldb
+        = (transB == rocsparse_operation_none) ? (transA == rocsparse_operation_none ? K : M) : N;
+    rocsparse_int ldc = (transA == rocsparse_operation_none) ? M : K;
 
-        // Convert COO to CSR
-        hcsr_row_ptrA.resize(M + 1, 0);
-        for(rocsparse_int i = 0; i < nnz; ++i)
-        {
-            ++hcsr_row_ptrA[hcoo_row_indA[i] + 1 - idx_base];
-        }
+    rocsparse_int ncol_B = (transB == rocsparse_operation_none ? N : K);
+    rocsparse_int nnz_B  = ldb * ncol_B;
+    rocsparse_int nnz_C  = ldc * N;
 
-        hcsr_row_ptrA[0] = idx_base;
-        for(rocsparse_int i = 0; i < M; ++i)
-        {
-            hcsr_row_ptrA[i + 1] += hcsr_row_ptrA[i];
-        }
-    }
+    // Allocate host memory for dense matrices
+    host_vector<T> hB(nnz_B);
+    host_vector<T> hC_1(nnz_C);
+    host_vector<T> hC_2(nnz_C);
+    host_vector<T> hC_gold(nnz_C);
 
-    if(transB == rocsparse_operation_none)
-    {
-        ldb = (transA == rocsparse_operation_none) ? K : M;
-    }
-    else
-    {
-        ldb = N;
-    }
-
-    ldc = (transA == rocsparse_operation_none) ? M : K;
-
-    rocsparse_int Anrow = M;
-    rocsparse_int Ancol = K;
-    rocsparse_int Bnrow = ldb;
-    rocsparse_int Bncol = (transB == rocsparse_operation_none) ? N : K;
-    rocsparse_int Bnnz  = Bnrow * Bncol;
-    rocsparse_int Cnrow = ldc;
-    rocsparse_int Cncol = N;
-    rocsparse_int Cnnz  = Cnrow * Cncol;
-
-    // Host structures - Dense matrix B and C
-    std::vector<T> hB(Bnnz);
-    std::vector<T> hC_1(Cnnz);
-    std::vector<T> hC_2(Cnnz);
-    std::vector<T> hC_gold(Cnnz);
-
-    rocsparse_init<T>(hB, Bnrow, Bncol);
-    rocsparse_init<T>(hC_1, Cnrow, Cncol);
-
-    // copy vector is easy in STL; hC_gold = hC_1: save a copy in hy_gold which will be output of
-    // CPU
-    hC_gold = hC_1;
+    // Initialize data on CPU
+    rocsparse_init<T>(hB, ldb, ncol_B, ldb);
+    rocsparse_init<T>(hC_1, ldc, N, ldc);
     hC_2    = hC_1;
+    hC_gold = hC_1;
 
-    // allocate memory on device
-    auto dcsr_row_ptrA_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * (M + 1)), device_free};
-    auto dcsr_col_indA_managed
-        = rocsparse_unique_ptr{device_malloc(sizeof(rocsparse_int) * nnz), device_free};
-    auto dcsr_valA_managed = rocsparse_unique_ptr{device_malloc(sizeof(T) * nnz), device_free};
-    auto dB_managed        = rocsparse_unique_ptr{device_malloc(sizeof(T) * Bnnz), device_free};
-    auto dC_1_managed      = rocsparse_unique_ptr{device_malloc(sizeof(T) * Cnnz), device_free};
-    auto dC_2_managed      = rocsparse_unique_ptr{device_malloc(sizeof(T) * Cnnz), device_free};
-    auto d_alpha_managed   = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
-    auto d_beta_managed    = rocsparse_unique_ptr{device_malloc(sizeof(T)), device_free};
+    // Allocate device memory
+    device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
+    device_vector<rocsparse_int> dcsr_col_ind(nnz_A);
+    device_vector<T>             dcsr_val(nnz_A);
+    device_vector<T>             dB(nnz_B);
+    device_vector<T>             dC_1(nnz_C);
+    device_vector<T>             dC_2(nnz_C);
+    device_vector<T>             d_alpha(1);
+    device_vector<T>             d_beta(1);
 
-    rocsparse_int* dcsr_row_ptrA = (rocsparse_int*)dcsr_row_ptrA_managed.get();
-    rocsparse_int* dcsr_col_indA = (rocsparse_int*)dcsr_col_indA_managed.get();
-    T*             dcsr_valA     = (T*)dcsr_valA_managed.get();
-    T*             dB            = (T*)dB_managed.get();
-    T*             dC_1          = (T*)dC_1_managed.get();
-    T*             dC_2          = (T*)dC_2_managed.get();
-    T*             d_alpha       = (T*)d_alpha_managed.get();
-    T*             d_beta        = (T*)d_beta_managed.get();
-
-    if(!dcsr_valA || !dcsr_row_ptrA || !dcsr_col_indA || !dB || !dC_1 || !d_alpha || !d_beta)
+    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC_1 || !dC_2 || !d_alpha || !d_beta)
     {
-        verify_rocsparse_status_success(rocsparse_status_memory_error,
-                                        "!dcsr_valA || !dcsr_row_ptrA || !dcsr_col_indA || !dB || "
-                                        "!dC_1 || !d_alpha || !d_beta");
-        return rocsparse_status_memory_error;
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
     }
 
-    // copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_row_ptrA,
-                              hcsr_row_ptrA.data(),
-                              sizeof(rocsparse_int) * (M + 1),
-                              hipMemcpyHostToDevice));
+    // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_col_indA, hcsr_col_indA.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_valA, hcsr_valA.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dB, hB.data(), sizeof(T) * Bnnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dC_1, hC_1.data(), sizeof(T) * Cnnz, hipMemcpyHostToDevice));
+        dcsr_row_ptr, hcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(
+        dcsr_col_ind, hcsr_col_ind, sizeof(rocsparse_int) * nnz_A, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val, sizeof(T) * nnz_A, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dB, hB, sizeof(T) * nnz_B, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dC_1, hC_1, sizeof(T) * nnz_C, hipMemcpyHostToDevice));
 
-    if(argus.unit_check)
+    if(arg.unit_check)
     {
-        CHECK_HIP_ERROR(hipMemcpy(dC_2, hC_2.data(), sizeof(T) * Cnnz, hipMemcpyHostToDevice));
+        // Copy data from CPU to device
+        CHECK_HIP_ERROR(hipMemcpy(dC_2, hC_2, sizeof(T) * nnz_C, hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(d_beta, &h_beta, sizeof(T), hipMemcpyHostToDevice));
 
-        // ROCSPARSE pointer mode host
+        // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrmm(handle,
-                                              transA,
-                                              transB,
-                                              Anrow,
-                                              Cncol,
-                                              Ancol,
-                                              nnz,
-                                              &h_alpha,
-                                              descr,
-                                              dcsr_valA,
-                                              dcsr_row_ptrA,
-                                              dcsr_col_indA,
-                                              dB,
-                                              ldb,
-                                              &h_beta,
-                                              dC_1,
-                                              ldc));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrmm<T>(handle,
+                                                 transA,
+                                                 transB,
+                                                 M,
+                                                 N,
+                                                 K,
+                                                 nnz_A,
+                                                 &h_alpha,
+                                                 descr,
+                                                 dcsr_val,
+                                                 dcsr_row_ptr,
+                                                 dcsr_col_ind,
+                                                 dB,
+                                                 ldb,
+                                                 &h_beta,
+                                                 dC_1,
+                                                 ldc));
 
-        // ROCSPARSE pointer mode device
+        // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csrmm(handle,
-                                              transA,
-                                              transB,
-                                              Anrow,
-                                              Cncol,
-                                              Ancol,
-                                              nnz,
-                                              d_alpha,
-                                              descr,
-                                              dcsr_valA,
-                                              dcsr_row_ptrA,
-                                              dcsr_col_indA,
-                                              dB,
-                                              ldb,
-                                              d_beta,
-                                              dC_2,
-                                              ldc));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrmm<T>(handle,
+                                                 transA,
+                                                 transB,
+                                                 M,
+                                                 N,
+                                                 K,
+                                                 nnz_A,
+                                                 d_alpha,
+                                                 descr,
+                                                 dcsr_val,
+                                                 dcsr_row_ptr,
+                                                 dcsr_col_ind,
+                                                 dB,
+                                                 ldb,
+                                                 d_beta,
+                                                 dC_2,
+                                                 ldc));
 
-        // copy output from device to CPU
-        CHECK_HIP_ERROR(hipMemcpy(hC_1.data(), dC_1, sizeof(T) * Cnnz, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hC_2.data(), dC_2, sizeof(T) * Cnnz, hipMemcpyDeviceToHost));
+        // Copy output to host
+        CHECK_HIP_ERROR(hipMemcpy(hC_1, dC_1, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
 
-        // CPU
-        double cpu_time_used = get_time_us();
+        // CPU csrmm
+        host_csrmm<T>(ldc,
+                      N,
+                      transB,
+                      h_alpha,
+                      hcsr_row_ptr,
+                      hcsr_col_ind,
+                      hcsr_val,
+                      hB,
+                      ldb,
+                      h_beta,
+                      hC_gold,
+                      ldc,
+                      base);
 
-        for(rocsparse_int i = 0; i < Cnrow; ++i)
-        {
-            for(rocsparse_int j = 0; j < Cncol; ++j)
-            {
-                rocsparse_int Cidx = i + j * ldc;
-                T             sum  = hC_gold[Cidx] * h_beta;
-
-                for(rocsparse_int k = hcsr_row_ptrA[i] - idx_base;
-                    k < hcsr_row_ptrA[i + 1] - idx_base;
-                    ++k)
-                {
-                    rocsparse_int Bidx = (transB == rocsparse_operation_none)
-                                             ? (hcsr_col_indA[k] - idx_base + j * ldb)
-                                             : (j + (hcsr_col_indA[k] - idx_base) * ldb);
-                    sum += h_alpha * hcsr_valA[k] * hB[Bidx];
-                }
-
-                hC_gold[Cidx] = sum;
-            }
-        }
-
-        cpu_time_used = get_time_us() - cpu_time_used;
-
-        unit_check_near(Cnrow, Cncol, ldc, hC_gold.data(), hC_1.data());
-        unit_check_near(Cnrow, Cncol, ldc, hC_gold.data(), hC_2.data());
+        near_check_general<T>(ldc, N, ldc, hC_gold, hC_1);
+        near_check_general<T>(ldc, N, ldc, hC_gold, hC_2);
     }
 
-    if(argus.timing)
+    if(arg.timing)
     {
         int number_cold_calls = 2;
-        int number_hot_calls  = argus.iters;
+        int number_hot_calls  = arg.iters;
+
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-        for(int iter = 0; iter < number_cold_calls; iter++)
+        // Warm up
+        for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            rocsparse_csrmm(handle,
-                            transA,
-                            transB,
-                            Anrow,
-                            Cncol,
-                            Ancol,
-                            nnz,
-                            &h_alpha,
-                            descr,
-                            dcsr_valA,
-                            dcsr_row_ptrA,
-                            dcsr_col_indA,
-                            dB,
-                            ldb,
-                            &h_beta,
-                            dC_1,
-                            ldc);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrmm<T>(handle,
+                                                     transA,
+                                                     transB,
+                                                     M,
+                                                     N,
+                                                     K,
+                                                     nnz_A,
+                                                     &h_alpha,
+                                                     descr,
+                                                     dcsr_val,
+                                                     dcsr_row_ptr,
+                                                     dcsr_col_ind,
+                                                     dB,
+                                                     ldb,
+                                                     &h_beta,
+                                                     dC_1,
+                                                     ldc));
         }
 
-        double gpu_time_used = get_time_us(); // in microseconds
+        double gpu_time_used = get_time_us();
 
-        for(int iter = 0; iter < number_hot_calls; iter++)
+        // Performance run
+        for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            rocsparse_csrmm(handle,
-                            transA,
-                            transB,
-                            Anrow,
-                            Cncol,
-                            Ancol,
-                            nnz,
-                            &h_alpha,
-                            descr,
-                            dcsr_valA,
-                            dcsr_row_ptrA,
-                            dcsr_col_indA,
-                            dB,
-                            ldb,
-                            &h_beta,
-                            dC_1,
-                            ldc);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrmm<T>(handle,
+                                                     transA,
+                                                     transB,
+                                                     M,
+                                                     N,
+                                                     K,
+                                                     nnz_A,
+                                                     &h_alpha,
+                                                     descr,
+                                                     dcsr_val,
+                                                     dcsr_row_ptr,
+                                                     dcsr_col_ind,
+                                                     dB,
+                                                     ldb,
+                                                     &h_beta,
+                                                     dC_1,
+                                                     ldc));
         }
 
-        // Convert to miliseconds per call
-        gpu_time_used     = (get_time_us() - gpu_time_used) / (number_hot_calls * 1e3);
-        size_t flops      = 3.0 * nnz * Bncol;
-        flops             = (h_beta != 0.0) ? flops + Cnnz : flops;
-        double gpu_gflops = flops / gpu_time_used / 1e6;
-        size_t memtrans   = nnz + Cnnz + Bnnz;
-        memtrans          = (h_beta != 0.0) ? memtrans + Cnnz : memtrans;
-        double bandwidth
-            = (memtrans * sizeof(T) + (M + 1 + nnz) * sizeof(rocsparse_int)) / gpu_time_used / 1e6;
+        gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
+
+        double gpu_gflops = csrmm_gflop_count<T>(N, nnz_A, nnz_C, h_beta != static_cast<T>(0))
+                            / gpu_time_used * 1e6;
+        double gpu_gbyte = csrmm_gbyte_count<T>(M, nnz_A, nnz_B, nnz_C, h_beta != static_cast<T>(0))
+                           / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
-        std::cout << std::setw(12) << "m" << std::setw(12) << "n" << std::setw(12) << "k"
-                  << std::setw(12) << "nnz" << std::setw(12) << "alpha" << std::setw(12) << "beta"
-                  << std::setw(12) << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12)
-                  << "msec" << std::endl;
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << K << std::setw(12)
-                  << nnz << std::setw(12) << h_alpha << std::setw(12) << h_beta << std::setw(12)
-                  << gpu_gflops << std::setw(12) << bandwidth << std::setw(12) << gpu_time_used
-                  << std::endl;
-    }
 
-    return rocsparse_status_success;
+        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "K"
+                  << std::setw(12) << "transA" << std::setw(12) << "transB" << std::setw(12)
+                  << "nnz_A" << std::setw(12) << "nnz_B" << std::setw(12) << "nnz_C"
+                  << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12)
+                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12) << "msec"
+                  << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
+
+        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << K << std::setw(12)
+                  << rocsparse_operation2string(transA) << std::setw(12)
+                  << rocsparse_operation2string(transB) << std::setw(12) << nnz_A << std::setw(12)
+                  << nnz_B << std::setw(12) << nnz_C << std::setw(12) << h_alpha << std::setw(12)
+                  << h_beta << std::setw(12) << gpu_gflops << std::setw(12) << gpu_gbyte
+                  << std::setw(12) << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls
+                  << std::setw(12) << (arg.unit_check ? "yes" : "no") << std::endl;
+    }
 }
 
 #endif // TESTING_CSRMM_HPP

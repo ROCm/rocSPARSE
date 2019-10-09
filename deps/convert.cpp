@@ -22,11 +22,12 @@
  * ************************************************************************ */
 
 #include <algorithm>
-#include <math.h>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
 #include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <vector>
 
 int read_mtx_matrix(const char*          filename,
@@ -151,9 +152,6 @@ int read_mtx_matrix(const char*          filename,
         --irow;
         --icol;
 
-        // Take absolute matrix value to avoid rounding issues when testing
-        ival = std::abs(ival);
-
         unsorted_row[idx] = irow;
         unsorted_col[idx] = icol;
         unsorted_val[idx] = ival;
@@ -214,21 +212,29 @@ int read_mtx_matrix(const char*          filename,
 int write_bin_matrix(
     const char* filename, int m, int n, int nnz, const int* ptr, const int* col, const double* val)
 {
-    FILE* f = fopen(filename, "wb");
-    if(!f)
+    std::ofstream out(filename, std::ios::out | std::ios::binary);
+
+    if(!out.is_open())
     {
         return -1;
     }
 
-    int err;
-    err = fwrite(&m, sizeof(int), 1, f);
-    err |= fwrite(&n, sizeof(int), 1, f);
-    err |= fwrite(&nnz, sizeof(int), 1, f);
-    err |= fwrite(ptr, sizeof(int), m + 1, f);
-    err |= fwrite(col, sizeof(int), nnz, f);
-    err |= fwrite(val, sizeof(double), nnz, f);
+    // Header
+    out << "#rocALUTION binary csr file" << std::endl;
 
-    fclose(f);
+    // rocALUTION version
+    int version = 10602;
+    out.write((char*)&version, sizeof(int));
+
+    // Data
+    out.write((char*)&m, sizeof(int));
+    out.write((char*)&n, sizeof(int));
+    out.write((char*)&nnz, sizeof(int));
+    out.write((char*)ptr, (m + 1) * sizeof(int));
+    out.write((char*)col, nnz * sizeof(int));
+    out.write((char*)val, nnz * sizeof(double));
+
+    out.close();
 
     return 0;
 }

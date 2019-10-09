@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,11 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_init.hpp"
+#include "rocsparse_random.hpp"
 #include "utility.hpp"
 
+#include <hip/hip_runtime_api.h>
 #include <iomanip>
 #include <iostream>
 #include <rocsparse.h>
@@ -35,7 +38,7 @@ int main(int argc, char* argv[])
     // Parse command line
     if(argc < 2)
     {
-        fprintf(stderr, "%s <ndim> [<trials> <batch_size>]\n", argv[0]);
+        std::cerr << argv[0] << " <ndim> [<trials> <batch_size>]" << std::endl;
         return -1;
     }
 
@@ -61,24 +64,28 @@ int main(int argc, char* argv[])
 
     hipGetDevice(&device_id);
     hipGetDeviceProperties(&devProp, device_id);
-    printf("Device: %s\n", devProp.name);
+    std::cout << "Device: " << devProp.name << std::endl;
 
     // Generate problem in CSR format
     std::vector<rocsparse_int> hAptr;
     std::vector<rocsparse_int> hAcol;
     std::vector<double>        hAval;
-    rocsparse_int m   = gen_2d_laplacian(ndim, hAptr, hAcol, hAval, rocsparse_index_base_zero);
-    rocsparse_int n   = m;
-    rocsparse_int nnz = hAptr[m];
+
+    rocsparse_int m;
+    rocsparse_int n;
+    rocsparse_int nnz;
+
+    rocsparse_init_csr_laplace2d(
+        hAptr, hAcol, hAval, ndim, ndim, m, n, nnz, rocsparse_index_base_zero);
 
     // Sample some random data
-    srand(12345ULL);
+    rocsparse_seedrand();
 
-    double halpha = static_cast<double>(rand()) / RAND_MAX;
+    double halpha = random_generator<double>();
     double hbeta  = 0.0;
 
     std::vector<double> hx(n);
-    rocsparse_init(hx, 1, n);
+    rocsparse_init<double>(hx, 1, n, 1);
 
     // Matrix descriptor
     rocsparse_mat_descr descrA;
@@ -161,6 +168,9 @@ int main(int argc, char* argv[])
     rocsparse_destroy_hyb_mat(hybA);
     rocsparse_destroy_mat_descr(descrA);
     rocsparse_destroy_handle(handle);
+
+    hipFree(dx);
+    hipFree(dy);
 
     return 0;
 }

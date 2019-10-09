@@ -23,12 +23,15 @@ RUN zypper -n --no-gpg-checks install \
     make \
     gcc-c++ \
     pkg-config \
+    python3-pip \
     dpkg \
     rocprim \
     libcxxtools9 \
     libboost_program_options1_66_0-devel \
     libnuma1 \
     rpm-build
+
+RUN pip3 install pyyaml
 
 # docker pipeline runs containers with particular uid
 # create a jenkins user with this specific uid so it can use sudo priviledges

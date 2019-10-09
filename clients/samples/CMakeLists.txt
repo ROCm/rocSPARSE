@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018 Advanced Micro Devices, Inc.
+# Copyright (c) 2019 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,6 @@
 #
 # ########################################################################
 
-get_target_property(HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE)
-
 set(ROCSPARSE_CLIENTS_COMMON ../common/utility.cpp)
 
 # Function to add rocsparse examples
@@ -34,7 +32,6 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
   target_include_directories(${EXAMPLE_TARGET}
     PRIVATE
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-      $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
   )
 
   # rocSPARSE library
@@ -44,15 +41,7 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
     target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse)
   endif()
 
-  if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
-    target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${HIP_LIBRARIES})
-    foreach(target ${AMDGPU_TARGETS})
-      target_link_libraries(${EXAMPLE_TARGET} PRIVATE --amdgpu-target=${target})
-    endforeach()
-  elseif(NOT CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
-    target_compile_definitions(${EXAMPLE_TARGET} PRIVATE __HIP_PLATFORM_HCC__)
-    target_link_libraries(${EXAMPLE_TARGET} PRIVATE ${HIPHCC_LOCATION})
-  endif()
+  target_link_libraries(${EXAMPLE_TARGET} PRIVATE hip::host)
 
   set_target_properties(${EXAMPLE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 endfunction()
