@@ -30,11 +30,11 @@
 #include "rocsparse_random.hpp"
 
 #include <algorithm>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <rocsparse.h>
 #include <vector>
-#include <cstdio>
 
 /* ==================================================================================== */
 /*! \brief  matrix/vector initialization: */
@@ -454,7 +454,7 @@ inline void rocsparse_init_coo_laplace3d(std::vector<rocsparse_int>& row_ind,
 /* ============================================================================================ */
 /*! \brief  Read matrix from mtx file in COO format */
 template <typename T>
-inline void rocsparse_init_coo_mtx(const char* filename,
+inline void rocsparse_init_coo_mtx(const char*                 filename,
                                    std::vector<rocsparse_int>& coo_row_ind,
                                    std::vector<rocsparse_int>& coo_col_ind,
                                    std::vector<T>&             coo_val,
@@ -556,8 +556,8 @@ inline void rocsparse_init_coo_mtx(const char* filename,
 
     sscanf(line, "%d %d %d", &inrow, &incol, &innz);
 
-    M = static_cast<rocsparse_int>(inrow);
-    N = static_cast<rocsparse_int>(incol);
+    M    = static_cast<rocsparse_int>(inrow);
+    N    = static_cast<rocsparse_int>(incol);
     snnz = static_cast<rocsparse_int>(innz);
 
     nnz = symm ? (snnz - M) * 2 + M : snnz;
@@ -648,7 +648,7 @@ inline void rocsparse_init_coo_mtx(const char* filename,
     {
         coo_row_ind[i] = unsorted_row[perm[i]];
         coo_col_ind[i] = unsorted_col[perm[i]];
-        coo_val[i] = unsorted_val[perm[i]];
+        coo_val[i]     = unsorted_val[perm[i]];
     }
 
     if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
