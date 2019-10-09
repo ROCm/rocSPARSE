@@ -294,6 +294,10 @@ int main(int argc, char* argv[])
         strcpy(arg.filename, filename.c_str());
         arg.matrix = rocsparse_matrix_file_mtx;
     }
+    else
+    {
+        arg.matrix = rocsparse_matrix_random;
+    }
 
     // Device query
     int devs;
