@@ -21,6 +21,26 @@
 #
 # ########################################################################
 
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_DETAILED_FAILURE_MSG ON)
+set(Boost_ADDITIONAL_VERSIONS 1.65.1 1.65)
+set(Boost_USE_STATIC_LIBS OFF)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+
+find_package(Threads REQUIRED)
+find_package(GTest REQUIRED)
+find_package(Boost)
+
+if(NOT Boost_FOUND)
+  message(STATUS "Dynamic boost libraries not found. Attempting to find static libraries...")
+  set(Boost_USE_STATIC_LIBS ON)
+  find_package(Boost)
+
+  if(NOT Boost_FOUND)
+    message(FATAL_ERROR "boost is a required dependency and is not found; try adding boost path to CMAKE_PREFIX_PATH")
+  endif()
+endif()
+
 # Download some test matrices
 set(TEST_MATRICES
   SNAP/amazon0312
@@ -72,8 +92,6 @@ foreach(m ${TEST_MATRICES})
   endif()
 endforeach()
 
-find_package(GTest REQUIRED)
-
 set(ROCSPARSE_TEST_SOURCES
   rocsparse_test_main.cpp
   test_axpyi.cpp
@@ -110,11 +128,8 @@ set(ROCSPARSE_CLIENTS_COMMON
 
 add_executable(rocsparse-test ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON})
 
+# Set GOOGLE_TEST definition
 target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
-
-if(OPENMP_FOUND)
-  target_compile_options(rocsparse-test PRIVATE ${OpenMP_CXX_FLAGS})
-endif()
 
 target_include_directories(rocsparse-test
   PRIVATE
@@ -125,9 +140,21 @@ target_include_directories(rocsparse-test
   SYSTEM
     PRIVATE
       $<BUILD_INTERFACE:${GTEST_INCLUDE_DIRS}>
-      $<BUILD_INTERFACE:${HIP_INCLUDE_DIRS}>
-#      $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
+      $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
 )
+
+#if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+#  target_include_directories(rocsparse-test PRIVATE /opt/rocm/hsa/include)
+#endif()
+
+# OpenMP cmake fix for cmake <= 3.9
+if(OPENMP_FOUND)
+  if(NOT TARGET OpenMP::OpenMP_CXX)
+    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+    set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+    set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+  endif()
+endif()
 
 if(NOT TARGET rocsparse)
   target_link_libraries(rocsparse-test PRIVATE ${ROCSPARSE_LIBRARIES})
@@ -135,38 +162,13 @@ else()
   target_link_libraries(rocsparse-test PRIVATE roc::rocsparse)
 endif()
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} Threads::Threads) #${Boost_LIBRARIES})
+target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} Threads::Threads hip::host)
 
 if(OPENMP_FOUND)
-  target_link_libraries(rocsparse-test PRIVATE ${OpenMP_CXX_FLAGS})
+  target_link_libraries(rocsparse-test PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
-target_compile_definitions(rocsparse-test PRIVATE __HIP_PLATFORM_HCC__)
-get_target_property(HIPHCC_LOCATION hip::hip_hcc IMPORTED_LOCATION_RELEASE)
-target_link_libraries(rocsparse-test PRIVATE ${HIPHCC_LOCATION})
-
-
-
-#set(Boost_USE_MULTITHREADED ON)
-#set(Boost_DETAILED_FAILURE_MSG ON)
-#set(Boost_ADDITIONAL_VERSIONS 1.65.1 1.65)
-#set(Boost_USE_STATIC_LIBS OFF)
-
-#find_package(Boost COMPONENTS program_options)
-
-#if( NOT Boost_FOUND )
-#  message( STATUS "Dynamic boost libraries not found. Attempting to find static libraries " )
-#  set( Boost_USE_STATIC_LIBS ON )
-#  find_package( Boost COMPONENTS program_options )
-
-#  if( NOT Boost_FOUND )
-#    message( FATAL_ERROR "boost is a required dependency and is not found;  try adding boost path to CMAKE_PREFIX_PATH" )
-#  endif( )
-#endif( )
-
-
+# Prepare testing data
 set(ROCSPARSE_TEST_DATA "${PROJECT_BINARY_DIR}/staging/rocsparse_test.data")
 add_custom_command(OUTPUT "${ROCSPARSE_TEST_DATA}"
                    COMMAND ../common/rocsparse_gentest.py -I ../include rocsparse_test.yaml -o "${ROCSPARSE_TEST_DATA}"
@@ -176,9 +178,5 @@ add_custom_target(rocsparse-test-data
                   DEPENDS "${ROCSPARSE_TEST_DATA}" )
 
 add_dependencies(rocsparse-test rocsparse-test-data rocsparse-common)
-
-if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
-  target_include_directories(rocsparse-test PRIVATE /opt/rocm/hsa/include)
-endif()
 
 set_target_properties(rocsparse-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
