@@ -55,6 +55,18 @@ endif()
 list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
 find_package(HIP REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH})
 
+# Determine if CXX Compiler is hcc or hip-clang
+execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--version" OUTPUT_VARIABLE CXX_OUTPUT
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_STRIP_TRAILING_WHITESPACE)
+string(REGEX MATCH "[A-Za-z]* ?clang version" TMP_CXX_VERSION ${CXX_OUTPUT})
+string(REGEX MATCH "[A-Za-z]+" CXX_VERSION_STRING ${TMP_CXX_VERSION})
+
+# Print compiler information
+if(NOT CXX_VERSION_STRING MATCHES "clang" AND NOT CXX_VERSION_STRING MATCHES "HCC")
+  message(FATAL_ERROR "'hcc' or 'hipcc' compiler required to compile for ROCm platform.")
+endif()
+
 # Build flags
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
