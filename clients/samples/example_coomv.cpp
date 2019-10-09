@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,11 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_init.hpp"
+#include "rocsparse_random.hpp"
 #include "utility.hpp"
 
+#include <hip/hip_runtime_api.h>
 #include <iomanip>
 #include <iostream>
 #include <rocsparse.h>
@@ -35,7 +38,7 @@ int main(int argc, char* argv[])
     // Parse command line
     if(argc < 2)
     {
-        fprintf(stderr, "%s <ndim> [<trials> <batch_size>]\n", argv[0]);
+        std::cerr << argv[0] << " <ndim> [<trials> <batch_size>]" << std::endl;
         return -1;
     }
 
@@ -61,35 +64,28 @@ int main(int argc, char* argv[])
 
     hipGetDevice(&device_id);
     hipGetDeviceProperties(&devProp, device_id);
-    printf("Device: %s\n", devProp.name);
+    std::cout << "Device: " << devProp.name << std::endl;
 
     // Generate problem
-    std::vector<rocsparse_int> hAptr;
+    std::vector<rocsparse_int> hArow;
     std::vector<rocsparse_int> hAcol;
     std::vector<double>        hAval;
-    rocsparse_int m   = gen_2d_laplacian(ndim, hAptr, hAcol, hAval, rocsparse_index_base_zero);
-    rocsparse_int n   = m;
-    rocsparse_int nnz = hAptr[m];
 
-    // Convert to COO matrix
-    std::vector<rocsparse_int> hArow(nnz);
+    rocsparse_int m;
+    rocsparse_int n;
+    rocsparse_int nnz;
 
-    for(rocsparse_int i = 0; i < m; ++i)
-    {
-        for(rocsparse_int j = hAptr[i]; j < hAptr[i + 1]; ++j)
-        {
-            hArow[j] = i;
-        }
-    }
+    rocsparse_init_coo_laplace2d(
+        hArow, hAcol, hAval, ndim, ndim, m, n, nnz, rocsparse_index_base_zero);
 
     // Sample some random data
-    srand(12345ULL);
+    rocsparse_seedrand();
 
-    double halpha = static_cast<double>(rand()) / RAND_MAX;
+    double halpha = random_generator<double>();
     double hbeta  = 0.0;
 
     std::vector<double> hx(n);
-    rocsparse_init(hx, 1, n);
+    rocsparse_init<double>(hx, 1, n, 1);
 
     // Matrix descriptor
     rocsparse_mat_descr descrA;

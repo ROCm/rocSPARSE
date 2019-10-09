@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,13 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_parse_data.hpp"
+#include "test_cleanup.hpp"
 #include "utility.hpp"
 
 #include <gtest/gtest.h>
 #include <hip/hip_runtime_api.h>
-#include <stdexcept>
+#include <rocsparse.h>
 
 using namespace testing;
 
@@ -151,38 +153,88 @@ public:
 
 int main(int argc, char** argv)
 {
-    // Get device id from command line
-    int device_id = 0;
+    // Get user device id from command line
+    int dev = 0;
 
     for(int i = 1; i < argc; ++i)
     {
         if(strcmp(argv[i], "--device") == 0 && argc > i + 1)
         {
-            device_id = atoi(argv[i + 1]);
+            dev = atoi(argv[i + 1]);
         }
     }
 
-    // Device Query
-    int device_count = query_device_property();
-
-    if(device_count <= device_id)
+    // Device query
+    int devs;
+    if(hipGetDeviceCount(&devs) != hipSuccess)
     {
-        fprintf(stderr, "Error: invalid device ID. There may not be such device ID. Will exit\n");
+        std::cerr << "Error: cannot get device count" << std::endl;
         return -1;
     }
-    else
+
+    std::cout << "Query device success: there are " << devs << " devices" << std::endl;
+
+    for(int i = 0; i < devs; ++i)
     {
-        set_device(device_id);
+        hipDeviceProp_t prop;
+
+        if(hipGetDeviceProperties(&prop, i) != hipSuccess)
+        {
+            std::cerr << "Error: cannot get device properties" << std::endl;
+            return -1;
+        }
+
+        std::cout << "Device ID " << i << ": " << prop.name << std::endl;
+        std::cout << "-------------------------------------------------------------------------"
+                  << std::endl;
+        std::cout << "with " << (prop.totalGlobalMem >> 20) << "MB memory, clock rate "
+                  << prop.clockRate / 1000 << "MHz @ computing capability " << prop.major << "."
+                  << prop.minor << std::endl;
+        std::cout << "maxGridDimX " << prop.maxGridSize[0] << ", sharedMemPerBlock "
+                  << (prop.sharedMemPerBlock >> 10) << "KB, maxThreadsPerBlock "
+                  << prop.maxThreadsPerBlock << std::endl;
+        std::cout << "wavefrontSize " << prop.warpSize << std::endl;
+        std::cout << "-------------------------------------------------------------------------"
+                  << std::endl;
     }
 
-    // Print version
-    char version[256];
-    query_version(version);
+    // Set device
+    if(hipSetDevice(dev) != hipSuccess || dev >= devs)
+    {
+        std::cerr << "Error: cannot set device ID " << dev << std::endl;
+        return -1;
+    }
 
-    printf("rocSPARSE version: %s\n", version);
+    hipDeviceProp_t prop;
+    hipGetDeviceProperties(&prop, dev);
+
+    std::cout << "Using device ID " << dev << " (" << prop.name << ") for rocSPARSE" << std::endl;
+    std::cout << "-------------------------------------------------------------------------"
+              << std::endl;
+
+    // Print version
+    rocsparse_handle handle;
+    rocsparse_create_handle(&handle);
+
+    int  ver;
+    char rev[64];
+
+    rocsparse_get_version(handle, &ver);
+    rocsparse_get_git_rev(handle, rev);
+
+    std::cout << "rocSPARSE version: " << ver / 100000 << "." << ver / 100 % 1000 << "."
+              << ver % 100 << "-" << rev << std::endl;
+
+    rocsparse_destroy_handle(handle);
+
+    // Set data file path
+    rocsparse_parse_data(argc, argv, rocsparse_exepath() + "rocsparse_test.data");
 
     // Initialize google test
     InitGoogleTest(&argc, argv);
+
+    // Free up all temporary data generated during test creation
+    test_cleanup::cleanup();
 
     // Remove the default listener
     auto& listeners       = UnitTest::GetInstance()->listeners();

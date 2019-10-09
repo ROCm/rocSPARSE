@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,8 +43,7 @@
 #include "testing_csrmm.hpp"
 
 // Extra
-#include "testing_csrgemm_a.hpp"
-#include "testing_csrgemm_b.hpp"
+#include "testing_csrgemm.hpp"
 
 // Preconditioner
 #include "testing_csrilu0.hpp"
@@ -64,18 +63,32 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <rocsparse.h>
-#include <stdio.h>
 
 namespace po = boost::program_options;
 
 int main(int argc, char* argv[])
 {
-    Arguments argus;
-    argus.unit_check = 0;
-    argus.timing     = 1;
+    Arguments arg;
+    arg.unit_check = 0;
+    arg.timing     = 1;
 
     std::string function;
+    std::string filename;
+    std::string rocalution;
     char        precision = 's';
+    char        transA;
+    char        transB;
+    int         baseA;
+    int         baseB;
+    int         baseC;
+    int         baseD;
+    int         action;
+    int         part;
+    char        diag;
+    char        uplo;
+    char        apol;
+
+    std::vector<rocsparse_int> laplace(3, 0);
 
     rocsparse_int device_id;
 
@@ -83,38 +96,91 @@ int main(int argc, char* argv[])
     desc.add_options()("help,h", "produces this help message")
         // clang-format off
         ("sizem,m",
-         po::value<rocsparse_int>(&argus.M)->default_value(128),
+         po::value<rocsparse_int>(&arg.M)->default_value(128),
          "Specific matrix size testing: sizem is only applicable to SPARSE-2 "
          "& SPARSE-3: the number of rows.")
 
         ("sizen,n",
-         po::value<rocsparse_int>(&argus.N)->default_value(128),
+         po::value<rocsparse_int>(&arg.N)->default_value(128),
          "Specific matrix/vector size testing: SPARSE-1: the length of the "
          "dense vector. SPARSE-2 & SPARSE-3: the number of columns")
 
+        ("sizen,k",
+         po::value<rocsparse_int>(&arg.K)->default_value(128),
+         "Specific matrix/vector size testing: SPARSE-3: the number of columns")
+
         ("sizennz,z",
-         po::value<rocsparse_int>(&argus.nnz)->default_value(32),
+         po::value<rocsparse_int>(&arg.nnz)->default_value(32),
          "Specific vector size testing, LEVEL-1: the number of non-zero elements "
          "of the sparse vector.")
 
         ("mtx",
-         po::value<std::string>(&argus.filename)->default_value(""), "read from matrix "
-         "market (.mtx) format. This will override parameters m, n, and z.")
+         po::value<std::string>(&filename)->default_value(""), "read from matrix "
+         "market (.mtx) format. This will override parameters -m, -n, and -z.")
 
         ("rocalution",
-         po::value<std::string>(&argus.rocalution)->default_value(""),
-         "read from rocalution matrix binary file.")
+         po::value<std::string>(&rocalution)->default_value(""),
+         "read from rocalution matrix binary file. This will override parameter --mtx")
 
         ("laplacian-dim",
-         po::value<rocsparse_int>(&argus.laplacian)->default_value(0), "assemble "
-         "laplacian matrix for 2D unit square with dimension <dim>. This will override "
-         "parameters m, n, z and mtx.")
+         po::value<std::vector<rocsparse_int> >(&laplace)->multitoken(), "assemble "
+         "laplacian matrix with dimensions <dimx dimy dimz>. dimz is optional. This "
+         "will override parameters -m, -n, -z and --mtx.")
 
         ("alpha", 
-          po::value<double>(&argus.alpha)->default_value(1.0), "specifies the scalar alpha")
+          po::value<double>(&arg.alpha)->default_value(1.0), "specifies the scalar alpha")
 
         ("beta", 
-          po::value<double>(&argus.beta)->default_value(0.0), "specifies the scalar beta")
+          po::value<double>(&arg.beta)->default_value(0.0), "specifies the scalar beta")
+
+        ("transposeA",
+          po::value<char>(&transA)->default_value('N'),
+          "N = no transpose, T = transpose, C = conjugate transpose")
+
+        ("transposeB",
+          po::value<char>(&transB)->default_value('N'),
+          "N = no transpose, T = transpose, C = conjugate transpose, (default = N)")
+
+        ("indexbaseA",
+          po::value<int>(&baseA)->default_value(0),
+          "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
+
+        ("indexbaseB",
+          po::value<int>(&baseB)->default_value(0),
+          "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
+
+        ("indexbaseC",
+          po::value<int>(&baseC)->default_value(0),
+          "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
+
+        ("indexbaseD",
+          po::value<int>(&baseD)->default_value(0),
+          "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
+
+        ("action",
+          po::value<int>(&action)->default_value(0),
+          "0 = rocsparse_action_numeric, 1 = rocsparse_action_symbolic, (default: 0)")
+
+        ("hybpart",
+          po::value<int>(&part)->default_value(0),
+          "0 = rocsparse_hyb_partition_auto, 1 = rocsparse_hyb_partition_user,\n"
+          "2 = rocsparse_hyb_partition_max, (default: 0)")
+
+        ("diag",
+          po::value<char>(&diag)->default_value('N'),
+          "N = non-unit diagonal, U = unit diagonal, (default = N)")
+
+        ("uplo",
+          po::value<char>(&uplo)->default_value('L'),
+          "L = lower fill, U = upper fill, (default = L)")
+
+        ("apolicy",
+          po::value<char>(&apol)->default_value('R'),
+          "R = reuse meta data, F = force re-build, (default = R)")
+
+//        ("spolicy",
+//          po::value<char>(&spol)->default_value('A'),
+//          "A = auto, (default = A)")
 
         ("function,f",
          po::value<std::string>(&function)->default_value("axpyi"),
@@ -133,11 +199,11 @@ int main(int argc, char* argv[])
          po::value<char>(&precision)->default_value('s'), "Options: s,d")
 
         ("verify,v",
-         po::value<rocsparse_int>(&argus.unit_check)->default_value(0),
+         po::value<rocsparse_int>(&arg.unit_check)->default_value(0),
          "Validate GPU results with CPU? 0 = No, 1 = Yes (default: No)")
 
         ("iters,i",
-         po::value<int>(&argus.iters)->default_value(10),
+         po::value<int>(&arg.iters)->default_value(10),
          "Iterations to run inside timing loop")
 
         ("device,d",
@@ -157,28 +223,150 @@ int main(int argc, char* argv[])
 
     if(precision != 's' && precision != 'd')
     {
-        fprintf(stderr, "Invalid value for --precision\n");
+        std::cerr << "Invalid value for --precision" << std::endl;
         return -1;
     }
 
-    // Device Query
-    rocsparse_int device_count = query_device_property();
-
-    if(device_count <= device_id)
+    if(transA == 'N')
     {
-        fprintf(stderr, "Error: invalid device ID. There may not be such device ID. Will exit\n");
-        return -1;
+        arg.transA = rocsparse_operation_none;
+    }
+    else if(transA == 'T')
+    {
+        arg.transA = rocsparse_operation_transpose;
+        ;
+    }
+    else if(transA == 'C')
+    {
+        arg.transA = rocsparse_operation_conjugate_transpose;
+    }
+
+    if(transB == 'N')
+    {
+        arg.transB = rocsparse_operation_none;
+    }
+    else if(transB == 'T')
+    {
+        arg.transB = rocsparse_operation_transpose;
+        ;
+    }
+    else if(transB == 'C')
+    {
+        arg.transB = rocsparse_operation_conjugate_transpose;
+    }
+
+    arg.baseA = (baseA == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
+    arg.baseB = (baseB == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
+    arg.baseC = (baseC == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
+    arg.baseD = (baseD == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
+
+    arg.action = (action == 0) ? rocsparse_action_numeric : rocsparse_action_symbolic;
+    arg.part   = (part == 0)
+                   ? rocsparse_hyb_partition_auto
+                   : (part == 1) ? rocsparse_hyb_partition_user : rocsparse_hyb_partition_max;
+    arg.diag = (diag == 'N') ? rocsparse_diag_type_non_unit : rocsparse_diag_type_unit;
+    arg.uplo = (uplo == 'L') ? rocsparse_fill_mode_lower : rocsparse_fill_mode_upper;
+    arg.apol = (apol == 'R') ? rocsparse_analysis_policy_reuse : rocsparse_analysis_policy_force;
+    arg.spol = rocsparse_solve_policy_auto;
+
+    // Set laplace dimensions
+    arg.dimx = laplace[0];
+    arg.dimy = laplace[1];
+    arg.dimz = laplace[2];
+
+    // rocALUTION parameter overrides filename parameter
+    if(rocalution != "")
+    {
+        strcpy(arg.filename, rocalution.c_str());
+        arg.matrix = rocsparse_matrix_file_rocalution;
+    }
+    else if(arg.dimx != 0 && arg.dimy != 0 && arg.dimz != 0)
+    {
+        arg.matrix = rocsparse_matrix_laplace_3d;
+    }
+    else if(arg.dimx != 0 && arg.dimy != 0)
+    {
+        arg.matrix = rocsparse_matrix_laplace_2d;
+    }
+    else if(filename != "")
+    {
+        strcpy(arg.filename, filename.c_str());
+        arg.matrix = rocsparse_matrix_file_mtx;
     }
     else
     {
-        set_device(device_id);
+        arg.matrix = rocsparse_matrix_random;
     }
+
+    // Device query
+    int devs;
+    if(hipGetDeviceCount(&devs) != hipSuccess)
+    {
+        std::cerr << "Error: cannot get device count" << std::endl;
+        return -1;
+    }
+
+    std::cout << "Query device success: there are " << devs << " devices" << std::endl;
+
+    for(int i = 0; i < devs; ++i)
+    {
+        hipDeviceProp_t prop;
+
+        if(hipGetDeviceProperties(&prop, i) != hipSuccess)
+        {
+            std::cerr << "Error: cannot get device properties" << std::endl;
+            return -1;
+        }
+
+        std::cout << "Device ID " << i << ": " << prop.name << std::endl;
+        std::cout << "-------------------------------------------------------------------------"
+                  << std::endl;
+        std::cout << "with " << (prop.totalGlobalMem >> 20) << "MB memory, clock rate "
+                  << prop.clockRate / 1000 << "MHz @ computing capability " << prop.major << "."
+                  << prop.minor << std::endl;
+        std::cout << "maxGridDimX " << prop.maxGridSize[0] << ", sharedMemPerBlock "
+                  << (prop.sharedMemPerBlock >> 10) << "KB, maxThreadsPerBlock "
+                  << prop.maxThreadsPerBlock << std::endl;
+        std::cout << "wavefrontSize " << prop.warpSize << std::endl;
+        std::cout << "-------------------------------------------------------------------------"
+                  << std::endl;
+    }
+
+    // Set device
+    if(hipSetDevice(device_id) != hipSuccess || device_id >= devs)
+    {
+        std::cerr << "Error: cannot set device ID " << device_id << std::endl;
+        return -1;
+    }
+
+    hipDeviceProp_t prop;
+    hipGetDeviceProperties(&prop, device_id);
+
+    std::cout << "Using device ID " << device_id << " (" << prop.name << ") for rocSPARSE"
+              << std::endl;
+    std::cout << "-------------------------------------------------------------------------"
+              << std::endl;
+
+    // Print version
+    rocsparse_handle handle;
+    rocsparse_create_handle(&handle);
+
+    int  ver;
+    char rev[64];
+
+    rocsparse_get_version(handle, &ver);
+    rocsparse_get_git_rev(handle, rev);
+
+    std::cout << "rocSPARSE version: " << ver / 100000 << "." << ver / 100 % 1000 << "."
+              << ver % 100 << "-" << rev << std::endl;
+
+    rocsparse_destroy_handle(handle);
 
     /* ============================================================================================
      */
-    if(argus.M < 0 || argus.N < 0)
+    if(arg.M < 0 || arg.N < 0)
     {
-        fprintf(stderr, "Invalid dimension\n");
+        std::cerr << "Invalid dimension" << std::endl;
         return -1;
     }
 
@@ -186,167 +374,157 @@ int main(int argc, char* argv[])
     if(function == "axpyi")
     {
         if(precision == 's')
-            testing_axpyi<float>(argus);
+            testing_axpyi<float>(arg);
         else if(precision == 'd')
-            testing_axpyi<double>(argus);
+            testing_axpyi<double>(arg);
     }
     else if(function == "doti")
     {
         if(precision == 's')
-            testing_doti<float>(argus);
+            testing_doti<float>(arg);
         else if(precision == 'd')
-            testing_doti<double>(argus);
+            testing_doti<double>(arg);
     }
     else if(function == "gthr")
     {
         if(precision == 's')
-            testing_gthr<float>(argus);
+            testing_gthr<float>(arg);
         else if(precision == 'd')
-            testing_gthr<double>(argus);
+            testing_gthr<double>(arg);
     }
     else if(function == "gthrz")
     {
         if(precision == 's')
-            testing_gthrz<float>(argus);
+            testing_gthrz<float>(arg);
         else if(precision == 'd')
-            testing_gthrz<double>(argus);
+            testing_gthrz<double>(arg);
     }
     else if(function == "roti")
     {
         if(precision == 's')
-            testing_roti<float>(argus);
+            testing_roti<float>(arg);
         else if(precision == 'd')
-            testing_roti<double>(argus);
+            testing_roti<double>(arg);
     }
     else if(function == "sctr")
     {
         if(precision == 's')
-            testing_sctr<float>(argus);
+            testing_sctr<float>(arg);
         else if(precision == 'd')
-            testing_sctr<double>(argus);
+            testing_sctr<double>(arg);
     }
     else if(function == "coomv")
     {
         if(precision == 's')
-            testing_coomv<float>(argus);
+            testing_coomv<float>(arg);
         else if(precision == 'd')
-            testing_coomv<double>(argus);
+            testing_coomv<double>(arg);
     }
     else if(function == "csrmv")
     {
-        argus.bswitch = true;
+        arg.algo = 1;
         if(precision == 's')
-            testing_csrmv<float>(argus);
+            testing_csrmv<float>(arg);
         else if(precision == 'd')
-            testing_csrmv<double>(argus);
+            testing_csrmv<double>(arg);
     }
     else if(function == "csrsv")
     {
         if(precision == 's')
-            testing_csrsv<float>(argus);
+            testing_csrsv<float>(arg);
         else if(precision == 'd')
-            testing_csrsv<double>(argus);
+            testing_csrsv<double>(arg);
     }
     else if(function == "ellmv")
     {
         if(precision == 's')
-            testing_ellmv<float>(argus);
+            testing_ellmv<float>(arg);
         else if(precision == 'd')
-            testing_ellmv<double>(argus);
+            testing_ellmv<double>(arg);
     }
     else if(function == "hybmv")
     {
         if(precision == 's')
-            testing_hybmv<float>(argus);
+            testing_hybmv<float>(arg);
         else if(precision == 'd')
-            testing_hybmv<double>(argus);
+            testing_hybmv<double>(arg);
     }
     else if(function == "csrmm")
     {
         if(precision == 's')
-            testing_csrmm<float>(argus);
+            testing_csrmm<float>(arg);
         else if(precision == 'd')
-            testing_csrmm<double>(argus);
+            testing_csrmm<double>(arg);
     }
     else if(function == "csrgemm")
     {
-        if(argus.alpha != 0.0 && argus.beta == 0.0)
-        {
-            if(precision == 's')
-                testing_csrgemm_a<float>(argus);
-            else if(precision == 'd')
-                testing_csrgemm_a<double>(argus);
-        }
-        else if(argus.alpha == 0.0 && argus.beta != 0.0)
-        {
-            if(precision == 's')
-                testing_csrgemm_b<float>(argus);
-            else if(precision == 'd')
-                testing_csrgemm_b<double>(argus);
-        }
+        if(precision == 's')
+            testing_csrgemm<float>(arg);
+        else if(precision == 'd')
+            testing_csrgemm<double>(arg);
     }
     else if(function == "csrilu0")
     {
         if(precision == 's')
-            testing_csrilu0<float>(argus);
+            testing_csrilu0<float>(arg);
         else if(precision == 'd')
-            testing_csrilu0<double>(argus);
+            testing_csrilu0<double>(arg);
     }
     else if(function == "csr2coo")
     {
-        testing_csr2coo(argus);
+        testing_csr2coo<float>(arg);
     }
     else if(function == "csr2csc")
     {
         if(precision == 's')
-            testing_csr2csc<float>(argus);
+            testing_csr2csc<float>(arg);
         else if(precision == 'd')
-            testing_csr2csc<double>(argus);
+            testing_csr2csc<double>(arg);
     }
     else if(function == "csr2ell")
     {
         if(precision == 's')
-            testing_csr2ell<float>(argus);
+            testing_csr2ell<float>(arg);
         else if(precision == 'd')
-            testing_csr2ell<double>(argus);
+            testing_csr2ell<double>(arg);
     }
     else if(function == "csr2hyb")
     {
         if(precision == 's')
-            testing_csr2hyb<float>(argus);
+            testing_csr2hyb<float>(arg);
         else if(precision == 'd')
-            testing_csr2hyb<double>(argus);
+            testing_csr2hyb<double>(arg);
     }
     else if(function == "coo2csr")
     {
-        testing_coo2csr(argus);
+        testing_coo2csr<float>(arg);
     }
     else if(function == "ell2csr")
     {
         if(precision == 's')
-            testing_ell2csr<float>(argus);
+            testing_ell2csr<float>(arg);
         else if(precision == 'd')
-            testing_ell2csr<double>(argus);
+            testing_ell2csr<double>(arg);
     }
     else if(function == "csrsort")
     {
-        testing_csrsort(argus);
+        testing_csrsort<float>(arg);
     }
     else if(function == "cscsort")
     {
-        testing_cscsort(argus);
+        testing_cscsort<float>(arg);
     }
     else if(function == "coosort")
     {
-        testing_coosort(argus);
+        testing_coosort<float>(arg);
     }
     else if(function == "identity")
     {
-        testing_identity(argus);
+        testing_identity<float>(arg);
     }
     else
     {
-        fprintf(stderr, "Invalid value for --function\n");
+        std::cerr << "Invalid value for --function" << std::endl;
         return -1;
     }
     return 0;
