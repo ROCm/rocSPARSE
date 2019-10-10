@@ -72,6 +72,13 @@ else()
   target_link_libraries(rocsparse-bench PRIVATE roc::rocsparse)
 endif()
 
+# Add amdgpu targets
+if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+  foreach(target ${AMDGPU_TARGETS})
+    target_link_libraries(rocsparse-bench PRIVATE --amdgpu-target=${target})
+  endforeach()
+endif()
+
 # Add hip host and boost target
 target_link_libraries(rocsparse-bench PRIVATE hip::host Boost::program_options)
 
