@@ -37,7 +37,7 @@ extern "C" rocsparse_status rocsparse_sgthr(rocsparse_handle     handle,
                                             const rocsparse_int* x_ind,
                                             rocsparse_index_base idx_base)
 {
-    return rocsparse_gthr_template<float>(handle, nnz, y, x_val, x_ind, idx_base);
+    return rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base);
 }
 
 extern "C" rocsparse_status rocsparse_dgthr(rocsparse_handle     handle,
@@ -47,5 +47,25 @@ extern "C" rocsparse_status rocsparse_dgthr(rocsparse_handle     handle,
                                             const rocsparse_int* x_ind,
                                             rocsparse_index_base idx_base)
 {
-    return rocsparse_gthr_template<double>(handle, nnz, y, x_val, x_ind, idx_base);
+    return rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base);
+}
+
+extern "C" rocsparse_status rocsparse_cgthr(rocsparse_handle               handle,
+                                            rocsparse_int                  nnz,
+                                            const rocsparse_float_complex* y,
+                                            rocsparse_float_complex*       x_val,
+                                            const rocsparse_int*           x_ind,
+                                            rocsparse_index_base           idx_base)
+{
+    return rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base);
+}
+
+extern "C" rocsparse_status rocsparse_zgthr(rocsparse_handle                handle,
+                                            rocsparse_int                   nnz,
+                                            const rocsparse_double_complex* y,
+                                            rocsparse_double_complex*       x_val,
+                                            const rocsparse_int*            x_ind,
+                                            rocsparse_index_base            idx_base)
+{
+    return rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base);
 }

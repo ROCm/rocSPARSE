@@ -91,3 +91,164 @@ rocsparse_status rocsparse_axpyi(rocsparse_handle            handle,
                             (rocsparse_double_complex*)y,
                             idx_base);
 }
+
+// gthr
+template <>
+rocsparse_status rocsparse_gthr(rocsparse_handle     handle,
+                                rocsparse_int        nnz,
+                                const float*         y,
+                                float*               x_val,
+                                const rocsparse_int* x_ind,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_sgthr(handle, nnz, y, x_val, x_ind, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_gthr(rocsparse_handle     handle,
+                                rocsparse_int        nnz,
+                                const double*        y,
+                                double*              x_val,
+                                const rocsparse_int* x_ind,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_dgthr(handle, nnz, y, x_val, x_ind, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_gthr(rocsparse_handle           handle,
+                                rocsparse_int              nnz,
+                                const std::complex<float>* y,
+                                std::complex<float>*       x_val,
+                                const rocsparse_int*       x_ind,
+                                rocsparse_index_base       idx_base)
+{
+    return rocsparse_cgthr(handle,
+                           nnz,
+                           (const rocsparse_float_complex*)y,
+                           (rocsparse_float_complex*)x_val,
+                           x_ind,
+                           idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_gthr(rocsparse_handle            handle,
+                                rocsparse_int               nnz,
+                                const std::complex<double>* y,
+                                std::complex<double>*       x_val,
+                                const rocsparse_int*        x_ind,
+                                rocsparse_index_base        idx_base)
+{
+    return rocsparse_zgthr(handle,
+                           nnz,
+                           (const rocsparse_double_complex*)y,
+                           (rocsparse_double_complex*)x_val,
+                           x_ind,
+                           idx_base);
+}
+
+// gthrz
+template <>
+rocsparse_status rocsparse_gthrz(rocsparse_handle     handle,
+                                 rocsparse_int        nnz,
+                                 float*               y,
+                                 float*               x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_index_base idx_base)
+{
+    return rocsparse_sgthrz(handle, nnz, y, x_val, x_ind, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_gthrz(rocsparse_handle     handle,
+                                 rocsparse_int        nnz,
+                                 double*              y,
+                                 double*              x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_index_base idx_base)
+{
+    return rocsparse_dgthrz(handle, nnz, y, x_val, x_ind, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_gthrz(rocsparse_handle     handle,
+                                 rocsparse_int        nnz,
+                                 std::complex<float>* y,
+                                 std::complex<float>* x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_index_base idx_base)
+{
+    return rocsparse_cgthrz(
+        handle, nnz, (rocsparse_float_complex*)y, (rocsparse_float_complex*)x_val, x_ind, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_gthrz(rocsparse_handle      handle,
+                                 rocsparse_int         nnz,
+                                 std::complex<double>* y,
+                                 std::complex<double>* x_val,
+                                 const rocsparse_int*  x_ind,
+                                 rocsparse_index_base  idx_base)
+{
+    return rocsparse_zgthrz(handle,
+                            nnz,
+                            (rocsparse_double_complex*)y,
+                            (rocsparse_double_complex*)x_val,
+                            x_ind,
+                            idx_base);
+}
+
+// sctr
+template <>
+rocsparse_status rocsparse_sctr(rocsparse_handle     handle,
+                                rocsparse_int        nnz,
+                                const float*         x_val,
+                                const rocsparse_int* x_ind,
+                                float*               y,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_ssctr(handle, nnz, x_val, x_ind, y, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_sctr(rocsparse_handle     handle,
+                                rocsparse_int        nnz,
+                                const double*        x_val,
+                                const rocsparse_int* x_ind,
+                                double*              y,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_dsctr(handle, nnz, x_val, x_ind, y, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_sctr(rocsparse_handle           handle,
+                                rocsparse_int              nnz,
+                                const std::complex<float>* x_val,
+                                const rocsparse_int*       x_ind,
+                                std::complex<float>*       y,
+                                rocsparse_index_base       idx_base)
+{
+    return rocsparse_csctr(handle,
+                           nnz,
+                           (const rocsparse_float_complex*)x_val,
+                           x_ind,
+                           (rocsparse_float_complex*)y,
+                           idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_sctr(rocsparse_handle            handle,
+                                rocsparse_int               nnz,
+                                const std::complex<double>* x_val,
+                                const rocsparse_int*        x_ind,
+                                std::complex<double>*       y,
+                                rocsparse_index_base        idx_base)
+{
+    return rocsparse_zsctr(handle,
+                           nnz,
+                           (const rocsparse_double_complex*)x_val,
+                           x_ind,
+                           (rocsparse_double_complex*)y,
+                           idx_base);
+}

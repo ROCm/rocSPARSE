@@ -34,12 +34,18 @@ Functions:
   rocsparse_ddoti: { function: doti, <<: *double_precision }
   rocsparse_sgthr: { function: gthr, <<: *single_precision }
   rocsparse_dgthr: { function: gthr, <<: *double_precision }
+  rocsparse_cgthr: { function: gthr, <<: *single_precision_complex }
+  rocsparse_zgthr: { function: gthr, <<: *double_precision_complex }
   rocsparse_sgthrz: { function: gthrz, <<: *single_precision }
   rocsparse_dgthrz: { function: gthrz, <<: *double_precision }
+  rocsparse_cgthrz: { function: gthrz, <<: *single_precision_complex }
+  rocsparse_zgthrz: { function: gthrz, <<: *double_precision_complex }
   rocsparse_sroti: { function: roti, <<: *single_precision }
   rocsparse_droti: { function: roti, <<: *double_precision }
   rocsparse_ssctr: { function: sctr, <<: *single_precision }
   rocsparse_dsctr: { function: sctr, <<: *double_precision }
+  rocsparse_csctr: { function: sctr, <<: *single_precision_complex }
+  rocsparse_zsctr: { function: sctr, <<: *double_precision_complex }
 
   rocsparse_scoomv: { function: coomv, <<: *single_precision }
   rocsparse_dcoomv: { function: coomv, <<: *double_precision }

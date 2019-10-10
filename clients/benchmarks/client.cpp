@@ -396,6 +396,10 @@ int main(int argc, char* argv[])
             testing_gthr<float>(arg);
         else if(precision == 'd')
             testing_gthr<double>(arg);
+        else if(precision == 'c')
+            testing_gthr<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_gthr<std::complex<double>>(arg);
     }
     else if(function == "gthrz")
     {
@@ -403,6 +407,10 @@ int main(int argc, char* argv[])
             testing_gthrz<float>(arg);
         else if(precision == 'd')
             testing_gthrz<double>(arg);
+        else if(precision == 'c')
+            testing_gthrz<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_gthrz<std::complex<double>>(arg);
     }
     else if(function == "roti")
     {
@@ -417,6 +425,10 @@ int main(int argc, char* argv[])
             testing_sctr<float>(arg);
         else if(precision == 'd')
             testing_sctr<double>(arg);
+        else if(precision == 'c')
+            testing_sctr<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_sctr<std::complex<double>>(arg);
     }
     else if(function == "coomv")
     {
