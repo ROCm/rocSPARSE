@@ -26,8 +26,8 @@
 
 // Level1
 #include "testing_axpyi.hpp"
-#include "testing_doti.hpp"
 #include "testing_dotci.hpp"
+#include "testing_doti.hpp"
 #include "testing_gthr.hpp"
 #include "testing_gthrz.hpp"
 #include "testing_roti.hpp"

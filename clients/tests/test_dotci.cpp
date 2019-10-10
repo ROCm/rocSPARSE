@@ -44,9 +44,9 @@ namespace
     // When the condition in the second argument is satisfied, the type combination
     // is valid. When the condition is false, this specialization does not apply.
     template <typename T>
-    struct dotci_testing<
-        T,
-        typename std::enable_if<std::is_same<T, std::complex<float>>{} || std::is_same<T, std::complex<double>>{}>::type>
+    struct dotci_testing<T,
+                         typename std::enable_if<std::is_same<T, std::complex<float>>{}
+                                                 || std::is_same<T, std::complex<double>>{}>::type>
     {
         explicit operator bool()
         {
@@ -81,8 +81,8 @@ namespace
         static std::string name_suffix(const Arguments& arg)
         {
             return RocSPARSE_TestName<dotci>{} << rocsparse_datatype2string(arg.compute_type) << '_'
-                                              << arg.M << '_' << arg.nnz << '_'
-                                              << rocsparse_indexbase2string(arg.baseA);
+                                               << arg.M << '_' << arg.nnz << '_'
+                                               << rocsparse_indexbase2string(arg.baseA);
         }
     };
 
