@@ -43,6 +43,13 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
 
   target_link_libraries(${EXAMPLE_TARGET} PRIVATE hip::host)
 
+  # Add amdgpu targets
+  if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+    foreach(target ${AMDGPU_TARGETS})
+      target_link_libraries(${EXAMPLE_TARGET} PRIVATE --amdgpu-target=${target})
+    endforeach()
+  endif()
+
   set_target_properties(${EXAMPLE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 endfunction()
 
