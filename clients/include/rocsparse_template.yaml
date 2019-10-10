@@ -34,6 +34,8 @@ Functions:
   rocsparse_ddoti: { function: doti, <<: *double_precision }
   rocsparse_cdoti: { function: doti, <<: *single_precision_complex }
   rocsparse_zdoti: { function: doti, <<: *double_precision_complex }
+  rocsparse_cdotci: { function: dotci, <<: *single_precision_complex }
+  rocsparse_zdotci: { function: dotci, <<: *double_precision_complex }
   rocsparse_sgthr: { function: gthr, <<: *single_precision }
   rocsparse_dgthr: { function: gthr, <<: *double_precision }
   rocsparse_cgthr: { function: gthr, <<: *single_precision_complex }

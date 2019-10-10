@@ -212,6 +212,73 @@ rocsparse_status rocsparse_zdoti(rocsparse_handle                handle,
 /**@}*/
 
 /*! \ingroup level1_module
+ *  \brief Compute the dot product of a sparse vector with a dense vector.
+ *
+ *  \details
+ *  \p rocsparse_dotci computes the dot product of the complex conjugate sparse vector
+ *  \f$x\f$ with the dense vector \f$y\f$, such that
+ *  \f[
+ *    \text{result} := x^H y
+ *  \f]
+ *
+ *  \code{.c}
+ *      for(i = 0; i < nnz; ++i)
+ *      {
+ *          result += conj(x_val[i]) * y[x_ind[i]];
+ *      }
+ *  \endcode
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
+ *  @param[in]
+ *  handle      handle to the rocsparse library context queue.
+ *  @param[in]
+ *  nnz         number of non-zero entries of vector \f$x\f$.
+ *  @param[in]
+ *  x_val       array of \p nnz values.
+ *  @param[in]
+ *  x_ind       array of \p nnz elements containing the indices of the non-zero
+ *              values of \f$x\f$.
+ *  @param[in]
+ *  y           array of values in dense format.
+ *  @param[out]
+ *  result      pointer to the result, can be host or device memory
+ *  @param[in]
+ *  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval rocsparse_status_invalid_value \p idx_base is invalid.
+ *  \retval rocsparse_status_invalid_size \p nnz is invalid.
+ *  \retval rocsparse_status_invalid_pointer \p x_val, \p x_ind, \p y or \p result
+ *          pointer is invalid.
+ *  \retval rocsparse_status_memory_error the buffer for the dot product reduction
+ *          could not be allocated.
+ *  \retval rocsparse_status_internal_error an internal error occurred.
+ */
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cdotci(rocsparse_handle               handle,
+                                  rocsparse_int                  nnz,
+                                  const rocsparse_float_complex* x_val,
+                                  const rocsparse_int*           x_ind,
+                                  const rocsparse_float_complex* y,
+                                  rocsparse_float_complex*       result,
+                                  rocsparse_index_base           idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zdotci(rocsparse_handle                handle,
+                                  rocsparse_int                   nnz,
+                                  const rocsparse_double_complex* x_val,
+                                  const rocsparse_int*            x_ind,
+                                  const rocsparse_double_complex* y,
+                                  rocsparse_double_complex*       result,
+                                  rocsparse_index_base            idx_base);
+/**@}*/
+
+/*! \ingroup level1_module
  *  \brief Gather elements from a dense vector and store them into a sparse vector.
  *
  *  \details

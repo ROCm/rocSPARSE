@@ -58,6 +58,16 @@ rocsparse_status rocsparse_doti(rocsparse_handle     handle,
                                 T*                   result,
                                 rocsparse_index_base idx_base);
 
+// dotci
+template <typename T>
+rocsparse_status rocsparse_dotci(rocsparse_handle     handle,
+                                 rocsparse_int        nnz,
+                                 const T*             x_val,
+                                 const rocsparse_int* x_ind,
+                                 const T*             y,
+                                 T*                   result,
+                                 rocsparse_index_base idx_base);
+
 // gthr
 template <typename T>
 rocsparse_status rocsparse_gthr(rocsparse_handle     handle,

@@ -153,6 +153,43 @@ rocsparse_status rocsparse_doti(rocsparse_handle            handle,
                            idx_base);
 }
 
+// dotci
+template <>
+rocsparse_status rocsparse_dotci(rocsparse_handle           handle,
+                                 rocsparse_int              nnz,
+                                 const std::complex<float>* x_val,
+                                 const rocsparse_int*       x_ind,
+                                 const std::complex<float>* y,
+                                 std::complex<float>*       result,
+                                 rocsparse_index_base       idx_base)
+{
+    return rocsparse_cdotci(handle,
+                            nnz,
+                            (const rocsparse_float_complex*)x_val,
+                            x_ind,
+                            (const rocsparse_float_complex*)y,
+                            (rocsparse_float_complex*)result,
+                            idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_dotci(rocsparse_handle            handle,
+                                 rocsparse_int               nnz,
+                                 const std::complex<double>* x_val,
+                                 const rocsparse_int*        x_ind,
+                                 const std::complex<double>* y,
+                                 std::complex<double>*       result,
+                                 rocsparse_index_base        idx_base)
+{
+    return rocsparse_zdotci(handle,
+                            nnz,
+                            (const rocsparse_double_complex*)x_val,
+                            x_ind,
+                            (const rocsparse_double_complex*)y,
+                            (rocsparse_double_complex*)result,
+                            idx_base);
+}
+
 // gthr
 template <>
 rocsparse_status rocsparse_gthr(rocsparse_handle     handle,
