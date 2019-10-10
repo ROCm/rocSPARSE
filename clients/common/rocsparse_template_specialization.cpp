@@ -92,6 +92,67 @@ rocsparse_status rocsparse_axpyi(rocsparse_handle            handle,
                             idx_base);
 }
 
+// doti
+template <>
+rocsparse_status rocsparse_doti(rocsparse_handle     handle,
+                                rocsparse_int        nnz,
+                                const float*         x_val,
+                                const rocsparse_int* x_ind,
+                                const float*         y,
+                                float*               result,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_sdoti(handle, nnz, x_val, x_ind, y, result, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_doti(rocsparse_handle     handle,
+                                rocsparse_int        nnz,
+                                const double*        x_val,
+                                const rocsparse_int* x_ind,
+                                const double*        y,
+                                double*              result,
+                                rocsparse_index_base idx_base)
+{
+    return rocsparse_ddoti(handle, nnz, x_val, x_ind, y, result, idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_doti(rocsparse_handle           handle,
+                                rocsparse_int              nnz,
+                                const std::complex<float>* x_val,
+                                const rocsparse_int*       x_ind,
+                                const std::complex<float>* y,
+                                std::complex<float>*       result,
+                                rocsparse_index_base       idx_base)
+{
+    return rocsparse_cdoti(handle,
+                           nnz,
+                           (const rocsparse_float_complex*)x_val,
+                           x_ind,
+                           (const rocsparse_float_complex*)y,
+                           (rocsparse_float_complex*)result,
+                           idx_base);
+}
+
+template <>
+rocsparse_status rocsparse_doti(rocsparse_handle            handle,
+                                rocsparse_int               nnz,
+                                const std::complex<double>* x_val,
+                                const rocsparse_int*        x_ind,
+                                const std::complex<double>* y,
+                                std::complex<double>*       result,
+                                rocsparse_index_base        idx_base)
+{
+    return rocsparse_zdoti(handle,
+                           nnz,
+                           (const rocsparse_double_complex*)x_val,
+                           x_ind,
+                           (const rocsparse_double_complex*)y,
+                           (rocsparse_double_complex*)result,
+                           idx_base);
+}
+
 // gthr
 template <>
 rocsparse_status rocsparse_gthr(rocsparse_handle     handle,

@@ -50,19 +50,13 @@ rocsparse_status rocsparse_axpyi(rocsparse_handle     handle,
 
 // doti
 template <typename T>
-rocsparse_status (*rocsparse_doti)(rocsparse_handle     handle,
-                                   rocsparse_int        nnz,
-                                   const T*             x_val,
-                                   const rocsparse_int* x_ind,
-                                   const T*             y,
-                                   T*                   result,
-                                   rocsparse_index_base idx_base);
-
-template <>
-static constexpr auto rocsparse_doti<float> = rocsparse_sdoti;
-
-template <>
-static constexpr auto rocsparse_doti<double> = rocsparse_ddoti;
+rocsparse_status rocsparse_doti(rocsparse_handle     handle,
+                                rocsparse_int        nnz,
+                                const T*             x_val,
+                                const rocsparse_int* x_ind,
+                                const T*             y,
+                                T*                   result,
+                                rocsparse_index_base idx_base);
 
 // gthr
 template <typename T>

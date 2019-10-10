@@ -85,7 +85,19 @@ public:
         return {real, imag};
     }
 
+    // In-place complex-complex operations
+    __device__ __host__ auto& operator+=(const rocsparse_complex_num& rhs)
+    {
+        return *this = {x + rhs.x, y + rhs.y};
+    }
+
     // Out-of-place complex-complex operations
+    __device__ __host__ auto operator+(const rocsparse_complex_num& rhs) const
+    {
+        auto lhs = *this;
+        return lhs += rhs;
+    }
+
     __device__ __host__ bool operator==(const rocsparse_complex_num& rhs) const
     {
         return x == rhs.x && y == rhs.y;

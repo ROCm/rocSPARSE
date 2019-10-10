@@ -40,13 +40,15 @@ __global__ void doti_kernel_part1(rocsparse_int        nnz,
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int gid = hipBlockDim_x * hipBlockIdx_x + tid;
 
-    __shared__ T sdata[NB];
-    sdata[tid] = static_cast<T>(0);
+    T dot = static_cast<T>(0);
 
     for(rocsparse_int idx = gid; idx < nnz; idx += hipGridDim_x * hipBlockDim_x)
     {
-        sdata[tid] = fma(y[x_ind[idx] - idx_base], x_val[idx], sdata[tid]);
+        dot = fma(y[x_ind[idx] - idx_base], x_val[idx], dot);
     }
+
+    __shared__ T sdata[NB];
+    sdata[tid] = dot;
 
     __syncthreads();
 
@@ -64,13 +66,8 @@ __global__ void doti_kernel_part2(rocsparse_int n, T* workspace, T* result)
     rocsparse_int tid = hipThreadIdx_x;
 
     __shared__ T sdata[NB];
-    sdata[tid] = static_cast<T>(0);
 
-    for(rocsparse_int i = tid; i < n; i += NB)
-    {
-        sdata[tid] = sdata[tid] + workspace[i];
-    }
-
+    sdata[tid] = workspace[tid];
     __syncthreads();
 
     rocsparse_blockreduce_sum<T, NB>(tid, sdata);

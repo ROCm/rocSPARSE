@@ -191,25 +191,24 @@ rocsparse_status rocsparse_ddoti(rocsparse_handle     handle,
                                  const double*        y,
                                  double*              result,
                                  rocsparse_index_base idx_base);
-/*
-ROCSPARSE_EXPORT
-rocsparse_status rocsparse_cdoti(rocsparse_handle handle,
-                                 rocsparse_int nnz,
-                                 const rocsparse_float_complex* x_val,
-                                 const rocsparse_int* x_ind,
-                                 const rocsparse_float_complex* y,
-                                 rocsparse_float_complex* result,
-                                 rocsparse_index_base idx_base);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_zdoti(rocsparse_handle handle,
-                                 rocsparse_int nnz,
+rocsparse_status rocsparse_cdoti(rocsparse_handle               handle,
+                                 rocsparse_int                  nnz,
+                                 const rocsparse_float_complex* x_val,
+                                 const rocsparse_int*           x_ind,
+                                 const rocsparse_float_complex* y,
+                                 rocsparse_float_complex*       result,
+                                 rocsparse_index_base           idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zdoti(rocsparse_handle                handle,
+                                 rocsparse_int                   nnz,
                                  const rocsparse_double_complex* x_val,
-                                 const rocsparse_int* x_ind,
+                                 const rocsparse_int*            x_ind,
                                  const rocsparse_double_complex* y,
-                                 rocsparse_double_complex* result,
-                                 rocsparse_index_base idx_base);
-*/
+                                 rocsparse_double_complex*       result,
+                                 rocsparse_index_base            idx_base);
 /**@}*/
 
 /*! \ingroup level1_module
