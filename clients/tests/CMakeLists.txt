@@ -160,6 +160,13 @@ else()
   target_link_libraries(rocsparse-test PRIVATE roc::rocsparse)
 endif()
 
+# Add amdgpu targets
+if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
+  foreach(target ${AMDGPU_TARGETS})
+    target_link_libraries(rocsparse-test PRIVATE --amdgpu-target=${target})
+  endforeach()
+endif()
+
 target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} Threads::Threads hip::host)
 
 if(OPENMP_FOUND)
