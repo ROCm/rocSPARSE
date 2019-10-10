@@ -28,6 +28,7 @@
 #include "rocsparse_arguments.hpp"
 
 #include <rocsparse.h>
+#include <complex>
 
 // ----------------------------------------------------------------------------
 // Calls TEST template based on the argument types. TEST<> is expected to
@@ -50,6 +51,10 @@ auto rocsparse_simple_dispatch(const Arguments& arg)
         return TEST<float>{}(arg);
     case rocsparse_datatype_f64_r:
         return TEST<double>{}(arg);
+    case rocsparse_datatype_f32_c:
+        return TEST<std::complex<float>>{}(arg);
+    case rocsparse_datatype_f64_c:
+        return TEST<std::complex<double>>{}(arg);
     default:
         return TEST<void>{}(arg);
     }

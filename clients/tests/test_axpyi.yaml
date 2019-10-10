@@ -29,13 +29,14 @@ Tests:
 - name: axpyi_bad_arg
   category: pre_checkin
   function: axpyi_bad_arg
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
 
 - name: axpyi
   category: quick
   function: axpyi
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
   M: [12000, 15332, 22031]
   nnz: [-1, 0, 5, 10, 500, 1000, 7111, 10000]
   alpha: [1.0, 0.0]
+  alphai: [2.0, 1.0]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]

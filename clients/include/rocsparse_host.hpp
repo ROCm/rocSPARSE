@@ -26,6 +26,7 @@
 #define ROCSPARSE_HOST_HPP
 
 #include "rocsparse_test.hpp"
+#include "rocsparse_math.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -243,7 +244,7 @@ inline void host_csrmv(rocsparse_int        M,
                 }
             }
 
-            if(beta == 0.0)
+            if(beta == static_cast<T>(0))
             {
                 y[i] = sum[0];
             }

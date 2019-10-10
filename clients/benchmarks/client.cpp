@@ -62,6 +62,7 @@
 
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <complex>
 #include <rocsparse.h>
 
 namespace po = boost::program_options;
@@ -196,7 +197,7 @@ int main(int argc, char* argv[])
          "  Misc: identity")
 
         ("precision,r",
-         po::value<char>(&precision)->default_value('s'), "Options: s,d")
+         po::value<char>(&precision)->default_value('s'), "Options: s,d,c,z")
 
         ("verify,v",
          po::value<rocsparse_int>(&arg.unit_check)->default_value(0),
@@ -221,7 +222,7 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    if(precision != 's' && precision != 'd')
+    if(precision != 's' && precision != 'd' && precision != 'c' && precision != 'z')
     {
         std::cerr << "Invalid value for --precision" << std::endl;
         return -1;
@@ -377,6 +378,10 @@ int main(int argc, char* argv[])
             testing_axpyi<float>(arg);
         else if(precision == 'd')
             testing_axpyi<double>(arg);
+        else if(precision == 'c')
+            testing_axpyi<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_axpyi<std::complex<double>>(arg);
     }
     else if(function == "doti")
     {

@@ -22,8 +22,8 @@
  * ************************************************************************ */
 
 /*! \file
- *  \brief rocsparse.hpp exposes C++ templated Sparse Linear Algebra interface with only
- *  the precision templated.
+ *  \brief rocsparse.hpp exposes C++ templated Sparse Linear Algebra interface
+ *  with only the precision templated.
  */
 
 #pragma once
@@ -31,6 +31,7 @@
 #define ROCSPARSE_HPP
 
 #include <rocsparse.h>
+#include <complex>
 
 /*
  * ===========================================================================
@@ -39,19 +40,13 @@
  */
 // axpyi
 template <typename T>
-rocsparse_status (*rocsparse_axpyi)(rocsparse_handle     handle,
-                                    rocsparse_int        nnz,
-                                    const T*             alpha,
-                                    const T*             x_vec,
-                                    const rocsparse_int* x_ind,
-                                    T*                   y,
-                                    rocsparse_index_base idx_base);
-
-template <>
-static constexpr auto rocsparse_axpyi<float> = rocsparse_saxpyi;
-
-template <>
-static constexpr auto rocsparse_axpyi<double> = rocsparse_daxpyi;
+rocsparse_status rocsparse_axpyi(rocsparse_handle     handle,
+                                 rocsparse_int        nnz,
+                                 const T*             alpha,
+                                 const T*             x_vec,
+                                 const rocsparse_int* x_ind,
+                                 T*                   y,
+                                 rocsparse_index_base idx_base);
 
 // doti
 template <typename T>

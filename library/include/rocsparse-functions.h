@@ -106,7 +106,7 @@ rocsparse_status rocsparse_daxpyi(rocsparse_handle     handle,
                                   const rocsparse_int* x_ind,
                                   double*              y,
                                   rocsparse_index_base idx_base);
-/*
+
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_caxpyi(rocsparse_handle handle,
                                   rocsparse_int nnz,
@@ -124,7 +124,6 @@ rocsparse_status rocsparse_zaxpyi(rocsparse_handle handle,
                                   const rocsparse_int* x_ind,
                                   rocsparse_double_complex* y,
                                   rocsparse_index_base idx_base);
-*/
 /**@}*/
 
 /*! \ingroup level1_module

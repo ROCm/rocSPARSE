@@ -200,7 +200,7 @@ inline void rocsparse_init_coo_matrix(std::vector<rocsparse_int>& row_ind,
         while(idx < i)
         {
             // Normal distribution around the diagonal
-            rocsparse_int rng = (i - begin) * random_generator_normal<T>();
+            rocsparse_int rng = (i - begin) * random_generator_normal<double>();
 
             if(M <= N)
             {
@@ -731,6 +731,8 @@ inline void rocsparse_init_csr_rocalution(const char*                 filename,
     row_ptr.resize(M + 1);
     col_ind.resize(nnz);
     val.resize(nnz);
+
+    // TODO complex file i/o
 
     std::vector<int>    iptr(M + 1);
     std::vector<int>    icol(nnz);

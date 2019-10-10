@@ -26,42 +26,72 @@
 #define ROCSPARSE_MATH_HPP
 
 #include <cmath>
+#include <complex>
 #include <rocsparse.h>
 
 /* =================================================================================== */
 /*! \brief  returns true if value is NaN */
 template <typename T>
-inline bool rocsparse_isnan(T)
-{
-    return false;
-}
-
-inline bool rocsparse_isnan(double arg)
+inline bool rocsparse_isnan(T arg)
 {
     return std::isnan(arg);
 }
 
-inline bool rocsparse_isnan(float arg)
+template <>
+inline bool rocsparse_isnan(std::complex<float> arg)
 {
-    return std::isnan(arg);
+    return std::isnan(arg.real()) || std::isnan(arg.imag());
+}
+
+template <>
+inline bool rocsparse_isnan(std::complex<double> arg)
+{
+    return std::isnan(arg.real()) || std::isnan(arg.imag());
 }
 
 /* =================================================================================== */
 /*! \brief  returns true if value is inf */
 template <typename T>
-inline bool rocsparse_isinf(T)
-{
-    return false;
-}
-
-inline bool rocsparse_isinf(double arg)
+inline bool rocsparse_isinf(T arg)
 {
     return std::isinf(arg);
 }
 
-inline bool rocsparse_isinf(float arg)
+template <>
+inline bool rocsparse_isinf(std::complex<float> arg)
 {
-    return std::isinf(arg);
+    return std::isinf(arg.real()) || std::isinf(arg.imag());
+}
+
+template <>
+inline bool rocsparse_isinf(std::complex<double> arg)
+{
+    return std::isinf(arg.real()) || std::isinf(arg.imag());
+}
+
+/* =================================================================================== */
+/*! \brief inject fma for rocsparse complex types into namespace std */
+namespace std
+{
+    inline std::complex<float> fma(std::complex<float> p,
+                                   std::complex<float> q,
+                                   std::complex<float> r)
+    {
+        float real = std::fma(-p.imag(), q.imag(), std::fma(p.real(), q.real(), r.real()));
+        float imag = std::fma(p.real(), q.imag(), std::fma(p.imag(), q.real(), r.imag()));
+
+        return std::complex<float>(real, imag);
+    }
+
+    inline std::complex<double> fma(std::complex<double> p,
+                                    std::complex<double> q,
+                                    std::complex<double> r)
+    {
+        double real = std::fma(-p.imag(), q.imag(), std::fma(p.real(), q.real(), r.real()));
+        double imag = std::fma(p.real(), q.imag(), std::fma(p.imag(), q.real(), r.imag()));
+
+        return std::complex<double>(real, imag);
+    }
 }
 
 #endif // ROCSPARSE_MATH_HPP

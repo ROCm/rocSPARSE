@@ -28,6 +28,8 @@ include: rocsparse_common.yaml
 Functions:
   rocsparse_saxpyi: { function: axpyi, <<: *single_precision }
   rocsparse_daxpyi: { function: axpyi, <<: *double_precision }
+  rocsparse_caxpyi: { function: axpyi, <<: *single_precision_complex }
+  rocsparse_zaxpyi: { function: axpyi, <<: *double_precision_complex }
   rocsparse_sdoti: { function: doti, <<: *single_precision }
   rocsparse_ddoti: { function: doti, <<: *double_precision }
   rocsparse_sgthr: { function: gthr, <<: *single_precision }
