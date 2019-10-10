@@ -269,20 +269,20 @@ rocsparse_status rocsparse_dgthr(rocsparse_handle     handle,
                                  rocsparse_index_base idx_base);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_cgthr(rocsparse_handle handle,
-                                 rocsparse_int nnz,
+rocsparse_status rocsparse_cgthr(rocsparse_handle               handle,
+                                 rocsparse_int                  nnz,
                                  const rocsparse_float_complex* y,
-                                 rocsparse_float_complex* x_val,
-                                 const rocsparse_int* x_ind,
-                                 rocsparse_index_base idx_base);
+                                 rocsparse_float_complex*       x_val,
+                                 const rocsparse_int*           x_ind,
+                                 rocsparse_index_base           idx_base);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_zgthr(rocsparse_handle handle,
-                                 rocsparse_int nnz,
+rocsparse_status rocsparse_zgthr(rocsparse_handle                handle,
+                                 rocsparse_int                   nnz,
                                  const rocsparse_double_complex* y,
-                                 rocsparse_double_complex* x_val,
-                                 const rocsparse_int* x_ind,
-                                 rocsparse_index_base idx_base);
+                                 rocsparse_double_complex*       x_val,
+                                 const rocsparse_int*            x_ind,
+                                 rocsparse_index_base            idx_base);
 /**@}*/
 
 /*! \ingroup level1_module
