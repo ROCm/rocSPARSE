@@ -46,6 +46,7 @@ set(ROCSPARSE_BENCHMARK_SOURCES
 
 set(ROCSPARSE_CLIENTS_COMMON
   ../common/utility.cpp
+  ../common/rocsparse_template_specialization.cpp
 )
 
 add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENTS_COMMON})

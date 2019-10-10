@@ -38,7 +38,7 @@ extern "C" rocsparse_status rocsparse_saxpyi(rocsparse_handle     handle,
                                              float*               y,
                                              rocsparse_index_base idx_base)
 {
-    return rocsparse_axpyi_template<float>(handle, nnz, alpha, x_val, x_ind, y, idx_base);
+    return rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base);
 }
 
 extern "C" rocsparse_status rocsparse_daxpyi(rocsparse_handle     handle,
@@ -49,5 +49,27 @@ extern "C" rocsparse_status rocsparse_daxpyi(rocsparse_handle     handle,
                                              double*              y,
                                              rocsparse_index_base idx_base)
 {
-    return rocsparse_axpyi_template<double>(handle, nnz, alpha, x_val, x_ind, y, idx_base);
+    return rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base);
+}
+
+extern "C" rocsparse_status rocsparse_caxpyi(rocsparse_handle               handle,
+                                             rocsparse_int                  nnz,
+                                             const rocsparse_float_complex* alpha,
+                                             const rocsparse_float_complex* x_val,
+                                             const rocsparse_int*           x_ind,
+                                             rocsparse_float_complex*       y,
+                                             rocsparse_index_base           idx_base)
+{
+    return rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base);
+}
+
+extern "C" rocsparse_status rocsparse_zaxpyi(rocsparse_handle                handle,
+                                             rocsparse_int                   nnz,
+                                             const rocsparse_double_complex* alpha,
+                                             const rocsparse_double_complex* x_val,
+                                             const rocsparse_int*            x_ind,
+                                             rocsparse_double_complex*       y,
+                                             rocsparse_index_base            idx_base)
+{
+    return rocsparse_axpyi_template(handle, nnz, alpha, x_val, x_ind, y, idx_base);
 }

@@ -27,6 +27,7 @@
 
 #include "rocsparse_math.hpp"
 
+#include <complex>
 #include <random>
 #include <rocsparse.h>
 #include <type_traits>
@@ -83,30 +84,38 @@ public:
     {
         return random_nan_data<float, uint32_t, 23, 8>();
     }
+
+    explicit operator std::complex<float>()
+    {
+        return {float(*this), float(*this)};
+    }
+
+    explicit operator std::complex<double>()
+    {
+        return {double(*this), double(*this)};
+    }
 };
 
 /* ==================================================================================== */
 /* generate random number :*/
 
-/*! \brief  generate a random number in range [1,2,3,4,5,6,7,8,9,10] */
+/*! \brief  generate a random number in range [a,b] */
 template <typename T>
-inline T random_generator()
-{
-    return std::uniform_int_distribution<int>(1, 10)(rocsparse_rng);
-}
-
-/*! \brief  generate a random number in range [a, b] */
-template <typename T>
-inline T random_generator(int a, int b)
+inline T random_generator(int a = 1, int b = 10)
 {
     return std::uniform_int_distribution<int>(a, b)(rocsparse_rng);
 }
 
-/*! \brief  generate a random number in HPL-like [-0.5,0.5] doubles  */
-template <typename T>
-inline T random_hpl_generator()
+template <>
+inline std::complex<float> random_generator<std::complex<float>>(int a, int b)
 {
-    return std::uniform_real_distribution<double>(-0.5, 0.5)(rocsparse_rng);
+    return std::complex<float>(random_generator<float>(a, b), random_generator<float>(a, b));
+}
+
+template <>
+inline std::complex<double> random_generator<std::complex<double>>(int a, int b)
+{
+    return std::complex<double>(random_generator<double>(a, b), random_generator<double>(a, b));
 }
 
 /*! \brief generate a random normally distributed number around 0 with stddev 1 */

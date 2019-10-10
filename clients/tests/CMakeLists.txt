@@ -124,6 +124,7 @@ set(ROCSPARSE_TEST_SOURCES
 set(ROCSPARSE_CLIENTS_COMMON
   ../common/utility.cpp
   ../common/rocsparse_parse_data.cpp
+  ../common/rocsparse_template_specialization.cpp
 )
 
 add_executable(rocsparse-test ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON})
