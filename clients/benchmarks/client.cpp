@@ -26,6 +26,7 @@
 
 // Level1
 #include "testing_axpyi.hpp"
+#include "testing_dotci.hpp"
 #include "testing_doti.hpp"
 #include "testing_gthr.hpp"
 #include "testing_gthrz.hpp"
@@ -186,7 +187,7 @@ int main(int argc, char* argv[])
         ("function,f",
          po::value<std::string>(&function)->default_value("axpyi"),
          "SPARSE function to test. Options:\n"
-         "  Level1: axpyi, doti, gthr, gthrz, roti, sctr\n"
+         "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
          "  Level2: coomv, csrmv, csrsv, ellmv, hybmv\n"
          "  Level3: csrmm\n"
          "  Extra: csrgemm\n"
@@ -389,6 +390,21 @@ int main(int argc, char* argv[])
             testing_doti<float>(arg);
         else if(precision == 'd')
             testing_doti<double>(arg);
+        else if(precision == 'c')
+            testing_doti<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_doti<std::complex<double>>(arg);
+    }
+    else if(function == "dotci")
+    {
+        if(precision == 's')
+            testing_doti<float>(arg);
+        else if(precision == 'd')
+            testing_doti<double>(arg);
+        else if(precision == 'c')
+            testing_dotci<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_dotci<std::complex<double>>(arg);
     }
     else if(function == "gthr")
     {
