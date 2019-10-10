@@ -389,6 +389,10 @@ int main(int argc, char* argv[])
             testing_doti<float>(arg);
         else if(precision == 'd')
             testing_doti<double>(arg);
+        else if(precision == 'c')
+            testing_doti<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_doti<std::complex<double>>(arg);
     }
     else if(function == "gthr")
     {
