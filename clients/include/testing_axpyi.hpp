@@ -208,11 +208,11 @@ void testing_axpyi(const Arguments& arg)
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
 
-        std::cout << std::setw(12) << "M" << std::setw(12) << "nnz" << std::setw(12) << "alpha"
+        std::cout << std::setw(12) << "M" << std::setw(12) << "nnz" << std::setw(16) << "alpha"
                   << std::setw(12) << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12)
                   << "usec" << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
 
-        std::cout << std::setw(12) << M << std::setw(12) << nnz << std::setw(12) << h_alpha
+        std::cout << std::setw(12) << M << std::setw(12) << nnz << std::setw(16) << h_alpha
                   << std::setw(12) << gpu_gflops << std::setw(12) << gpu_gbyte << std::setw(12)
                   << gpu_time_used << std::setw(12) << number_hot_calls << std::setw(12)
                   << (arg.unit_check ? "yes" : "no") << std::endl;

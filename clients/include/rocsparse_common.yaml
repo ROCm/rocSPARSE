@@ -30,7 +30,10 @@ Datatypes:
       attr:
         f32_r: 151
         f64_r: 152
+        f32_c: 154
+        f64_c: 155
   - { single: f32_r, double: f64_r }
+  - { single complex: f32_c, double complex: f64_c }
   - rocsparse_matrix_init:
       bases: [ c_int ]
       attr:
@@ -87,9 +90,25 @@ Real precisions: &real_precisions
   - &double_precision
     { compute_type: f64_r }
 
-C precisions: &single_double_precisions
+Complex precisions: &complex_precisions
+  - &single_precision_complex
+    { compute_type: f32_c }
+  - &double_precision_complex
+    { compute_type: f64_c }
+
+C precisions real: &single_double_precisions
   - *single_precision
   - *double_precision
+
+C precisions complex: &single_double_precisions_complex
+  - *single_precision_complex
+  - *double_precision_complex
+
+C precisions complex and real: &single_double_precisions_complex_real
+  - *single_precision
+  - *double_precision
+  - *single_precision_complex
+  - *double_precision_complex
 
 # The Arguments struct passed directly to C++. See rocsparse_arguments.hpp.
 # The order of the entries is significant, so it can't simply be a dictionary.

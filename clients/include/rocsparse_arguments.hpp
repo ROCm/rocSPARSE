@@ -173,10 +173,22 @@ struct Arguments
     }
 
 private:
-    template <typename T, typename U>
-    static T convert_alpha_beta(U r, U i)
+    template <typename T>
+    static T convert_alpha_beta(double r, double i)
     {
         return static_cast<T>(r);
+    }
+
+    template <>
+    std::complex<float> convert_alpha_beta(double r, double i)
+    {
+        return std::complex<float>(r, i);
+    }
+
+    template <>
+    std::complex<double> convert_alpha_beta(double r, double i)
+    {
+        return std::complex<double>(r, i);
     }
 
     // Function to read Structures data from stream

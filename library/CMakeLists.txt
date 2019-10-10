@@ -40,6 +40,7 @@ set(rocsparse_headers_public
   include/rocsparse-auxiliary.h
   include/rocsparse-functions.h
   include/rocsparse-types.h
+  include/rocsparse-complex-types.h
   include/rocsparse.h
   ${PROJECT_BINARY_DIR}/include/rocsparse-version.h
 )

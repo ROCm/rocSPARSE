@@ -37,7 +37,6 @@
 #include <iostream>
 #include <iterator>
 #include <string>
-//#include <utility>
 
 // Class used to read Arguments data into the tests
 class RocSPARSE_TestData

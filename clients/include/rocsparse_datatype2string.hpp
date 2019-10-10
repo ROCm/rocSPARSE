@@ -31,6 +31,8 @@ typedef enum rocsparse_datatype_
 {
     rocsparse_datatype_f32_r = 151, /**< 32 bit floating point, real */
     rocsparse_datatype_f64_r = 152, /**< 64 bit floating point, real */
+    rocsparse_datatype_f32_c = 154, /**< 32 bit floating point, complex real */
+    rocsparse_datatype_f64_c = 155 /**< 64 bit floating point, complex real */
 } rocsparse_datatype;
 
 typedef enum rocsparse_matrix_init_
@@ -69,6 +71,10 @@ constexpr auto rocsparse_datatype2string(rocsparse_datatype type)
         return "f32_r";
     case rocsparse_datatype_f64_r:
         return "f64_r";
+    case rocsparse_datatype_f32_c:
+        return "f32_c";
+    case rocsparse_datatype_f64_c:
+        return "f64_c";
     default:
         return "invalid";
     }

@@ -26,6 +26,7 @@
 #define ROCSPARSE_CHECK_HPP
 
 #include <cassert>
+#include <complex>
 #include <rocsparse.h>
 #ifdef GOOGLE_TEST
 #include <gtest/gtest.h>
@@ -59,6 +60,20 @@
 #define ASSERT_DOUBLE_EQ ASSERT_EQ
 #endif
 
+#define ASSERT_FLOAT_COMPLEX_EQ(a, b)        \
+    do                                       \
+    {                                        \
+        ASSERT_FLOAT_EQ(a.real(), b.real()); \
+        ASSERT_FLOAT_EQ(a.imag(), b.imag()); \
+    } while(0)
+
+#define ASSERT_DOUBLE_COMPLEX_EQ(a, b)        \
+    do                                        \
+    {                                         \
+        ASSERT_DOUBLE_EQ(a.real(), b.real()); \
+        ASSERT_DOUBLE_EQ(a.imag(), b.imag()); \
+    } while(0)
+
 #define UNIT_CHECK(M, N, lda, hCPU, hGPU, UNIT_ASSERT_EQ)                 \
     do                                                                    \
     {                                                                     \
@@ -89,6 +104,26 @@ inline void unit_check_general(
     rocsparse_int M, rocsparse_int N, rocsparse_int lda, double* hCPU, double* hGPU)
 {
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_DOUBLE_EQ);
+}
+
+template <>
+inline void unit_check_general(rocsparse_int        M,
+                               rocsparse_int        N,
+                               rocsparse_int        lda,
+                               std::complex<float>* hCPU,
+                               std::complex<float>* hGPU)
+{
+    UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_FLOAT_COMPLEX_EQ);
+}
+
+template <>
+inline void unit_check_general(rocsparse_int         M,
+                               rocsparse_int         N,
+                               rocsparse_int         lda,
+                               std::complex<double>* hCPU,
+                               std::complex<double>* hGPU)
+{
+    UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_DOUBLE_COMPLEX_EQ);
 }
 
 template <>

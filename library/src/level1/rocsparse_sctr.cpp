@@ -37,7 +37,7 @@ extern "C" rocsparse_status rocsparse_ssctr(rocsparse_handle     handle,
                                             float*               y,
                                             rocsparse_index_base idx_base)
 {
-    return rocsparse_sctr_template<float>(handle, nnz, x_val, x_ind, y, idx_base);
+    return rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base);
 }
 
 extern "C" rocsparse_status rocsparse_dsctr(rocsparse_handle     handle,
@@ -47,5 +47,25 @@ extern "C" rocsparse_status rocsparse_dsctr(rocsparse_handle     handle,
                                             double*              y,
                                             rocsparse_index_base idx_base)
 {
-    return rocsparse_sctr_template<double>(handle, nnz, x_val, x_ind, y, idx_base);
+    return rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base);
+}
+
+extern "C" rocsparse_status rocsparse_csctr(rocsparse_handle               handle,
+                                            rocsparse_int                  nnz,
+                                            const rocsparse_float_complex* x_val,
+                                            const rocsparse_int*           x_ind,
+                                            rocsparse_float_complex*       y,
+                                            rocsparse_index_base           idx_base)
+{
+    return rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base);
+}
+
+extern "C" rocsparse_status rocsparse_zsctr(rocsparse_handle                handle,
+                                            rocsparse_int                   nnz,
+                                            const rocsparse_double_complex* x_val,
+                                            const rocsparse_int*            x_ind,
+                                            rocsparse_double_complex*       y,
+                                            rocsparse_index_base            idx_base)
+{
+    return rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base);
 }

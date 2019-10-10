@@ -28,6 +28,7 @@
 #include "type_dispatch.hpp"
 
 #include <cctype>
+#include <complex>
 #include <cstring>
 #include <type_traits>
 
@@ -45,7 +46,9 @@ namespace
     template <typename T>
     struct axpyi_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}>::type>
+        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
+                                || std::is_same<T, std::complex<float>>{}
+                                || std::is_same<T, std::complex<double>>{}>::type>
     {
         explicit operator bool()
         {
@@ -81,6 +84,7 @@ namespace
         {
             return RocSPARSE_TestName<axpyi>{} << rocsparse_datatype2string(arg.compute_type) << '_'
                                                << arg.M << '_' << arg.nnz << '_' << arg.alpha << '_'
+                                               << arg.alphai << '_'
                                                << rocsparse_indexbase2string(arg.baseA);
         }
     };
