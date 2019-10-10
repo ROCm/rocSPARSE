@@ -61,8 +61,8 @@
 #include "testing_identity.hpp"
 
 #include <boost/program_options.hpp>
-#include <iostream>
 #include <complex>
+#include <iostream>
 #include <rocsparse.h>
 
 namespace po = boost::program_options;

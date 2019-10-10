@@ -73,9 +73,8 @@ inline bool rocsparse_isinf(std::complex<double> arg)
 /*! \brief inject fma for rocsparse complex types into namespace std */
 namespace std
 {
-    inline std::complex<float> fma(std::complex<float> p,
-                                   std::complex<float> q,
-                                   std::complex<float> r)
+    inline std::complex<float>
+        fma(std::complex<float> p, std::complex<float> q, std::complex<float> r)
     {
         float real = std::fma(-p.imag(), q.imag(), std::fma(p.real(), q.real(), r.real()));
         float imag = std::fma(p.real(), q.imag(), std::fma(p.imag(), q.real(), r.imag()));
@@ -83,9 +82,8 @@ namespace std
         return std::complex<float>(real, imag);
     }
 
-    inline std::complex<double> fma(std::complex<double> p,
-                                    std::complex<double> q,
-                                    std::complex<double> r)
+    inline std::complex<double>
+        fma(std::complex<double> p, std::complex<double> q, std::complex<double> r)
     {
         double real = std::fma(-p.imag(), q.imag(), std::fma(p.real(), q.real(), r.real()));
         double imag = std::fma(p.real(), q.imag(), std::fma(p.imag(), q.real(), r.imag()));

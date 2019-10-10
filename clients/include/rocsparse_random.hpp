@@ -27,8 +27,8 @@
 
 #include "rocsparse_math.hpp"
 
-#include <random>
 #include <complex>
+#include <random>
 #include <rocsparse.h>
 #include <type_traits>
 

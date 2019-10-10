@@ -25,8 +25,8 @@
 #ifndef ROCSPARSE_HOST_HPP
 #define ROCSPARSE_HOST_HPP
 
-#include "rocsparse_test.hpp"
 #include "rocsparse_math.hpp"
+#include "rocsparse_test.hpp"
 
 #include <algorithm>
 #include <cmath>

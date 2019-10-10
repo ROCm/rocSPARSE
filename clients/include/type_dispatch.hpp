@@ -27,8 +27,8 @@
 
 #include "rocsparse_arguments.hpp"
 
-#include <rocsparse.h>
 #include <complex>
+#include <rocsparse.h>
 
 // ----------------------------------------------------------------------------
 // Calls TEST template based on the argument types. TEST<> is expected to

@@ -23,8 +23,8 @@
 
 #include "rocsparse.hpp"
 
-#include <rocsparse.h>
 #include <complex>
+#include <rocsparse.h>
 
 /*
  * ===========================================================================
@@ -57,25 +57,37 @@ rocsparse_status rocsparse_axpyi(rocsparse_handle     handle,
 }
 
 template <>
-rocsparse_status rocsparse_axpyi(rocsparse_handle     handle,
-                                 rocsparse_int        nnz,
-                                 const std::complex<float>*         alpha,
-                                 const std::complex<float>*         x_val,
-                                 const rocsparse_int* x_ind,
-                                 std::complex<float>*               y,
-                                 rocsparse_index_base idx_base)
+rocsparse_status rocsparse_axpyi(rocsparse_handle           handle,
+                                 rocsparse_int              nnz,
+                                 const std::complex<float>* alpha,
+                                 const std::complex<float>* x_val,
+                                 const rocsparse_int*       x_ind,
+                                 std::complex<float>*       y,
+                                 rocsparse_index_base       idx_base)
 {
-    return rocsparse_caxpyi(handle, nnz, (const rocsparse_float_complex*)alpha, (const rocsparse_float_complex*)x_val, x_ind, (rocsparse_float_complex*)y, idx_base);
+    return rocsparse_caxpyi(handle,
+                            nnz,
+                            (const rocsparse_float_complex*)alpha,
+                            (const rocsparse_float_complex*)x_val,
+                            x_ind,
+                            (rocsparse_float_complex*)y,
+                            idx_base);
 }
 
 template <>
-rocsparse_status rocsparse_axpyi(rocsparse_handle     handle,
-                                 rocsparse_int        nnz,
-                                 const std::complex<double>*        alpha,
-                                 const std::complex<double>*        x_val,
-                                 const rocsparse_int* x_ind,
-                                 std::complex<double>*              y,
-                                 rocsparse_index_base idx_base)
+rocsparse_status rocsparse_axpyi(rocsparse_handle            handle,
+                                 rocsparse_int               nnz,
+                                 const std::complex<double>* alpha,
+                                 const std::complex<double>* x_val,
+                                 const rocsparse_int*        x_ind,
+                                 std::complex<double>*       y,
+                                 rocsparse_index_base        idx_base)
 {
-    return rocsparse_zaxpyi(handle, nnz, (const rocsparse_double_complex*)alpha, (const rocsparse_double_complex*)x_val, x_ind, (rocsparse_double_complex*)y, idx_base);
+    return rocsparse_zaxpyi(handle,
+                            nnz,
+                            (const rocsparse_double_complex*)alpha,
+                            (const rocsparse_double_complex*)x_val,
+                            x_ind,
+                            (rocsparse_double_complex*)y,
+                            idx_base);
 }

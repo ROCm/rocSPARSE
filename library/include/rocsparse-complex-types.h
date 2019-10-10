@@ -29,7 +29,6 @@
 #ifndef _ROCSPARSE_COMPLEX_TYPES_H_
 #define _ROCSPARSE_COMPLEX_TYPES_H_
 
-
 #if __cplusplus < 201402L || (!defined(__HCC__) && !defined(__HIPCC__))
 
 /* If this is a C compiler, C++ compiler below C++14, or a host-only compiler, only
@@ -55,14 +54,21 @@ typedef struct
 template <typename T>
 class rocsparse_complex_num
 {
-    public:
-
-    __device__ __host__ rocsparse_complex_num(void) = default;
-    __device__ __host__ ~rocsparse_complex_num(void) = default;
+public:
+    __device__ __host__ rocsparse_complex_num(void)           = default;
+    __device__          __host__ ~rocsparse_complex_num(void) = default;
 
     // Constructors
-    __device__ __host__ rocsparse_complex_num(T r, T i) : x(r), y(i) {}
-    __device__ __host__ rocsparse_complex_num(T r) : x(r), y(static_cast<T>(0)) {}
+    __device__ __host__ rocsparse_complex_num(T r, T i)
+        : x(r)
+        , y(i)
+    {
+    }
+    __device__ __host__ rocsparse_complex_num(T r)
+        : x(r)
+        , y(static_cast<T>(0))
+    {
+    }
 
     // Accessors
     friend __device__ __host__ T std::real(const rocsparse_complex_num& z);
@@ -85,8 +91,7 @@ class rocsparse_complex_num
         return x == rhs.x && y == rhs.y;
     }
 
-    private:
-
+private:
     T x;
     T y;
 };
@@ -111,9 +116,15 @@ namespace std
 template <typename T>
 class rocsparse_complex_num_check
 {
-    static_assert(std::is_standard_layout<rocsparse_complex_num<T>>{}, "rocsparse_complex_num<T> is not a standard layout type, and thus is incompatible with C.");
-    static_assert(std::is_trivial<rocsparse_complex_num<T>>{}, "rocsparse_complex_num<T> is not a trivial type, and thus is incompatible with C.");
-    static_assert(sizeof(rocsparse_complex_num<T>) == 2 * sizeof(T), "rocsparse_complex_num<T> is not the correct size, and thus is incompatible with C.");
+    static_assert(
+        std::is_standard_layout<rocsparse_complex_num<T>>{},
+        "rocsparse_complex_num<T> is not a standard layout type, and thus is incompatible with C.");
+    static_assert(
+        std::is_trivial<rocsparse_complex_num<T>>{},
+        "rocsparse_complex_num<T> is not a trivial type, and thus is incompatible with C.");
+    static_assert(
+        sizeof(rocsparse_complex_num<T>) == 2 * sizeof(T),
+        "rocsparse_complex_num<T> is not the correct size, and thus is incompatible with C.");
 };
 
 template class rocsparse_complex_num_check<float>;
