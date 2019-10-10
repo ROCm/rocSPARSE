@@ -21,29 +21,20 @@
 #
 # ########################################################################
 
-include: test_axpyi.yaml
-include: test_doti.yaml
-include: test_dotci.yaml
-include: test_gthr.yaml
-include: test_gthrz.yaml
-include: test_roti.yaml
-include: test_sctr.yaml
-include: test_coomv.yaml
-include: test_csrmv.yaml
-include: test_csrsv.yaml
-include: test_ellmv.yaml
-include: test_hybmv.yaml
-include: test_csrmm.yaml
-include: test_csrgemm.yaml
-include: test_csrilu0.yaml
-include: test_csr2coo.yaml
-include: test_csr2csc.yaml
-include: test_csr2ell.yaml
-include: test_csr2hyb.yaml
-include: test_coo2csr.yaml
-include: test_ell2csr.yaml
-include: test_identity.yaml
-include: test_csrsort.yaml
-include: test_cscsort.yaml
-include: test_coosort.yaml
-include: test_csrilusv.yaml
+---
+include: rocsparse_common.yaml
+include: known_bugs.yaml
+
+Tests:
+- name: dotci_bad_arg
+  category: pre_checkin
+  function: dotci_bad_arg
+  precision: *single_double_precisions_complex
+
+- name: dotci
+  category: quick
+  function: dotci
+  precision: *single_double_precisions_complex
+  M: [12000, 15332, 22031]
+  nnz: [-1, 0, 5, 10, 500, 1000, 7111, 10000]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]

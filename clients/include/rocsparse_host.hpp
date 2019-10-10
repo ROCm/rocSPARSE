@@ -75,6 +75,22 @@ inline void host_doti(rocsparse_int        nnz,
 }
 
 template <typename T>
+inline void host_dotci(rocsparse_int        nnz,
+                       const T*             x_val,
+                       const rocsparse_int* x_ind,
+                       const T*             y,
+                       T*                   result,
+                       rocsparse_index_base base)
+{
+    *result = static_cast<T>(0);
+
+    for(rocsparse_int i = 0; i < nnz; ++i)
+    {
+        *result = std::fma(std::conj(x_val[i]), y[x_ind[i] - base], *result);
+    }
+}
+
+template <typename T>
 inline void host_gthr(
     rocsparse_int nnz, const T* y, T* x_val, const rocsparse_int* x_ind, rocsparse_index_base base)
 {

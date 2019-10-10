@@ -20,3 +20,69 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+
+#pragma once
+#ifndef DOTCI_DEVICE_H
+#define DOTCI_DEVICE_H
+
+#include "common.h"
+
+#include <hip/hip_runtime.h>
+
+template <typename T, rocsparse_int NB>
+__global__ void dotci_kernel_part1(rocsparse_int        nnz,
+                                   const T*             x_val,
+                                   const rocsparse_int* x_ind,
+                                   const T*             y,
+                                   T*                   workspace,
+                                   rocsparse_index_base idx_base)
+{
+    rocsparse_int tid = hipThreadIdx_x;
+    rocsparse_int gid = hipBlockDim_x * hipBlockIdx_x + tid;
+
+    T dotc = static_cast<T>(0);
+
+    for(rocsparse_int idx = gid; idx < nnz; idx += hipGridDim_x * hipBlockDim_x)
+    {
+        dotc = fma(y[x_ind[idx] - idx_base], conj(x_val[idx]), dotc);
+    }
+
+    __shared__ T sdata[NB];
+    sdata[tid] = dotc;
+
+    __syncthreads();
+
+    rocsparse_blockreduce_sum<T, NB>(tid, sdata);
+
+    if(tid == 0)
+    {
+        workspace[hipBlockIdx_x] = sdata[0];
+    }
+}
+
+template <typename T, rocsparse_int NB>
+__global__ void dotci_kernel_part2(rocsparse_int n, T* workspace, T* result)
+{
+    rocsparse_int tid = hipThreadIdx_x;
+
+    __shared__ T sdata[NB];
+
+    sdata[tid] = workspace[tid];
+    __syncthreads();
+
+    rocsparse_blockreduce_sum<T, NB>(tid, sdata);
+
+    if(tid == 0)
+    {
+        if(result)
+        {
+            *result = sdata[0];
+        }
+        else
+        {
+            workspace[0] = sdata[0];
+        }
+    }
+}
+
+#endif // DOTCI_DEVICE_H

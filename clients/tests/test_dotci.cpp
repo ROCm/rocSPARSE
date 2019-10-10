@@ -24,7 +24,7 @@
 #include "rocsparse_data.hpp"
 #include "rocsparse_datatype2string.hpp"
 #include "rocsparse_test.hpp"
-#include "testing_doti.hpp"
+#include "testing_dotci.hpp"
 #include "type_dispatch.hpp"
 
 #include <cctype>
@@ -37,18 +37,16 @@ namespace
     // By default, this test does not apply to any types.
     // The unnamed second parameter is used for enable_if below.
     template <typename, typename = void>
-    struct doti_testing : rocsparse_test_invalid
+    struct dotci_testing : rocsparse_test_invalid
     {
     };
 
     // When the condition in the second argument is satisfied, the type combination
     // is valid. When the condition is false, this specialization does not apply.
     template <typename T>
-    struct doti_testing<
-        T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
-                                || std::is_same<T, std::complex<float>>{}
-                                || std::is_same<T, std::complex<double>>{}>::type>
+    struct dotci_testing<T,
+                         typename std::enable_if<std::is_same<T, std::complex<float>>{}
+                                                 || std::is_same<T, std::complex<double>>{}>::type>
     {
         explicit operator bool()
         {
@@ -56,16 +54,16 @@ namespace
         }
         void operator()(const Arguments& arg)
         {
-            if(!strcmp(arg.function, "doti"))
-                testing_doti<T>(arg);
-            else if(!strcmp(arg.function, "doti_bad_arg"))
-                testing_doti_bad_arg<T>(arg);
+            if(!strcmp(arg.function, "dotci"))
+                testing_dotci<T>(arg);
+            else if(!strcmp(arg.function, "dotci_bad_arg"))
+                testing_dotci_bad_arg<T>(arg);
             else
                 FAIL() << "Internal error: Test called with unknown function: " << arg.function;
         }
     };
 
-    struct doti : RocSPARSE_Test<doti, doti_testing>
+    struct dotci : RocSPARSE_Test<dotci, dotci_testing>
     {
         // Filter for which types apply to this suite
         static bool type_filter(const Arguments& arg)
@@ -76,22 +74,22 @@ namespace
         // Filter for which functions apply to this suite
         static bool function_filter(const Arguments& arg)
         {
-            return !strcmp(arg.function, "doti") || !strcmp(arg.function, "doti_bad_arg");
+            return !strcmp(arg.function, "dotci") || !strcmp(arg.function, "dotci_bad_arg");
         }
 
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            return RocSPARSE_TestName<doti>{} << rocsparse_datatype2string(arg.compute_type) << '_'
-                                              << arg.M << '_' << arg.nnz << '_'
-                                              << rocsparse_indexbase2string(arg.baseA);
+            return RocSPARSE_TestName<dotci>{} << rocsparse_datatype2string(arg.compute_type) << '_'
+                                               << arg.M << '_' << arg.nnz << '_'
+                                               << rocsparse_indexbase2string(arg.baseA);
         }
     };
 
-    TEST_P(doti, level1)
+    TEST_P(dotci, level1)
     {
-        rocsparse_simple_dispatch<doti_testing>(GetParam());
+        rocsparse_simple_dispatch<dotci_testing>(GetParam());
     }
-    INSTANTIATE_TEST_CATEGORIES(doti);
+    INSTANTIATE_TEST_CATEGORIES(dotci);
 
 } // namespace
