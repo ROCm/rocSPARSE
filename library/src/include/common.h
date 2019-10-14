@@ -32,21 +32,21 @@
 // clang-format off
 __device__ __forceinline__ float rocsparse_ldg(const float* ptr) { return __ldg(ptr); }
 __device__ __forceinline__ double rocsparse_ldg(const double* ptr) { return __ldg(ptr); }
+__device__ __forceinline__ rocsparse_float_complex rocsparse_ldg(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__ldg((const float*)ptr), __ldg((const float*)ptr + 1)); }
+__device__ __forceinline__ rocsparse_double_complex rocsparse_ldg(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__ldg((const double*)ptr), __ldg((const double*)ptr + 1)); }
 __device__ __forceinline__ rocsparse_int rocsparse_ldg(const rocsparse_int* ptr) { return __ldg(ptr); }
 
 __device__ __forceinline__ float rocsparse_nontemporal_load(const float* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ double rocsparse_nontemporal_load(const double* ptr) { return __builtin_nontemporal_load(ptr); }
+__device__ __forceinline__ rocsparse_float_complex rocsparse_nontemporal_load(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__builtin_nontemporal_load((const float*)ptr), __builtin_nontemporal_load((const float*)ptr + 1)); }
+__device__ __forceinline__ rocsparse_double_complex rocsparse_nontemporal_load(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__builtin_nontemporal_load((const double*)ptr), __builtin_nontemporal_load((const double*)ptr + 1)); }
 __device__ __forceinline__ rocsparse_int rocsparse_nontemporal_load(const rocsparse_int* ptr) { return __builtin_nontemporal_load(ptr); }
 
 __device__ __forceinline__ void rocsparse_nontemporal_store(float val, float* ptr) { __builtin_nontemporal_store(val, ptr); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(double val, double* ptr) { __builtin_nontemporal_store(val, ptr); }
+__device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_float_complex val, rocsparse_float_complex* ptr) { __builtin_nontemporal_store(std::real(val), (float*)ptr); __builtin_nontemporal_store(std::imag(val), (float*)ptr + 1); }
+__device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_double_complex val, rocsparse_double_complex* ptr) { __builtin_nontemporal_store(std::real(val), (double*)ptr); __builtin_nontemporal_store(std::imag(val), (double*)ptr + 1); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_int val, rocsparse_int* ptr) { __builtin_nontemporal_store(val, ptr); }
-
-__device__ __forceinline__ float rocsparse_fma(float p, float q, float r) { return fma(p, q, r); }
-__device__ __forceinline__ double rocsparse_fma(double p, double q, double r) { return fma(p, q, r); }
-
-__device__ __forceinline__ float rocsparse_rcp(float val) { return 1.0f / val; }
-__device__ __forceinline__ double rocsparse_rcp(double val) { return 1.0 / val; }
 
 __device__ __forceinline__ int32_t rocsparse_mul24(int32_t x, int32_t y) { return ((x << 8) >> 8) * ((y << 8) >> 8); }
 __device__ __forceinline__ int64_t rocsparse_mul24(int64_t x, int64_t y) { return ((x << 40) >> 40) * ((y << 40) >> 40); }
@@ -61,6 +61,17 @@ __device__ __forceinline__ int64_t atomicMin(int64_t* ptr, int64_t val) { return
 __device__ __forceinline__ int64_t atomicMax(int64_t* ptr, int64_t val) { return atomicMax((unsigned long long*)ptr, val); }
 __device__ __forceinline__ int64_t atomicAdd(int64_t* ptr, int64_t val) { return atomicAdd((unsigned long long*)ptr, val); }
 __device__ __forceinline__ int64_t atomicCAS(int64_t* ptr, int64_t cmp, int64_t val) { return atomicCAS((unsigned long long*)ptr, cmp, val); }
+
+__device__ __forceinline__ rocsparse_float_complex atomicAdd(rocsparse_float_complex* ptr, rocsparse_float_complex val)
+{
+    return rocsparse_float_complex(atomicAdd((float*)ptr, std::real(val)),
+                                   atomicAdd((float*)ptr + 1, std::imag(val)));
+}
+__device__ __forceinline__ rocsparse_double_complex atomicAdd(rocsparse_double_complex* ptr, rocsparse_double_complex val)
+{
+    return rocsparse_double_complex(atomicAdd((double*)ptr, std::real(val)),
+                                    atomicAdd((double*)ptr + 1, std::imag(val)));
+}
 
 // Block reduce kernel computing block sum
 template <typename T, unsigned int BLOCKSIZE>
@@ -374,6 +385,22 @@ __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
 
     sum = temp_sum.val;
     return sum;
+}
+
+// DPP-based complex float wavefront reduction sum
+template <unsigned int WFSIZE>
+__device__ __forceinline__ rocsparse_float_complex rocsparse_wfreduce_sum(rocsparse_float_complex sum)
+{
+    return rocsparse_float_complex(rocsparse_wfreduce_sum<WFSIZE>(std::real(sum)),
+                                   rocsparse_wfreduce_sum<WFSIZE>(std::imag(sum)));
+}
+
+// DPP-based complex double wavefront reduction
+template <unsigned int WFSIZE>
+__device__ __forceinline__ rocsparse_double_complex rocsparse_wfreduce_sum(rocsparse_double_complex sum)
+{
+    return rocsparse_double_complex(rocsparse_wfreduce_sum<WFSIZE>(std::real(sum)),
+                                    rocsparse_wfreduce_sum<WFSIZE>(std::imag(sum)));
 }
 // clang-format on
 
