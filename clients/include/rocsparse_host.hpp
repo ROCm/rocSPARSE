@@ -237,14 +237,16 @@ inline void host_csrmv(rocsparse_int        M,
 #endif
         for(rocsparse_int i = 0; i < M; ++i)
         {
+            rocsparse_int row_begin = csr_row_ptr[i] - base;
+            rocsparse_int row_end   = csr_row_ptr[i + 1] - base;
+
             std::vector<T> sum(WF_SIZE, static_cast<T>(0));
 
-            for(rocsparse_int j = csr_row_ptr[i] - base; j < csr_row_ptr[i + 1] - base;
-                j += WF_SIZE)
+            for(rocsparse_int j = row_begin; j < row_end; j += WF_SIZE)
             {
                 for(rocsparse_int k = 0; k < WF_SIZE; ++k)
                 {
-                    if(j + k < csr_row_ptr[i + 1] - base)
+                    if(j + k < row_end)
                     {
                         sum[k] = std::fma(
                             alpha * csr_val[j + k], x[csr_col_ind[j + k] - base], sum[k]);

@@ -27,21 +27,21 @@ include: known_bugs.yaml
 
 Definitions:
   - &alpha_beta_range
-    - { alpha:  2.0, beta:  0.0 }
-    - { alpha:  2.0, beta:  1.0 }
-    - { alpha:  3.0, beta:  0.0 }
-    - { alpha:  3.0, beta:  1.0 }
+    - { alpha:  2.0, beta:  0.0, alphai:  1.5, betai:  0.5 }
+    - { alpha:  2.0, beta:  1.0, alphai:  0.5, betai:  1.5 }
+    - { alpha:  3.0, beta:  0.0, alphai: -1.5, betai: -0.5 }
+    - { alpha:  3.0, beta:  1.0, alphai: -0.5, betai:  1.5 }
 
 Tests:
 - name: csrmv_bad_arg
   category: pre_checkin
   function: csrmv_bad_arg
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
 
 - name: csrmv
   category: quick
   function: csrmv
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
   M: [-1, 0, 10, 500, 7111]
   N: [-3, 0, 33, 842, 4441]
   alpha_beta: *alpha_beta_range
@@ -80,3 +80,20 @@ Tests:
              sme3Dc,
              webbase-1M,
              shipsec1]
+
+- name: csrmv_file
+  category: quick
+  function: csrmv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  algo: [0, 1]
+  filename: [mplate,
+             qc2534,
+             Chevron2,
+             Chevron3,
+             Chevron4]

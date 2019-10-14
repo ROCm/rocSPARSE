@@ -751,6 +751,10 @@ rocsparse_csrmv_analysis()
 .. doxygenfunction:: rocsparse_scsrmv_analysis
   :outline:
 .. doxygenfunction:: rocsparse_dcsrmv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrmv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrmv_analysis
 
 rocsparse_csrmv()
 *****************
@@ -758,6 +762,10 @@ rocsparse_csrmv()
 .. doxygenfunction:: rocsparse_scsrmv
   :outline:
 .. doxygenfunction:: rocsparse_dcsrmv
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrmv
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrmv
 
 rocsparse_csrmv_analysis_clear()
 *********************************

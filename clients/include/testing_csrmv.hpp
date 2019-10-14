@@ -505,16 +505,8 @@ void testing_csrmv(const Arguments& arg)
                       base,
                       adaptive);
 
-        if(adaptive)
-        {
-            near_check_general<T>(1, M, 1, hy_gold, hy_1);
-            near_check_general<T>(1, M, 1, hy_gold, hy_2);
-        }
-        else
-        {
-            unit_check_general<T>(1, M, 1, hy_gold, hy_1);
-            unit_check_general<T>(1, M, 1, hy_gold, hy_2);
-        }
+        near_check_general<T>(1, M, 1, hy_gold, hy_1);
+        near_check_general<T>(1, M, 1, hy_gold, hy_2);
     }
 
     if(arg.timing)
