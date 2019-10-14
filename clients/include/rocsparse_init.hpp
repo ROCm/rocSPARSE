@@ -681,6 +681,50 @@ inline void rocsparse_init_csr_mtx(const char*                 filename,
 
 /* ==================================================================================== */
 /*! \brief  Read matrix from binary file in rocALUTION format */
+static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, float* csr_val)
+{
+    // Temporary array to convert from double to float
+    std::vector<double> tmp(nnz);
+
+    // Read in double values
+    in.read((char*)tmp.data(), sizeof(double) * nnz);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int i = 0; i < nnz; ++i)
+    {
+        csr_val[i] = static_cast<float>(tmp[i]);
+    }
+}
+
+static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, double* csr_val)
+{
+    in.read((char*)csr_val, sizeof(double) * nnz);
+}
+
+static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, std::complex<float>* csr_val)
+{
+    // Temporary array to convert from double to float complex
+    std::vector<std::complex<double>> tmp(nnz);
+
+    // Read in double complex values
+    in.read((char*)tmp.data(), sizeof(std::complex<double>) * nnz);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int i = 0; i < nnz; ++i)
+    {
+        csr_val[i] = std::complex<float>(static_cast<float>(tmp[i].real()), static_cast<float>(tmp[i].imag()));
+    }
+}
+
+static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, std::complex<double>* csr_val)
+{
+    in.read((char*)csr_val, sizeof(std::complex<double>) * nnz);
+}
+
 template <typename T>
 inline void rocsparse_init_csr_rocalution(const char*                 filename,
                                           std::vector<rocsparse_int>& row_ptr,
@@ -732,15 +776,13 @@ inline void rocsparse_init_csr_rocalution(const char*                 filename,
     col_ind.resize(nnz);
     val.resize(nnz);
 
-    // TODO complex file i/o
-
     std::vector<int>    iptr(M + 1);
     std::vector<int>    icol(nnz);
-    std::vector<double> dval(nnz);
 
     in.read((char*)iptr.data(), sizeof(int) * (M + 1));
     in.read((char*)icol.data(), sizeof(int) * nnz);
-    in.read((char*)dval.data(), sizeof(double) * nnz);
+
+    read_csr_values(in, nnz, val.data());
 
     in.close();
 
@@ -763,12 +805,8 @@ inline void rocsparse_init_csr_rocalution(const char*                 filename,
         {
             // Transform all values to integers to avoid rounding errors when testing but
             // preserving the sparsity pattern
-            // val[i] = (dval[i] > static_cast<T>(0)) ? static_cast<T>(ceil(dval[i])) : static_cast<T>(floor(dval[i]));
-            val[i] = std::abs(dval[i]);
-        }
-        else
-        {
-            val[i] = static_cast<T>(dval[i]);
+            // val[i] = (val[i] > static_cast<T>(0)) ? static_cast<T>(ceil(val[i])) : static_cast<T>(floor(val[i]));
+            val[i] = std::abs(val[i]);
         }
     }
 
