@@ -58,8 +58,7 @@ static __device__ void ellmvn_device(rocsparse_int        m,
 
         if(col >= 0 && col < n)
         {
-            sum = fma(
-                rocsparse_nontemporal_load(ell_val + idx), rocsparse_ldg(x + col), sum);
+            sum = fma(rocsparse_nontemporal_load(ell_val + idx), rocsparse_ldg(x + col), sum);
         }
         else
         {
