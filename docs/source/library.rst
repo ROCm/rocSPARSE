@@ -666,6 +666,10 @@ rocsparse_axpyi()
 .. doxygenfunction:: rocsparse_saxpyi
   :outline:
 .. doxygenfunction:: rocsparse_daxpyi
+  :outline:
+.. doxygenfunction:: rocsparse_caxpyi
+  :outline:
+.. doxygenfunction:: rocsparse_zaxpyi
 
 rocsparse_doti()
 *********************
@@ -673,6 +677,17 @@ rocsparse_doti()
 .. doxygenfunction:: rocsparse_sdoti
   :outline:
 .. doxygenfunction:: rocsparse_ddoti
+  :outline:
+.. doxygenfunction:: rocsparse_cdoti
+  :outline:
+.. doxygenfunction:: rocsparse_zdoti
+
+rocsparse_dotci()
+*********************
+
+.. doxygenfunction:: rocsparse_cdotci
+  :outline:
+.. doxygenfunction:: rocsparse_zdotci
 
 rocsparse_gthr()
 *********************
@@ -680,6 +695,10 @@ rocsparse_gthr()
 .. doxygenfunction:: rocsparse_sgthr
   :outline:
 .. doxygenfunction:: rocsparse_dgthr
+  :outline:
+.. doxygenfunction:: rocsparse_cgthr
+  :outline:
+.. doxygenfunction:: rocsparse_zgthr
 
 rocsparse_gthrz()
 *********************
@@ -687,6 +706,10 @@ rocsparse_gthrz()
 .. doxygenfunction:: rocsparse_sgthrz
   :outline:
 .. doxygenfunction:: rocsparse_dgthrz
+  :outline:
+.. doxygenfunction:: rocsparse_cgthrz
+  :outline:
+.. doxygenfunction:: rocsparse_zgthrz
 
 rocsparse_roti()
 ****************
@@ -701,6 +724,10 @@ rocsparse_sctr()
 .. doxygenfunction:: rocsparse_ssctr
   :outline:
 .. doxygenfunction:: rocsparse_dsctr
+  :outline:
+.. doxygenfunction:: rocsparse_csctr
+  :outline:
+.. doxygenfunction:: rocsparse_zsctr
 
 .. _rocsparse_level2_functions_:
 
