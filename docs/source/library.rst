@@ -931,6 +931,10 @@ rocsparse_csr2csc()
 .. doxygenfunction:: rocsparse_scsr2csc
   :outline:
 .. doxygenfunction:: rocsparse_dcsr2csc
+  :outline:
+.. doxygenfunction:: rocsparse_ccsr2csc
+  :outline:
+.. doxygenfunction:: rocsparse_zcsr2csc
 
 rocsparse_csr2ell_width()
 *************************
