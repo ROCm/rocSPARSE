@@ -212,13 +212,14 @@ rocsparse_status rocsparse_zdoti(rocsparse_handle                handle,
 /**@}*/
 
 /*! \ingroup level1_module
- *  \brief Compute the dot product of a sparse vector with a dense vector.
+ *  \brief Compute the dot product of a complex conjugate sparse vector with a dense
+ *  vector.
  *
  *  \details
  *  \p rocsparse_dotci computes the dot product of the complex conjugate sparse vector
  *  \f$x\f$ with the dense vector \f$y\f$, such that
  *  \f[
- *    \text{result} := x^H y
+ *    \text{result} := \bar{x}^H y
  *  \f]
  *
  *  \code{.c}
