@@ -100,13 +100,14 @@ bool read_mtx_header(FILE* f, int& nrow, int& ncol, int& nnz, mtx_header& header
     }
 
     // Check type
-    if(strcmp(header.type, "general") && strcmp(header.type, "symmetric"))
+    if(strcmp(header.type, "general") && strcmp(header.type, "symmetric")
+       && strcmp(header.type, "hermitian"))
     {
         return false;
     }
 
     // Symmetric flag
-    header.symmetric = !strcmp(header.type, "symmetric");
+    header.symmetric = !strcmp(header.type, "symmetric") || !strcmp(header.type, "hermitian");
 
     // Skip comments
     while(fgets(line, 1024, f))
