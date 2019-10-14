@@ -363,28 +363,17 @@ rocsparse_status rocsparse_coomv(rocsparse_handle          handle,
                                  rocsparse_int             m,
                                  rocsparse_int             n,
                                  rocsparse_int             nnz,
-                                 const float*                  alpha,
+                                 const float*              alpha,
                                  const rocsparse_mat_descr descr,
-                                 const float*                  coo_val,
+                                 const float*              coo_val,
                                  const rocsparse_int*      coo_row_ind,
                                  const rocsparse_int*      coo_col_ind,
-                                 const float*                  x,
-                                 const float*                  beta,
-                                 float*                        y)
+                                 const float*              x,
+                                 const float*              beta,
+                                 float*                    y)
 {
-    return rocsparse_scoomv(handle,
-                            trans,
-                            m,
-                            n,
-                            nnz,
-                            alpha,
-                            descr,
-                            coo_val,
-                            coo_row_ind,
-                            coo_col_ind,
-                            x,
-                            beta,
-                            y);
+    return rocsparse_scoomv(
+        handle, trans, m, n, nnz, alpha, descr, coo_val, coo_row_ind, coo_col_ind, x, beta, y);
 }
 
 template <>
@@ -393,44 +382,33 @@ rocsparse_status rocsparse_coomv(rocsparse_handle          handle,
                                  rocsparse_int             m,
                                  rocsparse_int             n,
                                  rocsparse_int             nnz,
-                                 const double*                  alpha,
+                                 const double*             alpha,
                                  const rocsparse_mat_descr descr,
-                                 const double*                  coo_val,
+                                 const double*             coo_val,
                                  const rocsparse_int*      coo_row_ind,
                                  const rocsparse_int*      coo_col_ind,
-                                 const double*                  x,
-                                 const double*                  beta,
-                                 double*                        y)
+                                 const double*             x,
+                                 const double*             beta,
+                                 double*                   y)
 {
-    return rocsparse_dcoomv(handle,
-                            trans,
-                            m,
-                            n,
-                            nnz,
-                            alpha,
-                            descr,
-                            coo_val,
-                            coo_row_ind,
-                            coo_col_ind,
-                            x,
-                            beta,
-                            y);
+    return rocsparse_dcoomv(
+        handle, trans, m, n, nnz, alpha, descr, coo_val, coo_row_ind, coo_col_ind, x, beta, y);
 }
 
 template <>
-rocsparse_status rocsparse_coomv(rocsparse_handle          handle,
-                                 rocsparse_operation       trans,
-                                 rocsparse_int             m,
-                                 rocsparse_int             n,
-                                 rocsparse_int             nnz,
-                                 const std::complex<float>*                  alpha,
-                                 const rocsparse_mat_descr descr,
-                                 const std::complex<float>*                  coo_val,
-                                 const rocsparse_int*      coo_row_ind,
-                                 const rocsparse_int*      coo_col_ind,
-                                 const std::complex<float>*                  x,
-                                 const std::complex<float>*                  beta,
-                                 std::complex<float>*                        y)
+rocsparse_status rocsparse_coomv(rocsparse_handle           handle,
+                                 rocsparse_operation        trans,
+                                 rocsparse_int              m,
+                                 rocsparse_int              n,
+                                 rocsparse_int              nnz,
+                                 const std::complex<float>* alpha,
+                                 const rocsparse_mat_descr  descr,
+                                 const std::complex<float>* coo_val,
+                                 const rocsparse_int*       coo_row_ind,
+                                 const rocsparse_int*       coo_col_ind,
+                                 const std::complex<float>* x,
+                                 const std::complex<float>* beta,
+                                 std::complex<float>*       y)
 {
     return rocsparse_ccoomv(handle,
                             trans,
@@ -448,19 +426,19 @@ rocsparse_status rocsparse_coomv(rocsparse_handle          handle,
 }
 
 template <>
-rocsparse_status rocsparse_coomv(rocsparse_handle          handle,
-                                 rocsparse_operation       trans,
-                                 rocsparse_int             m,
-                                 rocsparse_int             n,
-                                 rocsparse_int             nnz,
-                                 const std::complex<double>*                  alpha,
-                                 const rocsparse_mat_descr descr,
-                                 const std::complex<double>*                  coo_val,
-                                 const rocsparse_int*      coo_row_ind,
-                                 const rocsparse_int*      coo_col_ind,
-                                 const std::complex<double>*                  x,
-                                 const std::complex<double>*                  beta,
-                                 std::complex<double>*                        y)
+rocsparse_status rocsparse_coomv(rocsparse_handle            handle,
+                                 rocsparse_operation         trans,
+                                 rocsparse_int               m,
+                                 rocsparse_int               n,
+                                 rocsparse_int               nnz,
+                                 const std::complex<double>* alpha,
+                                 const rocsparse_mat_descr   descr,
+                                 const std::complex<double>* coo_val,
+                                 const rocsparse_int*        coo_row_ind,
+                                 const rocsparse_int*        coo_col_ind,
+                                 const std::complex<double>* x,
+                                 const std::complex<double>* beta,
+                                 std::complex<double>*       y)
 {
     return rocsparse_zcoomv(handle,
                             trans,
