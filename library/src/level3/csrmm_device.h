@@ -78,7 +78,7 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
 
             for(rocsparse_int i = 0; i < WF_SIZE && col < N; ++i)
             {
-                sum = rocsparse_fma(shared_val[wid][i], B[shared_col[wid][i] + colB], sum);
+                sum = fma(shared_val[wid][i], B[shared_col[wid][i] + colB], sum);
             }
         }
 
@@ -90,7 +90,7 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
             }
             else
             {
-                C[row + colC] = rocsparse_fma(beta, C[row + colC], sum);
+                C[row + colC] = fma(beta, C[row + colC], sum);
             }
         }
     }
@@ -151,7 +151,7 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
             {
                 T val_B = (col < ncol) ? rocsparse_ldg(B + col + shared_col[wid][i])
                                        : static_cast<T>(0);
-                sum = rocsparse_fma(shared_val[wid][i], val_B, sum);
+                sum = fma(shared_val[wid][i], val_B, sum);
             }
         }
 
@@ -163,7 +163,7 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
             }
             else
             {
-                C[row + col * ldc] = rocsparse_fma(beta, C[row + col * ldc], sum);
+                C[row + col * ldc] = fma(beta, C[row + col * ldc], sum);
             }
         }
     }
