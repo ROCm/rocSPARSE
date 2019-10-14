@@ -703,7 +703,8 @@ static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, double*
     in.read((char*)csr_val, sizeof(double) * nnz);
 }
 
-static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, std::complex<float>* csr_val)
+static inline void
+    read_csr_values(std::ifstream& in, rocsparse_int nnz, std::complex<float>* csr_val)
 {
     // Temporary array to convert from double to float complex
     std::vector<std::complex<double>> tmp(nnz);
@@ -716,11 +717,13 @@ static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, std::co
 #endif
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
-        csr_val[i] = std::complex<float>(static_cast<float>(tmp[i].real()), static_cast<float>(tmp[i].imag()));
+        csr_val[i] = std::complex<float>(static_cast<float>(tmp[i].real()),
+                                         static_cast<float>(tmp[i].imag()));
     }
 }
 
-static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, std::complex<double>* csr_val)
+static inline void
+    read_csr_values(std::ifstream& in, rocsparse_int nnz, std::complex<double>* csr_val)
 {
     in.read((char*)csr_val, sizeof(std::complex<double>) * nnz);
 }
@@ -776,8 +779,8 @@ inline void rocsparse_init_csr_rocalution(const char*                 filename,
     col_ind.resize(nnz);
     val.resize(nnz);
 
-    std::vector<int>    iptr(M + 1);
-    std::vector<int>    icol(nnz);
+    std::vector<int> iptr(M + 1);
+    std::vector<int> icol(nnz);
 
     in.read((char*)iptr.data(), sizeof(int) * (M + 1));
     in.read((char*)icol.data(), sizeof(int) * nnz);
