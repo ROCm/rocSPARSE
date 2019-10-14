@@ -53,6 +53,8 @@ Functions:
 
   rocsparse_scoomv: { function: coomv, <<: *single_precision }
   rocsparse_dcoomv: { function: coomv, <<: *double_precision }
+  rocsparse_ccoomv: { function: coomv, <<: *single_precision_complex }
+  rocsparse_zcoomv: { function: coomv, <<: *double_precision_complex }
   rocsparse_scsrmv_analysis: { function: csrmv, <<: *single_precision }
   rocsparse_dcsrmv_analysis: { function: csrmv, <<: *double_precision }
   rocsparse_ccsrmv_analysis: { function: csrmv, <<: *single_precision_complex }

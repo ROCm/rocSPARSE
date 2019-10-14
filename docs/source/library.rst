@@ -744,6 +744,10 @@ rocsparse_coomv()
 .. doxygenfunction:: rocsparse_scoomv
   :outline:
 .. doxygenfunction:: rocsparse_dcoomv
+  :outline:
+.. doxygenfunction:: rocsparse_ccoomv
+  :outline:
+.. doxygenfunction:: rocsparse_zcoomv
 
 rocsparse_csrmv_analysis()
 ***************************
