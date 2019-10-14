@@ -805,7 +805,6 @@ rocsparse_status rocsparse_dcsrmv_analysis(rocsparse_handle          handle,
                                            const rocsparse_int*      csr_col_ind,
                                            rocsparse_mat_info        info);
 
-/*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrmv_analysis(rocsparse_handle               handle,
                                            rocsparse_operation            trans,
@@ -829,7 +828,6 @@ rocsparse_status rocsparse_zcsrmv_analysis(rocsparse_handle                handl
                                            const rocsparse_int*            csr_row_ptr,
                                            const rocsparse_int*            csr_col_ind,
                                            rocsparse_mat_info              info);
-*/
 /**@}*/
 
 /*! \ingroup level2_module
@@ -1029,7 +1027,7 @@ rocsparse_status rocsparse_dcsrmv(rocsparse_handle          handle,
                                   const double*             x,
                                   const double*             beta,
                                   double*                   y);
-/*
+
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrmv(rocsparse_handle               handle,
                                   rocsparse_operation            trans,
@@ -1061,7 +1059,6 @@ rocsparse_status rocsparse_zcsrmv(rocsparse_handle                handle,
                                   const rocsparse_double_complex* x,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex*       y);
-*/
 /**@}*/
 
 /*! \ingroup level2_module

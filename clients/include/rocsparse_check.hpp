@@ -217,4 +217,96 @@ inline void near_check_general(
     }
 }
 
+template <>
+inline void near_check_general(rocsparse_int        M,
+                               rocsparse_int        N,
+                               rocsparse_int        lda,
+                               std::complex<float>* hCPU,
+                               std::complex<float>* hGPU)
+{
+    for(rocsparse_int j = 0; j < N; ++j)
+    {
+        for(rocsparse_int i = 0; i < M; ++i)
+        {
+            std::complex<float> compare_val
+                = std::complex<float>(std::max(std::abs(hCPU[i + j * lda].real() * 1e-3f),
+                                               10 * std::numeric_limits<float>::epsilon()),
+                                      std::max(std::abs(hCPU[i + j * lda].imag() * 1e-3f),
+                                               10 * std::numeric_limits<float>::epsilon()));
+#ifdef GOOGLE_TEST
+            if(rocsparse_isnan(hCPU[i + j * lda]))
+            {
+                ASSERT_TRUE(rocsparse_isnan(hGPU[i + j * lda]));
+            }
+            else if(rocsparse_isinf(hCPU[i + j * lda]))
+            {
+                ASSERT_TRUE(rocsparse_isinf(hGPU[i + j * lda]));
+            }
+            else
+            {
+                ASSERT_NEAR(hCPU[i + j * lda].real(), hGPU[i + j * lda].real(), compare_val.real());
+                ASSERT_NEAR(hCPU[i + j * lda].imag(), hGPU[i + j * lda].imag(), compare_val.imag());
+            }
+#else
+            if(std::abs(hCPU[i + j * lda].real() - hGPU[i + j * lda].real()) >= compare_val.real()
+               || std::abs(hCPU[i + j * lda].imag() - hGPU[i + j * lda].imag())
+                      >= compare_val.imag())
+            {
+                std::cerr.precision(16);
+                std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
+                          << ") failed: " << std::abs(hCPU[i + j * lda] - hGPU[i + j * lda])
+                          << " exceeds compare_val " << compare_val << std::endl;
+                exit(EXIT_FAILURE);
+            }
+#endif
+        }
+    }
+}
+
+template <>
+inline void near_check_general(rocsparse_int         M,
+                               rocsparse_int         N,
+                               rocsparse_int         lda,
+                               std::complex<double>* hCPU,
+                               std::complex<double>* hGPU)
+{
+    for(rocsparse_int j = 0; j < N; ++j)
+    {
+        for(rocsparse_int i = 0; i < M; ++i)
+        {
+            std::complex<double> compare_val
+                = std::complex<double>(std::max(std::abs(hCPU[i + j * lda].real() * 1e-10),
+                                                10 * std::numeric_limits<double>::epsilon()),
+                                       std::max(std::abs(hCPU[i + j * lda].imag() * 1e-10),
+                                                10 * std::numeric_limits<double>::epsilon()));
+#ifdef GOOGLE_TEST
+            if(rocsparse_isnan(hCPU[i + j * lda]))
+            {
+                ASSERT_TRUE(rocsparse_isnan(hGPU[i + j * lda]));
+            }
+            else if(rocsparse_isinf(hCPU[i + j * lda]))
+            {
+                ASSERT_TRUE(rocsparse_isinf(hGPU[i + j * lda]));
+            }
+            else
+            {
+                ASSERT_NEAR(hCPU[i + j * lda].real(), hGPU[i + j * lda].real(), compare_val.real());
+                ASSERT_NEAR(hCPU[i + j * lda].imag(), hGPU[i + j * lda].imag(), compare_val.imag());
+            }
+#else
+            if(std::abs(hCPU[i + j * lda].real() - hGPU[i + j * lda].real()) >= compare_val.real()
+               || std::abs(hCPU[i + j * lda].imag() - hGPU[i + j * lda].imag())
+                      >= compare_val.imag())
+            {
+                std::cerr.precision(16);
+                std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
+                          << ") failed: " << std::abs(hCPU[i + j * lda] - hGPU[i + j * lda])
+                          << " exceeds compare_val " << compare_val << std::endl;
+                exit(EXIT_FAILURE);
+            }
+#endif
+        }
+    }
+}
+
 #endif // ROCSPARSE_CHECK_HPP

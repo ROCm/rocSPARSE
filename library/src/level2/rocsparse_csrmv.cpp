@@ -42,7 +42,7 @@ extern "C" rocsparse_status rocsparse_scsrmv_analysis(rocsparse_handle          
                                                       const rocsparse_int*      csr_col_ind,
                                                       rocsparse_mat_info        info)
 {
-    return rocsparse_csrmv_analysis_template<float>(
+    return rocsparse_csrmv_analysis_template(
         handle, trans, m, n, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info);
 }
 
@@ -57,7 +57,37 @@ extern "C" rocsparse_status rocsparse_dcsrmv_analysis(rocsparse_handle          
                                                       const rocsparse_int*      csr_col_ind,
                                                       rocsparse_mat_info        info)
 {
-    return rocsparse_csrmv_analysis_template<double>(
+    return rocsparse_csrmv_analysis_template(
+        handle, trans, m, n, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info);
+}
+
+extern "C" rocsparse_status rocsparse_ccsrmv_analysis(rocsparse_handle               handle,
+                                                      rocsparse_operation            trans,
+                                                      rocsparse_int                  m,
+                                                      rocsparse_int                  n,
+                                                      rocsparse_int                  nnz,
+                                                      const rocsparse_mat_descr      descr,
+                                                      const rocsparse_float_complex* csr_val,
+                                                      const rocsparse_int*           csr_row_ptr,
+                                                      const rocsparse_int*           csr_col_ind,
+                                                      rocsparse_mat_info             info)
+{
+    return rocsparse_csrmv_analysis_template(
+        handle, trans, m, n, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info);
+}
+
+extern "C" rocsparse_status rocsparse_zcsrmv_analysis(rocsparse_handle                handle,
+                                                      rocsparse_operation             trans,
+                                                      rocsparse_int                   m,
+                                                      rocsparse_int                   n,
+                                                      rocsparse_int                   nnz,
+                                                      const rocsparse_mat_descr       descr,
+                                                      const rocsparse_double_complex* csr_val,
+                                                      const rocsparse_int*            csr_row_ptr,
+                                                      const rocsparse_int*            csr_col_ind,
+                                                      rocsparse_mat_info              info)
+{
+    return rocsparse_csrmv_analysis_template(
         handle, trans, m, n, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info);
 }
 
@@ -98,20 +128,20 @@ extern "C" rocsparse_status rocsparse_scsrmv(rocsparse_handle          handle,
                                              const float*              beta,
                                              float*                    y)
 {
-    return rocsparse_csrmv_template<float>(handle,
-                                           trans,
-                                           m,
-                                           n,
-                                           nnz,
-                                           alpha,
-                                           descr,
-                                           csr_val,
-                                           csr_row_ptr,
-                                           csr_col_ind,
-                                           info,
-                                           x,
-                                           beta,
-                                           y);
+    return rocsparse_csrmv_template(handle,
+                                    trans,
+                                    m,
+                                    n,
+                                    nnz,
+                                    alpha,
+                                    descr,
+                                    csr_val,
+                                    csr_row_ptr,
+                                    csr_col_ind,
+                                    info,
+                                    x,
+                                    beta,
+                                    y);
 }
 
 extern "C" rocsparse_status rocsparse_dcsrmv(rocsparse_handle          handle,
@@ -129,18 +159,80 @@ extern "C" rocsparse_status rocsparse_dcsrmv(rocsparse_handle          handle,
                                              const double*             beta,
                                              double*                   y)
 {
-    return rocsparse_csrmv_template<double>(handle,
-                                            trans,
-                                            m,
-                                            n,
-                                            nnz,
-                                            alpha,
-                                            descr,
-                                            csr_val,
-                                            csr_row_ptr,
-                                            csr_col_ind,
-                                            info,
-                                            x,
-                                            beta,
-                                            y);
+    return rocsparse_csrmv_template(handle,
+                                    trans,
+                                    m,
+                                    n,
+                                    nnz,
+                                    alpha,
+                                    descr,
+                                    csr_val,
+                                    csr_row_ptr,
+                                    csr_col_ind,
+                                    info,
+                                    x,
+                                    beta,
+                                    y);
+}
+
+extern "C" rocsparse_status rocsparse_ccsrmv(rocsparse_handle               handle,
+                                             rocsparse_operation            trans,
+                                             rocsparse_int                  m,
+                                             rocsparse_int                  n,
+                                             rocsparse_int                  nnz,
+                                             const rocsparse_float_complex* alpha,
+                                             const rocsparse_mat_descr      descr,
+                                             const rocsparse_float_complex* csr_val,
+                                             const rocsparse_int*           csr_row_ptr,
+                                             const rocsparse_int*           csr_col_ind,
+                                             rocsparse_mat_info             info,
+                                             const rocsparse_float_complex* x,
+                                             const rocsparse_float_complex* beta,
+                                             rocsparse_float_complex*       y)
+{
+    return rocsparse_csrmv_template(handle,
+                                    trans,
+                                    m,
+                                    n,
+                                    nnz,
+                                    alpha,
+                                    descr,
+                                    csr_val,
+                                    csr_row_ptr,
+                                    csr_col_ind,
+                                    info,
+                                    x,
+                                    beta,
+                                    y);
+}
+
+extern "C" rocsparse_status rocsparse_zcsrmv(rocsparse_handle                handle,
+                                             rocsparse_operation             trans,
+                                             rocsparse_int                   m,
+                                             rocsparse_int                   n,
+                                             rocsparse_int                   nnz,
+                                             const rocsparse_double_complex* alpha,
+                                             const rocsparse_mat_descr       descr,
+                                             const rocsparse_double_complex* csr_val,
+                                             const rocsparse_int*            csr_row_ptr,
+                                             const rocsparse_int*            csr_col_ind,
+                                             rocsparse_mat_info              info,
+                                             const rocsparse_double_complex* x,
+                                             const rocsparse_double_complex* beta,
+                                             rocsparse_double_complex*       y)
+{
+    return rocsparse_csrmv_template(handle,
+                                    trans,
+                                    m,
+                                    n,
+                                    nnz,
+                                    alpha,
+                                    descr,
+                                    csr_val,
+                                    csr_row_ptr,
+                                    csr_col_ind,
+                                    info,
+                                    x,
+                                    beta,
+                                    y);
 }

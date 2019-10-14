@@ -460,6 +460,10 @@ int main(int argc, char* argv[])
             testing_csrmv<float>(arg);
         else if(precision == 'd')
             testing_csrmv<double>(arg);
+        else if(precision == 'c')
+            testing_csrmv<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_csrmv<std::complex<double>>(arg);
     }
     else if(function == "csrsv")
     {

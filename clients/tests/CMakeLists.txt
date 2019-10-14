@@ -62,6 +62,11 @@ set(TEST_MATRICES
   HB/nos6
   HB/nos7
   DNVS/shipsec1
+  Cote/mplate
+  Bai/qc2534
+  Chevron/Chevron2
+  Chevron/Chevron3
+  Chevron/Chevron4
 )
 
 if(NOT TARGET rocsparse)
