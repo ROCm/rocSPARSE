@@ -91,6 +91,12 @@ public:
         return {z.x, -z.y};
     }
 
+    // Unary operations
+    __device__ __host__ rocsparse_complex_num operator-() const
+    {
+        return {-x, -y};
+    }
+
     // In-place complex-complex operations
     __device__ __host__ auto& operator*=(const rocsparse_complex_num& rhs)
     {
@@ -110,6 +116,16 @@ public:
         return *this = {x - rhs.x, y - rhs.y};
     }
 
+    __device__ __host__ auto& operator/=(const rocsparse_complex_num& rhs)
+    {
+        T factor = static_cast<T>(1) / (fma(rhs.x, rhs.x, rhs.y * rhs.y));
+
+        T real = fma(x, rhs.x, y * rhs.y) * factor;
+        T imag = fma(y, rhs.x, -x * rhs.y) * factor;
+
+        return *this = {real, imag};
+    }
+
     // Out-of-place complex-complex operations
     __device__ __host__ auto operator+(const rocsparse_complex_num& rhs) const
     {
@@ -127,6 +143,12 @@ public:
     {
         auto lhs = *this;
         return lhs *= rhs;
+    }
+
+    __device__ __host__ auto operator/(const rocsparse_complex_num& rhs) const
+    {
+        auto lhs = *this;
+        return lhs /= rhs;
     }
 
     __device__ __host__ bool operator==(const rocsparse_complex_num& rhs) const
