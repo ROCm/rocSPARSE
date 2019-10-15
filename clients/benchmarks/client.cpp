@@ -492,6 +492,10 @@ int main(int argc, char* argv[])
             testing_csrmm<float>(arg);
         else if(precision == 'd')
             testing_csrmm<double>(arg);
+        else if(precision == 'c')
+            testing_csrmm<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_csrmm<std::complex<double>>(arg);
     }
     else if(function == "csrgemm")
     {
