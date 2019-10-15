@@ -373,17 +373,8 @@ void testing_coomv(const Arguments& arg)
         host_coomv<T>(
             M, nnz, h_alpha, hcoo_row_ind, hcoo_col_ind, hcoo_val, hx, h_beta, hy_gold, base);
 
-        // For "real" matrices, we need to do near comparison
-        if(mat == rocsparse_matrix_file_mtx || mat == rocsparse_matrix_file_rocalution)
-        {
-            near_check_general<T>(1, M, 1, hy_gold, hy_1);
-            near_check_general<T>(1, M, 1, hy_gold, hy_2);
-        }
-        else
-        {
-            unit_check_general<T>(1, M, 1, hy_gold, hy_1);
-            unit_check_general<T>(1, M, 1, hy_gold, hy_2);
-        }
+        near_check_general<T>(1, M, 1, hy_gold, hy_1);
+        near_check_general<T>(1, M, 1, hy_gold, hy_2);
     }
 
     if(arg.timing)

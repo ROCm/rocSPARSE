@@ -44,7 +44,7 @@ extern "C" rocsparse_status rocsparse_scoomv(rocsparse_handle          handle,
                                              const float*              beta,
                                              float*                    y)
 {
-    return rocsparse_coomv_template<float>(
+    return rocsparse_coomv_template(
         handle, trans, m, n, nnz, alpha, descr, coo_val, coo_row_ind, coo_col_ind, x, beta, y);
 }
 
@@ -62,6 +62,42 @@ extern "C" rocsparse_status rocsparse_dcoomv(rocsparse_handle          handle,
                                              const double*             beta,
                                              double*                   y)
 {
-    return rocsparse_coomv_template<double>(
+    return rocsparse_coomv_template(
+        handle, trans, m, n, nnz, alpha, descr, coo_val, coo_row_ind, coo_col_ind, x, beta, y);
+}
+
+extern "C" rocsparse_status rocsparse_ccoomv(rocsparse_handle               handle,
+                                             rocsparse_operation            trans,
+                                             rocsparse_int                  m,
+                                             rocsparse_int                  n,
+                                             rocsparse_int                  nnz,
+                                             const rocsparse_float_complex* alpha,
+                                             const rocsparse_mat_descr      descr,
+                                             const rocsparse_float_complex* coo_val,
+                                             const rocsparse_int*           coo_row_ind,
+                                             const rocsparse_int*           coo_col_ind,
+                                             const rocsparse_float_complex* x,
+                                             const rocsparse_float_complex* beta,
+                                             rocsparse_float_complex*       y)
+{
+    return rocsparse_coomv_template(
+        handle, trans, m, n, nnz, alpha, descr, coo_val, coo_row_ind, coo_col_ind, x, beta, y);
+}
+
+extern "C" rocsparse_status rocsparse_zcoomv(rocsparse_handle                handle,
+                                             rocsparse_operation             trans,
+                                             rocsparse_int                   m,
+                                             rocsparse_int                   n,
+                                             rocsparse_int                   nnz,
+                                             const rocsparse_double_complex* alpha,
+                                             const rocsparse_mat_descr       descr,
+                                             const rocsparse_double_complex* coo_val,
+                                             const rocsparse_int*            coo_row_ind,
+                                             const rocsparse_int*            coo_col_ind,
+                                             const rocsparse_double_complex* x,
+                                             const rocsparse_double_complex* beta,
+                                             rocsparse_double_complex*       y)
+{
+    return rocsparse_coomv_template(
         handle, trans, m, n, nnz, alpha, descr, coo_val, coo_row_ind, coo_col_ind, x, beta, y);
 }

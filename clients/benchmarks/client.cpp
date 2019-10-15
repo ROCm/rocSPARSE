@@ -452,6 +452,10 @@ int main(int argc, char* argv[])
             testing_coomv<float>(arg);
         else if(precision == 'd')
             testing_coomv<double>(arg);
+        else if(precision == 'c')
+            testing_coomv<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_coomv<std::complex<double>>(arg);
     }
     else if(function == "csrmv")
     {

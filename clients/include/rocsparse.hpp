@@ -119,25 +119,19 @@ rocsparse_status rocsparse_sctr(rocsparse_handle     handle,
  */
 // coomv
 template <typename T>
-rocsparse_status (*rocsparse_coomv)(rocsparse_handle          handle,
-                                    rocsparse_operation       trans,
-                                    rocsparse_int             m,
-                                    rocsparse_int             n,
-                                    rocsparse_int             nnz,
-                                    const T*                  alpha,
-                                    const rocsparse_mat_descr descr,
-                                    const T*                  coo_val,
-                                    const rocsparse_int*      coo_row_ind,
-                                    const rocsparse_int*      coo_col_ind,
-                                    const T*                  x,
-                                    const T*                  beta,
-                                    T*                        y);
-
-template <>
-static constexpr auto rocsparse_coomv<float> = rocsparse_scoomv;
-
-template <>
-static constexpr auto rocsparse_coomv<double> = rocsparse_dcoomv;
+rocsparse_status rocsparse_coomv(rocsparse_handle          handle,
+                                 rocsparse_operation       trans,
+                                 rocsparse_int             m,
+                                 rocsparse_int             n,
+                                 rocsparse_int             nnz,
+                                 const T*                  alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const T*                  coo_val,
+                                 const rocsparse_int*      coo_row_ind,
+                                 const rocsparse_int*      coo_col_ind,
+                                 const T*                  x,
+                                 const T*                  beta,
+                                 T*                        y);
 
 // csrmv
 template <typename T>
