@@ -696,7 +696,7 @@ rocsparse_status rocsparse_dcoomv(rocsparse_handle          handle,
                                   const double*             x,
                                   const double*             beta,
                                   double*                   y);
-/*
+
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccoomv(rocsparse_handle               handle,
                                   rocsparse_operation            trans,
@@ -726,7 +726,6 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle                handle,
                                   const rocsparse_double_complex* x,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex*       y);
-*/
 /**@}*/
 
 /*! \ingroup level2_module
