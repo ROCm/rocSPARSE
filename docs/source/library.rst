@@ -805,6 +805,10 @@ rocsparse_csrsv_buffer_size()
 .. doxygenfunction:: rocsparse_scsrsv_buffer_size
   :outline:
 .. doxygenfunction:: rocsparse_dcsrsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrsv_buffer_size
 
 rocsparse_csrsv_analysis()
 **************************
@@ -812,6 +816,10 @@ rocsparse_csrsv_analysis()
 .. doxygenfunction:: rocsparse_scsrsv_analysis
   :outline:
 .. doxygenfunction:: rocsparse_dcsrsv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrsv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrsv_analysis
 
 rocsparse_csrsv_solve()
 ***********************
@@ -819,6 +827,10 @@ rocsparse_csrsv_solve()
 .. doxygenfunction:: rocsparse_scsrsv_solve
   :outline:
 .. doxygenfunction:: rocsparse_dcsrsv_solve
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrsv_solve
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrsv_solve
 
 rocsparse_csrsv_clear()
 ***********************

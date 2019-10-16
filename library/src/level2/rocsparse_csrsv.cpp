@@ -44,7 +44,7 @@ extern "C" rocsparse_status rocsparse_scsrsv_buffer_size(rocsparse_handle       
                                                          rocsparse_mat_info        info,
                                                          size_t*                   buffer_size)
 {
-    return rocsparse_csrsv_buffer_size_template<float>(
+    return rocsparse_csrsv_buffer_size_template(
         handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);
 }
 
@@ -59,7 +59,37 @@ extern "C" rocsparse_status rocsparse_dcsrsv_buffer_size(rocsparse_handle       
                                                          rocsparse_mat_info        info,
                                                          size_t*                   buffer_size)
 {
-    return rocsparse_csrsv_buffer_size_template<double>(
+    return rocsparse_csrsv_buffer_size_template(
+        handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);
+}
+
+extern "C" rocsparse_status rocsparse_ccsrsv_buffer_size(rocsparse_handle               handle,
+                                                         rocsparse_operation            trans,
+                                                         rocsparse_int                  m,
+                                                         rocsparse_int                  nnz,
+                                                         const rocsparse_mat_descr      descr,
+                                                         const rocsparse_float_complex* csr_val,
+                                                         const rocsparse_int*           csr_row_ptr,
+                                                         const rocsparse_int*           csr_col_ind,
+                                                         rocsparse_mat_info             info,
+                                                         size_t*                        buffer_size)
+{
+    return rocsparse_csrsv_buffer_size_template(
+        handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);
+}
+
+extern "C" rocsparse_status rocsparse_zcsrsv_buffer_size(rocsparse_handle                handle,
+                                                         rocsparse_operation             trans,
+                                                         rocsparse_int                   m,
+                                                         rocsparse_int                   nnz,
+                                                         const rocsparse_mat_descr       descr,
+                                                         const rocsparse_double_complex* csr_val,
+                                                         const rocsparse_int* csr_row_ptr,
+                                                         const rocsparse_int* csr_col_ind,
+                                                         rocsparse_mat_info   info,
+                                                         size_t*              buffer_size)
+{
+    return rocsparse_csrsv_buffer_size_template(
         handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size);
 }
 
@@ -76,18 +106,18 @@ extern "C" rocsparse_status rocsparse_scsrsv_analysis(rocsparse_handle          
                                                       rocsparse_solve_policy    solve,
                                                       void*                     temp_buffer)
 {
-    return rocsparse_csrsv_analysis_template<float>(handle,
-                                                    trans,
-                                                    m,
-                                                    nnz,
-                                                    descr,
-                                                    csr_val,
-                                                    csr_row_ptr,
-                                                    csr_col_ind,
-                                                    info,
-                                                    analysis,
-                                                    solve,
-                                                    temp_buffer);
+    return rocsparse_csrsv_analysis_template(handle,
+                                             trans,
+                                             m,
+                                             nnz,
+                                             descr,
+                                             csr_val,
+                                             csr_row_ptr,
+                                             csr_col_ind,
+                                             info,
+                                             analysis,
+                                             solve,
+                                             temp_buffer);
 }
 
 extern "C" rocsparse_status rocsparse_dcsrsv_analysis(rocsparse_handle          handle,
@@ -103,18 +133,72 @@ extern "C" rocsparse_status rocsparse_dcsrsv_analysis(rocsparse_handle          
                                                       rocsparse_solve_policy    solve,
                                                       void*                     temp_buffer)
 {
-    return rocsparse_csrsv_analysis_template<double>(handle,
-                                                     trans,
-                                                     m,
-                                                     nnz,
-                                                     descr,
-                                                     csr_val,
-                                                     csr_row_ptr,
-                                                     csr_col_ind,
-                                                     info,
-                                                     analysis,
-                                                     solve,
-                                                     temp_buffer);
+    return rocsparse_csrsv_analysis_template(handle,
+                                             trans,
+                                             m,
+                                             nnz,
+                                             descr,
+                                             csr_val,
+                                             csr_row_ptr,
+                                             csr_col_ind,
+                                             info,
+                                             analysis,
+                                             solve,
+                                             temp_buffer);
+}
+
+extern "C" rocsparse_status rocsparse_ccsrsv_analysis(rocsparse_handle               handle,
+                                                      rocsparse_operation            trans,
+                                                      rocsparse_int                  m,
+                                                      rocsparse_int                  nnz,
+                                                      const rocsparse_mat_descr      descr,
+                                                      const rocsparse_float_complex* csr_val,
+                                                      const rocsparse_int*           csr_row_ptr,
+                                                      const rocsparse_int*           csr_col_ind,
+                                                      rocsparse_mat_info             info,
+                                                      rocsparse_analysis_policy      analysis,
+                                                      rocsparse_solve_policy         solve,
+                                                      void*                          temp_buffer)
+{
+    return rocsparse_csrsv_analysis_template(handle,
+                                             trans,
+                                             m,
+                                             nnz,
+                                             descr,
+                                             csr_val,
+                                             csr_row_ptr,
+                                             csr_col_ind,
+                                             info,
+                                             analysis,
+                                             solve,
+                                             temp_buffer);
+}
+
+extern "C" rocsparse_status rocsparse_zcsrsv_analysis(rocsparse_handle                handle,
+                                                      rocsparse_operation             trans,
+                                                      rocsparse_int                   m,
+                                                      rocsparse_int                   nnz,
+                                                      const rocsparse_mat_descr       descr,
+                                                      const rocsparse_double_complex* csr_val,
+                                                      const rocsparse_int*            csr_row_ptr,
+                                                      const rocsparse_int*            csr_col_ind,
+                                                      rocsparse_mat_info              info,
+                                                      rocsparse_analysis_policy       analysis,
+                                                      rocsparse_solve_policy          solve,
+                                                      void*                           temp_buffer)
+{
+    return rocsparse_csrsv_analysis_template(handle,
+                                             trans,
+                                             m,
+                                             nnz,
+                                             descr,
+                                             csr_val,
+                                             csr_row_ptr,
+                                             csr_col_ind,
+                                             info,
+                                             analysis,
+                                             solve,
+                                             temp_buffer);
 }
 
 extern "C" rocsparse_status rocsparse_csrsv_clear(rocsparse_handle          handle,
@@ -177,20 +261,20 @@ extern "C" rocsparse_status rocsparse_scsrsv_solve(rocsparse_handle          han
                                                    rocsparse_solve_policy    policy,
                                                    void*                     temp_buffer)
 {
-    return rocsparse_csrsv_solve_template<float>(handle,
-                                                 trans,
-                                                 m,
-                                                 nnz,
-                                                 alpha,
-                                                 descr,
-                                                 csr_val,
-                                                 csr_row_ind,
-                                                 csr_col_ind,
-                                                 info,
-                                                 x,
-                                                 y,
-                                                 policy,
-                                                 temp_buffer);
+    return rocsparse_csrsv_solve_template(handle,
+                                          trans,
+                                          m,
+                                          nnz,
+                                          alpha,
+                                          descr,
+                                          csr_val,
+                                          csr_row_ind,
+                                          csr_col_ind,
+                                          info,
+                                          x,
+                                          y,
+                                          policy,
+                                          temp_buffer);
 }
 
 extern "C" rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle          handle,
@@ -208,20 +292,82 @@ extern "C" rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle          han
                                                    rocsparse_solve_policy    policy,
                                                    void*                     temp_buffer)
 {
-    return rocsparse_csrsv_solve_template<double>(handle,
-                                                  trans,
-                                                  m,
-                                                  nnz,
-                                                  alpha,
-                                                  descr,
-                                                  csr_val,
-                                                  csr_row_ind,
-                                                  csr_col_ind,
-                                                  info,
-                                                  x,
-                                                  y,
-                                                  policy,
-                                                  temp_buffer);
+    return rocsparse_csrsv_solve_template(handle,
+                                          trans,
+                                          m,
+                                          nnz,
+                                          alpha,
+                                          descr,
+                                          csr_val,
+                                          csr_row_ind,
+                                          csr_col_ind,
+                                          info,
+                                          x,
+                                          y,
+                                          policy,
+                                          temp_buffer);
+}
+
+extern "C" rocsparse_status rocsparse_ccsrsv_solve(rocsparse_handle               handle,
+                                                   rocsparse_operation            trans,
+                                                   rocsparse_int                  m,
+                                                   rocsparse_int                  nnz,
+                                                   const rocsparse_float_complex* alpha,
+                                                   const rocsparse_mat_descr      descr,
+                                                   const rocsparse_float_complex* csr_val,
+                                                   const rocsparse_int*           csr_row_ind,
+                                                   const rocsparse_int*           csr_col_ind,
+                                                   rocsparse_mat_info             info,
+                                                   const rocsparse_float_complex* x,
+                                                   rocsparse_float_complex*       y,
+                                                   rocsparse_solve_policy         policy,
+                                                   void*                          temp_buffer)
+{
+    return rocsparse_csrsv_solve_template(handle,
+                                          trans,
+                                          m,
+                                          nnz,
+                                          alpha,
+                                          descr,
+                                          csr_val,
+                                          csr_row_ind,
+                                          csr_col_ind,
+                                          info,
+                                          x,
+                                          y,
+                                          policy,
+                                          temp_buffer);
+}
+
+extern "C" rocsparse_status rocsparse_zcsrsv_solve(rocsparse_handle                handle,
+                                                   rocsparse_operation             trans,
+                                                   rocsparse_int                   m,
+                                                   rocsparse_int                   nnz,
+                                                   const rocsparse_double_complex* alpha,
+                                                   const rocsparse_mat_descr       descr,
+                                                   const rocsparse_double_complex* csr_val,
+                                                   const rocsparse_int*            csr_row_ind,
+                                                   const rocsparse_int*            csr_col_ind,
+                                                   rocsparse_mat_info              info,
+                                                   const rocsparse_double_complex* x,
+                                                   rocsparse_double_complex*       y,
+                                                   rocsparse_solve_policy          policy,
+                                                   void*                           temp_buffer)
+{
+    return rocsparse_csrsv_solve_template(handle,
+                                          trans,
+                                          m,
+                                          nnz,
+                                          alpha,
+                                          descr,
+                                          csr_val,
+                                          csr_row_ind,
+                                          csr_col_ind,
+                                          info,
+                                          x,
+                                          y,
+                                          policy,
+                                          temp_buffer);
 }
 
 extern "C" rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle          handle,
