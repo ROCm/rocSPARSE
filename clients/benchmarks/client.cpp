@@ -525,6 +525,10 @@ int main(int argc, char* argv[])
             testing_csr2csc<float>(arg);
         else if(precision == 'd')
             testing_csr2csc<double>(arg);
+        else if(precision == 'c')
+            testing_csr2csc<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_csr2csc<std::complex<double>>(arg);
     }
     else if(function == "csr2ell")
     {

@@ -85,6 +85,8 @@ Functions:
   rocsparse_coo2csr: { function: coo2csr }
   rocsparse_scsr2csc: { function: csr2csc, <<: *single_precision }
   rocsparse_dcsr2csc: { function: csr2csc, <<: *double_precision }
+  rocsparse_ccsr2csc: { function: csr2csc, <<: *single_precision_complex }
+  rocsparse_zcsr2csc: { function: csr2csc, <<: *double_precision_complex }
   rocsparse_scsr2ell: { function: csr2ell, <<: *single_precision }
   rocsparse_dcsr2ell: { function: csr2ell, <<: *double_precision }
   rocsparse_ccsr2ell: { function: csr2ell, <<: *single_precision_complex }
