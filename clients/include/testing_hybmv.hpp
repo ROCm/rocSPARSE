@@ -263,8 +263,58 @@ void testing_hybmv(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
 
         // CPU hybmv
-        host_csrmv<T>(
-            M, nnz, h_alpha, hcsr_row_ptr, hcsr_col_ind, hcsr_val, hx, h_beta, hy_gold, base, true);
+        rocsparse_hyb_mat ptr  = hyb;
+        test_hyb*         dhyb = reinterpret_cast<test_hyb*>(ptr);
+
+        rocsparse_int ell_width = dhyb->ell_width;
+        rocsparse_int ell_nnz   = dhyb->ell_nnz;
+        rocsparse_int coo_nnz   = dhyb->coo_nnz;
+
+        host_vector<rocsparse_int> hhyb_ell_col_ind(ell_nnz);
+        host_vector<T>             hhyb_ell_val(ell_nnz);
+        host_vector<rocsparse_int> hhyb_coo_row_ind(coo_nnz);
+        host_vector<rocsparse_int> hhyb_coo_col_ind(coo_nnz);
+        host_vector<T>             hhyb_coo_val(coo_nnz);
+
+        if(ell_nnz > 0)
+        {
+            CHECK_HIP_ERROR(hipMemcpy(hhyb_ell_col_ind,
+                                      dhyb->ell_col_ind,
+                                      sizeof(rocsparse_int) * ell_nnz,
+                                      hipMemcpyDeviceToHost));
+            CHECK_HIP_ERROR(
+                hipMemcpy(hhyb_ell_val, dhyb->ell_val, sizeof(T) * ell_nnz, hipMemcpyDeviceToHost));
+        }
+
+        if(coo_nnz > 0)
+        {
+            CHECK_HIP_ERROR(hipMemcpy(hhyb_coo_row_ind,
+                                      dhyb->coo_row_ind,
+                                      sizeof(rocsparse_int) * coo_nnz,
+                                      hipMemcpyDeviceToHost));
+            CHECK_HIP_ERROR(hipMemcpy(hhyb_coo_col_ind,
+                                      dhyb->coo_col_ind,
+                                      sizeof(rocsparse_int) * coo_nnz,
+                                      hipMemcpyDeviceToHost));
+            CHECK_HIP_ERROR(
+                hipMemcpy(hhyb_coo_val, dhyb->coo_val, sizeof(T) * coo_nnz, hipMemcpyDeviceToHost));
+        }
+
+        host_hybmv<T>(M,
+                      N,
+                      h_alpha,
+                      ell_nnz,
+                      hhyb_ell_col_ind,
+                      hhyb_ell_val,
+                      ell_width,
+                      coo_nnz,
+                      hhyb_coo_row_ind,
+                      hhyb_coo_col_ind,
+                      hhyb_coo_val,
+                      hx,
+                      h_beta,
+                      hy_gold,
+                      base);
 
         near_check_general<T>(1, M, 1, hy_gold, hy_1);
         near_check_general<T>(1, M, 1, hy_gold, hy_2);

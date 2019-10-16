@@ -497,6 +497,10 @@ int main(int argc, char* argv[])
             testing_hybmv<float>(arg);
         else if(precision == 'd')
             testing_hybmv<double>(arg);
+        else if(precision == 'c')
+            testing_hybmv<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_hybmv<std::complex<double>>(arg);
     }
     else if(function == "csrmm")
     {
@@ -555,6 +559,10 @@ int main(int argc, char* argv[])
             testing_csr2hyb<float>(arg);
         else if(precision == 'd')
             testing_csr2hyb<double>(arg);
+        else if(precision == 'c')
+            testing_csr2hyb<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_csr2hyb<std::complex<double>>(arg);
     }
     else if(function == "coo2csr")
     {

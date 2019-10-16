@@ -53,3 +53,27 @@ extern "C" rocsparse_status rocsparse_dhybmv(rocsparse_handle          handle,
 {
     return rocsparse_hybmv_template(handle, trans, alpha, descr, hyb, x, beta, y);
 }
+
+extern "C" rocsparse_status rocsparse_chybmv(rocsparse_handle               handle,
+                                             rocsparse_operation            trans,
+                                             const rocsparse_float_complex* alpha,
+                                             const rocsparse_mat_descr      descr,
+                                             const rocsparse_hyb_mat        hyb,
+                                             const rocsparse_float_complex* x,
+                                             const rocsparse_float_complex* beta,
+                                             rocsparse_float_complex*       y)
+{
+    return rocsparse_hybmv_template(handle, trans, alpha, descr, hyb, x, beta, y);
+}
+
+extern "C" rocsparse_status rocsparse_zhybmv(rocsparse_handle                handle,
+                                             rocsparse_operation             trans,
+                                             const rocsparse_double_complex* alpha,
+                                             const rocsparse_mat_descr       descr,
+                                             const rocsparse_hyb_mat         hyb,
+                                             const rocsparse_double_complex* x,
+                                             const rocsparse_double_complex* beta,
+                                             rocsparse_double_complex*       y)
+{
+    return rocsparse_hybmv_template(handle, trans, alpha, descr, hyb, x, beta, y);
+}
