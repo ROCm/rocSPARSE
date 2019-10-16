@@ -30,22 +30,23 @@ Definitions:
     - { M:  -1, N:  -1 }
     - { M:   0, N:   0 }
     - { M:  50, N:  50 }
-    - { M: 647, N: 647 }
+    - { M: 187, N: 187 }
 
 Tests:
 - name: csrsv_bad_arg
   category: pre_checkin
   function: csrsv_bad_arg
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
 
 - name: csrsv
   category: quick
   function: csrsv
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
   M_N: *M_N_range
   alpha: [1.0, 2.3, -3.7]
+  alphai: [-0.7, 0.6, 1.5]
   transA: [rocsparse_operation_none]
-  diag: [rocsparse_diag_type_non_unit] # TODO rocsparse_diag_type_unit
+  diag: [rocsparse_diag_type_non_unit, rocsparse_diag_type_unit]
   uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
   apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
   spol: [rocsparse_solve_policy_auto]
@@ -80,3 +81,23 @@ Tests:
              nos6,
              amazon0312,
              sme3Dc]
+
+- name: csrsv_file
+  category: quick
+  function: csrsv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  alpha: [1.0, 2.3, -3.7]
+  alphai: [-0.07, 0.2]
+  transA: [rocsparse_operation_none]
+  diag: [rocsparse_diag_type_non_unit, rocsparse_diag_type_unit]
+  uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mplate,
+             Chevron2,
+             Chevron3,
+             Chevron4]

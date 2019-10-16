@@ -1169,7 +1169,6 @@ rocsparse_status rocsparse_dcsrsv_buffer_size(rocsparse_handle          handle,
                                               rocsparse_mat_info        info,
                                               size_t*                   buffer_size);
 
-/*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrsv_buffer_size(rocsparse_handle               handle,
                                               rocsparse_operation            trans,
@@ -1193,7 +1192,6 @@ rocsparse_status rocsparse_zcsrsv_buffer_size(rocsparse_handle                ha
                                               const rocsparse_int*            csr_col_ind,
                                               rocsparse_mat_info              info,
                                               size_t*                         buffer_size);
-*/
 /**@}*/
 
 /*! \ingroup level2_module
@@ -1287,7 +1285,6 @@ rocsparse_status rocsparse_dcsrsv_analysis(rocsparse_handle          handle,
                                            rocsparse_solve_policy    solve,
                                            void*                     temp_buffer);
 
-/*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrsv_analysis(rocsparse_handle               handle,
                                            rocsparse_operation            trans,
@@ -1315,7 +1312,6 @@ rocsparse_status rocsparse_zcsrsv_analysis(rocsparse_handle                handl
                                            rocsparse_analysis_policy       analysis,
                                            rocsparse_solve_policy          solve,
                                            void*                           temp_buffer);
-*/
 /**@}*/
 
 /*! \ingroup level2_module
@@ -1539,7 +1535,6 @@ rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle          handle,
                                         rocsparse_solve_policy    policy,
                                         void*                     temp_buffer);
 
-/*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrsv_solve(rocsparse_handle               handle,
                                         rocsparse_operation            trans,
@@ -1571,7 +1566,6 @@ rocsparse_status rocsparse_zcsrsv_solve(rocsparse_handle                handle,
                                         rocsparse_double_complex*       y,
                                         rocsparse_solve_policy          policy,
                                         void*                           temp_buffer);
-*/
 /**@}*/
 
 /*! \ingroup level2_module

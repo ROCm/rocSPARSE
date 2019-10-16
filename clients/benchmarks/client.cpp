@@ -475,6 +475,10 @@ int main(int argc, char* argv[])
             testing_csrsv<float>(arg);
         else if(precision == 'd')
             testing_csrsv<double>(arg);
+        else if(precision == 'c')
+            testing_csrsv<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_csrsv<std::complex<double>>(arg);
     }
     else if(function == "ellmv")
     {

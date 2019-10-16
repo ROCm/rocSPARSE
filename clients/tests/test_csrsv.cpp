@@ -28,6 +28,7 @@
 #include "type_dispatch.hpp"
 
 #include <cctype>
+#include <complex>
 #include <cstring>
 #include <type_traits>
 
@@ -45,7 +46,9 @@ namespace
     template <typename T>
     struct csrsv_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}>::type>
+        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
+                                || std::is_same<T, std::complex<float>>{}
+                                || std::is_same<T, std::complex<double>>{}>::type>
     {
         explicit operator bool()
         {
@@ -84,7 +87,8 @@ namespace
             {
                 return RocSPARSE_TestName<csrsv>{}
                        << "DISABLED_" << rocsparse_datatype2string(arg.compute_type) << '_'
-                       << arg.alpha << '_' << rocsparse_operation2string(arg.transA) << '_'
+                       << arg.alpha << '_' << arg.alphai << '_'
+                       << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_diagtype2string(arg.diag) << '_'
                        << rocsparse_fillmode2string(arg.uplo) << '_'
                        << rocsparse_analysis2string(arg.apol) << '_'
@@ -96,7 +100,8 @@ namespace
             {
                 return RocSPARSE_TestName<csrsv>{}
                        << "DISABLED_" << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M
-                       << '_' << arg.alpha << '_' << rocsparse_operation2string(arg.transA) << '_'
+                       << '_' << arg.alpha << '_' << arg.alphai << '_'
+                       << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_diagtype2string(arg.diag) << '_'
                        << rocsparse_fillmode2string(arg.uplo) << '_'
                        << rocsparse_analysis2string(arg.apol) << '_'
