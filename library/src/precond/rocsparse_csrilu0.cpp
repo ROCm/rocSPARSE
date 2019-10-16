@@ -75,6 +75,50 @@ extern "C" rocsparse_status rocsparse_dcsrilu0_buffer_size(rocsparse_handle     
                                         buffer_size);
 }
 
+extern "C" rocsparse_status rocsparse_ccsrilu0_buffer_size(rocsparse_handle               handle,
+                                                           rocsparse_int                  m,
+                                                           rocsparse_int                  nnz,
+                                                           const rocsparse_mat_descr      descr,
+                                                           const rocsparse_float_complex* csr_val,
+                                                           const rocsparse_int* csr_row_ptr,
+                                                           const rocsparse_int* csr_col_ind,
+                                                           rocsparse_mat_info   info,
+                                                           size_t*              buffer_size)
+{
+    return rocsparse_ccsrsv_buffer_size(handle,
+                                        rocsparse_operation_none,
+                                        m,
+                                        nnz,
+                                        descr,
+                                        csr_val,
+                                        csr_row_ptr,
+                                        csr_col_ind,
+                                        info,
+                                        buffer_size);
+}
+
+extern "C" rocsparse_status rocsparse_zcsrilu0_buffer_size(rocsparse_handle                handle,
+                                                           rocsparse_int                   m,
+                                                           rocsparse_int                   nnz,
+                                                           const rocsparse_mat_descr       descr,
+                                                           const rocsparse_double_complex* csr_val,
+                                                           const rocsparse_int* csr_row_ptr,
+                                                           const rocsparse_int* csr_col_ind,
+                                                           rocsparse_mat_info   info,
+                                                           size_t*              buffer_size)
+{
+    return rocsparse_zcsrsv_buffer_size(handle,
+                                        rocsparse_operation_none,
+                                        m,
+                                        nnz,
+                                        descr,
+                                        csr_val,
+                                        csr_row_ptr,
+                                        csr_col_ind,
+                                        info,
+                                        buffer_size);
+}
+
 extern "C" rocsparse_status rocsparse_scsrilu0_analysis(rocsparse_handle          handle,
                                                         rocsparse_int             m,
                                                         rocsparse_int             nnz,
@@ -87,17 +131,17 @@ extern "C" rocsparse_status rocsparse_scsrilu0_analysis(rocsparse_handle        
                                                         rocsparse_solve_policy    solve,
                                                         void*                     temp_buffer)
 {
-    return rocsparse_csrilu0_analysis_template<float>(handle,
-                                                      m,
-                                                      nnz,
-                                                      descr,
-                                                      csr_val,
-                                                      csr_row_ptr,
-                                                      csr_col_ind,
-                                                      info,
-                                                      analysis,
-                                                      solve,
-                                                      temp_buffer);
+    return rocsparse_csrilu0_analysis_template(handle,
+                                               m,
+                                               nnz,
+                                               descr,
+                                               csr_val,
+                                               csr_row_ptr,
+                                               csr_col_ind,
+                                               info,
+                                               analysis,
+                                               solve,
+                                               temp_buffer);
 }
 
 extern "C" rocsparse_status rocsparse_dcsrilu0_analysis(rocsparse_handle          handle,
@@ -112,17 +156,67 @@ extern "C" rocsparse_status rocsparse_dcsrilu0_analysis(rocsparse_handle        
                                                         rocsparse_solve_policy    solve,
                                                         void*                     temp_buffer)
 {
-    return rocsparse_csrilu0_analysis_template<double>(handle,
-                                                       m,
-                                                       nnz,
-                                                       descr,
-                                                       csr_val,
-                                                       csr_row_ptr,
-                                                       csr_col_ind,
-                                                       info,
-                                                       analysis,
-                                                       solve,
-                                                       temp_buffer);
+    return rocsparse_csrilu0_analysis_template(handle,
+                                               m,
+                                               nnz,
+                                               descr,
+                                               csr_val,
+                                               csr_row_ptr,
+                                               csr_col_ind,
+                                               info,
+                                               analysis,
+                                               solve,
+                                               temp_buffer);
+}
+
+extern "C" rocsparse_status rocsparse_ccsrilu0_analysis(rocsparse_handle               handle,
+                                                        rocsparse_int                  m,
+                                                        rocsparse_int                  nnz,
+                                                        const rocsparse_mat_descr      descr,
+                                                        const rocsparse_float_complex* csr_val,
+                                                        const rocsparse_int*           csr_row_ptr,
+                                                        const rocsparse_int*           csr_col_ind,
+                                                        rocsparse_mat_info             info,
+                                                        rocsparse_analysis_policy      analysis,
+                                                        rocsparse_solve_policy         solve,
+                                                        void*                          temp_buffer)
+{
+    return rocsparse_csrilu0_analysis_template(handle,
+                                               m,
+                                               nnz,
+                                               descr,
+                                               csr_val,
+                                               csr_row_ptr,
+                                               csr_col_ind,
+                                               info,
+                                               analysis,
+                                               solve,
+                                               temp_buffer);
+}
+
+extern "C" rocsparse_status rocsparse_zcsrilu0_analysis(rocsparse_handle                handle,
+                                                        rocsparse_int                   m,
+                                                        rocsparse_int                   nnz,
+                                                        const rocsparse_mat_descr       descr,
+                                                        const rocsparse_double_complex* csr_val,
+                                                        const rocsparse_int*            csr_row_ptr,
+                                                        const rocsparse_int*            csr_col_ind,
+                                                        rocsparse_mat_info              info,
+                                                        rocsparse_analysis_policy       analysis,
+                                                        rocsparse_solve_policy          solve,
+                                                        void*                           temp_buffer)
+{
+    return rocsparse_csrilu0_analysis_template(handle,
+                                               m,
+                                               nnz,
+                                               descr,
+                                               csr_val,
+                                               csr_row_ptr,
+                                               csr_col_ind,
+                                               info,
+                                               analysis,
+                                               solve,
+                                               temp_buffer);
 }
 
 extern "C" rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle   handle,
@@ -166,7 +260,7 @@ extern "C" rocsparse_status rocsparse_scsrilu0(rocsparse_handle          handle,
                                                rocsparse_solve_policy    policy,
                                                void*                     temp_buffer)
 {
-    return rocsparse_csrilu0_template<float>(
+    return rocsparse_csrilu0_template(
         handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
 }
 
@@ -181,7 +275,37 @@ extern "C" rocsparse_status rocsparse_dcsrilu0(rocsparse_handle          handle,
                                                rocsparse_solve_policy    policy,
                                                void*                     temp_buffer)
 {
-    return rocsparse_csrilu0_template<double>(
+    return rocsparse_csrilu0_template(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
+}
+
+extern "C" rocsparse_status rocsparse_ccsrilu0(rocsparse_handle          handle,
+                                               rocsparse_int             m,
+                                               rocsparse_int             nnz,
+                                               const rocsparse_mat_descr descr,
+                                               rocsparse_float_complex*  csr_val,
+                                               const rocsparse_int*      csr_row_ptr,
+                                               const rocsparse_int*      csr_col_ind,
+                                               rocsparse_mat_info        info,
+                                               rocsparse_solve_policy    policy,
+                                               void*                     temp_buffer)
+{
+    return rocsparse_csrilu0_template(
+        handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
+}
+
+extern "C" rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
+                                               rocsparse_int             m,
+                                               rocsparse_int             nnz,
+                                               const rocsparse_mat_descr descr,
+                                               rocsparse_double_complex* csr_val,
+                                               const rocsparse_int*      csr_row_ptr,
+                                               const rocsparse_int*      csr_col_ind,
+                                               rocsparse_mat_info        info,
+                                               rocsparse_solve_policy    policy,
+                                               void*                     temp_buffer)
+{
+    return rocsparse_csrilu0_template(
         handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
 }
 

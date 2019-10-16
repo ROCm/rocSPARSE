@@ -118,12 +118,20 @@ public:
 
     __device__ __host__ auto& operator/=(const rocsparse_complex_num& rhs)
     {
-        T factor = static_cast<T>(1) / (fma(rhs.x, rhs.x, rhs.y * rhs.y));
+        if(abs(rhs.x) > abs(rhs.y))
+        {
+            T ratio = rhs.y / rhs.x;
+            T scale = static_cast<T>(1) / (rhs.x + rhs.y * ratio);
+            *this   = {(x + y * ratio) * scale, (y - x * ratio) * scale};
+        }
+        else
+        {
+            T ratio = rhs.x / rhs.y;
+            T scale = static_cast<T>(1) / (rhs.x * ratio + rhs.y);
+            *this   = {(y + x * ratio) * scale, (y * ratio - x) * scale};
+        }
 
-        T real = fma(x, rhs.x, y * rhs.y) * factor;
-        T imag = fma(y, rhs.x, -x * rhs.y) * factor;
-
-        return *this = {real, imag};
+        return *this;
     }
 
     // Out-of-place complex-complex operations
