@@ -356,6 +356,105 @@ rocsparse_status rocsparse_sctr(rocsparse_handle            handle,
  *    level 2 SPARSE
  * ===========================================================================
  */
+// coomv
+template <>
+rocsparse_status rocsparse_coomv(rocsparse_handle          handle,
+                                 rocsparse_operation       trans,
+                                 rocsparse_int             m,
+                                 rocsparse_int             n,
+                                 rocsparse_int             nnz,
+                                 const float*              alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const float*              coo_val,
+                                 const rocsparse_int*      coo_row_ind,
+                                 const rocsparse_int*      coo_col_ind,
+                                 const float*              x,
+                                 const float*              beta,
+                                 float*                    y)
+{
+    return rocsparse_scoomv(
+        handle, trans, m, n, nnz, alpha, descr, coo_val, coo_row_ind, coo_col_ind, x, beta, y);
+}
+
+template <>
+rocsparse_status rocsparse_coomv(rocsparse_handle          handle,
+                                 rocsparse_operation       trans,
+                                 rocsparse_int             m,
+                                 rocsparse_int             n,
+                                 rocsparse_int             nnz,
+                                 const double*             alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const double*             coo_val,
+                                 const rocsparse_int*      coo_row_ind,
+                                 const rocsparse_int*      coo_col_ind,
+                                 const double*             x,
+                                 const double*             beta,
+                                 double*                   y)
+{
+    return rocsparse_dcoomv(
+        handle, trans, m, n, nnz, alpha, descr, coo_val, coo_row_ind, coo_col_ind, x, beta, y);
+}
+
+template <>
+rocsparse_status rocsparse_coomv(rocsparse_handle           handle,
+                                 rocsparse_operation        trans,
+                                 rocsparse_int              m,
+                                 rocsparse_int              n,
+                                 rocsparse_int              nnz,
+                                 const std::complex<float>* alpha,
+                                 const rocsparse_mat_descr  descr,
+                                 const std::complex<float>* coo_val,
+                                 const rocsparse_int*       coo_row_ind,
+                                 const rocsparse_int*       coo_col_ind,
+                                 const std::complex<float>* x,
+                                 const std::complex<float>* beta,
+                                 std::complex<float>*       y)
+{
+    return rocsparse_ccoomv(handle,
+                            trans,
+                            m,
+                            n,
+                            nnz,
+                            (const rocsparse_float_complex*)alpha,
+                            descr,
+                            (const rocsparse_float_complex*)coo_val,
+                            coo_row_ind,
+                            coo_col_ind,
+                            (const rocsparse_float_complex*)x,
+                            (const rocsparse_float_complex*)beta,
+                            (rocsparse_float_complex*)y);
+}
+
+template <>
+rocsparse_status rocsparse_coomv(rocsparse_handle            handle,
+                                 rocsparse_operation         trans,
+                                 rocsparse_int               m,
+                                 rocsparse_int               n,
+                                 rocsparse_int               nnz,
+                                 const std::complex<double>* alpha,
+                                 const rocsparse_mat_descr   descr,
+                                 const std::complex<double>* coo_val,
+                                 const rocsparse_int*        coo_row_ind,
+                                 const rocsparse_int*        coo_col_ind,
+                                 const std::complex<double>* x,
+                                 const std::complex<double>* beta,
+                                 std::complex<double>*       y)
+{
+    return rocsparse_zcoomv(handle,
+                            trans,
+                            m,
+                            n,
+                            nnz,
+                            (const rocsparse_double_complex*)alpha,
+                            descr,
+                            (const rocsparse_double_complex*)coo_val,
+                            coo_row_ind,
+                            coo_col_ind,
+                            (const rocsparse_double_complex*)x,
+                            (const rocsparse_double_complex*)beta,
+                            (rocsparse_double_complex*)y);
+}
+
 // csrmv
 template <>
 rocsparse_status rocsparse_csrmv_analysis(rocsparse_handle          handle,
@@ -565,6 +664,99 @@ rocsparse_status rocsparse_csrmv(rocsparse_handle            handle,
                             (rocsparse_double_complex*)y);
 }
 
+// ellmv
+template <>
+rocsparse_status rocsparse_ellmv(rocsparse_handle          handle,
+                                 rocsparse_operation       trans,
+                                 rocsparse_int             m,
+                                 rocsparse_int             n,
+                                 const float*              alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const float*              ell_val,
+                                 const rocsparse_int*      ell_col_ind,
+                                 rocsparse_int             ell_width,
+                                 const float*              x,
+                                 const float*              beta,
+                                 float*                    y)
+{
+    return rocsparse_sellmv(
+        handle, trans, m, n, alpha, descr, ell_val, ell_col_ind, ell_width, x, beta, y);
+}
+
+template <>
+rocsparse_status rocsparse_ellmv(rocsparse_handle          handle,
+                                 rocsparse_operation       trans,
+                                 rocsparse_int             m,
+                                 rocsparse_int             n,
+                                 const double*             alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const double*             ell_val,
+                                 const rocsparse_int*      ell_col_ind,
+                                 rocsparse_int             ell_width,
+                                 const double*             x,
+                                 const double*             beta,
+                                 double*                   y)
+{
+    return rocsparse_dellmv(
+        handle, trans, m, n, alpha, descr, ell_val, ell_col_ind, ell_width, x, beta, y);
+}
+
+template <>
+rocsparse_status rocsparse_ellmv(rocsparse_handle           handle,
+                                 rocsparse_operation        trans,
+                                 rocsparse_int              m,
+                                 rocsparse_int              n,
+                                 const std::complex<float>* alpha,
+                                 const rocsparse_mat_descr  descr,
+                                 const std::complex<float>* ell_val,
+                                 const rocsparse_int*       ell_col_ind,
+                                 rocsparse_int              ell_width,
+                                 const std::complex<float>* x,
+                                 const std::complex<float>* beta,
+                                 std::complex<float>*       y)
+{
+    return rocsparse_cellmv(handle,
+                            trans,
+                            m,
+                            n,
+                            (const rocsparse_float_complex*)alpha,
+                            descr,
+                            (const rocsparse_float_complex*)ell_val,
+                            ell_col_ind,
+                            ell_width,
+                            (const rocsparse_float_complex*)x,
+                            (const rocsparse_float_complex*)beta,
+                            (rocsparse_float_complex*)y);
+}
+
+template <>
+rocsparse_status rocsparse_ellmv(rocsparse_handle            handle,
+                                 rocsparse_operation         trans,
+                                 rocsparse_int               m,
+                                 rocsparse_int               n,
+                                 const std::complex<double>* alpha,
+                                 const rocsparse_mat_descr   descr,
+                                 const std::complex<double>* ell_val,
+                                 const rocsparse_int*        ell_col_ind,
+                                 rocsparse_int               ell_width,
+                                 const std::complex<double>* x,
+                                 const std::complex<double>* beta,
+                                 std::complex<double>*       y)
+{
+    return rocsparse_zellmv(handle,
+                            trans,
+                            m,
+                            n,
+                            (const rocsparse_double_complex*)alpha,
+                            descr,
+                            (const rocsparse_double_complex*)ell_val,
+                            ell_col_ind,
+                            ell_width,
+                            (const rocsparse_double_complex*)x,
+                            (const rocsparse_double_complex*)beta,
+                            (rocsparse_double_complex*)y);
+}
+
 /*
  * ===========================================================================
  *    conversion SPARSE
@@ -689,4 +881,205 @@ rocsparse_status rocsparse_csr2csc(rocsparse_handle            handle,
                               copy_values,
                               idx_base,
                               temp_buffer);
+
+// csr2ell
+template <>
+rocsparse_status rocsparse_csr2ell(rocsparse_handle          handle,
+                                   rocsparse_int             m,
+                                   const rocsparse_mat_descr csr_descr,
+                                   const float*              csr_val,
+                                   const rocsparse_int*      csr_row_ptr,
+                                   const rocsparse_int*      csr_col_ind,
+                                   const rocsparse_mat_descr ell_descr,
+                                   rocsparse_int             ell_width,
+                                   float*                    ell_val,
+                                   rocsparse_int*            ell_col_ind)
+{
+    return rocsparse_scsr2ell(handle,
+                              m,
+                              csr_descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              ell_descr,
+                              ell_width,
+                              ell_val,
+                              ell_col_ind);
+}
+
+template <>
+rocsparse_status rocsparse_csr2ell(rocsparse_handle          handle,
+                                   rocsparse_int             m,
+                                   const rocsparse_mat_descr csr_descr,
+                                   const double*             csr_val,
+                                   const rocsparse_int*      csr_row_ptr,
+                                   const rocsparse_int*      csr_col_ind,
+                                   const rocsparse_mat_descr ell_descr,
+                                   rocsparse_int             ell_width,
+                                   double*                   ell_val,
+                                   rocsparse_int*            ell_col_ind)
+{
+    return rocsparse_dcsr2ell(handle,
+                              m,
+                              csr_descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              ell_descr,
+                              ell_width,
+                              ell_val,
+                              ell_col_ind);
+}
+
+template <>
+rocsparse_status rocsparse_csr2ell(rocsparse_handle           handle,
+                                   rocsparse_int              m,
+                                   const rocsparse_mat_descr  csr_descr,
+                                   const std::complex<float>* csr_val,
+                                   const rocsparse_int*       csr_row_ptr,
+                                   const rocsparse_int*       csr_col_ind,
+                                   const rocsparse_mat_descr  ell_descr,
+                                   rocsparse_int              ell_width,
+                                   std::complex<float>*       ell_val,
+                                   rocsparse_int*             ell_col_ind)
+{
+    return rocsparse_ccsr2ell(handle,
+                              m,
+                              csr_descr,
+                              (const rocsparse_float_complex*)csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              ell_descr,
+                              ell_width,
+                              (rocsparse_float_complex*)ell_val,
+                              ell_col_ind);
+}
+
+template <>
+rocsparse_status rocsparse_csr2ell(rocsparse_handle            handle,
+                                   rocsparse_int               m,
+                                   const rocsparse_mat_descr   csr_descr,
+                                   const std::complex<double>* csr_val,
+                                   const rocsparse_int*        csr_row_ptr,
+                                   const rocsparse_int*        csr_col_ind,
+                                   const rocsparse_mat_descr   ell_descr,
+                                   rocsparse_int               ell_width,
+                                   std::complex<double>*       ell_val,
+                                   rocsparse_int*              ell_col_ind)
+{
+    return rocsparse_zcsr2ell(handle,
+                              m,
+                              csr_descr,
+                              (const rocsparse_double_complex*)csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              ell_descr,
+                              ell_width,
+                              (rocsparse_double_complex*)ell_val,
+                              ell_col_ind);
+}
+
+// ell2csr
+template <>
+rocsparse_status rocsparse_ell2csr(rocsparse_handle          handle,
+                                   rocsparse_int             m,
+                                   rocsparse_int             n,
+                                   const rocsparse_mat_descr ell_descr,
+                                   rocsparse_int             ell_width,
+                                   const float*              ell_val,
+                                   const rocsparse_int*      ell_col_ind,
+                                   const rocsparse_mat_descr csr_descr,
+                                   float*                    csr_val,
+                                   const rocsparse_int*      csr_row_ptr,
+                                   rocsparse_int*            csr_col_ind)
+{
+    return rocsparse_sell2csr(handle,
+                              m,
+                              n,
+                              ell_descr,
+                              ell_width,
+                              ell_val,
+                              ell_col_ind,
+                              csr_descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind);
+}
+
+template <>
+rocsparse_status rocsparse_ell2csr(rocsparse_handle          handle,
+                                   rocsparse_int             m,
+                                   rocsparse_int             n,
+                                   const rocsparse_mat_descr ell_descr,
+                                   rocsparse_int             ell_width,
+                                   const double*             ell_val,
+                                   const rocsparse_int*      ell_col_ind,
+                                   const rocsparse_mat_descr csr_descr,
+                                   double*                   csr_val,
+                                   const rocsparse_int*      csr_row_ptr,
+                                   rocsparse_int*            csr_col_ind)
+{
+    return rocsparse_dell2csr(handle,
+                              m,
+                              n,
+                              ell_descr,
+                              ell_width,
+                              ell_val,
+                              ell_col_ind,
+                              csr_descr,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind);
+}
+
+template <>
+rocsparse_status rocsparse_ell2csr(rocsparse_handle           handle,
+                                   rocsparse_int              m,
+                                   rocsparse_int              n,
+                                   const rocsparse_mat_descr  ell_descr,
+                                   rocsparse_int              ell_width,
+                                   const std::complex<float>* ell_val,
+                                   const rocsparse_int*       ell_col_ind,
+                                   const rocsparse_mat_descr  csr_descr,
+                                   std::complex<float>*       csr_val,
+                                   const rocsparse_int*       csr_row_ptr,
+                                   rocsparse_int*             csr_col_ind)
+{
+    return rocsparse_cell2csr(handle,
+                              m,
+                              n,
+                              ell_descr,
+                              ell_width,
+                              (const rocsparse_float_complex*)ell_val,
+                              ell_col_ind,
+                              csr_descr,
+                              (rocsparse_float_complex*)csr_val,
+                              csr_row_ptr,
+                              csr_col_ind);
+}
+
+template <>
+rocsparse_status rocsparse_ell2csr(rocsparse_handle            handle,
+                                   rocsparse_int               m,
+                                   rocsparse_int               n,
+                                   const rocsparse_mat_descr   ell_descr,
+                                   rocsparse_int               ell_width,
+                                   const std::complex<double>* ell_val,
+                                   const rocsparse_int*        ell_col_ind,
+                                   const rocsparse_mat_descr   csr_descr,
+                                   std::complex<double>*       csr_val,
+                                   const rocsparse_int*        csr_row_ptr,
+                                   rocsparse_int*              csr_col_ind)
+{
+    return rocsparse_zell2csr(handle,
+                              m,
+                              n,
+                              ell_descr,
+                              ell_width,
+                              (const rocsparse_double_complex*)ell_val,
+                              ell_col_ind,
+                              csr_descr,
+                              (rocsparse_double_complex*)csr_val,
+                              csr_row_ptr,
+                              csr_col_ind);
 }
