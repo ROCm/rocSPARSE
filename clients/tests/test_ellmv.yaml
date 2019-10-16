@@ -36,12 +36,12 @@ Tests:
 - name: ellmv_bad_arg
   category: pre_checkin
   function: ellmv_bad_arg
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
 
 - name: ellmv
   category: quick
   function: ellmv
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
   M: [-1, 0, 10, 500, 7111, 10000]
   N: [-3, 0, 33, 842, 4441, 10000]
   alpha_beta: *alpha_beta_range
@@ -75,3 +75,19 @@ Tests:
              amazon0312,
              sme3Dc,
              shipsec1]
+
+- name: ellmv_file
+  category: quick
+  function: ellmv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mplate,
+             qc2534,
+             Chevron2,
+             Chevron3,
+             Chevron4]

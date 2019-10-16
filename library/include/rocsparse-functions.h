@@ -696,7 +696,7 @@ rocsparse_status rocsparse_dcoomv(rocsparse_handle          handle,
                                   const double*             x,
                                   const double*             beta,
                                   double*                   y);
-/*
+
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccoomv(rocsparse_handle               handle,
                                   rocsparse_operation            trans,
@@ -726,7 +726,6 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle                handle,
                                   const rocsparse_double_complex* x,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex*       y);
-*/
 /**@}*/
 
 /*! \ingroup level2_module
@@ -1689,7 +1688,6 @@ rocsparse_status rocsparse_dellmv(rocsparse_handle          handle,
                                   const double*             beta,
                                   double*                   y);
 
-/*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_cellmv(rocsparse_handle               handle,
                                   rocsparse_operation            trans,
@@ -1717,7 +1715,6 @@ rocsparse_status rocsparse_zellmv(rocsparse_handle                handle,
                                   const rocsparse_double_complex* x,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex*       y);
-*/
 /**@}*/
 
 /*! \ingroup level2_module
@@ -3661,7 +3658,6 @@ rocsparse_status rocsparse_dcsr2csc(rocsparse_handle     handle,
                                     rocsparse_index_base idx_base,
                                     void*                temp_buffer);
 
-/*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsr2csc(rocsparse_handle               handle,
                                     rocsparse_int                  m,
@@ -3691,7 +3687,6 @@ rocsparse_status rocsparse_zcsr2csc(rocsparse_handle                handle,
                                     rocsparse_action                copy_values,
                                     rocsparse_index_base            idx_base,
                                     void*                           temp_buffer);
-*/
 /**@}*/
 
 /*! \ingroup conv_module
@@ -3863,7 +3858,6 @@ rocsparse_status rocsparse_dcsr2ell(rocsparse_handle          handle,
                                     double*                   ell_val,
                                     rocsparse_int*            ell_col_ind);
 
-/*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsr2ell(rocsparse_handle               handle,
                                     rocsparse_int                  m,
@@ -3887,7 +3881,6 @@ rocsparse_status rocsparse_zcsr2ell(rocsparse_handle                handle,
                                     rocsparse_int                   ell_width,
                                     rocsparse_double_complex*       ell_val,
                                     rocsparse_int*                  ell_col_ind);
-*/
 /**@}*/
 
 /*! \ingroup conv_module
@@ -4300,7 +4293,7 @@ rocsparse_status rocsparse_dell2csr(rocsparse_handle          handle,
                                     double*                   csr_val,
                                     const rocsparse_int*      csr_row_ptr,
                                     rocsparse_int*            csr_col_ind);
-/*
+
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_cell2csr(rocsparse_handle               handle,
                                     rocsparse_int                  m,
@@ -4326,7 +4319,6 @@ rocsparse_status rocsparse_zell2csr(rocsparse_handle                handle,
                                     rocsparse_double_complex*       csr_val,
                                     const rocsparse_int*            csr_row_ptr,
                                     rocsparse_int*                  csr_col_ind);
-*/
 /**@}*/
 
 /*! \ingroup conv_module

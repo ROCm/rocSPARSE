@@ -53,6 +53,8 @@ Functions:
 
   rocsparse_scoomv: { function: coomv, <<: *single_precision }
   rocsparse_dcoomv: { function: coomv, <<: *double_precision }
+  rocsparse_ccoomv: { function: coomv, <<: *single_precision_complex }
+  rocsparse_zcoomv: { function: coomv, <<: *double_precision_complex }
   rocsparse_scsrmv_analysis: { function: csrmv, <<: *single_precision }
   rocsparse_dcsrmv_analysis: { function: csrmv, <<: *double_precision }
   rocsparse_ccsrmv_analysis: { function: csrmv, <<: *single_precision_complex }
@@ -65,6 +67,8 @@ Functions:
   rocsparse_dcsrsv_solve: { function: csrsv_solve, <<: *double_precision }
   rocsparse_sellmv: { function: ellmv, <<: *single_precision }
   rocsparse_dellmv: { function: ellmv, <<: *double_precision }
+  rocsparse_cellmv: { function: ellmv, <<: *single_precision_complex }
+  rocsparse_zellmv: { function: ellmv, <<: *double_precision_complex }
   rocsparse_shybmv: { function: hybmv, <<: *single_precision }
   rocsparse_dhybmv: { function: hybmv, <<: *double_precision }
 
@@ -81,10 +85,16 @@ Functions:
   rocsparse_coo2csr: { function: coo2csr }
   rocsparse_scsr2csc: { function: csr2csc, <<: *single_precision }
   rocsparse_dcsr2csc: { function: csr2csc, <<: *double_precision }
+  rocsparse_ccsr2csc: { function: csr2csc, <<: *single_precision_complex }
+  rocsparse_zcsr2csc: { function: csr2csc, <<: *double_precision_complex }
   rocsparse_scsr2ell: { function: csr2ell, <<: *single_precision }
   rocsparse_dcsr2ell: { function: csr2ell, <<: *double_precision }
+  rocsparse_ccsr2ell: { function: csr2ell, <<: *single_precision_complex }
+  rocsparse_zcsr2ell: { function: csr2ell, <<: *double_precision_complex }
   rocsparse_sell2csr: { function: ell2csr, <<: *single_precision }
   rocsparse_dell2csr: { function: ell2csr, <<: *double_precision }
+  rocsparse_cell2csr: { function: ell2csr, <<: *single_precision_complex }
+  rocsparse_zell2csr: { function: ell2csr, <<: *double_precision_complex }
   rocsparse_scsr2hyb: { function: csr2hyb, <<: *single_precision }
   rocsparse_dcsr2hyb: { function: csr2hyb, <<: *double_precision }
   rocsparse_create_identity_permutation: { function: rocsparse_create_identity_permutation }
