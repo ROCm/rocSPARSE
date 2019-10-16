@@ -793,6 +793,10 @@ rocsparse_hybmv()
 .. doxygenfunction:: rocsparse_shybmv
   :outline:
 .. doxygenfunction:: rocsparse_dhybmv
+  :outline:
+.. doxygenfunction:: rocsparse_chybmv
+  :outline:
+.. doxygenfunction:: rocsparse_zhybmv
 
 rocsparse_csrsv_zero_pivot()
 ****************************
@@ -986,6 +990,10 @@ rocsparse_csr2hyb()
 .. doxygenfunction:: rocsparse_scsr2hyb
   :outline:
 .. doxygenfunction:: rocsparse_dcsr2hyb
+  :outline:
+.. doxygenfunction:: rocsparse_ccsr2hyb
+  :outline:
+.. doxygenfunction:: rocsparse_zcsr2hyb
 
 rocsparse_create_identity_permutation()
 ***************************************

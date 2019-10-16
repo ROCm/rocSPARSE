@@ -1801,7 +1801,7 @@ rocsparse_status rocsparse_dhybmv(rocsparse_handle          handle,
                                   const double*             x,
                                   const double*             beta,
                                   double*                   y);
-/*
+
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_chybmv(rocsparse_handle               handle,
                                   rocsparse_operation            trans,
@@ -1821,7 +1821,6 @@ rocsparse_status rocsparse_zhybmv(rocsparse_handle                handle,
                                   const rocsparse_double_complex* x,
                                   const rocsparse_double_complex* beta,
                                   rocsparse_double_complex*       y);
-*/
 /**@}*/
 
 /*
@@ -3988,7 +3987,7 @@ rocsparse_status rocsparse_dcsr2hyb(rocsparse_handle          handle,
                                     rocsparse_hyb_mat         hyb,
                                     rocsparse_int             user_ell_width,
                                     rocsparse_hyb_partition   partition_type);
-/*
+
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsr2hyb(rocsparse_handle               handle,
                                     rocsparse_int                  m,
@@ -4012,7 +4011,6 @@ rocsparse_status rocsparse_zcsr2hyb(rocsparse_handle                handle,
                                     rocsparse_hyb_mat               hyb,
                                     rocsparse_int                   user_ell_width,
                                     rocsparse_hyb_partition         partition_type);
-*/
 /**@}*/
 
 /*! \ingroup conv_module

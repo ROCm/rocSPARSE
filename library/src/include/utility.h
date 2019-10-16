@@ -57,6 +57,16 @@ static inline void rocsparse_one(const rocsparse_handle handle, double** one)
     *one = handle->done;
 }
 
+static inline void rocsparse_one(const rocsparse_handle handle, rocsparse_float_complex** one)
+{
+    *one = handle->cone;
+}
+
+static inline void rocsparse_one(const rocsparse_handle handle, rocsparse_double_complex** one)
+{
+    *one = handle->zone;
+}
+
 // if trace logging is turned on with
 // (handle->layer_mode & rocsparse_layer_mode_log_trace) == true
 // then
