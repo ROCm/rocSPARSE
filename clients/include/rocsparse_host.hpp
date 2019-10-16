@@ -553,6 +553,39 @@ inline void host_ellmv(rocsparse_int        M,
     }
 }
 
+template <typename T>
+inline void host_hybmv(rocsparse_int        M,
+                       rocsparse_int        N,
+                       T                    alpha,
+                       rocsparse_int        ell_nnz,
+                       const rocsparse_int* ell_col_ind,
+                       const T*             ell_val,
+                       rocsparse_int        ell_width,
+                       rocsparse_int        coo_nnz,
+                       const rocsparse_int* coo_row_ind,
+                       const rocsparse_int* coo_col_ind,
+                       const T*             coo_val,
+                       const T*             x,
+                       T                    beta,
+                       T*                   y,
+                       rocsparse_index_base base)
+{
+    T coo_beta = beta;
+
+    // ELL part
+    if(ell_nnz > 0)
+    {
+        host_ellmv<T>(M, N, ell_nnz, alpha, ell_col_ind, ell_val, ell_width, x, beta, y, base);
+        coo_beta = static_cast<T>(1);
+    }
+
+    // COO part
+    if(coo_nnz > 0)
+    {
+        host_coomv<T>(M, coo_nnz, alpha, coo_row_ind, coo_col_ind, coo_val, x, coo_beta, y, base);
+    }
+}
+
 /*
  * ===========================================================================
  *    level 3 SPARSE

@@ -67,6 +67,8 @@ _rocsparse_handle::_rocsparse_handle()
     // Device one
     THROW_IF_HIP_ERROR(hipMalloc(&sone, sizeof(float)));
     THROW_IF_HIP_ERROR(hipMalloc(&done, sizeof(double)));
+    THROW_IF_HIP_ERROR(hipMalloc(&cone, sizeof(rocsparse_float_complex)));
+    THROW_IF_HIP_ERROR(hipMalloc(&zone, sizeof(rocsparse_double_complex)));
 
     // Execute empty kernel for initialization
     hipLaunchKernelGGL(init_kernel, dim3(1), dim3(1), 0, stream);
@@ -74,12 +76,21 @@ _rocsparse_handle::_rocsparse_handle()
     // Execute memset for initialization
     THROW_IF_HIP_ERROR(hipMemsetAsync(sone, 0, sizeof(float), stream));
     THROW_IF_HIP_ERROR(hipMemsetAsync(done, 0, sizeof(double), stream));
+    THROW_IF_HIP_ERROR(hipMemsetAsync(cone, 0, sizeof(rocsparse_float_complex), stream));
+    THROW_IF_HIP_ERROR(hipMemsetAsync(zone, 0, sizeof(rocsparse_double_complex), stream));
 
     float  hsone = 1.0f;
     double hdone = 1.0;
 
+    rocsparse_float_complex  hcone = rocsparse_float_complex(1.0f, 0.0f);
+    rocsparse_double_complex hzone = rocsparse_double_complex(1.0, 0.0);
+
     THROW_IF_HIP_ERROR(hipMemcpyAsync(sone, &hsone, sizeof(float), hipMemcpyHostToDevice, stream));
     THROW_IF_HIP_ERROR(hipMemcpyAsync(done, &hdone, sizeof(double), hipMemcpyHostToDevice, stream));
+    THROW_IF_HIP_ERROR(hipMemcpyAsync(
+        cone, &hcone, sizeof(rocsparse_float_complex), hipMemcpyHostToDevice, stream));
+    THROW_IF_HIP_ERROR(hipMemcpyAsync(
+        zone, &hzone, sizeof(rocsparse_double_complex), hipMemcpyHostToDevice, stream));
 
     // Wait for device transfer to finish
     THROW_IF_HIP_ERROR(hipStreamSynchronize(stream));
@@ -105,6 +116,8 @@ _rocsparse_handle::~_rocsparse_handle()
     PRINT_IF_HIP_ERROR(hipFree(buffer));
     PRINT_IF_HIP_ERROR(hipFree(sone));
     PRINT_IF_HIP_ERROR(hipFree(done));
+    PRINT_IF_HIP_ERROR(hipFree(cone));
+    PRINT_IF_HIP_ERROR(hipFree(zone));
 
     // Close log files
     if(log_trace_ofs.is_open())

@@ -37,21 +37,6 @@
 #include "rocsparse_vector.hpp"
 #include "utility.hpp"
 
-struct test_hyb
-{
-    rocsparse_int           m;
-    rocsparse_int           n;
-    rocsparse_hyb_partition partition;
-    rocsparse_int           ell_nnz;
-    rocsparse_int           ell_width;
-    rocsparse_int*          ell_col_ind;
-    void*                   ell_val;
-    rocsparse_int           coo_nnz;
-    rocsparse_int*          coo_row_ind;
-    rocsparse_int*          coo_col_ind;
-    void*                   coo_val;
-};
-
 template <typename T>
 void testing_csr2hyb_bad_arg(const Arguments& arg)
 {

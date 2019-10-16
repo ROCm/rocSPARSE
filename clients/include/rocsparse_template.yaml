@@ -84,6 +84,8 @@ Functions:
   rocsparse_zellmv: { function: ellmv, <<: *double_precision_complex }
   rocsparse_shybmv: { function: hybmv, <<: *single_precision }
   rocsparse_dhybmv: { function: hybmv, <<: *double_precision }
+  rocsparse_chybmv: { function: hybmv, <<: *single_precision_complex }
+  rocsparse_zhybmv: { function: hybmv, <<: *double_precision_complex }
 
   rocsparse_scsrmm: { function: csrmm, <<: *single_precision }
   rocsparse_dcsrmm: { function: csrmm, <<: *double_precision }
@@ -110,6 +112,8 @@ Functions:
   rocsparse_zell2csr: { function: ell2csr, <<: *double_precision_complex }
   rocsparse_scsr2hyb: { function: csr2hyb, <<: *single_precision }
   rocsparse_dcsr2hyb: { function: csr2hyb, <<: *double_precision }
+  rocsparse_ccsr2hyb: { function: csr2hyb, <<: *single_precision_complex }
+  rocsparse_zcsr2hyb: { function: csr2hyb, <<: *double_precision_complex }
   rocsparse_create_identity_permutation: { function: rocsparse_create_identity_permutation }
   rocsparse_csrsort: { function: csrsort }
   rocsparse_cscsort: { function: cscsort }

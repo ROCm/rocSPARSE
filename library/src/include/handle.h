@@ -74,6 +74,9 @@ struct _rocsparse_handle
     // device one
     float*  sone;
     double* done;
+    // device complex one
+    rocsparse_float_complex*  cone;
+    rocsparse_double_complex* zone;
 
     // logging streams
     std::ofstream log_trace_ofs;
