@@ -840,6 +840,10 @@ rocsparse_csrmm()
 .. doxygenfunction:: rocsparse_scsrmm
   :outline:
 .. doxygenfunction:: rocsparse_dcsrmm
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrmm
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrmm
 
 .. _rocsparse_extra_functions_:
 

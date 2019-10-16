@@ -28,6 +28,7 @@
 #include "type_dispatch.hpp"
 
 #include <cctype>
+#include <complex>
 #include <cstring>
 #include <type_traits>
 
@@ -45,7 +46,9 @@ namespace
     template <typename T>
     struct csrmm_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}>::type>
+        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
+                                || std::is_same<T, std::complex<float>>{}
+                                || std::is_same<T, std::complex<double>>{}>::type>
     {
         explicit operator bool()
         {
@@ -84,8 +87,8 @@ namespace
             {
                 return RocSPARSE_TestName<csrmm>{}
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.N << '_'
-                       << arg.alpha << '_' << arg.beta << '_'
-                       << rocsparse_operation2string(arg.transA) << '_'
+                       << arg.alpha << '_' << arg.alphai << '_' << arg.beta << '_' << arg.betai
+                       << '_' << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_operation2string(arg.transB) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
@@ -94,7 +97,8 @@ namespace
             {
                 return RocSPARSE_TestName<csrmm>{} << rocsparse_datatype2string(arg.compute_type)
                                                    << '_' << arg.M << '_' << arg.N << '_' << arg.K
-                                                   << '_' << arg.alpha << '_' << arg.beta << '_'
+                                                   << '_' << arg.alpha << '_' << arg.alphai << '_'
+                                                   << arg.beta << '_' << arg.betai << '_'
                                                    << rocsparse_operation2string(arg.transA) << '_'
                                                    << rocsparse_operation2string(arg.transB) << '_'
                                                    << rocsparse_indexbase2string(arg.baseA) << '_'
