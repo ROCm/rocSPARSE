@@ -27,12 +27,12 @@ include: known_bugs.yaml
 
 Definitions:
   - &alpha_beta_range
-    - { alpha:   2.0, beta:  0.0  }
-    - { alpha:   2.0, beta:  0.67 }
-    - { alpha:   2.0, beta:  1.0  }
-    - { alpha:   3.0, beta:  0.0  }
-    - { alpha:   3.0, beta:  0.67 }
-    - { alpha:   3.0, beta:  1.0  }
+    - { alpha:   2.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
+    - { alpha:   2.0, beta:  0.67, alphai: -1.0, betai:  1.5 }
+    - { alpha:   2.0, beta:  1.0,  alphai:  1.0, betai: -0.5 }
+    - { alpha:   3.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
+    - { alpha:   3.0, beta:  0.67, alphai: -1.0, betai:  1.5 }
+    - { alpha:   3.0, beta:  1.0,  alphai:  1.0, betai: -0.5 }
 
 Tests:
 - name: coomv_bad_arg

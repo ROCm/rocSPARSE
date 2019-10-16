@@ -27,10 +27,10 @@ include: known_bugs.yaml
 
 Definitions:
   - &alpha_beta_range
-    - { alpha:  2.0, beta:  0.0 }
-    - { alpha:  2.0, beta:  0.6 }
-    - { alpha:  3.0, beta:  0.0 }
-    - { alpha:  3.0, beta:  0.6 }
+    - { alpha:  2.0, beta:  0.0, alphai:  -0.5, betai:  1.0 }
+    - { alpha:  2.0, beta:  0.6, alphai:   1.0, betai: -0.5 }
+    - { alpha:  3.0, beta:  0.0, alphai:  -0.5, betai:  1.0 }
+    - { alpha:  3.0, beta:  0.6, alphai:   1.0, betai: -0.5 }
 
 Tests:
 - name: ellmv_bad_arg
