@@ -913,6 +913,7 @@ rocsparse_status rocsparse_csrmm(rocsparse_handle            handle,
                             (const rocsparse_double_complex*)beta,
                             (rocsparse_double_complex*)C,
                             ldc);
+}
 
 /*
  * ===========================================================================
@@ -1038,6 +1039,7 @@ rocsparse_status rocsparse_csr2csc(rocsparse_handle            handle,
                               copy_values,
                               idx_base,
                               temp_buffer);
+}
 
 // csr2ell
 template <>
