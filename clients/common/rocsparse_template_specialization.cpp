@@ -983,6 +983,7 @@ rocsparse_status rocsparse_csrsv_solve(rocsparse_handle            handle,
                                   (rocsparse_double_complex*)y,
                                   policy,
                                   temp_buffer);
+}
 
 // ellmv
 template <>
