@@ -94,8 +94,8 @@ public:
     // In-place complex-complex operations
     __device__ __host__ auto& operator*=(const rocsparse_complex_num& rhs)
     {
-        T real = fma(x, rhs.x, -y * rhs.y);
-        T imag = fma(y, rhs.x, x * rhs.y);
+        T real = x * rhs.x - y * rhs.y;
+        T imag = y * rhs.x + x * rhs.y;
 
         return *this = {real, imag};
     }
