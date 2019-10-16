@@ -486,6 +486,10 @@ int main(int argc, char* argv[])
             testing_ellmv<float>(arg);
         else if(precision == 'd')
             testing_ellmv<double>(arg);
+        else if(precision == 'c')
+            testing_ellmv<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_ellmv<std::complex<double>>(arg);
     }
     else if(function == "hybmv")
     {
@@ -500,6 +504,10 @@ int main(int argc, char* argv[])
             testing_csrmm<float>(arg);
         else if(precision == 'd')
             testing_csrmm<double>(arg);
+        else if(precision == 'c')
+            testing_csrmm<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_csrmm<std::complex<double>>(arg);
     }
     else if(function == "csrgemm")
     {
@@ -525,6 +533,10 @@ int main(int argc, char* argv[])
             testing_csr2csc<float>(arg);
         else if(precision == 'd')
             testing_csr2csc<double>(arg);
+        else if(precision == 'c')
+            testing_csr2csc<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_csr2csc<std::complex<double>>(arg);
     }
     else if(function == "csr2ell")
     {
@@ -532,6 +544,10 @@ int main(int argc, char* argv[])
             testing_csr2ell<float>(arg);
         else if(precision == 'd')
             testing_csr2ell<double>(arg);
+        else if(precision == 'c')
+            testing_csr2ell<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_csr2ell<std::complex<double>>(arg);
     }
     else if(function == "csr2hyb")
     {
@@ -550,6 +566,10 @@ int main(int argc, char* argv[])
             testing_ell2csr<float>(arg);
         else if(precision == 'd')
             testing_ell2csr<double>(arg);
+        else if(precision == 'c')
+            testing_ell2csr<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_ell2csr<std::complex<double>>(arg);
     }
     else if(function == "csrsort")
     {

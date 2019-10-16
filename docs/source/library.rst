@@ -782,6 +782,10 @@ rocsparse_ellmv()
 .. doxygenfunction:: rocsparse_sellmv
   :outline:
 .. doxygenfunction:: rocsparse_dellmv
+  :outline:
+.. doxygenfunction:: rocsparse_cellmv
+  :outline:
+.. doxygenfunction:: rocsparse_zellmv
 
 rocsparse_hybmv()
 *****************
@@ -848,6 +852,10 @@ rocsparse_csrmm()
 .. doxygenfunction:: rocsparse_scsrmm
   :outline:
 .. doxygenfunction:: rocsparse_dcsrmm
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrmm
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrmm
 
 .. _rocsparse_extra_functions_:
 
@@ -947,6 +955,10 @@ rocsparse_csr2csc()
 .. doxygenfunction:: rocsparse_scsr2csc
   :outline:
 .. doxygenfunction:: rocsparse_dcsr2csc
+  :outline:
+.. doxygenfunction:: rocsparse_ccsr2csc
+  :outline:
+.. doxygenfunction:: rocsparse_zcsr2csc
 
 rocsparse_csr2ell_width()
 *************************
@@ -959,6 +971,10 @@ rocsparse_csr2ell()
 .. doxygenfunction:: rocsparse_scsr2ell
   :outline:
 .. doxygenfunction:: rocsparse_dcsr2ell
+  :outline:
+.. doxygenfunction:: rocsparse_ccsr2ell
+  :outline:
+.. doxygenfunction:: rocsparse_zcsr2ell
 
 rocsparse_ell2csr_nnz()
 ***********************
@@ -971,6 +987,10 @@ rocsparse_ell2csr()
 .. doxygenfunction:: rocsparse_sell2csr
   :outline:
 .. doxygenfunction:: rocsparse_dell2csr
+  :outline:
+.. doxygenfunction:: rocsparse_cell2csr
+  :outline:
+.. doxygenfunction:: rocsparse_zell2csr
 
 rocsparse_csr2hyb()
 *******************
