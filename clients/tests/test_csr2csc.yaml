@@ -29,12 +29,12 @@ Tests:
 - name: csr2csc_bad_arg
   category: pre_checkin
   function: csr2csc_bad_arg
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
 
 - name: csr2csc
   category: quick
   function: csr2csc
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
   M: [-1, 0, 10, 500, 872, 1000]
   N: [-3, 0, 33, 242, 623, 1000]
   action: [rocsparse_action_numeric, rocsparse_action_symbolic]
@@ -69,3 +69,18 @@ Tests:
              sme3Dc,
              webbase-1M,
              shipsec1]
+
+- name: csr2csc_file
+  category: quick
+  function: csr2csc
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  action: [rocsparse_action_numeric, rocsparse_action_symbolic]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mplate,
+             qc2534,
+             Chevron2,
+             Chevron3,
+             Chevron4]

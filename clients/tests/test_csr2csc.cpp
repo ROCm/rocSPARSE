@@ -28,6 +28,7 @@
 #include "type_dispatch.hpp"
 
 #include <cctype>
+#include <complex>
 #include <cstring>
 #include <type_traits>
 
@@ -45,7 +46,9 @@ namespace
     template <typename T>
     struct csr2csc_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}>::type>
+        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
+                                || std::is_same<T, std::complex<float>>{}
+                                || std::is_same<T, std::complex<double>>{}>::type>
     {
         explicit operator bool()
         {

@@ -3659,7 +3659,6 @@ rocsparse_status rocsparse_dcsr2csc(rocsparse_handle     handle,
                                     rocsparse_index_base idx_base,
                                     void*                temp_buffer);
 
-/*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsr2csc(rocsparse_handle               handle,
                                     rocsparse_int                  m,
@@ -3689,7 +3688,6 @@ rocsparse_status rocsparse_zcsr2csc(rocsparse_handle                handle,
                                     rocsparse_action                copy_values,
                                     rocsparse_index_base            idx_base,
                                     void*                           temp_buffer);
-*/
 /**@}*/
 
 /*! \ingroup conv_module

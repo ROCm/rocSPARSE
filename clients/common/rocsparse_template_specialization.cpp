@@ -762,6 +762,126 @@ rocsparse_status rocsparse_ellmv(rocsparse_handle            handle,
  *    conversion SPARSE
  * ===========================================================================
  */
+// csr2csc
+template <>
+rocsparse_status rocsparse_csr2csc(rocsparse_handle     handle,
+                                   rocsparse_int        m,
+                                   rocsparse_int        n,
+                                   rocsparse_int        nnz,
+                                   const float*         csr_val,
+                                   const rocsparse_int* csr_row_ptr,
+                                   const rocsparse_int* csr_col_ind,
+                                   float*               csc_val,
+                                   rocsparse_int*       csc_row_ind,
+                                   rocsparse_int*       csc_col_ptr,
+                                   rocsparse_action     copy_values,
+                                   rocsparse_index_base idx_base,
+                                   void*                temp_buffer)
+{
+    return rocsparse_scsr2csc(handle,
+                              m,
+                              n,
+                              nnz,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              csc_val,
+                              csc_row_ind,
+                              csc_col_ptr,
+                              copy_values,
+                              idx_base,
+                              temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_csr2csc(rocsparse_handle     handle,
+                                   rocsparse_int        m,
+                                   rocsparse_int        n,
+                                   rocsparse_int        nnz,
+                                   const double*        csr_val,
+                                   const rocsparse_int* csr_row_ptr,
+                                   const rocsparse_int* csr_col_ind,
+                                   double*              csc_val,
+                                   rocsparse_int*       csc_row_ind,
+                                   rocsparse_int*       csc_col_ptr,
+                                   rocsparse_action     copy_values,
+                                   rocsparse_index_base idx_base,
+                                   void*                temp_buffer)
+{
+    return rocsparse_dcsr2csc(handle,
+                              m,
+                              n,
+                              nnz,
+                              csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              csc_val,
+                              csc_row_ind,
+                              csc_col_ptr,
+                              copy_values,
+                              idx_base,
+                              temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_csr2csc(rocsparse_handle           handle,
+                                   rocsparse_int              m,
+                                   rocsparse_int              n,
+                                   rocsparse_int              nnz,
+                                   const std::complex<float>* csr_val,
+                                   const rocsparse_int*       csr_row_ptr,
+                                   const rocsparse_int*       csr_col_ind,
+                                   std::complex<float>*       csc_val,
+                                   rocsparse_int*             csc_row_ind,
+                                   rocsparse_int*             csc_col_ptr,
+                                   rocsparse_action           copy_values,
+                                   rocsparse_index_base       idx_base,
+                                   void*                      temp_buffer)
+{
+    return rocsparse_ccsr2csc(handle,
+                              m,
+                              n,
+                              nnz,
+                              (const rocsparse_float_complex*)csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              (rocsparse_float_complex*)csc_val,
+                              csc_row_ind,
+                              csc_col_ptr,
+                              copy_values,
+                              idx_base,
+                              temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_csr2csc(rocsparse_handle            handle,
+                                   rocsparse_int               m,
+                                   rocsparse_int               n,
+                                   rocsparse_int               nnz,
+                                   const std::complex<double>* csr_val,
+                                   const rocsparse_int*        csr_row_ptr,
+                                   const rocsparse_int*        csr_col_ind,
+                                   std::complex<double>*       csc_val,
+                                   rocsparse_int*              csc_row_ind,
+                                   rocsparse_int*              csc_col_ptr,
+                                   rocsparse_action            copy_values,
+                                   rocsparse_index_base        idx_base,
+                                   void*                       temp_buffer)
+{
+    return rocsparse_zcsr2csc(handle,
+                              m,
+                              n,
+                              nnz,
+                              (const rocsparse_double_complex*)csr_val,
+                              csr_row_ptr,
+                              csr_col_ind,
+                              (rocsparse_double_complex*)csc_val,
+                              csc_row_ind,
+                              csc_col_ptr,
+                              copy_values,
+                              idx_base,
+                              temp_buffer);
+
 // csr2ell
 template <>
 rocsparse_status rocsparse_csr2ell(rocsparse_handle          handle,
