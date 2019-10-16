@@ -262,29 +262,23 @@ static constexpr auto rocsparse_hybmv<double> = rocsparse_dhybmv;
  */
 // csrmm
 template <typename T>
-rocsparse_status (*rocsparse_csrmm)(rocsparse_handle          handle,
-                                    rocsparse_operation       trans_A,
-                                    rocsparse_operation       trans_B,
-                                    rocsparse_int             m,
-                                    rocsparse_int             n,
-                                    rocsparse_int             k,
-                                    rocsparse_int             nnz,
-                                    const T*                  alpha,
-                                    const rocsparse_mat_descr descr,
-                                    const T*                  csr_val,
-                                    const rocsparse_int*      csr_row_ptr,
-                                    const rocsparse_int*      csr_col_ind,
-                                    const T*                  B,
-                                    rocsparse_int             ldb,
-                                    const T*                  beta,
-                                    T*                        C,
-                                    rocsparse_int             ldc);
-
-template <>
-static constexpr auto rocsparse_csrmm<float> = rocsparse_scsrmm;
-
-template <>
-static constexpr auto rocsparse_csrmm<double> = rocsparse_dcsrmm;
+rocsparse_status rocsparse_csrmm(rocsparse_handle          handle,
+                                 rocsparse_operation       trans_A,
+                                 rocsparse_operation       trans_B,
+                                 rocsparse_int             m,
+                                 rocsparse_int             n,
+                                 rocsparse_int             k,
+                                 rocsparse_int             nnz,
+                                 const T*                  alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const T*                  csr_val,
+                                 const rocsparse_int*      csr_row_ptr,
+                                 const rocsparse_int*      csr_col_ind,
+                                 const T*                  B,
+                                 rocsparse_int             ldb,
+                                 const T*                  beta,
+                                 T*                        C,
+                                 rocsparse_int             ldc);
 
 /*
  * ===========================================================================
