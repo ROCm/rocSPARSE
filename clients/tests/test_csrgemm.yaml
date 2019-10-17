@@ -29,17 +29,18 @@ Tests:
 - name: csrgemm_bad_arg
   category: pre_checkin
   function: csrgemm_bad_arg
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
 
 # C = alpha * A * B
 - name: csrgemm_mult
   category: quick
   function: csrgemm
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
   M: [-1, 0, 50, 647, 1799]
   N: [-1, 0, 13, 523, 3712]
   K: [-1, 0, 50, 254, 1942]
-  alpha: [0.0, 2.7]
+  alpha: [0.0, 0.7]
+  alphai: [-0.5, 1.0]
   beta: [-99.0]
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none]
@@ -81,16 +82,39 @@ Tests:
              webbase-1M,
              shipsec1]
 
+- name: csrgemm_mult_file
+  category: quick
+  function: csrgemm
+  precision: *single_double_precisions_complex
+  M: 1
+  N: [-1, 0, 13, 523, 3712]
+  K: 1
+  alpha: [0.0, 2.7]
+  alphai: [-0.5, 1.0]
+  beta: [-99.0]
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseB: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mplate,
+             qc2534,
+             Chevron2,
+             Chevron3,
+             Chevron4]
+
 # C = beta * D
 - name: csrgemm_scale
   category: quick
   function: csrgemm
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
   M: [-1, 0, 50, 647, 1799]
   N: [-1, 0, 13, 523, 3712]
   K: 1
   alpha: [-99.0]
   beta: [0.0, 1.0]
+  betai: [-0.5, 1.0]
   baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
   baseD: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
@@ -123,3 +147,21 @@ Tests:
              sme3Dc,
              webbase-1M,
              shipsec1]
+
+- name: csrgemm_scale_file
+  category: quick
+  function: csrgemm
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  alpha: [-99.0]
+  beta: [0.0, 1.3]
+  betai: [-0.5, 1.0]
+  baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseD: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mplate,
+             qc2534,
+             Chevron2,
+             Chevron3,
+             Chevron4]
