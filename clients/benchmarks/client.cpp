@@ -73,6 +73,8 @@ int main(int argc, char* argv[])
     Arguments arg;
     arg.unit_check = 0;
     arg.timing     = 1;
+    arg.alphai     = 0.0;
+    arg.betai      = 0.0;
 
     std::string function;
     std::string filename;
@@ -515,10 +517,19 @@ int main(int argc, char* argv[])
     }
     else if(function == "csrgemm")
     {
+        // TODO workaround until fully implemented
+        if(arg.beta == 0.0)
+        {
+            arg.beta = -99;
+        }
         if(precision == 's')
             testing_csrgemm<float>(arg);
         else if(precision == 'd')
             testing_csrgemm<double>(arg);
+        else if(precision == 'c')
+            testing_csrgemm<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_csrgemm<std::complex<double>>(arg);
     }
     else if(function == "csrilu0")
     {

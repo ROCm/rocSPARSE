@@ -263,71 +263,59 @@ rocsparse_status rocsparse_csrmm(rocsparse_handle          handle,
  */
 // csrgemm
 template <typename T>
-rocsparse_status (*rocsparse_csrgemm_buffer_size)(rocsparse_handle          handle,
-                                                  rocsparse_operation       trans_A,
-                                                  rocsparse_operation       trans_B,
-                                                  rocsparse_int             m,
-                                                  rocsparse_int             n,
-                                                  rocsparse_int             k,
-                                                  const T*                  alpha,
-                                                  const rocsparse_mat_descr descr_A,
-                                                  rocsparse_int             nnz_A,
-                                                  const rocsparse_int*      csr_row_ptr_A,
-                                                  const rocsparse_int*      csr_col_ind_A,
-                                                  const rocsparse_mat_descr descr_B,
-                                                  rocsparse_int             nnz_B,
-                                                  const rocsparse_int*      csr_row_ptr_B,
-                                                  const rocsparse_int*      csr_col_ind_B,
-                                                  const T*                  beta,
-                                                  const rocsparse_mat_descr descr_D,
-                                                  rocsparse_int             nnz_D,
-                                                  const rocsparse_int*      csr_row_ptr_D,
-                                                  const rocsparse_int*      csr_col_ind_D,
-                                                  rocsparse_mat_info        info_C,
-                                                  size_t*                   buffer_size);
-
-template <>
-static constexpr auto rocsparse_csrgemm_buffer_size<float> = rocsparse_scsrgemm_buffer_size;
-
-template <>
-static constexpr auto rocsparse_csrgemm_buffer_size<double> = rocsparse_dcsrgemm_buffer_size;
+rocsparse_status rocsparse_csrgemm_buffer_size(rocsparse_handle          handle,
+                                               rocsparse_operation       trans_A,
+                                               rocsparse_operation       trans_B,
+                                               rocsparse_int             m,
+                                               rocsparse_int             n,
+                                               rocsparse_int             k,
+                                               const T*                  alpha,
+                                               const rocsparse_mat_descr descr_A,
+                                               rocsparse_int             nnz_A,
+                                               const rocsparse_int*      csr_row_ptr_A,
+                                               const rocsparse_int*      csr_col_ind_A,
+                                               const rocsparse_mat_descr descr_B,
+                                               rocsparse_int             nnz_B,
+                                               const rocsparse_int*      csr_row_ptr_B,
+                                               const rocsparse_int*      csr_col_ind_B,
+                                               const T*                  beta,
+                                               const rocsparse_mat_descr descr_D,
+                                               rocsparse_int             nnz_D,
+                                               const rocsparse_int*      csr_row_ptr_D,
+                                               const rocsparse_int*      csr_col_ind_D,
+                                               rocsparse_mat_info        info_C,
+                                               size_t*                   buffer_size);
 
 template <typename T>
-rocsparse_status (*rocsparse_csrgemm)(rocsparse_handle          handle,
-                                      rocsparse_operation       trans_A,
-                                      rocsparse_operation       trans_B,
-                                      rocsparse_int             m,
-                                      rocsparse_int             n,
-                                      rocsparse_int             k,
-                                      const T*                  alpha,
-                                      const rocsparse_mat_descr descr_A,
-                                      rocsparse_int             nnz_A,
-                                      const T*                  csr_val_A,
-                                      const rocsparse_int*      csr_row_ptr_A,
-                                      const rocsparse_int*      csr_col_ind_A,
-                                      const rocsparse_mat_descr descr_B,
-                                      rocsparse_int             nnz_B,
-                                      const T*                  csr_val_B,
-                                      const rocsparse_int*      csr_row_ptr_B,
-                                      const rocsparse_int*      csr_col_ind_B,
-                                      const T*                  beta,
-                                      const rocsparse_mat_descr descr_D,
-                                      rocsparse_int             nnz_D,
-                                      const T*                  csr_val_D,
-                                      const rocsparse_int*      csr_row_ptr_D,
-                                      const rocsparse_int*      csr_col_ind_D,
-                                      const rocsparse_mat_descr descr_C,
-                                      T*                        csr_val_C,
-                                      const rocsparse_int*      csr_row_ptr_C,
-                                      rocsparse_int*            csr_col_ind_C,
-                                      const rocsparse_mat_info  info_C,
-                                      void*                     temp_buffer);
-
-template <>
-static constexpr auto rocsparse_csrgemm<float> = rocsparse_scsrgemm;
-
-template <>
-static constexpr auto rocsparse_csrgemm<double> = rocsparse_dcsrgemm;
+rocsparse_status rocsparse_csrgemm(rocsparse_handle          handle,
+                                   rocsparse_operation       trans_A,
+                                   rocsparse_operation       trans_B,
+                                   rocsparse_int             m,
+                                   rocsparse_int             n,
+                                   rocsparse_int             k,
+                                   const T*                  alpha,
+                                   const rocsparse_mat_descr descr_A,
+                                   rocsparse_int             nnz_A,
+                                   const T*                  csr_val_A,
+                                   const rocsparse_int*      csr_row_ptr_A,
+                                   const rocsparse_int*      csr_col_ind_A,
+                                   const rocsparse_mat_descr descr_B,
+                                   rocsparse_int             nnz_B,
+                                   const T*                  csr_val_B,
+                                   const rocsparse_int*      csr_row_ptr_B,
+                                   const rocsparse_int*      csr_col_ind_B,
+                                   const T*                  beta,
+                                   const rocsparse_mat_descr descr_D,
+                                   rocsparse_int             nnz_D,
+                                   const T*                  csr_val_D,
+                                   const rocsparse_int*      csr_row_ptr_D,
+                                   const rocsparse_int*      csr_col_ind_D,
+                                   const rocsparse_mat_descr descr_C,
+                                   T*                        csr_val_C,
+                                   const rocsparse_int*      csr_row_ptr_C,
+                                   rocsparse_int*            csr_col_ind_C,
+                                   const rocsparse_mat_info  info_C,
+                                   void*                     temp_buffer);
 
 /*
  * ===========================================================================
