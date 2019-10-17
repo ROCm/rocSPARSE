@@ -876,6 +876,10 @@ rocsparse_csrgemm_buffer_size()
 .. doxygenfunction:: rocsparse_scsrgemm_buffer_size
   :outline:
 .. doxygenfunction:: rocsparse_dcsrgemm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrgemm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrgemm_buffer_size
 
 rocsparse_csrgemm_nnz()
 ***********************
@@ -888,6 +892,10 @@ rocsparse_csrgemm()
 .. doxygenfunction:: rocsparse_scsrgemm
   :outline:
 .. doxygenfunction:: rocsparse_dcsrgemm
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrgemm
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrgemm
 
 .. _rocsparse_precond_functions_:
 

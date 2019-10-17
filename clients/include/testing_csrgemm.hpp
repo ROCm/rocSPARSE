@@ -2270,21 +2270,21 @@ void testing_csrgemm(const Arguments& arg)
     // alpha == -99 means test for alpha == nullptr
     // beta  == -99 means test for beta == nullptr
     int scenario;
-    if(h_alpha == -99 && h_beta == -99)
+    if(h_alpha == static_cast<T>(-99) && h_beta == static_cast<T>(-99))
     {
         scenario = 1;
     }
-    else if(h_alpha != -99 && h_beta == -99)
+    else if(h_alpha != static_cast<T>(-99) && h_beta == static_cast<T>(-99))
     {
         scenario   = 2;
         halpha_ptr = &h_alpha;
     }
-    else if(h_alpha == -99 && h_beta != -99)
+    else if(h_alpha == static_cast<T>(-99) && h_beta != static_cast<T>(-99))
     {
         scenario  = 3;
         hbeta_ptr = &h_beta;
     }
-    else if(h_alpha != -99 && h_beta != -99)
+    else if(h_alpha != static_cast<T>(-99) && h_beta != static_cast<T>(-99))
     {
         scenario   = 4;
         halpha_ptr = &h_alpha;
@@ -2829,8 +2829,8 @@ void testing_csrgemm(const Arguments& arg)
         // Check C
         unit_check_general<rocsparse_int>(1, hnnz_C_gold, 1, hcsr_col_ind_C_gold, hcsr_col_ind_C_1);
         unit_check_general<rocsparse_int>(1, hnnz_C_gold, 1, hcsr_col_ind_C_gold, hcsr_col_ind_C_2);
-        unit_check_general<T>(1, hnnz_C_gold, 1, hcsr_val_C_gold, hcsr_val_C_1);
-        unit_check_general<T>(1, hnnz_C_gold, 1, hcsr_val_C_gold, hcsr_val_C_2);
+        near_check_general<T>(1, hnnz_C_gold, 1, hcsr_val_C_gold, hcsr_val_C_1);
+        near_check_general<T>(1, hnnz_C_gold, 1, hcsr_val_C_gold, hcsr_val_C_2);
     }
 
     if(arg.timing)
@@ -2979,9 +2979,9 @@ void testing_csrgemm(const Arguments& arg)
                                                    hcsr_row_ptr_D,
                                                    baseA)
                             / gpu_solve_time_used * 1e6;
-        double gpu_gbyte = csrgemm_gbyte_count<T>(
-                               M, N, K, nnz_A, nnz_B, hnnz_C_gold, nnz_D, halpha_ptr, hbeta_ptr)
-                           / gpu_solve_time_used * 1e6;
+        double gpu_gbyte
+            = csrgemm_gbyte_count<T>(M, N, K, nnz_A, nnz_B, hnnz_C_1, nnz_D, halpha_ptr, hbeta_ptr)
+              / gpu_solve_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
@@ -2998,7 +2998,7 @@ void testing_csrgemm(const Arguments& arg)
         std::cout << std::setw(12) << rocsparse_operation2string(transA) << std::setw(12)
                   << rocsparse_operation2string(transB) << std::setw(12) << M << std::setw(12) << N
                   << std::setw(12) << K << std::setw(12) << nnz_A << std::setw(12) << nnz_B
-                  << std::setw(12) << hnnz_C_gold << std::setw(12) << nnz_D;
+                  << std::setw(12) << hnnz_C_1 << std::setw(12) << nnz_D;
         if(scenario == 2 || scenario == 4)
         {
             std::cout << std::setw(12) << h_alpha;
