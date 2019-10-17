@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
          "Specific matrix/vector size testing: SPARSE-1: the length of the "
          "dense vector. SPARSE-2 & SPARSE-3: the number of columns")
 
-        ("sizen,k",
+        ("sizek,k",
          po::value<rocsparse_int>(&arg.K)->default_value(128),
          "Specific matrix/vector size testing: SPARSE-3: the number of columns")
 
