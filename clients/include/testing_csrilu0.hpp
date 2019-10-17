@@ -223,7 +223,7 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
                                                           nullptr),
                             rocsparse_status_invalid_pointer);
 
-    // Test rocsparse_csrilu0_solve()
+    // Test rocsparse_csrilu0()
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0<T>(nullptr,
                                                  safe_size,
                                                  safe_size,
@@ -562,8 +562,8 @@ void testing_csrilu0(const Arguments& arg)
         // Check solution vector if no pivot has been found
         if(h_analysis_pivot_gold[0] == -1 && h_solve_pivot_gold[0] == -1)
         {
-            unit_check_general<T>(1, nnz, 1, hcsr_val_gold, hcsr_val_1);
-            unit_check_general<T>(1, nnz, 1, hcsr_val_gold, hcsr_val_2);
+            near_check_general<T>(1, nnz, 1, hcsr_val_gold, hcsr_val_1);
+            near_check_general<T>(1, nnz, 1, hcsr_val_gold, hcsr_val_2);
         }
     }
 

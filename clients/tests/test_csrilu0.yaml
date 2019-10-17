@@ -30,18 +30,18 @@ Definitions:
     - { M:  -1, N:  -1 }
     - { M:   0, N:   0 }
     - { M:  50, N:  50 }
-    - { M: 647, N: 647 }
+    - { M: 347, N: 347 }
 
 Tests:
 - name: csrilu0_bad_arg
   category: pre_checkin
   function: csrilu0_bad_arg
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
 
 - name: csrilu0
   category: quick
   function: csrilu0
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex_real
   M_N: *M_N_range
   transA: [rocsparse_operation_none]
   apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
@@ -75,3 +75,18 @@ Tests:
              nos7,
              amazon0312,
              sme3Dc]
+
+- name: csrilu0_file
+  category: quick
+  function: csrilu0
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  transA: [rocsparse_operation_none]
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron2,
+             Chevron3,
+             Chevron4]
