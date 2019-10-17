@@ -37,15 +37,76 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mac_econ_fwd500,
-             mc2depi,
-             scircuit,
-             bmwcra_1,
-             nos1,
              nos2,
-             nos3,
              nos4,
-             nos5,
              nos6,
-             nos7,
+             scircuit]
+
+- name: csrilusv_file
+  category: pre_checkin
+  function: csrilusv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mc2depi,
+             ASIC_320k,
+             nos1,
+             nos3,
+             nos5,
+             nos7]
+
+- name: csrilusv_file
+  category: nightly
+  function: csrilusv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [bmwcra_1,
              amazon0312,
-             sme3Dc]
+             Chebyshev4,
+             sme3Dc,
+             webbase-1M]
+
+- name: csrilusv_file
+  category: quick
+  function: csrilusv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron2]
+
+- name: csrilusv_file
+  category: pre_checkin
+  function: csrilusv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron3]
+
+- name: csrilusv_file
+  category: nightly
+  function: csrilusv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron4]

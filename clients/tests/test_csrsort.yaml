@@ -35,8 +35,28 @@ Tests:
   category: quick
   function: csrsort
   precision: *single_precision
-  M: [-1, 0, 10, 500, 872, 1000]
-  N: [-3, 0, 33, 242, 623, 1000]
+  M: [10, 500]
+  N: [33, 242]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  algo: [0, 1]
+
+- name: csrsort
+  category: pre_checkin
+  function: csrsort
+  precision: *single_precision
+  M: [-1, 0, 3872, 10000]
+  N: [-3, 0, 1623, 10000]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  algo: [0, 1]
+
+- name: csrsort
+  category: nightly
+  function: csrsort
+  precision: *single_precision
+  M: [29593, 159382, 738249]
+  N: [9173, 82940, 538192]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
   algo: [0, 1]
@@ -50,22 +70,47 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   algo: [0, 1]
-  filename: [rma10,
-             mac_econ_fwd500,
-             bibd_22_8,
-             mc2depi,
-             scircuit,
-             ASIC_320k,
-             bmwcra_1,
-             nos1,
+  filename: [mac_econ_fwd500,
              nos2,
-             nos3,
              nos4,
-             nos5,
              nos6,
-             nos7,
+             scircuit,
+             Chevron2,
+             mplate,
+             qc2534]
+
+- name: csrsort_file
+  category: pre_checkin
+  function: csrsort
+  precision: *single_precision
+  M: 1
+  N: 1
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  algo: [0, 1]
+  filename: [rma10,
+             mc2depi,
+             ASIC_320k,
+             nos1,
+             nos3,
+             nos5,
+             nos7]
+
+- name: csrsort_file
+  category: nightly
+  function: csrsort
+  precision: *single_precision
+  M: 1
+  N: 1
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  algo: [0, 1]
+  filename: [bibd_22_8,
+             bmwcra_1,
              amazon0312,
              Chebyshev4,
              sme3Dc,
              webbase-1M,
-             shipsec1]
+             shipsec1,
+             Chevron3,
+             Chevron4]

@@ -26,13 +26,22 @@ include: rocsparse_common.yaml
 include: known_bugs.yaml
 
 Definitions:
-  - &alpha_beta_range
+  - &alpha_beta_range_quick
+    - { alpha:   1.0, beta: -1.0, alphai:  1.0, betai: -0.5 }
+    - { alpha:  -0.5, beta:  0.5, alphai: -0.5, betai:  1.0 }
+
+  - &alpha_beta_range_checkin
     - { alpha:   2.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
     - { alpha:   2.0, beta:  0.67, alphai: -1.0, betai:  1.5 }
-    - { alpha:   2.0, beta:  1.0,  alphai:  1.0, betai: -0.5 }
-    - { alpha:   3.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
-    - { alpha:   3.0, beta:  0.67, alphai: -1.0, betai:  1.5 }
+    - { alpha:   0.0, beta:  1.0,  alphai:  1.5, betai:  0.5 }
     - { alpha:   3.0, beta:  1.0,  alphai:  1.0, betai: -0.5 }
+
+  - &alpha_beta_range_nightly
+    - { alpha:   0.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
+    - { alpha:   2.0, beta:  0.67, alphai:  0.0, betai:  1.5 }
+    - { alpha:   3.0, beta:  1.0,  alphai:  1.5, betai:  0.0 }
+    - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
+    - { alpha:  -1.0, beta: -0.5,  alphai:  0.0, betai:  0.0 }
 
 Tests:
 - name: coomv_bad_arg
@@ -44,9 +53,31 @@ Tests:
   category: quick
   function: coomv
   precision: *single_double_precisions_complex_real
-  M: [-1, 0, 10, 500, 7111, 10000]
-  N: [-3, 0, 33, 842, 4441, 10000]
-  alpha_beta: *alpha_beta_range
+  M: [10, 500]
+  N: [33, 842]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+
+- name: coomv
+  category: pre_checkin
+  function: coomv
+  precision: *single_double_precisions_complex_real
+  M: [-1, 0, 7111, 10000]
+  N: [-3, 0, 4441, 10000]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+
+- name: coomv
+  category: nightly
+  function: coomv
+  precision: *single_double_precisions_complex_real
+  M: [39385, 193482, 639102]
+  N: [29348, 340123, 710341]
+  alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
@@ -57,24 +88,46 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  alpha_beta: *alpha_beta_range
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mac_econ_fwd500,
+             nos2,
+             nos4,
+             nos6,
+             scircuit]
+
+- name: coomv_file
+  category: pre_checkin
+  function: coomv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [rma10,
-             mac_econ_fwd500,
-             bibd_22_8,
              mc2depi,
-             scircuit,
              ASIC_320k,
-             bmwcra_1,
              nos1,
-             nos2,
              nos3,
-             nos4,
              nos5,
-             nos6,
-             nos7,
+             nos7]
+
+- name: coomv_file
+  category: nightly
+  function: coomv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [bibd_22_8,
+             bmwcra_1,
              amazon0312,
              Chebyshev4,
              sme3Dc,
@@ -87,12 +140,34 @@ Tests:
   precision: *single_double_precisions_complex
   M: 1
   N: 1
-  alpha_beta: *alpha_beta_range
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron2,
+             qc2534]
+
+- name: coomv_file
+  category: pre_checkin
+  function: coomv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mplate,
-             qc2534,
-             Chevron2,
-             Chevron3,
-             Chevron4]
+             Chevron3]
+
+- name: coomv_file
+  category: nightly
+  function: coomv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron4]

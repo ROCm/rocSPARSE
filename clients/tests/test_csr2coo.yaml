@@ -35,8 +35,26 @@ Tests:
   category: quick
   function: csr2coo
   precision: *single_precision
-  M: [-1, 0, 10, 500, 872, 1000]
-  N: [-3, 0, 33, 242, 623, 1000]
+  M: [10, 872]
+  N: [33, 623]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+
+- name: csr2coo
+  category: pre_checkin
+  function: csr2coo
+  precision: *single_precision
+  M: [-1, 0, 500, 1000]
+  N: [-3, 0, 242, 1000]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+
+- name: csr2coo
+  category: nightly
+  function: csr2coo
+  precision: *single_precision
+  M: [27428, 941291, 1105637]
+  N: [18582, 571938, 995827]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
 
@@ -48,22 +66,45 @@ Tests:
   N: 1
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [rma10,
-             mac_econ_fwd500,
-             bibd_22_8,
-             mc2depi,
-             scircuit,
-             ASIC_320k,
-             bmwcra_1,
-             nos1,
+  filename: [mac_econ_fwd500,
              nos2,
-             nos3,
              nos4,
-             nos5,
              nos6,
-             nos7,
+             scircuit,
+             Chevron2,
+             mplate,
+             qc2534]
+
+- name: csr2coo_file
+  category: pre_checkin
+  function: csr2coo
+  precision: *single_precision
+  M: 1
+  N: 1
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [rma10,
+             mc2depi,
+             ASIC_320k,
+             nos1,
+             nos3,
+             nos5,
+             nos7]
+
+- name: csr2coo_file
+  category: nightly
+  function: csr2coo
+  precision: *single_precision
+  M: 1
+  N: 1
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [bibd_22_8,
+             bmwcra_1,
              amazon0312,
              Chebyshev4,
              sme3Dc,
              webbase-1M,
-             shipsec1]
+             shipsec1,
+             Chevron3,
+             Chevron4]
