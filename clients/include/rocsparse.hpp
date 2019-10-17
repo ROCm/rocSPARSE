@@ -336,24 +336,7 @@ static constexpr auto rocsparse_csrgemm<double> = rocsparse_dcsrgemm;
  */
 // csrilu0
 template <typename T>
-rocsparse_status (*rocsparse_csrilu0_buffer_size)(rocsparse_handle          handle,
-                                                  rocsparse_int             m,
-                                                  rocsparse_int             nnz,
-                                                  const rocsparse_mat_descr descr,
-                                                  const T*                  csr_val,
-                                                  const rocsparse_int*      csr_row_ptr,
-                                                  const rocsparse_int*      csr_col_ind,
-                                                  rocsparse_mat_info        info,
-                                                  size_t*                   buffer_size);
-
-template <>
-static constexpr auto rocsparse_csrilu0_buffer_size<float> = rocsparse_scsrilu0_buffer_size;
-
-template <>
-static constexpr auto rocsparse_csrilu0_buffer_size<double> = rocsparse_dcsrilu0_buffer_size;
-
-template <typename T>
-rocsparse_status (*rocsparse_csrilu0_analysis)(rocsparse_handle          handle,
+rocsparse_status rocsparse_csrilu0_buffer_size(rocsparse_handle          handle,
                                                rocsparse_int             m,
                                                rocsparse_int             nnz,
                                                const rocsparse_mat_descr descr,
@@ -361,33 +344,32 @@ rocsparse_status (*rocsparse_csrilu0_analysis)(rocsparse_handle          handle,
                                                const rocsparse_int*      csr_row_ptr,
                                                const rocsparse_int*      csr_col_ind,
                                                rocsparse_mat_info        info,
-                                               rocsparse_analysis_policy analysis,
-                                               rocsparse_solve_policy    solve,
-                                               void*                     temp_buffer);
-
-template <>
-static constexpr auto rocsparse_csrilu0_analysis<float> = rocsparse_scsrilu0_analysis;
-
-template <>
-static constexpr auto rocsparse_csrilu0_analysis<double> = rocsparse_dcsrilu0_analysis;
+                                               size_t*                   buffer_size);
 
 template <typename T>
-rocsparse_status (*rocsparse_csrilu0)(rocsparse_handle          handle,
-                                      rocsparse_int             m,
-                                      rocsparse_int             nnz,
-                                      const rocsparse_mat_descr descr,
-                                      T*                        csr_val,
-                                      const rocsparse_int*      csr_row_ptr,
-                                      const rocsparse_int*      csr_col_ind,
-                                      rocsparse_mat_info        info,
-                                      rocsparse_solve_policy    policy,
-                                      void*                     temp_buffer);
+rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             nnz,
+                                            const rocsparse_mat_descr descr,
+                                            const T*                  csr_val,
+                                            const rocsparse_int*      csr_row_ptr,
+                                            const rocsparse_int*      csr_col_ind,
+                                            rocsparse_mat_info        info,
+                                            rocsparse_analysis_policy analysis,
+                                            rocsparse_solve_policy    solve,
+                                            void*                     temp_buffer);
 
-template <>
-static constexpr auto rocsparse_csrilu0<float> = rocsparse_scsrilu0;
-
-template <>
-static constexpr auto rocsparse_csrilu0<double> = rocsparse_dcsrilu0;
+template <typename T>
+rocsparse_status rocsparse_csrilu0(rocsparse_handle          handle,
+                                   rocsparse_int             m,
+                                   rocsparse_int             nnz,
+                                   const rocsparse_mat_descr descr,
+                                   T*                        csr_val,
+                                   const rocsparse_int*      csr_row_ptr,
+                                   const rocsparse_int*      csr_col_ind,
+                                   rocsparse_mat_info        info,
+                                   rocsparse_solve_policy    policy,
+                                   void*                     temp_buffer);
 
 /*
  * ===========================================================================

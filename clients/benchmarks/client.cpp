@@ -526,6 +526,10 @@ int main(int argc, char* argv[])
             testing_csrilu0<float>(arg);
         else if(precision == 'd')
             testing_csrilu0<double>(arg);
+        else if(precision == 'c')
+            testing_csrilu0<std::complex<float>>(arg);
+        else if(precision == 'z')
+            testing_csrilu0<std::complex<double>>(arg);
     }
     else if(function == "csr2coo")
     {

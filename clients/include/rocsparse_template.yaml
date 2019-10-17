@@ -93,8 +93,20 @@ Functions:
   rocsparse_scsrgemm: { function: csrgemm, <<: *single_precision }
   rocsparse_dcsrgemm: { function: csrgemm, <<: *double_precision }
 
+  rocsparse_scsrilu0_buffer_size: { function: csrilu0, <<: *single_precision }
+  rocsparse_dcsrilu0_buffer_size: { function: csrilu0, <<: *double_precision }
+  rocsparse_ccsrilu0_buffer_size: { function: csrilu0, <<: *single_precision_complex }
+  rocsparse_zcsrilu0_buffer_size: { function: csrilu0, <<: *double_precision_complex }
+  rocsparse_scsrilu0_analysis: { function: csrilu0, <<: *single_precision }
+  rocsparse_dcsrilu0_analysis: { function: csrilu0, <<: *double_precision }
+  rocsparse_ccsrilu0_analysis: { function: csrilu0, <<: *single_precision_complex }
+  rocsparse_zcsrilu0_analysis: { function: csrilu0, <<: *double_precision_complex }
   rocsparse_scsrilu0: { function: csrilu0, <<: *single_precision }
   rocsparse_dcsrilu0: { function: csrilu0, <<: *double_precision }
+  rocsparse_ccsrilu0: { function: csrilu0, <<: *single_precision_complex }
+  rocsparse_zcsrilu0: { function: csrilu0, <<: *double_precision_complex }
+  rocsparse_csrilu0_zero_pivot: { function: csrilu0 }
+  rocsparse_csrilu0_clear: { function: csrilu0 }
 
   rocsparse_csr2coo: { function: csr2coo }
   rocsparse_coo2csr: { function: coo2csr }

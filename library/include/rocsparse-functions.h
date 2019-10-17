@@ -2899,7 +2899,6 @@ rocsparse_status rocsparse_dcsrilu0_buffer_size(rocsparse_handle          handle
                                                 rocsparse_mat_info        info,
                                                 size_t*                   buffer_size);
 
-/*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrilu0_buffer_size(rocsparse_handle               handle,
                                                 rocsparse_int                  m,
@@ -2921,7 +2920,6 @@ rocsparse_status rocsparse_zcsrilu0_buffer_size(rocsparse_handle                
                                                 const rocsparse_int*            csr_col_ind,
                                                 rocsparse_mat_info              info,
                                                 size_t*                         buffer_size);
-*/
 /**@}*/
 
 /*! \ingroup precond_module
@@ -3012,7 +3010,6 @@ rocsparse_status rocsparse_dcsrilu0_analysis(rocsparse_handle          handle,
                                              rocsparse_solve_policy    solve,
                                              void*                     temp_buffer);
 
-/*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrilu0_analysis(rocsparse_handle               handle,
                                              rocsparse_int                  m,
@@ -3038,7 +3035,6 @@ rocsparse_status rocsparse_zcsrilu0_analysis(rocsparse_handle                han
                                              rocsparse_analysis_policy       analysis,
                                              rocsparse_solve_policy          solve,
                                              void*                           temp_buffer);
-*/
 /**@}*/
 
 /*! \ingroup precond_module
@@ -3335,7 +3331,6 @@ rocsparse_status rocsparse_dcsrilu0(rocsparse_handle          handle,
                                     rocsparse_solve_policy    policy,
                                     void*                     temp_buffer);
 
-/*
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_ccsrilu0(rocsparse_handle          handle,
                                     rocsparse_int             m,
@@ -3359,7 +3354,6 @@ rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
                                     rocsparse_mat_info        info,
                                     rocsparse_solve_policy    policy,
                                     void*                     temp_buffer);
-*/
 /**@}*/
 
 /*

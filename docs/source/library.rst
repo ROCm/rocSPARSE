@@ -909,6 +909,10 @@ rocsparse_csrilu0_buffer_size()
 .. doxygenfunction:: rocsparse_scsrilu0_buffer_size
   :outline:
 .. doxygenfunction:: rocsparse_dcsrilu0_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrilu0_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrilu0_buffer_size
 
 rocsparse_csrilu0_analysis()
 ****************************
@@ -916,6 +920,10 @@ rocsparse_csrilu0_analysis()
 .. doxygenfunction:: rocsparse_scsrilu0_analysis
   :outline:
 .. doxygenfunction:: rocsparse_dcsrilu0_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrilu0_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrilu0_analysis
 
 rocsparse_csrilu0()
 *******************
@@ -923,6 +931,10 @@ rocsparse_csrilu0()
 .. doxygenfunction:: rocsparse_scsrilu0
   :outline:
 .. doxygenfunction:: rocsparse_dcsrilu0
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrilu0
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrilu0
 
 rocsparse_csrilu0_clear()
 **********************************
