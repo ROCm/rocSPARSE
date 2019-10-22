@@ -78,12 +78,12 @@ rocSPARSECI:
         platform, project->
 
         String sudo = auxiliary.sudo(platform.jenkinsLabel)
-        def gfilter = auxiliary.isJobStartedByTimer() ? "*nightly*" : "*checkin*"
+        def gfilter = auxiliary.isJobStartedByTimer() ? "*quick*:*checkin*:*nightly*" : "*quick*:*checkin*"
         def distest = platform.jenkinsLabel.contains('gfx908') ? "" : "--gtest_also_run_disabled_tests"
         def command = """#!/usr/bin/env bash
                         set -x
                         cd ${project.paths.project_build_prefix}/build/release/clients/staging
-                        ${sudo} LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test ${distest} --gtest_output=xml --gtest_color=yes #--gtest_filter=${gfilter}-*known_bug*
+                        ${sudo} LD_LIBRARY_PATH=/opt/rocm/hcc/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test ${distest} --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}-*known_bug*
                     """
 
         platform.runCommand(this, command)

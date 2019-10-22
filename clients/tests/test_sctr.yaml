@@ -35,6 +35,22 @@ Tests:
   category: quick
   function: sctr
   precision: *single_double_precisions_complex_real
-  M: [12000, 15332, 22031]
-  nnz: [-1, 0, 5, 10, 500, 1000, 7111, 10000]
+  M: [12000]
+  nnz: [5, 10, 500]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+
+- name: sctr
+  category: pre_checkin
+  function: sctr
+  precision: *single_double_precisions_complex_real
+  M: [15332, 22031, 31958]
+  nnz: [-1, 0, 1543, 7111, 10000]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+
+- name: sctr
+  category: nightly
+  function: sctr
+  precision: *single_double_precisions_complex_real
+  M: [735519, 1452387, 7834525]
+  nnz: [23512, 84412, 311983]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]

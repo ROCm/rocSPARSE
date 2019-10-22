@@ -35,11 +35,33 @@ Tests:
   category: quick
   function: csr2hyb
   precision: *single_double_precisions_complex_real
-  M: [-1, 0, 10, 500, 872, 1000]
-  N: [-3, 0, 33, 242, 623, 1000]
+  M: [10, 872]
+  N: [33, 623]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
+  algo: [-33]
+  matrix: [rocsparse_matrix_random]
+
+- name: csr2hyb
+  category: pre_checkin
+  function: csr2hyb
+  precision: *single_double_precisions_complex_real
+  M: [-1, 0, 500, 1000]
+  N: [-3, 0, 242, 1000]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
   algo: [-33, -1, 0, 2147483647]
+  matrix: [rocsparse_matrix_random]
+
+- name: csr2hyb
+  category: nightly
+  function: csr2hyb
+  precision: *single_double_precisions_complex_real
+  M: [27428, 941291, 1105637]
+  N: [18582, 571938, 995827]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
+  algo: [-33]
   matrix: [rocsparse_matrix_random]
 
 - name: csr2hyb_file
@@ -50,22 +72,44 @@ Tests:
   N: 1
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
+  algo: [-33]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mac_econ_fwd500,
+             nos2,
+             nos4,
+             nos6,
+             scircuit]
+
+- name: csr2hyb_file
+  category: pre_checkin
+  function: csr2hyb
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
   algo: [-33, -1, 0, 2147483647]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [rma10,
-             mac_econ_fwd500,
-             bibd_22_8,
              mc2depi,
-             scircuit,
              ASIC_320k,
-             bmwcra_1,
              nos1,
-             nos2,
              nos3,
-             nos4,
              nos5,
-             nos6,
-             nos7,
+             nos7]
+
+- name: csr2hyb_file
+  category: nightly
+  function: csr2hyb
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
+  algo: [-33]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [bibd_22_8,
+             bmwcra_1,
              amazon0312,
              Chebyshev4,
              sme3Dc,
@@ -80,10 +124,32 @@ Tests:
   N: 1
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
+  algo: [-33]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [qc2534,
+             Chevron2]
+
+- name: csr2hyb_file
+  category: pre_checkin
+  function: csr2hyb
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
   algo: [-33, -1, 0, 2147483647]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mplate,
-             qc2534,
-             Chevron2,
-             Chevron3,
-             Chevron4]
+             Chevron3]
+
+- name: csr2hyb_file
+  category: nightly
+  function: csr2hyb
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
+  algo: [-33]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron4]
