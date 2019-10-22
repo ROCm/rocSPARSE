@@ -137,7 +137,6 @@ Tests:
              amazon0312,
              Chebyshev4,
              sme3Dc,
-             webbase-1M,
              shipsec1]
 
 - name: csrmv_file
