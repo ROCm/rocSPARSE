@@ -63,7 +63,7 @@ constexpr double roti_gflop_count(rocsparse_int nnz)
 template <typename T>
 constexpr double spmv_gflop_count(rocsparse_int M, rocsparse_int nnz, bool beta = false)
 {
-    return (3.0 * nnz + (beta ? M : 0)) / 1e9;
+    return (2.0 * nnz + (beta ? M : 0)) / 1e9;
 }
 
 template <typename T>
