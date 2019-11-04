@@ -49,7 +49,11 @@ typedef struct
 // If this is a full internal build, add full support of complex arithmetic and classes
 // including __host__ and __device__ and such we need to use <hip/hip_runtime.h>.
 
+#include <cmath>
+#include <complex>
 #include <hip/hip_runtime.h>
+#include <ostream>
+#include <sstream>
 
 template <typename T>
 class rocsparse_complex_num
@@ -74,13 +78,31 @@ public:
     friend __device__ __host__ T std::real(const rocsparse_complex_num& z);
     friend __device__ __host__ T std::imag(const rocsparse_complex_num& z);
 
+    // Stream output
+    friend auto& operator<<(std::ostream& out, const rocsparse_complex_num& z)
+    {
+        std::stringstream ss;
+        ss << '(' << z.x << ',' << z.y << ')';
+        return out << ss.str();
+    }
+
     // complex fma
-    friend __device__ __host__ rocsparse_complex_num fma(rocsparse_complex_num p,
-                                                         rocsparse_complex_num q,
-                                                         rocsparse_complex_num r)
+    friend __device__ rocsparse_complex_num fma(rocsparse_complex_num p,
+                                                rocsparse_complex_num q,
+                                                rocsparse_complex_num r)
     {
         T real = fma(-p.y, q.y, fma(p.x, q.x, r.x));
         T imag = fma(p.x, q.y, fma(p.y, q.x, r.y));
+
+        return {real, imag};
+    }
+
+    friend __host__ rocsparse_complex_num fma(rocsparse_complex_num p,
+                                              rocsparse_complex_num q,
+                                              rocsparse_complex_num r)
+    {
+        T real = std::fma(-p.y, q.y, std::fma(p.x, q.x, r.x));
+        T imag = std::fma(p.x, q.y, std::fma(p.y, q.x, r.y));
 
         return {real, imag};
     }
