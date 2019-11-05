@@ -49,6 +49,8 @@ typedef struct
 // If this is a full internal build, add full support of complex arithmetic and classes
 // including __host__ and __device__ and such we need to use <hip/hip_runtime.h>.
 
+#include <cmath>
+#include <complex>
 #include <hip/hip_runtime.h>
 
 template <typename T>
