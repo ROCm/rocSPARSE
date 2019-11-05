@@ -1,15 +1,10 @@
-=====================================
-Welcome to rocSPARSE's documentation!
-=====================================
+#########
+rocSPARSE
+#########
 
 .. toctree::
    :maxdepth: 4
    :caption: Contents:
 
-   library
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
+   usermanual
+   design
