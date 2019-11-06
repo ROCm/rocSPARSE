@@ -453,6 +453,44 @@ inline void rocsparse_init_coo_laplace3d(std::vector<rocsparse_int>& row_ind,
 
 /* ============================================================================================ */
 /*! \brief  Read matrix from mtx file in COO format */
+static inline void
+    read_mtx_value(std::istringstream& is, rocsparse_int& row, rocsparse_int& col, float& val)
+{
+    is >> row >> col >> val;
+}
+
+static inline void
+    read_mtx_value(std::istringstream& is, rocsparse_int& row, rocsparse_int& col, double& val)
+{
+    is >> row >> col >> val;
+}
+
+static inline void read_mtx_value(std::istringstream&      is,
+                                  rocsparse_int&           row,
+                                  rocsparse_int&           col,
+                                  rocsparse_float_complex& val)
+{
+    float real;
+    float imag;
+
+    is >> row >> col >> real >> imag;
+
+    val = {real, imag};
+}
+
+static inline void read_mtx_value(std::istringstream&       is,
+                                  rocsparse_int&            row,
+                                  rocsparse_int&            col,
+                                  rocsparse_double_complex& val)
+{
+    double real;
+    double imag;
+
+    is >> row >> col >> real >> imag;
+
+    val = {real, imag};
+}
+
 template <typename T>
 inline void rocsparse_init_coo_mtx(const char*                 filename,
                                    std::vector<rocsparse_int>& coo_row_ind,
@@ -524,7 +562,8 @@ inline void rocsparse_init_coo_mtx(const char*                 filename,
     }
 
     // Check data
-    if(strcmp(data, "real") != 0 && strcmp(data, "integer") != 0 && strcmp(data, "pattern") != 0)
+    if(strcmp(data, "real") != 0 && strcmp(data, "integer") != 0 && strcmp(data, "pattern") != 0
+       && strcmp(data, "complex") != 0)
     {
         CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
     }
@@ -588,7 +627,7 @@ inline void rocsparse_init_coo_mtx(const char*                 filename,
         }
         else
         {
-            ss >> irow >> icol >> ival;
+            read_mtx_value(ss, irow, icol, ival);
         }
 
         if(base == rocsparse_index_base_zero)
@@ -704,28 +743,28 @@ static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, double*
 }
 
 static inline void
-    read_csr_values(std::ifstream& in, rocsparse_int nnz, std::complex<float>* csr_val)
+    read_csr_values(std::ifstream& in, rocsparse_int nnz, rocsparse_float_complex* csr_val)
 {
     // Temporary array to convert from double to float complex
-    std::vector<std::complex<double>> tmp(nnz);
+    std::vector<rocsparse_double_complex> tmp(nnz);
 
     // Read in double complex values
-    in.read((char*)tmp.data(), sizeof(std::complex<double>) * nnz);
+    in.read((char*)tmp.data(), sizeof(rocsparse_double_complex) * nnz);
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
 #endif
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
-        csr_val[i] = std::complex<float>(static_cast<float>(tmp[i].real()),
-                                         static_cast<float>(tmp[i].imag()));
+        csr_val[i] = rocsparse_float_complex(static_cast<float>(std::real(tmp[i])),
+                                             static_cast<float>(std::imag(tmp[i])));
     }
 }
 
 static inline void
-    read_csr_values(std::ifstream& in, rocsparse_int nnz, std::complex<double>* csr_val)
+    read_csr_values(std::ifstream& in, rocsparse_int nnz, rocsparse_double_complex* csr_val)
 {
-    in.read((char*)csr_val, sizeof(std::complex<double>) * nnz);
+    in.read((char*)csr_val, sizeof(rocsparse_double_complex) * nnz);
 }
 
 template <typename T>
