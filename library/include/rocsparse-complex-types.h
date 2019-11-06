@@ -60,6 +60,11 @@ class rocsparse_complex_num
 {
 public:
     __device__ __host__ rocsparse_complex_num(void)           = default;
+    __device__ __host__ rocsparse_complex_num(const rocsparse_complex_num&) = default;
+    __device__ __host__ rocsparse_complex_num(rocsparse_complex_num&&) = default;
+    __device__ __host__ rocsparse_complex_num& operator=(const rocsparse_complex_num& rhs) = default;
+    __device__ __host__ rocsparse_complex_num& operator=(rocsparse_complex_num&& rhs) = default;
+
     __device__          __host__ ~rocsparse_complex_num(void) = default;
 
     // Constructors
@@ -68,10 +73,24 @@ public:
         , y(i)
     {
     }
+
     __device__ __host__ rocsparse_complex_num(T r)
         : x(r)
         , y(static_cast<T>(0))
     {
+    }
+
+    // Conversion from std::complex<T>
+    __device__ __host__ rocsparse_complex_num(const std::complex<T>& z)
+        : x(reinterpret_cast<T (&)[2]>(z)[0])
+        , y(reinterpret_cast<T (&)[2]>(z)[1])
+    {
+    }
+
+    // Conversion to std::complex<T>
+    __device__ __host__ operator std::complex<T>() const
+    {
+        return {x, y};
     }
 
     // Accessors
@@ -192,6 +211,12 @@ public:
     }
 
 private:
+    // Internal real absolute function, to be sure we're on both device and host
+    static __forceinline__ __device__ __host__ T abs(T x)
+    {
+        return x < 0 ? -x : x;
+    }
+
     T x;
     T y;
 };
