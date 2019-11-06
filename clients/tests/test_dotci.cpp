@@ -28,7 +28,6 @@
 #include "type_dispatch.hpp"
 
 #include <cctype>
-#include <complex>
 #include <cstring>
 #include <type_traits>
 
@@ -44,9 +43,10 @@ namespace
     // When the condition in the second argument is satisfied, the type combination
     // is valid. When the condition is false, this specialization does not apply.
     template <typename T>
-    struct dotci_testing<T,
-                         typename std::enable_if<std::is_same<T, std::complex<float>>{}
-                                                 || std::is_same<T, std::complex<double>>{}>::type>
+    struct dotci_testing<
+        T,
+        typename std::enable_if<std::is_same<T, rocsparse_float_complex>{}
+                                || std::is_same<T, rocsparse_double_complex>{}>::type>
     {
         explicit operator bool()
         {

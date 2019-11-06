@@ -201,7 +201,7 @@ Tests:
   function: csrgemm
   precision: *single_double_precisions_complex
   M: 1
-  N: [-1, 0, 5923, 20142]
+  N: [-1, 0, 5925, 20142]
   K: 1
   alpha_alphai: *alpha_range_checkin
   beta: [-99.0]
