@@ -59,13 +59,14 @@ template <typename T>
 class rocsparse_complex_num
 {
 public:
-    __device__ __host__ rocsparse_complex_num(void)           = default;
+    __device__ __host__ rocsparse_complex_num(void)                         = default;
     __device__ __host__ rocsparse_complex_num(const rocsparse_complex_num&) = default;
-    __device__ __host__ rocsparse_complex_num(rocsparse_complex_num&&) = default;
-    __device__ __host__ rocsparse_complex_num& operator=(const rocsparse_complex_num& rhs) = default;
+    __device__ __host__ rocsparse_complex_num(rocsparse_complex_num&&)      = default;
+    __device__ __host__ rocsparse_complex_num& operator=(const rocsparse_complex_num& rhs)
+        = default;
     __device__ __host__ rocsparse_complex_num& operator=(rocsparse_complex_num&& rhs) = default;
 
-    __device__          __host__ ~rocsparse_complex_num(void) = default;
+    __device__ __host__ ~rocsparse_complex_num(void) = default;
 
     // Constructors
     __device__ __host__ rocsparse_complex_num(T r, T i)
