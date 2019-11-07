@@ -30,7 +30,6 @@
 #ifndef ROCSPARSE_HPP
 #define ROCSPARSE_HPP
 
-#include <complex>
 #include <rocsparse.h>
 
 /*

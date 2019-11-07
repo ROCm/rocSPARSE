@@ -62,7 +62,6 @@
 #include "testing_identity.hpp"
 
 #include <boost/program_options.hpp>
-#include <complex>
 #include <iostream>
 #include <rocsparse.h>
 
@@ -382,9 +381,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_axpyi<double>(arg);
         else if(precision == 'c')
-            testing_axpyi<std::complex<float>>(arg);
+            testing_axpyi<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_axpyi<std::complex<double>>(arg);
+            testing_axpyi<rocsparse_double_complex>(arg);
     }
     else if(function == "doti")
     {
@@ -393,9 +392,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_doti<double>(arg);
         else if(precision == 'c')
-            testing_doti<std::complex<float>>(arg);
+            testing_doti<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_doti<std::complex<double>>(arg);
+            testing_doti<rocsparse_double_complex>(arg);
     }
     else if(function == "dotci")
     {
@@ -404,9 +403,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_doti<double>(arg);
         else if(precision == 'c')
-            testing_dotci<std::complex<float>>(arg);
+            testing_dotci<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_dotci<std::complex<double>>(arg);
+            testing_dotci<rocsparse_double_complex>(arg);
     }
     else if(function == "gthr")
     {
@@ -415,9 +414,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_gthr<double>(arg);
         else if(precision == 'c')
-            testing_gthr<std::complex<float>>(arg);
+            testing_gthr<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_gthr<std::complex<double>>(arg);
+            testing_gthr<rocsparse_double_complex>(arg);
     }
     else if(function == "gthrz")
     {
@@ -426,9 +425,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_gthrz<double>(arg);
         else if(precision == 'c')
-            testing_gthrz<std::complex<float>>(arg);
+            testing_gthrz<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_gthrz<std::complex<double>>(arg);
+            testing_gthrz<rocsparse_double_complex>(arg);
     }
     else if(function == "roti")
     {
@@ -444,9 +443,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_sctr<double>(arg);
         else if(precision == 'c')
-            testing_sctr<std::complex<float>>(arg);
+            testing_sctr<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_sctr<std::complex<double>>(arg);
+            testing_sctr<rocsparse_double_complex>(arg);
     }
     else if(function == "coomv")
     {
@@ -455,9 +454,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_coomv<double>(arg);
         else if(precision == 'c')
-            testing_coomv<std::complex<float>>(arg);
+            testing_coomv<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_coomv<std::complex<double>>(arg);
+            testing_coomv<rocsparse_double_complex>(arg);
     }
     else if(function == "csrmv")
     {
@@ -467,9 +466,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_csrmv<double>(arg);
         else if(precision == 'c')
-            testing_csrmv<std::complex<float>>(arg);
+            testing_csrmv<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_csrmv<std::complex<double>>(arg);
+            testing_csrmv<rocsparse_double_complex>(arg);
     }
     else if(function == "csrsv")
     {
@@ -478,9 +477,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_csrsv<double>(arg);
         else if(precision == 'c')
-            testing_csrsv<std::complex<float>>(arg);
+            testing_csrsv<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_csrsv<std::complex<double>>(arg);
+            testing_csrsv<rocsparse_double_complex>(arg);
     }
     else if(function == "ellmv")
     {
@@ -489,9 +488,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_ellmv<double>(arg);
         else if(precision == 'c')
-            testing_ellmv<std::complex<float>>(arg);
+            testing_ellmv<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_ellmv<std::complex<double>>(arg);
+            testing_ellmv<rocsparse_double_complex>(arg);
     }
     else if(function == "hybmv")
     {
@@ -500,9 +499,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_hybmv<double>(arg);
         else if(precision == 'c')
-            testing_hybmv<std::complex<float>>(arg);
+            testing_hybmv<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_hybmv<std::complex<double>>(arg);
+            testing_hybmv<rocsparse_double_complex>(arg);
     }
     else if(function == "csrmm")
     {
@@ -511,9 +510,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_csrmm<double>(arg);
         else if(precision == 'c')
-            testing_csrmm<std::complex<float>>(arg);
+            testing_csrmm<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_csrmm<std::complex<double>>(arg);
+            testing_csrmm<rocsparse_double_complex>(arg);
     }
     else if(function == "csrgemm")
     {
@@ -527,9 +526,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_csrgemm<double>(arg);
         else if(precision == 'c')
-            testing_csrgemm<std::complex<float>>(arg);
+            testing_csrgemm<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_csrgemm<std::complex<double>>(arg);
+            testing_csrgemm<rocsparse_double_complex>(arg);
     }
     else if(function == "csrilu0")
     {
@@ -538,9 +537,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_csrilu0<double>(arg);
         else if(precision == 'c')
-            testing_csrilu0<std::complex<float>>(arg);
+            testing_csrilu0<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_csrilu0<std::complex<double>>(arg);
+            testing_csrilu0<rocsparse_double_complex>(arg);
     }
     else if(function == "csr2coo")
     {
@@ -553,9 +552,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_csr2csc<double>(arg);
         else if(precision == 'c')
-            testing_csr2csc<std::complex<float>>(arg);
+            testing_csr2csc<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_csr2csc<std::complex<double>>(arg);
+            testing_csr2csc<rocsparse_double_complex>(arg);
     }
     else if(function == "csr2ell")
     {
@@ -564,9 +563,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_csr2ell<double>(arg);
         else if(precision == 'c')
-            testing_csr2ell<std::complex<float>>(arg);
+            testing_csr2ell<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_csr2ell<std::complex<double>>(arg);
+            testing_csr2ell<rocsparse_double_complex>(arg);
     }
     else if(function == "csr2hyb")
     {
@@ -575,9 +574,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_csr2hyb<double>(arg);
         else if(precision == 'c')
-            testing_csr2hyb<std::complex<float>>(arg);
+            testing_csr2hyb<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_csr2hyb<std::complex<double>>(arg);
+            testing_csr2hyb<rocsparse_double_complex>(arg);
     }
     else if(function == "coo2csr")
     {
@@ -590,9 +589,9 @@ int main(int argc, char* argv[])
         else if(precision == 'd')
             testing_ell2csr<double>(arg);
         else if(precision == 'c')
-            testing_ell2csr<std::complex<float>>(arg);
+            testing_ell2csr<rocsparse_float_complex>(arg);
         else if(precision == 'z')
-            testing_ell2csr<std::complex<double>>(arg);
+            testing_ell2csr<rocsparse_double_complex>(arg);
     }
     else if(function == "csrsort")
     {

@@ -27,7 +27,6 @@
 
 #include "rocsparse_arguments.hpp"
 
-#include <complex>
 #include <rocsparse.h>
 
 // ----------------------------------------------------------------------------
@@ -52,9 +51,9 @@ auto rocsparse_simple_dispatch(const Arguments& arg)
     case rocsparse_datatype_f64_r:
         return TEST<double>{}(arg);
     case rocsparse_datatype_f32_c:
-        return TEST<std::complex<float>>{}(arg);
+        return TEST<rocsparse_float_complex>{}(arg);
     case rocsparse_datatype_f64_c:
-        return TEST<std::complex<double>>{}(arg);
+        return TEST<rocsparse_double_complex>{}(arg);
     default:
         return TEST<void>{}(arg);
     }

@@ -26,7 +26,6 @@
 #define ROCSPARSE_CHECK_HPP
 
 #include <cassert>
-#include <complex>
 #include <rocsparse.h>
 #ifdef GOOGLE_TEST
 #include <gtest/gtest.h>
@@ -60,18 +59,18 @@
 #define ASSERT_DOUBLE_EQ ASSERT_EQ
 #endif
 
-#define ASSERT_FLOAT_COMPLEX_EQ(a, b)        \
-    do                                       \
-    {                                        \
-        ASSERT_FLOAT_EQ(a.real(), b.real()); \
-        ASSERT_FLOAT_EQ(a.imag(), b.imag()); \
+#define ASSERT_FLOAT_COMPLEX_EQ(a, b)                \
+    do                                               \
+    {                                                \
+        ASSERT_FLOAT_EQ(std::real(a), std::real(b)); \
+        ASSERT_FLOAT_EQ(std::imag(a), std::imag(b)); \
     } while(0)
 
-#define ASSERT_DOUBLE_COMPLEX_EQ(a, b)        \
-    do                                        \
-    {                                         \
-        ASSERT_DOUBLE_EQ(a.real(), b.real()); \
-        ASSERT_DOUBLE_EQ(a.imag(), b.imag()); \
+#define ASSERT_DOUBLE_COMPLEX_EQ(a, b)                \
+    do                                                \
+    {                                                 \
+        ASSERT_DOUBLE_EQ(std::real(a), std::real(b)); \
+        ASSERT_DOUBLE_EQ(std::imag(a), std::imag(b)); \
     } while(0)
 
 #define UNIT_CHECK(M, N, lda, hCPU, hGPU, UNIT_ASSERT_EQ)                 \
@@ -107,21 +106,21 @@ inline void unit_check_general(
 }
 
 template <>
-inline void unit_check_general(rocsparse_int        M,
-                               rocsparse_int        N,
-                               rocsparse_int        lda,
-                               std::complex<float>* hCPU,
-                               std::complex<float>* hGPU)
+inline void unit_check_general(rocsparse_int            M,
+                               rocsparse_int            N,
+                               rocsparse_int            lda,
+                               rocsparse_float_complex* hCPU,
+                               rocsparse_float_complex* hGPU)
 {
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_FLOAT_COMPLEX_EQ);
 }
 
 template <>
-inline void unit_check_general(rocsparse_int         M,
-                               rocsparse_int         N,
-                               rocsparse_int         lda,
-                               std::complex<double>* hCPU,
-                               std::complex<double>* hGPU)
+inline void unit_check_general(rocsparse_int             M,
+                               rocsparse_int             N,
+                               rocsparse_int             lda,
+                               rocsparse_double_complex* hCPU,
+                               rocsparse_double_complex* hGPU)
 {
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_DOUBLE_COMPLEX_EQ);
 }
@@ -218,21 +217,21 @@ inline void near_check_general(
 }
 
 template <>
-inline void near_check_general(rocsparse_int        M,
-                               rocsparse_int        N,
-                               rocsparse_int        lda,
-                               std::complex<float>* hCPU,
-                               std::complex<float>* hGPU)
+inline void near_check_general(rocsparse_int            M,
+                               rocsparse_int            N,
+                               rocsparse_int            lda,
+                               rocsparse_float_complex* hCPU,
+                               rocsparse_float_complex* hGPU)
 {
     for(rocsparse_int j = 0; j < N; ++j)
     {
         for(rocsparse_int i = 0; i < M; ++i)
         {
-            std::complex<float> compare_val
-                = std::complex<float>(std::max(std::abs(hCPU[i + j * lda].real() * 1e-3f),
-                                               10 * std::numeric_limits<float>::epsilon()),
-                                      std::max(std::abs(hCPU[i + j * lda].imag() * 1e-3f),
-                                               10 * std::numeric_limits<float>::epsilon()));
+            rocsparse_float_complex compare_val
+                = rocsparse_float_complex(std::max(std::abs(std::real(hCPU[i + j * lda]) * 1e-3f),
+                                                   10 * std::numeric_limits<float>::epsilon()),
+                                          std::max(std::abs(std::imag(hCPU[i + j * lda]) * 1e-3f),
+                                                   10 * std::numeric_limits<float>::epsilon()));
 #ifdef GOOGLE_TEST
             if(rocsparse_isnan(hCPU[i + j * lda]))
             {
@@ -244,13 +243,18 @@ inline void near_check_general(rocsparse_int        M,
             }
             else
             {
-                ASSERT_NEAR(hCPU[i + j * lda].real(), hGPU[i + j * lda].real(), compare_val.real());
-                ASSERT_NEAR(hCPU[i + j * lda].imag(), hGPU[i + j * lda].imag(), compare_val.imag());
+                ASSERT_NEAR(std::real(hCPU[i + j * lda]),
+                            std::real(hGPU[i + j * lda]),
+                            std::real(compare_val));
+                ASSERT_NEAR(std::imag(hCPU[i + j * lda]),
+                            std::imag(hGPU[i + j * lda]),
+                            std::imag(compare_val));
             }
 #else
-            if(std::abs(hCPU[i + j * lda].real() - hGPU[i + j * lda].real()) >= compare_val.real()
-               || std::abs(hCPU[i + j * lda].imag() - hGPU[i + j * lda].imag())
-                      >= compare_val.imag())
+            if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
+                   >= std::real(compare_val)
+               || std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
+                      >= std::imag(compare_val))
             {
                 std::cerr.precision(16);
                 std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
@@ -264,21 +268,21 @@ inline void near_check_general(rocsparse_int        M,
 }
 
 template <>
-inline void near_check_general(rocsparse_int         M,
-                               rocsparse_int         N,
-                               rocsparse_int         lda,
-                               std::complex<double>* hCPU,
-                               std::complex<double>* hGPU)
+inline void near_check_general(rocsparse_int             M,
+                               rocsparse_int             N,
+                               rocsparse_int             lda,
+                               rocsparse_double_complex* hCPU,
+                               rocsparse_double_complex* hGPU)
 {
     for(rocsparse_int j = 0; j < N; ++j)
     {
         for(rocsparse_int i = 0; i < M; ++i)
         {
-            std::complex<double> compare_val
-                = std::complex<double>(std::max(std::abs(hCPU[i + j * lda].real() * 1e-10),
-                                                10 * std::numeric_limits<double>::epsilon()),
-                                       std::max(std::abs(hCPU[i + j * lda].imag() * 1e-10),
-                                                10 * std::numeric_limits<double>::epsilon()));
+            rocsparse_double_complex compare_val
+                = rocsparse_double_complex(std::max(std::abs(std::real(hCPU[i + j * lda]) * 1e-10),
+                                                    10 * std::numeric_limits<double>::epsilon()),
+                                           std::max(std::abs(std::imag(hCPU[i + j * lda]) * 1e-10),
+                                                    10 * std::numeric_limits<double>::epsilon()));
 #ifdef GOOGLE_TEST
             if(rocsparse_isnan(hCPU[i + j * lda]))
             {
@@ -290,13 +294,18 @@ inline void near_check_general(rocsparse_int         M,
             }
             else
             {
-                ASSERT_NEAR(hCPU[i + j * lda].real(), hGPU[i + j * lda].real(), compare_val.real());
-                ASSERT_NEAR(hCPU[i + j * lda].imag(), hGPU[i + j * lda].imag(), compare_val.imag());
+                ASSERT_NEAR(std::real(hCPU[i + j * lda]),
+                            std::real(hGPU[i + j * lda]),
+                            std::real(compare_val));
+                ASSERT_NEAR(std::imag(hCPU[i + j * lda]),
+                            std::imag(hGPU[i + j * lda]),
+                            std::imag(compare_val));
             }
 #else
-            if(std::abs(hCPU[i + j * lda].real() - hGPU[i + j * lda].real()) >= compare_val.real()
-               || std::abs(hCPU[i + j * lda].imag() - hGPU[i + j * lda].imag())
-                      >= compare_val.imag())
+            if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
+                   >= std::real(compare_val)
+               || std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
+                      >= std::imag(compare_val))
             {
                 std::cerr.precision(16);
                 std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
