@@ -180,15 +180,15 @@ private:
     }
 
     template <>
-    std::complex<float> convert_alpha_beta(double r, double i)
+    rocsparse_float_complex convert_alpha_beta(double r, double i)
     {
-        return std::complex<float>(r, i);
+        return rocsparse_float_complex(r, i);
     }
 
     template <>
-    std::complex<double> convert_alpha_beta(double r, double i)
+    rocsparse_double_complex convert_alpha_beta(double r, double i)
     {
-        return std::complex<double>(r, i);
+        return rocsparse_double_complex(r, i);
     }
 
     // Function to read Structures data from stream

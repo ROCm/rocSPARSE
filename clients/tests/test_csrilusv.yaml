@@ -69,8 +69,7 @@ Tests:
   spol: [rocsparse_solve_policy_auto]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [bmwcra_1,
-             amazon0312,
+  filename: [amazon0312,
              Chebyshev4,
              sme3Dc,
              webbase-1M]
