@@ -18,7 +18,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 dev=0
-path=../../build/release/clients/benchmarks
+path=../../build/release/clients/staging
 
 # Parse command line parameters
 getopt -T
@@ -65,7 +65,11 @@ else
     echo ">>" $(realpath $(ldd $bench | grep rocsparse | awk '{print $3;}'))
 fi
 
+# Generate logfile name
+logname=dcsrsv_$(date +'%Y%m%d%H%M%S').log
+truncate -s 0 $logname
+
 # Run csrsv for all matrices available
 for filename in ./matrices/*.csr; do
-    $bench -f csrsv --precision d --device $dev --alpha 1 --iters 200 --rocalution $filename
+    $bench -f csrsv --precision d --device $dev --alpha 1 --iters 1000 --rocalution $filename 2>&1 | tee -a $logname
 done
