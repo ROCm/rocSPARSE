@@ -49,14 +49,24 @@ typedef struct
 // If this is a full internal build, add full support of complex arithmetic and classes
 // including __host__ and __device__ and such we need to use <hip/hip_runtime.h>.
 
+#include <cmath>
+#include <complex>
 #include <hip/hip_runtime.h>
+#include <ostream>
+#include <sstream>
 
 template <typename T>
 class rocsparse_complex_num
 {
 public:
-    __device__ __host__ rocsparse_complex_num(void)           = default;
-    __device__          __host__ ~rocsparse_complex_num(void) = default;
+    __device__ __host__ rocsparse_complex_num(void)                         = default;
+    __device__ __host__ rocsparse_complex_num(const rocsparse_complex_num&) = default;
+    __device__ __host__ rocsparse_complex_num(rocsparse_complex_num&&)      = default;
+    __device__ __host__ rocsparse_complex_num& operator=(const rocsparse_complex_num& rhs)
+        = default;
+    __device__ __host__ rocsparse_complex_num& operator=(rocsparse_complex_num&& rhs) = default;
+
+    __device__ __host__ ~rocsparse_complex_num(void) = default;
 
     // Constructors
     __device__ __host__ rocsparse_complex_num(T r, T i)
@@ -64,23 +74,55 @@ public:
         , y(i)
     {
     }
+
     __device__ __host__ rocsparse_complex_num(T r)
         : x(r)
         , y(static_cast<T>(0))
     {
     }
 
+    // Conversion from std::complex<T>
+    __device__ __host__ rocsparse_complex_num(const std::complex<T>& z)
+        : x(reinterpret_cast<T (&)[2]>(z)[0])
+        , y(reinterpret_cast<T (&)[2]>(z)[1])
+    {
+    }
+
+    // Conversion to std::complex<T>
+    __device__ __host__ operator std::complex<T>() const
+    {
+        return {x, y};
+    }
+
     // Accessors
     friend __device__ __host__ T std::real(const rocsparse_complex_num& z);
     friend __device__ __host__ T std::imag(const rocsparse_complex_num& z);
 
+    // Stream output
+    friend auto& operator<<(std::ostream& out, const rocsparse_complex_num& z)
+    {
+        std::stringstream ss;
+        ss << '(' << z.x << ',' << z.y << ')';
+        return out << ss.str();
+    }
+
     // complex fma
-    friend __device__ __host__ rocsparse_complex_num fma(rocsparse_complex_num p,
-                                                         rocsparse_complex_num q,
-                                                         rocsparse_complex_num r)
+    friend __device__ rocsparse_complex_num fma(rocsparse_complex_num p,
+                                                rocsparse_complex_num q,
+                                                rocsparse_complex_num r)
     {
         T real = fma(-p.y, q.y, fma(p.x, q.x, r.x));
         T imag = fma(p.x, q.y, fma(p.y, q.x, r.y));
+
+        return {real, imag};
+    }
+
+    friend __host__ rocsparse_complex_num fma(rocsparse_complex_num p,
+                                              rocsparse_complex_num q,
+                                              rocsparse_complex_num r)
+    {
+        T real = std::fma(-p.y, q.y, std::fma(p.x, q.x, r.x));
+        T imag = std::fma(p.x, q.y, std::fma(p.y, q.x, r.y));
 
         return {real, imag};
     }
@@ -170,6 +212,12 @@ public:
     }
 
 private:
+    // Internal real absolute function, to be sure we're on both device and host
+    static __forceinline__ __device__ __host__ T abs(T x)
+    {
+        return x < 0 ? -x : x;
+    }
+
     T x;
     T y;
 };

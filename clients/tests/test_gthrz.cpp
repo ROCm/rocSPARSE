@@ -28,7 +28,6 @@
 #include "type_dispatch.hpp"
 
 #include <cctype>
-#include <complex>
 #include <cstring>
 #include <type_traits>
 
@@ -47,8 +46,8 @@ namespace
     struct gthrz_testing<
         T,
         typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
-                                || std::is_same<T, std::complex<float>>{}
-                                || std::is_same<T, std::complex<double>>{}>::type>
+                                || std::is_same<T, rocsparse_float_complex>{}
+                                || std::is_same<T, rocsparse_double_complex>{}>::type>
     {
         explicit operator bool()
         {
