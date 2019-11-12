@@ -60,7 +60,7 @@ gnuplot -persist <<-EOFMarker
     reset
     set grid
     set style fill solid 0.2
-    set term postscript eps enhanced color font 'Helvetica,10'
+    set term postscript eps enhanced color font 'Helvetica,12'
     set output "$1.eps"
     set termoption noenhanced
     set ylabel "GFlop/s"
