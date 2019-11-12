@@ -125,10 +125,10 @@ install_packages( )
   fi
 
   # dependencies needed for library and clients to build
-  local library_dependencies_ubuntu=( "make" "cmake-curses-gui" "hip_hcc" "pkg-config" "libnuma1" "rocprim")
-  local library_dependencies_centos=( "epel-release" "make" "cmake3" "hip_hcc" "gcc-c++" "rpm-build" "numactl-libs" "rocprim" )
-  local library_dependencies_fedora=( "make" "cmake" "hip_hcc" "gcc-c++" "libcxx-devel" "rpm-build" "numactl-libs" "rocprim" )
-  local library_dependencies_sles=( "make" "cmake" "hip_hcc" "gcc-c++" "libcxxtools9" "rpm-build" "rocprim" )
+  local library_dependencies_ubuntu=( "make" "cmake-curses-gui" "rocm-dev" "pkg-config" "libnuma1" "rocprim")
+  local library_dependencies_centos=( "epel-release" "make" "cmake3" "rocm-dev" "gcc-c++" "rpm-build" "numactl-libs" "rocprim" )
+  local library_dependencies_fedora=( "make" "cmake" "rocm-dev" "gcc-c++" "libcxx-devel" "rpm-build" "numactl-libs" "rocprim" )
+  local library_dependencies_sles=( "make" "cmake" "rocm-dev" "gcc-c++" "libcxxtools9" "rpm-build" "rocprim" )
 
   local client_dependencies_ubuntu=( "libboost-program-options-dev" )
   local client_dependencies_centos=( "boost-devel" )
