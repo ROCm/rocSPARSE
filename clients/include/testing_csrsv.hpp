@@ -809,10 +809,10 @@ void testing_csrsv(const Arguments& arg)
 
         std::cout << std::setw(12) << "M" << std::setw(12) << "nnz" << std::setw(12) << "alpha"
                   << std::setw(12) << "pivot" << std::setw(16) << "operation" << std::setw(12)
-                  << "diag type" << std::setw(12) << "fill mode" << std::setw(16)
-                  << "analysis policy" << std::setw(16) << "solve policy" << std::setw(12)
-                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(16) << "analysis msec"
-                  << std::setw(16) << "solve msec" << std::setw(12) << "iter" << std::setw(12)
+                  << "diag_type" << std::setw(12) << "fill_mode" << std::setw(16)
+                  << "analysis_policy" << std::setw(16) << "solve_policy" << std::setw(12)
+                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(16) << "analysis_msec"
+                  << std::setw(16) << "solve_msec" << std::setw(12) << "iter" << std::setw(12)
                   << "verified" << std::endl;
 
         std::cout << std::setw(12) << M << std::setw(12) << nnz << std::setw(12) << h_alpha
