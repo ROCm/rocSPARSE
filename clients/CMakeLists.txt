@@ -48,11 +48,11 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT TARGET rocsparse)
-  find_package(rocsparse REQUIRED CONFIG PATHS /opt/rocm/rocsparse)
+  find_package(rocsparse REQUIRED CONFIG PATHS ${CMAKE_INSTALL_PREFIX}/rocsparse)
 endif()
 
 # Hip headers required of all clients; clients use hip to allocate device memory
-list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX})
 find_package(HIP REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH})
 
 # Build flags
