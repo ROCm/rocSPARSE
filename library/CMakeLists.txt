@@ -59,6 +59,11 @@ include(src/CMakeLists.txt)
 add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
 add_library(roc::rocsparse ALIAS rocsparse)
 
+# RUNPATH is set only when ROCM_RPATH is defined in the ENV
+if( DEFINED ENV{ROCM_RPATH} )
+  set ( CMAKE_SHARED_LINKER_FLAGS " -Wl,--enable-new-dtags -Wl,--rpath,$ENV{ROCM_RPATH}" )
+endif( )
+
 # Target compile options
 target_compile_options(rocsparse PRIVATE -fno-gpu-rdc)
 foreach(target ${AMDGPU_TARGETS})
@@ -124,7 +129,7 @@ set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PR
 # Package name
 set(package_name rocsparse)
 
-set(ROCSPARSE_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file")
+set(ROCSPARSE_CONFIG_DIR "/opt/rocm/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file")
 
 rocm_create_package(
   NAME ${package_name}
