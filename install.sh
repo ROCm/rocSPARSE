@@ -130,7 +130,7 @@ install_packages( )
   local library_dependencies_fedora=( "make" "cmake" "rocm-dev" "gcc-c++" "libcxx-devel" "rpm-build" "numactl-libs" "rocprim" )
   local library_dependencies_sles=( "make" "cmake" "rocm-dev" "gcc-c++" "libcxxtools9" "rpm-build" "rocprim" )
 
-  local client_dependencies_ubuntu=( "libboost-program-options-dev" "python3" "python3-yaml" 
+  local client_dependencies_ubuntu=( "libboost-program-options-dev" "python3" "python3-yaml" )
   local client_dependencies_centos=( "boost-devel" "python36" "PyYAML" )
   local client_dependencies_fedora=( "boost-devel" "python36" "PyYAML" )
   local client_dependencies_sles=( "libboost_program_options1_66_0-devel" "pkg-config" "dpkg" "python3-pip" )
