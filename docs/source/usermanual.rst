@@ -1,3 +1,5 @@
+.. _user_manual:
+
 ***********
 User Manual
 ***********
@@ -21,152 +23,35 @@ rocSPARSE is a library that contains basic linear algebra subroutines for sparse
 
 The code is open and hosted here: https://github.com/ROCmSoftwarePlatform/rocSPARSE
 
-Device and Stream Management
-----------------------------
-`hipSetDevice()` and `hipGetDevice()` are HIP device management APIs. They are NOT part of the rocSPARSE API.
-
-Asynchronous Execution
-``````````````````````
-All rocSPARSE library functions, unless otherwise stated, are non blocking and executed asynchronously with respect to the host. They may return before the actual computation has finished. To force synchronization, `hipDeviceSynchronize()` or `hipStreamSynchronize()` can be used. This will ensure that all previously executed rocSPARSE functions on the device / this particular stream have completed.
-
-HIP Device Management
-`````````````````````
-Before a HIP kernel invocation, users need to call `hipSetDevice()` to set a device, e.g. device 1. If users do not explicitly call it, the system by default sets it as device 0. Unless users explicitly call `hipSetDevice()` to set to another device, their HIP kernels are always launched on device 0.
-
-The above is a HIP (and CUDA) device management approach and has nothing to do with rocSPARSE. rocSPARSE honors the approach above and assumes users have already set the device before a rocSPARSE routine call.
-
-Once users set the device, they create a handle with :ref:`rocsparse_create_handle_`.
-
-Subsequent rocSPARSE routines take this handle as an input parameter. rocSPARSE ONLY queries (by `hipGetDevice()`) the user's device; rocSPARSE does NOT set the device for users. If rocSPARSE does not see a valid device, it returns an error message. It is the users' responsibility to provide a valid device to rocSPARSE and ensure the device safety.
-
-Users CANNOT switch devices between :ref:`rocsparse_create_handle_` and :ref:`rocsparse_destroy_handle_`. If users want to change device, they must destroy the current handle and create another rocSPARSE handle.
-
-HIP Stream Management
-`````````````````````
-HIP kernels are always launched in a queue (also known as stream).
-
-If users do not explicitly specify a stream, the system provides a default stream, maintained by the system. Users cannot create or destroy the default stream. However, users can freely create new streams (with `hipStreamCreate()`) and bind it to the rocSPARSE handle using :ref:`rocsparse_set_stream_`. HIP kernels are invoked in rocSPARSE routines. The rocSPARSE handle is always associated with a stream, and rocSPARSE passes its stream to the kernels inside the routine. One rocSPARSE routine only takes one stream in a single invocation. If users create a stream, they are responsible for destroying it.
-
-Multiple Streams and Multiple Devices
-`````````````````````````````````````
-If the system under test has multiple HIP devices, users can run multiple rocSPARSE handles concurrently, but can NOT run a single rocSPARSE handle on different discrete devices. Each handle is associated with a particular singular device, and a new handle should be created for each additional device.
-
-.. _rocsparse_contributing:
-
-Contributing
-------------
-
-Contribution License Agreement
-``````````````````````````````
-
-#. The code I am contributing is mine, and I have the right to license it.
-#. By submitting a pull request for this project I am granting you a license to distribute said code under the MIT License for the project.
-
-How to contribute
-`````````````````
-Our code contriubtion guidelines closely follows the model of GitHub pull-requests. This repository follows the git flow workflow, which dictates a /master branch where releases are cut, and a /develop branch which serves as an integration branch for new code.
-
-A `git extention <https://github.com/nvie/gitflow>`_ has been developed to ease the use of the 'git flow' methodology, but requires manual installation by the user. Please refer to the projects wiki.
-
-Pull-request guidelines
-```````````````````````
-* Target the **develop** branch for integration.
-* Ensure code builds successfully.
-* Do not break existing test cases
-* New functionality will only be merged with new unit tests.
-
-  * New unit tests should integrate within the existing `googletest framework <https://github.com/google/googletest/blob/master/googletest/docs/primer.md>`_.
-  * Tests must have good code coverage.
-  * Code must also have benchmark tests, and performance must approach the compute bound limit or memory bound limit.
-
-StyleGuide
-``````````
-This project follows the `CPP Core guidelines <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md>`_, with few modifications or additions noted below. All pull-requests should in good faith attempt to follow the guidelines stated therein, but we recognize that the content is lengthy. Below we list our primary concerns when reviewing pull-requests.
-
-**Interface**
-
-* All public APIs are C89 compatible; all other library code should use C++14.
-* Our minimum supported compiler is clang 3.6.
-* Avoid CamelCase.
-* This rule applies specifically to publicly visible APIs, but is also encouraged (not mandated) for internal code.
-
-**Philosophy**
-
-* `P.2 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rp-Cplusplus>`_: Write in ISO Standard C++ (especially to support Windows, Linux and MacOS platforms).
-* `P.5 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rp-compile-time>`_: Prefer compile-time checking to run-time checking.
-
-**Implementation**
-
-* `SF.1 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rs-file-suffix>`_: Use a .cpp suffix for code files and .h for interface files if your project doesn't already follow another convention.
-* We modify this rule:
-
-  * .h: C header files.
-  * .hpp: C++ header files.
-
-* `SF.5 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rs-consistency>`_: A .cpp file must include the .h file(s) that defines its interface.
-* `SF.7 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rs-using-directive>`_: Don't put a using-directive in a header file.
-* `SF.8 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rs-guards>`_: Use #include guards for all .h files.
-* `SF.21 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rs-unnamed>`_: Don't use an unnamed (anonymous) namespace in a header.
-* `SL.10 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rsl-arrays>`_: Prefer using STL array or vector instead of a C array.
-* `C.9 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rc-private>`_: Minimize exposure of members.
-* `F.3 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rf-single>`_: Keep functions short and simple.
-* `F.21 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rf-out-multi>`_: To return multiple 'out' values, prefer returning a tuple.
-* `R.1 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rr-raii>`_: Manage resources automatically using RAII (this includes unique_ptr & shared_ptr).
-* `ES.11 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Res-auto>`_:  Use auto to avoid redundant repetition of type names.
-* `ES.20 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Res-always>`_: Always initialize an object.
-* `ES.23 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Res-list>`_: Prefer the {} initializer syntax.
-* `ES.49 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Res-casts-named>`_: If you must use a cast, use a named cast.
-* `CP.1 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#S-concurrency>`_: Assume that your code will run as part of a multi-threaded program.
-* `I.2 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Ri-global>`_: Avoid global variables.
-
-**Format**
-
-C and C++ code is formatted using clang-format. To format a file, use
-
-::
-
-  clang-format-3.8 -style=file -i <file>
-
-To format all files, run the following script in rocSPARSE directory:
-
-::
-
-  #!/bin/bash
-
-  find . -iname '*.h' \
-  -o -iname '*.hpp' \
-  -o -iname '*.cpp' \
-  -o -iname '*.h.in' \
-  -o -iname '*.hpp.in' \
-  -o -iname '*.cpp.in' \
-  -o -iname '*.cl' \
-  | grep -v 'build' \
-  | xargs -n 1 -P 8 -I{} clang-format-3.8 -style=file -i {}
-
-Also, githooks can be installed to format the code per-commit:
-
-::
-
-  ./.githooks/install
-
 .. _rocsparse_building:
 
 Building and Installing
 =======================
 
-Installing from AMD ROCm repositories
--------------------------------------
+Prerequisites
+-------------
+rocSPARSE requires a ROCm enabled platform, more information `here <https://rocm.github.io/>`_.
+
+Installing pre-built packages
+-----------------------------
 rocSPARSE can be installed from `AMD ROCm repository <https://rocm.github.io/ROCmInstall.html#installing-from-amd-rocm-repositories>`_.
 For detailed instructions on how to set up ROCm on different platforms, see the `AMD ROCm Platform Installation Guide for Linux <https://rocm.github.io/ROCmInstall.html>`_.
 
-rocSPARSE has the following run-time dependencies
+rocSPARSE can be installed on e.g. Ubuntu using
 
-- `AMD ROCm <https://github.com/RadeonOpenCompute/ROCm>`_
+::
 
-Building rocSPARSE from GitHub repository
------------------------------------------
+    $ sudo apt-get update
+    $ sudo apt-get install rocsparse
 
-To build rocSPARSE from source, the following compile-time and run-time dependencies must be met
+Once installed, rocSPARSE can be used just like any other library with a C API.
+The header file will need to be included in the user code in order to make calls into rocSPARSE, and the rocSPARSE shared library will become link-time and run-time dependent for the user application.
+
+Building rocSPARSE from source
+------------------------------
+Building from source is not necessary, as rocSPARSE can be used after installing the pre-built packages as described above.
+If desired, the following instructions can be used to build rocSPARSE from source.
+Furthermore, the following compile-time dependencies must be met
 
 - `git <https://git-scm.com/>`_
 - `CMake <https://cmake.org/>`_ 3.5 or later
@@ -184,8 +69,6 @@ Download the master branch using:
 
   $ git clone -b master https://github.com/ROCmSoftwarePlatform/rocSPARSE.git
   $ cd rocSPARSE
-
-.. note:: If you want to contribute to rocSPARSE, you will need to checkout the develop branch instead of the master branch, see :ref:`rocsparse_contributing` for further details.
 
 Below are steps to build different packages of the library, including dependencies and clients.
 It is recommended to install rocSPARSE using the `install.sh` script.
@@ -274,9 +157,9 @@ rocSPARSE with dependencies and clients can be built using the following command
 
 Common build problems
 `````````````````````
-#. **Issue:** HIP (/opt/rocm/hip) was built using hcc 1.0.xxx-xxx-xxx-xxx, but you are using /opt/rocm/bin/hcc with version 1.0.yyy-yyy-yyy-yyy from hipcc (version mismatch). Please rebuild HIP including cmake or update HCC_HOME variable.
+#. **Issue:** HIP (`/opt/rocm/hip`) was built using `hcc` 1.0.xxx-xxx-xxx-xxx, but you are using `/opt/rocm/bin/hcc` with version 1.0.yyy-yyy-yyy-yyy from `hipcc` (version mismatch). Please rebuild HIP including cmake or update HCC_HOME variable.
 
-   **Solution:** Download HIP from GitHub and use hcc to `build from source <https://github.com/ROCm-Developer-Tools/HIP/blob/master/INSTALL.md>`_ and then use the built HIP instead of /opt/rocm/hip.
+   **Solution:** Download HIP from GitHub and use `hcc` to `build from source <https://github.com/ROCm-Developer-Tools/HIP/blob/master/INSTALL.md>`_ and then use the built HIP instead of `/opt/rocm/hip`.
 
 #. **Issue:** HCC RUNTIME ERROR: Failed to find compatible kernel
 
@@ -316,6 +199,37 @@ The following HIP capable devices are currently supported
 - gfx906 (e.g. Vega20, MI50, MI60)
 - gfx908
 
+Device and Stream Management
+============================
+:cpp:func:`hipSetDevice` and :cpp:func:`hipGetDevice` are HIP device management APIs.
+They are NOT part of the rocSPARSE API.
+
+Asynchronous Execution
+----------------------
+All rocSPARSE library functions, unless otherwise stated, are non blocking and executed asynchronously with respect to the host. They may return before the actual computation has finished. To force synchronization, :cpp:func:`hipDeviceSynchronize` or :cpp:func:`hipStreamSynchronize` can be used. This will ensure that all previously executed rocSPARSE functions on the device / this particular stream have completed.
+
+HIP Device Management
+---------------------
+Before a HIP kernel invocation, users need to call :cpp:func:`hipSetDevice` to set a device, e.g. device 1. If users do not explicitly call it, the system by default sets it as device 0. Unless users explicitly call :cpp:func:`hipSetDevice` to set to another device, their HIP kernels are always launched on device 0.
+
+The above is a HIP (and CUDA) device management approach and has nothing to do with rocSPARSE. rocSPARSE honors the approach above and assumes users have already set the device before a rocSPARSE routine call.
+
+Once users set the device, they create a handle with :ref:`rocsparse_create_handle_`.
+
+Subsequent rocSPARSE routines take this handle as an input parameter. rocSPARSE ONLY queries (by :cpp:func:`hipGetDevice`) the user's device; rocSPARSE does NOT set the device for users. If rocSPARSE does not see a valid device, it returns an error message. It is the users' responsibility to provide a valid device to rocSPARSE and ensure the device safety.
+
+Users CANNOT switch devices between :ref:`rocsparse_create_handle_` and :ref:`rocsparse_destroy_handle_`. If users want to change device, they must destroy the current handle and create another rocSPARSE handle.
+
+HIP Stream Management
+---------------------
+HIP kernels are always launched in a queue (also known as stream).
+
+If users do not explicitly specify a stream, the system provides a default stream, maintained by the system. Users cannot create or destroy the default stream. However, users can freely create new streams (with :cpp:func:`hipStreamCreate`) and bind it to the rocSPARSE handle using :ref:`rocsparse_set_stream_`. HIP kernels are invoked in rocSPARSE routines. The rocSPARSE handle is always associated with a stream, and rocSPARSE passes its stream to the kernels inside the routine. One rocSPARSE routine only takes one stream in a single invocation. If users create a stream, they are responsible for destroying it.
+
+Multiple Streams and Multiple Devices
+-------------------------------------
+If the system under test has multiple HIP devices, users can run multiple rocSPARSE handles concurrently, but can NOT run a single rocSPARSE handle on different discrete devices. Each handle is associated with a particular singular device, and a new handle should be created for each additional device.
+
 Storage Formats
 ===============
 
@@ -348,9 +262,9 @@ where
 .. math::
 
   \begin{array}{ll}
-    \text{coo\_val}[8] & = \{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0\} \\
-    \text{coo\_row\_ind}[8] & = \{0, 0, 0, 1, 1, 2, 2, 2\} \\
-    \text{coo\_col\_ind}[8] & = \{0, 1, 3, 1, 2, 0, 3, 4\}
+    \text{coo_val}[8] & = \{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0\} \\
+    \text{coo_row_ind}[8] & = \{0, 0, 0, 1, 1, 2, 2, 2\} \\
+    \text{coo_col_ind}[8] & = \{0, 1, 3, 1, 2, 0, 3, 4\}
   \end{array}
 
 CSR storage format
@@ -382,9 +296,9 @@ where
 .. math::
 
   \begin{array}{ll}
-    \text{csr\_val}[8] & = \{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0\} \\
-    \text{csr\_row\_ptr}[4] & = \{1, 4, 6, 9\} \\
-    \text{csr\_col\_ind}[8] & = \{1, 2, 4, 2, 3, 1, 4, 5\}
+    \text{csr_val}[8] & = \{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0\} \\
+    \text{csr_row_ptr}[4] & = \{1, 4, 6, 9\} \\
+    \text{csr_col_ind}[8] & = \{1, 2, 4, 2, 3, 1, 4, 5\}
   \end{array}
 
 ELL storage format
@@ -400,7 +314,7 @@ ell_col_ind array of ``m times ell_width`` elements containing the column indice
 =========== ================================================================================
 
 The ELL matrix is assumed to be stored in column-major format. Rows with less than ``ell_width`` non-zero elements are padded with zeros (``ell_val``) and :math:`-1` (``ell_col_ind``).
-Consider the following :math:`3 \times 5` matrix and the corresponding ELL structures, with :math:`m = 3, n = 5` and :math:`\text{ell\_width} = 3` using zero based indexing:
+Consider the following :math:`3 \times 5` matrix and the corresponding ELL structures, with :math:`m = 3, n = 5` and :math:`\text{ell_width} = 3` using zero based indexing:
 
 .. math::
 
@@ -415,8 +329,8 @@ where
 .. math::
 
   \begin{array}{ll}
-    \text{ell\_val}[9] & = \{1.0, 4.0, 6.0, 2.0, 5.0, 7.0, 3.0, 0.0, 8.0\} \\
-    \text{ell\_col\_ind}[9] & = \{0, 1, 0, 1, 2, 3, 3, -1, 4\}
+    \text{ell_val}[9] & = \{1.0, 4.0, 6.0, 2.0, 5.0, 7.0, 3.0, 0.0, 8.0\} \\
+    \text{ell_col_ind}[9] & = \{0, 1, 0, 1, 2, 3, 3, -1, 4\}
   \end{array}
 
 .. _HYB storage format:
@@ -565,6 +479,197 @@ When logging is enabled, each rocSPARSE function call will write the function na
 If the user sets the environment variable ``ROCSPARSE_LOG_TRACE_PATH`` to the full path name for a file, the file is opened and trace logging is streamed to that file. If the user sets the environment variable ``ROCSPARSE_LOG_BENCH_PATH`` to the full path name for a file, the file is opened and bench logging is streamed to that file. If the file cannot be opened, logging output is stream to ``stderr``.
 
 Note that performance will degrade when logging is enabled. By default, the environment variable ``ROCSPARSE_LAYER`` is unset and logging is disabled.
+
+.. _api:
+
+Exported Sparse Functions
+=========================
+
+Auxiliary Functions
+-------------------
+
++----------------------------------------+
+|Function name                           |
++----------------------------------------+
+|:cpp:func:`rocsparse_create_handle`     |
++----------------------------------------+
+|:cpp:func:`rocsparse_destroy_handle`    |
++----------------------------------------+
+|:cpp:func:`rocsparse_set_stream`        |
++----------------------------------------+
+|:cpp:func:`rocsparse_get_stream`        |
++----------------------------------------+
+|:cpp:func:`rocsparse_set_pointer_mode`  |
++----------------------------------------+
+|:cpp:func:`rocsparse_get_pointer_mode`  |
++----------------------------------------+
+|:cpp:func:`rocsparse_get_version`       |
++----------------------------------------+
+|:cpp:func:`rocsparse_get_git_rev`       |
++----------------------------------------+
+|:cpp:func:`rocsparse_create_mat_descr`  |
++----------------------------------------+
+|:cpp:func:`rocsparse_destroy_mat_descr` |
++----------------------------------------+
+|:cpp:func:`rocsparse_copy_mat_descr`    |
++----------------------------------------+
+|:cpp:func:`rocsparse_set_mat_index_base`|
++----------------------------------------+
+|:cpp:func:`rocsparse_get_mat_index_base`|
++----------------------------------------+
+|:cpp:func:`rocsparse_set_mat_type`      |
++----------------------------------------+
+|:cpp:func:`rocsparse_get_mat_type`      |
++----------------------------------------+
+|:cpp:func:`rocsparse_set_mat_fill_mode` |
++----------------------------------------+
+|:cpp:func:`rocsparse_get_mat_fill_mode` |
++----------------------------------------+
+|:cpp:func:`rocsparse_set_mat_diag_type` |
++----------------------------------------+
+|:cpp:func:`rocsparse_get_mat_diag_type` |
++----------------------------------------+
+|:cpp:func:`rocsparse_create_hyb_mat`    |
++----------------------------------------+
+|:cpp:func:`rocsparse_destroy_hyb_mat`   |
++----------------------------------------+
+|:cpp:func:`rocsparse_create_mat_info`   |
++----------------------------------------+
+|:cpp:func:`rocsparse_destroy_mat_info`  |
++----------------------------------------+
+
+Sparse Level 1 Functions
+------------------------
+
+================================================= ====== ====== ============== ==============
+Function name                                     single double single complex double complex
+================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xaxpyi() <rocsparse_saxpyi>` x      x      x              x
+:cpp:func:`rocsparse_Xdoti() <rocsparse_sdoti>`   x      x      x              x
+:cpp:func:`rocsparse_Xdotci() <rocsparse_cdotci>`               x              x
+:cpp:func:`rocsparse_Xgthr() <rocsparse_sgthr>`   x      x      x              x
+:cpp:func:`rocsparse_Xgthrz() <rocsparse_sgthrz>` x      x      x              x
+:cpp:func:`rocsparse_Xroti() <rocsparse_sroti>`   x      x
+:cpp:func:`rocsparse_Xsctr() <rocsparse_ssctr>`   x      x      x              x
+================================================= ====== ====== ============== ==============
+
+Sparse Level 2 Functions
+------------------------
+
+========================================================================= ====== ====== ============== ==============
+Function name                                                             single double single complex double complex
+========================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xcoomv() <rocsparse_scoomv>`                         x      x      x              x
+:cpp:func:`rocsparse_Xcsrmv_analysis() <rocsparse_scsrmv_analysis>`       x      x      x              x
+:cpp:func:`rocsparse_csrmv_clear`
+:cpp:func:`rocsparse_Xcsrmv() <rocsparse_scsrmv>`                         x      x      x              x
+:cpp:func:`rocsparse_Xcsrsv_buffer_size() <rocsparse_scsrsv_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_Xcsrsv_analysis() <rocsparse_scsrsv_analysis>`       x      x      x              x
+:cpp:func:`rocsparse_csrsv_zero_pivot`
+:cpp:func:`rocsparse_csrsv_clear`
+:cpp:func:`rocsparse_Xcsrsv_solve() <rocsparse_scsrsv_solve>`             x      x      x              x
+:cpp:func:`rocsparse_Xellmv() <rocsparse_sellmv>`                         x      x      x              x
+:cpp:func:`rocsparse_Xhybmv() <rocsparse_shybmv>`                         x      x      x              x
+========================================================================= ====== ====== ============== ==============
+
+Sparse Level 3 Functions
+------------------------
+
+================================================= ====== ====== ============== ==============
+Function name                                     single double single complex double complex
+================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xcsrmm() <rocsparse_scsrmm>` x      x      x              x
+================================================= ====== ====== ============== ==============
+
+Sparse Extra Functions
+----------------------
+
+============================================================================= ====== ====== ============== ==============
+Function name                                                                 single double single complex double complex
+============================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xcsrgemm_buffer_size() <rocsparse_scsrgemm_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_csrgemm_nnz`
+:cpp:func:`rocsparse_Xcsrgemm() <rocsparse_scsrgemm>`                         x      x      x              x
+============================================================================= ====== ====== ============== ==============
+
+Preconditioner Functions
+------------------------
+
+============================================================================= ====== ====== ============== ==============
+Function name                                                                 single double single complex double complex
+============================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xcsrilu0_buffer_size() <rocsparse_scsrilu0_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_Xcsrilu0_analysis() <rocsparse_scsrilu0_analysis>`       x      x      x              x
+:cpp:func:`rocsparse_csrilu0_zero_pivot`
+:cpp:func:`rocsparse_csrilu0_clear`
+:cpp:func:`rocsparse_Xcsrilu0() <rocsparse_scsrilu0>`                         x      x      x              x
+============================================================================= ====== ====== ============== ==============
+
+Conversion Functions
+--------------------
+
+===================================================== ====== ====== ============== ==============
+Function name                                         single double single complex double complex
+===================================================== ====== ====== ============== ==============
+:cpp:func:`rocsparse_csr2coo`
+:cpp:func:`rocsparse_csr2csc_buffer_size`
+:cpp:func:`rocsparse_Xcsr2csc() <rocsparse_scsr2csc>` x      x      x              x
+:cpp:func:`rocsparse_csr2ell_width`
+:cpp:func:`rocsparse_Xcsr2ell() <rocsparse_scsr2ell>` x      x      x              x
+:cpp:func:`rocsparse_Xcsr2hyb() <rocsparse_scsr2hyb>` x      x      x              x
+:cpp:func:`rocsparse_coo2csr`
+:cpp:func:`rocsparse_ell2csr_nnz`
+:cpp:func:`rocsparse_Xell2csr() <rocsparse_sell2csr>` x      x      x              x
+:cpp:func:`rocsparse_create_identity_permutation`
+:cpp:func:`rocsparse_cscsort_buffer_size`
+:cpp:func:`rocsparse_cscsort`
+:cpp:func:`rocsparse_csrsort_buffer_size`
+:cpp:func:`rocsparse_csrsort`
+:cpp:func:`rocsparse_coosort_buffer_size`
+:cpp:func:`rocsparse_coosort_by_row`
+:cpp:func:`rocsparse_coosort_by_column`
+===================================================== ====== ====== ============== ==============
+
+Storage schemes and indexing base
+---------------------------------
+rocSPARSE supports 0 and 1 based indexing.
+The index base is selected by the :cpp:enum:`rocsparse_index_base` type which is either passed as standalone parameter or as part of the :cpp:type:`rocsparse_mat_descr` type.
+
+Furthermore, dense vectors are represented with a 1D array, stored linearly in memory.
+Sparse vectors are represented by a 1D data array stored linearly in memory that hold all non-zero elements and a 1D indexing array stored linearly in memory that hold the positions of the corresponding non-zero elements.
+
+Pointer mode
+------------
+The auxiliary functions :cpp:func:`rocsparse_set_pointer_mode` and :cpp:func:`rocsparse_get_pointer_mode` are used to set and get the value of the state variable :cpp:enum:`rocsparse_pointer_mode`.
+If :cpp:enum:`rocsparse_pointer_mode` is equal to :cpp:enumerator:`rocsparse_pointer_mode_host`, then scalar parameters must be allocated on the host.
+If :cpp:enum:`rocsparse_pointer_mode` is equal to :cpp:enumerator:`rocsparse_pointer_mode_device`, then scalar parameters must be allocated on the device.
+
+There are two types of scalar parameter:
+
+  1. Scaling parameters, such as `alpha` and `beta` used in e.g. :cpp:func:`rocsparse_scsrmv`, :cpp:func:`rocsparse_scoomv`, ...
+  2. Scalar results from functions such as :cpp:func:`rocsparse_sdoti`, :cpp:func:`rocsparse_cdotci`, ...
+
+For scalar parameters such as alpha and beta, memory can be allocated on the host heap or stack, when :cpp:enum:`rocsparse_pointer_mode` is equal to :cpp:enumerator:`rocsparse_pointer_mode_host`.
+The kernel launch is asynchronous, and if the scalar parameter is on the heap, it can be freed after the return from the kernel launch.
+When :cpp:enum:`rocsparse_pointer_mode` is equal to :cpp:enumerator:`rocsparse_pointer_mode_device`, the scalar parameter must not be changed till the kernel completes.
+
+For scalar results, when :cpp:enum:`rocsparse_pointer_mode` is equal to :cpp:enumerator:`rocsparse_pointer_mode_host`, the function blocks the CPU till the GPU has copied the result back to the host.
+Using :cpp:enum:`rocsparse_pointer_mode` equal to :cpp:enumerator:`rocsparse_pointer_mode_device`, the function will return after the asynchronous launch.
+Similarly to vector and matrix results, the scalar result is only available when the kernel has completed execution.
+
+Asynchronous API
+----------------
+Except a functions having memory allocation inside preventing asynchronicity, all rocSPARSE functions are configured to operate in non-blocking fashion with respect to CPU, meaning these library functions return immediately.
+
+hipSPARSE
+---------
+hipSPARSE is a SPARSE marshalling library, with multiple supported backends.
+It sits between the application and a `worker` SPARSE library, marshalling inputs into the backend library and marshalling results back to the application.
+hipSPARSE exports an interface that does not require the client to change, regardless of the chosen backend.
+Currently, hipSPARSE supports rocSPARSE and cuSPARSE as backends.
+hipSPARSE focuses on convenience and portability.
+If performance outweighs these factors, then using rocSPARSE itself is highly recommended.
+hipSPARSE can be found on `GitHub <https://github.com/ROCmSoftwarePlatform/hipSPARSE/>`_.
 
 .. _rocsparse_auxiliary_functions_:
 

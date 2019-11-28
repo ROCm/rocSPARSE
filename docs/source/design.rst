@@ -1,3 +1,5 @@
+.. _design_document:
+
 ********************
 Design Documentation
 ********************
@@ -5,6 +7,115 @@ Design Documentation
 .. toctree::
    :maxdepth: 3
    :caption: Contents:
+
+Design and Philosophy
+=====================
+The rocSPARSE library is developed using the `Hourglass API` approach.
+This is especially helpful to offer a thin C89 API to the user and still get all the convenience of C++.
+As a side effect, ABI related binary compatibility issues can be avoided.
+Furthermore, this approach allows rocSPARSE routines to be used by other programming languages.
+
+In public API header files, rocSPARSE only relies on functions, pointers, forward declared structs, enumerations and type defs.
+Additionally, rocSPARSE introduces multiple library and object handles by using opaque types to hide layout and implementation details from the user.
+
+Temporary Device Memory
+=======================
+Many routines exposed by the rocSPARSE API require a temporary storage buffer on the device.
+rocSPARSE notion is that the user is responsible for such buffer allocation and deallocation.
+Hence, allocated buffers can be re-used and do not need to be regularly (de)allocated on every single API call.
+For this purpose, routines that require a temporary storage buffer offer a special API function to query for the storage buffer size, e.g. :cpp:func:`rocsparse_scsrsv_buffer_size`.
+
+.. _rocsparse_contributing:
+
+Contributing
+============
+
+Contribution License Agreement
+------------------------------
+
+#. The code I am contributing is mine, and I have the right to license it.
+#. By submitting a pull request for this project I am granting you a license to distribute said code under the MIT License for the project.
+
+How to contribute
+-----------------
+Our code contriubtion guidelines closely follows the model of GitHub pull-requests. This repository follows the git flow workflow, which dictates a /master branch where releases are cut, and a /develop branch which serves as an integration branch for new code.
+
+A `git extention <https://github.com/nvie/gitflow>`_ has been developed to ease the use of the 'git flow' methodology, but requires manual installation by the user. Please refer to the projects wiki.
+
+Pull-request guidelines
+-----------------------
+* Target the **develop** branch for integration.
+* Ensure code builds successfully.
+* Do not break existing test cases
+* New functionality will only be merged with new unit tests.
+
+  * New unit tests should integrate within the existing `googletest framework <https://github.com/google/googletest/blob/master/googletest/docs/primer.md>`_.
+  * Tests must have good code coverage.
+  * Code must also have benchmark tests, and performance must approach the compute bound limit or memory bound limit.
+
+StyleGuide
+----------
+This project follows the `CPP Core guidelines <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md>`_, with few modifications or additions noted below. All pull-requests should in good faith attempt to follow the guidelines stated therein, but we recognize that the content is lengthy. Below we list our primary concerns when reviewing pull-requests.
+
+**Interface**
+
+* All public APIs are C89 compatible; all other library code should use C++14.
+* Our minimum supported compiler is clang 3.6.
+* Avoid CamelCase.
+* This rule applies specifically to publicly visible APIs, but is also encouraged (not mandated) for internal code.
+
+**Philosophy**
+
+* `P.2 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rp-Cplusplus>`_: Write in ISO Standard C++ (especially to support Windows, Linux and MacOS platforms).
+* `P.5 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rp-compile-time>`_: Prefer compile-time checking to run-time checking.
+
+**Implementation**
+
+* `SF.1 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rs-file-suffix>`_: Use a .cpp suffix for code files and .h for interface files if your project doesn't already follow another convention.
+* We modify this rule:
+
+  * .h: C header files.
+  * .hpp: C++ header files.
+
+* `SF.5 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rs-consistency>`_: A .cpp file must include the .h file(s) that defines its interface.
+* `SF.7 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rs-using-directive>`_: Don't put a using-directive in a header file.
+* `SF.8 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rs-guards>`_: Use #include guards for all .h files.
+* `SF.21 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rs-unnamed>`_: Don't use an unnamed (anonymous) namespace in a header.
+* `SL.10 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rsl-arrays>`_: Prefer using STL array or vector instead of a C array.
+* `C.9 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rc-private>`_: Minimize exposure of members.
+* `F.3 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rf-single>`_: Keep functions short and simple.
+* `F.21 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rf-out-multi>`_: To return multiple 'out' values, prefer returning a tuple.
+* `R.1 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Rr-raii>`_: Manage resources automatically using RAII (this includes unique_ptr & shared_ptr).
+* `ES.11 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Res-auto>`_:  Use auto to avoid redundant repetition of type names.
+* `ES.20 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Res-always>`_: Always initialize an object.
+* `ES.23 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Res-list>`_: Prefer the {} initializer syntax.
+* `ES.49 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Res-casts-named>`_: If you must use a cast, use a named cast.
+* `CP.1 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#S-concurrency>`_: Assume that your code will run as part of a multi-threaded program.
+* `I.2 <https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#Ri-global>`_: Avoid global variables.
+
+**Format**
+
+C and C++ code is formatted using clang-format. To format a file, use
+
+::
+
+  /opt/rocm/hcc/bin/clang-format -style=file -i <file>
+
+To format all files, run the following script in rocSPARSE directory:
+
+::
+
+  #!/bin/bash
+
+  find . -iname '*.h' \
+  -o -iname '*.hpp' \
+  -o -iname '*.cpp' \
+  -o -iname '*.h.in' \
+  -o -iname '*.hpp.in' \
+  -o -iname '*.cpp.in' \
+  -o -iname '*.cl' \
+  | grep -v 'build' \
+  | xargs -n 1 -P 8 -I{} /opt/rocm/hcc/bin/clang-format -style=file -i {}
 
 Library Source Organization
 ===========================
@@ -29,8 +140,22 @@ The `library/src/` directory
 ----------------------------
 This directory contains all rocSPARSE library source files.
 The root of the `library/src/` directory hosts the implementation of the library handle and auxiliary functions.
-Furthermore, each subdirectory is responsible for the specific class of sparse linear algebra subroutines.
+Furthermore, each sub-directory is responsible for the specific class of sparse linear algebra subroutines.
 Finally, the `library/src/include` directory defines :ref:`rocsparse_common`, :ref:`rocsparse_macros`, :ref:`rocsparse_mat_struct` and :ref:`rocsparse_logging`.
+
+========================= ====
+File                      Description
+========================= ====
+`handle.cpp`              Implementation of opaque handle structures.
+`rocsparse_auxiliary.cpp` Implementation of auxiliary functions, e.g. create and destroy handles.
+`status.cpp`              Implementation of :cpp:enum:`hipError_t` to :cpp:enum:`rocsparse_status` conversion function.
+`include/common.h`        Commonly used functions among several rocSPARSE routines, see :ref:`rocsparse_common`.
+`include/definitions.h`   Status-flag macros are defined here, see :ref:`rocsparse_macros`.
+`include/handle.h`        Declaration of opaque handle structures.
+`include/logging.h`       Implementation of different rocSPARSE logging helper functions.
+`include/status.h`        Declaration of :cpp:enum:`hipError_t` to :cpp:enum:`rocsparse_status` conversion function.
+`include/utility.h`       Implementation of different rocSPARSE logging functionality.
+========================= ====
 
 The `clients/` directory
 ------------------------
@@ -39,10 +164,10 @@ Further details are given in :ref:`rocsparse_clients`.
 
 Sparse Linear Algebra Subroutines
 ---------------------------------
-Each sparse linear algebra subroutine is implemented in a set of source files: ``rocsparse_subroutine.cpp``, ``rocsparse_subroutine.hpp`` and ``subroutine_device.h``.
+Each sparse linear algebra subroutine is implemented in a set of source files in the corresponding directory: ``rocsparse_subroutine.cpp``, ``rocsparse_subroutine.hpp`` and ``subroutine_device.h``.
 
-``rocsparse_subroutine.cpp`` implements the C wrapper and the not precision dependent API functionality.
-Furthermore, ``rocsparse_subroutine.hpp`` implements the precision dependent API functionality, using the precision as template parameter.
+``rocsparse_subroutine.cpp`` implements the C wrapper and the API functionality for each precision supported.
+Furthermore, ``rocsparse_subroutine.hpp`` implements the API functionality, using the precision as template parameter.
 Finally, ``subroutine_device.h`` implements the device code, required for the computation of the subroutine.
 
 .. note:: Each API exposed subroutine is expected to return a :cpp:type:`rocsparse_status`.
@@ -247,9 +372,9 @@ Device function                   Description
 ``rocsparse_mad24()``             Multiply 24-bit integers and add a 32-bit value.
 ``rocsparse_atomic_load()``       Memory model aware atomic load operation for int type.
 ``rocsparse_atomic_store()``      Memory model aware atomic store operation for int type.
-``rocsparse_blockreduce_sum()``   Blockwide reduction sum for int, int64, single, double real and complex types.
-``rocsparse_blockreduce_max()``   Blockwide reduction max for int, int64, single, double real and complex types.
-``rocsparse_blockreduce_min()``   Blockwide reduction min for int, int64, single, double real and complex types.
+``rocsparse_blockreduce_sum()``   Block-wide reduction sum for int, int64, single, double real and complex types.
+``rocsparse_blockreduce_max()``   Block-wide reduction max for int, int64, single, double real and complex types.
+``rocsparse_blockreduce_min()``   Block-wide reduction min for int, int64, single, double real and complex types.
 ``rocsparse_wfreduce_max()``      DPP based wavefront reduction max for int type.
 ``rocsparse_wfreduce_min()``      DPP based wavefront reduction min for int and int64 types.
 ``rocsparse_wfreduce_sum()``      DPP based wavefront reduction sum for int, int64, single, double real and complex types.
@@ -264,9 +389,9 @@ The following table lists the status-flag macros available in rocSPARSE and thei
 =================================== ====
 Macro                               Description
 =================================== ====
-``RETURN_IF_HIP_ERROR(stat)``       Returns, if `stat` is not equal to ``hipSuccess``
-``THROW_IF_HIP_ERROR(stat)``        Throws an exception, if `stat` is not equal to ``hipSuccess``
-``PRINT_IF_HIP_ERROR(stat)``        Prints an error message, if `stat` is not equal to ``hipSuccess``
+``RETURN_IF_HIP_ERROR(stat)``       Returns, if `stat` is not equal to :cpp:enumerator:`hipSuccess`
+``THROW_IF_HIP_ERROR(stat)``        Throws an exception, if `stat` is not equal to :cpp:enumerator:`hipSuccess`
+``PRINT_IF_HIP_ERROR(stat)``        Prints an error message, if `stat` is not equal to :cpp:enumerator:`hipSuccess`
 ``RETURN_IF_ROCSPARSE_ERROR(stat)`` Returns, if `stat` is not equal to :cpp:enumerator:`rocsparse_status_success`
 =================================== ====
 
@@ -335,7 +460,7 @@ Unit Tests
 ----------
 Multiple unit tests are available to test for bad arguments, invalid parameters and sparse routine functionality.
 The unit tests are based on `googletest <https://github.com/google/googletest>`_.
-The tests cover all routines that are exposed by the API, including all available floating-point precisions.
+The tests cover all routines that are exposed by the API, including all available floating-point precision.
 
 Benchmarks
 ----------
