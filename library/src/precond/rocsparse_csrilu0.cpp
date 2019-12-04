@@ -357,11 +357,8 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   hand
         // rocsparse_pointer_mode_device
         rocsparse_int pivot;
 
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(&pivot,
-                                           info->csrilu0_info->zero_pivot,
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyDeviceToHost,
-                                           stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            &pivot, info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
 
         // Wait for host transfer to finish
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
@@ -373,7 +370,7 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   hand
         else
         {
             RETURN_IF_HIP_ERROR(hipMemcpyAsync(position,
-                                               info->csrilu0_info->zero_pivot,
+                                               info->zero_pivot,
                                                sizeof(rocsparse_int),
                                                hipMemcpyDeviceToDevice,
                                                stream));
@@ -384,10 +381,8 @@ extern "C" rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   hand
     else
     {
         // rocsparse_pointer_mode_host
-        RETURN_IF_HIP_ERROR(hipMemcpy(position,
-                                      info->csrilu0_info->zero_pivot,
-                                      sizeof(rocsparse_int),
-                                      hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(position, info->zero_pivot, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         // If no zero pivot is found, set -1
         if(*position == std::numeric_limits<rocsparse_int>::max())

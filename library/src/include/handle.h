@@ -144,11 +144,16 @@ struct _rocsparse_hyb_mat
 struct _rocsparse_mat_info
 {
     // info structs
-    rocsparse_csrmv_info   csrmv_info       = nullptr;
-    rocsparse_csrtr_info   csrilu0_info     = nullptr;
-    rocsparse_csrtr_info   csrsv_upper_info = nullptr;
-    rocsparse_csrtr_info   csrsv_lower_info = nullptr;
-    rocsparse_csrgemm_info csrgemm_info     = nullptr;
+    rocsparse_csrmv_info   csrmv_info        = nullptr;
+    rocsparse_csrtr_info   csrilu0_info      = nullptr;
+    rocsparse_csrtr_info   csrsv_upper_info  = nullptr;
+    rocsparse_csrtr_info   csrsv_lower_info  = nullptr;
+    rocsparse_csrtr_info   csrsvt_upper_info = nullptr;
+    rocsparse_csrtr_info   csrsvt_lower_info = nullptr;
+    rocsparse_csrgemm_info csrgemm_info      = nullptr;
+
+    // zero pivot for csrsv, csrsm, csrilu0, csric0
+    rocsparse_int* zero_pivot = nullptr;
 };
 
 /********************************************************************************
@@ -196,8 +201,10 @@ struct _rocsparse_csrtr_info
     rocsparse_int* row_map = nullptr;
     // device array to hold pointer to diagonal entry
     rocsparse_int* csr_diag_ind = nullptr;
-    // device pointer to hold zero pivot
-    rocsparse_int* zero_pivot = nullptr;
+    // device pointers to hold transposed data
+    rocsparse_int* csrt_perm    = nullptr;
+    rocsparse_int* csrt_row_ptr = nullptr;
+    rocsparse_int* csrt_col_ind = nullptr;
 
     // some data to verify correct execution
     rocsparse_int               m;

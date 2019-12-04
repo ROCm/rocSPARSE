@@ -491,6 +491,18 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrmv_info(info->csrmv_info));
     }
 
+    // Clear csrsvt upper info struct
+    if(info->csrsvt_upper_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsvt_upper_info));
+    }
+
+    // Clear csrsvt lower info struct
+    if(info->csrsvt_lower_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsvt_lower_info));
+    }
+
     // Clear csrilu0 info struct
     if(info->csrilu0_info != nullptr)
     {
@@ -513,6 +525,13 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
     if(info->csrgemm_info != nullptr)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrgemm_info(info->csrgemm_info));
+    }
+
+    // Clear zero pivot
+    if(info->zero_pivot != nullptr)
+    {
+        RETURN_IF_HIP_ERROR(hipFree(info->zero_pivot));
+        info->zero_pivot = nullptr;
     }
 
     // Destruct
