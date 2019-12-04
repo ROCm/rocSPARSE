@@ -246,7 +246,9 @@ void testing_csrilusv(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
 
     // Compute reference solution on host
-    host_csrsv<T>(M,
+    host_csrsv<T>(rocsparse_operation_none,
+                  M,
+                  nnz,
                   h_alpha,
                   hcsr_row_ptr,
                   hcsr_col_ind,
@@ -258,7 +260,9 @@ void testing_csrilusv(const Arguments& arg)
                   base,
                   h_struct_pivot_gold,
                   h_numeric_pivot_L_gold);
-    host_csrsv<T>(M,
+    host_csrsv<T>(rocsparse_operation_none,
+                  M,
+                  nnz,
                   h_alpha,
                   hcsr_row_ptr,
                   hcsr_col_ind,

@@ -1149,7 +1149,7 @@ rocsparse_status rocsparse_csrsv_zero_pivot(rocsparse_handle          handle,
  *              \p csr_col_ind, \p info or \p buffer_size pointer is invalid.
  *  \retval     rocsparse_status_internal_error an internal error occurred.
  *  \retval     rocsparse_status_not_implemented
- *              \p trans != \ref rocsparse_operation_none or
+ *              \p trans == \ref rocsparse_operation_conjugate_transpose or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
 /**@{*/
@@ -1263,7 +1263,7 @@ rocsparse_status rocsparse_zcsrsv_buffer_size(rocsparse_handle                ha
  *              \p csr_col_ind, \p info or \p temp_buffer pointer is invalid.
  *  \retval     rocsparse_status_internal_error an internal error occurred.
  *  \retval     rocsparse_status_not_implemented
- *              \p trans != \ref rocsparse_operation_none or
+ *              \p trans == \ref rocsparse_operation_conjugate_transpose or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  */
 /**@{*/
@@ -1396,7 +1396,8 @@ rocsparse_status rocsparse_csrsv_clear(rocsparse_handle          handle,
  *  It may return before the actual computation has finished.
  *
  *  \note
- *  Currently, only \p trans == \ref rocsparse_operation_none is supported.
+ *  Currently, only \p trans == \ref rocsparse_operation_none and
+ *  \p trans == \ref rocsparse_operation_transpose is supported.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -1437,7 +1438,7 @@ rocsparse_status rocsparse_csrsv_clear(rocsparse_handle          handle,
  *  \retval     rocsparse_status_arch_mismatch the device is not supported.
  *  \retval     rocsparse_status_internal_error an internal error occurred.
  *  \retval     rocsparse_status_not_implemented
- *              \p trans != \ref rocsparse_operation_none or
+ *              \p trans == \ref rocsparse_operation_conjugate_transpose or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  *
  *  \par Example

@@ -694,7 +694,9 @@ void testing_csrsv(const Arguments& arg)
             hipMemcpy(h_solve_pivot_2, d_solve_pivot_2, sizeof(T), hipMemcpyDeviceToHost));
 
         // CPU csrsv
-        host_csrsv<T>(M,
+        host_csrsv<T>(trans,
+                      M,
+                      nnz,
                       h_alpha,
                       hcsr_row_ptr,
                       hcsr_col_ind,

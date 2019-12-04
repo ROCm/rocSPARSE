@@ -178,9 +178,11 @@ rocsparse_status rocsparse_csrilu0_analysis_template(rocsparse_handle          h
                                                        m,
                                                        nnz,
                                                        descr,
+                                                       csr_val,
                                                        csr_row_ptr,
                                                        csr_col_ind,
                                                        info->csrilu0_info,
+                                                       &info->zero_pivot,
                                                        temp_buffer));
 
     return rocsparse_status_success;
@@ -314,7 +316,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
         else if(max_nnz <= 64)
@@ -331,7 +333,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
         else if(max_nnz <= 128)
@@ -348,7 +350,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
         else if(max_nnz <= 256)
@@ -365,7 +367,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
         else if(max_nnz <= 512)
@@ -382,7 +384,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
         else
@@ -399,7 +401,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
     }
@@ -419,7 +421,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
         else if(max_nnz <= 128)
@@ -436,7 +438,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
         else if(max_nnz <= 256)
@@ -453,7 +455,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
         else if(max_nnz <= 512)
@@ -470,7 +472,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
         else if(max_nnz <= 1024)
@@ -487,7 +489,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
         else
@@ -504,7 +506,7 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                info->csrilu0_info->csr_diag_ind,
                                d_done_array,
                                info->csrilu0_info->row_map,
-                               info->csrilu0_info->zero_pivot,
+                               info->zero_pivot,
                                descr->base);
         }
     }
