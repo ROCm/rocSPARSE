@@ -202,9 +202,9 @@ struct _rocsparse_csrtr_info
     // device array to hold pointer to diagonal entry
     rocsparse_int* csr_diag_ind = nullptr;
     // device pointers to hold transposed data
+    rocsparse_int* csrt_perm    = nullptr;
     rocsparse_int* csrt_row_ptr = nullptr;
     rocsparse_int* csrt_col_ind = nullptr;
-    void*          csrt_val     = nullptr;
 
     // some data to verify correct execution
     rocsparse_int               m;

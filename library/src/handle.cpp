@@ -260,6 +260,25 @@ rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
         info->csr_diag_ind = nullptr;
     }
 
+    // Clear csrt arrays
+    if(info->csrt_perm != nullptr)
+    {
+        RETURN_IF_HIP_ERROR(hipFree(info->csrt_perm));
+        info->csrt_perm = nullptr;
+    }
+
+    if(info->csrt_row_ptr != nullptr)
+    {
+        RETURN_IF_HIP_ERROR(hipFree(info->csrt_row_ptr));
+        info->csrt_row_ptr = nullptr;
+    }
+
+    if(info->csrt_col_ind != nullptr)
+    {
+        RETURN_IF_HIP_ERROR(hipFree(info->csrt_col_ind));
+        info->csrt_col_ind = nullptr;
+    }
+
     // Destruct
     try
     {
