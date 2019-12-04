@@ -260,12 +260,6 @@ rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
         info->csr_diag_ind = nullptr;
     }
 
-    if(info->zero_pivot != nullptr)
-    {
-        RETURN_IF_HIP_ERROR(hipFree(info->zero_pivot));
-        info->zero_pivot = nullptr;
-    }
-
     // Destruct
     try
     {
