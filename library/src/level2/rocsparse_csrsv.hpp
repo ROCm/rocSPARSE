@@ -167,7 +167,8 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
         size_t transpose_size;
 
         // Determine rocprim buffer size
-        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(nullptr, transpose_size, dummy, dummy, nnz, 0, 32, stream));
+        RETURN_IF_HIP_ERROR(
+            rocprim::radix_sort_pairs(nullptr, transpose_size, dummy, dummy, nnz, 0, 32, stream));
 
         // rocPRIM does not support in-place sorting, so we need an additional buffer
         transpose_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
@@ -198,8 +199,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
     // If analyzing transposed, allocate some info memory to hold the transposed matrix
     if(trans == rocsparse_operation_transpose)
     {
-        if(info->csrt_perm != nullptr || info->csrt_row_ptr != nullptr ||
-           info->csrt_col_ind != nullptr)
+        if(info->csrt_perm != nullptr || info->csrt_row_ptr != nullptr
+           || info->csrt_col_ind != nullptr)
         {
             return rocsparse_status_internal_error;
         }
@@ -219,7 +220,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
         void* rocprim_buffer = reinterpret_cast<void*>(ptr);
 
         // Load CSR column indices into work1 buffer
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(tmp_work1, csr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            tmp_work1, csr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
 
         RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->csrt_perm, sizeof(rocsparse_int) * nnz));
         RETURN_IF_HIP_ERROR(
@@ -227,34 +229,48 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
         RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->csrt_col_ind, sizeof(rocsparse_int) * nnz));
 
         // Create identity permutation
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, nnz, info->csrt_perm));
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_create_identity_permutation(handle, nnz, info->csrt_perm));
 
         // Stable sort COO by columns
         rocprim::double_buffer<rocsparse_int> keys(tmp_work1, info->csrt_col_ind);
         rocprim::double_buffer<rocsparse_int> vals(info->csrt_perm, tmp_work2);
 
         unsigned int startbit = 0;
-        unsigned int endbit = rocsparse_clz(m);
+        unsigned int endbit   = rocsparse_clz(m);
 
         size_t rocprim_size;
 
-        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(nullptr, rocprim_size, keys, vals, nnz, startbit, endbit, stream));
-        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(rocprim_buffer, rocprim_size, keys, vals, nnz, startbit, endbit, stream));
+        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
+            nullptr, rocprim_size, keys, vals, nnz, startbit, endbit, stream));
+        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
+            rocprim_buffer, rocprim_size, keys, vals, nnz, startbit, endbit, stream));
 
         // Copy permutation vector, if not already available
         if(vals.current() != info->csrt_perm)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->csrt_perm, vals.current(), sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
+            RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->csrt_perm,
+                                               vals.current(),
+                                               sizeof(rocsparse_int) * nnz,
+                                               hipMemcpyDeviceToDevice,
+                                               stream));
         }
 
         // Create column pointers
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2csr(handle, keys.current(), nnz, m, info->csrt_row_ptr, descr->base));
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_coo2csr(handle, keys.current(), nnz, m, info->csrt_row_ptr, descr->base));
 
         // Create row indices
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2coo(handle, csr_row_ptr, nnz, m, tmp_work1, descr->base));
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_csr2coo(handle, csr_row_ptr, nnz, m, tmp_work1, descr->base));
 
         // Permute column indices
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(handle, nnz, tmp_work1, info->csrt_col_ind, info->csrt_perm, rocsparse_index_base_zero));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(handle,
+                                                          nnz,
+                                                          tmp_work1,
+                                                          info->csrt_col_ind,
+                                                          info->csrt_perm,
+                                                          rocsparse_index_base_zero));
     }
 
     // Buffer
@@ -970,7 +986,8 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
         T* csrt_val = reinterpret_cast<T*>(ptr);
 
         // Gather values
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(handle, nnz, csr_val, csrt_val, csrsv->csrt_perm, rocsparse_index_base_zero));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(
+            handle, nnz, csr_val, csrt_val, csrsv->csrt_perm, rocsparse_index_base_zero));
 
         local_csr_row_ptr = csrsv->csrt_row_ptr;
         local_csr_col_ind = csrsv->csrt_col_ind;
