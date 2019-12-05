@@ -187,6 +187,19 @@ typedef enum rocsparse_action_
 } rocsparse_action;
 
 /*! \ingroup types_module
+ *  \brief Specify the matrix direction.
+ *
+ *  \details
+ *  The \ref rocsparse_direction indicates whether a dense matrix should be parsed by
+ *  rows or by columns, assuming column-major storage.
+ */
+typedef enum rocsparse_direction_
+{
+    rocsparse_direction_row    = 0, /**< Parse the matrix by rows. */
+    rocsparse_direction_column = 1 /**< Parse the matrix by columns. */
+} rocsparse_direction;
+
+/*! \ingroup types_module
  *  \brief HYB matrix partitioning type.
  *
  *  \details
