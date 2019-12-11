@@ -31,7 +31,7 @@ find_package(rocprim REQUIRED)
 
 # Workaround until hcc & hip cmake modules fixes symlink logic in their config files.
 # (Thanks to rocBLAS devs for finding workaround for this problem!)
-list(APPEND CMAKE_PREFIX_PATH /opt/rocm/hcc /opt/rocm/hip /opt/rocm)
+list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hcc /opt/rocm/hcc ${ROCM_PATH}/hip /opt/rocm/hip ${ROCM_PATH} /opt/rocm)
 
 # HIP configuration
 if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
