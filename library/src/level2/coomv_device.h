@@ -63,7 +63,7 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
     rocsparse_int tid = hipThreadIdx_x;
 
     // Lane index (0,...,WF_SIZE)
-    rocsparse_int lid = gid % WF_SIZE;
+    rocsparse_int lid = tid & (WF_SIZE - 1);
     // Wavefront index
     rocsparse_int wid = gid / WF_SIZE;
 
@@ -237,8 +237,10 @@ __global__ void coomvn_general_block_reduce(rocsparse_int nnz,
         segmented_blockreduce<T, BLOCKSIZE>(shared_row, shared_val);
 
         // Add reduced sum to y if valid
-        rocsparse_int row = shared_row[tid];
-        if(row != shared_row[tid + 1] && row >= 0)
+        rocsparse_int row   = shared_row[tid];
+        rocsparse_int rowp1 = (tid < BLOCKSIZE - 1) ? shared_row[tid + 1] : -1;
+
+        if(row != rowp1 && row >= 0)
         {
             y[row] = y[row] + shared_val[tid];
         }
