@@ -66,7 +66,7 @@ else
 fi
 
 # Generate logfile name
-logname=dcsrmv_$(date +'%Y%m%d%H%M%S').log
+logname=scsrmv_$(date +'%Y%m%d%H%M%S').log
 truncate -s 0 $logname
 
 # Run csrmv for all matrices available

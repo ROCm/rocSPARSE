@@ -546,6 +546,12 @@ void testing_csrsv(const Arguments& arg)
                               false,
                               full_rank);
 
+    // Non-squared matrices are not supported
+    if(M != N)
+    {
+        return;
+    }
+
     // Allocate host memory for vectors
     host_vector<T>             hx(N);
     host_vector<T>             hy_1(M);

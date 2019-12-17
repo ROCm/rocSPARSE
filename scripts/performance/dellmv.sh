@@ -66,10 +66,10 @@ else
 fi
 
 # Generate logfile name
-logname=scsrsv_$(date +'%Y%m%d%H%M%S').log
+logname=dellmv_$(date +'%Y%m%d%H%M%S').log
 truncate -s 0 $logname
 
-# Run csrsv for all matrices available
+# Run ellmv for all matrices available
 for filename in ./matrices/*.csr; do
-    $bench -f csrsv --precision s --device $dev --alpha 1 --iters 1000 --rocalution $filename 2>&1 | tee -a $logname
+    $bench -f ellmv --precision d --device $dev --alpha 1 --beta 0 --iters 1000 --rocalution $filename 2>&1 | tee -a $logname
 done
