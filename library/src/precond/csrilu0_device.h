@@ -184,7 +184,7 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
 __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
                                          const rocsparse_int* __restrict__ csr_row_ptr,
                                          const rocsparse_int* __restrict__ csr_col_ind,
@@ -232,8 +232,25 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
         }
 
         // Spin loop until dependency has been resolved
-        while(!rocsparse_atomic_load(&done[local_col], __ATOMIC_ACQUIRE))
-            ;
+        int          local_done    = rocsparse_atomic_load(&done[local_col], __ATOMIC_ACQUIRE);
+        unsigned int times_through = 0;
+        while(!local_done)
+        {
+            if(SLEEP)
+            {
+                for(unsigned int i = 0; i < times_through; ++i)
+                {
+                    __builtin_amdgcn_s_sleep(1);
+                }
+
+                if(times_through < 3907)
+                {
+                    ++times_through;
+                }
+            }
+
+            local_done = rocsparse_atomic_load(&done[local_col], __ATOMIC_ACQUIRE);
+        }
 
         // Load diagonal entry
         T diag_val = csr_val[local_diag];

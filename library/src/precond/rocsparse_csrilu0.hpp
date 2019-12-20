@@ -296,223 +296,246 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
     // Max nnz per row
     rocsparse_int max_nnz = info->csrilu0_info->max_nnz;
 
+    // Determine gcnArch
+    int gcnArch = handle->properties.gcnArch;
+
 #define CSRILU0_DIM 256
     dim3 csrilu0_blocks((m * handle->wavefront_size - 1) / CSRILU0_DIM + 1);
     dim3 csrilu0_threads(CSRILU0_DIM);
 
-    if(handle->wavefront_size == 32)
+    if(gcnArch == 908)
     {
-        if(max_nnz <= 32)
-        {
-            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 1>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
-        else if(max_nnz <= 64)
-        {
-            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 2>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
-        else if(max_nnz <= 128)
-        {
-            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 4>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
-        else if(max_nnz <= 256)
-        {
-            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 8>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
-        else if(max_nnz <= 512)
-        {
-            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 16>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
-        else
-        {
-            hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 32>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
-    }
-    else if(handle->wavefront_size == 64)
-    {
-        if(max_nnz <= 64)
-        {
-            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 1>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
-        else if(max_nnz <= 128)
-        {
-            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 2>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
-        else if(max_nnz <= 256)
-        {
-            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 4>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
-        else if(max_nnz <= 512)
-        {
-            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 8>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
-        else if(max_nnz <= 1024)
-        {
-            hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 16>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
-        else
-        {
-            hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 64>),
-                               csrilu0_blocks,
-                               csrilu0_threads,
-                               0,
-                               stream,
-                               m,
-                               csr_row_ptr,
-                               csr_col_ind,
-                               csr_val,
-                               info->csrilu0_info->csr_diag_ind,
-                               d_done_array,
-                               info->csrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base);
-        }
+        hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 64, true>),
+                           csrilu0_blocks,
+                           csrilu0_threads,
+                           0,
+                           stream,
+                           m,
+                           csr_row_ptr,
+                           csr_col_ind,
+                           csr_val,
+                           info->csrilu0_info->csr_diag_ind,
+                           d_done_array,
+                           info->csrilu0_info->row_map,
+                           info->zero_pivot,
+                           descr->base);
     }
     else
     {
-        return rocsparse_status_arch_mismatch;
+        if(handle->wavefront_size == 32)
+        {
+            if(max_nnz <= 32)
+            {
+                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 1>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+            else if(max_nnz <= 64)
+            {
+                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 2>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+            else if(max_nnz <= 128)
+            {
+                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 4>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+            else if(max_nnz <= 256)
+            {
+                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 8>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+            else if(max_nnz <= 512)
+            {
+                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 16>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 32, false>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+        }
+        else if(handle->wavefront_size == 64)
+        {
+            if(max_nnz <= 64)
+            {
+                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 1>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+            else if(max_nnz <= 128)
+            {
+                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 2>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+            else if(max_nnz <= 256)
+            {
+                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 4>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+            else if(max_nnz <= 512)
+            {
+                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 8>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+            else if(max_nnz <= 1024)
+            {
+                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 16>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 64, false>),
+                                   csrilu0_blocks,
+                                   csrilu0_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   info->csrilu0_info->csr_diag_ind,
+                                   d_done_array,
+                                   info->csrilu0_info->row_map,
+                                   info->zero_pivot,
+                                   descr->base);
+            }
+        }
+        else
+        {
+            return rocsparse_status_arch_mismatch;
+        }
     }
 #undef CSRILU0_DIM
 

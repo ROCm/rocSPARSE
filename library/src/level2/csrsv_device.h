@@ -29,7 +29,9 @@
 
 #include <hip/hip_runtime.h>
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+extern "C" void __builtin_amdgcn_s_sleep(int);
+
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
 __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
                                             const rocsparse_int* __restrict__ csr_row_ptr,
                                             const rocsparse_int* __restrict__ csr_col_ind,
@@ -96,9 +98,23 @@ __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
 
         // While there are threads in this workgroup that have been unable to
         // get their input, loop and wait for the flag to exist.
-        int local_done = 0;
+        int          local_done    = atomicOr(&done_array[local_col], 0);
+        unsigned int times_through = 0;
         while(!local_done)
         {
+            if(SLEEP)
+            {
+                for(unsigned int i = 0; i < times_through; ++i)
+                {
+                    __builtin_amdgcn_s_sleep(1);
+                }
+
+                if(times_through < 3907)
+                {
+                    ++times_through;
+                }
+            }
+
             local_done = atomicOr(&done_array[local_col], 0);
         }
 
@@ -121,9 +137,23 @@ __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
             // Index into shared memory to query for done flag
             int local_idx = local_col - first_row;
 
-            int local_done = 0;
+            int          local_done    = atomicOr(&local_done_array[local_idx], 0);
+            unsigned int times_through = 0;
             while(!local_done)
             {
+                if(SLEEP)
+                {
+                    for(unsigned int i = 0; i < times_through; ++i)
+                    {
+                        __builtin_amdgcn_s_sleep(1);
+                    }
+
+                    if(times_through < 3907)
+                    {
+                        ++times_through;
+                    }
+                }
+
                 local_done = atomicOr(&local_done_array[local_idx], 0);
             }
 
@@ -153,7 +183,7 @@ __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
 __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
                                             const rocsparse_int* __restrict__ csr_row_ptr,
                                             const rocsparse_int* __restrict__ csr_col_ind,
@@ -220,9 +250,23 @@ __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
 
         // While there are threads in this workgroup that have been unable to
         // get their input, loop and wait for the flag to exist.
-        int local_done = 0;
+        int          local_done    = atomicOr(&done_array[local_col], 0);
+        unsigned int times_through = 0;
         while(!local_done)
         {
+            if(SLEEP)
+            {
+                for(unsigned int i = 0; i < times_through; ++i)
+                {
+                    __builtin_amdgcn_s_sleep(1);
+                }
+
+                if(times_through < 3907)
+                {
+                    ++times_through;
+                }
+            }
+
             local_done = atomicOr(&done_array[local_col], 0);
         }
 
@@ -245,9 +289,23 @@ __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
             // Index into shared memory to query for done flag
             int local_idx = last_row - local_col;
 
-            int local_done = 0;
+            int          local_done    = atomicOr(&local_done_array[local_idx], 0);
+            unsigned int times_through = 0;
             while(!local_done)
             {
+                if(SLEEP)
+                {
+                    for(unsigned int i = 0; i < times_through; ++i)
+                    {
+                        __builtin_amdgcn_s_sleep(1);
+                    }
+
+                    if(times_through < 3907)
+                    {
+                        ++times_through;
+                    }
+                }
+
                 local_done = atomicOr(&local_done_array[local_idx], 0);
             }
 
@@ -277,7 +335,7 @@ __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
 __device__ void csrsv_device(rocsparse_int m,
                              T             alpha,
                              const rocsparse_int* __restrict__ csr_row_ptr,
@@ -391,8 +449,25 @@ __device__ void csrsv_device(rocsparse_int m,
         }
 
         // Spin loop until dependency has been resolved
-        while(!rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE))
-            ;
+        int          local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+        unsigned int times_through = 0;
+        while(!local_done)
+        {
+            if(SLEEP)
+            {
+                for(unsigned int i = 0; i < times_through; ++i)
+                {
+                    __builtin_amdgcn_s_sleep(1);
+                }
+
+                if(times_through < 3907)
+                {
+                    ++times_through;
+                }
+            }
+
+            local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+        }
 
         // Local sum computation for each lane
         local_sum = fma(-local_val, y[local_col], local_sum);

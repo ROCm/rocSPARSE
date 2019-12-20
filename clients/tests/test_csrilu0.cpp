@@ -85,7 +85,7 @@ namespace
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
                 return RocSPARSE_TestName<csrilu0>{}
-                       << "DISABLED_" << rocsparse_datatype2string(arg.compute_type) << '_'
+                       << rocsparse_datatype2string(arg.compute_type) << '_'
                        << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_analysis2string(arg.apol) << '_'
@@ -95,8 +95,8 @@ namespace
             else
             {
                 return RocSPARSE_TestName<csrilu0>{}
-                       << "DISABLED_" << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M
-                       << '_' << rocsparse_operation2string(arg.transA) << '_'
+                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
+                       << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_analysis2string(arg.apol) << '_'
                        << rocsparse_solve2string(arg.spol) << '_'
