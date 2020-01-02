@@ -15,6 +15,7 @@ function display_help()
   echo "    [-i|--install] install after build"
   echo "    [-d|--dependencies] install build dependencies"
   echo "    [-c|--clients] build library clients too (combines with -i & -d)"
+  echo "    [-r]--relocatable] create a package to support relocatable ROCm"
   echo "    [-g|--debug] -DCMAKE_BUILD_TYPE=Debug (default is =Release)"
   echo "    [--hip-clang] build library for amdgpu backend using hip-clang"
 }
@@ -214,11 +215,8 @@ build_clients=false
 build_release=true
 build_hip_clang=false
 install_prefix=rocsparse-install
-
 rocm_path=/opt/rocm
-if ! [ -z ${ROCM_PATH+x} ]; then
-    rocm_path=${ROCM_PATH}
-fi
+build_relocatable=false
 
 # #################################################
 # Parameter parsing
@@ -227,7 +225,7 @@ fi
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang --options hicdg -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,relocatable --options hicdgr -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -254,6 +252,9 @@ while true; do
         shift ;;
     -c|--clients)
         build_clients=true
+        shift ;;
+    -r|--relocatable)
+        build_relocatable=true
         shift ;;
     -g|--debug)
         build_release=false
@@ -310,9 +311,24 @@ if [[ "${install_dependencies}" == true ]]; then
   popd
 fi
 
+if [[ "${build_relocatable}" == true ]]; then
+    if ! [ -z ${ROCM_PATH+x} ]; then
+        rocm_path=${ROCM_PATH}
+    fi
+
+    rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,/opt/rocm/lib:/opt/rocm/lib64"
+    if ! [ -z ${ROCM_RPATH+x} ]; then
+        rocm_rpath=" -Wl,--enable-new-dtags -Wl,--rpath,${ROCM_RPATH}"
+    fi
+fi
+
 # We append customary rocm path; if user provides custom rocm path in ${path}, our
 # hard-coded path has lesser priority
-export PATH=${PATH}:${rocm_path}/bin:/opt/rocm/bin
+if [[ "${build_relocatable}" == true ]]; then
+    export PATH=${rocm_path}/bin:${PATH}
+else
+    export PATH=${PATH}:/opt/rocm/bin
+fi
 
 pushd .
   # #################################################
@@ -340,11 +356,22 @@ pushd .
     compiler="hipcc"
   fi
 
+  if [[ "${build_clients}" == false ]]; then
+    cmake_client_options=""
+  fi
+
   # Build library with AMD toolchain because of existense of device kernels
-  if [[ "${build_clients}" == true ]]; then
-    CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${install_prefix} -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} -DROCM_PATH=${rocm_path} ../..
+  if [[ "${build_relocatable}" == true ]]; then
+    CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF \
+      -DCMAKE_INSTALL_PREFIX=${rocm_path} \
+      -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} \
+      -DCMAKE_SHARED_LINKER_FLAGS=${rocm_rpath} \
+      -DCMAKE_PREFIX_PATH="${rocm_path} ${rocm_path}/hcc ${rocm_path}/hip" \
+      -DCMAKE_MODULE_PATH="${rocm_path}/hip/cmake" \
+      -DROCM_DISABLE_LDCONFIG=ON \
+      -DROCM_PATH=${rocm_path} ../..
   else
-    CXX=${compiler} ${cmake_executable} ${cmake_common_options} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${install_prefix} -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} -DROCM_PATH=${rocm_path} ../..
+    CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${install_prefix} -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} -DROCM_PATH=${rocm_path} ../..
   fi
   check_exit_code
 
