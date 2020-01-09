@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,23 +22,23 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef CSRILU0_DEVICE_H
-#define CSRILU0_DEVICE_H
+#ifndef CSRIC0_DEVICE_H
+#define CSRIC0_DEVICE_H
 
 #include "common.h"
 
 #include <hip/hip_runtime.h>
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH>
-__global__ void csrilu0_hash_kernel(rocsparse_int m,
-                                    const rocsparse_int* __restrict__ csr_row_ptr,
-                                    const rocsparse_int* __restrict__ csr_col_ind,
-                                    T* __restrict__ csr_val,
-                                    const rocsparse_int* __restrict__ csr_diag_ind,
-                                    int* __restrict__ done,
-                                    const rocsparse_int* __restrict__ map,
-                                    rocsparse_int* __restrict__ zero_pivot,
-                                    rocsparse_index_base idx_base)
+__global__ void csric0_hash_kernel(rocsparse_int m,
+                                   const rocsparse_int* __restrict__ csr_row_ptr,
+                                   const rocsparse_int* __restrict__ csr_col_ind,
+                                   T* __restrict__ csr_val,
+                                   const rocsparse_int* __restrict__ csr_diag_ind,
+                                   int* __restrict__ done,
+                                   const rocsparse_int* __restrict__ map,
+                                   rocsparse_int* __restrict__ zero_pivot,
+                                   rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -73,6 +73,9 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
     // Row entry point
     rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
     rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+
+    // Row sum accumulator
+    T sum = static_cast<T>(0);
 
     // Fill hash table
     // Loop over columns of current row and fill hash table with row dependencies
@@ -115,16 +118,19 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
         // Corresponding value
         T local_val = csr_val[j];
 
-        // End of the row that corresponds to local_col
-        rocsparse_int local_end = csr_row_ptr[local_col + 1] - idx_base;
+        // Beginning of the row that corresponds to local_col
+        rocsparse_int local_begin = csr_row_ptr[local_col] - idx_base;
 
         // Diagonal entry point of row local_col
         rocsparse_int local_diag = csr_diag_ind[local_col];
 
+        // Local row sum
+        T local_sum = static_cast<T>(0);
+
         // Structural zero pivot, do not process this row
         if(local_diag == -1)
         {
-            local_diag = local_end - 1;
+            local_diag = row_diag - 1;
         }
 
         // Spin loop until dependency has been resolved
@@ -147,11 +153,12 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
             break;
         }
 
-        csr_val[j] = local_val = local_val / diag_val;
+        // Compute reciprocal
+        diag_val = static_cast<T>(1) / diag_val;
 
         // Loop over the row the current column index depends on
         // Each lane processes one entry
-        for(rocsparse_int k = local_diag + 1 + lid; k < local_end; k += WFSIZE)
+        for(rocsparse_int k = local_begin + lid; k < local_diag; k += WFSIZE)
         {
             // Get value from hash table
             rocsparse_int key = csr_col_ind[k];
@@ -169,9 +176,9 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
                 }
                 else if(table[hash] == key)
                 {
-                    // Entry found, do ILU computation
+                    // Entry found, do linear combination
                     rocsparse_int idx = data[hash];
-                    csr_val[idx]      = fma(-local_val, csr_val[k], csr_val[idx]);
+                    local_sum         = fma(csr_val[k], csr_val[idx], local_sum);
                     break;
                 }
                 else
@@ -181,25 +188,43 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
                 }
             }
         }
+
+        // Accumulate row sum
+        local_sum = rocsparse_wfreduce_sum<WFSIZE>(local_sum);
+
+        // Last lane id computes the Cholesky factor and writes it to global memory
+        if(lid == WFSIZE - 1)
+        {
+            local_val = (local_val - local_sum) * diag_val;
+            sum       = fma(local_val, local_val, sum);
+
+            csr_val[j] = local_val;
+        }
     }
 
-    if(lid == 0)
+    if(lid == WFSIZE - 1)
     {
-        // First lane writes "we are done" flag
+        // Last lane processes the diagonal entry
+        if(row_diag >= 0)
+        {
+            csr_val[row_diag] = sqrt(abs(csr_val[row_diag] - sum));
+        }
+
+        // Last lane writes "we are done" flag
         rocsparse_atomic_store(&done[row], 1, __ATOMIC_RELEASE);
     }
 }
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
-__global__ void csrilu0_binsearch_kernel(rocsparse_int m,
-                                         const rocsparse_int* __restrict__ csr_row_ptr,
-                                         const rocsparse_int* __restrict__ csr_col_ind,
-                                         T* __restrict__ csr_val,
-                                         const rocsparse_int* __restrict__ csr_diag_ind,
-                                         int* __restrict__ done,
-                                         const rocsparse_int* __restrict__ map,
-                                         rocsparse_int* __restrict__ zero_pivot,
-                                         rocsparse_index_base idx_base)
+__global__ void csric0_binsearch_kernel(rocsparse_int m,
+                                        const rocsparse_int* __restrict__ csr_row_ptr,
+                                        const rocsparse_int* __restrict__ csr_col_ind,
+                                        T* __restrict__ csr_val,
+                                        const rocsparse_int* __restrict__ csr_diag_ind,
+                                        int* __restrict__ done,
+                                        const rocsparse_int* __restrict__ map,
+                                        rocsparse_int* __restrict__ zero_pivot,
+                                        rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -222,6 +247,9 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
     rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
     rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
 
+    // Row sum accumulator
+    T sum = static_cast<T>(0);
+
     // Loop over column of current row
     for(rocsparse_int j = row_begin; j < row_diag; ++j)
     {
@@ -231,16 +259,19 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
         // Corresponding value
         T local_val = csr_val[j];
 
-        // End of the row that corresponds to local_col
-        rocsparse_int local_end = csr_row_ptr[local_col + 1] - idx_base;
+        // Beginning of the row that corresponds to local_col
+        rocsparse_int local_begin = csr_row_ptr[local_col] - idx_base;
 
         // Diagonal entry point of row local_col
         rocsparse_int local_diag = csr_diag_ind[local_col];
 
+        // Local row sum
+        T local_sum = static_cast<T>(0);
+
         // Structural zero pivot, do not process this row
         if(local_diag == -1)
         {
-            local_diag = local_end - 1;
+            local_diag = row_diag - 1;
         }
 
         // Spin loop until dependency has been resolved
@@ -280,12 +311,13 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
             break;
         }
 
-        csr_val[j] = local_val = local_val / diag_val;
+        // Compute reciprocal
+        diag_val = static_cast<T>(1) / diag_val;
 
         // Loop over the row the current column index depends on
         // Each lane processes one entry
-        rocsparse_int l = j + 1;
-        for(rocsparse_int k = local_diag + 1 + lid; k < local_end; k += WFSIZE)
+        rocsparse_int l = row_begin;
+        for(rocsparse_int k = local_begin + lid; k < local_diag; k += WFSIZE)
         {
             // Perform a binary search to find matching columns
             rocsparse_int r     = row_end - 1;
@@ -313,17 +345,35 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
             // Check if a match has been found
             if(col_j == col_k)
             {
-                // If a match has been found, do ILU computation
-                csr_val[l] = fma(-local_val, csr_val[k], csr_val[l]);
+                // If a match has been found, do linear combination
+                local_sum = fma(csr_val[k], csr_val[m], local_sum);
             }
+        }
+
+        // Accumulate row sum
+        local_sum = rocsparse_wfreduce_sum<WFSIZE>(local_sum);
+
+        // Last lane id computes the Cholesky factor and writes it to global memory
+        if(lid == WFSIZE - 1)
+        {
+            local_val = (local_val - local_sum) * diag_val;
+            sum       = fma(local_val, local_val, sum);
+
+            csr_val[j] = local_val;
         }
     }
 
-    if(lid == 0)
+    if(lid == WFSIZE - 1)
     {
-        // First lane writes "we are done" flag
+        // Last lane processes the diagonal entry
+        if(row_diag >= 0)
+        {
+            csr_val[row_diag] = sqrt(abs(csr_val[row_diag] - sum));
+        }
+
+        // Last lane writes "we are done" flag
         rocsparse_atomic_store(&done[row], 1, __ATOMIC_RELEASE);
     }
 }
 
-#endif // CSRILU0_DEVICE_H
+#endif // CSRIC0_DEVICE_H

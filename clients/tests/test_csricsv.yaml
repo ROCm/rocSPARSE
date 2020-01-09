@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018 Advanced Micro Devices, Inc.
+# Copyright (c) 2019 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -21,47 +21,35 @@
 #
 # ########################################################################
 
-# rocSPARSE source
-set(rocsparse_source
-  src/handle.cpp
-  src/status.cpp
-  src/rocsparse_auxiliary.cpp
+---
+include: rocsparse_common.yaml
+include: known_bugs.yaml
 
-# Level1
-  src/level1/rocsparse_axpyi.cpp
-  src/level1/rocsparse_doti.cpp
-  src/level1/rocsparse_dotci.cpp
-  src/level1/rocsparse_gthr.cpp
-  src/level1/rocsparse_gthrz.cpp
-  src/level1/rocsparse_roti.cpp
-  src/level1/rocsparse_sctr.cpp
+Tests:
+- name: csricsv_file
+  category: quick
+  function: csricsv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [nos4,
+             nos6,
+             scircuit]
 
-# Level2
-  src/level2/rocsparse_coomv.cpp
-  src/level2/rocsparse_csrmv.cpp
-  src/level2/rocsparse_csrsv.cpp
-  src/level2/rocsparse_ellmv.cpp
-  src/level2/rocsparse_hybmv.cpp
-
-# Level3
-  src/level3/rocsparse_csrmm.cpp
-
-# Extra
-  src/extra/rocsparse_csrgemm.cpp
-
-# Preconditioner
-  src/precond/rocsparse_csric0.cpp
-  src/precond/rocsparse_csrilu0.cpp
-
-# Conversion
-  src/conversion/rocsparse_csr2coo.cpp
-  src/conversion/rocsparse_csr2csc.cpp
-  src/conversion/rocsparse_csr2ell.cpp
-  src/conversion/rocsparse_csr2hyb.cpp
-  src/conversion/rocsparse_coo2csr.cpp
-  src/conversion/rocsparse_ell2csr.cpp
-  src/conversion/rocsparse_identity.cpp
-  src/conversion/rocsparse_csrsort.cpp
-  src/conversion/rocsparse_cscsort.cpp
-  src/conversion/rocsparse_coosort.cpp
-)
+- name: csricsv_file
+  category: pre_checkin
+  function: csricsv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [nos3,
+             nos5,
+             nos7]

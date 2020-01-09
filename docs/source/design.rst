@@ -422,14 +422,18 @@ The following table lists subroutines that can in some cases share meta data:
 ================================== ====
 Subroutine                         Sharing meta data with
 ================================== ====
-:cpp:func:`rocsparse_scsrsv_solve` :cpp:func:`rocsparse_scsrilu0`
-:cpp:func:`rocsparse_dcsrsv_solve` :cpp:func:`rocsparse_dcsrilu0`
-:cpp:func:`rocsparse_ccsrsv_solve` :cpp:func:`rocsparse_ccsrilu0`
-:cpp:func:`rocsparse_zcsrsv_solve` :cpp:func:`rocsparse_zcsrilu0`
-:cpp:func:`rocsparse_scsrilu0`     :cpp:func:`rocsparse_scsrsv_solve`
-:cpp:func:`rocsparse_dcsrilu0`     :cpp:func:`rocsparse_dcsrsv_solve`
-:cpp:func:`rocsparse_ccsrilu0`     :cpp:func:`rocsparse_ccsrsv_solve`
-:cpp:func:`rocsparse_zcsrilu0`     :cpp:func:`rocsparse_zcsrsv_solve`
+:cpp:func:`rocsparse_scsrsv_solve` :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_scsrilu0`
+:cpp:func:`rocsparse_dcsrsv_solve` :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_dcsrilu0`
+:cpp:func:`rocsparse_ccsrsv_solve` :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_ccsrilu0`
+:cpp:func:`rocsparse_zcsrsv_solve` :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_zcsrilu0`
+:cpp:func:`rocsparse_scsric0`      :cpp:func:`rocsparse_scsrilu0`, :cpp:func:`rocsparse_scsrsv_solve`
+:cpp:func:`rocsparse_dcsric0`      :cpp:func:`rocsparse_scsrilu0`, :cpp:func:`rocsparse_dcsrsv_solve`
+:cpp:func:`rocsparse_ccsric0`      :cpp:func:`rocsparse_scsrilu0`, :cpp:func:`rocsparse_ccsrsv_solve`
+:cpp:func:`rocsparse_zcsric0`      :cpp:func:`rocsparse_scsrilu0`, :cpp:func:`rocsparse_zcsrsv_solve`
+:cpp:func:`rocsparse_scsrilu0`     :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_scsrsv_solve`
+:cpp:func:`rocsparse_dcsrilu0`     :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_dcsrsv_solve`
+:cpp:func:`rocsparse_ccsrilu0`     :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_ccsrsv_solve`
+:cpp:func:`rocsparse_zcsrilu0`     :cpp:func:`rocsparse_scsric0`, :cpp:func:`rocsparse_zcsrsv_solve`
 ================================== ====
 
 .. note:: It is important to note, that on rocSPARSE extensions, this functionality can be further expanded to improve meta data collection performance significantly.
