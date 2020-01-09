@@ -35,6 +35,7 @@ include: test_ellmv.yaml
 include: test_hybmv.yaml
 include: test_csrmm.yaml
 include: test_csrgemm.yaml
+include: test_csric0.yaml
 include: test_csrilu0.yaml
 include: test_csr2coo.yaml
 include: test_csr2csc.yaml
@@ -46,4 +47,5 @@ include: test_identity.yaml
 include: test_csrsort.yaml
 include: test_cscsort.yaml
 include: test_coosort.yaml
+include: test_csricsv.yaml
 include: test_csrilusv.yaml

@@ -211,10 +211,11 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
 }
 
 /********************************************************************************
- * \brief rocsparse_csrtr_info is a structure holding the rocsparse csrsv and
- * csrilu0 data gathered during csrsv_analysis and csrilu0_analysis. It must be
- * initialized using the rocsparse_create_csrtr_info() routine. It should be
- * destroyed at the end using rocsparse_destroy_csrtr_info().
+ * \brief rocsparse_csrtr_info is a structure holding the rocsparse csrsv,
+ * csrilu0 and csric0 data gathered during csrsv_analysis, csrilu0_analysis and
+ * csric0_analysis. It must be initialized using the
+ * rocsparse_create_csrtr_info() routine. It should be destroyed at the end
+ * using rocsparse_destroy_csrtr_info().
  *******************************************************************************/
 rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info)
 {

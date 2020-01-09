@@ -127,6 +127,16 @@ public:
         return {real, imag};
     }
 
+    // complex abs
+    friend __device__ __host__ T abs(rocsparse_complex_num n)
+    {
+        T real = abs(n.x);
+        T imag = abs(n.y);
+
+        return real > imag ? (imag /= real, real * sqrt(imag * imag + 1))
+                           : (real /= imag, imag * sqrt(real * real + 1));
+    }
+
     // complex conjugate
     friend __device__ __host__ rocsparse_complex_num conj(const rocsparse_complex_num& z)
     {

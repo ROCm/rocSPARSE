@@ -480,9 +480,15 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
 
     // Uncouple shared meta data
     // TODO add more crossover data here
-    if(info->csrsv_lower_info == info->csrilu0_info)
+    if(info->csrsv_lower_info == info->csrilu0_info || info->csrsv_lower_info == info->csric0_info)
     {
         info->csrsv_lower_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(info->csrilu0_info == info->csric0_info)
+    {
+        info->csrilu0_info = nullptr;
     }
 
     // Clear csrmv info struct
@@ -501,6 +507,12 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
     if(info->csrsvt_lower_info != nullptr)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsvt_lower_info));
+    }
+
+    // Clear csric0 info struct
+    if(info->csric0_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csric0_info));
     }
 
     // Clear csrilu0 info struct

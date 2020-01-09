@@ -598,6 +598,11 @@ Preconditioner Functions
 ============================================================================= ====== ====== ============== ==============
 Function name                                                                 single double single complex double complex
 ============================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xcsric0_buffer_size() <rocsparse_scsric0_buffer_size>`   x      x      x              x
+:cpp:func:`rocsparse_Xcsric0_analysis() <rocsparse_scsric0_analysis>`         x      x      x              x
+:cpp:func:`rocsparse_csric0_zero_pivot`
+:cpp:func:`rocsparse_csric0_clear`
+:cpp:func:`rocsparse_Xcsric0() <rocsparse_scsric0>`                           x      x      x              x
 :cpp:func:`rocsparse_Xcsrilu0_buffer_size() <rocsparse_scsrilu0_buffer_size>` x      x      x              x
 :cpp:func:`rocsparse_Xcsrilu0_analysis() <rocsparse_scsrilu0_analysis>`       x      x      x              x
 :cpp:func:`rocsparse_csrilu0_zero_pivot`
@@ -1057,6 +1062,49 @@ Preconditioner Functions
 This module holds all sparse preconditioners.
 
 The sparse preconditioners describe manipulations on a matrix in sparse format to obtain a sparse preconditioner matrix.
+
+rocsparse_csric0_zero_pivot()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_csric0_zero_pivot
+
+rocsparse_csric0_buffer_size()
+------------------------------
+
+.. doxygenfunction:: rocsparse_scsric0_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcsric0_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccsric0_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcsric0_buffer_size
+
+rocsparse_csric0_analysis()
+---------------------------
+
+.. doxygenfunction:: rocsparse_scsric0_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_dcsric0_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_ccsric0_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_zcsric0_analysis
+
+rocsparse_csric0()
+------------------
+
+.. doxygenfunction:: rocsparse_scsric0
+  :outline:
+.. doxygenfunction:: rocsparse_dcsric0
+  :outline:
+.. doxygenfunction:: rocsparse_ccsric0
+  :outline:
+.. doxygenfunction:: rocsparse_zcsric0
+
+rocsparse_csric0_clear()
+------------------------
+
+.. doxygenfunction:: rocsparse_csric0_clear
 
 rocsparse_csrilu0_zero_pivot()
 ------------------------------

@@ -47,6 +47,7 @@
 #include "testing_csrgemm.hpp"
 
 // Preconditioner
+#include "testing_csric0.hpp"
 #include "testing_csrilu0.hpp"
 
 // Conversion
@@ -192,7 +193,7 @@ int main(int argc, char* argv[])
          "  Level2: coomv, csrmv, csrsv, ellmv, hybmv\n"
          "  Level3: csrmm\n"
          "  Extra: csrgemm\n"
-         "  Preconditioner: csrilu0\n"
+         "  Preconditioner: csric0, csrilu0\n"
          "  Conversion: csr2coo, csr2csc, csr2ell,\n"
          "              csr2hyb, coo2csr, ell2csr\n"
          "  Sorting: cscsort, csrsort, coosort\n"
@@ -529,6 +530,17 @@ int main(int argc, char* argv[])
             testing_csrgemm<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_csrgemm<rocsparse_double_complex>(arg);
+    }
+    else if(function == "csric0")
+    {
+        if(precision == 's')
+            testing_csric0<float>(arg);
+        else if(precision == 'd')
+            testing_csric0<double>(arg);
+        else if(precision == 'c')
+            testing_csric0<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_csric0<rocsparse_double_complex>(arg);
     }
     else if(function == "csrilu0")
     {
