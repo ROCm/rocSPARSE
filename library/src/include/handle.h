@@ -151,6 +151,8 @@ struct _rocsparse_mat_info
     rocsparse_csrtr_info   csrsv_lower_info  = nullptr;
     rocsparse_csrtr_info   csrsvt_upper_info = nullptr;
     rocsparse_csrtr_info   csrsvt_lower_info = nullptr;
+    rocsparse_csrtr_info   csrsm_upper_info  = nullptr;
+    rocsparse_csrtr_info   csrsm_lower_info  = nullptr;
     rocsparse_csrgemm_info csrgemm_info      = nullptr;
 
     // zero pivot for csrsv, csrsm, csrilu0, csric0
@@ -216,7 +218,7 @@ struct _rocsparse_csrtr_info
 };
 
 /********************************************************************************
- * \brief rocsparse_csrtr_info is a structure holding the rocsparse csrsv,
+ * \brief rocsparse_csrtr_info is a structure holding the rocsparse csrsv, csrsm,
  * csrilu0 and csric0 data gathered during csrsv_analysis, csrilu0_analysis and
  * csric0_analysis. It must be initialized using the
  * rocsparse_create_csrtr_info() routine. It should be destroyed at the end
@@ -225,9 +227,15 @@ struct _rocsparse_csrtr_info
 rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info);
 
 /********************************************************************************
- * \brief Destroy csrmv info.
+ * \brief Destroy csrtr info.
  *******************************************************************************/
 rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info);
+
+/********************************************************************************
+ * \brief rocsparse_check_csrtr_shared checks if the given csrtr info structure
+ * shares its meta data with another csrtr info structure.
+ *******************************************************************************/
+bool rocsparse_check_csrtr_shared(const rocsparse_mat_info info, rocsparse_csrtr_info csrtr);
 
 /********************************************************************************
  * \brief rocsparse_csrgemm_info is a structure holding the rocsparse csrgemm

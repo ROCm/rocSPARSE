@@ -235,15 +235,12 @@ extern "C" rocsparse_status rocsparse_csrilu0_clear(rocsparse_handle   handle,
     // Logging
     log_trace(handle, "rocsparse_csrilu0_clear", (const void*&)info);
 
-    // If meta data is shared, do not delete anything
-    if(info->csrilu0_info == info->csrsv_lower_info || info->csrilu0_info == info->csrsv_upper_info)
+    // If meta data is not shared, delete it
+    if(!rocsparse_check_csrtr_shared(info, info->csrilu0_info))
     {
-        info->csrilu0_info = nullptr;
-
-        return rocsparse_status_success;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrilu0_info));
     }
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrilu0_info));
     info->csrilu0_info = nullptr;
 
     return rocsparse_status_success;

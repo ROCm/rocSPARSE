@@ -211,7 +211,7 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
 }
 
 /********************************************************************************
- * \brief rocsparse_csrtr_info is a structure holding the rocsparse csrsv,
+ * \brief rocsparse_csrtr_info is a structure holding the rocsparse csrsv, csrsm,
  * csrilu0 and csric0 data gathered during csrsv_analysis, csrilu0_analysis and
  * csric0_analysis. It must be initialized using the
  * rocsparse_create_csrtr_info() routine. It should be destroyed at the end
@@ -290,6 +290,39 @@ rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
         return status;
     }
     return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief rocsparse_check_csrtr_shared checks if the given csrtr info structure
+ * shares its meta data with another csrtr info structure.
+ *******************************************************************************/
+bool rocsparse_check_csrtr_shared(const rocsparse_mat_info info, rocsparse_csrtr_info csrtr)
+{
+    if(info == nullptr)
+    {
+        return false;
+    }
+
+    int shared = -1;
+
+    if(csrtr == info->csrilu0_info)
+        ++shared;
+    if(csrtr == info->csric0_info)
+        ++shared;
+    if(csrtr == info->csrsv_lower_info)
+        ++shared;
+    if(csrtr == info->csrsv_upper_info)
+        ++shared;
+    if(csrtr == info->csrsvt_lower_info)
+        ++shared;
+    if(csrtr == info->csrsvt_upper_info)
+        ++shared;
+    if(csrtr == info->csrsm_lower_info)
+        ++shared;
+    if(csrtr == info->csrsm_upper_info)
+        ++shared;
+
+    return (shared > 0) ? true : false;
 }
 
 /********************************************************************************

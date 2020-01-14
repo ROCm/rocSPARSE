@@ -222,26 +222,28 @@ extern "C" rocsparse_status rocsparse_csrsv_clear(rocsparse_handle          hand
     // Logging
     log_trace(handle, "rocsparse_csrsv_clear", (const void*&)descr, (const void*&)info);
 
-    // Determine which info meta data should be deleted
-    if(descr->fill_mode == rocsparse_fill_mode_lower)
+    // Clear csrsv meta data (this includes lower, upper and their transposed equivalents
+    if(!rocsparse_check_csrtr_shared(info, info->csrsv_lower_info))
     {
-        // If meta data is shared, do not delete anything
-        if(info->csrilu0_info == info->csrsv_lower_info)
-        {
-            info->csrsv_lower_info = nullptr;
-
-            return rocsparse_status_success;
-        }
-
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsv_lower_info));
-        info->csrsv_lower_info = nullptr;
     }
-    else if(descr->fill_mode == rocsparse_fill_mode_upper)
+    if(!rocsparse_check_csrtr_shared(info, info->csrsvt_lower_info))
     {
-        // Upper info has no shares (yet)
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsv_upper_info));
-        info->csrsv_upper_info = nullptr;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsvt_lower_info));
     }
+    if(!rocsparse_check_csrtr_shared(info, info->csrsv_upper_info))
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsv_upper_info));
+    }
+    if(!rocsparse_check_csrtr_shared(info, info->csrsvt_upper_info))
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsvt_upper_info));
+    }
+
+    info->csrsv_lower_info  = nullptr;
+    info->csrsvt_lower_info = nullptr;
+    info->csrsv_upper_info  = nullptr;
+    info->csrsvt_upper_info = nullptr;
 
     return rocsparse_status_success;
 }
@@ -253,7 +255,7 @@ extern "C" rocsparse_status rocsparse_scsrsv_solve(rocsparse_handle          han
                                                    const float*              alpha,
                                                    const rocsparse_mat_descr descr,
                                                    const float*              csr_val,
-                                                   const rocsparse_int*      csr_row_ind,
+                                                   const rocsparse_int*      csr_row_ptr,
                                                    const rocsparse_int*      csr_col_ind,
                                                    rocsparse_mat_info        info,
                                                    const float*              x,
@@ -268,7 +270,7 @@ extern "C" rocsparse_status rocsparse_scsrsv_solve(rocsparse_handle          han
                                           alpha,
                                           descr,
                                           csr_val,
-                                          csr_row_ind,
+                                          csr_row_ptr,
                                           csr_col_ind,
                                           info,
                                           x,
@@ -284,7 +286,7 @@ extern "C" rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle          han
                                                    const double*             alpha,
                                                    const rocsparse_mat_descr descr,
                                                    const double*             csr_val,
-                                                   const rocsparse_int*      csr_row_ind,
+                                                   const rocsparse_int*      csr_row_ptr,
                                                    const rocsparse_int*      csr_col_ind,
                                                    rocsparse_mat_info        info,
                                                    const double*             x,
@@ -299,7 +301,7 @@ extern "C" rocsparse_status rocsparse_dcsrsv_solve(rocsparse_handle          han
                                           alpha,
                                           descr,
                                           csr_val,
-                                          csr_row_ind,
+                                          csr_row_ptr,
                                           csr_col_ind,
                                           info,
                                           x,
@@ -315,7 +317,7 @@ extern "C" rocsparse_status rocsparse_ccsrsv_solve(rocsparse_handle             
                                                    const rocsparse_float_complex* alpha,
                                                    const rocsparse_mat_descr      descr,
                                                    const rocsparse_float_complex* csr_val,
-                                                   const rocsparse_int*           csr_row_ind,
+                                                   const rocsparse_int*           csr_row_ptr,
                                                    const rocsparse_int*           csr_col_ind,
                                                    rocsparse_mat_info             info,
                                                    const rocsparse_float_complex* x,
@@ -330,7 +332,7 @@ extern "C" rocsparse_status rocsparse_ccsrsv_solve(rocsparse_handle             
                                           alpha,
                                           descr,
                                           csr_val,
-                                          csr_row_ind,
+                                          csr_row_ptr,
                                           csr_col_ind,
                                           info,
                                           x,
@@ -346,7 +348,7 @@ extern "C" rocsparse_status rocsparse_zcsrsv_solve(rocsparse_handle             
                                                    const rocsparse_double_complex* alpha,
                                                    const rocsparse_mat_descr       descr,
                                                    const rocsparse_double_complex* csr_val,
-                                                   const rocsparse_int*            csr_row_ind,
+                                                   const rocsparse_int*            csr_row_ptr,
                                                    const rocsparse_int*            csr_col_ind,
                                                    rocsparse_mat_info              info,
                                                    const rocsparse_double_complex* x,
@@ -361,7 +363,7 @@ extern "C" rocsparse_status rocsparse_zcsrsv_solve(rocsparse_handle             
                                           alpha,
                                           descr,
                                           csr_val,
-                                          csr_row_ind,
+                                          csr_row_ptr,
                                           csr_col_ind,
                                           info,
                                           x,

@@ -89,6 +89,20 @@ Functions:
 
   rocsparse_scsrmm: { function: csrmm, <<: *single_precision }
   rocsparse_dcsrmm: { function: csrmm, <<: *double_precision }
+  rocsparse_scsrsm_buffer_size: { function: csrsm, <<: *single_precision }
+  rocsparse_dcsrsm_buffer_size: { function: csrsm, <<: *double_precision }
+  rocsparse_ccsrsm_buffer_size: { function: csrsm, <<: *single_precision_complex }
+  rocsparse_zcsrsm_buffer_size: { function: csrsm, <<: *double_precision_complex }
+  rocsparse_scsrsm_analysis: { function: csrsm, <<: *single_precision }
+  rocsparse_dcsrsm_analysis: { function: csrsm, <<: *double_precision }
+  rocsparse_ccsrsm_analysis: { function: csrsm, <<: *single_precision_complex }
+  rocsparse_zcsrsm_analysis: { function: csrsm, <<: *double_precision_complex }
+  rocsparse_scsrsm_solve: { function: csrsm, <<: *single_precision }
+  rocsparse_dcsrsm_solve: { function: csrsm, <<: *double_precision }
+  rocsparse_ccsrsm_solve: { function: csrsm, <<: *single_precision_complex }
+  rocsparse_zcsrsm_solve: { function: csrsm, <<: *double_precision_complex }
+  rocsparse_csrsm_zero_pivot: {function: csrsm }
+  rocsparse_csrsm_clear: {function: csrsm }
 
   rocsparse_scsrgemm_buffer_size: { function: csrgemm, <<: *single_precision }
   rocsparse_dcsrgemm_buffer_size: { function: csrgemm, <<: *double_precision }

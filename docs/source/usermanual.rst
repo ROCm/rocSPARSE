@@ -575,11 +575,16 @@ Function name                                                             single
 Sparse Level 3 Functions
 ------------------------
 
-================================================= ====== ====== ============== ==============
-Function name                                     single double single complex double complex
-================================================= ====== ====== ============== ==============
-:cpp:func:`rocsparse_Xcsrmm() <rocsparse_scsrmm>` x      x      x              x
-================================================= ====== ====== ============== ==============
+========================================================================= ====== ====== ============== ==============
+Function name                                                             single double single complex double complex
+========================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xcsrmm() <rocsparse_scsrmm>`                         x      x      x              x
+:cpp:func:`rocsparse_Xcsrsm_buffer_size() <rocsparse_scsrsm_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_Xcsrsm_analysis() <rocsparse_scsrsm_analysis>`       x      x      x              x
+:cpp:func:`rocsparse_csrsm_zero_pivot`
+:cpp:func:`rocsparse_csrsm_clear`
+:cpp:func:`rocsparse_Xcsrsm_solve() <rocsparse_scsrsm_solve>`             x      x      x              x
+========================================================================= ====== ====== ============== ==============
 
 Sparse Extra Functions
 ----------------------
@@ -1017,6 +1022,49 @@ rocsparse_csrmm()
 .. doxygenfunction:: rocsparse_ccsrmm
   :outline:
 .. doxygenfunction:: rocsparse_zcsrmm
+
+rocsparse_csrsm_zero_pivot()
+----------------------------
+
+.. doxygenfunction:: rocsparse_csrsm_zero_pivot
+
+rocsparse_csrsm_buffer_size()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_scsrsm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrsm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrsm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrsm_buffer_size
+
+rocsparse_csrsm_analysis()
+--------------------------
+
+.. doxygenfunction:: rocsparse_scsrsm_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrsm_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrsm_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrsm_analysis
+
+rocsparse_csrsm_solve()
+-----------------------
+
+.. doxygenfunction:: rocsparse_scsrsm_solve
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrsm_solve
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrsm_solve
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrsm_solve
+
+rocsparse_csrsm_clear()
+-----------------------
+
+.. doxygenfunction:: rocsparse_csrsm_clear
 
 .. _rocsparse_extra_functions_:
 

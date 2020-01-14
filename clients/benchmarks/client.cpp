@@ -42,6 +42,7 @@
 
 // Level3
 #include "testing_csrmm.hpp"
+#include "testing_csrsm.hpp"
 
 // Extra
 #include "testing_csrgemm.hpp"
@@ -191,7 +192,7 @@ int main(int argc, char* argv[])
          "SPARSE function to test. Options:\n"
          "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
          "  Level2: coomv, csrmv, csrsv, ellmv, hybmv\n"
-         "  Level3: csrmm\n"
+         "  Level3: csrmm, csrsm\n"
          "  Extra: csrgemm\n"
          "  Preconditioner: csric0, csrilu0\n"
          "  Conversion: csr2coo, csr2csc, csr2ell,\n"
@@ -514,6 +515,17 @@ int main(int argc, char* argv[])
             testing_csrmm<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_csrmm<rocsparse_double_complex>(arg);
+    }
+    else if(function == "csrsm")
+    {
+        if(precision == 's')
+            testing_csrsm<float>(arg);
+        else if(precision == 'd')
+            testing_csrsm<double>(arg);
+        else if(precision == 'c')
+            testing_csrsm<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_csrsm<rocsparse_double_complex>(arg);
     }
     else if(function == "csrgemm")
     {
