@@ -630,6 +630,8 @@ Function name                                         single double single compl
 :cpp:func:`rocsparse_coo2csr`
 :cpp:func:`rocsparse_ell2csr_nnz`
 :cpp:func:`rocsparse_Xell2csr() <rocsparse_sell2csr>` x      x      x              x
+:cpp:func:`rocsparse_hyb2csr_buffer_size`
+:cpp:func:`rocsparse_Xhyb2csr() <rocsparse_shyb2csr>` x      x      x              x
 :cpp:func:`rocsparse_create_identity_permutation`
 :cpp:func:`rocsparse_cscsort_buffer_size`
 :cpp:func:`rocsparse_cscsort`
@@ -1274,6 +1276,22 @@ rocsparse_csr2hyb()
 .. doxygenfunction:: rocsparse_ccsr2hyb
   :outline:
 .. doxygenfunction:: rocsparse_zcsr2hyb
+
+rocsparse_hyb2csr_buffer_size()
+-------------------------------
+
+.. doxygenfunction:: rocsparse_hyb2csr_buffer_size
+
+rocsparse_hyb2csr()
+-------------------
+
+.. doxygenfunction:: rocsparse_shyb2csr
+  :outline:
+.. doxygenfunction:: rocsparse_dhyb2csr
+  :outline:
+.. doxygenfunction:: rocsparse_chyb2csr
+  :outline:
+.. doxygenfunction:: rocsparse_zhyb2csr
 
 rocsparse_create_identity_permutation()
 ---------------------------------------

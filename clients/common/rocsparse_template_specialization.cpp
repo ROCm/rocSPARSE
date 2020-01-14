@@ -2956,3 +2956,52 @@ rocsparse_status rocsparse_ell2csr(rocsparse_handle                handle,
                               csr_row_ptr,
                               csr_col_ind);
 }
+
+// hyb2csr
+template <>
+rocsparse_status rocsparse_hyb2csr(rocsparse_handle          handle,
+                                   const rocsparse_mat_descr descr,
+                                   const rocsparse_hyb_mat   hyb,
+                                   float*                    csr_val,
+                                   rocsparse_int*            csr_row_ptr,
+                                   rocsparse_int*            csr_col_ind,
+                                   void*                     temp_buffer)
+{
+    return rocsparse_shyb2csr(handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_hyb2csr(rocsparse_handle          handle,
+                                   const rocsparse_mat_descr descr,
+                                   const rocsparse_hyb_mat   hyb,
+                                   double*                   csr_val,
+                                   rocsparse_int*            csr_row_ptr,
+                                   rocsparse_int*            csr_col_ind,
+                                   void*                     temp_buffer)
+{
+    return rocsparse_dhyb2csr(handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_hyb2csr(rocsparse_handle          handle,
+                                   const rocsparse_mat_descr descr,
+                                   const rocsparse_hyb_mat   hyb,
+                                   rocsparse_float_complex*  csr_val,
+                                   rocsparse_int*            csr_row_ptr,
+                                   rocsparse_int*            csr_col_ind,
+                                   void*                     temp_buffer)
+{
+    return rocsparse_chyb2csr(handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_hyb2csr(rocsparse_handle          handle,
+                                   const rocsparse_mat_descr descr,
+                                   const rocsparse_hyb_mat   hyb,
+                                   rocsparse_double_complex* csr_val,
+                                   rocsparse_int*            csr_row_ptr,
+                                   rocsparse_int*            csr_col_ind,
+                                   void*                     temp_buffer)
+{
+    return rocsparse_zhyb2csr(handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+}

@@ -512,4 +512,14 @@ rocsparse_status rocsparse_ell2csr(rocsparse_handle          handle,
                                    const rocsparse_int*      csr_row_ptr,
                                    rocsparse_int*            csr_col_ind);
 
+// hyb2csr
+template <typename T>
+rocsparse_status rocsparse_hyb2csr(rocsparse_handle          handle,
+                                   const rocsparse_mat_descr descr,
+                                   const rocsparse_hyb_mat   hyb,
+                                   T*                        csr_val,
+                                   rocsparse_int*            csr_row_ptr,
+                                   rocsparse_int*            csr_col_ind,
+                                   void*                     temp_buffer);
+
 #endif // ROCSPARSE_HPP

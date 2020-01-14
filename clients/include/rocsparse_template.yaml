@@ -161,6 +161,11 @@ Functions:
   rocsparse_dcsr2hyb: { function: csr2hyb, <<: *double_precision }
   rocsparse_ccsr2hyb: { function: csr2hyb, <<: *single_precision_complex }
   rocsparse_zcsr2hyb: { function: csr2hyb, <<: *double_precision_complex }
+  rocsparse_hyb2csr_buffer_size: { function: hyb2csr }
+  rocsparse_shyb2csr: { function: hyb2csr, <<: *single_precision }
+  rocsparse_dhyb2csr: { function: hyb2csr, <<: *double_precision }
+  rocsparse_chyb2csr: { function: hyb2csr, <<: *single_precision_complex }
+  rocsparse_zhyb2csr: { function: hyb2csr, <<: *double_precision_complex }
   rocsparse_create_identity_permutation: { function: rocsparse_create_identity_permutation }
   rocsparse_csrsort: { function: csrsort }
   rocsparse_cscsort: { function: cscsort }
