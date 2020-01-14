@@ -38,7 +38,7 @@ def runPackageCommand(platform, project)
 
     def command
 
-    if(platform.jenkinsLabel.contains('centos'))
+    if(platform.jenkinsLabel.contains('centos') || platform.jenkinsLabel.contains('sles'))
     {
         command = """
                 set -x
@@ -52,7 +52,7 @@ def runPackageCommand(platform, project)
         platform.runCommand(this, command)
         platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/release/package/*.rpm""")
     }
-    else if(platform.jenkinsLabel.contains('hip-clang') || platform.jenkinsLabel.contains('sles'))
+    else if(platform.jenkinsLabel.contains('hip-clang'))
     {
         packageCommand = null
     }
