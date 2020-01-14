@@ -61,6 +61,7 @@
 #include "testing_csr2hyb.hpp"
 #include "testing_csrsort.hpp"
 #include "testing_ell2csr.hpp"
+#include "testing_hyb2csr.hpp"
 #include "testing_identity.hpp"
 
 #include <boost/program_options.hpp>
@@ -195,8 +196,8 @@ int main(int argc, char* argv[])
          "  Level3: csrmm, csrsm\n"
          "  Extra: csrgemm\n"
          "  Preconditioner: csric0, csrilu0\n"
-         "  Conversion: csr2coo, csr2csc, csr2ell,\n"
-         "              csr2hyb, coo2csr, ell2csr\n"
+         "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb\n"
+         "              coo2csr, ell2csr, hyb2csr\n"
          "  Sorting: cscsort, csrsort, coosort\n"
          "  Misc: identity")
 
@@ -616,6 +617,17 @@ int main(int argc, char* argv[])
             testing_ell2csr<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_ell2csr<rocsparse_double_complex>(arg);
+    }
+    else if(function == "hyb2csr")
+    {
+        if(precision == 's')
+            testing_hyb2csr<float>(arg);
+        else if(precision == 'd')
+            testing_hyb2csr<double>(arg);
+        else if(precision == 'c')
+            testing_hyb2csr<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_hyb2csr<rocsparse_double_complex>(arg);
     }
     else if(function == "csrsort")
     {

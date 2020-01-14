@@ -216,6 +216,17 @@ constexpr double csr2hyb_gbyte_count(rocsparse_int M,
 }
 
 template <typename T>
+constexpr double hyb2csr_gbyte_count(rocsparse_int M,
+                                     rocsparse_int csr_nnz,
+                                     rocsparse_int ell_nnz,
+                                     rocsparse_int coo_nnz)
+{
+    return ((M + 1.0 + csr_nnz + ell_nnz + 2.0 * coo_nnz) * sizeof(rocsparse_int)
+            + (csr_nnz + ell_nnz + coo_nnz) * sizeof(T))
+           / 1e9;
+}
+
+template <typename T>
 constexpr double identity_gbyte_count(rocsparse_int N)
 {
     return N * sizeof(rocsparse_int) / 1e9;
