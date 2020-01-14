@@ -144,21 +144,23 @@ rocsparse_status rocsparse_csrilu0_analysis_template(rocsparse_handle          h
         }
 
         // Check for other lower analysis meta data
-        rocsparse_csrtr_info reuse = nullptr;
 
-        // csrsv_lower meta data
-        if(info->csrsv_lower_info != nullptr)
+        if(info->csric0_info != nullptr)
         {
-            reuse = info->csrsv_lower_info;
+            // csric0 meta data
+            info->csrilu0_info = info->csric0_info;
+            return rocsparse_status_success;
         }
-
-        // TODO add more crossover data here
-
-        // If data has been found, use it
-        if(reuse != nullptr)
+        else if(info->csrsv_lower_info != nullptr)
         {
-            info->csrilu0_info = reuse;
-
+            // csrsv meta data
+            info->csrilu0_info = info->csrsv_lower_info;
+            return rocsparse_status_success;
+        }
+        else if(info->csrsm_lower_info != nullptr)
+        {
+            // csrsm meta data
+            info->csrilu0_info = info->csrsm_lower_info;
             return rocsparse_status_success;
         }
     }

@@ -489,7 +489,6 @@ void testing_csricsv(const Arguments& arg)
 
     // Clear csrsv meta data
     CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_clear(handle, descrL, info));
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_clear(handle, descrL, info));
     CHECK_ROCSPARSE_ERROR(rocsparse_csric0_clear(handle, info));
 
     // Free buffer

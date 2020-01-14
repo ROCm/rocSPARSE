@@ -255,6 +255,62 @@ rocsparse_status rocsparse_csrmm(rocsparse_handle          handle,
                                  T*                        C,
                                  rocsparse_int             ldc);
 
+// csrsm
+template <typename T>
+rocsparse_status rocsparse_csrsm_buffer_size(rocsparse_handle          handle,
+                                             rocsparse_operation       trans_A,
+                                             rocsparse_operation       trans_B,
+                                             rocsparse_int             m,
+                                             rocsparse_int             nrhs,
+                                             rocsparse_int             nnz,
+                                             const T*                  alpha,
+                                             const rocsparse_mat_descr descr,
+                                             const T*                  csr_val,
+                                             const rocsparse_int*      csr_row_ptr,
+                                             const rocsparse_int*      csr_col_ind,
+                                             const T*                  B,
+                                             rocsparse_int             ldb,
+                                             rocsparse_mat_info        info,
+                                             rocsparse_solve_policy    policy,
+                                             size_t*                   buffer_size);
+
+template <typename T>
+rocsparse_status rocsparse_csrsm_analysis(rocsparse_handle          handle,
+                                          rocsparse_operation       trans_A,
+                                          rocsparse_operation       trans_B,
+                                          rocsparse_int             m,
+                                          rocsparse_int             nrhs,
+                                          rocsparse_int             nnz,
+                                          const T*                  alpha,
+                                          const rocsparse_mat_descr descr,
+                                          const T*                  csr_val,
+                                          const rocsparse_int*      csr_row_ptr,
+                                          const rocsparse_int*      csr_col_ind,
+                                          const T*                  B,
+                                          rocsparse_int             ldb,
+                                          rocsparse_mat_info        info,
+                                          rocsparse_analysis_policy analysis,
+                                          rocsparse_solve_policy    solve,
+                                          void*                     temp_buffer);
+
+template <typename T>
+rocsparse_status rocsparse_csrsm_solve(rocsparse_handle          handle,
+                                       rocsparse_operation       trans_A,
+                                       rocsparse_operation       trans_B,
+                                       rocsparse_int             m,
+                                       rocsparse_int             nrhs,
+                                       rocsparse_int             nnz,
+                                       const T*                  alpha,
+                                       const rocsparse_mat_descr descr,
+                                       const T*                  csr_val,
+                                       const rocsparse_int*      csr_row_ptr,
+                                       const rocsparse_int*      csr_col_ind,
+                                       T*                        B,
+                                       rocsparse_int             ldb,
+                                       rocsparse_mat_info        info,
+                                       rocsparse_solve_policy    policy,
+                                       void*                     temp_buffer);
+
 /*
  * ===========================================================================
  *    extra SPARSE

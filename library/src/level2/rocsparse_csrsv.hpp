@@ -342,7 +342,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                    done_array,
                                    d_max_nnz,
                                    *zero_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   descr->diag_type);
             }
             else if(descr->fill_mode == rocsparse_fill_mode_lower)
             {
@@ -358,7 +359,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                    done_array,
                                    d_max_nnz,
                                    *zero_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   descr->diag_type);
             }
         }
         else
@@ -379,7 +381,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                        done_array,
                                        d_max_nnz,
                                        *zero_pivot,
-                                       descr->base);
+                                       descr->base,
+                                       descr->diag_type);
                 }
                 else if(descr->fill_mode == rocsparse_fill_mode_lower)
                 {
@@ -395,7 +398,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                        done_array,
                                        d_max_nnz,
                                        *zero_pivot,
-                                       descr->base);
+                                       descr->base,
+                                       descr->diag_type);
                 }
             }
             else if(handle->wavefront_size == 64)
@@ -414,7 +418,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                        done_array,
                                        d_max_nnz,
                                        *zero_pivot,
-                                       descr->base);
+                                       descr->base,
+                                       descr->diag_type);
                 }
                 else if(descr->fill_mode == rocsparse_fill_mode_lower)
                 {
@@ -430,7 +435,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                        done_array,
                                        d_max_nnz,
                                        *zero_pivot,
-                                       descr->base);
+                                       descr->base,
+                                       descr->diag_type);
                 }
             }
             else
@@ -457,7 +463,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                    done_array,
                                    d_max_nnz,
                                    *zero_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   descr->diag_type);
             }
             else if(descr->fill_mode == rocsparse_fill_mode_lower)
             {
@@ -473,7 +480,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                    done_array,
                                    d_max_nnz,
                                    *zero_pivot,
-                                   descr->base);
+                                   descr->base,
+                                   descr->diag_type);
             }
         }
         else
@@ -494,7 +502,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                        done_array,
                                        d_max_nnz,
                                        *zero_pivot,
-                                       descr->base);
+                                       descr->base,
+                                       descr->diag_type);
                 }
                 else if(descr->fill_mode == rocsparse_fill_mode_lower)
                 {
@@ -510,7 +519,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                        done_array,
                                        d_max_nnz,
                                        *zero_pivot,
-                                       descr->base);
+                                       descr->base,
+                                       descr->diag_type);
                 }
             }
             else if(handle->wavefront_size == 64)
@@ -529,7 +539,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                        done_array,
                                        d_max_nnz,
                                        *zero_pivot,
-                                       descr->base);
+                                       descr->base,
+                                       descr->diag_type);
                 }
                 else if(descr->fill_mode == rocsparse_fill_mode_lower)
                 {
@@ -545,7 +556,8 @@ static rocsparse_status rocsparse_csrtr_analysis(rocsparse_handle          handl
                                        done_array,
                                        d_max_nnz,
                                        *zero_pivot,
-                                       descr->base);
+                                       descr->base,
+                                       descr->diag_type);
                 }
             }
             else
@@ -712,8 +724,37 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
     // Switch between lower and upper triangular analysis
     if(descr->fill_mode == rocsparse_fill_mode_upper)
     {
-        // This is currently the only case where we need upper triangular analysis,
-        // therefore we ignore the analysis policy
+        // Differentiate the analysis policies
+        if(analysis == rocsparse_analysis_policy_reuse)
+        {
+            // We try to re-use already analyzed lower part, if available.
+            // It is the user's responsibility that this data is still valid,
+            // since he passed the 'reuse' flag.
+
+            // If csrsv meta data is already available, do nothing
+            if(trans == rocsparse_operation_none && info->csrsv_upper_info != nullptr)
+            {
+                return rocsparse_status_success;
+            }
+            else if(trans == rocsparse_operation_transpose && info->csrsvt_upper_info != nullptr)
+            {
+                return rocsparse_status_success;
+            }
+
+            // Check for other lower analysis meta data
+
+            if(trans == rocsparse_operation_none && info->csrsm_upper_info != nullptr)
+            {
+                // csrsm meta data
+                info->csrsv_upper_info = info->csrsm_upper_info;
+                return rocsparse_status_success;
+            }
+        }
+
+        // User is explicitly asking to force a re-analysis, or no valid data has been
+        // found to be re-used.
+
+        // Clear csrsv info
 
         // Clear csrsv info
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info((trans == rocsparse_operation_none)
@@ -759,21 +800,23 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
             }
 
             // Check for other lower analysis meta data
-            rocsparse_csrtr_info reuse = nullptr;
 
-            // csrilu0 meta data
             if(trans == rocsparse_operation_none && info->csrilu0_info != nullptr)
             {
-                reuse = info->csrilu0_info;
+                // csrilu0 meta data
+                info->csrsv_lower_info = info->csrilu0_info;
+                return rocsparse_status_success;
             }
-
-            // TODO add more crossover data here
-
-            // If data has been found, use it
-            if(trans == rocsparse_operation_none && reuse != nullptr)
+            else if(trans == rocsparse_operation_none && info->csric0_info != nullptr)
             {
-                info->csrsv_lower_info = reuse;
-
+                // csric0 meta data
+                info->csrsv_lower_info = info->csric0_info;
+                return rocsparse_status_success;
+            }
+            else if(trans == rocsparse_operation_none && info->csrsm_lower_info != nullptr)
+            {
+                // csrsm meta data
+                info->csrsv_lower_info = info->csrsm_lower_info;
                 return rocsparse_status_success;
             }
         }

@@ -39,7 +39,8 @@ __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
                                             int* __restrict__ done_array,
                                             rocsparse_int* __restrict__ max_nnz,
                                             rocsparse_int* __restrict__ zero_pivot,
-                                            rocsparse_index_base idx_base)
+                                            rocsparse_index_base idx_base,
+                                            rocsparse_diag_type  diag_type)
 {
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
     int wid = hipThreadIdx_x / WF_SIZE;
@@ -175,7 +176,7 @@ __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
         // Obtain maximum nnz
         atomicMax(max_nnz, row_end - row_begin);
 
-        if(csr_diag_ind[row] == -1)
+        if(csr_diag_ind[row] == -1 && diag_type == rocsparse_diag_type_non_unit)
         {
             // We are looking for the first zero pivot
             atomicMin(zero_pivot, row + idx_base);
@@ -191,7 +192,8 @@ __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
                                             int* __restrict__ done_array,
                                             rocsparse_int* __restrict__ max_nnz,
                                             rocsparse_int* __restrict__ zero_pivot,
-                                            rocsparse_index_base idx_base)
+                                            rocsparse_index_base idx_base,
+                                            rocsparse_diag_type  diag_type)
 {
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
     int wid = hipThreadIdx_x / WF_SIZE;
@@ -327,7 +329,7 @@ __global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
         // Obtain maximum nnz
         atomicMax(max_nnz, row_end - row_begin);
 
-        if(csr_diag_ind[row] == -1)
+        if(csr_diag_ind[row] == -1 && diag_type == rocsparse_diag_type_non_unit)
         {
             // We are looking for the first zero pivot
             atomicMin(zero_pivot, row + idx_base);

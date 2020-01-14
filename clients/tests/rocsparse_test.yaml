@@ -34,6 +34,7 @@ include: test_csrsv.yaml
 include: test_ellmv.yaml
 include: test_hybmv.yaml
 include: test_csrmm.yaml
+include: test_csrsm.yaml
 include: test_csrgemm.yaml
 include: test_csric0.yaml
 include: test_csrilu0.yaml
