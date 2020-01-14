@@ -20,6 +20,8 @@ rocSPARSECI:
     // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(['gfx906 && centos7', 'gfx900 && ubuntu', 'gfx906 && ubuntu', 'gfx906 && sles', 'gfx908 && centos7'], rocsparse)
 
+    def commonGroovy
+
     boolean formatCheck = true
 
     def compileCommand =
