@@ -720,7 +720,7 @@ inline void rocsparse_init_csr_mtx(const char*                 filename,
 
 /* ==================================================================================== */
 /*! \brief  Read matrix from binary file in rocALUTION format */
-static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, float* csr_val)
+static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, float* csr_val, bool mod)
 {
     // Temporary array to convert from double to float
     std::vector<double> tmp(nnz);
@@ -733,17 +733,34 @@ static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, float* 
 #endif
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
-        csr_val[i] = static_cast<float>(tmp[i]);
+        if(mod)
+        {
+            csr_val[i] = std::abs(static_cast<float>(tmp[i]));
+        }
+        else
+        {
+            csr_val[i] = static_cast<float>(tmp[i]);
+        }
     }
 }
 
-static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, double* csr_val)
+static inline void read_csr_values(std::ifstream& in, rocsparse_int nnz, double* csr_val, bool mod)
 {
     in.read((char*)csr_val, sizeof(double) * nnz);
+
+    if(mod)
+    {
+        for(rocsparse_int i = 0; i < nnz; ++i)
+        {
+            csr_val[i] = std::abs(csr_val[i]);
+        }
+    }
 }
 
-static inline void
-    read_csr_values(std::ifstream& in, rocsparse_int nnz, rocsparse_float_complex* csr_val)
+static inline void read_csr_values(std::ifstream&           in,
+                                   rocsparse_int            nnz,
+                                   rocsparse_float_complex* csr_val,
+                                   bool                     mod)
 {
     // Temporary array to convert from double to float complex
     std::vector<rocsparse_double_complex> tmp(nnz);
@@ -756,15 +773,34 @@ static inline void
 #endif
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
-        csr_val[i] = rocsparse_float_complex(static_cast<float>(std::real(tmp[i])),
-                                             static_cast<float>(std::imag(tmp[i])));
+        if(mod)
+        {
+            csr_val[i] = rocsparse_float_complex(std::abs(static_cast<float>(std::real(tmp[i]))),
+                                                 std::abs(static_cast<float>(std::imag(tmp[i]))));
+        }
+        else
+        {
+            csr_val[i] = rocsparse_float_complex(static_cast<float>(std::real(tmp[i])),
+                                                 static_cast<float>(std::imag(tmp[i])));
+        }
     }
 }
 
-static inline void
-    read_csr_values(std::ifstream& in, rocsparse_int nnz, rocsparse_double_complex* csr_val)
+static inline void read_csr_values(std::ifstream&            in,
+                                   rocsparse_int             nnz,
+                                   rocsparse_double_complex* csr_val,
+                                   bool                      mod)
 {
     in.read((char*)csr_val, sizeof(rocsparse_double_complex) * nnz);
+
+    if(mod)
+    {
+        for(rocsparse_int i = 0; i < nnz; ++i)
+        {
+            csr_val[i] = rocsparse_double_complex(std::abs(std::real(csr_val[i])),
+                                                  std::abs(std::imag(csr_val[i])));
+        }
+    }
 }
 
 template <typename T>
@@ -824,7 +860,7 @@ inline void rocsparse_init_csr_rocalution(const char*                 filename,
     in.read((char*)iptr.data(), sizeof(int) * (M + 1));
     in.read((char*)icol.data(), sizeof(int) * nnz);
 
-    read_csr_values(in, nnz, val.data());
+    read_csr_values(in, nnz, val.data(), toint);
 
     in.close();
 
@@ -842,14 +878,6 @@ inline void rocsparse_init_csr_rocalution(const char*                 filename,
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
         col_ind[i] = static_cast<rocsparse_int>(icol[i]);
-
-        if(toint)
-        {
-            // Transform all values to integers to avoid rounding errors when testing but
-            // preserving the sparsity pattern
-            // val[i] = (val[i] > static_cast<T>(0)) ? static_cast<T>(ceil(val[i])) : static_cast<T>(floor(val[i]));
-            val[i] = std::abs(val[i]);
-        }
     }
 
     if(base == rocsparse_index_base_one)
