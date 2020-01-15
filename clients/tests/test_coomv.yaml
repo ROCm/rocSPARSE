@@ -144,8 +144,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron2,
-             qc2534]
+  filename: [Chevron2]
 
 - name: coomv_file
   category: pre_checkin
