@@ -44,7 +44,7 @@ __global__ void dotci_kernel_part1(rocsparse_int        nnz,
 
     for(rocsparse_int idx = gid; idx < nnz; idx += hipGridDim_x * hipBlockDim_x)
     {
-        dotc = fma(y[x_ind[idx] - idx_base], conj(x_val[idx]), dotc);
+        dotc = rocsparse_fma(y[x_ind[idx] - idx_base], rocsparse_conj(x_val[idx]), dotc);
     }
 
     __shared__ T sdata[NB];

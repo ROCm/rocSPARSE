@@ -68,46 +68,4 @@ inline bool rocsparse_isinf(rocsparse_double_complex arg)
     return std::isinf(std::real(arg)) || std::isinf(std::imag(arg));
 }
 
-/* =================================================================================== */
-/*! \brief  computes fused multiply add */
-template <typename T>
-inline T math_fma(T p, T q, T r)
-{
-    return std::fma(p, q, r);
-}
-
-template <>
-inline rocsparse_float_complex
-    math_fma(rocsparse_float_complex p, rocsparse_float_complex q, rocsparse_float_complex r)
-{
-    return fma(p, q, r);
-}
-
-template <>
-inline rocsparse_double_complex
-    math_fma(rocsparse_double_complex p, rocsparse_double_complex q, rocsparse_double_complex r)
-{
-    return fma(p, q, r);
-}
-
-/* =================================================================================== */
-/*! \brief inject fma for rocsparse complex types into namespace std */
-namespace std
-{
-    template <class T>
-    inline rocsparse_complex_num<T> conj(const rocsparse_complex_num<T>& z)
-    {
-        return rocsparse_complex_num<T>(std::real(z), -std::imag(z));
-    }
-
-    template <class T>
-    inline T abs(const rocsparse_complex_num<T>& z)
-    {
-        T tr = abs(std::real(z));
-        T ti = abs(std::imag(z));
-
-        return (tr > ti) ? (ti /= tr, tr * sqrt(ti * ti + 1)) : (tr /= ti, ti * sqrt(tr * tr + 1));
-    }
-}
-
 #endif // ROCSPARSE_MATH_HPP

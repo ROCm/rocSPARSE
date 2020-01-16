@@ -472,7 +472,7 @@ __device__ void csrsv_device(rocsparse_int m,
         }
 
         // Local sum computation for each lane
-        local_sum = fma(-local_val, y[local_col], local_sum);
+        local_sum = rocsparse_fma(-local_val, y[local_col], local_sum);
     }
 
     // Gather all local sums for each lane

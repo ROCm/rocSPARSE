@@ -34,15 +34,15 @@ Definitions:
     - { M:  -1, N:  -1 }
     - { M:   0, N:   0 }
     - { M:  79, N:  79 }
-    - { M: 368, N: 368 }
+    - { M: 141, N: 141 }
 
   - &M_N_range_nightly
     - { M:   9381, N:   9381 }
     - { M:  37017, N:  37017 }
 
   - &alpha_range_quick
-    - { alpha:   1.0, alphai:  0.75 }
-    - { alpha:  -0.5, alphai: -0.25 }
+    - { alpha:   1.0, alphai: -0.2 }
+    - { alpha:  -0.5, alphai:  0.1 }
 
   - &alpha_range_checkin
     - { alpha:   2.0, alphai:  0.0 }

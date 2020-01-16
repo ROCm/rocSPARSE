@@ -36,6 +36,21 @@ __device__ __forceinline__ rocsparse_float_complex rocsparse_ldg(const rocsparse
 __device__ __forceinline__ rocsparse_double_complex rocsparse_ldg(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__ldg((const double*)ptr), __ldg((const double*)ptr + 1)); }
 __device__ __forceinline__ rocsparse_int rocsparse_ldg(const rocsparse_int* ptr) { return __ldg(ptr); }
 
+__device__ __forceinline__ float rocsparse_fma(float p, float q, float r) { return fma(p, q, r); }
+__device__ __forceinline__ double rocsparse_fma(double p, double q, double r) { return fma(p, q, r); }
+__device__ __forceinline__ rocsparse_float_complex rocsparse_fma(rocsparse_float_complex p, rocsparse_float_complex q, rocsparse_float_complex r) { return std::fma(p, q, r); }
+__device__ __forceinline__ rocsparse_double_complex rocsparse_fma(rocsparse_double_complex p, rocsparse_double_complex q, rocsparse_double_complex r) { return std::fma(p, q, r); }
+
+__device__ __forceinline__ float rocsparse_abs(float x) { return x < 0.0f ? -x : x; }
+__device__ __forceinline__ double rocsparse_abs(double x) { return x < 0.0 ? -x : x; }
+__device__ __forceinline__ float rocsparse_abs(rocsparse_float_complex x) { return std::abs(x); }
+__device__ __forceinline__ double rocsparse_abs(rocsparse_double_complex x) { return std::abs(x); }
+
+__device__ __forceinline__ float rocsparse_conj(const float& x) { return x; }
+__device__ __forceinline__ double rocsparse_conj(const double& x) { return x; }
+__device__ __forceinline__ rocsparse_float_complex rocsparse_conj(const rocsparse_float_complex& x) { return std::conj(x); }
+__device__ __forceinline__ rocsparse_double_complex rocsparse_conj(const rocsparse_double_complex& x) { return std::conj(x); }
+
 __device__ __forceinline__ float rocsparse_nontemporal_load(const float* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ double rocsparse_nontemporal_load(const double* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_nontemporal_load(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__builtin_nontemporal_load((const float*)ptr), __builtin_nontemporal_load((const float*)ptr + 1)); }

@@ -171,7 +171,7 @@ __global__ void csrilu0_hash_kernel(rocsparse_int m,
                 {
                     // Entry found, do ILU computation
                     rocsparse_int idx = data[hash];
-                    csr_val[idx]      = fma(-local_val, csr_val[k], csr_val[idx]);
+                    csr_val[idx]      = rocsparse_fma(-local_val, csr_val[k], csr_val[idx]);
                     break;
                 }
                 else
@@ -314,7 +314,7 @@ __global__ void csrilu0_binsearch_kernel(rocsparse_int m,
             if(col_j == col_k)
             {
                 // If a match has been found, do ILU computation
-                csr_val[l] = fma(-local_val, csr_val[k], csr_val[l]);
+                csr_val[l] = rocsparse_fma(-local_val, csr_val[k], csr_val[l]);
             }
         }
     }
