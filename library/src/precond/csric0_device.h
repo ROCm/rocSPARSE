@@ -178,7 +178,7 @@ __global__ void csric0_hash_kernel(rocsparse_int m,
                 {
                     // Entry found, do linear combination
                     rocsparse_int idx = data[hash];
-                    local_sum         = fma(csr_val[k], csr_val[idx], local_sum);
+                    local_sum         = rocsparse_fma(csr_val[k], csr_val[idx], local_sum);
                     break;
                 }
                 else
@@ -196,7 +196,7 @@ __global__ void csric0_hash_kernel(rocsparse_int m,
         if(lid == WFSIZE - 1)
         {
             local_val = (local_val - local_sum) * diag_val;
-            sum       = fma(local_val, local_val, sum);
+            sum       = rocsparse_fma(local_val, local_val, sum);
 
             csr_val[j] = local_val;
         }
@@ -207,7 +207,7 @@ __global__ void csric0_hash_kernel(rocsparse_int m,
         // Last lane processes the diagonal entry
         if(row_diag >= 0)
         {
-            csr_val[row_diag] = sqrt(abs(csr_val[row_diag] - sum));
+            csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
         }
 
         // Last lane writes "we are done" flag
@@ -346,7 +346,7 @@ __global__ void csric0_binsearch_kernel(rocsparse_int m,
             if(col_j == col_k)
             {
                 // If a match has been found, do linear combination
-                local_sum = fma(csr_val[k], csr_val[m], local_sum);
+                local_sum = rocsparse_fma(csr_val[k], csr_val[m], local_sum);
             }
         }
 
@@ -357,7 +357,7 @@ __global__ void csric0_binsearch_kernel(rocsparse_int m,
         if(lid == WFSIZE - 1)
         {
             local_val = (local_val - local_sum) * diag_val;
-            sum       = fma(local_val, local_val, sum);
+            sum       = rocsparse_fma(local_val, local_val, sum);
 
             csr_val[j] = local_val;
         }
@@ -368,7 +368,7 @@ __global__ void csric0_binsearch_kernel(rocsparse_int m,
         // Last lane processes the diagonal entry
         if(row_diag >= 0)
         {
-            csr_val[row_diag] = sqrt(abs(csr_val[row_diag] - sum));
+            csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
         }
 
         // Last lane writes "we are done" flag

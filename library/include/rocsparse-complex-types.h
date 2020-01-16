@@ -106,42 +106,11 @@ public:
         return out << ss.str();
     }
 
-    // complex fma
-    friend __device__ rocsparse_complex_num fma(rocsparse_complex_num p,
-                                                rocsparse_complex_num q,
-                                                rocsparse_complex_num r)
-    {
-        T real = fma(-p.y, q.y, fma(p.x, q.x, r.x));
-        T imag = fma(p.x, q.y, fma(p.y, q.x, r.y));
-
-        return {real, imag};
-    }
-
-    friend __host__ rocsparse_complex_num fma(rocsparse_complex_num p,
-                                              rocsparse_complex_num q,
-                                              rocsparse_complex_num r)
-    {
-        T real = std::fma(-p.y, q.y, std::fma(p.x, q.x, r.x));
-        T imag = std::fma(p.x, q.y, std::fma(p.y, q.x, r.y));
-
-        return {real, imag};
-    }
-
-    // complex abs
-    friend __device__ __host__ T abs(rocsparse_complex_num n)
-    {
-        T real = abs(n.x);
-        T imag = abs(n.y);
-
-        return real > imag ? (imag /= real, real * sqrt(imag * imag + 1))
-                           : (real /= imag, imag * sqrt(real * real + 1));
-    }
-
-    // complex conjugate
-    friend __device__ __host__ rocsparse_complex_num conj(const rocsparse_complex_num& z)
-    {
-        return {z.x, -z.y};
-    }
+    friend __device__ __host__ rocsparse_complex_num std::fma(rocsparse_complex_num p,
+                                                              rocsparse_complex_num q,
+                                                              rocsparse_complex_num r);
+    friend __device__ __host__ rocsparse_complex_num std::conj(const rocsparse_complex_num& z);
+    friend __device__ __host__ T                     std::abs(const rocsparse_complex_num<T>& z);
 
     // Unary operations
     __device__ __host__ rocsparse_complex_num operator-() const
@@ -175,7 +144,7 @@ public:
         T real = (x * rhs.x + y * rhs.y) * sqabs;
         T imag = (y * rhs.x - x * rhs.y) * sqabs;
 
-        return *this = {x, y};
+        return *this = {real, imag};
     }
 
     // Out-of-place complex-complex operations
@@ -220,6 +189,26 @@ private:
         return x < 0 ? -x : x;
     }
 
+    static __forceinline__ __device__ __host__ float sqrt(float x)
+    {
+        return ::sqrtf(x);
+    }
+
+    static __forceinline__ __device__ __host__ double sqrt(double x)
+    {
+        return ::sqrt(x);
+    }
+
+    static __forceinline__ __device__ __host__ float fma(float p, float q, float r)
+    {
+        return ::fma(p, q, r);
+    }
+
+    static __forceinline__ __device__ __host__ double fma(double p, double q, double r)
+    {
+        return ::fma(p, q, r);
+    }
+
     T x;
     T y;
 };
@@ -237,6 +226,36 @@ namespace std
     __device__ __host__ inline T imag(const rocsparse_complex_num<T>& z)
     {
         return z.y;
+    }
+
+    template <typename T>
+    __device__ __host__ inline rocsparse_complex_num<T>
+               fma(rocsparse_complex_num<T> p, rocsparse_complex_num<T> q, rocsparse_complex_num<T> r)
+    {
+        T real = rocsparse_complex_num<T>::fma(
+            -p.y, q.y, rocsparse_complex_num<T>::fma(p.x, q.x, r.x));
+        T imag
+            = rocsparse_complex_num<T>::fma(p.x, q.y, rocsparse_complex_num<T>::fma(p.y, q.x, r.y));
+
+        return {real, imag};
+    }
+
+    template <typename T>
+    __device__ __host__ inline rocsparse_complex_num<T> conj(const rocsparse_complex_num<T>& z)
+    {
+        return {z.x, -z.y};
+    }
+
+    template <typename T>
+    __device__ __host__ inline T abs(const rocsparse_complex_num<T>& z)
+    {
+        T real = rocsparse_complex_num<T>::abs(z.x);
+        T imag = rocsparse_complex_num<T>::abs(z.y);
+
+        return real > imag
+                   ? (imag /= real, real * rocsparse_complex_num<T>::sqrt(imag * imag + 1))
+                   : imag ? (real /= imag, imag * rocsparse_complex_num<T>::sqrt(real * real + 1))
+                          : 0;
     }
 }
 

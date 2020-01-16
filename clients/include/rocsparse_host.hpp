@@ -25,7 +25,6 @@
 #ifndef ROCSPARSE_HOST_HPP
 #define ROCSPARSE_HOST_HPP
 
-#include "rocsparse_math.hpp"
 #include "rocsparse_test.hpp"
 
 #include <algorithm>
@@ -67,7 +66,7 @@ inline void host_axpyi(rocsparse_int        nnz,
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
         rocsparse_int idx = x_ind[i] - base;
-        y[idx]            = math_fma(alpha, x_val[i], y[idx]);
+        y[idx]            = std::fma(alpha, x_val[i], y[idx]);
     }
 }
 
@@ -83,7 +82,7 @@ inline void host_doti(rocsparse_int        nnz,
 
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
-        *result = math_fma(y[x_ind[i] - base], x_val[i], *result);
+        *result = std::fma(y[x_ind[i] - base], x_val[i], *result);
     }
 }
 
@@ -99,7 +98,7 @@ inline void host_dotci(rocsparse_int        nnz,
 
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
-        *result = math_fma(std::conj(x_val[i]), y[x_ind[i] - base], *result);
+        *result = std::fma(std::conj(x_val[i]), y[x_ind[i] - base], *result);
     }
 }
 
@@ -183,7 +182,7 @@ inline void host_coomv(rocsparse_int        M,
     for(rocsparse_int i = 0; i < nnz; ++i)
     {
         y[coo_row_ind[i] - base]
-            = math_fma(alpha * coo_val[i], x[coo_col_ind[i] - base], y[coo_row_ind[i] - base]);
+            = std::fma(alpha * coo_val[i], x[coo_col_ind[i] - base], y[coo_row_ind[i] - base]);
     }
 }
 
@@ -261,7 +260,7 @@ inline void host_csrmv(rocsparse_int        M,
                 {
                     if(j + k < row_end)
                     {
-                        sum[k] = math_fma(
+                        sum[k] = std::fma(
                             alpha * csr_val[j + k], x[csr_col_ind[j + k] - base], sum[k]);
                     }
                 }
@@ -281,7 +280,7 @@ inline void host_csrmv(rocsparse_int        M,
             }
             else
             {
-                y[i] = math_fma(beta, y[i], sum[0]);
+                y[i] = std::fma(beta, y[i], sum[0]);
             }
         }
     }
@@ -309,7 +308,7 @@ inline void host_csrmv(rocsparse_int        M,
 
             if(beta != static_cast<T>(0))
             {
-                y[i] = math_fma(beta, y[i], sum + err);
+                y[i] = std::fma(beta, y[i], sum + err);
             }
             else
             {
@@ -398,7 +397,7 @@ static inline void host_lsolve(rocsparse_int                     M,
                 }
 
                 // Lower triangular part
-                temp[k] = math_fma(-local_val, y[local_col], temp[k]);
+                temp[k] = std::fma(-local_val, y[local_col], temp[k]);
             }
         }
 
@@ -501,7 +500,7 @@ static inline void host_usolve(rocsparse_int                     M,
                 }
 
                 // Upper triangular part
-                temp[k] = math_fma(-local_val, y[local_col], temp[k]);
+                temp[k] = std::fma(-local_val, y[local_col], temp[k]);
             }
         }
 
@@ -661,7 +660,7 @@ inline void host_ellmv(rocsparse_int        M,
 
             if(col >= 0 && col < N)
             {
-                sum = math_fma(ell_val[idx], x[col], sum);
+                sum = std::fma(ell_val[idx], x[col], sum);
             }
             else
             {
@@ -671,7 +670,7 @@ inline void host_ellmv(rocsparse_int        M,
 
         if(beta != static_cast<T>(0))
         {
-            y[i] = math_fma(beta, y[i], alpha * sum);
+            y[i] = std::fma(beta, y[i], alpha * sum);
         }
         else
         {
@@ -752,7 +751,7 @@ inline void host_csrmm(rocsparse_int                     M,
                                           ? (csr_col_ind_A[k] - base + j * ldb)
                                           : (j + (csr_col_ind_A[k] - base) * ldb);
 
-                sum = math_fma(alpha * csr_val_A[k], B[idx_B], sum);
+                sum = std::fma(alpha * csr_val_A[k], B[idx_B], sum);
             }
 
             if(beta == static_cast<T>(0))
@@ -761,7 +760,7 @@ inline void host_csrmm(rocsparse_int                     M,
             }
             else
             {
-                C[idx_C] = math_fma(beta, C[idx_C], sum);
+                C[idx_C] = std::fma(beta, C[idx_C], sum);
             }
         }
     }
@@ -858,7 +857,7 @@ static inline void host_lssolve(rocsparse_int                     M,
                     // Lower triangular part
                     rocsparse_int idx = (transB == rocsparse_operation_none) ? i * ldb + local_col
                                                                              : local_col * ldb + i;
-                    temp[k] = math_fma(-local_val, B[idx], temp[k]);
+                    temp[k] = std::fma(-local_val, B[idx], temp[k]);
                 }
             }
 
@@ -974,7 +973,7 @@ static inline void host_ussolve(rocsparse_int                     M,
                     // Upper triangular part
                     rocsparse_int idx = (transB == rocsparse_operation_none) ? i * ldb + local_col
                                                                              : local_col * ldb + i;
-                    temp[k] = math_fma(-local_val, B[idx], temp[k]);
+                    temp[k] = std::fma(-local_val, B[idx], temp[k]);
                 }
             }
 
@@ -1472,12 +1471,12 @@ inline void host_csric0(rocsparse_int                     M,
                 if(nnz_entries[col_k] != 0)
                 {
                     rocsparse_int idx = nnz_entries[col_k];
-                    local_sum         = math_fma(csr_val[k], csr_val[idx], local_sum);
+                    local_sum         = std::fma(csr_val[k], csr_val[idx], local_sum);
                 }
             }
 
             val_j = (val_j - local_sum) * inv_diag;
-            sum   = math_fma(val_j, val_j, sum);
+            sum   = std::fma(val_j, val_j, sum);
 
             csr_val[j] = val_j;
         }
@@ -1560,7 +1559,7 @@ inline void host_csrilu0(rocsparse_int                     M,
                         if(nnz_entries[csr_col_ind[k] - base] != 0)
                         {
                             rocsparse_int idx = nnz_entries[csr_col_ind[k] - base];
-                            csr_val[idx]      = math_fma(-csr_val[j], csr_val[k], csr_val[idx]);
+                            csr_val[idx]      = std::fma(-csr_val[j], csr_val[k], csr_val[idx]);
                         }
                     }
                 }

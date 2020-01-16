@@ -27,7 +27,7 @@ include: known_bugs.yaml
 
 Definitions:
   - &alpha_beta_range_quick
-    - { alpha:   1.0, beta: -1.0, alphai:  1.0, betai: -0.5 }
+    - { alpha:   1.0, beta: -1.0, alphai:  1.0, betai: -0.1 }
     - { alpha:  -0.5, beta:  0.5, alphai: -0.5, betai:  1.0 }
 
   - &alpha_beta_range_checkin
@@ -144,7 +144,8 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron2]
+  filename: [Chevron2,
+             qc2534]
 
 - name: coomv_file
   category: pre_checkin

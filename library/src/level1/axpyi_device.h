@@ -25,6 +25,8 @@
 #ifndef AXPYI_DEVICE_H
 #define AXPYI_DEVICE_H
 
+#include "common.h"
+
 #include <hip/hip_runtime.h>
 
 // y = a * x + y kernel for sparse x and dense y
@@ -44,7 +46,7 @@ __device__ void axpyi_device(rocsparse_int        nnz,
     }
 
     rocsparse_int i = x_ind[idx] - idx_base;
-    y[i]            = fma(alpha, x_val[idx], y[i]);
+    y[i]            = rocsparse_fma(alpha, x_val[idx], y[i]);
 }
 
 #endif // AXPYI_DEVICE_H

@@ -25,6 +25,8 @@
 #ifndef CSRSM_DEVICE_H
 #define CSRSM_DEVICE_H
 
+#include "common.h"
+
 #include <hip/hip_runtime.h>
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
@@ -170,7 +172,7 @@ __device__ void csrsm_device(rocsparse_int       m,
             = (trans_B == rocsparse_operation_none) ? n * ldb + local_col : local_col * ldb + n;
 
         // Local sum computation for each lane
-        local_sum = fma(-local_val, B[idx_X], local_sum);
+        local_sum = rocsparse_fma(-local_val, B[idx_X], local_sum);
     }
 
     // Gather all local sums for each lane

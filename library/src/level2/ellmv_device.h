@@ -58,7 +58,8 @@ static __device__ void ellmvn_device(rocsparse_int        m,
 
         if(col >= 0 && col < n)
         {
-            sum = fma(rocsparse_nontemporal_load(ell_val + idx), rocsparse_ldg(x + col), sum);
+            sum = rocsparse_fma(
+                rocsparse_nontemporal_load(ell_val + idx), rocsparse_ldg(x + col), sum);
         }
         else
         {
@@ -69,7 +70,7 @@ static __device__ void ellmvn_device(rocsparse_int        m,
     if(beta != static_cast<T>(0))
     {
         T yv = rocsparse_nontemporal_load(y + ai);
-        rocsparse_nontemporal_store(fma(beta, yv, alpha * sum), y + ai);
+        rocsparse_nontemporal_store(rocsparse_fma(beta, yv, alpha * sum), y + ai);
     }
     else
     {
