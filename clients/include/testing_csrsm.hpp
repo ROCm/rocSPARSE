@@ -544,11 +544,11 @@ void testing_csrsm_bad_arg(const Arguments& arg)
 
     // Test rocsparse_csrsm_zero_pivot()
     rocsparse_int position;
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(nullptr, descr, info, &position),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(nullptr, info, &position),
                             rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, descr, nullptr, &position),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, nullptr, &position),
                             rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, descr, info, nullptr),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, info, nullptr),
                             rocsparse_status_invalid_pointer);
 
     // Test rocsparse_csrsm_clear()
@@ -676,7 +676,7 @@ void testing_csrsm(const Arguments& arg)
                                                          dbuffer),
                                 (M < 0 || nrhs < 0) ? rocsparse_status_invalid_size
                                                     : rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, descr, info, &pivot),
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, info, &pivot),
                                 rocsparse_status_success);
         EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_clear(handle, info), rocsparse_status_success);
 
@@ -805,7 +805,7 @@ void testing_csrsm(const Arguments& arg)
                                                           apol,
                                                           spol,
                                                           dbuffer));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, descr, info, h_analysis_pivot_1),
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, info, h_analysis_pivot_1),
                                 (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                               : rocsparse_status_success);
 
@@ -828,7 +828,7 @@ void testing_csrsm(const Arguments& arg)
                                                           apol,
                                                           spol,
                                                           dbuffer));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, descr, info, d_analysis_pivot_2),
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, info, d_analysis_pivot_2),
                                 (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                               : rocsparse_status_success);
 
@@ -852,7 +852,7 @@ void testing_csrsm(const Arguments& arg)
                                                        info,
                                                        spol,
                                                        dbuffer));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, descr, info, h_solve_pivot_1),
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, info, h_solve_pivot_1),
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
 
@@ -874,7 +874,7 @@ void testing_csrsm(const Arguments& arg)
                                                        info,
                                                        spol,
                                                        dbuffer));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, descr, info, d_solve_pivot_2),
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, info, d_solve_pivot_2),
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
 
