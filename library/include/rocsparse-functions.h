@@ -2103,8 +2103,6 @@ rocsparse_status rocsparse_zcsrmm(rocsparse_handle                handle,
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
- *  descr       descriptor of the sparse CSR matrix.
- *  @param[in]
  *  info        structure that holds the information collected during the analysis step.
  *  @param[inout]
  *  position    pointer to zero pivot \f$j\f$, can be in host or device memory.
@@ -2117,10 +2115,9 @@ rocsparse_status rocsparse_zcsrmm(rocsparse_handle                handle,
  *  \retval     rocsparse_status_zero_pivot zero pivot has been found.
  */
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle          handle,
-                                            const rocsparse_mat_descr descr,
-                                            rocsparse_mat_info        info,
-                                            rocsparse_int*            position);
+rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle   handle,
+                                            rocsparse_mat_info info,
+                                            rocsparse_int*     position);
 
 /*! \ingroup level3_module
  *  \brief Sparse triangular system solve using CSR storage format

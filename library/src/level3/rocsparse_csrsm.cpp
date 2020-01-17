@@ -34,10 +34,9 @@
  * ===========================================================================
  */
 
-extern "C" rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle          handle,
-                                                       const rocsparse_mat_descr descr,
-                                                       rocsparse_mat_info        info,
-                                                       rocsparse_int*            position)
+extern "C" rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle   handle,
+                                                       rocsparse_mat_info info,
+                                                       rocsparse_int*     position)
 {
     // Check for valid handle and matrix descriptor
     if(handle == nullptr)
