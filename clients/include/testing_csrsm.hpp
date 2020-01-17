@@ -881,10 +881,10 @@ void testing_csrsm(const Arguments& arg)
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hB_1, dB_1, sizeof(T) * M * nrhs, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hB_2, dB_2, sizeof(T) * M * nrhs, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(h_analysis_pivot_2, d_analysis_pivot_2, sizeof(T), hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(h_solve_pivot_2, d_solve_pivot_2, sizeof(T), hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(
+            h_analysis_pivot_2, d_analysis_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(
+            h_solve_pivot_2, d_solve_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         // CPU csrsm
         host_csrsm<T>(M,
