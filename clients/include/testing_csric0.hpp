@@ -534,10 +534,10 @@ void testing_csric0(const Arguments& arg)
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hcsr_val_1, dcsr_val_1, sizeof(T) * nnz, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hcsr_val_2, dcsr_val_2, sizeof(T) * nnz, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(h_analysis_pivot_2, d_analysis_pivot_2, sizeof(T), hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(h_solve_pivot_2, d_solve_pivot_2, sizeof(T), hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(
+            h_analysis_pivot_2, d_analysis_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(
+            h_solve_pivot_2, d_solve_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         // CPU csric0
         host_csric0<T>(M,

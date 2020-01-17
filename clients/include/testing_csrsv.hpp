@@ -694,10 +694,10 @@ void testing_csrsv(const Arguments& arg)
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hy_1, dy_1, sizeof(T) * M, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(h_analysis_pivot_2, d_analysis_pivot_2, sizeof(T), hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(h_solve_pivot_2, d_solve_pivot_2, sizeof(T), hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(
+            h_analysis_pivot_2, d_analysis_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        CHECK_HIP_ERROR(hipMemcpy(
+            h_solve_pivot_2, d_solve_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         // CPU csrsv
         host_csrsv<T>(trans,
