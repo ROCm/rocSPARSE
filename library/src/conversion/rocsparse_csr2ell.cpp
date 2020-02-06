@@ -87,6 +87,12 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle          ha
         return rocsparse_status_invalid_size;
     }
 
+    // Check ell_width pointer
+    if(ell_width == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Stream
     hipStream_t stream = handle->stream;
 
@@ -106,10 +112,6 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle          ha
 
     // Check pointer arguments
     if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(ell_width == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
