@@ -339,8 +339,8 @@ void testing_ellmv(const Arguments& arg)
         host_ellmv<T>(
             M, N, nnz, h_alpha, hell_col_ind, hell_val, ell_width, hx, h_beta, hy_gold, base);
 
-        unit_check_general<T>(1, M, 1, hy_gold, hy_1);
-        unit_check_general<T>(1, M, 1, hy_gold, hy_2);
+        near_check_general<T>(1, M, 1, hy_gold, hy_1);
+        near_check_general<T>(1, M, 1, hy_gold, hy_2);
     }
 
     if(arg.timing)
