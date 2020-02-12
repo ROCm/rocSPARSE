@@ -139,9 +139,6 @@ set(ROCSPARSE_CLIENTS_COMMON
 
 add_executable(rocsparse-test ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON})
 
-# Compile options set to enable fma on host path
-target_compile_options(rocsparse-test PRIVATE -mfma)
-
 # Set GOOGLE_TEST definition
 target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
 

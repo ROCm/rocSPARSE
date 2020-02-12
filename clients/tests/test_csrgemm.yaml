@@ -211,8 +211,7 @@ Tests:
   baseB: [rocsparse_index_base_zero, rocsparse_index_base_one]
   baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mplate,
-             Chevron3]
+  filename: [Chevron3]
 
 - name: csrgemm_mult_file
   category: nightly
