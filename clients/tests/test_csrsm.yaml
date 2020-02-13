@@ -39,7 +39,6 @@ Definitions:
   - &M_N_range_nightly
     - { M:  9381, N:  9381 }
     - { M: 37017, N: 37017 }
-    - { M: 75205, N: 75205 }
 
   - &alpha_range_quick
     - { alpha:   1.0, alphai: -0.2 }

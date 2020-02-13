@@ -171,8 +171,7 @@ Tests:
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mplate,
-             Chevron3]
+  filename: [Chevron3]
 
 - name: csrmm_file
   category: nightly

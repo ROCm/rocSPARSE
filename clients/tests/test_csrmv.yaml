@@ -164,8 +164,7 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   algo: [0, 1]
-  filename: [mplate,
-             Chevron3]
+  filename: [Chevron3]
 
 - name: csrmv_file
   category: nightly
