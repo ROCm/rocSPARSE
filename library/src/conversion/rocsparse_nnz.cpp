@@ -69,7 +69,7 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
               "nnz",
               "--dir",
               dirA,
-	      "-M",
+              "-M",
               m,
               "-N",
               n,
@@ -79,10 +79,10 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
     //
     // Check validity of the direction.
     //
-    if (rocsparse_direction_row != dirA && rocsparse_direction_column != dirA)
-      {
-	return rocsparse_status_invalid_value;	
-      }
+    if(rocsparse_direction_row != dirA && rocsparse_direction_column != dirA)
+    {
+        return rocsparse_status_invalid_value;
+    }
 
     //
     // Check sizes
@@ -91,7 +91,7 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
     {
         return rocsparse_status_invalid_size;
     }
-    
+
     //
     // Quick return if possible, before checking for invalid pointers.
     //
