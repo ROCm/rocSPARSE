@@ -4630,50 +4630,49 @@ rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
  *  \endcode
  */
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_snnz(rocsparse_handle     		handle,
-				rocsparse_direction  		dirA,
-				rocsparse_int 			m,
-				rocsparse_int 			n,
-				const rocsparse_mat_descr	descrA,
-				const float * 			A,
-				rocsparse_int 			lda,
-				rocsparse_int* 			nnzPerRowColumn,
-				rocsparse_int* 			nnzTotalDevHostPtr);
+rocsparse_status rocsparse_snnz(rocsparse_handle          handle,
+                                rocsparse_direction       dirA,
+                                rocsparse_int             m,
+                                rocsparse_int             n,
+                                const rocsparse_mat_descr descrA,
+                                const float*              A,
+                                rocsparse_int             lda,
+                                rocsparse_int*            nnzPerRowColumn,
+                                rocsparse_int*            nnzTotalDevHostPtr);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_dnnz(rocsparse_handle     		handle,
-			       rocsparse_direction  		dirA,
-				rocsparse_int 			m,
-				rocsparse_int 			n,
-				const rocsparse_mat_descr	descrA,
-				const double * 			A,
-				rocsparse_int 			lda,
-				rocsparse_int* 			nnzPerRowColumn,
-				rocsparse_int* 			nnzTotalDevHostPtr);
+rocsparse_status rocsparse_dnnz(rocsparse_handle          handle,
+                                rocsparse_direction       dirA,
+                                rocsparse_int             m,
+                                rocsparse_int             n,
+                                const rocsparse_mat_descr descrA,
+                                const double*             A,
+                                rocsparse_int             lda,
+                                rocsparse_int*            nnzPerRowColumn,
+                                rocsparse_int*            nnzTotalDevHostPtr);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_cnnz(rocsparse_handle     		handle,
-			       rocsparse_direction  		dirA,
-				rocsparse_int 			m,
-				rocsparse_int 			n,
-				const rocsparse_mat_descr	descrA,
-				const rocsparse_float_complex*  A,
-				rocsparse_int 			lda,
-				rocsparse_int* 			nnzPerRowColumn,
-				rocsparse_int* 			nnzTotalDevHostPtr);
+rocsparse_status rocsparse_cnnz(rocsparse_handle               handle,
+                                rocsparse_direction            dirA,
+                                rocsparse_int                  m,
+                                rocsparse_int                  n,
+                                const rocsparse_mat_descr      descrA,
+                                const rocsparse_float_complex* A,
+                                rocsparse_int                  lda,
+                                rocsparse_int*                 nnzPerRowColumn,
+                                rocsparse_int*                 nnzTotalDevHostPtr);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_znnz(rocsparse_handle     		handle,
-			       rocsparse_direction  		dirA,
-				rocsparse_int 			m,
-				rocsparse_int 			n,
-				const rocsparse_mat_descr	descrA,
-				const rocsparse_double_complex* A,
-				rocsparse_int 			lda,
-				rocsparse_int* 			nnzPerRowColumn,
-				rocsparse_int* 			nnzTotalDevHostPtr);
-  
-  
+rocsparse_status rocsparse_znnz(rocsparse_handle                handle,
+                                rocsparse_direction             dirA,
+                                rocsparse_int                   m,
+                                rocsparse_int                   n,
+                                const rocsparse_mat_descr       descrA,
+                                const rocsparse_double_complex* A,
+                                rocsparse_int                   lda,
+                                rocsparse_int*                  nnzPerRowColumn,
+                                rocsparse_int*                  nnzTotalDevHostPtr);
+
 /*! \ingroup conv_module
  *  \brief Convert a sparse CSR matrix into a sparse COO matrix
  *

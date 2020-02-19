@@ -46,7 +46,7 @@ struct Arguments
     rocsparse_int N;
     rocsparse_int K;
     rocsparse_int nnz;
-  
+
     rocsparse_int dimx;
     rocsparse_int dimy;
     rocsparse_int dimz;
@@ -77,8 +77,8 @@ struct Arguments
     rocsparse_int timing;
     rocsparse_int iters;
 
-    rocsparse_direction      direction;
-    rocsparse_int            denseld;
+    rocsparse_direction direction;
+    rocsparse_int       denseld;
 
     uint32_t algo;
 

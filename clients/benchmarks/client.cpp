@@ -52,7 +52,6 @@
 #include "testing_csrilu0.hpp"
 
 // Conversion
-#include "testing_nnz.hpp"
 #include "testing_coo2csr.hpp"
 #include "testing_coosort.hpp"
 #include "testing_cscsort.hpp"
@@ -64,6 +63,7 @@
 #include "testing_ell2csr.hpp"
 #include "testing_hyb2csr.hpp"
 #include "testing_identity.hpp"
+#include "testing_nnz.hpp"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -79,22 +79,22 @@ int main(int argc, char* argv[])
     arg.alphai     = 0.0;
     arg.betai      = 0.0;
 
-    std::string function;
-    std::string filename;
-    std::string rocalution;
-    char        precision = 's';
-    char        transA;
-    char        transB;
-    int         baseA;
-    int         baseB;
-    int         baseC;
-    int         baseD;
-    int         action;
-    int         part;
-    char        diag;
-    char        uplo;
-    char        apol;
-    rocsparse_int dir;
+    std::string                function;
+    std::string                filename;
+    std::string                rocalution;
+    char                       precision = 's';
+    char                       transA;
+    char                       transB;
+    int                        baseA;
+    int                        baseB;
+    int                        baseC;
+    int                        baseD;
+    int                        action;
+    int                        part;
+    char                       diag;
+    char                       uplo;
+    char                       apol;
+    rocsparse_int              dir;
     std::vector<rocsparse_int> laplace(3, 0);
 
     rocsparse_int device_id;
@@ -236,12 +236,12 @@ int main(int argc, char* argv[])
         std::cout << desc << std::endl;
         return 0;
     }
-    
-    if (dir != rocsparse_direction_row&&dir != rocsparse_direction_column)
-     {
-	std::cerr << "Invalid value for --direction" << std::endl;
+
+    if(dir != rocsparse_direction_row && dir != rocsparse_direction_column)
+    {
+        std::cerr << "Invalid value for --direction" << std::endl;
         return -1;
-     }
+    }
 
     if(precision != 's' && precision != 'd' && precision != 'c' && precision != 'z')
     {
@@ -269,8 +269,7 @@ int main(int argc, char* argv[])
     }
     else if(transB == 'T')
     {
-      arg.transB = rocsparse_operation_transpose;
-     
+        arg.transB = rocsparse_operation_transpose;
     }
     else if(transB == 'C')
     {
@@ -290,7 +289,8 @@ int main(int argc, char* argv[])
     arg.uplo = (uplo == 'L') ? rocsparse_fill_mode_lower : rocsparse_fill_mode_upper;
     arg.apol = (apol == 'R') ? rocsparse_analysis_policy_reuse : rocsparse_analysis_policy_force;
     arg.spol = rocsparse_solve_policy_auto;
-    arg.direction = (dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
+    arg.direction
+        = (dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
 
     // Set laplace dimensions
     arg.dimx = laplace[0];
