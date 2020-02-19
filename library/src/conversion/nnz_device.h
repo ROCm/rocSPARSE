@@ -65,7 +65,7 @@ template
 				 rocsparse_int lda,
 				 rocsparse_int*		nnzPerColumn)  
 {
-  static constexpr T zero = {};
+  static constexpr T s_zero = {};
   rocsparse_int
     tx = hipThreadIdx_x,         
     col = hipBlockIdx_x,
@@ -77,10 +77,10 @@ template
   A += col * lda + ( (tx < m) ? tx : 0 ); 
   
   for(rocsparse_int i = 0; i < m_full; i += NB_X)
-    res += (A[i]!=zero) ? 1 : 0;
+    res += (A[i]!=s_zero) ? 1 : 0;
 
   if(tx + m_full < m)
-    res += (A[m_full]!=zero) ? 1 : 0;
+    res += (A[m_full]!=s_zero) ? 1 : 0;
 
   sdata[tx] = res;
 
@@ -126,23 +126,22 @@ template
 				 rocsparse_int lda,
 				 rocsparse_int*		nnzPerRow)  
 {
-  static constexpr T zero = {};
+  static constexpr T s_zero = {};
 
   rocsparse_int thread_id = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x;
-  
   rocsparse_int tx = thread_id % DIM_X;
   rocsparse_int ty = thread_id / DIM_X;
+  rocsparse_int ind 	= hipBlockIdx_x * DIM_X * 4 + tx;
+  rocsparse_int n_tail 	= n % (4 * DIM_Y);
+  rocsparse_int col    	= ty * 4;
+  rocsparse_int res_A[4];
+
   __shared__ rocsparse_int sdata[DIM_X * 4 * DIM_Y];
 
-  rocsparse_int res_A[4];
   for (rocsparse_int k=0;k<4;++k)
     {
       res_A[k] = 0;
     }
-
-  rocsparse_int ind = hipBlockIdx_x * DIM_X * 4 + tx;
-  rocsparse_int n_tail = n % (4 * DIM_Y);
-  rocsparse_int col    = ty * 4;
 
   for(col = ty * 4; col < (n - n_tail); col += 4 * DIM_Y)
     {
@@ -152,7 +151,7 @@ template
 	    {
 	      for (rocsparse_int j=0;j<4;++j)
 		{
-		  if (A[ind + k*DIM_X + (col + j) * lda] != zero) res_A[k] += 1;
+		  if (A[ind + k*DIM_X + (col + j) * lda] != s_zero) res_A[k] += 1;
 		}
 	    }
 	}
@@ -168,7 +167,7 @@ template
 		{
 		  if (col + j < n)
 		    {
-		      res_A[k] += (A[ind + k * DIM_X + (col + j) * lda] != zero) ? 1 : 0;
+		      res_A[k] += (A[ind + k * DIM_X + (col + j) * lda] != s_zero) ? 1 : 0;
 		    }
 		}
 	    }

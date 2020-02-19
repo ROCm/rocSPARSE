@@ -135,7 +135,9 @@ void testing_nnz(const Arguments& arg)
   //
   if(M <= 0 || N <= 0 || LD < M)
     {
-      static constexpr size_t safe_size = 100;
+      rocsparse_status expected_status = ( ((M == 0 && N >= 0) || (M >= 0 && N == 0)) && (LD >= M)  )
+	? rocsparse_status_success
+	: rocsparse_status_invalid_size;
       
       EXPECT_ROCSPARSE_STATUS( rocsparse_nnz(handle,
 					     dirA,
@@ -145,9 +147,8 @@ void testing_nnz(const Arguments& arg)
 					     (const T*)nullptr,
 					     LD,
 					     nullptr,
-					     nullptr) ,
-			       
-			       ( ((M == 0) && (N >= 0)) || ((M >= 0) && (N == 0) )  ) ? rocsparse_status_success : rocsparse_status_invalid_size);
+					     nullptr),
+			       expected_status);
       
       return;
     }
