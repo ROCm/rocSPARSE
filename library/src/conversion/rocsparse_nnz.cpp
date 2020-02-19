@@ -81,7 +81,8 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle     		handle,
   // Check sizes
   //
   if ( (m < 0) ||
-       (n < 0) )
+       (n < 0) ||
+       (lda < m) )
     {
       return rocsparse_status_invalid_size;
     }
@@ -92,11 +93,6 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle     		handle,
   if(!m || !n)
     {
       return rocsparse_status_success;      
-    }
-
-  if ( lda < m )
-    {
-      return rocsparse_status_invalid_size;
     }
 
   //
