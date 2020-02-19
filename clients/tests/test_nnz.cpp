@@ -82,7 +82,7 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-	  return RocSPARSE_TestName<nnz>{} << rocsparse_datatype2string(arg.compute_type)
+ 	  return RocSPARSE_TestName<nnz>{} << rocsparse_datatype2string(arg.compute_type)
 						<< '_'
 						<< arg.M
 						<< '_'
