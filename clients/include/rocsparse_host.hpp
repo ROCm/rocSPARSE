@@ -1606,50 +1606,49 @@ inline void host_csrilu0(rocsparse_int                     M,
  * ===========================================================================
  */
 
-template<typename T>
-rocsparse_status host_nnz(rocsparse_direction  			dirA,
-			  rocsparse_int 			m,
-			  rocsparse_int 			n,
-			  const rocsparse_mat_descr 		descrA,
-			  const T * 				A,
-			  rocsparse_int 			lda,
-			  rocsparse_int* 			nnzPerRowColumn,
-			  rocsparse_int* 			nnzTotalDevHostPtr)
+template <typename T>
+rocsparse_status host_nnz(rocsparse_direction       dirA,
+                          rocsparse_int             m,
+                          rocsparse_int             n,
+                          const rocsparse_mat_descr descrA,
+                          const T*                  A,
+                          rocsparse_int             lda,
+                          rocsparse_int*            nnzPerRowColumn,
+                          rocsparse_int*            nnzTotalDevHostPtr)
 {
 
-  rocsparse_int mn = (dirA == rocsparse_direction_row) ? m : n;
-  for (rocsparse_int j=0;j<mn;++j)
+    rocsparse_int mn = (dirA == rocsparse_direction_row) ? m : n;
+    for(rocsparse_int j = 0; j < mn; ++j)
     {
-      nnzPerRowColumn[j] = 0;
+        nnzPerRowColumn[j] = 0;
     }
-  
-  for (rocsparse_int j=0;j<n;++j)
-    {
-      for (rocsparse_int i=0;i<m;++i)
-	{
-	  if (A[j*lda+i] != 0)
-	    {
-	      if (dirA == rocsparse_direction_row)
-		{
-		  nnzPerRowColumn[i]+=1;
-		}
-	      else
-		{
-		  nnzPerRowColumn[j]+=1;
-		}
-	    }
-	}
-    }
-  
-  nnzTotalDevHostPtr[0] = 0;
-  for (rocsparse_int j=0;j<mn;++j)
-    {
-      nnzTotalDevHostPtr[0] += nnzPerRowColumn[j];
-    }
-  
-  return rocsparse_status_success;  
-}
 
+    for(rocsparse_int j = 0; j < n; ++j)
+    {
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            if(A[j * lda + i] != 0)
+            {
+                if(dirA == rocsparse_direction_row)
+                {
+                    nnzPerRowColumn[i] += 1;
+                }
+                else
+                {
+                    nnzPerRowColumn[j] += 1;
+                }
+            }
+        }
+    }
+
+    nnzTotalDevHostPtr[0] = 0;
+    for(rocsparse_int j = 0; j < mn; ++j)
+    {
+        nnzTotalDevHostPtr[0] += nnzPerRowColumn[j];
+    }
+
+    return rocsparse_status_success;
+}
 
 inline void host_csr_to_coo(rocsparse_int                     M,
                             rocsparse_int                     nnz,

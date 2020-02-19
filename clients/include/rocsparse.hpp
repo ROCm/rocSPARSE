@@ -459,16 +459,15 @@ rocsparse_status rocsparse_csrilu0(rocsparse_handle          handle,
 
 // nnz
 template <typename T>
-rocsparse_status rocsparse_nnz(rocsparse_handle     	handle,
-			       rocsparse_direction  	dirA,
-			       rocsparse_int        	m,
-			       rocsparse_int        	n,
-			       const rocsparse_mat_descr descrA,
-			       const T*             	A,
-			       rocsparse_int        	lda,
-			       rocsparse_int* 		nnzPerRowColumn,
-			       rocsparse_int* 		nnzTotalDevHostPtr);
-
+rocsparse_status rocsparse_nnz(rocsparse_handle          handle,
+                               rocsparse_direction       dirA,
+                               rocsparse_int             m,
+                               rocsparse_int             n,
+                               const rocsparse_mat_descr descrA,
+                               const T*                  A,
+                               rocsparse_int             lda,
+                               rocsparse_int*            nnzPerRowColumn,
+                               rocsparse_int*            nnzTotalDevHostPtr);
 
 // csr2csc
 template <typename T>

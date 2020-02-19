@@ -30,9 +30,9 @@
 #include "rocsparse.h"
 
 #include <algorithm>
+#include <exception>
 #include <fstream>
 #include <string>
-#include <exception>
 
 // Return the leftmost significant bit position
 #if defined(rocsparse_ILP64)
@@ -137,13 +137,11 @@ std::string replaceX(std::string input_string)
     return input_string;
 }
 
-
-
-
 // Convert the current C++ exception to rocsparse_status
 // This allows extern "C" functions to return this function in a catch(...) block
 // while converting all C++ exceptions to an equivalent rocsparse_status here
-inline rocsparse_status exception_to_rocsparse_status(std::exception_ptr e = std::current_exception())
+inline rocsparse_status exception_to_rocsparse_status(std::exception_ptr e
+                                                      = std::current_exception())
 try
 {
     if(e)

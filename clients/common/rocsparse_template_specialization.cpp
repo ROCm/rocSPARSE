@@ -2540,96 +2540,62 @@ rocsparse_status rocsparse_csrilu0(rocsparse_handle          handle,
 
 // nnz
 template <>
-rocsparse_status rocsparse_nnz(rocsparse_handle     	handle,
-			       rocsparse_direction  	dirA,
-			       rocsparse_int        	m,
-			       rocsparse_int        	n,
-			       const rocsparse_mat_descr descrA,
-			       const float*            	A,
-			       rocsparse_int        	lda,
-			       rocsparse_int* 		nnzPerRowColumn,
-			       rocsparse_int* 		nnzTotalDevHostPtr)
+rocsparse_status rocsparse_nnz(rocsparse_handle          handle,
+                               rocsparse_direction       dirA,
+                               rocsparse_int             m,
+                               rocsparse_int             n,
+                               const rocsparse_mat_descr descrA,
+                               const float*              A,
+                               rocsparse_int             lda,
+                               rocsparse_int*            nnzPerRowColumn,
+                               rocsparse_int*            nnzTotalDevHostPtr)
 {
-  return rocsparse_snnz(handle,
-			dirA,
-			m,
-			n,
-			descrA,
-			A,
-			lda,
-			nnzPerRowColumn,
-			nnzTotalDevHostPtr);  
+    return rocsparse_snnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowColumn, nnzTotalDevHostPtr);
 }
 
 template <>
-rocsparse_status rocsparse_nnz(rocsparse_handle     	handle,
-			       rocsparse_direction  	dirA,
-			       rocsparse_int        	m,
-			       rocsparse_int        	n,
-			       const rocsparse_mat_descr descrA,
-			       const double*            	A,
-			       rocsparse_int        	lda,
-			       rocsparse_int* 		nnzPerRowColumn,
-			       rocsparse_int* 		nnzTotalDevHostPtr)
+rocsparse_status rocsparse_nnz(rocsparse_handle          handle,
+                               rocsparse_direction       dirA,
+                               rocsparse_int             m,
+                               rocsparse_int             n,
+                               const rocsparse_mat_descr descrA,
+                               const double*             A,
+                               rocsparse_int             lda,
+                               rocsparse_int*            nnzPerRowColumn,
+                               rocsparse_int*            nnzTotalDevHostPtr)
 {
- 
-  return rocsparse_dnnz(handle,
-			dirA,
-			m,
-			n,
-			descrA,
-			A,
-			lda,
-			nnzPerRowColumn,
-			nnzTotalDevHostPtr);  
-}
 
-
-template <>
-rocsparse_status rocsparse_nnz(rocsparse_handle     	handle,
-			       rocsparse_direction  	dirA,
-			       rocsparse_int        	m,
-			       rocsparse_int        	n,
-			       const rocsparse_mat_descr descrA,
-			       const rocsparse_float_complex*            	A,
-			       rocsparse_int        	lda,
-			       rocsparse_int* 		nnzPerRowColumn,
-			       rocsparse_int* 		nnzTotalDevHostPtr)
-{
-  return rocsparse_cnnz(handle,
-			dirA,
-			m,
-			n,
-			descrA,
-			A,
-			lda,
-			nnzPerRowColumn,
-			nnzTotalDevHostPtr);  
+    return rocsparse_dnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowColumn, nnzTotalDevHostPtr);
 }
 
 template <>
-rocsparse_status rocsparse_nnz(rocsparse_handle     	handle,
-			       rocsparse_direction  	dirA,
-			       rocsparse_int        	m,
-			       rocsparse_int        	n,
-			       const rocsparse_mat_descr descrA,
-			       const rocsparse_double_complex*            	A,
-			       rocsparse_int        	lda,
-			       rocsparse_int* 		nnzPerRowColumn,
-			       rocsparse_int* 		nnzTotalDevHostPtr)
+rocsparse_status rocsparse_nnz(rocsparse_handle               handle,
+                               rocsparse_direction            dirA,
+                               rocsparse_int                  m,
+                               rocsparse_int                  n,
+                               const rocsparse_mat_descr      descrA,
+                               const rocsparse_float_complex* A,
+                               rocsparse_int                  lda,
+                               rocsparse_int*                 nnzPerRowColumn,
+                               rocsparse_int*                 nnzTotalDevHostPtr)
 {
-
-  return rocsparse_znnz(handle,
-			dirA,
-			m,
-			n,
-			descrA,
-			A,
-			lda,
-			nnzPerRowColumn,
-			nnzTotalDevHostPtr);  
+    return rocsparse_cnnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowColumn, nnzTotalDevHostPtr);
 }
 
+template <>
+rocsparse_status rocsparse_nnz(rocsparse_handle                handle,
+                               rocsparse_direction             dirA,
+                               rocsparse_int                   m,
+                               rocsparse_int                   n,
+                               const rocsparse_mat_descr       descrA,
+                               const rocsparse_double_complex* A,
+                               rocsparse_int                   lda,
+                               rocsparse_int*                  nnzPerRowColumn,
+                               rocsparse_int*                  nnzTotalDevHostPtr)
+{
+
+    return rocsparse_znnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowColumn, nnzTotalDevHostPtr);
+}
 
 // csr2csc
 template <>

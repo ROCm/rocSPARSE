@@ -170,9 +170,9 @@ constexpr double csrilu0_gbyte_count(rocsparse_int M, rocsparse_int nnz)
  * ===========================================================================
  */
 template <typename T>
-constexpr double nnz_gbyte_count(rocsparse_int M, rocsparse_int N,  rocsparse_direction dir)
+constexpr double nnz_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_direction dir)
 {
-  return ( (M * N + ((rocsparse_direction_row == dir) ? M : N)) * sizeof(rocsparse_int)  ) / 1e9;
+    return ((M * N + ((rocsparse_direction_row == dir) ? M : N)) * sizeof(rocsparse_int)) / 1e9;
 }
 
 template <typename T>
