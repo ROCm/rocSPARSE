@@ -134,6 +134,19 @@ constexpr auto rocsparse_fillmode2string(rocsparse_fill_mode uplo)
     }
 }
 
+constexpr auto rocsparse_direction2string(rocsparse_direction dir)
+{
+    switch(dir)
+    {
+    case rocsparse_direction_row:
+        return "row";
+    case rocsparse_direction_column:
+        return "col";
+    default:
+        return "invalid";
+    }
+}
+
 constexpr auto rocsparse_action2string(rocsparse_action action)
 {
     switch(action)

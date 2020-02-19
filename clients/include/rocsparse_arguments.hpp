@@ -46,7 +46,7 @@ struct Arguments
     rocsparse_int N;
     rocsparse_int K;
     rocsparse_int nnz;
-
+  
     rocsparse_int dimx;
     rocsparse_int dimy;
     rocsparse_int dimz;
@@ -76,6 +76,9 @@ struct Arguments
     rocsparse_int unit_check;
     rocsparse_int timing;
     rocsparse_int iters;
+
+    rocsparse_direction      direction;
+    rocsparse_int            denseld;
 
     uint32_t algo;
 
@@ -149,6 +152,8 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(unit_check);
         ROCSPARSE_FORMAT_CHECK(timing);
         ROCSPARSE_FORMAT_CHECK(iters);
+        ROCSPARSE_FORMAT_CHECK(direction);
+        ROCSPARSE_FORMAT_CHECK(denseld);
         ROCSPARSE_FORMAT_CHECK(algo);
         ROCSPARSE_FORMAT_CHECK(filename);
         ROCSPARSE_FORMAT_CHECK(function);
@@ -290,7 +295,8 @@ private:
         print("unit_check", arg.unit_check);
         print("timing", arg.timing);
         print("iters", arg.iters);
-
+        print("dir", rocsparse_direction2string(arg.direction));
+        print("denseld", arg.denseld);
         return str << " }\n";
     }
 };

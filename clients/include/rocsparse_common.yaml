@@ -83,6 +83,11 @@ Datatypes:
       bases: [ c_int ]
       attr:
         rocsparse_solve_policy_auto: 0
+  - rocsparse_direction:
+      bases: [ c_int ]
+      attr:
+        rocsparse_direction_row: 0
+        rocsparse_direction_col: 1
 
 Real precisions: &real_precisions
   - &single_precision
@@ -143,6 +148,8 @@ Arguments:
   - unit_check: rocsparse_int
   - timing: rocsparse_int
   - iters: rocsparse_int
+  - dir: rocsparse_direction
+  - denseld: rocsparse_int
   - algo: c_uint
   - filename: c_char*64
   - function: c_char*64
@@ -216,6 +223,8 @@ Defaults:
   unit_check: 1
   timing: 0
   iters: 10
+  dir: rocsparse_direction_row
+  denseld: -1
   algo: 0
   workspace_size: 0
   category: nightly
