@@ -365,7 +365,7 @@ void testing_nnz(const Arguments& arg)
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
-	// clang-format off
+        // clang-format off
         std::cout
             << std::setw(20) << "M" 
             << std::setw(20) << "N" 
@@ -389,7 +389,7 @@ void testing_nnz(const Arguments& arg)
 	    << std::setw(20) << number_hot_calls
 	    << std::setw(20) << (arg.unit_check ? "yes" : "no")
 	    << std::endl;
-	// clang-format on
+        // clang-format on
     }
 
     //
