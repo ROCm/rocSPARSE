@@ -123,6 +123,20 @@ void testing_nnz_bad_arg(const Arguments& arg)
         rocsparse_status_invalid_pointer);
 
     //
+    // Testing invalid direction
+    //
+    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz(handle,
+                                          (rocsparse_direction)77,
+                                          -1,
+                                          -1,
+                                          descrA,
+                                          (const T*)nullptr,
+                                          -1,
+                                          nullptr,
+                                          nullptr),
+                            rocsparse_status_invalid_value);
+
+    //
     // Testing invalid size on M
     //
     EXPECT_ROCSPARSE_STATUS(rocsparse_nnz(handle,
@@ -351,21 +365,31 @@ void testing_nnz(const Arguments& arg)
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
+	// clang-format off
+        std::cout
+            << std::setw(20) << "M" 
+            << std::setw(20) << "N" 
+            << std::setw(20) << "LD"
+	    << std::setw(20) << "nnz"
+	    << std::setw(20) << "dir"
+            << std::setw(20) << "GB/s"
+	    << std::setw(20) << "msec"
+	    << std::setw(20) << "iter"
+            << std::setw(20) << "verified"
+	    << std::endl;
 
-        std::cout //
-            << std::setw(20) << "M" // Output description
-            << std::setw(20) << "N" //
-            << std::setw(20) << "LD" << std::setw(20) << "nnz" << std::setw(20) << "dir"
-            << std::setw(20) << "GB/s" << std::setw(20) << "msec" << std::setw(20) << "iter"
-            << std::setw(20) << "verified" << std::endl;
-
-        std::cout //
-            << std::setw(20) << M // Values
-            << std::setw(20) << N //
-            << std::setw(20) << LD << std::setw(20) << h_nnz << std::setw(20)
-            << rocsparse_direction2string(dirA) << std::setw(20) << gpu_gbyte << std::setw(20)
-            << gpu_time_used / 1e3 << std::setw(20) << number_hot_calls << std::setw(20)
-            << (arg.unit_check ? "yes" : "no") << std::endl;
+        std::cout
+            << std::setw(20) << M 
+            << std::setw(20) << N 
+            << std::setw(20) << LD
+	    << std::setw(20) << h_nnz
+	    << std::setw(20) << rocsparse_direction2string(dirA)
+	    << std::setw(20) << gpu_gbyte
+	    << std::setw(20) << gpu_time_used / 1e3
+	    << std::setw(20) << number_hot_calls
+	    << std::setw(20) << (arg.unit_check ? "yes" : "no")
+	    << std::endl;
+	// clang-format on
     }
 
     //
