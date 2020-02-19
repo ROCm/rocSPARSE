@@ -55,6 +55,7 @@ set(rocsparse_source
   src/precond/rocsparse_csrilu0.cpp
 
 # Conversion
+  src/conversion/rocsparse_nnz.cpp
   src/conversion/rocsparse_csr2coo.cpp
   src/conversion/rocsparse_csr2csc.cpp
   src/conversion/rocsparse_csr2ell.cpp

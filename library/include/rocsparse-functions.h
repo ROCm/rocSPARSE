@@ -4589,6 +4589,92 @@ rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
  */
 
 /*! \ingroup conv_module
+ *  \brief 
+ *  This function computes the number of nonzero elements per row or column and the total number of nonzero elements in a dense matrix.
+ *  \details
+ *  This function requires temporary extra storage that is allocated internally.
+ *  The routine does not support asynchronous execution.
+ *  @param[in]
+ *  handle      handle to the rocsparse library context queue.
+ *
+ *  @param[in]
+ *  dirA 	direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by \ref rocsparse_direction_row.
+ *
+ *  @param[in]
+ *  m 		number of rows of the dense matrix \p A.
+ *
+ *  @param[in]
+ *  n 		number of columns of the dense matrix \p A.
+ *
+ *  @param[in]
+ *  descrA 	the descriptor of the dense matrix \p A. 
+ *
+ *  @param[in]
+ *  A 		array of dimensions (\p lda, \p n)
+ *
+ *  @param[in]
+ *  lda 	leading dimension of dense array \p A.
+ *
+ *  @param[out]
+ *  nnzPerRowColumn 
+ * 		array of size \p m or \p n containing the number of nonzero elements per row or column, respectively.
+ *  @param[out]
+ *  nnzTotalDevHostPtr 
+ * 		total number of nonzero elements in device or host memory.
+ *
+ *  \retval     rocsparse_status_success the operation completed successfully.
+ *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval     rocsparse_status_invalid_size \p m or \p n or \p lda is invalid.
+ *  \retval     rocsparse_status_invalid_pointer \p A or \p nnzPerRowColumn or \p nnzTotalDevHostPtr
+ *              pointer is invalid.
+ *  \endcode
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_snnz(rocsparse_handle     		handle,
+				rocsparse_direction  		dirA,
+				rocsparse_int 			m,
+				rocsparse_int 			n,
+				const rocsparse_mat_descr	descrA,
+				const float * 			A,
+				rocsparse_int 			lda,
+				rocsparse_int* 			nnzPerRowColumn,
+				rocsparse_int* 			nnzTotalDevHostPtr);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dnnz(rocsparse_handle     		handle,
+			       rocsparse_direction  		dirA,
+				rocsparse_int 			m,
+				rocsparse_int 			n,
+				const rocsparse_mat_descr	descrA,
+				const double * 			A,
+				rocsparse_int 			lda,
+				rocsparse_int* 			nnzPerRowColumn,
+				rocsparse_int* 			nnzTotalDevHostPtr);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cnnz(rocsparse_handle     		handle,
+			       rocsparse_direction  		dirA,
+				rocsparse_int 			m,
+				rocsparse_int 			n,
+				const rocsparse_mat_descr	descrA,
+				const rocsparse_float_complex*  A,
+				rocsparse_int 			lda,
+				rocsparse_int* 			nnzPerRowColumn,
+				rocsparse_int* 			nnzTotalDevHostPtr);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_znnz(rocsparse_handle     		handle,
+			       rocsparse_direction  		dirA,
+				rocsparse_int 			m,
+				rocsparse_int 			n,
+				const rocsparse_mat_descr	descrA,
+				const rocsparse_double_complex* A,
+				rocsparse_int 			lda,
+				rocsparse_int* 			nnzPerRowColumn,
+				rocsparse_int* 			nnzTotalDevHostPtr);
+  
+  
+/*! \ingroup conv_module
  *  \brief Convert a sparse CSR matrix into a sparse COO matrix
  *
  *  \details
