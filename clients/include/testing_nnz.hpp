@@ -210,6 +210,53 @@ void testing_nnz(const Arguments& arg)
             rocsparse_nnz(handle, dirA, M, N, descrA, (const T*)nullptr, LD, nullptr, nullptr),
             expected_status);
 
+	if (rocsparse_status_success == expected_status)
+	  {
+	    rocsparse_int h_nnz = 77;
+	    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+	    
+	    EXPECT_ROCSPARSE_STATUS(
+				    rocsparse_nnz(handle, dirA, M, N, descrA, (const T*)nullptr, LD, nullptr, nullptr),
+				    rocsparse_status_success);
+	    
+	    EXPECT_ROCSPARSE_STATUS(
+				    rocsparse_nnz(handle, dirA, M, N, descrA, (const T*)nullptr, LD, nullptr, &h_nnz),
+				    rocsparse_status_success);
+
+	    EXPECT_ROCSPARSE_STATUS(0 == h_nnz
+				    ? rocsparse_status_success
+				    : rocsparse_status_internal_error,
+				    rocsparse_status_success);
+
+
+	    h_nnz = 139;
+	    device_vector<rocsparse_int>  d_nnz(1);
+	    CHECK_HIP_ERROR(hipMemcpy((rocsparse_int*)d_nnz,
+				      &h_nnz,
+				      sizeof(rocsparse_int) * 1,
+				      hipMemcpyHostToDevice));
+
+	    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));	    
+	    EXPECT_ROCSPARSE_STATUS(
+				    rocsparse_nnz(handle, dirA, M, N, descrA, (const T*)nullptr, LD, nullptr, nullptr),
+				    rocsparse_status_success);
+
+	    EXPECT_ROCSPARSE_STATUS(
+				    rocsparse_nnz(handle, dirA, M, N, descrA, (const T*)nullptr, LD, nullptr, (rocsparse_int*)d_nnz),
+				    rocsparse_status_success);
+
+	    CHECK_HIP_ERROR(hipMemcpy(&h_nnz,
+				      (rocsparse_int*)d_nnz,
+				      sizeof(rocsparse_int) * 1,
+				      hipMemcpyDeviceToHost));
+
+	    EXPECT_ROCSPARSE_STATUS(0 == h_nnz
+				    ? rocsparse_status_success
+				    : rocsparse_status_internal_error,
+				    rocsparse_status_success);
+
+	  }
+	
         return;
     }
 
@@ -360,7 +407,7 @@ void testing_nnz(const Arguments& arg)
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = nnz_gbyte_count<T>(M, N, dirA) / gpu_time_used * 1e6;
+        double gpu_gbyte  = nnz_gbyte_count<T>(M, N, dirA) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

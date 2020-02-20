@@ -97,6 +97,26 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
     //
     if(!m || !n)
     {
+      
+	if (nullptr != nnzTotalDevHostPtr)
+	  {
+	    rocsparse_pointer_mode mode;
+	    rocsparse_status status = rocsparse_get_pointer_mode(handle, &mode);
+	    if (rocsparse_status_success != status)
+	      {
+		return status;
+	      }
+	    
+	    if(rocsparse_pointer_mode_device == mode)
+	      {
+		RETURN_IF_HIP_ERROR(hipMemsetAsync(nnzTotalDevHostPtr, 0, sizeof(rocsparse_int), handle->stream));
+	      }
+	    else
+	      {
+		*nnzTotalDevHostPtr = 0;
+	      }	    
+	  }
+	
         return rocsparse_status_success;
     }
 
@@ -120,10 +140,14 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
     //
     // Count.
     //
-    rocsparse_status status = rocsparse_nnz_template(handle, dirA, m, n, A, lda, nnzPerRowColumn);
-    if(status != rocsparse_status_success)
-        return status;
-
+    {
+      rocsparse_status status = rocsparse_nnz_template(handle, dirA, m, n, A, lda, nnzPerRowColumn);
+      if(status != rocsparse_status_success)
+	{
+	  return status;
+	}
+    }
+    
     //
     // Compute the total number of non-zeros.
     //
@@ -198,7 +222,7 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
         }
     }
 
-    return status;
+    return rocsparse_status_success;
 }
 
 extern "C" {
