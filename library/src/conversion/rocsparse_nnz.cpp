@@ -131,8 +131,14 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
         rocsparse_int mn = dirA == rocsparse_direction_row ? m : n;
         auto          op = rocprim::plus<rocsparse_int>();
         size_t        temp_storage_size_bytes;
-        rocprim::reduce(
-            nullptr, temp_storage_size_bytes, nnzPerRowColumn, nnzTotalDevHostPtr, 0, mn, op);
+        RETURN_IF_HIP_ERROR(rocprim::reduce(nullptr,
+					    temp_storage_size_bytes,
+					    nnzPerRowColumn,
+					    nnzTotalDevHostPtr,
+					    0,
+					    mn,
+					    op,
+					    handle->stream));
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;
 
@@ -157,8 +163,14 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
         //
         // Perform reduce
         //
-        RETURN_IF_HIP_ERROR(rocprim::reduce(
-            temp_storage_ptr, temp_storage_size_bytes, nnzPerRowColumn, d_nnz, 0, mn, op));
+        RETURN_IF_HIP_ERROR(rocprim::reduce(temp_storage_ptr,
+					    temp_storage_size_bytes,
+					    nnzPerRowColumn,
+					    d_nnz,
+					    0,
+					    mn,
+					    op,
+					    handle->stream));
 
         //
         // Extract nnz
