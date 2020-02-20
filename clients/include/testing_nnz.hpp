@@ -407,7 +407,8 @@ void testing_nnz(const Arguments& arg)
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = nnz_gbyte_count<T>(M, N, dirA) / gpu_time_used * 1e6;
+        double
+	  gpu_gbyte = nnz_gbyte_count<T>(M, N, dirA) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
