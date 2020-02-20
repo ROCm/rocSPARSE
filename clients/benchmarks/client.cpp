@@ -197,10 +197,10 @@ int main(int argc, char* argv[])
          "  Level3: csrmm, csrsm\n"
          "  Extra: csrgemm\n"
          "  Preconditioner: csric0, csrilu0\n"
-         "  Conversion: nnz, csr2coo, csr2csc, csr2ell, csr2hyb\n"
+         "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb\n"
          "              coo2csr, ell2csr, hyb2csr\n"
          "  Sorting: cscsort, csrsort, coosort\n"
-         "  Misc: identity")
+         "  Misc: identity, nnz")
 
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d,c,z")

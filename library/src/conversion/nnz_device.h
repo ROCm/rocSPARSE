@@ -33,7 +33,7 @@
 //! @param sdata     The array of data.
 //!
 template <rocsparse_int n>
-__device__ void nnz_device_reduce(rocsparse_int tx, rocsparse_int* sdata)
+__forceinline__ __device__ void nnz_device_reduce(rocsparse_int tx, rocsparse_int* sdata)
 {
     __syncthreads();
     if(tx < n / 2)
@@ -44,7 +44,7 @@ __device__ void nnz_device_reduce(rocsparse_int tx, rocsparse_int* sdata)
 }
 
 template <>
-__device__ void nnz_device_reduce<0>(rocsparse_int tx, rocsparse_int* sdata)
+__forceinline__ __device__ void nnz_device_reduce<0>(rocsparse_int tx, rocsparse_int* sdata)
 {
 }
 
@@ -57,8 +57,11 @@ __device__ void nnz_device_reduce<0>(rocsparse_int tx, rocsparse_int* sdata)
 //! @param nnzPerColumn         The array storing the results of the nnz per column.
 //!
 template <rocsparse_int NB_X, typename T>
-__global__ void nnz_kernel_col(
-    rocsparse_int m, rocsparse_int n, const T* A, rocsparse_int lda, rocsparse_int* nnzPerColumn)
+  __global__ void nnz_kernel_col(rocsparse_int m,
+				 rocsparse_int n,
+				 const T* __restrict__  A,
+				 rocsparse_int lda,
+				 rocsparse_int* __restrict__ nnzPerColumn)
 {
     static constexpr T s_zero = {};
     rocsparse_int tx = hipThreadIdx_x, col = hipBlockIdx_x, m_full = (m / NB_X) * NB_X, res = 0;
@@ -107,8 +110,11 @@ __global__ void nnz_kernel_col(
 //! @param nnzPerRow            The array storing the results of the nnz per row.
 //!
 template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename T>
-__global__ void nnz_kernel_row(
-    rocsparse_int m, rocsparse_int n, const T* A, rocsparse_int lda, rocsparse_int* nnzPerRow)
+__global__ void nnz_kernel_row(rocsparse_int m,
+			       rocsparse_int n,
+			       const T* __restrict__ A,
+			       rocsparse_int lda,
+			       rocsparse_int* __restrict__ nnzPerRow)
 {
     static constexpr T s_zero = {};
 
