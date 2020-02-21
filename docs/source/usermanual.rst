@@ -640,7 +640,7 @@ Function name                                         single double single compl
 :cpp:func:`rocsparse_coosort_buffer_size`
 :cpp:func:`rocsparse_coosort_by_row`
 :cpp:func:`rocsparse_coosort_by_column`
-:cpp:func:`rocsparse_Xnnz`                            x      x      x              x
+:cpp:func:`rocsparse_Xnnz() <rocsparse_snnz>`         x      x      x              x
 ===================================================== ====== ====== ============== ==============
 
 Storage schemes and indexing base
