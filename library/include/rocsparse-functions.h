@@ -4592,8 +4592,7 @@ rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
  *  \brief 
  *  This function computes the number of nonzero elements per row or column and the total number of nonzero elements in a dense matrix.
  *  \details
- *  This function requires temporary extra storage that is allocated internally.
- *  The routine does not support asynchronous execution.
+ *  The routine does support asynchronous execution if the pointer mode is set to device.
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *
