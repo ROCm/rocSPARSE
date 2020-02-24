@@ -143,6 +143,10 @@ Functions:
   rocsparse_csrilu0_zero_pivot: { function: csrilu0 }
   rocsparse_csrilu0_clear: { function: csrilu0 }
 
+  rocsparse_snnz: { function: nnz, <<: *single_precision }
+  rocsparse_dnnz: { function: nnz, <<: *double_precision }
+  rocsparse_cnnz: { function: nnz, <<: *single_precision_complex }
+  rocsparse_znnz: { function: nnz, <<: *double_precision_complex }
   rocsparse_csr2coo: { function: csr2coo }
   rocsparse_coo2csr: { function: coo2csr }
   rocsparse_scsr2csc: { function: csr2csc, <<: *single_precision }
