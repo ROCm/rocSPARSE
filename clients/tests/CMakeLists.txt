@@ -177,6 +177,8 @@ if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
   foreach(target ${AMDGPU_TARGETS})
     target_link_libraries(rocsparse-test PRIVATE --amdgpu-target=${target})
   endforeach()
+else()
+  target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma)
 endif()
 
 target_link_libraries(rocsparse-test PRIVATE ${GTEST_BOTH_LIBRARIES} Threads::Threads hip::host)
