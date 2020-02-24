@@ -63,6 +63,7 @@
 #include "testing_ell2csr.hpp"
 #include "testing_hyb2csr.hpp"
 #include "testing_identity.hpp"
+#include "testing_nnz.hpp"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -78,22 +79,22 @@ int main(int argc, char* argv[])
     arg.alphai     = 0.0;
     arg.betai      = 0.0;
 
-    std::string function;
-    std::string filename;
-    std::string rocalution;
-    char        precision = 's';
-    char        transA;
-    char        transB;
-    int         baseA;
-    int         baseB;
-    int         baseC;
-    int         baseD;
-    int         action;
-    int         part;
-    char        diag;
-    char        uplo;
-    char        apol;
-
+    std::string                function;
+    std::string                filename;
+    std::string                rocalution;
+    char                       precision = 's';
+    char                       transA;
+    char                       transB;
+    int                        baseA;
+    int                        baseB;
+    int                        baseC;
+    int                        baseD;
+    int                        action;
+    int                        part;
+    char                       diag;
+    char                       uplo;
+    char                       apol;
+    rocsparse_int              dir;
     std::vector<rocsparse_int> laplace(3, 0);
 
     rocsparse_int device_id;
@@ -199,7 +200,7 @@ int main(int argc, char* argv[])
          "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb\n"
          "              coo2csr, ell2csr, hyb2csr\n"
          "  Sorting: cscsort, csrsort, coosort\n"
-         "  Misc: identity")
+         "  Misc: identity, nnz")
 
         ("precision,r",
          po::value<char>(&precision)->default_value('s'), "Options: s,d,c,z")
@@ -214,7 +215,16 @@ int main(int argc, char* argv[])
 
         ("device,d",
          po::value<rocsparse_int>(&device_id)->default_value(0),
-         "Set default device to be used for subsequent program runs");
+         "Set default device to be used for subsequent program runs")
+
+        ("direction",
+         po::value<rocsparse_int>(&dir)->default_value(rocsparse_direction_row),
+         "Indicates whether a dense matrix should be parsed by rows or by columns, assuming column-major storage: row = 0, column = 1 (default: 0)")
+
+        ("denseld",
+         po::value<rocsparse_int>(&arg.denseld)->default_value(128),
+         "Indicates the leading dimension of a dense matrix >= M, assuming a column-oriented storage.");
+
     // clang-format on
 
     po::variables_map vm;
@@ -225,6 +235,12 @@ int main(int argc, char* argv[])
     {
         std::cout << desc << std::endl;
         return 0;
+    }
+
+    if(dir != rocsparse_direction_row && dir != rocsparse_direction_column)
+    {
+        std::cerr << "Invalid value for --direction" << std::endl;
+        return -1;
     }
 
     if(precision != 's' && precision != 'd' && precision != 'c' && precision != 'z')
@@ -254,7 +270,6 @@ int main(int argc, char* argv[])
     else if(transB == 'T')
     {
         arg.transB = rocsparse_operation_transpose;
-        ;
     }
     else if(transB == 'C')
     {
@@ -274,6 +289,8 @@ int main(int argc, char* argv[])
     arg.uplo = (uplo == 'L') ? rocsparse_fill_mode_lower : rocsparse_fill_mode_upper;
     arg.apol = (apol == 'R') ? rocsparse_analysis_policy_reuse : rocsparse_analysis_policy_force;
     arg.spol = rocsparse_solve_policy_auto;
+    arg.direction
+        = (dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
 
     // Set laplace dimensions
     arg.dimx = laplace[0];
@@ -565,6 +582,17 @@ int main(int argc, char* argv[])
             testing_csrilu0<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_csrilu0<rocsparse_double_complex>(arg);
+    }
+    else if(function == "nnz")
+    {
+        if(precision == 's')
+            testing_nnz<float>(arg);
+        else if(precision == 'd')
+            testing_nnz<double>(arg);
+        else if(precision == 'c')
+            testing_nnz<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_nnz<rocsparse_double_complex>(arg);
     }
     else if(function == "csr2coo")
     {

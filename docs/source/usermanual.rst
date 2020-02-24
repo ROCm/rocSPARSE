@@ -640,6 +640,7 @@ Function name                                         single double single compl
 :cpp:func:`rocsparse_coosort_buffer_size`
 :cpp:func:`rocsparse_coosort_by_row`
 :cpp:func:`rocsparse_coosort_by_column`
+:cpp:func:`rocsparse_Xnnz() <rocsparse_snnz>`         x      x      x              x
 ===================================================== ====== ====== ============== ==============
 
 Storage schemes and indexing base
@@ -1332,3 +1333,14 @@ rocsparse_coosort_by_column()
 -----------------------------
 
 .. doxygenfunction:: rocsparse_coosort_by_column
+
+rocsparse_nnz()
+-------------------
+
+.. doxygenfunction:: rocsparse_snnz
+  :outline:
+.. doxygenfunction:: rocsparse_dnnz
+  :outline:
+.. doxygenfunction:: rocsparse_cnnz
+  :outline:
+.. doxygenfunction:: rocsparse_znnz
