@@ -781,28 +781,18 @@ static inline void host_lssolve(rocsparse_int                     M,
                                 rocsparse_int*                    struct_pivot,
                                 rocsparse_int*                    numeric_pivot)
 {
-    // Get device properties
-    int             dev;
-    hipDeviceProp_t prop;
-
-    hipGetDevice(&dev);
-    hipGetDeviceProperties(&prop, dev);
-
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
     for(rocsparse_int i = 0; i < nrhs; ++i)
     {
-        std::vector<T> temp(prop.warpSize);
-
         // Process lower triangular part
         for(rocsparse_int row = 0; row < M; ++row)
         {
-            temp.assign(prop.warpSize, static_cast<T>(0));
-
             rocsparse_int idx_B
                 = (transB == rocsparse_operation_none) ? i * ldb + row : row * ldb + i;
-            temp[0] = alpha * B[idx_B];
+
+            T sum = alpha * B[idx_B];
 
             rocsparse_int diag      = -1;
             rocsparse_int row_begin = csr_row_ptr[row] - base;
@@ -810,63 +800,44 @@ static inline void host_lssolve(rocsparse_int                     M,
 
             T diag_val = static_cast<T>(0);
 
-            for(rocsparse_int l = row_begin; l < row_end; l += prop.warpSize)
+            for(rocsparse_int j = row_begin; j < row_end; ++j)
             {
-                for(unsigned int k = 0; k < prop.warpSize; ++k)
+                rocsparse_int local_col = csr_col_ind[j] - base;
+                T             local_val = csr_val[j];
+
+                if(local_val == static_cast<T>(0) && local_col == row
+                   && diag_type == rocsparse_diag_type_non_unit)
                 {
-                    rocsparse_int j = l + k;
-
-                    // Do not run out of bounds
-                    if(j >= row_end)
-                    {
-                        break;
-                    }
-
-                    rocsparse_int local_col = csr_col_ind[j] - base;
-                    T             local_val = csr_val[j];
-
-                    if(local_val == static_cast<T>(0) && local_col == row
-                       && diag_type == rocsparse_diag_type_non_unit)
-                    {
-                        // Numerical zero pivot found, avoid division by 0 and store
-                        // index for later use
-                        *numeric_pivot = std::min(*numeric_pivot, row + base);
-                        local_val      = static_cast<T>(1);
-                    }
-
-                    // Ignore all entries that are above the diagonal
-                    if(local_col > row)
-                    {
-                        break;
-                    }
-
-                    // Diagonal entry
-                    if(local_col == row)
-                    {
-                        // If diagonal type is non unit, do division by diagonal entry
-                        // This is not required for unit diagonal for obvious reasons
-                        if(diag_type == rocsparse_diag_type_non_unit)
-                        {
-                            diag     = j;
-                            diag_val = static_cast<T>(1) / local_val;
-                        }
-
-                        break;
-                    }
-
-                    // Lower triangular part
-                    rocsparse_int idx = (transB == rocsparse_operation_none) ? i * ldb + local_col
-                                                                             : local_col * ldb + i;
-                    temp[k] = std::fma(-local_val, B[idx], temp[k]);
+                    // Numerical zero pivot found, avoid division by 0 and store
+                    // index for later use
+                    *numeric_pivot = std::min(*numeric_pivot, row + base);
+                    local_val      = static_cast<T>(1);
                 }
-            }
 
-            for(unsigned int j = 1; j < prop.warpSize; j <<= 1)
-            {
-                for(unsigned int k = 0; k < prop.warpSize - j; ++k)
+                // Ignore all entries that are above the diagonal
+                if(local_col > row)
                 {
-                    temp[k] += temp[k + j];
+                    break;
                 }
+
+                // Diagonal entry
+                if(local_col == row)
+                {
+                    // If diagonal type is non unit, do division by diagonal entry
+                    // This is not required for unit diagonal for obvious reasons
+                    if(diag_type == rocsparse_diag_type_non_unit)
+                    {
+                        diag     = j;
+                        diag_val = static_cast<T>(1) / local_val;
+                    }
+
+                    break;
+                }
+
+                // Lower triangular part
+                rocsparse_int idx = (transB == rocsparse_operation_none) ? i * ldb + local_col
+                                                                         : local_col * ldb + i;
+                sum = std::fma(-local_val, B[idx], sum);
             }
 
             if(diag_type == rocsparse_diag_type_non_unit)
@@ -876,11 +847,11 @@ static inline void host_lssolve(rocsparse_int                     M,
                     *struct_pivot = std::min(*struct_pivot, row + base);
                 }
 
-                B[idx_B] = temp[0] * diag_val;
+                B[idx_B] = sum * diag_val;
             }
             else
             {
-                B[idx_B] = temp[0];
+                B[idx_B] = sum;
             }
         }
     }
@@ -901,28 +872,18 @@ static inline void host_ussolve(rocsparse_int                     M,
                                 rocsparse_int*                    struct_pivot,
                                 rocsparse_int*                    numeric_pivot)
 {
-    // Get device properties
-    int             dev;
-    hipDeviceProp_t prop;
-
-    hipGetDevice(&dev);
-    hipGetDeviceProperties(&prop, dev);
-
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
     for(rocsparse_int i = 0; i < nrhs; ++i)
     {
-        std::vector<T> temp(prop.warpSize);
-
         // Process upper triangular part
         for(rocsparse_int row = M - 1; row >= 0; --row)
         {
-            temp.assign(prop.warpSize, static_cast<T>(0));
-
             rocsparse_int idx_B
                 = (transB == rocsparse_operation_none) ? i * ldb + row : row * ldb + i;
-            temp[0] = alpha * B[idx_B];
+
+            T sum = alpha * B[idx_B];
 
             rocsparse_int diag      = -1;
             rocsparse_int row_begin = csr_row_ptr[row] - base;
@@ -930,59 +891,40 @@ static inline void host_ussolve(rocsparse_int                     M,
 
             T diag_val = static_cast<T>(0);
 
-            for(rocsparse_int l = row_end - 1; l >= row_begin; l -= prop.warpSize)
+            for(rocsparse_int j = row_end - 1; j >= row_begin; --j)
             {
-                for(unsigned int k = 0; k < prop.warpSize; ++k)
+                rocsparse_int local_col = csr_col_ind[j] - base;
+                T             local_val = csr_val[j];
+
+                // Ignore all entries that are below the diagonal
+                if(local_col < row)
                 {
-                    rocsparse_int j = l - k;
+                    continue;
+                }
 
-                    // Do not run out of bounds
-                    if(j < row_begin)
+                // Diagonal entry
+                if(local_col == row)
+                {
+                    if(diag_type == rocsparse_diag_type_non_unit)
                     {
-                        break;
-                    }
-
-                    rocsparse_int local_col = csr_col_ind[j] - base;
-                    T             local_val = csr_val[j];
-
-                    // Ignore all entries that are below the diagonal
-                    if(local_col < row)
-                    {
-                        continue;
-                    }
-
-                    // Diagonal entry
-                    if(local_col == row)
-                    {
-                        if(diag_type == rocsparse_diag_type_non_unit)
+                        // Check for numerical zero
+                        if(local_val == static_cast<T>(0))
                         {
-                            // Check for numerical zero
-                            if(local_val == static_cast<T>(0))
-                            {
-                                *numeric_pivot = std::min(*numeric_pivot, row + base);
-                                local_val      = static_cast<T>(1);
-                            }
-
-                            diag     = j;
-                            diag_val = static_cast<T>(1) / local_val;
+                            *numeric_pivot = std::min(*numeric_pivot, row + base);
+                            local_val      = static_cast<T>(1);
                         }
 
-                        continue;
+                        diag     = j;
+                        diag_val = static_cast<T>(1) / local_val;
                     }
 
-                    // Upper triangular part
-                    rocsparse_int idx = (transB == rocsparse_operation_none) ? i * ldb + local_col
-                                                                             : local_col * ldb + i;
-                    temp[k] = std::fma(-local_val, B[idx], temp[k]);
+                    continue;
                 }
-            }
 
-            for(unsigned int j = 1; j < prop.warpSize; j <<= 1)
-            {
-                for(unsigned int k = 0; k < prop.warpSize - j; ++k)
-                {
-                    temp[k] += temp[k + j];
-                }
+                // Upper triangular part
+                rocsparse_int idx = (transB == rocsparse_operation_none) ? i * ldb + local_col
+                                                                         : local_col * ldb + i;
+                sum = std::fma(-local_val, B[idx], sum);
             }
 
             if(diag_type == rocsparse_diag_type_non_unit)
@@ -992,11 +934,11 @@ static inline void host_ussolve(rocsparse_int                     M,
                     *struct_pivot = std::min(*struct_pivot, row + base);
                 }
 
-                B[idx_B] = temp[0] * diag_val;
+                B[idx_B] = sum * diag_val;
             }
             else
             {
-                B[idx_B] = temp[0];
+                B[idx_B] = sum;
             }
         }
     }

@@ -29,11 +29,98 @@
 
 #include <hip/hip_runtime.h>
 
+template <typename T, unsigned int DIM_X, unsigned int DIM_Y>
+__global__ void csrsm_transpose(rocsparse_int m,
+                                rocsparse_int n,
+                                const T* __restrict__ A,
+                                rocsparse_int lda,
+                                T* __restrict__ B,
+                                rocsparse_int ldb)
+{
+    rocsparse_int lid = hipThreadIdx_x & (DIM_X - 1);
+    rocsparse_int wid = hipThreadIdx_x / DIM_X;
+
+    rocsparse_int row_A = hipBlockIdx_x * DIM_X + lid;
+    rocsparse_int row_B = hipBlockIdx_x * DIM_X + wid;
+
+    __shared__ T sdata[DIM_X][DIM_X];
+
+    for(int j = 0; j < n; j += DIM_X)
+    {
+        __syncthreads();
+
+        int col_A = j + wid;
+
+        for(int k = 0; k < DIM_X; k += DIM_Y)
+        {
+            if(row_A < m && col_A + k < n)
+            {
+                sdata[wid + k][lid] = A[row_A + lda * (col_A + k)];
+            }
+        }
+
+        __syncthreads();
+
+        int col_B = j + lid;
+
+        for(int k = 0; k < DIM_X; k += DIM_Y)
+        {
+            if(col_B < n && row_B + k < m)
+            {
+                B[col_B + ldb * (row_B + k)] = sdata[lid][wid + k];
+            }
+        }
+    }
+}
+
+template <typename T, unsigned int DIM_X, unsigned int DIM_Y>
+__global__ void csrsm_transpose_back(rocsparse_int m,
+                                     rocsparse_int n,
+                                     const T* __restrict__ A,
+                                     rocsparse_int lda,
+                                     T* __restrict__ B,
+                                     rocsparse_int ldb)
+{
+    rocsparse_int lid = hipThreadIdx_x & (DIM_X - 1);
+    rocsparse_int wid = hipThreadIdx_x / DIM_X;
+
+    rocsparse_int row_A = hipBlockIdx_x * DIM_X + wid;
+    rocsparse_int row_B = hipBlockIdx_x * DIM_X + lid;
+
+    __shared__ T sdata[DIM_X][DIM_X];
+
+    for(int j = 0; j < n; j += DIM_X)
+    {
+        __syncthreads();
+
+        int col_A = j + lid;
+
+        for(int k = 0; k < DIM_X; k += DIM_Y)
+        {
+            if(col_A < n && row_A + k < m)
+            {
+                sdata[wid + k][lid] = A[col_A + lda * (row_A + k)];
+            }
+        }
+
+        __syncthreads();
+
+        int col_B = j + wid;
+
+        for(int k = 0; k < DIM_X; k += DIM_Y)
+        {
+            if(row_B < m && col_B + k < n)
+            {
+                B[row_B + ldb * (col_B + k)] = sdata[lid][wid + k];
+            }
+        }
+    }
+}
+
 template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
-__device__ void csrsm_device(rocsparse_int       m,
-                             rocsparse_int       n,
-                             rocsparse_operation trans_B,
-                             T                   alpha,
+__device__ void csrsm_device(rocsparse_int m,
+                             rocsparse_int nrhs,
+                             T             alpha,
                              const rocsparse_int* __restrict__ csr_row_ptr,
                              const rocsparse_int* __restrict__ csr_col_ind,
                              const T* __restrict__ csr_val,
@@ -46,20 +133,12 @@ __device__ void csrsm_device(rocsparse_int       m,
                              rocsparse_fill_mode  fill_mode,
                              rocsparse_diag_type  diag_type)
 {
-    int lid = hipThreadIdx_x & (WF_SIZE - 1);
-    int wid = hipThreadIdx_x / WF_SIZE;
-
     // Index into the row map
-    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WF_SIZE + wid;
+    rocsparse_int idx = hipBlockIdx_x % m;
 
-    // Shared memory to hold diagonal entry
-    __shared__ T diagonal[BLOCKSIZE / WF_SIZE];
-
-    // Do not run out of bounds
-    if(idx >= m)
-    {
-        return;
-    }
+    // Shared memory to hold columns and values
+    __shared__ rocsparse_int scsr_col_ind[BLOCKSIZE];
+    __shared__ T             scsr_val[BLOCKSIZE];
 
     // Get the row this warp will operate on
     rocsparse_int row = map[idx];
@@ -68,25 +147,44 @@ __device__ void csrsm_device(rocsparse_int       m,
     rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
     rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
 
-    // Local summation variable.
-    T local_sum = static_cast<T>(0);
+    // Column index into B
+    rocsparse_int col_B = hipBlockIdx_x / m * hipBlockDim_x + hipThreadIdx_x;
 
-    // Index into B
-    rocsparse_int idx_B = (trans_B == rocsparse_operation_none) ? n * ldb + row : row * ldb + n;
+    // Index into B (i,j)
+    rocsparse_int idx_B = row * ldb + col_B;
 
-    if(lid == 0)
+    // Index into done array
+    rocsparse_int id = hipBlockIdx_x / m * m;
+
+    // Initialize local sum with alpha and X
+    T local_sum = (col_B < nrhs) ? alpha * B[idx_B] : static_cast<T>(0);
+
+    // Initialize diagonal entry
+    T diagonal = static_cast<T>(1);
+
+    for(rocsparse_int j = row_begin; j < row_end; ++j)
     {
-        // Lane 0 initializes its local sum with alpha and x
-        local_sum = alpha * rocsparse_nontemporal_load(B + idx_B);
-    }
+        // Project j onto [0, BLOCKSIZE-1]
+        rocsparse_int k = (j - row_begin) & (BLOCKSIZE - 1);
 
-    for(rocsparse_int j = row_begin + lid; j < row_end; j += WF_SIZE)
-    {
+        // Preload column indices and values into shared memory
+        // This happens only once for each chunk of BLOCKSIZE elements
+        if(k == 0)
+        {
+            scsr_col_ind[hipThreadIdx_x]
+                = (hipThreadIdx_x < row_end - j) ? csr_col_ind[hipThreadIdx_x + j] - idx_base : -1;
+            scsr_val[hipThreadIdx_x]
+                = (hipThreadIdx_x < row_end - j) ? csr_val[hipThreadIdx_x + j] : -1;
+        }
+
+        // Wait for preload to finish
+        __syncthreads();
+
         // Current column this lane operates on
-        rocsparse_int local_col = rocsparse_nontemporal_load(csr_col_ind + j) - idx_base;
+        rocsparse_int local_col = scsr_col_ind[k];
 
         // Local value this lane operates with
-        T local_val = rocsparse_nontemporal_load(csr_val + j);
+        T local_val = scsr_val[k];
 
         // Check for numerical zero
         if(local_val == static_cast<T>(0) && local_col == row
@@ -94,7 +192,11 @@ __device__ void csrsm_device(rocsparse_int       m,
         {
             // Numerical zero pivot found, avoid division by 0
             // and store index for later use.
-            atomicMin(zero_pivot, row + idx_base);
+            if(hipThreadIdx_x == 0)
+            {
+                atomicMin(zero_pivot, row + idx_base);
+            }
+
             local_val = static_cast<T>(1);
         }
 
@@ -113,12 +215,12 @@ __device__ void csrsm_device(rocsparse_int       m,
             if(local_col == row)
             {
                 // If diagonal type is non unit, do division by diagonal entry
-                // This is not required for unit diagonal for obvious reasons
                 if(diag_type == rocsparse_diag_type_non_unit)
                 {
-                    diagonal[wid] = static_cast<T>(1) / local_val;
+                    diagonal = static_cast<T>(1) / local_val;
                 }
 
+                // Skip diagonal entry
                 continue;
             }
         }
@@ -136,60 +238,71 @@ __device__ void csrsm_device(rocsparse_int       m,
             if(local_col == row)
             {
                 // If diagonal type is non unit, do division by diagonal entry
-                // This is not required for unit diagonal for obvious reasons
                 if(diag_type == rocsparse_diag_type_non_unit)
                 {
-                    diagonal[wid] = static_cast<T>(1) / local_val;
+                    diagonal = static_cast<T>(1) / local_val;
                 }
 
+                // Skip diagonal entry
                 break;
             }
         }
 
         // Spin loop until dependency has been resolved
-        int          local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
-        unsigned int times_through = 0;
-        while(!local_done)
+        if(hipThreadIdx_x == 0)
         {
-            if(SLEEP)
+            int local_done = rocsparse_atomic_load(&done_array[local_col + id], __ATOMIC_ACQUIRE);
+            unsigned int times_through = 0;
+            while(!local_done)
             {
-                for(unsigned int i = 0; i < times_through; ++i)
+                if(SLEEP)
                 {
-                    __builtin_amdgcn_s_sleep(1);
+                    for(unsigned int i = 0; i < times_through; ++i)
+                    {
+                        __builtin_amdgcn_s_sleep(1);
+                    }
+
+                    if(times_through < 3907)
+                    {
+                        ++times_through;
+                    }
                 }
 
-                if(times_through < 3907)
-                {
-                    ++times_through;
-                }
+                local_done = rocsparse_atomic_load(&done_array[local_col + id], __ATOMIC_ACQUIRE);
             }
-
-            local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
         }
 
+        // Wait for spin looping thread to finish as the whole block depends on this row
+        __syncthreads();
+
         // Index into X
-        rocsparse_int idx_X
-            = (trans_B == rocsparse_operation_none) ? n * ldb + local_col : local_col * ldb + n;
+        rocsparse_int idx_X = local_col * ldb + col_B;
 
         // Local sum computation for each lane
-        local_sum = rocsparse_fma(-local_val, B[idx_X], local_sum);
+        local_sum
+            = (col_B < nrhs) ? rocsparse_fma(-local_val, B[idx_X], local_sum) : static_cast<T>(0);
     }
-
-    // Gather all local sums for each lane
-    local_sum = rocsparse_wfreduce_sum<WF_SIZE>(local_sum);
 
     // If we have non unit diagonal, take the diagonal into account
     // For unit diagonal, this would be multiplication with one
     if(diag_type == rocsparse_diag_type_non_unit)
     {
-        local_sum = local_sum * diagonal[wid];
+        local_sum = local_sum * diagonal;
     }
 
-    if(lid == WF_SIZE - 1)
+    // Store result in B
+    if(col_B < nrhs)
     {
-        // Write the "row is done" flag and store the rows result in B
-        rocsparse_nontemporal_store(local_sum, &B[idx_B]);
-        rocsparse_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE);
+        B[idx_B] = local_sum;
+    }
+
+    // Wait for all threads to finish writing into global memory before we mark the row "done"
+    __syncthreads();
+
+    if(hipThreadIdx_x == 0)
+    {
+        // Write the "row is done" flag
+        rocsparse_atomic_store(&done_array[row + id], 1, __ATOMIC_RELEASE);
     }
 }
 
