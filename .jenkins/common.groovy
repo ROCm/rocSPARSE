@@ -1,12 +1,12 @@
 // This file is for internal AMD use.
 // If you are interested in running your own Jenkins, please raise a github issue for assistance.
 
-def runCompileCommand(platform, project)
+def runCompileCommand(platform, project, jobName)
 {
     project.paths.construct_build_prefix()
 
-    String compiler = platform.jenkinsLabel.contains('hip-clang') ? 'hipcc' : 'hcc'
-    String hipClangArgs = platform.jenkinsLabel.contains('hip-clang') ? ' --hip-clang' : ''
+    String compiler = jobName.contains('hipclang') ? 'hipcc' : 'hcc'
+    String hipClangArgs = jobName.contains('hipclang') ? ' --hip-clang' : ''
     String sudo = platform.jenkinsLabel.contains('sles') ? 'sudo' : ''
 
     def command = """#!/usr/bin/env bash
