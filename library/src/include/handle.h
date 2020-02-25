@@ -153,6 +153,8 @@ struct _rocsparse_mat_info
     rocsparse_csrtr_info   csrsvt_lower_info = nullptr;
     rocsparse_csrtr_info   csrsm_upper_info  = nullptr;
     rocsparse_csrtr_info   csrsm_lower_info  = nullptr;
+    rocsparse_csrtr_info   csrsmt_upper_info = nullptr;
+    rocsparse_csrtr_info   csrsmt_lower_info = nullptr;
     rocsparse_csrgemm_info csrgemm_info      = nullptr;
 
     // zero pivot for csrsv, csrsm, csrilu0, csric0

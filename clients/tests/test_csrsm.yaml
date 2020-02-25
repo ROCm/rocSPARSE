@@ -52,8 +52,8 @@ Definitions:
 
   - &alpha_range_nightly
     - { alpha:   0.0,  alphai:  0.05 }
-    - { alpha:   0.1,  alphai:  0.15 }
-    - { alpha:  -0.02, alphai: -0.2 }
+    - { alpha:   0.1,  alphai:  0.01 }
+    - { alpha:  -0.02, alphai: -0.1 }
 
 Tests:
 - name: csrsm_bad_arg
@@ -82,7 +82,7 @@ Tests:
   function: csrsm
   precision: *single_double_precisions_complex_real
   M_N: *M_N_range_checkin
-  K: [-1, 0, 3, 107, 473, 885]
+  K: [-1, 0, 3, 107, 473, 875, 1263]
   alpha_alphai: *alpha_range_checkin
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_transpose]
