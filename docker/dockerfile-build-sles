@@ -25,6 +25,7 @@ RUN zypper -n --no-gpg-checks install \
     pkg-config \
     python3-pip \
     dpkg \
+    hip-base \
     rocm-dev \
     rocprim \
     libcxxtools9 \
