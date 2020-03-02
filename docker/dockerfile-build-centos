@@ -29,9 +29,6 @@ RUN yum install -y \
     pkgconfig \
     python36 \
     PyYAML \
-    hip-hcc \
-    hip-base \
-    rocm-dev \
     rocprim \
     libcxx-devel \
     boost-devel \
