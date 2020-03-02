@@ -29,6 +29,7 @@ RUN yum install -y \
     pkgconfig \
     python36 \
     PyYAML \
+    rocm-dev \
     rocprim \
     libcxx-devel \
     boost-devel \

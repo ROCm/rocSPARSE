@@ -25,6 +25,7 @@ RUN zypper -n --no-gpg-checks install \
     pkg-config \
     python3-pip \
     dpkg \
+    rocm-dev \
     rocprim \
     libcxxtools9 \
     libboost_program_options1_66_0-devel \
