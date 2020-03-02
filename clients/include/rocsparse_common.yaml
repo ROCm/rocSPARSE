@@ -87,7 +87,7 @@ Datatypes:
       bases: [ c_int ]
       attr:
         rocsparse_direction_row: 0
-        rocsparse_direction_col: 1
+        rocsparse_direction_column: 1
 
 Real precisions: &real_precisions
   - &single_precision

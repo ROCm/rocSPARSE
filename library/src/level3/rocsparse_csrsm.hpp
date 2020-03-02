@@ -188,8 +188,22 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     // rocsparse_int max_nnz
     *buffer_size = 256;
 
-    // rocsparse_int done_array[m]
-    *buffer_size += sizeof(int) * ((m - 1) / 256 + 1) * 256;
+    // Each thread block performs at most blockdim columns of the
+    // rhs matrix. Therefore, the number of blocks depend on nrhs
+    // and the blocksize.
+    // Because of this, we might need a larger done_array compared
+    // to csrsv.
+    int blockdim = 512;
+    while(nrhs <= blockdim && blockdim > 32)
+    {
+        blockdim >>= 1;
+    }
+
+    blockdim <<= 1;
+    int narrays = (nrhs - 1) / blockdim + 1;
+
+    // int done_array
+    *buffer_size += sizeof(int) * ((m * narrays - 1) / 256 + 1) * 256;
 
     // rocsparse_int workspace
     *buffer_size += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
@@ -209,6 +223,12 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
 
     // rocprim buffer
     *buffer_size += rocprim_size;
+
+    // Additional buffer to store transpose of B, if trans_B == rocsparse_operation_none
+    if(trans_B == rocsparse_operation_none)
+    {
+        *buffer_size += sizeof(T) * ((m * nrhs - 1) / 256 + 1) * 256;
+    }
 
     return rocsparse_status_success;
 }
@@ -490,12 +510,11 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
     return rocsparse_status_success;
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
 __launch_bounds__(BLOCKSIZE) __global__
-    void csrsm_host_pointer(rocsparse_int       m,
-                            rocsparse_int       n,
-                            rocsparse_operation trans_B,
-                            T                   alpha,
+    void csrsm_host_pointer(rocsparse_int m,
+                            rocsparse_int nrhs,
+                            T             alpha,
                             const rocsparse_int* __restrict__ csr_row_ptr,
                             const rocsparse_int* __restrict__ csr_col_ind,
                             const T* __restrict__ csr_val,
@@ -508,29 +527,27 @@ __launch_bounds__(BLOCKSIZE) __global__
                             rocsparse_fill_mode  fill_mode,
                             rocsparse_diag_type  diag_type)
 {
-    csrsm_device<T, BLOCKSIZE, WF_SIZE, SLEEP>(m,
-                                               n,
-                                               trans_B,
-                                               alpha,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               csr_val,
-                                               B,
-                                               ldb,
-                                               done_array,
-                                               map,
-                                               zero_pivot,
-                                               idx_base,
-                                               fill_mode,
-                                               diag_type);
+    csrsm_device<T, BLOCKSIZE, WFSIZE, SLEEP>(m,
+                                              nrhs,
+                                              alpha,
+                                              csr_row_ptr,
+                                              csr_col_ind,
+                                              csr_val,
+                                              B,
+                                              ldb,
+                                              done_array,
+                                              map,
+                                              zero_pivot,
+                                              idx_base,
+                                              fill_mode,
+                                              diag_type);
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
 __launch_bounds__(BLOCKSIZE) __global__
-    void csrsm_device_pointer(rocsparse_int       m,
-                              rocsparse_int       n,
-                              rocsparse_operation trans_B,
-                              const T*            alpha,
+    void csrsm_device_pointer(rocsparse_int m,
+                              rocsparse_int nrhs,
+                              const T*      alpha,
                               const rocsparse_int* __restrict__ csr_row_ptr,
                               const rocsparse_int* __restrict__ csr_col_ind,
                               const T* __restrict__ csr_val,
@@ -543,21 +560,20 @@ __launch_bounds__(BLOCKSIZE) __global__
                               rocsparse_fill_mode  fill_mode,
                               rocsparse_diag_type  diag_type)
 {
-    csrsm_device<T, BLOCKSIZE, WF_SIZE, SLEEP>(m,
-                                               n,
-                                               trans_B,
-                                               *alpha,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               csr_val,
-                                               B,
-                                               ldb,
-                                               done_array,
-                                               map,
-                                               zero_pivot,
-                                               idx_base,
-                                               fill_mode,
-                                               diag_type);
+    csrsm_device<T, BLOCKSIZE, WFSIZE, SLEEP>(m,
+                                              nrhs,
+                                              *alpha,
+                                              csr_row_ptr,
+                                              csr_col_ind,
+                                              csr_val,
+                                              B,
+                                              ldb,
+                                              done_array,
+                                              map,
+                                              zero_pivot,
+                                              idx_base,
+                                              fill_mode,
+                                              diag_type);
 }
 
 template <typename T>
@@ -716,9 +732,29 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
 
     ptr += 256;
 
+    // Each thread block performs at most blockdim columns of the
+    // rhs matrix. Therefore, the number of blocks depend on nrhs
+    // and the blocksize.
+    // Because of this, we might need a larger done_array compared
+    // to csrsv.
+    int blockdim = 512;
+    while(nrhs <= blockdim && blockdim > 32)
+    {
+        blockdim >>= 1;
+    }
+    blockdim <<= 1;
+
+    int narrays = (nrhs - 1) / blockdim + 1;
+
     // done array
     int* done_array = reinterpret_cast<int*>(ptr);
-    ptr += sizeof(int) * ((m - 1) / 256 + 1) * 256;
+    ptr += sizeof(int) * ((m * narrays - 1) / 256 + 1) * 256;
+
+    // Temporary array to store transpoe of B
+    T* Bt = (trans_B == rocsparse_operation_none) ? reinterpret_cast<T*>(ptr) : B;
+
+    // Initialize buffers
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * m * narrays, stream));
 
     rocsparse_csrtr_info csrsm = (descr->fill_mode == rocsparse_fill_mode_upper)
                                      ? info->csrsm_upper_info
@@ -740,125 +776,552 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     }
 
-    rocsparse_fill_mode fill_mode = descr->fill_mode;
+    // Leading dimension
+    rocsparse_int ldimB = ldb;
+
+    // Transpose B if B is not transposed yet to improve performance
+    if(trans_B == rocsparse_operation_none)
+    {
+        // Leading dimension for transposed B
+        ldimB = nrhs;
+
+#define CSRSM_DIM_X 32
+#define CSRSM_DIM_Y 8
+        dim3 csrsm_blocks((m - 1) / CSRSM_DIM_X + 1);
+        dim3 csrsm_threads(CSRSM_DIM_X * CSRSM_DIM_Y);
+
+        hipLaunchKernelGGL((csrsm_transpose<T, CSRSM_DIM_X, CSRSM_DIM_Y>),
+                           csrsm_blocks,
+                           csrsm_threads,
+                           0,
+                           stream,
+                           m,
+                           nrhs,
+                           B,
+                           ldb,
+                           Bt,
+                           ldimB);
+#undef CSRSM_DIM_X
+#undef CSRSM_DIM_Y
+    }
+
+    dim3 csrsm_blocks(((nrhs - 1) / blockdim + 1) * m);
+    dim3 csrsm_threads(blockdim);
 
     // Determine gcnArch
     int gcnArch = handle->properties.gcnArch;
 
-#define CSRSM_DIM 1024
-    dim3 csrsm_blocks((handle->wavefront_size * m - 1) / CSRSM_DIM + 1);
-    dim3 csrsm_threads(CSRSM_DIM);
-
-    // Loop over rhs columns
-    for(rocsparse_int n = 0; n < nrhs; ++n)
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        // Initialize buffers
-        RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * m, stream));
+        // rocsparse_pointer_mode_device
 
-        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        if(blockdim == 64)
         {
-            // gfx908
             if(gcnArch == 908)
             {
-                hipLaunchKernelGGL((csrsm_device_pointer<T, CSRSM_DIM, 64, true>),
+                hipLaunchKernelGGL((csrsm_device_pointer<T, 64, 64, true>),
                                    csrsm_blocks,
                                    csrsm_threads,
                                    0,
                                    stream,
                                    m,
-                                   n,
-                                   trans_B,
+                                   nrhs,
                                    alpha,
                                    csr_row_ptr,
                                    csr_col_ind,
                                    csr_val,
-                                   B,
-                                   ldb,
+                                   Bt,
+                                   ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   fill_mode,
+                                   descr->fill_mode,
                                    descr->diag_type);
             }
             else
             {
-                // rocsparse_pointer_mode_device
-                hipLaunchKernelGGL((csrsm_device_pointer<T, CSRSM_DIM, 64, false>),
+                hipLaunchKernelGGL((csrsm_device_pointer<T, 64, 64, false>),
                                    csrsm_blocks,
                                    csrsm_threads,
                                    0,
                                    stream,
                                    m,
-                                   n,
-                                   trans_B,
+                                   nrhs,
                                    alpha,
                                    csr_row_ptr,
                                    csr_col_ind,
                                    csr_val,
-                                   B,
-                                   ldb,
+                                   Bt,
+                                   ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   fill_mode,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+        }
+        else if(blockdim == 128)
+        {
+            if(gcnArch == 908)
+            {
+                hipLaunchKernelGGL((csrsm_device_pointer<T, 128, 64, true>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrsm_device_pointer<T, 128, 64, false>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+        }
+        else if(blockdim == 256)
+        {
+            if(gcnArch == 908)
+            {
+                hipLaunchKernelGGL((csrsm_device_pointer<T, 256, 64, true>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrsm_device_pointer<T, 256, 64, false>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+        }
+        else if(blockdim == 512)
+        {
+            if(gcnArch == 908)
+            {
+                hipLaunchKernelGGL((csrsm_device_pointer<T, 512, 64, true>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrsm_device_pointer<T, 512, 64, false>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+        }
+        else if(blockdim == 1024)
+        {
+            if(gcnArch == 908)
+            {
+                hipLaunchKernelGGL((csrsm_device_pointer<T, 1024, 64, true>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrsm_device_pointer<T, 1024, 64, false>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
                                    descr->diag_type);
             }
         }
         else
         {
-            // gfx908
+            return rocsparse_status_internal_error;
+        }
+    }
+    else
+    {
+        // rocsparse_pointer_mode_host
+
+        if(blockdim == 64)
+        {
             if(gcnArch == 908)
             {
-                hipLaunchKernelGGL((csrsm_host_pointer<T, CSRSM_DIM, 64, true>),
+                hipLaunchKernelGGL((csrsm_host_pointer<T, 64, 64, true>),
                                    csrsm_blocks,
                                    csrsm_threads,
                                    0,
                                    stream,
                                    m,
-                                   n,
-                                   trans_B,
+                                   nrhs,
                                    *alpha,
                                    csr_row_ptr,
                                    csr_col_ind,
                                    csr_val,
-                                   B,
-                                   ldb,
+                                   Bt,
+                                   ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   fill_mode,
+                                   descr->fill_mode,
                                    descr->diag_type);
             }
             else
             {
-                // rocsparse_pointer_mode_host
-                hipLaunchKernelGGL((csrsm_host_pointer<T, CSRSM_DIM, 64, false>),
+                hipLaunchKernelGGL((csrsm_host_pointer<T, 64, 64, false>),
                                    csrsm_blocks,
                                    csrsm_threads,
                                    0,
                                    stream,
                                    m,
-                                   n,
-                                   trans_B,
+                                   nrhs,
                                    *alpha,
                                    csr_row_ptr,
                                    csr_col_ind,
                                    csr_val,
-                                   B,
-                                   ldb,
+                                   Bt,
+                                   ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   fill_mode,
+                                   descr->fill_mode,
                                    descr->diag_type);
             }
         }
+        else if(blockdim == 128)
+        {
+            if(gcnArch == 908)
+            {
+                hipLaunchKernelGGL((csrsm_host_pointer<T, 128, 64, true>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   *alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrsm_host_pointer<T, 128, 64, false>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   *alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+        }
+        else if(blockdim == 256)
+        {
+            if(gcnArch == 908)
+            {
+                hipLaunchKernelGGL((csrsm_host_pointer<T, 256, 64, true>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   *alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrsm_host_pointer<T, 256, 64, false>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   *alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+        }
+        else if(blockdim == 512)
+        {
+            if(gcnArch == 908)
+            {
+                hipLaunchKernelGGL((csrsm_host_pointer<T, 512, 64, true>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   *alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrsm_host_pointer<T, 512, 64, false>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   *alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+        }
+        else if(blockdim == 1024)
+        {
+            if(gcnArch == 908)
+            {
+                hipLaunchKernelGGL((csrsm_host_pointer<T, 1024, 64, true>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   *alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+            else
+            {
+                hipLaunchKernelGGL((csrsm_host_pointer<T, 1024, 64, false>),
+                                   csrsm_blocks,
+                                   csrsm_threads,
+                                   0,
+                                   stream,
+                                   m,
+                                   nrhs,
+                                   *alpha,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   Bt,
+                                   ldimB,
+                                   done_array,
+                                   csrsm->row_map,
+                                   info->zero_pivot,
+                                   descr->base,
+                                   descr->fill_mode,
+                                   descr->diag_type);
+            }
+        }
+        else
+        {
+            return rocsparse_status_internal_error;
+        }
     }
-#undef CSRSM_DIM
+
+    // Transpose B back if B was not initially transposed
+    if(trans_B == rocsparse_operation_none)
+    {
+#define CSRSM_DIM_X 32
+#define CSRSM_DIM_Y 8
+        dim3 csrsm_blocks((m - 1) / CSRSM_DIM_X + 1);
+        dim3 csrsm_threads(CSRSM_DIM_X * CSRSM_DIM_Y);
+
+        hipLaunchKernelGGL((csrsm_transpose_back<T, CSRSM_DIM_X, CSRSM_DIM_Y>),
+                           csrsm_blocks,
+                           csrsm_threads,
+                           0,
+                           stream,
+                           m,
+                           nrhs,
+                           Bt,
+                           ldimB,
+                           B,
+                           ldb);
+#undef CSRSM_DIM_X
+#undef CSRSM_DIM_Y
+    }
 
     return rocsparse_status_success;
 }
