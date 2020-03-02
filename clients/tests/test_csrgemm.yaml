@@ -31,9 +31,9 @@ Definitions:
     - { alpha:  -0.5, alphai: -0.5 }
 
   - &alpha_range_checkin
-    - { alpha:   2.0, alphai:  1.5 }
+    - { alpha:   2.0, alphai:  0.5 }
     - { alpha:   0.0, alphai:  1.5 }
-    - { alpha:   3.0, alphai:  1.0 }
+    - { alpha:   3.0, alphai: -0.5 }
 
   - &alpha_range_nightly
     - { alpha:   0.0, alphai:  1.5 }
