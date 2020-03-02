@@ -40,7 +40,7 @@ rocsparse_status rocsparse_nnz_kernel_row(rocsparse_handle handle,
             blocks = (m - 1) / (NNZ_DIM_X) + 1;
         dim3 k_grid(blocks);
         dim3 k_threads(NNZ_DIM_X, NNZ_DIM_Y);
-        hipLaunchKernelGGL(nnz_kernel_row<NNZ_DIM_X, NNZ_DIM_Y, T>,
+        hipLaunchKernelGGL((nnz_kernel_row<NNZ_DIM_X, NNZ_DIM_Y, T>),
                            k_grid,
                            k_threads,
                            0,
@@ -69,7 +69,7 @@ rocsparse_status rocsparse_nnz_kernel_col(rocsparse_handle handle,
         static constexpr rocsparse_int NB = 256;
         dim3                           kernel_blocks(n);
         dim3                           kernel_threads(NB);
-        hipLaunchKernelGGL(nnz_kernel_col<NB, T>,
+        hipLaunchKernelGGL((nnz_kernel_col<NB, T>),
                            kernel_blocks,
                            kernel_threads,
                            0,
