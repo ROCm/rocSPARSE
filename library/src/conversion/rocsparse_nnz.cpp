@@ -69,9 +69,9 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
               "nnz",
               "--dir",
               dirA,
-              "-M",
+              "-m",
               m,
-              "-N",
+              "-n",
               n,
               "--denseld",
               lda);
@@ -165,6 +165,7 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
                                             mn,
                                             op,
                                             handle->stream));
+        temp_storage_size_bytes += sizeof(rocsparse_int);
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;
 
@@ -172,17 +173,16 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
         // Device buffer should be sufficient for rocprim in most cases
         //
         rocsparse_int* d_nnz;
-        if(handle->buffer_size >= temp_storage_size_bytes + sizeof(rocsparse_int) * 2)
+        if(handle->buffer_size >= temp_storage_size_bytes)
         {
             d_nnz            = (rocsparse_int*)handle->buffer;
-            temp_storage_ptr = d_nnz + 2;
+            temp_storage_ptr = d_nnz + 1;
             temp_alloc       = false;
         }
         else
         {
-            RETURN_IF_HIP_ERROR(
-                hipMalloc(&d_nnz, temp_storage_size_bytes + sizeof(rocsparse_int) * 2));
-            temp_storage_ptr = d_nnz + 2;
+            RETURN_IF_HIP_ERROR(hipMalloc(&d_nnz, temp_storage_size_bytes));
+            temp_storage_ptr = d_nnz + 1;
             temp_alloc       = true;
         }
 
