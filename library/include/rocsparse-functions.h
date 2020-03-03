@@ -2425,8 +2425,6 @@ rocsparse_status rocsparse_zcsrsm_analysis(rocsparse_handle                handl
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
- *  @param[in]
- *  descr       descriptor of the sparse CSR matrix.
  *  @param[inout]
  *  info        structure that holds the information collected during the analysis step.
  *
@@ -4626,8 +4624,8 @@ rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
  *  \retval     rocsparse_status_invalid_size \p m or \p n or \p lda is invalid.
  *  \retval     rocsparse_status_invalid_pointer \p A or \p nnzPerRowColumn or \p nnzTotalDevHostPtr
  *              pointer is invalid.
- *  \endcode
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_snnz(rocsparse_handle          handle,
                                 rocsparse_direction       dirA,
@@ -4671,6 +4669,7 @@ rocsparse_status rocsparse_znnz(rocsparse_handle                handle,
                                 rocsparse_int                   lda,
                                 rocsparse_int*                  nnzPerRowColumn,
                                 rocsparse_int*                  nnzTotalDevHostPtr);
+/**@}*/
 
 /*! \ingroup conv_module
  *  \brief Convert a sparse CSR matrix into a sparse COO matrix
