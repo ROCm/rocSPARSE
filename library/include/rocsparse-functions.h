@@ -4595,29 +4595,29 @@ rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
  *  handle      handle to the rocsparse library context queue.
  *
  *  @param[in]
- *  dirA 	direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by \ref rocsparse_direction_row.
+ *  dirA        direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by \ref rocsparse_direction_row.
  *
  *  @param[in]
- *  m 		number of rows of the dense matrix \p A.
+ *  m           number of rows of the dense matrix \p A.
  *
  *  @param[in]
- *  n 		number of columns of the dense matrix \p A.
+ *  n           number of columns of the dense matrix \p A.
  *
  *  @param[in]
- *  descrA 	the descriptor of the dense matrix \p A. 
+ *  descrA      the descriptor of the dense matrix \p A. 
  *
  *  @param[in]
- *  A 		array of dimensions (\p lda, \p n)
+ *  A           array of dimensions (\p lda, \p n)
  *
  *  @param[in]
- *  lda 	leading dimension of dense array \p A.
+ *  lda         leading dimension of dense array \p A.
  *
  *  @param[out]
  *  nnzPerRowColumn 
- * 		array of size \p m or \p n containing the number of nonzero elements per row or column, respectively.
+ *              array of size \p m or \p n containing the number of nonzero elements per row or column, respectively.
  *  @param[out]
- *  nnzTotalDevHostPtr 
- * 		total number of nonzero elements in device or host memory.
+ *  nnzTotalDevHostPtr
+ *              total number of nonzero elements in device or host memory.
  *
  *  \retval     rocsparse_status_success the operation completed successfully.
  *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -4681,40 +4681,40 @@ rocsparse_status rocsparse_znnz(rocsparse_handle                handle,
  *  handle      handle to the rocsparse library context queue.
  *
  *  @param[in]
- *  m 		number of rows of the dense matrix \p A.
+ *  m           number of rows of the dense matrix \p A.
  *
  *  @param[in]
- *  n 		number of columns of the dense matrix \p A.
+ *  n           number of columns of the dense matrix \p A.
  *
  *  @param[in]
- *  descrA 	the descriptor of the dense matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
+ *  descrA      the descriptor of the dense matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
  *
  *  @param[in]
- *  A 		array of dimensions (\p lda, \p n)
+ *  A           array of dimensions (\p lda, \p n)
  *
  *  @param[in]
- *  lda 	leading dimension of dense array \p A.
+ *  lda         leading dimension of dense array \p A.
  *
  *  @param[in]
  *  nnzPerRow   array of size \p n containing the number of non-zero elements per row.
- *  
+ *
  *  @param[out]
- *  csrValA 
+ *  csrValA
  *              array of nnz ( = \p csrRowPtrA[m] - \p csrRowPtrA[0] ) nonzero elements of matrix \p A.
  *  @param[out]
  *  csrRowPtrA
  *              integer array of m+1 elements that contains the start of every row and the end of the last row plus one.
  *  @param[out]
  *  csrColIndA
- * 		integer array of nnz ( = \p csrRowPtrA[m] - csrRowPtrA[0] ) column indices of the non-zero elements of matrix \p A.
+ *              integer array of nnz ( = \p csrRowPtrA[m] - csrRowPtrA[0] ) column indices of the non-zero elements of matrix \p A.
  *
  *  \retval     rocsparse_status_success the operation completed successfully.
  *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
  *  \retval     rocsparse_status_invalid_size \p m or \p n or \p lda is invalid.
  *  \retval     rocsparse_status_invalid_pointer \p A or \p nnzPerRow or \p csrValA \p csrRowPtrA or \p csrColIndA
  *              pointer is invalid.
- *  \endcode
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_sdense2csr(rocsparse_handle          handle,
                                       rocsparse_int             m,
@@ -4761,6 +4761,7 @@ rocsparse_status rocsparse_zdense2csr(rocsparse_handle                handle,
                                       rocsparse_double_complex*       csrValA,
                                       rocsparse_int*                  csrRowPtrA,
                                       rocsparse_int*                  csrColIndA);
+/**@}*/
 
 /*! \ingroup conv_module
  *  \brief 
@@ -4774,19 +4775,19 @@ rocsparse_status rocsparse_zdense2csr(rocsparse_handle                handle,
  *  handle      handle to the rocsparse library context queue.
  *
  *  @param[in]
- *  m 		number of rows of the dense matrix \p A.
+ *  m           number of rows of the dense matrix \p A.
  *
  *  @param[in]
- *  n 		number of columns of the dense matrix \p A.
+ *  n           number of columns of the dense matrix \p A.
  *
  *  @param[in]
- *  descrA 	the descriptor of the dense matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
+ *  descrA      the descriptor of the dense matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
  *
  *  @param[in]
- *  A 		array of dimensions (\p lda, \p n)
+ *  A           array of dimensions (\p lda, \p n)
  *
  *  @param[in]
- *  lda 	leading dimension of dense array \p A.
+ *  lda         leading dimension of dense array \p A.
  *
  *  @param[in]
  *  nnzPerCol   array of size \p n containing the number of non-zero elements per column.
@@ -4799,15 +4800,15 @@ rocsparse_status rocsparse_zdense2csr(rocsparse_handle                handle,
  *              integer array of m+1 elements that contains the start of every column and the end of the last column plus one.
  *  @param[out]
  *  cscRowIndA
- * 		integer array of nnz ( = \p cscColPtrA[m] - cscColPtrA[0] ) column indices of the non-zero elements of matrix \p A.
+ *              integer array of nnz ( = \p cscColPtrA[m] - cscColPtrA[0] ) column indices of the non-zero elements of matrix \p A.
  *
  *  \retval     rocsparse_status_success the operation completed successfully.
  *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
  *  \retval     rocsparse_status_invalid_size \p m or \p n or \p lda is invalid.
  *  \retval     rocsparse_status_invalid_pointer \p A or \p nnzPerCol or \p cscValA \p cscColPtrA or \p cscColIndA
  *              pointer is invalid.
- *  \endcode
  */
+/**@{*/
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_sdense2csc(rocsparse_handle          handle,
                                       rocsparse_int             m,
@@ -4854,6 +4855,7 @@ rocsparse_status rocsparse_zdense2csc(rocsparse_handle                handle,
                                       rocsparse_double_complex*       cscValA,
                                       rocsparse_int*                  cscColPtrA,
                                       rocsparse_int*                  cscRowIndA);
+/**@}*/
 
 /*! \ingroup conv_module
  *  \brief Convert a sparse CSR matrix into a sparse COO matrix
