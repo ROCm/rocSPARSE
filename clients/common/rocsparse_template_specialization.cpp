@@ -2597,6 +2597,136 @@ rocsparse_status rocsparse_nnz(rocsparse_handle                handle,
     return rocsparse_znnz(handle, dirA, m, n, descrA, A, lda, nnzPerRowColumn, nnzTotalDevHostPtr);
 }
 
+// dense2csr
+template <>
+rocsparse_status rocsparse_dense2csr(rocsparse_handle          handle,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr descrA,
+                                     const float*              A,
+                                     rocsparse_int             lda,
+                                     const rocsparse_int*      nnzPerRow,
+                                     float*                    csrValA,
+                                     rocsparse_int*            csrRowPtrA,
+                                     rocsparse_int*            csrColIndA)
+{
+    return rocsparse_sdense2csr(
+        handle, m, n, descrA, A, lda, nnzPerRow, csrValA, csrRowPtrA, csrColIndA);
+}
+
+template <>
+rocsparse_status rocsparse_dense2csr(rocsparse_handle          handle,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr descrA,
+                                     const double*             A,
+                                     rocsparse_int             lda,
+                                     const rocsparse_int*      nnzPerRow,
+                                     double*                   csrValA,
+                                     rocsparse_int*            csrRowPtrA,
+                                     rocsparse_int*            csrColIndA)
+{
+    return rocsparse_ddense2csr(
+        handle, m, n, descrA, A, lda, nnzPerRow, csrValA, csrRowPtrA, csrColIndA);
+}
+
+template <>
+rocsparse_status rocsparse_dense2csr(rocsparse_handle               handle,
+                                     rocsparse_int                  m,
+                                     rocsparse_int                  n,
+                                     const rocsparse_mat_descr      descrA,
+                                     const rocsparse_float_complex* A,
+                                     rocsparse_int                  lda,
+                                     const rocsparse_int*           nnzPerRow,
+                                     rocsparse_float_complex*       csrValA,
+                                     rocsparse_int*                 csrRowPtrA,
+                                     rocsparse_int*                 csrColIndA)
+{
+    return rocsparse_cdense2csr(
+        handle, m, n, descrA, A, lda, nnzPerRow, csrValA, csrRowPtrA, csrColIndA);
+}
+
+template <>
+rocsparse_status rocsparse_dense2csr(rocsparse_handle                handle,
+                                     rocsparse_int                   m,
+                                     rocsparse_int                   n,
+                                     const rocsparse_mat_descr       descrA,
+                                     const rocsparse_double_complex* A,
+                                     rocsparse_int                   lda,
+                                     const rocsparse_int*            nnzPerRow,
+                                     rocsparse_double_complex*       csrValA,
+                                     rocsparse_int*                  csrRowPtrA,
+                                     rocsparse_int*                  csrColIndA)
+{
+    return rocsparse_zdense2csr(
+        handle, m, n, descrA, A, lda, nnzPerRow, csrValA, csrRowPtrA, csrColIndA);
+}
+
+// dense2csc
+template <>
+rocsparse_status rocsparse_dense2csc(rocsparse_handle          handle,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr descrA,
+                                     const float*              A,
+                                     rocsparse_int             lda,
+                                     const rocsparse_int*      nnzPerCol,
+                                     float*                    cscValA,
+                                     rocsparse_int*            cscColPtrA,
+                                     rocsparse_int*            cscRowIndA)
+{
+    return rocsparse_sdense2csc(
+        handle, m, n, descrA, A, lda, nnzPerCol, cscValA, cscColPtrA, cscRowIndA);
+}
+
+template <>
+rocsparse_status rocsparse_dense2csc(rocsparse_handle          handle,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr descrA,
+                                     const double*             A,
+                                     rocsparse_int             lda,
+                                     const rocsparse_int*      nnzPerCol,
+                                     double*                   cscValA,
+                                     rocsparse_int*            cscColPtrA,
+                                     rocsparse_int*            cscRowIndA)
+{
+    return rocsparse_ddense2csc(
+        handle, m, n, descrA, A, lda, nnzPerCol, cscValA, cscColPtrA, cscRowIndA);
+}
+
+template <>
+rocsparse_status rocsparse_dense2csc(rocsparse_handle               handle,
+                                     rocsparse_int                  m,
+                                     rocsparse_int                  n,
+                                     const rocsparse_mat_descr      descrA,
+                                     const rocsparse_float_complex* A,
+                                     rocsparse_int                  lda,
+                                     const rocsparse_int*           nnzPerCol,
+                                     rocsparse_float_complex*       cscValA,
+                                     rocsparse_int*                 cscColPtrA,
+                                     rocsparse_int*                 cscRowIndA)
+{
+    return rocsparse_cdense2csc(
+        handle, m, n, descrA, A, lda, nnzPerCol, cscValA, cscColPtrA, cscRowIndA);
+}
+
+template <>
+rocsparse_status rocsparse_dense2csc(rocsparse_handle                handle,
+                                     rocsparse_int                   m,
+                                     rocsparse_int                   n,
+                                     const rocsparse_mat_descr       descrA,
+                                     const rocsparse_double_complex* A,
+                                     rocsparse_int                   lda,
+                                     const rocsparse_int*            nnzPerCol,
+                                     rocsparse_double_complex*       cscValA,
+                                     rocsparse_int*                  cscColPtrA,
+                                     rocsparse_int*                  cscRowIndA)
+{
+    return rocsparse_zdense2csc(
+        handle, m, n, descrA, A, lda, nnzPerCol, cscValA, cscColPtrA, cscRowIndA);
+}
+
 // csr2csc
 template <>
 rocsparse_status rocsparse_csr2csc(rocsparse_handle     handle,

@@ -21,36 +21,39 @@
 #
 # ########################################################################
 
-include: test_axpyi.yaml
-include: test_doti.yaml
-include: test_dotci.yaml
-include: test_gthr.yaml
-include: test_gthrz.yaml
-include: test_roti.yaml
-include: test_sctr.yaml
-include: test_coomv.yaml
-include: test_csrmv.yaml
-include: test_csrsv.yaml
-include: test_ellmv.yaml
-include: test_hybmv.yaml
-include: test_csrmm.yaml
-include: test_csrsm.yaml
-include: test_csrgemm.yaml
-include: test_csric0.yaml
-include: test_csrilu0.yaml
-include: test_nnz.yaml
-include: test_dense2csr.yaml
-include: test_dense2csc.yaml
-include: test_csr2coo.yaml
-include: test_csr2csc.yaml
-include: test_csr2ell.yaml
-include: test_csr2hyb.yaml
-include: test_coo2csr.yaml
-include: test_ell2csr.yaml
-include: test_hyb2csr.yaml
-include: test_identity.yaml
-include: test_csrsort.yaml
-include: test_cscsort.yaml
-include: test_coosort.yaml
-include: test_csricsv.yaml
-include: test_csrilusv.yaml
+---
+include: rocsparse_common.yaml
+include: known_bugs.yaml
+
+Tests:
+- name: dense2csc_bad_arg
+  category: pre_checkin
+  function: dense2csc_bad_arg
+  precision: *single_double_precisions_complex_real
+
+- name: dense2csc
+  category: quick
+  function: dense2csc
+  precision: *single_double_precisions_complex_real
+  M: [0, 3, 8, 13, 64, 256]
+  N: [0, 3, 8, 13, 64, 256]
+  denseld: [-8, 64, 512]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  
+- name: dense2csc
+  category: pre_checkin
+  function: dense2csc
+  precision: *single_double_precisions_complex_real
+  M: [-1, 0, 531, 1000]
+  N: [-3, 0, 241, 1000]
+  denseld: [100, 1000, 2000]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  
+- name: dense2csc
+  category: nightly
+  function: dense2csc
+  precision: *single_double_precisions_complex_real
+  M: [2000, 4000, 8000]
+  N: [2000, 4000]
+  denseld: [ 8000 ]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]

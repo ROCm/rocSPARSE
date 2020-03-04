@@ -469,6 +469,33 @@ rocsparse_status rocsparse_nnz(rocsparse_handle          handle,
                                rocsparse_int*            nnzPerRowColumn,
                                rocsparse_int*            nnzTotalDevHostPtr);
 
+// dense2csr
+
+template <typename T>
+rocsparse_status rocsparse_dense2csr(rocsparse_handle          handle,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr descrA,
+                                     const T*                  A,
+                                     rocsparse_int             lda,
+                                     const rocsparse_int*      nnzPerRow,
+                                     T*                        csrValA,
+                                     rocsparse_int*            csrRowPtrA,
+                                     rocsparse_int*            csrColIndA);
+
+// dense2csc
+template <typename T>
+rocsparse_status rocsparse_dense2csc(rocsparse_handle          handle,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr descrA,
+                                     const T*                  A,
+                                     rocsparse_int             lda,
+                                     const rocsparse_int*      nnzPerCol,
+                                     T*                        cscValA,
+                                     rocsparse_int*            cscColPtrA,
+                                     rocsparse_int*            cscRowIndA);
+
 // csr2csc
 template <typename T>
 rocsparse_status rocsparse_csr2csc(rocsparse_handle     handle,

@@ -1592,6 +1592,68 @@ rocsparse_status host_nnz(rocsparse_direction       dirA,
     return rocsparse_status_success;
 }
 
+template <rocsparse_direction DIRA, typename T>
+rocsparse_status host_dense2csx(rocsparse_int        m,
+                                rocsparse_int        n,
+                                rocsparse_index_base base,
+                                const T*             A,
+                                rocsparse_int        lda,
+                                const rocsparse_int* nnzPerRowColumn,
+                                T*                   csrValA,
+                                rocsparse_int*       csrRowColPtrA,
+                                rocsparse_int*       csrColRowIndA)
+{
+    static constexpr T s_zero = {};
+    rocsparse_int      len    = (rocsparse_direction_row == DIRA) ? m : n;
+    *csrRowColPtrA            = base;
+    for(rocsparse_int i = 0; i < len; ++i)
+    {
+        csrRowColPtrA[i + 1] = nnzPerRowColumn[i] + csrRowColPtrA[i];
+    }
+
+    switch(DIRA)
+    {
+    case rocsparse_direction_column:
+    {
+        for(rocsparse_int j = 0; j < n; ++j)
+        {
+            for(rocsparse_int i = 0; i < m; ++i)
+            {
+                if(A[j * lda + i] != s_zero)
+                {
+                    *csrValA++       = A[j * lda + i];
+                    *csrColRowIndA++ = i + base;
+                }
+            }
+        }
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_direction_row:
+    {
+        //
+        // Does not matter having an orthogonal traversal ... testing only.
+        // Otherwise, we would use csrRowPtrA to store the shifts.
+        // and once the job is done a simple memory move would reinitialize the csrRowPtrA to its initial state)
+        //
+        for(rocsparse_int i = 0; i < m; ++i)
+        {
+            for(rocsparse_int j = 0; j < n; ++j)
+            {
+                if(A[j * lda + i] != s_zero)
+                {
+                    *csrValA++       = A[j * lda + i];
+                    *csrColRowIndA++ = j + base;
+                }
+            }
+        }
+        return rocsparse_status_success;
+    }
+    }
+
+    return rocsparse_status_invalid_value;
+}
+
 inline void host_csr_to_coo(rocsparse_int                     M,
                             rocsparse_int                     nnz,
                             const std::vector<rocsparse_int>& csr_row_ptr,
