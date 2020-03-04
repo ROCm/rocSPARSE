@@ -147,6 +147,14 @@ Functions:
   rocsparse_dnnz: { function: nnz, <<: *double_precision }
   rocsparse_cnnz: { function: nnz, <<: *single_precision_complex }
   rocsparse_znnz: { function: nnz, <<: *double_precision_complex }
+  rocsparse_sdense2csr: { function: dense2csr, <<: *single_precision }
+  rocsparse_ddense2csr: { function: dense2csr, <<: *double_precision }
+  rocsparse_cdense2csr: { function: dense2csr, <<: *single_precision_complex }
+  rocsparse_zdense2csr: { function: dense2csr, <<: *double_precision_complex }
+  rocsparse_sdense2csc: { function: dense2csc, <<: *single_precision }
+  rocsparse_ddense2csc: { function: dense2csc, <<: *double_precision }
+  rocsparse_cdense2csc: { function: dense2csc, <<: *single_precision_complex }
+  rocsparse_zdense2csc: { function: dense2csc, <<: *double_precision_complex }
   rocsparse_csr2coo: { function: csr2coo }
   rocsparse_coo2csr: { function: coo2csr }
   rocsparse_scsr2csc: { function: csr2csc, <<: *single_precision }

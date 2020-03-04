@@ -177,6 +177,15 @@ constexpr double nnz_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_dir
            / 1e9;
 }
 
+template <rocsparse_direction DIRA, typename T>
+constexpr double dense2csx_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz)
+{
+    rocsparse_int L = (rocsparse_direction_row == DIRA) ? M : N;
+    return ((M * N) * sizeof(T) + 2 * (L + 1) * sizeof(rocsparse_int)
+            + nnz * (sizeof(T) + sizeof(rocsparse_int)))
+           / 1e9;
+}
+
 template <typename T>
 constexpr double csr2coo_gbyte_count(rocsparse_int M, rocsparse_int nnz)
 {

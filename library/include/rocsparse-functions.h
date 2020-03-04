@@ -4672,6 +4672,190 @@ rocsparse_status rocsparse_znnz(rocsparse_handle                handle,
 /**@}*/
 
 /*! \ingroup conv_module
+ *  \brief 
+ *  This function converts the matrix A in dense format into a sparse matrix in CSR format. 
+ *  All the parameters are assumed to have been pre-allocated by the user and the arrays are filled in based on nnzPerRow, which can be pre-computed with rocsparse_xnnz().
+ *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
+ *  \details
+ *  @param[in]
+ *  handle      handle to the rocsparse library context queue.
+ *
+ *  @param[in]
+ *  m 		number of rows of the dense matrix \p A.
+ *
+ *  @param[in]
+ *  n 		number of columns of the dense matrix \p A.
+ *
+ *  @param[in]
+ *  descrA 	the descriptor of the dense matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
+ *
+ *  @param[in]
+ *  A 		array of dimensions (\p lda, \p n)
+ *
+ *  @param[in]
+ *  lda 	leading dimension of dense array \p A.
+ *
+ *  @param[in]
+ *  nnzPerRow   array of size \p n containing the number of non-zero elements per row.
+ *  
+ *  @param[out]
+ *  csrValA 
+ *              array of nnz ( = \p csrRowPtrA[m] - \p csrRowPtrA[0] ) nonzero elements of matrix \p A.
+ *  @param[out]
+ *  csrRowPtrA
+ *              integer array of m+1 elements that contains the start of every row and the end of the last row plus one.
+ *  @param[out]
+ *  csrColIndA
+ * 		integer array of nnz ( = \p csrRowPtrA[m] - csrRowPtrA[0] ) column indices of the non-zero elements of matrix \p A.
+ *
+ *  \retval     rocsparse_status_success the operation completed successfully.
+ *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval     rocsparse_status_invalid_size \p m or \p n or \p lda is invalid.
+ *  \retval     rocsparse_status_invalid_pointer \p A or \p nnzPerRow or \p csrValA \p csrRowPtrA or \p csrColIndA
+ *              pointer is invalid.
+ *  \endcode
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sdense2csr(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      const rocsparse_mat_descr descrA,
+                                      const float*              A,
+                                      rocsparse_int             lda,
+                                      const rocsparse_int*      nnzPerRow,
+                                      float*                    csrValA,
+                                      rocsparse_int*            csrRowPtrA,
+                                      rocsparse_int*            csrColIndA);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ddense2csr(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      const rocsparse_mat_descr descrA,
+                                      const double*             A,
+                                      rocsparse_int             lda,
+                                      const rocsparse_int*      nnzPerRow,
+                                      double*                   csrValA,
+                                      rocsparse_int*            csrRowPtrA,
+                                      rocsparse_int*            csrColIndA);
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cdense2csr(rocsparse_handle               handle,
+                                      rocsparse_int                  m,
+                                      rocsparse_int                  n,
+                                      const rocsparse_mat_descr      descrA,
+                                      const rocsparse_float_complex* A,
+                                      rocsparse_int                  lda,
+                                      const rocsparse_int*           nnzPerRow,
+                                      rocsparse_float_complex*       csrValA,
+                                      rocsparse_int*                 csrRowPtrA,
+                                      rocsparse_int*                 csrColIndA);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zdense2csr(rocsparse_handle                handle,
+                                      rocsparse_int                   m,
+                                      rocsparse_int                   n,
+                                      const rocsparse_mat_descr       descrA,
+                                      const rocsparse_double_complex* A,
+                                      rocsparse_int                   lda,
+                                      const rocsparse_int*            nnzPerRow,
+                                      rocsparse_double_complex*       csrValA,
+                                      rocsparse_int*                  csrRowPtrA,
+                                      rocsparse_int*                  csrColIndA);
+
+/*! \ingroup conv_module
+ *  \brief 
+ * 
+ *  This function converts the matrix A in dense format into a sparse matrix in CSC format. 
+ *  All the parameters are assumed to have been pre-allocated by the user and the arrays are filled in based on nnzPerCol, which can be pre-computed with rocsparse_xnnz().
+ *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
+ * 
+ *  \details
+ *  @param[in]
+ *  handle      handle to the rocsparse library context queue.
+ *
+ *  @param[in]
+ *  m 		number of rows of the dense matrix \p A.
+ *
+ *  @param[in]
+ *  n 		number of columns of the dense matrix \p A.
+ *
+ *  @param[in]
+ *  descrA 	the descriptor of the dense matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
+ *
+ *  @param[in]
+ *  A 		array of dimensions (\p lda, \p n)
+ *
+ *  @param[in]
+ *  lda 	leading dimension of dense array \p A.
+ *
+ *  @param[in]
+ *  nnzPerCol   array of size \p n containing the number of non-zero elements per column.
+ *
+ *  @param[out]
+ *  cscValA 
+ *              array of nnz ( = \p cscColPtrA[m] - \p cscColPtrA[0] ) nonzero elements of matrix \p A.
+ *  @param[out]
+ *  cscColPtrA
+ *              integer array of m+1 elements that contains the start of every column and the end of the last column plus one.
+ *  @param[out]
+ *  cscRowIndA
+ * 		integer array of nnz ( = \p cscColPtrA[m] - cscColPtrA[0] ) column indices of the non-zero elements of matrix \p A.
+ *
+ *  \retval     rocsparse_status_success the operation completed successfully.
+ *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval     rocsparse_status_invalid_size \p m or \p n or \p lda is invalid.
+ *  \retval     rocsparse_status_invalid_pointer \p A or \p nnzPerCol or \p cscValA \p cscColPtrA or \p cscColIndA
+ *              pointer is invalid.
+ *  \endcode
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sdense2csc(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      const rocsparse_mat_descr descrA,
+                                      const float*              A,
+                                      rocsparse_int             lda,
+                                      const rocsparse_int*      nnzPerCol,
+                                      float*                    cscValA,
+                                      rocsparse_int*            cscColPtrA,
+                                      rocsparse_int*            cscRowIndA);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ddense2csc(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      const rocsparse_mat_descr descrA,
+                                      const double*             A,
+                                      rocsparse_int             lda,
+                                      const rocsparse_int*      nnzPerCol,
+                                      double*                   cscValA,
+                                      rocsparse_int*            cscColPtrA,
+                                      rocsparse_int*            cscRowIndA);
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cdense2csc(rocsparse_handle               handle,
+                                      rocsparse_int                  m,
+                                      rocsparse_int                  n,
+                                      const rocsparse_mat_descr      descrA,
+                                      const rocsparse_float_complex* A,
+                                      rocsparse_int                  lda,
+                                      const rocsparse_int*           nnzPerCol,
+                                      rocsparse_float_complex*       cscValA,
+                                      rocsparse_int*                 cscColPtrA,
+                                      rocsparse_int*                 cscRowIndA);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zdense2csc(rocsparse_handle                handle,
+                                      rocsparse_int                   m,
+                                      rocsparse_int                   n,
+                                      const rocsparse_mat_descr       descrA,
+                                      const rocsparse_double_complex* A,
+                                      rocsparse_int                   lda,
+                                      const rocsparse_int*            nnzPerCol,
+                                      rocsparse_double_complex*       cscValA,
+                                      rocsparse_int*                  cscColPtrA,
+                                      rocsparse_int*                  cscRowIndA);
+
+/*! \ingroup conv_module
  *  \brief Convert a sparse CSR matrix into a sparse COO matrix
  *
  *  \details
