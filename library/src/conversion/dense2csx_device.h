@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,53 +26,149 @@
 
 #include "handle.h"
 #include <hip/hip_runtime.h>
+#include <iostream>
 
-template <rocsparse_int DIM_X, typename T>
-__global__ void dense2csc_kernel(rocsparse_int  base,
-                                 rocsparse_int  m,
-                                 rocsparse_int  n,
-                                 const T*       A,
-                                 rocsparse_int  lda,
-                                 T*             cscValA,
-                                 rocsparse_int* cscColPtrA,
-                                 rocsparse_int* cscRowIndA)
+template <rocsparse_int NUMROWS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
+static __global__ void dense2csr_kernel(rocsparse_int base,
+                                        rocsparse_int m,
+                                        rocsparse_int n,
+                                        const T* __restrict__ a,
+                                        rocsparse_int lda,
+                                        T* __restrict__ csr_val,
+                                        rocsparse_int* __restrict__ csr_row_ptr,
+                                        rocsparse_int* __restrict__ csr_col_ind)
 {
-    rocsparse_int col = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
-    if(col < n)
+    rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE, lane_index = hipThreadIdx_x % WF_SIZE;
+
+    const uint64_t      filter    = 0xffffffffffffffff >> (63 - lane_index);
+    const rocsparse_int row_index = NUMROWS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
+
+    if(row_index < m)
     {
-        rocsparse_int shift = cscColPtrA[col] - base;
-        for(rocsparse_int row = 0; row < m; ++row)
+        rocsparse_int shift = csr_row_ptr[row_index] - base;
+        //
+        // The warp handles the entire row.
+        //
+        for(rocsparse_int column_index = lane_index; column_index < n; column_index += WF_SIZE)
         {
-            if(A[row + col * lda] != 0)
+            //
+            // Synchronize for cache considerations.
+            //
+            __syncthreads();
+
+            //
+            // Get value.
+            //
+            const T value = a[row_index + column_index * lda];
+
+            //
+            // Predicate.
+            //
+            const bool predicate = value != 0;
+
+            //
+            // Mask of the wavefront.
+            //
+            const uint64_t wavefront_mask = __ballot(predicate);
+
+            //
+            // Get the number of previous non-zero in the row.
+            //
+            const uint64_t count_previous_nnzs = __popcll(wavefront_mask & filter);
+
+            if(predicate)
             {
-                cscValA[shift]      = A[row + col * lda];
-                cscRowIndA[shift++] = row + base;
+                //
+                // Calculate local index.
+                //
+                const uint64_t local_index_in_warp = count_previous_nnzs - 1;
+
+                //
+                // Populate the sparse matrix.
+                //
+                csr_val[shift + local_index_in_warp]     = value;
+                csr_col_ind[shift + local_index_in_warp] = column_index + base;
             }
+
+            //
+            // Broadcast the update of the shift to all 64 threads for the next set of 64 columns.
+            // Choose the last lane since that it contains the size of the sparse row (even if its predicate is false).
+            //
+            shift += __shfl(static_cast<int>(count_previous_nnzs), WF_SIZE - 1);
         }
     }
 }
 
-template <rocsparse_int DIM_X, typename T>
-__global__ void dense2csr_kernel(rocsparse_int base,
-                                 rocsparse_int m,
-                                 rocsparse_int n,
-                                 const T* __restrict__ A,
-                                 rocsparse_int lda,
-                                 T* __restrict__ csrValA,
-                                 rocsparse_int* __restrict__ csrRowPtrA,
-                                 rocsparse_int* __restrict__ csrColIndA)
+template <rocsparse_int NUMCOLUMNS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
+static __global__ void dense2csc_kernel(rocsparse_int base,
+                                        rocsparse_int m,
+                                        rocsparse_int n,
+                                        const T* __restrict__ a,
+                                        rocsparse_int lda,
+                                        T* __restrict__ csc_val,
+                                        rocsparse_int* __restrict__ csc_col_ptr,
+                                        rocsparse_int* __restrict__ csc_row_ind)
 {
-    rocsparse_int row = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
-    if(row < m)
+    rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE, lane_index = hipThreadIdx_x % WF_SIZE;
+
+    const uint64_t      filter       = 0xffffffffffffffff >> (63 - lane_index);
+    const rocsparse_int column_index = NUMCOLUMNS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
+
+    if(column_index < n)
     {
-        rocsparse_int shift = csrRowPtrA[row] - base;
-        for(rocsparse_int col = 0; col < n; ++col)
+
+        rocsparse_int shift = csc_col_ptr[column_index] - base;
+        //
+        // The warp handles the entire column.
+        //
+        a += column_index * lda;
+        for(rocsparse_int row_index = lane_index; row_index < m; row_index += WF_SIZE)
         {
-            if(A[row + col * lda] != 0)
+
+            //
+            // Get value.
+            //
+            const T value = a[row_index];
+
+            //
+            // Predicate.
+            //
+            const bool predicate = value != 0;
+
+            //
+            // Mask of the wavefront.
+            //
+            const uint64_t wavefront_mask = __ballot(predicate);
+
+            //
+            // Get the number of previous non-zero in the row.
+            //
+            const uint64_t count_previous_nnzs = __popcll(wavefront_mask & filter);
+
+            //
+            // Synchronize for cache considerations.
+            //
+            __syncthreads();
+
+            if(predicate)
             {
-                csrValA[shift]      = A[row + col * lda];
-                csrColIndA[shift++] = col + base;
+                //
+                // Calculate local index.
+                //
+                const uint64_t local_index = count_previous_nnzs - 1;
+
+                //
+                // Populate the sparse matrix.
+                //
+                csc_val[shift + local_index]     = value;
+                csc_row_ind[shift + local_index] = row_index + base;
             }
+
+            //
+            // Broadcast the update of the shift to all 64 threads for the next set of 64 columns.
+            // Choose the last lane since that it contains the size of the sparse row (even if its predicate is false).
+            //
+            shift += __shfl(static_cast<int>(count_previous_nnzs), WF_SIZE - 1);
         }
     }
 }
