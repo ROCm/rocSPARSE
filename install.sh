@@ -18,6 +18,7 @@ function display_help()
   echo "    [-r]--relocatable] create a package to support relocatable ROCm"
   echo "    [-g|--debug] -DCMAKE_BUILD_TYPE=Debug (default is =Release)"
   echo "    [--hip-clang] build library for amdgpu backend using hip-clang"
+  echo "    [--static] build static library"
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
@@ -217,6 +218,7 @@ install_dependencies=false
 build_clients=false
 build_release=true
 build_hip_clang=false
+build_static=false
 install_prefix=rocsparse-install
 rocm_path=/opt/rocm
 build_relocatable=false
@@ -228,7 +230,7 @@ build_relocatable=false
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,relocatable --options hicdgr -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable --options hicdgr -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -264,6 +266,9 @@ while true; do
         shift ;;
     --hip-clang)
         build_hip_clang=true
+        shift ;;
+    --static)
+        build_static=true
         shift ;;
     --prefix)
         install_prefix=${2}
@@ -347,6 +352,11 @@ pushd .
   else
     mkdir -p ${build_dir}/debug/clients && cd ${build_dir}/debug
     cmake_common_options="${cmake_common_options} -DCMAKE_BUILD_TYPE=Debug"
+  fi
+
+  # library type
+  if [[ "${build_static}" == true ]]; then
+    cmake_common_options="{cmake_common_options} -DBUILD_SHARED_LIBS=OFF"
   fi
 
   # clients
