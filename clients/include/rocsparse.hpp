@@ -460,14 +460,14 @@ rocsparse_status rocsparse_csrilu0(rocsparse_handle          handle,
 // nnz
 template <typename T>
 rocsparse_status rocsparse_nnz(rocsparse_handle          handle,
-                               rocsparse_direction       dirA,
+                               rocsparse_direction       dir,
                                rocsparse_int             m,
                                rocsparse_int             n,
-                               const rocsparse_mat_descr descrA,
+                               const rocsparse_mat_descr descr,
                                const T*                  A,
                                rocsparse_int             lda,
-                               rocsparse_int*            nnzPerRowColumn,
-                               rocsparse_int*            nnzTotalDevHostPtr);
+                               rocsparse_int*            nnz_per_row_columns,
+                               rocsparse_int*            nnz_total_dev_host_ptr);
 
 // dense2csr
 
@@ -475,26 +475,50 @@ template <typename T>
 rocsparse_status rocsparse_dense2csr(rocsparse_handle          handle,
                                      rocsparse_int             m,
                                      rocsparse_int             n,
-                                     const rocsparse_mat_descr descrA,
+                                     const rocsparse_mat_descr descr,
                                      const T*                  A,
                                      rocsparse_int             lda,
-                                     const rocsparse_int*      nnzPerRow,
-                                     T*                        csrValA,
-                                     rocsparse_int*            csrRowPtrA,
-                                     rocsparse_int*            csrColIndA);
+                                     const rocsparse_int*      nnz_per_rows,
+                                     T*                        csr_val,
+                                     rocsparse_int*            csr_row_ptr,
+                                     rocsparse_int*            csr_col_ind);
 
 // dense2csc
 template <typename T>
 rocsparse_status rocsparse_dense2csc(rocsparse_handle          handle,
                                      rocsparse_int             m,
                                      rocsparse_int             n,
-                                     const rocsparse_mat_descr descrA,
+                                     const rocsparse_mat_descr descr,
                                      const T*                  A,
                                      rocsparse_int             lda,
-                                     const rocsparse_int*      nnzPerCol,
-                                     T*                        cscValA,
-                                     rocsparse_int*            cscColPtrA,
-                                     rocsparse_int*            cscRowIndA);
+                                     const rocsparse_int*      nnz_per_columns,
+                                     T*                        csc_val,
+                                     rocsparse_int*            csc_col_ptr,
+                                     rocsparse_int*            csc_row_ind);
+
+// csr2dense
+template <typename T>
+rocsparse_status rocsparse_csr2dense(rocsparse_handle          handle,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr descr,
+                                     const T*                  csr_val,
+                                     const rocsparse_int*      csr_row_ptr,
+                                     const rocsparse_int*      csr_col_ind,
+                                     T*                        A,
+                                     rocsparse_int             lda);
+
+// csc2dense
+template <typename T>
+rocsparse_status rocsparse_csc2dense(rocsparse_handle          handle,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr descr,
+                                     const T*                  csc_val,
+                                     const rocsparse_int*      csc_col_ptr,
+                                     const rocsparse_int*      csc_row_ind,
+                                     T*                        A,
+                                     rocsparse_int             lda);
 
 // csr2csc
 template <typename T>

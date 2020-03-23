@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,8 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef TESTING_DENSE2CSX_HPP
-#define TESTING_DENSE2CSX_HPP
+#ifndef TESTING_CSX2DENSE_HPP
+#define TESTING_CSX2DENSE_HPP
 
 #include <rocsparse.hpp>
 
@@ -40,7 +40,7 @@
 #include <thread>
 
 template <rocsparse_direction DIRA, typename T, typename FUNC>
-void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
+void testing_csx2dense_bad_arg(const Arguments& arg, FUNC& csx2dense)
 {
 
     static constexpr size_t              safe_size = 100;
@@ -51,159 +51,134 @@ void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
     rocsparse_local_handle               handle;
 
     device_vector<T>             d_dense_val(safe_size);
-    device_vector<rocsparse_int> d_nnz_per_row_columns(2);
     device_vector<rocsparse_int> d_csx_row_col_ptr(2);
     device_vector<rocsparse_int> d_csx_col_row_ind(2);
     device_vector<T>             d_csx_val(2);
 
-    if(!d_dense_val || !d_nnz_per_row_columns || !d_csx_row_col_ptr || !d_csx_col_row_ind
-       || !d_csx_val)
+    if(!d_dense_val || !d_csx_row_col_ptr || !d_csx_col_row_ind || !d_csx_val)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
-    rocsparse_local_mat_descr descr;
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, rocsparse_index_base_zero));
-
+    rocsparse_mat_descr descr = nullptr;
+    rocsparse_create_mat_descr(&descr);
     //
     // Testing invalid handle.
     //
     EXPECT_ROCSPARSE_STATUS(
-        dense2csx(
-            nullptr, 0, 0, nullptr, (const T*)nullptr, 0, nullptr, (T*)nullptr, nullptr, nullptr),
+        csx2dense(nullptr, 0, 0, nullptr, (const T*)nullptr, nullptr, nullptr, (T*)nullptr, 0),
         rocsparse_status_invalid_handle);
 
     //
     // Testing invalid pointers.
     //
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
+    EXPECT_ROCSPARSE_STATUS(csx2dense(handle,
                                       M,
                                       N,
                                       nullptr,
-                                      (const T*)d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
+                                      (const T*)d_csx_val,
                                       d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
+                                      d_csx_col_row_ind,
+                                      (T*)d_dense_val,
+                                      LD),
                             rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
+    EXPECT_ROCSPARSE_STATUS(csx2dense(handle,
                                       M,
                                       N,
                                       descr,
                                       (const T*)nullptr,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
                                       d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
+                                      d_csx_col_row_ind,
+                                      (T*)d_dense_val,
+                                      LD),
                             rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
+    EXPECT_ROCSPARSE_STATUS(csx2dense(handle,
                                       M,
                                       N,
                                       descr,
-                                      (const T*)d_dense_val,
-                                      LD,
+                                      (const T*)d_csx_val,
                                       nullptr,
-                                      (T*)d_csx_val,
-                                      d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
+                                      d_csx_col_row_ind,
+                                      (T*)d_dense_val,
+                                      LD),
                             rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
+    EXPECT_ROCSPARSE_STATUS(csx2dense(handle,
                                       M,
                                       N,
                                       descr,
-                                      (const T*)d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
+                                      (const T*)d_csx_val,
+                                      d_csx_row_col_ptr,
+                                      nullptr,
+                                      (T*)d_dense_val,
+                                      LD),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(csx2dense(handle,
+                                      M,
+                                      N,
+                                      descr,
+                                      (const T*)d_csx_val,
+                                      d_csx_row_col_ptr,
+                                      d_csx_col_row_ind,
                                       (T*)nullptr,
-                                      d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
-                                      M,
-                                      N,
-                                      descr,
-                                      (const T*)d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
-                                      nullptr,
-                                      d_csx_col_row_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
-                                      M,
-                                      N,
-                                      descr,
-                                      (const T*)d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
-                                      d_csx_row_col_ptr,
-                                      nullptr),
+                                      LD),
                             rocsparse_status_invalid_pointer);
 
     //
     // Testing invalid size on M
     //
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
+    EXPECT_ROCSPARSE_STATUS(csx2dense(handle,
                                       -1,
                                       N,
                                       descr,
-                                      (const T*)d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
+                                      (const T*)d_csx_val,
                                       d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
+                                      d_csx_col_row_ind,
+                                      (T*)d_dense_val,
+                                      LD),
                             rocsparse_status_invalid_size);
     //
     // Testing invalid size on N
     //
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
+    EXPECT_ROCSPARSE_STATUS(csx2dense(handle,
                                       M,
                                       -1,
                                       descr,
-                                      (const T*)d_dense_val,
-                                      LD,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
+                                      (const T*)d_csx_val,
                                       d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
+                                      d_csx_col_row_ind,
+                                      (T*)d_dense_val,
+                                      LD),
                             rocsparse_status_invalid_size);
     //
     // Testing invalid size on LD
     //
-    EXPECT_ROCSPARSE_STATUS(dense2csx(handle,
+    EXPECT_ROCSPARSE_STATUS(csx2dense(handle,
                                       M,
-                                      N,
+                                      -1,
                                       descr,
-                                      (const T*)d_dense_val,
-                                      M - 1,
-                                      d_nnz_per_row_columns,
-                                      (T*)d_csx_val,
+                                      (const T*)d_csx_val,
                                       d_csx_row_col_ptr,
-                                      d_csx_col_row_ind),
+                                      d_csx_col_row_ind,
+                                      (T*)d_dense_val,
+                                      M - 1),
                             rocsparse_status_invalid_size);
+    rocsparse_destroy_mat_descr(descr);
 }
 
-template <rocsparse_direction DIRA, typename T, typename FUNC>
-void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
+template <rocsparse_direction DIRA, typename T, typename FUNC1, typename FUNC2>
+void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
 
 {
-    static constexpr rocsparse_direction direction = DIRA;
-
-    rocsparse_int        M      = arg.M;
-    rocsparse_int        N      = arg.N;
-    rocsparse_int        LD     = arg.denseld;
-    rocsparse_index_base baseA  = arg.baseA;
-    rocsparse_int        DIMDIR = (rocsparse_direction_row == DIRA) ? M : N;
-
+    rocsparse_int          M      = arg.M;
+    rocsparse_int          N      = arg.N;
+    rocsparse_int          LD     = arg.denseld;
+    rocsparse_int          DIMDIR = (rocsparse_direction_row == DIRA) ? M : N;
     rocsparse_local_handle handle;
+    rocsparse_mat_descr    descr;
+    rocsparse_create_mat_descr(&descr);
+    rocsparse_set_mat_index_base(descr, arg.baseA);
 
-    rocsparse_local_mat_descr descr;
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, baseA));
     //
     // Argument sanity check before allocating invalid memory
     //
@@ -214,8 +189,7 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
                                                : rocsparse_status_invalid_size;
 
         EXPECT_ROCSPARSE_STATUS(
-            dense2csx(
-                handle, M, N, descr, (const T*)nullptr, LD, nullptr, (T*)nullptr, nullptr, nullptr),
+            csx2dense(handle, M, N, descr, (const T*)nullptr, nullptr, nullptr, (T*)nullptr, LD),
             expected_status);
         return;
     }
@@ -224,11 +198,12 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
     // Allocate memory.
     //
     host_vector<T>   h_dense_val(LD * N);
+    host_vector<T>   h_dense_val_ref(LD * N);
     device_vector<T> d_dense_val(LD * N);
 
-    host_vector<rocsparse_int>   h_nnz_per_row_columns(DIMDIR);
-    device_vector<rocsparse_int> d_nnz_per_row_columns(DIMDIR);
-    if(!d_nnz_per_row_columns || !d_dense_val || !h_nnz_per_row_columns || !h_dense_val)
+    host_vector<rocsparse_int>   h_nnzPerRowColumn(DIMDIR);
+    device_vector<rocsparse_int> d_nnzPerRowColumn(DIMDIR);
+    if(!d_nnzPerRowColumn || !d_dense_val || !h_nnzPerRowColumn || !h_dense_val)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -251,7 +226,14 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         {
             for(rocsparse_int j = 0; j < N; ++j)
             {
-                h_dense_val[j * LD + i] = -1;
+                h_dense_val_ref[j * LD + i] = -1;
+            }
+        }
+        for(rocsparse_int i = 0; i < LD; ++i)
+        {
+            for(rocsparse_int j = 0; j < N; ++j)
+            {
+                h_dense_val[j * LD + i] = -2;
             }
         }
 
@@ -262,7 +244,7 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         {
             for(rocsparse_int j = 0; j < N; ++j)
             {
-                h_dense_val[j * LD + i] = random_generator<T>(0, 4);
+                h_dense_val_ref[j * LD + i] = random_generator<T>(0, 4) == 0 ? 1 : 0;
             }
         }
     }
@@ -270,18 +252,19 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
     //
     // Transfer.
     //
-    CHECK_HIP_ERROR(hipMemcpy(d_dense_val, h_dense_val, sizeof(T) * LD * N, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(
+        hipMemcpy(d_dense_val, h_dense_val_ref, sizeof(T) * LD * N, hipMemcpyHostToDevice));
 
     rocsparse_int nnz;
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
     CHECK_ROCSPARSE_ERROR(rocsparse_nnz(
-        handle, direction, M, N, descr, (const T*)d_dense_val, LD, d_nnz_per_row_columns, &nnz));
+        handle, DIRA, M, N, descr, (const T*)d_dense_val, LD, d_nnzPerRowColumn, &nnz));
 
     //
     // Transfer.
     //
-    CHECK_HIP_ERROR(hipMemcpy(h_nnz_per_row_columns,
-                              d_nnz_per_row_columns,
+    CHECK_HIP_ERROR(hipMemcpy(h_nnzPerRowColumn,
+                              d_nnzPerRowColumn,
                               sizeof(rocsparse_int) * DIMDIR,
                               hipMemcpyDeviceToHost));
 
@@ -295,61 +278,71 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
     }
 
     host_vector<rocsparse_int> cpu_csx_row_col_ptr(DIMDIR + 1);
-    host_vector<T>             cpu_csx_val(nnz);
-    host_vector<rocsparse_int> cpu_csx_col_row_ind(nnz);
+    host_vector<T>             cpu_csx_val(std::max(nnz, 1));
+    host_vector<rocsparse_int> cpu_csx_col_row_ind(std::max(nnz, 1));
     if(!cpu_csx_row_col_ptr || !cpu_csx_val || !cpu_csx_col_row_ind)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
+    //
+    // Convert the dense matrix to a compressed sparse matrix.
+    //
+    CHECK_ROCSPARSE_ERROR(dense2csx(handle,
+                                    M,
+                                    N,
+                                    descr,
+                                    (const T*)d_dense_val,
+                                    LD,
+                                    d_nnzPerRowColumn,
+                                    d_csx_val,
+                                    d_csx_row_col_ptr,
+                                    d_csx_col_row_ind));
+
+    //
+    // Copy on host.
+    //
+    CHECK_HIP_ERROR(
+        hipMemcpy(cpu_csx_val, d_csx_val, sizeof(T) * std::max(nnz, 1), hipMemcpyDeviceToHost));
+
+    CHECK_HIP_ERROR(hipMemcpy(cpu_csx_row_col_ptr,
+                              d_csx_row_col_ptr,
+                              sizeof(rocsparse_int) * (DIMDIR + 1),
+                              hipMemcpyDeviceToHost));
+
+    CHECK_HIP_ERROR(hipMemcpy(cpu_csx_col_row_ind,
+                              d_csx_col_row_ind,
+                              sizeof(rocsparse_int) * std::max(nnz, 1),
+                              hipMemcpyDeviceToHost));
+
     if(arg.unit_check)
     {
-
-        //
-        // Compute the reference host first.
-        //
-
-        host_dense2csx<DIRA, T>(M,
+        CHECK_HIP_ERROR(
+            hipMemcpy(d_dense_val, h_dense_val, sizeof(T) * LD * N, hipMemcpyHostToDevice));
+        host_csx2dense<DIRA, T>(M,
                                 N,
                                 rocsparse_get_mat_index_base(descr),
-                                (const T*)h_dense_val,
-                                LD,
-                                (const rocsparse_int*)h_nnz_per_row_columns,
-                                (T*)cpu_csx_val,
+                                (const T*)cpu_csx_val,
                                 cpu_csx_row_col_ptr,
-                                cpu_csx_col_row_ind);
+                                cpu_csx_col_row_ind,
+                                (T*)h_dense_val,
+                                LD);
 
-        CHECK_ROCSPARSE_ERROR(dense2csx(handle,
+        CHECK_ROCSPARSE_ERROR(csx2dense(handle,
                                         M,
                                         N,
                                         descr,
-                                        (const T*)d_dense_val,
-                                        LD,
-                                        d_nnz_per_row_columns,
-                                        (T*)d_csx_val,
-                                        (rocsparse_int*)d_csx_row_col_ptr,
-                                        (rocsparse_int*)d_csx_col_row_ind));
+                                        (const T*)d_csx_val,
+                                        d_csx_row_col_ptr,
+                                        d_csx_col_row_ind,
+                                        (T*)d_dense_val,
+                                        LD));
 
-        void* buffer
-            = malloc(std::max(sizeof(T), sizeof(rocsparse_int)) * std::max(DIMDIR + 1, nnz));
-        //
-        // Transfer and check results.
-        //
-        CHECK_HIP_ERROR(hipMemcpy(buffer, d_csx_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
-        unit_check_general(1, nnz, 1, (T*)cpu_csx_val, (T*)buffer);
-        CHECK_HIP_ERROR(hipMemcpy(
-            buffer, d_csx_col_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
-        unit_check_general(1, nnz, 1, (rocsparse_int*)cpu_csx_col_row_ind, (rocsparse_int*)buffer);
-
-        CHECK_HIP_ERROR(hipMemcpy(buffer,
-                                  d_csx_row_col_ptr,
-                                  sizeof(rocsparse_int) * (DIMDIR + 1),
-                                  hipMemcpyDeviceToHost));
-
-        unit_check_general(
-            1, (DIMDIR + 1), 1, (rocsparse_int*)cpu_csx_row_col_ptr, (rocsparse_int*)buffer);
-
+        void* buffer = malloc(sizeof(T) * LD * N);
+        CHECK_HIP_ERROR(hipMemcpy(buffer, d_dense_val, sizeof(T) * LD * N, hipMemcpyDeviceToHost));
+        unit_check_general(M, N, LD, (T*)h_dense_val, (T*)buffer);
+        unit_check_general(M, N, LD, (T*)h_dense_val, (T*)h_dense_val_ref);
         free(buffer);
         buffer = nullptr;
     }
@@ -362,19 +355,18 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         //
         // Warm-up
         //
-
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(dense2csx(handle,
+
+            CHECK_ROCSPARSE_ERROR(csx2dense(handle,
                                             M,
                                             N,
                                             descr,
-                                            (const T*)d_dense_val,
-                                            LD,
-                                            d_nnz_per_row_columns,
-                                            (T*)d_csx_val,
+                                            (const T*)d_csx_val,
                                             d_csx_row_col_ptr,
-                                            d_csx_col_row_ind));
+                                            d_csx_col_row_ind,
+                                            (T*)d_dense_val,
+                                            LD));
         }
 
         double gpu_time_used = get_time_us();
@@ -384,21 +376,20 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
             //
             for(int iter = 0; iter < number_hot_calls; ++iter)
             {
-                CHECK_ROCSPARSE_ERROR(dense2csx(handle,
+                CHECK_ROCSPARSE_ERROR(csx2dense(handle,
                                                 M,
                                                 N,
                                                 descr,
-                                                (const T*)d_dense_val,
-                                                LD,
-                                                d_nnz_per_row_columns,
-                                                (T*)d_csx_val,
+                                                (const T*)d_csx_val,
                                                 d_csx_row_col_ptr,
-                                                d_csx_col_row_ind));
+                                                d_csx_col_row_ind,
+                                                (T*)d_dense_val,
+                                                LD));
             }
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = dense2csx_gbyte_count<DIRA, T>(M, N, nnz) / gpu_time_used * 1e6;
+        double gpu_gbyte = csx2dense_gbyte_count<DIRA, T>(M, N, nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
@@ -427,6 +418,11 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
 	  << std::endl;
         // clang-format on
     }
+
+    //
+    // Destroy the matrix descriptor.
+    //
+    rocsparse_destroy_mat_descr(descr);
 }
 
-#endif // TESTING_DENSE2CSX_HPP
+#endif // TESTING_CSX2DENSE_HPP

@@ -1555,14 +1555,14 @@ rocsparse_status host_nnz(rocsparse_direction       dirA,
                           const rocsparse_mat_descr descrA,
                           const T*                  A,
                           rocsparse_int             lda,
-                          rocsparse_int*            nnzPerRowColumn,
-                          rocsparse_int*            nnzTotalDevHostPtr)
+                          rocsparse_int*            nnz_per_row_columns,
+                          rocsparse_int*            nnz_total_dev_host_ptr)
 {
 
     rocsparse_int mn = (dirA == rocsparse_direction_row) ? m : n;
     for(rocsparse_int j = 0; j < mn; ++j)
     {
-        nnzPerRowColumn[j] = 0;
+        nnz_per_row_columns[j] = 0;
     }
 
     for(rocsparse_int j = 0; j < n; ++j)
@@ -1573,20 +1573,20 @@ rocsparse_status host_nnz(rocsparse_direction       dirA,
             {
                 if(dirA == rocsparse_direction_row)
                 {
-                    nnzPerRowColumn[i] += 1;
+                    nnz_per_row_columns[i] += 1;
                 }
                 else
                 {
-                    nnzPerRowColumn[j] += 1;
+                    nnz_per_row_columns[j] += 1;
                 }
             }
         }
     }
 
-    nnzTotalDevHostPtr[0] = 0;
+    nnz_total_dev_host_ptr[0] = 0;
     for(rocsparse_int j = 0; j < mn; ++j)
     {
-        nnzTotalDevHostPtr[0] += nnzPerRowColumn[j];
+        nnz_total_dev_host_ptr[0] += nnz_per_row_columns[j];
     }
 
     return rocsparse_status_success;
@@ -1597,18 +1597,18 @@ rocsparse_status host_dense2csx(rocsparse_int        m,
                                 rocsparse_int        n,
                                 rocsparse_index_base base,
                                 const T*             A,
-                                rocsparse_int        lda,
-                                const rocsparse_int* nnzPerRowColumn,
-                                T*                   csrValA,
-                                rocsparse_int*       csrRowColPtrA,
-                                rocsparse_int*       csrColRowIndA)
+                                rocsparse_int        ld,
+                                const rocsparse_int* nnz_per_row_columns,
+                                T*                   csx_val,
+                                rocsparse_int*       csx_row_col_ptr,
+                                rocsparse_int*       csx_col_row_ind)
 {
     static constexpr T s_zero = {};
     rocsparse_int      len    = (rocsparse_direction_row == DIRA) ? m : n;
-    *csrRowColPtrA            = base;
+    *csx_row_col_ptr          = base;
     for(rocsparse_int i = 0; i < len; ++i)
     {
-        csrRowColPtrA[i + 1] = nnzPerRowColumn[i] + csrRowColPtrA[i];
+        csx_row_col_ptr[i + 1] = nnz_per_row_columns[i] + csx_row_col_ptr[i];
     }
 
     switch(DIRA)
@@ -1619,10 +1619,10 @@ rocsparse_status host_dense2csx(rocsparse_int        m,
         {
             for(rocsparse_int i = 0; i < m; ++i)
             {
-                if(A[j * lda + i] != s_zero)
+                if(A[j * ld + i] != s_zero)
                 {
-                    *csrValA++       = A[j * lda + i];
-                    *csrColRowIndA++ = i + base;
+                    *csx_val++         = A[j * ld + i];
+                    *csx_col_row_ind++ = i + base;
                 }
             }
         }
@@ -1633,18 +1633,72 @@ rocsparse_status host_dense2csx(rocsparse_int        m,
     {
         //
         // Does not matter having an orthogonal traversal ... testing only.
-        // Otherwise, we would use csrRowPtrA to store the shifts.
-        // and once the job is done a simple memory move would reinitialize the csrRowPtrA to its initial state)
+        // Otherwise, we would use csxRowPtrA to store the shifts.
+        // and once the job is done a simple memory move would reinitialize the csxRowPtrA to its initial state)
         //
         for(rocsparse_int i = 0; i < m; ++i)
         {
             for(rocsparse_int j = 0; j < n; ++j)
             {
-                if(A[j * lda + i] != s_zero)
+                if(A[j * ld + i] != s_zero)
                 {
-                    *csrValA++       = A[j * lda + i];
-                    *csrColRowIndA++ = j + base;
+                    *csx_val++         = A[j * ld + i];
+                    *csx_col_row_ind++ = j + base;
                 }
+            }
+        }
+        return rocsparse_status_success;
+    }
+    }
+
+    return rocsparse_status_invalid_value;
+}
+
+template <rocsparse_direction DIRA, typename T>
+rocsparse_status host_csx2dense(rocsparse_int        m,
+                                rocsparse_int        n,
+                                rocsparse_index_base base,
+                                const T*             csx_val,
+                                const rocsparse_int* csx_row_col_ptr,
+                                const rocsparse_int* csx_col_row_ind,
+                                T*                   A,
+                                rocsparse_int        ld)
+{
+    static constexpr T s_zero = {};
+    switch(DIRA)
+    {
+    case rocsparse_direction_column:
+    {
+        static constexpr T s_zero = {};
+        for(rocsparse_int col = 0; col < n; ++col)
+        {
+            for(rocsparse_int row = 0; row < m; ++row)
+            {
+                A[row + ld * col] = s_zero;
+            }
+            const rocsparse_int bound = csx_row_col_ptr[col + 1] - base;
+            for(rocsparse_int at = csx_row_col_ptr[col] - base; at < bound; ++at)
+            {
+                A[(csx_col_row_ind[at] - base) + ld * col] = csx_val[at];
+            }
+        }
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_direction_row:
+    {
+        static constexpr T s_zero = {};
+        for(rocsparse_int row = 0; row < m; ++row)
+        {
+            for(rocsparse_int col = 0; col < n; ++col)
+            {
+                A[col * ld + row] = s_zero;
+            }
+
+            const rocsparse_int bound = csx_row_col_ptr[row + 1] - base;
+            for(rocsparse_int at = csx_row_col_ptr[row] - base; at < bound; ++at)
+            {
+                A[(csx_col_row_ind[at] - base) * ld + row] = csx_val[at];
             }
         }
         return rocsparse_status_success;

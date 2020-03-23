@@ -27,8 +27,8 @@ rocsparse_status rocsparse_nnz_kernel_row(rocsparse_handle handle,
                                           rocsparse_int    m,
                                           rocsparse_int    n,
                                           const T*         A,
-                                          rocsparse_int    lda,
-                                          rocsparse_int*   nnzPerRow)
+                                          rocsparse_int    ld,
+                                          rocsparse_int*   nnz_per_rows)
 {
 
     hipStream_t stream = handle->stream;
@@ -48,8 +48,8 @@ rocsparse_status rocsparse_nnz_kernel_row(rocsparse_handle handle,
                            m,
                            n,
                            A,
-                           lda,
-                           nnzPerRow);
+                           ld,
+                           nnz_per_rows);
         return rocsparse_status_success;
     }
 }
@@ -59,8 +59,8 @@ rocsparse_status rocsparse_nnz_kernel_col(rocsparse_handle handle,
                                           rocsparse_int    m,
                                           rocsparse_int    n,
                                           const T*         A,
-                                          rocsparse_int    lda,
-                                          rocsparse_int*   nnzPerColumn)
+                                          rocsparse_int    ld,
+                                          rocsparse_int*   nnz_per_columns)
 {
 
     hipStream_t stream = handle->stream;
@@ -77,20 +77,20 @@ rocsparse_status rocsparse_nnz_kernel_col(rocsparse_handle handle,
                            m,
                            n,
                            A,
-                           lda,
-                           nnzPerColumn);
+                           ld,
+                           nnz_per_columns);
     }
     return rocsparse_status_success;
 }
 
 template <typename T>
 rocsparse_status rocsparse_nnz_template(rocsparse_handle    handle,
-                                        rocsparse_direction dirA,
+                                        rocsparse_direction dir,
                                         rocsparse_int       m,
                                         rocsparse_int       n,
                                         const T*            A,
-                                        rocsparse_int       lda,
-                                        rocsparse_int*      nnzPerRowColumn)
+                                        rocsparse_int       ld,
+                                        rocsparse_int*      nnz_per_row_columns)
 {
 
     if(0 == m || 0 == n)
@@ -100,18 +100,18 @@ rocsparse_status rocsparse_nnz_template(rocsparse_handle    handle,
 
     rocsparse_status status = rocsparse_status_invalid_value;
 
-    switch(dirA)
+    switch(dir)
     {
 
     case rocsparse_direction_row:
     {
-        status = rocsparse_nnz_kernel_row(handle, m, n, A, lda, nnzPerRowColumn);
+        status = rocsparse_nnz_kernel_row(handle, m, n, A, ld, nnz_per_row_columns);
         break;
     }
 
     case rocsparse_direction_column:
     {
-        status = rocsparse_nnz_kernel_col(handle, m, n, A, lda, nnzPerRowColumn);
+        status = rocsparse_nnz_kernel_col(handle, m, n, A, ld, nnz_per_row_columns);
         break;
     }
     }
