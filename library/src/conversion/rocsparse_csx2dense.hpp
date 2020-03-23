@@ -20,36 +20,37 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "dense2csx_device.h"
+#include "csx2dense_device.h"
 
 template <rocsparse_direction DIRA, typename T>
-rocsparse_status rocsparse_dense2csx_template(rocsparse_handle          handle,
+rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
                                               rocsparse_int             m,
                                               rocsparse_int             n,
                                               const rocsparse_mat_descr descr,
-                                              const T*                  A,
-                                              rocsparse_int             ld,
-                                              T*                        csx_val,
-                                              rocsparse_int*            csx_row_col_ptr,
-                                              rocsparse_int*            csx_col_row_ind)
+                                              const T*                  csx_val,
+                                              const rocsparse_int*      csx_row_col_ptr,
+                                              const rocsparse_int*      csx_col_row_ind,
+                                              T*                        A,
+                                              rocsparse_int             ld)
 {
     if(0 == m || 0 == n)
     {
         return rocsparse_status_success;
     }
 
-    static constexpr rocsparse_int data_ratio = sizeof(T) / sizeof(float);
-    hipStream_t                    stream     = handle->stream;
+    hipStream_t stream = handle->stream;
+
     switch(DIRA)
     {
     case rocsparse_direction_row:
     {
+        static constexpr rocsparse_int WAVEFRONT_SIZE  = 64;
+        static constexpr rocsparse_int NROWS_PER_BLOCK = 16;
 
-        static constexpr rocsparse_int WF_SIZE         = 64;
-        static constexpr rocsparse_int NROWS_PER_BLOCK = 16 / (data_ratio > 0 ? data_ratio : 1);
-        rocsparse_int                  blocks          = (m - 1) / NROWS_PER_BLOCK + 1;
-        dim3                           k_blocks(blocks), k_threads(WF_SIZE * NROWS_PER_BLOCK);
-        hipLaunchKernelGGL((dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
+        rocsparse_int blocks = (m - 1) / NROWS_PER_BLOCK + 1;
+        dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NROWS_PER_BLOCK);
+
+        hipLaunchKernelGGL((csr2dense_kernel<NROWS_PER_BLOCK, WAVEFRONT_SIZE, T>),
                            k_blocks,
                            k_threads,
                            0,
@@ -57,21 +58,24 @@ rocsparse_status rocsparse_dense2csx_template(rocsparse_handle          handle,
                            descr->base,
                            m,
                            n,
-                           A,
-                           ld,
                            csx_val,
                            csx_row_col_ptr,
-                           csx_col_row_ind);
+                           csx_col_row_ind,
+                           A,
+                           ld);
+
         return rocsparse_status_success;
     }
 
     case rocsparse_direction_column:
     {
-        static constexpr rocsparse_int WF_SIZE            = 64;
-        static constexpr rocsparse_int NCOLUMNS_PER_BLOCK = 16 / (data_ratio > 0 ? data_ratio : 1);
-        rocsparse_int                  blocks             = (n - 1) / NCOLUMNS_PER_BLOCK + 1;
-        dim3                           k_blocks(blocks), k_threads(WF_SIZE * NCOLUMNS_PER_BLOCK);
-        hipLaunchKernelGGL((dense2csc_kernel<NCOLUMNS_PER_BLOCK, WF_SIZE, T>),
+        static constexpr rocsparse_int WAVEFRONT_SIZE     = 64;
+        static constexpr rocsparse_int NCOLUMNS_PER_BLOCK = 16;
+
+        rocsparse_int blocks = (n - 1) / NCOLUMNS_PER_BLOCK + 1;
+        dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NCOLUMNS_PER_BLOCK);
+
+        hipLaunchKernelGGL((csc2dense_kernel<NCOLUMNS_PER_BLOCK, WAVEFRONT_SIZE, T>),
                            k_blocks,
                            k_threads,
                            0,
@@ -79,11 +83,11 @@ rocsparse_status rocsparse_dense2csx_template(rocsparse_handle          handle,
                            descr->base,
                            m,
                            n,
-                           A,
-                           ld,
                            csx_val,
                            csx_row_col_ptr,
-                           csx_col_row_ind);
+                           csx_col_row_ind,
+                           A,
+                           ld);
 
         return rocsparse_status_success;
     }

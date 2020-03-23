@@ -54,9 +54,11 @@
 // Conversion
 #include "testing_coo2csr.hpp"
 #include "testing_coosort.hpp"
+#include "testing_csc2dense.hpp"
 #include "testing_cscsort.hpp"
 #include "testing_csr2coo.hpp"
 #include "testing_csr2csc.hpp"
+#include "testing_csr2dense.hpp"
 #include "testing_csr2ell.hpp"
 #include "testing_csr2hyb.hpp"
 #include "testing_csrsort.hpp"
@@ -201,6 +203,7 @@ int main(int argc, char* argv[])
          "  Preconditioner: csric0, csrilu0\n"
          "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb\n"
          "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2csc\n"
+         "              csr2dense, csc2dense\n"
          "  Sorting: cscsort, csrsort, coosort\n"
          "  Misc: identity, nnz")
 
@@ -617,6 +620,28 @@ int main(int argc, char* argv[])
             testing_dense2csc<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_dense2csc<rocsparse_double_complex>(arg);
+    }
+    else if(function == "csr2dense")
+    {
+        if(precision == 's')
+            testing_csr2dense<float>(arg);
+        else if(precision == 'd')
+            testing_csr2dense<double>(arg);
+        else if(precision == 'c')
+            testing_csr2dense<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_csr2dense<rocsparse_double_complex>(arg);
+    }
+    else if(function == "csc2dense")
+    {
+        if(precision == 's')
+            testing_csc2dense<float>(arg);
+        else if(precision == 'd')
+            testing_csc2dense<double>(arg);
+        else if(precision == 'c')
+            testing_csc2dense<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_csc2dense<rocsparse_double_complex>(arg);
     }
     else if(function == "csr2coo")
     {

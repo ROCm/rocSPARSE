@@ -34,27 +34,27 @@ extern "C" {
 //
 // Definition of the C-implementation.
 //
-#define CAPI_IMPL(name_, type_)                                                            \
-    rocsparse_status name_(rocsparse_handle          handle,                               \
-                           rocsparse_int             m,                                    \
-                           rocsparse_int             n,                                    \
-                           const rocsparse_mat_descr descrA,                               \
-                           const type_*              A,                                    \
-                           rocsparse_int             lda,                                  \
-                           const rocsparse_int*      nnzPerCol,                            \
-                           type_*                    cscValA,                              \
-                           rocsparse_int*            cscColPtrA,                           \
-                           rocsparse_int*            cscRowIndA)                           \
-    {                                                                                      \
-        try                                                                                \
-        {                                                                                  \
-            return rocsparse_dense2csx_impl<rocsparse_direction_column, type_>(            \
-                handle, m, n, descrA, A, lda, nnzPerCol, cscValA, cscColPtrA, cscRowIndA); \
-        }                                                                                  \
-        catch(...)                                                                         \
-        {                                                                                  \
-            return exception_to_rocsparse_status();                                        \
-        }                                                                                  \
+#define CAPI_IMPL(name_, type_)                                                                  \
+    rocsparse_status name_(rocsparse_handle          handle,                                     \
+                           rocsparse_int             m,                                          \
+                           rocsparse_int             n,                                          \
+                           const rocsparse_mat_descr descr,                                      \
+                           const type_*              A,                                          \
+                           rocsparse_int             ld,                                         \
+                           const rocsparse_int*      nnz_per_Columns,                            \
+                           type_*                    csc_val,                                    \
+                           rocsparse_int*            csc_col_ptr,                                \
+                           rocsparse_int*            csc_row_ind)                                \
+    {                                                                                            \
+        try                                                                                      \
+        {                                                                                        \
+            return rocsparse_dense2csx_impl<rocsparse_direction_column, type_>(                  \
+                handle, m, n, descr, A, ld, nnz_per_Columns, csc_val, csc_col_ptr, csc_row_ind); \
+        }                                                                                        \
+        catch(...)                                                                               \
+        {                                                                                        \
+            return exception_to_rocsparse_status();                                              \
+        }                                                                                        \
     }
 
 //

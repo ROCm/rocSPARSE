@@ -180,10 +180,26 @@ constexpr double nnz_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_dir
 template <rocsparse_direction DIRA, typename T>
 constexpr double dense2csx_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz)
 {
-    rocsparse_int L = (rocsparse_direction_row == DIRA) ? M : N;
-    return ((M * N) * sizeof(T) + nnz * (sizeof(T) + sizeof(rocsparse_int))
-            + 3 * L * sizeof(rocsparse_int))
-           / 1e9;
+    const rocsparse_int L             = (rocsparse_direction_row == DIRA) ? M : N;
+    const rocsparse_int write_csx_ptr = (L + 1) * sizeof(rocsparse_int);
+    const rocsparse_int read_csx_ptr  = (L + 1) * sizeof(rocsparse_int);
+    const rocsparse_int build_csx_ptr = write_csx_ptr + read_csx_ptr;
+
+    const rocsparse_int write_csx
+        = nnz * sizeof(T) + nnz * sizeof(rocsparse_int) + (L + 1) * sizeof(rocsparse_int);
+    const rocsparse_int read_dense = M * N * sizeof(T);
+    return (read_dense + build_csx_ptr + write_csx) / 1e9;
+}
+
+template <rocsparse_direction DIRA, typename T>
+constexpr double csx2dense_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz)
+{
+    const rocsparse_int L = (rocsparse_direction_row == DIRA) ? M : N;
+    const rocsparse_int read_csx
+        = nnz * sizeof(T) + nnz * sizeof(rocsparse_int) + (L + 1) * sizeof(rocsparse_int);
+    const rocsparse_int write_dense
+        = M * N * sizeof(T) + nnz * sizeof(T); // set to zero + nnz assignments.
+    return (read_csx + write_dense) / 1e9;
 }
 
 template <typename T>
