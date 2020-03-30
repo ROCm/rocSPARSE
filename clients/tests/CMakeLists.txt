@@ -84,7 +84,7 @@ foreach(m ${TEST_MATRICES})
   set(CMAKE_MATRICES_DIR ${PROJECT_BINARY_DIR}/matrices)
   if(NOT EXISTS "${CMAKE_MATRICES_DIR}/${mat}.csr")
     message("  Downloading and extracting test matrix ${m}.tar.gz")
-    file(DOWNLOAD http://www.cise.ufl.edu/research/sparse/MM/${m}.tar.gz
+    file(DOWNLOAD https://sparse.tamu.edu/MM/${m}.tar.gz
          ${CMAKE_MATRICES_DIR}/${mat}.tar.gz)
     execute_process(COMMAND tar xf ${mat}.tar.gz
                     WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
