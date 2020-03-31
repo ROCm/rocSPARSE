@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1709,6 +1709,80 @@ rocsparse_status host_csx2dense(rocsparse_int        m,
     return rocsparse_status_invalid_value;
 }
 
+inline void host_csr_to_bsr_nnz(rocsparse_direction               dir,
+                                rocsparse_int                     M,
+                                rocsparse_int                     N,
+                                rocsparse_index_base              csr_base,
+                                const std::vector<rocsparse_int>& csr_row_ptr,
+                                const std::vector<rocsparse_int>& csr_col_ind,
+                                rocsparse_int                     block_dim,
+                                rocsparse_index_base              bsr_base,
+                                std::vector<rocsparse_int>&       bsr_row_ptr,
+                                rocsparse_int*                    nnzTotalDevHostPtr)
+{
+    rocsparse_int Mb  = (M + block_dim - 1) / block_dim;
+    rocsparse_int Nb  = (N + block_dim - 1) / block_dim;
+    rocsparse_int nnz = csr_row_ptr[M] - csr_row_ptr[0];
+
+    // determine number of non-zero block columns for each block row of the bsr matrix
+    bsr_row_ptr.resize(Mb + 1, 0);
+    bsr_row_ptr[0] = bsr_base;
+
+    std::vector<rocsparse_int> temp(nnz, -1);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int i = 0; i < nnz; i++)
+    {
+        temp[i] = (csr_col_ind[i] - csr_base) / block_dim;
+    }
+
+    // perform segmented scan on temp array to count unique values
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(int i = 0; i < Mb; i++)
+    {
+        rocsparse_int start = csr_row_ptr[block_dim * i] - csr_base;
+        rocsparse_int end   = csr_row_ptr[min(block_dim * i + block_dim, M)] - csr_base;
+
+        // replace duplicates with -1 marker
+        for(rocsparse_int j = start; j < end; j++)
+        {
+            for(rocsparse_int k = j + 1; k < end; k++)
+            {
+                if(temp[k] == temp[j])
+                {
+                    temp[k] = -1;
+                }
+            }
+        }
+
+        // add up the number of unique elements in the segment
+        rocsparse_int uniqueCount = 0;
+        for(rocsparse_int j = start; j < end; j++)
+        {
+            if(temp[j] == -1)
+            {
+                continue;
+            }
+
+            uniqueCount++;
+        }
+
+        bsr_row_ptr[i + 1] = uniqueCount;
+    }
+
+    // update row pointer array
+    for(int i = 0; i < Mb; i++)
+    {
+        bsr_row_ptr[i + 1] = bsr_row_ptr[i + 1] + bsr_row_ptr[i];
+    }
+
+    *nnzTotalDevHostPtr = bsr_row_ptr[Mb] - bsr_row_ptr[0];
+}
+
 inline void host_csr_to_coo(rocsparse_int                     M,
                             rocsparse_int                     nnz,
                             const std::vector<rocsparse_int>& csr_row_ptr,
@@ -2126,6 +2200,269 @@ inline void host_ell_to_csr(rocsparse_int                     M,
 
                 ++csr_idx;
             }
+        }
+    }
+}
+
+template <typename T>
+inline void host_bsr_to_csr(rocsparse_direction               direction,
+                            rocsparse_int                     Mb,
+                            rocsparse_int                     Nb,
+                            rocsparse_int                     block_dim,
+                            rocsparse_index_base              bsr_base,
+                            const std::vector<rocsparse_int>& bsr_row_ptr,
+                            const std::vector<rocsparse_int>& bsr_col_ind,
+                            const std::vector<T>&             bsr_val,
+                            rocsparse_index_base              csr_base,
+                            std::vector<rocsparse_int>&       csr_row_ptr,
+                            std::vector<rocsparse_int>&       csr_col_ind,
+                            std::vector<T>&                   csr_val)
+{
+    rocsparse_int m    = Mb * block_dim;
+    rocsparse_int n    = Nb * block_dim;
+    rocsparse_int nnzb = bsr_row_ptr[Mb] - bsr_row_ptr[0];
+
+    csr_row_ptr.resize(m + 1, 0);
+    csr_col_ind.resize(nnzb * block_dim * block_dim, 0);
+    csr_val.resize(nnzb * block_dim * block_dim, 0);
+
+    // quick return if block_dim == 1
+    if(block_dim == 1)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(size_t i = 0; i < bsr_row_ptr.size(); i++)
+        {
+            csr_row_ptr[i] = (bsr_row_ptr[i] - bsr_base) + csr_base;
+        }
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(size_t i = 0; i < bsr_col_ind.size(); i++)
+        {
+            csr_col_ind[i] = (bsr_col_ind[i] - bsr_base) + csr_base;
+        }
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(size_t i = 0; i < bsr_val.size(); i++)
+        {
+            csr_val[i] = bsr_val[i];
+        }
+
+        return;
+    }
+
+    csr_row_ptr[0] = csr_base;
+
+    // find csr row ptr array
+    for(rocsparse_int i = 0; i < Mb; i++)
+    {
+        rocsparse_int entries_in_row = block_dim * (bsr_row_ptr[i + 1] - bsr_row_ptr[i]);
+
+        for(rocsparse_int j = 0; j < block_dim; j++)
+        {
+            csr_row_ptr[i * block_dim + j + 1] = csr_row_ptr[i * block_dim + j] + entries_in_row;
+        }
+    }
+
+    rocsparse_int entries_in_block = block_dim * block_dim;
+
+    // find csr col indices and values arrays
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int i = 0; i < Mb; i++)
+    {
+        rocsparse_int entries_in_Row     = (bsr_row_ptr[i + 1] - bsr_row_ptr[i]) * block_dim;
+        rocsparse_int entries_in_row_sum = (bsr_row_ptr[i] - bsr_base) * entries_in_block;
+
+        for(rocsparse_int j = bsr_row_ptr[i] - bsr_base; j < bsr_row_ptr[i + 1] - bsr_base; j++)
+        {
+            rocsparse_int col = bsr_col_ind[j] - bsr_base;
+            rocsparse_int offset
+                = entries_in_row_sum + block_dim * (j - (bsr_row_ptr[i] - bsr_base));
+
+            for(rocsparse_int k = 0; k < block_dim; k++)
+            {
+                for(rocsparse_int l = 0; l < block_dim; l++)
+                {
+                    csr_col_ind[offset + k * entries_in_Row + l] = block_dim * col + l + csr_base;
+                    if(direction == rocsparse_direction_row)
+                    {
+                        csr_val[offset + k * entries_in_Row + l]
+                            = bsr_val[j * entries_in_block + k * block_dim + l];
+                    }
+                    else
+                    {
+                        csr_val[offset + k * entries_in_Row + l]
+                            = bsr_val[j * entries_in_block + k + block_dim * l];
+                    }
+                }
+            }
+        }
+    }
+}
+
+template <typename T>
+inline void host_csr_to_bsr(rocsparse_direction               direction,
+                            rocsparse_int                     M,
+                            rocsparse_int                     N,
+                            rocsparse_int                     block_dim,
+                            rocsparse_int&                    nnzb,
+                            rocsparse_index_base              csr_base,
+                            const std::vector<rocsparse_int>& csr_row_ptr,
+                            const std::vector<rocsparse_int>& csr_col_ind,
+                            const std::vector<T>&             csr_val,
+                            rocsparse_index_base              bsr_base,
+                            std::vector<rocsparse_int>&       bsr_row_ptr,
+                            std::vector<rocsparse_int>&       bsr_col_ind,
+                            std::vector<T>&                   bsr_val)
+{
+    rocsparse_int mb = (M + block_dim - 1) / block_dim;
+    rocsparse_int nb = (N + block_dim - 1) / block_dim;
+
+    // quick return if block_dim == 1
+    if(block_dim == 1)
+    {
+        bsr_row_ptr.resize(mb + 1, 0);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(size_t i = 0; i < csr_row_ptr.size(); i++)
+        {
+            bsr_row_ptr[i] = (csr_row_ptr[i] - csr_base) + bsr_base;
+        }
+
+        nnzb = bsr_row_ptr[mb] - bsr_row_ptr[0];
+
+        bsr_col_ind.resize(nnzb, 0);
+        bsr_val.resize(nnzb * block_dim * block_dim, 0);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(size_t i = 0; i < csr_col_ind.size(); i++)
+        {
+            bsr_col_ind[i] = (csr_col_ind[i] - csr_base) + bsr_base;
+        }
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(size_t i = 0; i < csr_val.size(); i++)
+        {
+            bsr_val[i] = csr_val[i];
+        }
+
+        return;
+    }
+
+    // determine number of non-zero block columns for each block row of the bsr matrix
+    bsr_row_ptr.resize(mb + 1, 0);
+
+    bsr_row_ptr[0] = bsr_base;
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int i = 0; i < mb; i++)
+    {
+        rocsparse_int start = csr_row_ptr[i * block_dim] - csr_base;
+        rocsparse_int end   = csr_row_ptr[std::min(M, block_dim * i + block_dim)] - csr_base;
+
+        std::vector<rocsparse_int> temp(nb, 0);
+        for(rocsparse_int j = start; j < end; j++)
+        {
+            rocsparse_int blockCol = (csr_col_ind[j] - csr_base) / block_dim;
+            temp[blockCol]         = 1;
+        }
+
+        rocsparse_int sum = 0;
+        for(rocsparse_int j = 0; j < temp.size(); j++)
+        {
+            sum += temp[j];
+        }
+
+        bsr_row_ptr[i + 1] = sum;
+    }
+
+    for(rocsparse_int i = 0; i < mb; i++)
+    {
+        bsr_row_ptr[i + 1] += bsr_row_ptr[i];
+    }
+
+    nnzb = bsr_row_ptr[mb] - bsr_row_ptr[0];
+
+    // find bsr col indices array
+    bsr_col_ind.resize(nnzb, 0);
+    bsr_val.resize(nnzb * block_dim * block_dim, 0);
+
+    rocsparse_int colIndex = 0;
+
+    for(rocsparse_int i = 0; i < mb; i++)
+    {
+        rocsparse_int start = csr_row_ptr[i * block_dim] - csr_base;
+        rocsparse_int end   = csr_row_ptr[std::min(M, block_dim * i + block_dim)] - csr_base;
+
+        std::vector<rocsparse_int> temp(nb, 0);
+
+        for(rocsparse_int j = start; j < end; j++)
+        {
+            rocsparse_int blockCol = (csr_col_ind[j] - csr_base) / block_dim;
+            temp[blockCol]         = 1;
+        }
+
+        for(rocsparse_int j = 0; j < nb; j++)
+        {
+            if(temp[j] == 1)
+            {
+                bsr_col_ind[colIndex] = j + bsr_base;
+                colIndex++;
+            }
+        }
+    }
+
+    // find bsr values array
+    for(rocsparse_int i = 0; i < M; i++)
+    {
+        rocsparse_int blockRow = i / block_dim;
+
+        rocsparse_int start = csr_row_ptr[i] - csr_base;
+        rocsparse_int end   = csr_row_ptr[i + 1] - csr_base;
+
+        for(rocsparse_int j = start; j < end; j++)
+        {
+            rocsparse_int blockCol = (csr_col_ind[j] - csr_base) / block_dim;
+
+            colIndex = -1;
+            for(rocsparse_int k = bsr_row_ptr[blockRow] - bsr_base;
+                k < bsr_row_ptr[blockRow + 1] - bsr_base;
+                k++)
+            {
+                if(bsr_col_ind[k] - bsr_base == blockCol)
+                {
+                    colIndex = k - (bsr_row_ptr[blockRow] - bsr_base);
+                    break;
+                }
+            }
+
+            assert(colIndex != -1);
+
+            rocsparse_int blockIndex = 0;
+            if(direction == rocsparse_direction_row)
+            {
+                blockIndex = (csr_col_ind[j] - csr_base) % block_dim + (i % block_dim) * block_dim;
+            }
+            else
+            {
+                blockIndex
+                    = ((csr_col_ind[j] - csr_base) % block_dim) * block_dim + (i % block_dim);
+            }
+
+            rocsparse_int index = (bsr_row_ptr[blockRow] - bsr_base) * block_dim * block_dim
+                                  + colIndex * block_dim * block_dim + blockIndex;
+
+            bsr_val[index] = csr_val[j];
         }
     }
 }

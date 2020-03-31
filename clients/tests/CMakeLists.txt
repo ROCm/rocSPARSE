@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019 Advanced Micro Devices, Inc.
+# Copyright (c) 2020 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -120,9 +120,11 @@ set(ROCSPARSE_TEST_SOURCES
   test_csr2csc.cpp
   test_csr2ell.cpp
   test_csr2hyb.cpp
+  test_csr2bsr.cpp
   test_coo2csr.cpp
   test_ell2csr.cpp
   test_hyb2csr.cpp
+  test_bsr2csr.cpp
   test_csr2csr_compress.cpp
   test_identity.cpp
   test_csrsort.cpp
@@ -196,7 +198,7 @@ endif()
 set(ROCSPARSE_TEST_DATA "${PROJECT_BINARY_DIR}/staging/rocsparse_test.data")
 add_custom_command(OUTPUT "${ROCSPARSE_TEST_DATA}"
                    COMMAND ../common/rocsparse_gentest.py -I ../include rocsparse_test.yaml -o "${ROCSPARSE_TEST_DATA}"
-                   DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml test_axpyi.yaml test_doti.yaml test_dotci.yaml test_gthr.yaml test_gthrz.yaml test_roti.yaml test_sctr.yaml test_coomv.yaml test_csrmv.yaml test_csrsv.yaml test_ellmv.yaml test_hybmv.yaml test_csrmm.yaml test_csrsm.yaml test_csrgemm.yaml test_csric0.yaml test_csrilu0.yaml test_csr2coo.yaml test_csr2csc.yaml test_csr2ell.yaml test_csr2hyb.yaml test_coo2csr.yaml test_ell2csr.yaml test_hyb2csr.yaml test_identity.yaml test_csrsort.yaml test_cscsort.yaml test_coosort.yaml test_csricsv.yaml test_csrilusv.yaml test_nnz.yaml test_dense2csr.yaml test_dense2csc.yaml test_csr2dense.yaml test_csc2dense.yaml test_csr2csr_compress.cpp
+                   DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml test_axpyi.yaml test_doti.yaml test_dotci.yaml test_gthr.yaml test_gthrz.yaml test_roti.yaml test_sctr.yaml test_coomv.yaml test_csrmv.yaml test_csrsv.yaml test_ellmv.yaml test_hybmv.yaml test_csrmm.yaml test_csrsm.yaml test_csrgemm.yaml test_csric0.yaml test_csrilu0.yaml test_csr2coo.yaml test_csr2csc.yaml test_csr2ell.yaml test_csr2hyb.yaml test_bsr2csr.yaml test_csr2bsr.yaml test_coo2csr.yaml test_ell2csr.yaml test_hyb2csr.yaml test_identity.yaml test_csrsort.yaml test_cscsort.yaml test_coosort.yaml test_csricsv.yaml test_csrilusv.yaml test_nnz.yaml test_dense2csr.yaml test_dense2csc.yaml test_csr2dense.yaml test_csc2dense.yaml test_csr2csr_compress.cpp
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 add_custom_target(rocsparse-test-data
                   DEPENDS "${ROCSPARSE_TEST_DATA}" )

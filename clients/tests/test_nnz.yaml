@@ -38,7 +38,7 @@ Tests:
   M: [0, 3, 8, 13, 64, 256]
   N: [0, 3, 8, 13, 64, 256]
   denseld: [-8, 64, 512]
-  dir: [rocsparse_direction_row, rocsparse_direction_column]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
 
 - name: nnz
   category: pre_checkin
@@ -47,7 +47,7 @@ Tests:
   M: [-1, 0, 531, 1000]
   N: [-3, 0, 241, 1000]
   denseld: [100, 1000, 2000]
-  dir: [rocsparse_direction_row, rocsparse_direction_column]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
 
 - name: nnz
   category: nightly
@@ -56,4 +56,4 @@ Tests:
   M: [2000, 4000, 8000]
   N: [2000, 4000]
   denseld: [ 8000 ]
-  dir: [rocsparse_direction_row, rocsparse_direction_column]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]

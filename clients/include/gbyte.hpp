@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -257,6 +257,37 @@ constexpr double hyb2csr_gbyte_count(rocsparse_int M,
     return ((M + 1.0 + csr_nnz + ell_nnz + 2.0 * coo_nnz) * sizeof(rocsparse_int)
             + (csr_nnz + ell_nnz + coo_nnz) * sizeof(T))
            / 1e9;
+}
+
+template <typename T>
+constexpr double bsr2csr_gbyte_count(rocsparse_int Mb, rocsparse_int block_dim, rocsparse_int nnzb)
+{
+    // reads
+    size_t reads
+        = nnzb * block_dim * block_dim * sizeof(T) + (Mb + 1 + nnzb) * sizeof(rocsparse_int);
+
+    // writes
+    size_t writes = nnzb * block_dim * block_dim * sizeof(T)
+                    + (Mb * block_dim + 1 + nnzb * block_dim * block_dim) * sizeof(rocsparse_int);
+
+    return (reads + writes) / 1e9;
+}
+
+template <typename T>
+constexpr double csr2bsr_gbyte_count(rocsparse_int M,
+                                     rocsparse_int Mb,
+                                     rocsparse_int nnz,
+                                     rocsparse_int nnzb,
+                                     rocsparse_int block_dim)
+{
+    // reads
+    size_t reads = (M + 1 + nnz) * sizeof(rocsparse_int) + nnz * sizeof(T);
+
+    // writes
+    size_t writes = (Mb + 1 + nnzb * block_dim * block_dim) * sizeof(rocsparse_int)
+                    + (nnzb * block_dim * block_dim) * sizeof(T);
+
+    return (reads + writes) / 1e9;
 }
 
 template <typename T>

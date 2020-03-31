@@ -134,19 +134,6 @@ constexpr auto rocsparse_fillmode2string(rocsparse_fill_mode uplo)
     }
 }
 
-constexpr auto rocsparse_direction2string(rocsparse_direction dir)
-{
-    switch(dir)
-    {
-    case rocsparse_direction_row:
-        return "row";
-    case rocsparse_direction_column:
-        return "col";
-    default:
-        return "invalid";
-    }
-}
-
 constexpr auto rocsparse_action2string(rocsparse_action action)
 {
     switch(action)
@@ -194,6 +181,19 @@ constexpr auto rocsparse_solve2string(rocsparse_solve_policy policy)
     {
     case rocsparse_solve_policy_auto:
         return "auto";
+    default:
+        return "invalid";
+    }
+}
+
+constexpr auto rocsparse_direction2string(rocsparse_direction direction)
+{
+    switch(direction)
+    {
+    case rocsparse_direction_row:
+        return "row";
+    case rocsparse_direction_column:
+        return "column";
     default:
         return "invalid";
     }

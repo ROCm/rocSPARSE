@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,10 +52,12 @@
 #include "testing_csrilu0.hpp"
 
 // Conversion
+#include "testing_bsr2csr.hpp"
 #include "testing_coo2csr.hpp"
 #include "testing_coosort.hpp"
 #include "testing_csc2dense.hpp"
 #include "testing_cscsort.hpp"
+#include "testing_csr2bsr.hpp"
 #include "testing_csr2coo.hpp"
 #include "testing_csr2csc.hpp"
 #include "testing_csr2csr_compress.hpp"
@@ -84,22 +86,23 @@ int main(int argc, char* argv[])
     arg.alphai     = 0.0;
     arg.betai      = 0.0;
 
-    std::string                function;
-    std::string                filename;
-    std::string                rocalution;
-    char                       precision = 's';
-    char                       transA;
-    char                       transB;
-    int                        baseA;
-    int                        baseB;
-    int                        baseC;
-    int                        baseD;
-    int                        action;
-    int                        part;
-    char                       diag;
-    char                       uplo;
-    char                       apol;
-    rocsparse_int              dir;
+    std::string   function;
+    std::string   filename;
+    std::string   rocalution;
+    char          precision = 's';
+    char          transA;
+    char          transB;
+    int           baseA;
+    int           baseB;
+    int           baseC;
+    int           baseD;
+    int           action;
+    int           part;
+    char          diag;
+    char          uplo;
+    char          apol;
+    rocsparse_int dir;
+
     std::vector<rocsparse_int> laplace(3, 0);
 
     rocsparse_int device_id;
@@ -125,6 +128,11 @@ int main(int argc, char* argv[])
          po::value<rocsparse_int>(&arg.nnz)->default_value(32),
          "Specific vector size testing, LEVEL-1: the number of non-zero elements "
          "of the sparse vector.")
+
+        ("blockdim",
+         po::value<rocsparse_int>(&arg.block_dim)->default_value(2),
+         "Specific BSR matrix block dimension testing: blockdim is only applicable to SPARSE-2 "
+         "& SPARSE-3: the block dimension in BSR")
 
         ("mtx",
          po::value<std::string>(&filename)->default_value(""), "read from matrix "
@@ -202,9 +210,9 @@ int main(int argc, char* argv[])
          "  Level3: csrmm, csrsm\n"
          "  Extra: csrgemm\n"
          "  Preconditioner: csric0, csrilu0\n"
-         "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb\n"
+         "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb, csr2bsr\n"
          "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2csc\n"
-         "              csr2dense, csc2dense csr2csr_compress\n"
+         "              csr2dense, csc2dense, bsr2csr, csr2csr_compress\n"
          "  Sorting: cscsort, csrsort, coosort\n"
          "  Misc: identity, nnz")
 
@@ -396,6 +404,12 @@ int main(int argc, char* argv[])
     if(arg.M < 0 || arg.N < 0)
     {
         std::cerr << "Invalid dimension" << std::endl;
+        return -1;
+    }
+
+    if(arg.block_dim <= 0)
+    {
+        std::cerr << "Invalid block dimension" << std::endl;
         return -1;
     }
 
@@ -681,6 +695,17 @@ int main(int argc, char* argv[])
         else if(precision == 'z')
             testing_csr2hyb<rocsparse_double_complex>(arg);
     }
+    else if(function == "csr2bsr")
+    {
+        if(precision == 's')
+            testing_csr2bsr<float>(arg);
+        else if(precision == 'd')
+            testing_csr2bsr<double>(arg);
+        else if(precision == 'c')
+            testing_csr2bsr<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_csr2bsr<rocsparse_double_complex>(arg);
+    }
     else if(function == "coo2csr")
     {
         testing_coo2csr<float>(arg);
@@ -706,6 +731,17 @@ int main(int argc, char* argv[])
             testing_hyb2csr<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_hyb2csr<rocsparse_double_complex>(arg);
+    }
+    else if(function == "bsr2csr")
+    {
+        if(precision == 's')
+            testing_bsr2csr<float>(arg);
+        else if(precision == 'd')
+            testing_bsr2csr<double>(arg);
+        else if(precision == 'c')
+            testing_bsr2csr<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_bsr2csr<rocsparse_double_complex>(arg);
     }
     else if(function == "csr2csr_compress")
     {

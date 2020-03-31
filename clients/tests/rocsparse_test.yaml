@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019 Advanced Micro Devices, Inc.
+# Copyright (c) 2020 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -47,9 +47,11 @@ include: test_csr2coo.yaml
 include: test_csr2csc.yaml
 include: test_csr2ell.yaml
 include: test_csr2hyb.yaml
+include: test_csr2bsr.yaml
 include: test_coo2csr.yaml
 include: test_ell2csr.yaml
 include: test_hyb2csr.yaml
+include: test_bsr2csr.yaml
 include: test_csr2csr_compress.yaml
 include: test_identity.yaml
 include: test_csrsort.yaml

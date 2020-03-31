@@ -46,6 +46,7 @@ struct Arguments
     rocsparse_int N;
     rocsparse_int K;
     rocsparse_int nnz;
+    rocsparse_int block_dim;
 
     rocsparse_int dimx;
     rocsparse_int dimy;
@@ -70,6 +71,7 @@ struct Arguments
     rocsparse_fill_mode       uplo;
     rocsparse_analysis_policy apol;
     rocsparse_solve_policy    spol;
+    rocsparse_direction       direction;
 
     rocsparse_matrix_init matrix;
 
@@ -77,8 +79,7 @@ struct Arguments
     rocsparse_int timing;
     rocsparse_int iters;
 
-    rocsparse_direction direction;
-    rocsparse_int       denseld;
+    rocsparse_int denseld;
 
     uint32_t algo;
 
@@ -128,6 +129,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(N);
         ROCSPARSE_FORMAT_CHECK(K);
         ROCSPARSE_FORMAT_CHECK(nnz);
+        ROCSPARSE_FORMAT_CHECK(block_dim);
         ROCSPARSE_FORMAT_CHECK(dimx);
         ROCSPARSE_FORMAT_CHECK(dimy);
         ROCSPARSE_FORMAT_CHECK(dimz);
@@ -148,11 +150,11 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(uplo);
         ROCSPARSE_FORMAT_CHECK(apol);
         ROCSPARSE_FORMAT_CHECK(spol);
+        ROCSPARSE_FORMAT_CHECK(direction);
         ROCSPARSE_FORMAT_CHECK(matrix);
         ROCSPARSE_FORMAT_CHECK(unit_check);
         ROCSPARSE_FORMAT_CHECK(timing);
         ROCSPARSE_FORMAT_CHECK(iters);
-        ROCSPARSE_FORMAT_CHECK(direction);
         ROCSPARSE_FORMAT_CHECK(denseld);
         ROCSPARSE_FORMAT_CHECK(algo);
         ROCSPARSE_FORMAT_CHECK(filename);
@@ -274,6 +276,7 @@ private:
         print("N", arg.N);
         print("K", arg.K);
         print("nnz", arg.nnz);
+        print("block_dim", arg.block_dim);
         print("dim_x", arg.dimx);
         print("dim_y", arg.dimy);
         print("dim_z", arg.dimz);
@@ -287,6 +290,7 @@ private:
         print("uplo", rocsparse_fillmode2string(arg.uplo));
         print("analysis_policy", rocsparse_analysis2string(arg.apol));
         print("solve_policy", rocsparse_solve2string(arg.spol));
+        print("direction", rocsparse_direction2string(arg.direction));
         print("matrix", rocsparse_matrix2string(arg.matrix));
         print("file", arg.filename);
         print("algo", arg.algo);
@@ -295,7 +299,6 @@ private:
         print("unit_check", arg.unit_check);
         print("timing", arg.timing);
         print("iters", arg.iters);
-        print("dir", rocsparse_direction2string(arg.direction));
         print("denseld", arg.denseld);
         return str << " }\n";
     }
