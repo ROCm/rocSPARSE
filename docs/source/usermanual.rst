@@ -1397,7 +1397,7 @@ rocsparse_dense2csc()
   :outline:
 .. doxygenfunction:: rocsparse_zdense2csc
 
-		     
+
 rocsparse_csr2dense()
 ---------------------
 
