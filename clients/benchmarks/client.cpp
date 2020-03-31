@@ -58,6 +58,7 @@
 #include "testing_cscsort.hpp"
 #include "testing_csr2coo.hpp"
 #include "testing_csr2csc.hpp"
+#include "testing_csr2csr_compress.hpp"
 #include "testing_csr2dense.hpp"
 #include "testing_csr2ell.hpp"
 #include "testing_csr2hyb.hpp"
@@ -203,7 +204,7 @@ int main(int argc, char* argv[])
          "  Preconditioner: csric0, csrilu0\n"
          "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb\n"
          "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2csc\n"
-         "              csr2dense, csc2dense\n"
+         "              csr2dense, csc2dense csr2csr_compress\n"
          "  Sorting: cscsort, csrsort, coosort\n"
          "  Misc: identity, nnz")
 
@@ -705,6 +706,17 @@ int main(int argc, char* argv[])
             testing_hyb2csr<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_hyb2csr<rocsparse_double_complex>(arg);
+    }
+    else if(function == "csr2csr_compress")
+    {
+        if(precision == 's')
+            testing_csr2csr_compress<float>(arg);
+        else if(precision == 'd')
+            testing_csr2csr_compress<double>(arg);
+        else if(precision == 'c')
+            testing_csr2csr_compress<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_csr2csr_compress<rocsparse_double_complex>(arg);
     }
     else if(function == "csrsort")
     {

@@ -618,20 +618,21 @@ Function name                                                                 si
 Conversion Functions
 --------------------
 
-=====================================================             ====== ====== ============== ==============
-Function name                                                     single double single complex double complex
-=====================================================             ====== ====== ============== ==============
+======================================================================= ====== ====== ============== ==============
+Function name                                                           single double single complex double complex
+======================================================================= ====== ====== ============== ==============
 :cpp:func:`rocsparse_csr2coo`
 :cpp:func:`rocsparse_csr2csc_buffer_size`
-:cpp:func:`rocsparse_Xcsr2csc() <rocsparse_scsr2csc>`             x      x      x              x
+:cpp:func:`rocsparse_Xcsr2csc() <rocsparse_scsr2csc>`                   x      x      x              x
 :cpp:func:`rocsparse_csr2ell_width`
-:cpp:func:`rocsparse_Xcsr2ell() <rocsparse_scsr2ell>`             x      x      x              x
-:cpp:func:`rocsparse_Xcsr2hyb() <rocsparse_scsr2hyb>`             x      x      x              x
+:cpp:func:`rocsparse_Xcsr2ell() <rocsparse_scsr2ell>`                   x      x      x              x
+:cpp:func:`rocsparse_Xcsr2hyb() <rocsparse_scsr2hyb>`                   x      x      x              x
 :cpp:func:`rocsparse_coo2csr`
 :cpp:func:`rocsparse_ell2csr_nnz`
-:cpp:func:`rocsparse_Xell2csr() <rocsparse_sell2csr>`             x      x      x              x
+:cpp:func:`rocsparse_Xell2csr() <rocsparse_sell2csr>`                   x      x      x              x
 :cpp:func:`rocsparse_hyb2csr_buffer_size`
-:cpp:func:`rocsparse_Xhyb2csr() <rocsparse_shyb2csr>`             x      x      x              x
+:cpp:func:`rocsparse_Xhyb2csr() <rocsparse_shyb2csr>`                   x      x      x              x
+:cpp:func:`rocsparse_Xcsr2csr_compress() <rocsparse_scsr2csr_compress>` x      x      x              x
 :cpp:func:`rocsparse_create_identity_permutation`
 :cpp:func:`rocsparse_cscsort_buffer_size`
 :cpp:func:`rocsparse_cscsort`
@@ -640,12 +641,13 @@ Function name                                                     single double 
 :cpp:func:`rocsparse_coosort_buffer_size`
 :cpp:func:`rocsparse_coosort_by_row`
 :cpp:func:`rocsparse_coosort_by_column`
-:cpp:func:`rocsparse_Xnnz() <rocsparse_snnz>`                     x      x      x              x
-:cpp:func:`rocsparse_Xdense2csr() <rocsparse_sdense2csr>`         x      x      x              x
-:cpp:func:`rocsparse_Xdense2csc() <rocsparse_sdense2csc>`         x      x      x              x
-:cpp:func:`rocsparse_Xcsr2dense() <rocsparse_scsr2dense>`         x      x      x              x
-:cpp:func:`rocsparse_Xcsc2dense() <rocsparse_scsc2dense>`         x      x      x              x
-================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xdense2csr() <rocsparse_sdense2csr>`               x      x      x              x
+:cpp:func:`rocsparse_Xdense2csc() <rocsparse_sdense2csc>`               x      x      x              x
+:cpp:func:`rocsparse_Xcsr2dense() <rocsparse_scsr2dense>`               x      x      x              x
+:cpp:func:`rocsparse_Xcsc2dense() <rocsparse_scsc2dense>`               x      x      x              x
+:cpp:func:`rocsparse_Xnnz_compress() <rocsparse_snnz_compress>`         x      x      x              x
+:cpp:func:`rocsparse_Xnnz() <rocsparse_snnz>`                           x      x      x              x
+======================================================================= ====== ====== ============== ==============
 
 Storage schemes and indexing base
 ---------------------------------
@@ -1298,6 +1300,17 @@ rocsparse_hyb2csr()
   :outline:
 .. doxygenfunction:: rocsparse_zhyb2csr
 
+rocsparse_csr2csr_compress()
+----------------------------
+
+.. doxygenfunction:: rocsparse_scsr2csr_compress
+  :outline:
+.. doxygenfunction:: rocsparse_dcsr2csr_compress
+  :outline:
+.. doxygenfunction:: rocsparse_ccsr2csr_compress
+  :outline:
+.. doxygenfunction:: rocsparse_zcsr2csr_compress
+
 rocsparse_create_identity_permutation()
 ---------------------------------------
 
@@ -1338,8 +1351,19 @@ rocsparse_coosort_by_column()
 
 .. doxygenfunction:: rocsparse_coosort_by_column
 
+rocsparse_nnz_compress()
+------------------------
+
+.. doxygenfunction:: rocsparse_snnz_compress
+  :outline:
+.. doxygenfunction:: rocsparse_dnnz_compress
+  :outline:
+.. doxygenfunction:: rocsparse_cnnz_compress
+  :outline:
+.. doxygenfunction:: rocsparse_znnz_compress
+
 rocsparse_nnz()
--------------------
+---------------
 
 .. doxygenfunction:: rocsparse_snnz
   :outline:
@@ -1351,7 +1375,7 @@ rocsparse_nnz()
 
 
 rocsparse_dense2csr()
--------------------
+---------------------
 
 .. doxygenfunction:: rocsparse_sdense2csr
   :outline:
@@ -1363,7 +1387,7 @@ rocsparse_dense2csr()
 
 
 rocsparse_dense2csc()
--------------------
+---------------------
 
 .. doxygenfunction:: rocsparse_sdense2csc
   :outline:
@@ -1375,7 +1399,7 @@ rocsparse_dense2csc()
 
 		     
 rocsparse_csr2dense()
--------------------
+---------------------
 
 .. doxygenfunction:: rocsparse_scsr2dense
   :outline:
@@ -1387,7 +1411,7 @@ rocsparse_csr2dense()
 
 
 rocsparse_csc2dense()
--------------------
+---------------------
 
 .. doxygenfunction:: rocsparse_scsc2dense
   :outline:

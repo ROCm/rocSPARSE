@@ -60,10 +60,12 @@ set(rocsparse_source
   src/conversion/rocsparse_dense2csc.cpp
   src/conversion/rocsparse_csr2dense.cpp
   src/conversion/rocsparse_csc2dense.cpp
+  src/conversion/rocsparse_nnz_compress.cpp
   src/conversion/rocsparse_csr2coo.cpp
   src/conversion/rocsparse_csr2csc.cpp
   src/conversion/rocsparse_csr2ell.cpp
   src/conversion/rocsparse_csr2hyb.cpp
+  src/conversion/rocsparse_csr2csr_compress.cpp
   src/conversion/rocsparse_coo2csr.cpp
   src/conversion/rocsparse_ell2csr.cpp
   src/conversion/rocsparse_hyb2csr.cpp

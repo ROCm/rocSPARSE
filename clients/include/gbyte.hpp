@@ -260,6 +260,17 @@ constexpr double hyb2csr_gbyte_count(rocsparse_int M,
 }
 
 template <typename T>
+constexpr double
+    csr2csr_compress_gbyte_count(rocsparse_int M, rocsparse_int nnz_A, rocsparse_int nnz_C)
+{
+    size_t reads = (M + 1 + nnz_A) * sizeof(rocsparse_int) + nnz_A * sizeof(T);
+
+    size_t writes = (M + 1 + nnz_C) * sizeof(rocsparse_int) + nnz_C * sizeof(T);
+
+    return (reads + writes) / 1e9;
+}
+
+template <typename T>
 constexpr double identity_gbyte_count(rocsparse_int N)
 {
     return N * sizeof(rocsparse_int) / 1e9;

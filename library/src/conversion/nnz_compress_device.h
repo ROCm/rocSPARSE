@@ -1,0 +1,80 @@
+/* ************************************************************************
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * ************************************************************************ */
+
+#pragma once
+#ifndef NNZ_COMPRESS_DEVICE_H
+#define NNZ_COMPRESS_DEVICE_H
+
+#include <limits>
+
+#include "common.h"
+
+#include <hip/hip_runtime.h>
+
+template <typename T,
+          rocsparse_int BLOCK_SIZE,
+          rocsparse_int SEGMENTS_PER_BLOCK,
+          rocsparse_int SEGMENT_SIZE,
+          rocsparse_int WF_SIZE>
+__launch_bounds__(BLOCK_SIZE) __global__
+    void nnz_compress_kernel(rocsparse_int        m,
+                             rocsparse_index_base idx_base,
+                             const T* __restrict__ csr_val_A,
+                             const rocsparse_int* __restrict__ csr_row_ptr_A,
+                             rocsparse_int* __restrict__ nnz_per_row,
+                             T tol)
+{
+    const rocsparse_int segment_id      = hipThreadIdx_x / SEGMENT_SIZE;
+    const rocsparse_int segment_lane_id = hipThreadIdx_x % SEGMENT_SIZE;
+
+    const rocsparse_int row_index = SEGMENTS_PER_BLOCK * hipBlockIdx_x + segment_id;
+
+    if(row_index < m)
+    {
+        const rocsparse_int start_A = csr_row_ptr_A[row_index] - idx_base;
+        const rocsparse_int end_A   = csr_row_ptr_A[row_index + 1] - idx_base;
+
+        rocsparse_int count = 0;
+
+        // One segment per row
+        for(rocsparse_int i = start_A + segment_lane_id; i < end_A; i += SEGMENT_SIZE)
+        {
+            const T value = csr_val_A[i];
+            if(rocsparse_abs(value) > std::real(tol)
+               && rocsparse_abs(value) > std::numeric_limits<float>::min())
+            {
+                count++;
+            }
+        }
+
+        // last thread in segment will contain the total count after this call
+        rocsparse_wfreduce_sum<SEGMENT_SIZE>(&count);
+
+        // broadcast count from last thread in segment to all threads in segment
+        count = __shfl(count, SEGMENT_SIZE - 1, SEGMENT_SIZE);
+
+        nnz_per_row[row_index] = count;
+    }
+}
+
+#endif // NNZ_COMPRESS_DEVICE_H
