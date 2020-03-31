@@ -627,11 +627,14 @@ Function name                                                           single d
 :cpp:func:`rocsparse_csr2ell_width`
 :cpp:func:`rocsparse_Xcsr2ell() <rocsparse_scsr2ell>`                   x      x      x              x
 :cpp:func:`rocsparse_Xcsr2hyb() <rocsparse_scsr2hyb>`                   x      x      x              x
+:cpp:func:`rocsparse_csr2bsr_nnz`
+:cpp:func:`rocsparse_Xcsr2bsr() <rocsparse_scsr2bsr>`                   x      x      x              x
 :cpp:func:`rocsparse_coo2csr`
 :cpp:func:`rocsparse_ell2csr_nnz`
 :cpp:func:`rocsparse_Xell2csr() <rocsparse_sell2csr>`                   x      x      x              x
 :cpp:func:`rocsparse_hyb2csr_buffer_size`
 :cpp:func:`rocsparse_Xhyb2csr() <rocsparse_shyb2csr>`                   x      x      x              x
+:cpp:func:`rocsparse_Xbsr2csr() <rocsparse_sbsr2csr>`                   x      x      x              x
 :cpp:func:`rocsparse_Xcsr2csr_compress() <rocsparse_scsr2csr_compress>` x      x      x              x
 :cpp:func:`rocsparse_create_identity_permutation`
 :cpp:func:`rocsparse_cscsort_buffer_size`
@@ -1299,6 +1302,33 @@ rocsparse_hyb2csr()
 .. doxygenfunction:: rocsparse_chyb2csr
   :outline:
 .. doxygenfunction:: rocsparse_zhyb2csr
+
+rocsparse_bsr2csr()
+-------------------
+
+.. doxygenfunction:: rocsparse_sbsr2csr
+  :outline:
+.. doxygenfunction:: rocsparse_dbsr2csr
+  :outline:
+.. doxygenfunction:: rocsparse_cbsr2csr
+  :outline:
+.. doxygenfunction:: rocsparse_zbsr2csr
+
+rocsparse_csr2bsr_nnz()
+-----------------------
+
+.. doxygenfunction:: rocsparse_csr2bsr_nnz
+
+rocsparse_csr2bsr()
+-------------------
+
+.. doxygenfunction:: rocsparse_scsr2bsr
+  :outline:
+.. doxygenfunction:: rocsparse_dcsr2bsr
+  :outline:
+.. doxygenfunction:: rocsparse_ccsr2bsr
+  :outline:
+.. doxygenfunction:: rocsparse_zcsr2bsr
 
 rocsparse_csr2csr_compress()
 ----------------------------

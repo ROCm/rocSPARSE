@@ -124,6 +124,7 @@ Arguments:
   - N: rocsparse_int
   - K: rocsparse_int
   - nnz: rocsparse_int
+  - block_dim: rocsparse_int
   - dimx: rocsparse_int
   - dimy: rocsparse_int
   - dimz: rocsparse_int
@@ -144,11 +145,11 @@ Arguments:
   - uplo: rocsparse_fill_mode
   - apol: rocsparse_analysis_policy
   - spol: rocsparse_solve_policy
+  - direction: rocsparse_direction
   - matrix: rocsparse_matrix_init
   - unit_check: rocsparse_int
   - timing: rocsparse_int
   - iters: rocsparse_int
-  - dir: rocsparse_direction
   - denseld: rocsparse_int
   - algo: c_uint
   - filename: c_char*64
@@ -200,6 +201,7 @@ Defaults:
   N: -1
   K: -1
   nnz: -1
+  block_dim: 2
   dimx: 0
   dimy: 0
   dimz: 0
@@ -219,11 +221,11 @@ Defaults:
   uplo: rocsparse_fill_mode_lower
   apol: rocsparse_analysis_policy_reuse
   spol: rocsparse_solve_policy_auto
+  direction: rocsparse_direction_row
   matrix: rocsparse_matrix_random
   unit_check: 1
   timing: 0
   iters: 10
-  dir: rocsparse_direction_row
   denseld: -1
   algo: 0
   workspace_size: 0

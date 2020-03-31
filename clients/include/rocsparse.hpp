@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -572,6 +572,22 @@ rocsparse_status rocsparse_csr2hyb(rocsparse_handle          handle,
                                    rocsparse_int             user_ell_width,
                                    rocsparse_hyb_partition   partition_type);
 
+// csr2bsr
+template <typename T>
+rocsparse_status rocsparse_csr2bsr(rocsparse_handle          handle,
+                                   rocsparse_direction       direction,
+                                   rocsparse_int             m,
+                                   rocsparse_int             n,
+                                   const rocsparse_mat_descr csr_descr,
+                                   const T*                  csr_val,
+                                   const rocsparse_int*      csr_row_ptr,
+                                   const rocsparse_int*      csr_col_ind,
+                                   rocsparse_int             block_dim,
+                                   const rocsparse_mat_descr bsr_descr,
+                                   T*                        bsr_val,
+                                   rocsparse_int*            bsr_row_ptr,
+                                   rocsparse_int*            bsr_col_ind);
+
 // ell2csr
 template <typename T>
 rocsparse_status rocsparse_ell2csr(rocsparse_handle          handle,
@@ -595,6 +611,22 @@ rocsparse_status rocsparse_hyb2csr(rocsparse_handle          handle,
                                    rocsparse_int*            csr_row_ptr,
                                    rocsparse_int*            csr_col_ind,
                                    void*                     temp_buffer);
+
+// bsr2csr
+template <typename T>
+rocsparse_status rocsparse_bsr2csr(rocsparse_handle          handle,
+                                   rocsparse_direction       dir,
+                                   rocsparse_int             mb,
+                                   rocsparse_int             nb,
+                                   const rocsparse_mat_descr bsr_descr,
+                                   const T*                  bsr_val,
+                                   const rocsparse_int*      bsr_row_ptr,
+                                   const rocsparse_int*      bsr_col_ind,
+                                   rocsparse_int             block_dim,
+                                   const rocsparse_mat_descr csr_descr,
+                                   T*                        csr_val,
+                                   rocsparse_int*            csr_row_ptr,
+                                   rocsparse_int*            csr_col_ind);
 
 // csr2csr_compress
 template <typename T>

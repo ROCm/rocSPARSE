@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019 Advanced Micro Devices, Inc.
+# Copyright (c) 2020 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -185,11 +185,19 @@ Functions:
   rocsparse_dcsr2hyb: { function: csr2hyb, <<: *double_precision }
   rocsparse_ccsr2hyb: { function: csr2hyb, <<: *single_precision_complex }
   rocsparse_zcsr2hyb: { function: csr2hyb, <<: *double_precision_complex }
+  rocsparse_scsr2bsr: { function: csr2bsr, <<: *single_precision }
+  rocsparse_dcsr2bsr: { function: csr2bsr, <<: *double_precision }
+  rocsparse_ccsr2bsr: { function: csr2bsr, <<: *single_precision_complex }
+  rocsparse_zcsr2bsr: { function: csr2bsr, <<: *double_precision_complex }
   rocsparse_hyb2csr_buffer_size: { function: hyb2csr }
   rocsparse_shyb2csr: { function: hyb2csr, <<: *single_precision }
   rocsparse_dhyb2csr: { function: hyb2csr, <<: *double_precision }
   rocsparse_chyb2csr: { function: hyb2csr, <<: *single_precision_complex }
   rocsparse_zhyb2csr: { function: hyb2csr, <<: *double_precision_complex }
+  rocsparse_sbsr2csr: { function: bsr2csr, <<: *single_precision }
+  rocsparse_dbsr2csr: { function: bsr2csr, <<: *double_precision }
+  rocsparse_cbsr2csr: { function: bsr2csr, <<: *single_precision_complex }
+  rocsparse_zbsr2csr: { function: bsr2csr, <<: *double_precision_complex }
   rocsparse_scsr2csr_compress: { function: csr2csr_compress, <<: *single_precision }
   rocsparse_dcsr2csr_compress: { function: csr2csr_compress, <<: *double_precision }
   rocsparse_ccsr2csr_compress: { function: csr2csr_compress, <<: *single_precision_complex }
