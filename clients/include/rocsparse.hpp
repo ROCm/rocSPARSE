@@ -469,8 +469,18 @@ rocsparse_status rocsparse_nnz(rocsparse_handle          handle,
                                rocsparse_int*            nnz_per_row_columns,
                                rocsparse_int*            nnz_total_dev_host_ptr);
 
-// dense2csr
+// nnz_compress
+template <typename T>
+rocsparse_status rocsparse_nnz_compress(rocsparse_handle          handle,
+                                        rocsparse_int             m,
+                                        const rocsparse_mat_descr descr_A,
+                                        const T*                  csr_val_A,
+                                        const rocsparse_int*      csr_row_ptr_A,
+                                        rocsparse_int*            nnz_per_row,
+                                        rocsparse_int*            nnz_C,
+                                        T                         tol);
 
+// dense2csr
 template <typename T>
 rocsparse_status rocsparse_dense2csr(rocsparse_handle          handle,
                                      rocsparse_int             m,
@@ -585,5 +595,21 @@ rocsparse_status rocsparse_hyb2csr(rocsparse_handle          handle,
                                    rocsparse_int*            csr_row_ptr,
                                    rocsparse_int*            csr_col_ind,
                                    void*                     temp_buffer);
+
+// csr2csr_compress
+template <typename T>
+rocsparse_status rocsparse_csr2csr_compress(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             n,
+                                            const rocsparse_mat_descr descr_A,
+                                            const T*                  csr_val_A,
+                                            const rocsparse_int*      csr_col_ind_A,
+                                            const rocsparse_int*      csr_row_ptr_A,
+                                            rocsparse_int             nnz_A,
+                                            const rocsparse_int*      nnz_per_row,
+                                            T*                        csr_val_C,
+                                            rocsparse_int*            csr_col_ind_C,
+                                            rocsparse_int*            csr_row_ptr_C,
+                                            T                         tol);
 
 #endif // ROCSPARSE_HPP

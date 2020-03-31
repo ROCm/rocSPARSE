@@ -2845,6 +2845,65 @@ rocsparse_status rocsparse_csc2dense(rocsparse_handle                handle,
     return rocsparse_zcsc2dense(handle, m, n, descr, csc_val, csc_col_ptr, csc_row_ind, A, ld);
 }
 
+// nnz_compress
+template <>
+rocsparse_status rocsparse_nnz_compress(rocsparse_handle          handle,
+                                        rocsparse_int             m,
+                                        const rocsparse_mat_descr descr_A,
+                                        const float*              csr_val_A,
+                                        const rocsparse_int*      csr_row_ptr_A,
+                                        rocsparse_int*            nnz_per_row,
+                                        rocsparse_int*            nnz_C,
+                                        float                     tol)
+{
+    return rocsparse_snnz_compress(
+        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+}
+
+template <>
+rocsparse_status rocsparse_nnz_compress(rocsparse_handle          handle,
+                                        rocsparse_int             m,
+                                        const rocsparse_mat_descr descr_A,
+                                        const double*             csr_val_A,
+                                        const rocsparse_int*      csr_row_ptr_A,
+                                        rocsparse_int*            nnz_per_row,
+                                        rocsparse_int*            nnz_C,
+                                        double                    tol)
+{
+
+    return rocsparse_dnnz_compress(
+        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+}
+
+template <>
+rocsparse_status rocsparse_nnz_compress(rocsparse_handle               handle,
+                                        rocsparse_int                  m,
+                                        const rocsparse_mat_descr      descr_A,
+                                        const rocsparse_float_complex* csr_val_A,
+                                        const rocsparse_int*           csr_row_ptr_A,
+                                        rocsparse_int*                 nnz_per_row,
+                                        rocsparse_int*                 nnz_C,
+                                        rocsparse_float_complex        tol)
+{
+    return rocsparse_cnnz_compress(
+        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+}
+
+template <>
+rocsparse_status rocsparse_nnz_compress(rocsparse_handle                handle,
+                                        rocsparse_int                   m,
+                                        const rocsparse_mat_descr       descr_A,
+                                        const rocsparse_double_complex* csr_val_A,
+                                        const rocsparse_int*            csr_row_ptr_A,
+                                        rocsparse_int*                  nnz_per_row,
+                                        rocsparse_int*                  nnz_C,
+                                        rocsparse_double_complex        tol)
+{
+
+    return rocsparse_znnz_compress(
+        handle, m, descr_A, csr_val_A, csr_row_ptr_A, nnz_per_row, nnz_C, tol);
+}
+
 // csr2csc
 template <>
 rocsparse_status rocsparse_csr2csc(rocsparse_handle     handle,
@@ -3312,4 +3371,125 @@ rocsparse_status rocsparse_hyb2csr(rocsparse_handle          handle,
                                    void*                     temp_buffer)
 {
     return rocsparse_zhyb2csr(handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer);
+}
+
+// csr2csr_compress
+template <>
+rocsparse_status rocsparse_csr2csr_compress(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             n,
+                                            const rocsparse_mat_descr descr_A,
+                                            const float*              csr_val_A,
+                                            const rocsparse_int*      csr_col_ind_A,
+                                            const rocsparse_int*      csr_row_ptr_A,
+                                            rocsparse_int             nnz_A,
+                                            const rocsparse_int*      nnz_per_row,
+                                            float*                    csr_val_C,
+                                            rocsparse_int*            csr_col_ind_C,
+                                            rocsparse_int*            csr_row_ptr_C,
+                                            float                     tol)
+{
+    return rocsparse_scsr2csr_compress(handle,
+                                       m,
+                                       n,
+                                       descr_A,
+                                       csr_val_A,
+                                       csr_col_ind_A,
+                                       csr_row_ptr_A,
+                                       nnz_A,
+                                       nnz_per_row,
+                                       csr_val_C,
+                                       csr_col_ind_C,
+                                       csr_row_ptr_C,
+                                       tol);
+}
+
+template <>
+rocsparse_status rocsparse_csr2csr_compress(rocsparse_handle          handle,
+                                            rocsparse_int             m,
+                                            rocsparse_int             n,
+                                            const rocsparse_mat_descr descr_A,
+                                            const double*             csr_val_A,
+                                            const rocsparse_int*      csr_col_ind_A,
+                                            const rocsparse_int*      csr_row_ptr_A,
+                                            rocsparse_int             nnz_A,
+                                            const rocsparse_int*      nnz_per_row,
+                                            double*                   csr_val_C,
+                                            rocsparse_int*            csr_col_ind_C,
+                                            rocsparse_int*            csr_row_ptr_C,
+                                            double                    tol)
+{
+    return rocsparse_dcsr2csr_compress(handle,
+                                       m,
+                                       n,
+                                       descr_A,
+                                       csr_val_A,
+                                       csr_col_ind_A,
+                                       csr_row_ptr_A,
+                                       nnz_A,
+                                       nnz_per_row,
+                                       csr_val_C,
+                                       csr_col_ind_C,
+                                       csr_row_ptr_C,
+                                       tol);
+}
+
+template <>
+rocsparse_status rocsparse_csr2csr_compress(rocsparse_handle               handle,
+                                            rocsparse_int                  m,
+                                            rocsparse_int                  n,
+                                            const rocsparse_mat_descr      descr_A,
+                                            const rocsparse_float_complex* csr_val_A,
+                                            const rocsparse_int*           csr_col_ind_A,
+                                            const rocsparse_int*           csr_row_ptr_A,
+                                            rocsparse_int                  nnz_A,
+                                            const rocsparse_int*           nnz_per_row,
+                                            rocsparse_float_complex*       csr_val_C,
+                                            rocsparse_int*                 csr_col_ind_C,
+                                            rocsparse_int*                 csr_row_ptr_C,
+                                            rocsparse_float_complex        tol)
+{
+    return rocsparse_ccsr2csr_compress(handle,
+                                       m,
+                                       n,
+                                       descr_A,
+                                       csr_val_A,
+                                       csr_col_ind_A,
+                                       csr_row_ptr_A,
+                                       nnz_A,
+                                       nnz_per_row,
+                                       csr_val_C,
+                                       csr_col_ind_C,
+                                       csr_row_ptr_C,
+                                       tol);
+}
+
+template <>
+rocsparse_status rocsparse_csr2csr_compress(rocsparse_handle                handle,
+                                            rocsparse_int                   m,
+                                            rocsparse_int                   n,
+                                            const rocsparse_mat_descr       descr_A,
+                                            const rocsparse_double_complex* csr_val_A,
+                                            const rocsparse_int*            csr_col_ind_A,
+                                            const rocsparse_int*            csr_row_ptr_A,
+                                            rocsparse_int                   nnz_A,
+                                            const rocsparse_int*            nnz_per_row,
+                                            rocsparse_double_complex*       csr_val_C,
+                                            rocsparse_int*                  csr_col_ind_C,
+                                            rocsparse_int*                  csr_row_ptr_C,
+                                            rocsparse_double_complex        tol)
+{
+    return rocsparse_zcsr2csr_compress(handle,
+                                       m,
+                                       n,
+                                       descr_A,
+                                       csr_val_A,
+                                       csr_col_ind_A,
+                                       csr_row_ptr_A,
+                                       nnz_A,
+                                       nnz_per_row,
+                                       csr_val_C,
+                                       csr_col_ind_C,
+                                       csr_row_ptr_C,
+                                       tol);
 }
