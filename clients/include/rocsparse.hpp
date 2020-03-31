@@ -116,6 +116,24 @@ rocsparse_status rocsparse_sctr(rocsparse_handle     handle,
  *    level 2 SPARSE
  * ===========================================================================
  */
+// bsrmv
+template <typename T>
+rocsparse_status rocsparse_bsrmv(rocsparse_handle          handle,
+                                 rocsparse_direction       dir,
+                                 rocsparse_operation       trans,
+                                 rocsparse_int             mb,
+                                 rocsparse_int             nb,
+                                 rocsparse_int             nnzb,
+                                 const T*                  alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const T*                  bsr_val,
+                                 const rocsparse_int*      bsr_row_ptr,
+                                 const rocsparse_int*      bsr_col_ind,
+                                 rocsparse_int             bsr_dim,
+                                 const T*                  x,
+                                 const T*                  beta,
+                                 T*                        y);
+
 // coomv
 template <typename T>
 rocsparse_status rocsparse_coomv(rocsparse_handle          handle,

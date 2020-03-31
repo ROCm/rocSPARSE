@@ -581,6 +581,153 @@ rocsparse_status rocsparse_zsctr(rocsparse_handle                handle,
  */
 
 /*! \ingroup level2_module
+ *  \brief Sparse matrix vector multiplication using BSR storage format
+ *
+ *  \details
+ *  \p rocsparse_bsrmv multiplies the scalar \f$\alpha\f$ with a sparse
+ *  \f$(mb \cdot \text{bsr_dim}) \times (nb \cdot \text{bsr_dim})\f$
+ *  matrix, defined in BSR storage format, and the dense vector \f$x\f$ and adds the
+ *  result to the dense vector \f$y\f$ that is multiplied by the scalar \f$\beta\f$,
+ *  such that
+ *  \f[
+ *    y := \alpha \cdot op(A) \cdot x + \beta \cdot y,
+ *  \f]
+ *  with
+ *  \f[
+ *    op(A) = \left\{
+ *    \begin{array}{ll}
+ *        A,   & \text{if trans == rocsparse_operation_none} \\
+ *        A^T, & \text{if trans == rocsparse_operation_transpose} \\
+ *        A^H, & \text{if trans == rocsparse_operation_conjugate_transpose}
+ *    \end{array}
+ *    \right.
+ *  \f]
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
+ *  \note
+ *  Currently, only \p trans == \ref rocsparse_operation_none is supported.
+ *
+ *  @param[in]
+ *  handle      handle to the rocsparse library context queue.
+ *  @param[in]
+ *  dir         matrix storage of BSR blocks.
+ *  @param[in]
+ *  trans       matrix operation type.
+ *  @param[in]
+ *  mb          number of block rows of the sparse BSR matrix.
+ *  @param[in]
+ *  nb          number of block columns of the sparse BSR matrix.
+ *  @param[in]
+ *  nnzb        number of non-zero blocks of the sparse BSR matrix.
+ *  @param[in]
+ *  alpha       scalar \f$\alpha\f$.
+ *  @param[in]
+ *  descr       descriptor of the sparse BSR matrix. Currently, only
+ *              \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  bsr_val     array of \p nnzb blocks of the sparse BSR matrix.
+ *  @param[in]
+ *  bsr_row_ptr array of \p mb+1 elements that point to the start of every block row of
+ *              the sparse BSR matrix.
+ *  @param[in]
+ *  bsr_col_ind array of \p nnz containing the block column indices of the sparse
+ *              BSR matrix.
+ *  @param[in]
+ *  bsr_dim     block dimension of the sparse BSR matrix.
+ *  @param[in]
+ *  x           array of \p nb*bsr_dim elements (\f$op(A) = A\f$) or \p mb*bsr_dim
+ *              elements (\f$op(A) = A^T\f$ or \f$op(A) = A^H\f$).
+ *  @param[in]
+ *  beta        scalar \f$\beta\f$.
+ *  @param[inout]
+ *  y           array of \p mb*bsr_dim elements (\f$op(A) = A\f$) or \p nb*bsr_dim
+ *              elements (\f$op(A) = A^T\f$ or \f$op(A) = A^H\f$).
+ *
+ *  \retval     rocsparse_status_success the operation completed successfully.
+ *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval     rocsparse_status_invalid_size \p mb, \p nb, \p nnzb or \p bsr_dim is
+ *              invalid.
+ *  \retval     rocsparse_status_invalid_pointer \p descr, \p alpha, \p bsr_val,
+ *              \p bsr_row_ind, \p bsr_col_ind, \p x, \p beta or \p y pointer is invalid.
+ *  \retval     rocsparse_status_arch_mismatch the device is not supported.
+ *  \retval     rocsparse_status_not_implemented
+ *              \p trans != \ref rocsparse_operation_none or
+ *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
+ */
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sbsrmv(rocsparse_handle          handle,
+                                  rocsparse_direction       dir,
+                                  rocsparse_operation       trans,
+                                  rocsparse_int             mb,
+                                  rocsparse_int             nb,
+                                  rocsparse_int             nnzb,
+                                  const float*              alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const float*              bsr_val,
+                                  const rocsparse_int*      bsr_row_ptr,
+                                  const rocsparse_int*      bsr_col_ind,
+                                  rocsparse_int             bsr_dim,
+                                  const float*              x,
+                                  const float*              beta,
+                                  float*                    y);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dbsrmv(rocsparse_handle          handle,
+                                  rocsparse_direction       dir,
+                                  rocsparse_operation       trans,
+                                  rocsparse_int             mb,
+                                  rocsparse_int             nb,
+                                  rocsparse_int             nnzb,
+                                  const double*             alpha,
+                                  const rocsparse_mat_descr descr,
+                                  const double*             bsr_val,
+                                  const rocsparse_int*      bsr_row_ptr,
+                                  const rocsparse_int*      bsr_col_ind,
+                                  rocsparse_int             bsr_dim,
+                                  const double*             x,
+                                  const double*             beta,
+                                  double*                   y);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cbsrmv(rocsparse_handle               handle,
+                                  rocsparse_direction            dir,
+                                  rocsparse_operation            trans,
+                                  rocsparse_int                  mb,
+                                  rocsparse_int                  nb,
+                                  rocsparse_int                  nnzb,
+                                  const rocsparse_float_complex* alpha,
+                                  const rocsparse_mat_descr      descr,
+                                  const rocsparse_float_complex* bsr_val,
+                                  const rocsparse_int*           bsr_row_ptr,
+                                  const rocsparse_int*           bsr_col_ind,
+                                  rocsparse_int                  bsr_dim,
+                                  const rocsparse_float_complex* x,
+                                  const rocsparse_float_complex* beta,
+                                  rocsparse_float_complex*       y);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zbsrmv(rocsparse_handle                handle,
+                                  rocsparse_direction             dir,
+                                  rocsparse_operation             trans,
+                                  rocsparse_int                   mb,
+                                  rocsparse_int                   nb,
+                                  rocsparse_int                   nnzb,
+                                  const rocsparse_double_complex* alpha,
+                                  const rocsparse_mat_descr       descr,
+                                  const rocsparse_double_complex* bsr_val,
+                                  const rocsparse_int*            bsr_row_ptr,
+                                  const rocsparse_int*            bsr_col_ind,
+                                  rocsparse_int                   bsr_dim,
+                                  const rocsparse_double_complex* x,
+                                  const rocsparse_double_complex* beta,
+                                  rocsparse_double_complex*       y);
+/**@}*/
+
+/*! \ingroup level2_module
  *  \brief Sparse matrix vector multiplication using COO storage format
  *
  *  \details

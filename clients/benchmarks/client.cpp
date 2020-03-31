@@ -34,6 +34,7 @@
 #include "testing_sctr.hpp"
 
 // Level2
+#include "testing_bsrmv.hpp"
 #include "testing_coomv.hpp"
 #include "testing_csrmv.hpp"
 #include "testing_csrsv.hpp"
@@ -131,8 +132,7 @@ int main(int argc, char* argv[])
 
         ("blockdim",
          po::value<rocsparse_int>(&arg.block_dim)->default_value(2),
-         "Specific BSR matrix block dimension testing: blockdim is only applicable to SPARSE-2 "
-         "& SPARSE-3: the block dimension in BSR")
+         "BSR block dimension (default: 2)")
 
         ("mtx",
          po::value<std::string>(&filename)->default_value(""), "read from matrix "
@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
          po::value<std::string>(&function)->default_value("axpyi"),
          "SPARSE function to test. Options:\n"
          "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
-         "  Level2: coomv, csrmv, csrsv, ellmv, hybmv\n"
+         "  Level2: bsrmv, coomv, csrmv, csrsv, ellmv, hybmv\n"
          "  Level3: csrmm, csrsm\n"
          "  Extra: csrgemm\n"
          "  Preconditioner: csric0, csrilu0\n"
@@ -407,9 +407,9 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    if(arg.block_dim <= 0)
+    if(arg.block_dim < 2)
     {
-        std::cerr << "Invalid block dimension" << std::endl;
+        std::cerr << "Invalid value for --blockdim" << std::endl;
         return -1;
     }
 
@@ -486,6 +486,17 @@ int main(int argc, char* argv[])
             testing_sctr<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_sctr<rocsparse_double_complex>(arg);
+    }
+    else if(function == "bsrmv")
+    {
+        if(precision == 's')
+            testing_bsrmv<float>(arg);
+        else if(precision == 'd')
+            testing_bsrmv<double>(arg);
+        else if(precision == 'c')
+            testing_bsrmv<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_bsrmv<rocsparse_double_complex>(arg);
     }
     else if(function == "coomv")
     {
