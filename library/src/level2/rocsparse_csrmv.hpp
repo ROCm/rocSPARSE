@@ -33,7 +33,7 @@
 
 #include <hip/hip_runtime.h>
 
-#define BLOCKSIZE 1024
+#define BLOCK_SIZE 1024
 #define BLOCK_MULTIPLIER 3
 #define ROWS_FOR_VECTOR 1
 #define WG_BITS 24
@@ -189,10 +189,10 @@ static void ComputeRowBlocks(unsigned long long*  rowBlocks,
 
         // exactly one row results in non-zero elements to be greater than blockSize
         // This is csr-vector case; bottom WGBITS == workgroup ID
-        if((i - last_i == 1) && sum > static_cast<unsigned long long>(BLOCKSIZE))
+        if((i - last_i == 1) && sum > static_cast<unsigned long long>(BLOCK_SIZE))
         {
             rocsparse_int numWGReq = static_cast<rocsparse_int>(
-                std::ceil(static_cast<double>(row_length) / (BLOCK_MULTIPLIER * BLOCKSIZE)));
+                std::ceil(static_cast<double>(row_length) / (BLOCK_MULTIPLIER * BLOCK_SIZE)));
 
             // Check to ensure #workgroups can fit in WGBITS bits, if not
             // then the last workgroup will do all the remaining work
@@ -220,7 +220,7 @@ static void ComputeRowBlocks(unsigned long long*  rowBlocks,
         }
         // more than one row results in non-zero elements to be greater than blockSize
         // This is csr-stream case; bottom WGBITS = number of parallel reduction threads
-        else if((i - last_i > 1) && sum > static_cast<unsigned long long>(BLOCKSIZE))
+        else if((i - last_i > 1) && sum > static_cast<unsigned long long>(BLOCK_SIZE))
         {
             // This row won't fit, so back off one.
             --i;
@@ -242,7 +242,7 @@ static void ComputeRowBlocks(unsigned long long*  rowBlocks,
             consecutive_long_rows = 0;
         }
         // This is csr-stream case; bottom WGBITS = number of parallel reduction threads
-        else if(sum == static_cast<unsigned long long>(BLOCKSIZE))
+        else if(sum == static_cast<unsigned long long>(BLOCK_SIZE))
         {
             if(allocate_row_blocks)
             {
@@ -476,7 +476,7 @@ __launch_bounds__(WG_SIZE) __global__
                                              rocsparse_index_base idx_base)
 {
     csrmvn_adaptive_device<T,
-                           BLOCKSIZE,
+                           BLOCK_SIZE,
                            BLOCK_MULTIPLIER,
                            ROWS_FOR_VECTOR,
                            WG_BITS,
@@ -498,7 +498,7 @@ __launch_bounds__(WG_SIZE) __global__
                                                rocsparse_index_base idx_base)
 {
     csrmvn_adaptive_device<T,
-                           BLOCKSIZE,
+                           BLOCK_SIZE,
                            BLOCK_MULTIPLIER,
                            ROWS_FOR_VECTOR,
                            WG_BITS,

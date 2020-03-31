@@ -161,6 +161,207 @@ inline void host_sctr(
  * ===========================================================================
  */
 template <typename T>
+inline void host_bsrmv(rocsparse_direction  dir,
+                       rocsparse_operation  trans,
+                       rocsparse_int        mb,
+                       rocsparse_int        nb,
+                       rocsparse_int        nnzb,
+                       T                    alpha,
+                       const rocsparse_int* bsr_row_ptr,
+                       const rocsparse_int* bsr_col_ind,
+                       const T*             bsr_val,
+                       rocsparse_int        bsr_dim,
+                       const T*             x,
+                       T                    beta,
+                       T*                   y,
+                       rocsparse_index_base base)
+{
+    // Quick return
+    if(alpha == static_cast<T>(0))
+    {
+        if(beta != static_cast<T>(1))
+        {
+            for(rocsparse_int i = 0; i < mb * bsr_dim; ++i)
+            {
+                y[i] *= beta;
+            }
+        }
+
+        return;
+    }
+
+    rocsparse_int WFSIZE;
+
+    if(bsr_dim == 2)
+    {
+        rocsparse_int blocks_per_row = nnzb / mb;
+
+        if(blocks_per_row < 8)
+        {
+            WFSIZE = 4;
+        }
+        else if(blocks_per_row < 16)
+        {
+            WFSIZE = 8;
+        }
+        else if(blocks_per_row < 32)
+        {
+            WFSIZE = 16;
+        }
+        else if(blocks_per_row < 64)
+        {
+            WFSIZE = 32;
+        }
+        else
+        {
+            WFSIZE = 64;
+        }
+    }
+    else if(bsr_dim <= 8)
+    {
+        WFSIZE = 8;
+    }
+    else if(bsr_dim <= 16)
+    {
+        WFSIZE = 16;
+    }
+    else
+    {
+        WFSIZE = 32;
+    }
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int row = 0; row < mb; ++row)
+    {
+        rocsparse_int row_begin = bsr_row_ptr[row] - base;
+        rocsparse_int row_end   = bsr_row_ptr[row + 1] - base;
+
+        if(bsr_dim == 2)
+        {
+            std::vector<T> sum0(WFSIZE, static_cast<T>(0));
+            std::vector<T> sum1(WFSIZE, static_cast<T>(0));
+
+            for(rocsparse_int j = row_begin; j < row_end; j += WFSIZE)
+            {
+                for(rocsparse_int k = 0; k < WFSIZE; ++k)
+                {
+                    if(j + k < row_end)
+                    {
+                        rocsparse_int col = bsr_col_ind[j + k] - base;
+
+                        if(dir == rocsparse_direction_column)
+                        {
+                            sum0[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 0],
+                                               x[col * bsr_dim + 0],
+                                               sum0[k]);
+                            sum1[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 1],
+                                               x[col * bsr_dim + 0],
+                                               sum1[k]);
+                            sum0[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 2],
+                                               x[col * bsr_dim + 1],
+                                               sum0[k]);
+                            sum1[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 3],
+                                               x[col * bsr_dim + 1],
+                                               sum1[k]);
+                        }
+                        else
+                        {
+                            sum0[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 0],
+                                               x[col * bsr_dim + 0],
+                                               sum0[k]);
+                            sum0[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 1],
+                                               x[col * bsr_dim + 1],
+                                               sum0[k]);
+                            sum1[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 2],
+                                               x[col * bsr_dim + 0],
+                                               sum1[k]);
+                            sum1[k] = std::fma(bsr_val[bsr_dim * bsr_dim * (j + k) + 3],
+                                               x[col * bsr_dim + 1],
+                                               sum1[k]);
+                        }
+                    }
+                }
+            }
+
+            for(unsigned int j = 1; j < WFSIZE; j <<= 1)
+            {
+                for(unsigned int k = 0; k < WFSIZE - j; ++k)
+                {
+                    sum0[k] += sum0[k + j];
+                    sum1[k] += sum1[k + j];
+                }
+            }
+
+            if(beta != static_cast<T>(0))
+            {
+                y[row * bsr_dim + 0] = std::fma(beta, y[row * bsr_dim + 0], alpha * sum0[0]);
+                y[row * bsr_dim + 1] = std::fma(beta, y[row * bsr_dim + 1], alpha * sum1[0]);
+            }
+            else
+            {
+                y[row * bsr_dim + 0] = alpha * sum0[0];
+                y[row * bsr_dim + 1] = alpha * sum1[0];
+            }
+        }
+        else
+        {
+            for(rocsparse_int bi = 0; bi < bsr_dim; ++bi)
+            {
+                std::vector<T> sum(WFSIZE, static_cast<T>(0));
+
+                for(rocsparse_int j = row_begin; j < row_end; ++j)
+                {
+                    rocsparse_int col = bsr_col_ind[j] - base;
+
+                    for(rocsparse_int bj = 0; bj < bsr_dim; bj += WFSIZE)
+                    {
+                        for(unsigned int k = 0; k < WFSIZE; ++k)
+                        {
+                            if(bj + k < bsr_dim)
+                            {
+                                if(dir == rocsparse_direction_column)
+                                {
+                                    sum[k] = std::fma(
+                                        bsr_val[bsr_dim * bsr_dim * j + bsr_dim * (bj + k) + bi],
+                                        x[bsr_dim * col + (bj + k)],
+                                        sum[k]);
+                                }
+                                else
+                                {
+                                    sum[k] = std::fma(
+                                        bsr_val[bsr_dim * bsr_dim * j + bsr_dim * bi + (bj + k)],
+                                        x[bsr_dim * col + (bj + k)],
+                                        sum[k]);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for(unsigned int j = 1; j < WFSIZE; j <<= 1)
+                {
+                    for(unsigned int k = 0; k < WFSIZE - j; ++k)
+                    {
+                        sum[k] += sum[k + j];
+                    }
+                }
+
+                if(beta != static_cast<T>(0))
+                {
+                    y[row * bsr_dim + bi] = std::fma(beta, y[row * bsr_dim + bi], alpha * sum[0]);
+                }
+                else
+                {
+                    y[row * bsr_dim + bi] = alpha * sum[0];
+                }
+            }
+        }
+    }
+}
+
+template <typename T>
 inline void host_coomv(rocsparse_int        M,
                        rocsparse_int        nnz,
                        T                    alpha,
@@ -1548,7 +1749,6 @@ inline void host_csrilu0(rocsparse_int                     M,
  *    conversion SPARSE
  * ===========================================================================
  */
-
 template <typename T>
 rocsparse_status host_nnz(rocsparse_direction       dirA,
                           rocsparse_int             m,

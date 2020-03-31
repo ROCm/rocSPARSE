@@ -79,6 +79,19 @@ constexpr double sctr_gbyte_count(rocsparse_int nnz)
  * ===========================================================================
  */
 template <typename T>
+constexpr double bsrmv_gbyte_count(rocsparse_int mb,
+                                   rocsparse_int nb,
+                                   rocsparse_int nnzb,
+                                   rocsparse_int bsr_dim,
+                                   bool          beta = false)
+{
+    return ((mb + 1 + nnzb) * sizeof(rocsparse_int)
+            + ((mb + nb) * bsr_dim + nnzb * bsr_dim * bsr_dim + (beta ? mb * bsr_dim : 0))
+                  * sizeof(T))
+           / 1e9;
+}
+
+template <typename T>
 constexpr double
     coomv_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz, bool beta = false)
 {

@@ -51,6 +51,10 @@ Functions:
   rocsparse_csctr: { function: sctr, <<: *single_precision_complex }
   rocsparse_zsctr: { function: sctr, <<: *double_precision_complex }
 
+  rocsparse_sbsrmv: { function: bsrmv, <<: *single_precision }
+  rocsparse_dbsrmv: { function: bsrmv, <<: *double_precision }
+  rocsparse_cbsrmv: { function: bsrmv, <<: *single_precision_complex }
+  rocsparse_zbsrmv: { function: bsrmv, <<: *double_precision_complex }
   rocsparse_scoomv: { function: coomv, <<: *single_precision }
   rocsparse_dcoomv: { function: coomv, <<: *double_precision }
   rocsparse_ccoomv: { function: coomv, <<: *single_precision_complex }
