@@ -9,9 +9,19 @@ def runCompileCommand(platform, project, jobName)
     String hipClangArgs = jobName.contains('hipclang') ? ' --hip-clang' : ''
     String sudo = platform.jenkinsLabel.contains('sles') ? 'sudo' : ''
 
+    def getDependenciesCommand = ""
+    if (project.installLibraryDependenciesFromCI)
+    {
+        project.libraryDependencies.each
+        { libraryName ->
+            getDependenciesCommand += auxiliary.getLibrary(libraryName, platform.jenkinsLabel, 'develop')
+        }
+    }
+
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}
+                ${getDependenciesCommand}
                 ${sudo} LD_LIBRARY_PATH=/opt/rocm/lib CXX=/opt/rocm/bin/${compiler} ${project.paths.build_command} ${hipClangArgs}
             """
 

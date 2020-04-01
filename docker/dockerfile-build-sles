@@ -5,6 +5,7 @@ FROM ${base_image}
 LABEL maintainer="rocsparse-maintainer@amd.com"
 
 ARG user_uid
+ARG library_dependencies="rocprim"
 
 # Install dependent packages
 # Dependencies: rocprim
@@ -25,17 +26,20 @@ RUN zypper -n --no-gpg-checks install \
     pkg-config \
     python3-pip \
     dpkg \
-    rocprim \
     libcxxtools9 \
     libboost_program_options1_66_0-devel \
     libnuma1 \
-    rpm-build
+    rpm-build \
+    wget \
+    unzip \
+    ${library_dependencies}
+
 
 RUN pip3 install pyyaml
 
 # docker pipeline runs containers with particular uid
 # create a jenkins user with this specific uid so it can use sudo priviledges
-# Grant any member of sudo group password-less sudo privileges
+# Grant any member of video group password-less sudo privileges
 RUN useradd --create-home -u ${user_uid} -o -G video --shell /bin/bash jenkins && \
     echo '%video ALL=(ALL) NOPASSWD:ALL' | tee /etc/sudoers.d/sudo-nopasswd && \
     chmod 400 /etc/sudoers.d/sudo-nopasswd
