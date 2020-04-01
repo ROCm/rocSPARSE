@@ -17,6 +17,7 @@ def runCI =
 
     // customize for project
     prj.paths.build_command = './install.sh -c'
+    prj.libraryDependencies = ['rocPRIM']
     prj.timeout.test = 600
 
     // Define test architectures, optional rocm version argument is available
