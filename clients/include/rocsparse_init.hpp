@@ -971,51 +971,6 @@ inline void rocsparse_init_coo_rocalution(const char*                 filename,
 }
 
 /* ==================================================================================== */
-/*! \brief  Read matrix from binary file in rocALUTION format */
-template <typename T>
-inline void rocsparse_init_bsr_rocalution(const char*                 filename,
-                                          std::vector<rocsparse_int>& bsr_row_ptr,
-                                          std::vector<rocsparse_int>& bsr_col_ind,
-                                          std::vector<T>&             bsr_val,
-                                          rocsparse_direction         direction,
-                                          rocsparse_int&              Mb,
-                                          rocsparse_int&              Nb,
-                                          rocsparse_int               block_dim,
-                                          rocsparse_int&              nnzb,
-                                          rocsparse_index_base        base,
-                                          bool                        toint)
-{
-    std::vector<rocsparse_int> csr_row_ptr;
-    std::vector<rocsparse_int> csr_col_ind;
-    std::vector<T>             csr_val;
-
-    rocsparse_int M   = 0;
-    rocsparse_int N   = 0;
-    rocsparse_int nnz = 0;
-
-    rocsparse_init_csr_rocalution(
-        filename, csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base, toint);
-
-    Mb = (M + block_dim - 1) / block_dim;
-    Nb = (N + block_dim - 1) / block_dim;
-
-    // Convert to BSR
-    host_csr_to_bsr(direction,
-                    M,
-                    N,
-                    block_dim,
-                    nnzb,
-                    base,
-                    csr_row_ptr,
-                    csr_col_ind,
-                    csr_val,
-                    base,
-                    bsr_row_ptr,
-                    bsr_col_ind,
-                    bsr_val);
-}
-
-/* ==================================================================================== */
 /*! \brief  Generate a random sparse matrix in CSR format */
 template <typename T>
 inline void rocsparse_init_csr_random(std::vector<rocsparse_int>& row_ptr,
@@ -1057,46 +1012,6 @@ inline void rocsparse_init_coo_random(std::vector<rocsparse_int>& row_ind,
 
     // Sample random matrix
     rocsparse_init_coo_matrix(row_ind, col_ind, val, M, N, nnz, base, full_rank);
-}
-
-/* ==================================================================================== */
-/*! \brief  Generate a random sparse matrix in BSR format */
-template <typename T>
-inline void rocsparse_init_bsr_random(std::vector<rocsparse_int>& bsr_row_ptr,
-                                      std::vector<rocsparse_int>& bsr_col_ind,
-                                      std::vector<T>&             bsr_val,
-                                      rocsparse_direction         direction,
-                                      rocsparse_int               Mb,
-                                      rocsparse_int               Nb,
-                                      rocsparse_int               block_dim,
-                                      rocsparse_int&              nnzb,
-                                      rocsparse_index_base        base,
-                                      bool                        full_rank = false)
-{
-    std::vector<rocsparse_int> csr_row_ptr;
-    std::vector<rocsparse_int> csr_col_ind;
-    std::vector<T>             csr_val;
-
-    rocsparse_int M   = Mb * block_dim;
-    rocsparse_int N   = Nb * block_dim;
-    rocsparse_int nnz = 0;
-
-    rocsparse_init_csr_random(csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base, full_rank);
-
-    // Convert to BSR
-    host_csr_to_bsr(direction,
-                    M,
-                    N,
-                    block_dim,
-                    nnzb,
-                    base,
-                    csr_row_ptr,
-                    csr_col_ind,
-                    csr_val,
-                    base,
-                    bsr_row_ptr,
-                    bsr_col_ind,
-                    bsr_val);
 }
 
 /* ==================================================================================== */
@@ -1186,54 +1101,6 @@ inline void rocsparse_init_coo_matrix(std::vector<rocsparse_int>& coo_row_ind,
     else if(matrix == rocsparse_matrix_file_mtx)
     {
         rocsparse_init_coo_mtx(filename, coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base);
-    }
-}
-
-/* ==================================================================================== */
-/*! \brief  Initialize a sparse matrix in BSR format */
-template <typename T>
-inline void rocsparse_init_bsr_matrix(std::vector<rocsparse_int>& bsr_row_ptr,
-                                      std::vector<rocsparse_int>& bsr_col_ind,
-                                      std::vector<T>&             bsr_val,
-                                      rocsparse_direction         direction,
-                                      rocsparse_int&              Mb,
-                                      rocsparse_int&              Nb,
-                                      rocsparse_int               block_dim,
-                                      rocsparse_int&              K,
-                                      rocsparse_int               dim_x,
-                                      rocsparse_int               dim_y,
-                                      rocsparse_int               dim_z,
-                                      rocsparse_int&              nnzb,
-                                      rocsparse_index_base        base,
-                                      rocsparse_matrix_init       matrix,
-                                      const char*                 filename,
-                                      bool                        toint     = false,
-                                      bool                        full_rank = false)
-{
-    // Differentiate the different matrix generators
-    if(matrix == rocsparse_matrix_random)
-    {
-        rocsparse_init_bsr_random(
-            bsr_row_ptr, bsr_col_ind, bsr_val, direction, Mb, Nb, block_dim, nnzb, base, full_rank);
-    }
-    else if(matrix == rocsparse_matrix_file_rocalution)
-    {
-        rocsparse_init_bsr_rocalution(filename,
-                                      bsr_row_ptr,
-                                      bsr_col_ind,
-                                      bsr_val,
-                                      direction,
-                                      Mb,
-                                      Nb,
-                                      block_dim,
-                                      nnzb,
-                                      base,
-                                      toint);
-    }
-    else if(matrix == rocsparse_matrix_file_mtx)
-    {
-        rocsparse_init_bsr_mtx(
-            filename, bsr_row_ptr, bsr_col_ind, bsr_val, direction, Mb, Nb, block_dim, nnzb, base);
     }
 }
 

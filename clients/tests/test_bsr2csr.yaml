@@ -35,8 +35,8 @@ Tests:
   category: quick
   function: bsr2csr
   precision: *single_double_precisions_complex_real
-  M: [1, 99, 872]
-  N: [1, 89, 623]
+  M: [1, 99, 872, 17034]
+  N: [1, 89, 623, 17385]
   block_dim: [-1, 0, 1, 2, 3, 7, 8, 64]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_one]
@@ -49,7 +49,7 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  block_dim: [5]
+  block_dim: [5, 9]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -91,8 +91,8 @@ Tests:
   category: nightly
   function: bsr2csr
   precision: *single_double_precisions_complex_real
-  M: [27428, 94129]
-  N: [18582, 57193]
+  M: [27428, 94129, 375868]
+  N: [18582, 57193, 486726]
   block_dim: [3, 7, 9]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_zero]
@@ -105,7 +105,7 @@ Tests:
   precision: *single_double_precisions_complex
   M: 1
   N: 1
-  block_dim: [7]
+  block_dim: [3, 7]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -119,7 +119,7 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  block_dim: [7]
+  block_dim: [5, 7]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
