@@ -108,6 +108,11 @@ Functions:
   rocsparse_csrsm_zero_pivot: {function: csrsm }
   rocsparse_csrsm_clear: {function: csrsm }
 
+  rocsparse_csrgeam_nnz: { function: csrgeam }
+  rocsparse_scsrgeam: { function: csrgeam, <<: *single_precision }
+  rocsparse_dcsrgeam: { function: csrgeam, <<: *double_precision }
+  rocsparse_ccsrgeam: { function: csrgeam, <<: *single_precision_complex }
+  rocsparse_zcsrgeam: { function: csrgeam, <<: *double_precision_complex }
   rocsparse_scsrgemm_buffer_size: { function: csrgemm, <<: *single_precision }
   rocsparse_dcsrgemm_buffer_size: { function: csrgemm, <<: *double_precision }
   rocsparse_ccsrgemm_buffer_size: { function: csrgemm, <<: *single_precision_complex }

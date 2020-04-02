@@ -142,6 +142,21 @@ constexpr double csrmm_gbyte_count(rocsparse_int M,
  * ===========================================================================
  */
 template <typename T>
+constexpr double csrgeam_gbyte_count(rocsparse_int M,
+                                     rocsparse_int nnz_A,
+                                     rocsparse_int nnz_B,
+                                     rocsparse_int nnz_C,
+                                     const T*      alpha,
+                                     const T*      beta)
+{
+    double size_A = alpha ? (M + 1.0 + nnz_A) * sizeof(rocsparse_int) + nnz_A * sizeof(T) : 0.0;
+    double size_B = alpha ? (M + 1.0 + nnz_B) * sizeof(rocsparse_int) + nnz_B * sizeof(T) : 0.0;
+    double size_C = (M + 1.0 + nnz_C) * sizeof(rocsparse_int) + nnz_C * sizeof(T);
+
+    return (size_A + size_B + size_C) / 1e9;
+}
+
+template <typename T>
 constexpr double csrgemm_gbyte_count(rocsparse_int M,
                                      rocsparse_int N,
                                      rocsparse_int K,
