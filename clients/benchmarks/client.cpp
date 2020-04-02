@@ -46,6 +46,7 @@
 #include "testing_csrsm.hpp"
 
 // Extra
+#include "testing_csrgeam.hpp"
 #include "testing_csrgemm.hpp"
 
 // Preconditioner
@@ -208,7 +209,7 @@ int main(int argc, char* argv[])
          "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
          "  Level2: bsrmv, coomv, csrmv, csrsv, ellmv, hybmv\n"
          "  Level3: csrmm, csrsm\n"
-         "  Extra: csrgemm\n"
+         "  Extra: csrgeam, csrgemm\n"
          "  Preconditioner: csric0, csrilu0\n"
          "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb, csr2bsr\n"
          "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2csc\n"
@@ -575,6 +576,17 @@ int main(int argc, char* argv[])
             testing_csrsm<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_csrsm<rocsparse_double_complex>(arg);
+    }
+    else if(function == "csrgeam")
+    {
+        if(precision == 's')
+            testing_csrgeam<float>(arg);
+        else if(precision == 'd')
+            testing_csrgeam<double>(arg);
+        else if(precision == 'c')
+            testing_csrgeam<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_csrgeam<rocsparse_double_complex>(arg);
     }
     else if(function == "csrgemm")
     {

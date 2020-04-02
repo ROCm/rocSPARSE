@@ -90,6 +90,38 @@ constexpr double
  * ===========================================================================
  */
 template <typename T>
+constexpr double csrgeam_gflop_count(
+    rocsparse_int nnz_A, rocsparse_int nnz_B, rocsparse_int nnz_C, const T* alpha, const T* beta)
+{
+    // Flop counter
+    double flops = 0.0;
+
+    if(alpha && beta)
+    {
+        // Count alpha * A
+        flops += static_cast<double>(nnz_A);
+
+        // Count beta * B
+        flops += static_cast<double>(nnz_B);
+
+        // Count A + B
+        flops += static_cast<double>(nnz_C);
+    }
+    else if(!alpha)
+    {
+        // Count beta * B
+        flops += static_cast<double>(nnz_B);
+    }
+    else
+    {
+        // Count alpha * A
+        flops += static_cast<double>(nnz_A);
+    }
+
+    return flops / 1e9;
+}
+
+template <typename T>
 constexpr double csrgemm_gflop_count(rocsparse_int                     M,
                                      const T*                          alpha,
                                      const std::vector<rocsparse_int>& csr_row_ptr_A,

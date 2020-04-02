@@ -334,6 +334,28 @@ rocsparse_status rocsparse_csrsm_solve(rocsparse_handle          handle,
  *    extra SPARSE
  * ===========================================================================
  */
+// csrgeam
+template <typename T>
+rocsparse_status rocsparse_csrgeam(rocsparse_handle          handle,
+                                   rocsparse_int             m,
+                                   rocsparse_int             n,
+                                   const T*                  alpha,
+                                   const rocsparse_mat_descr descr_A,
+                                   rocsparse_int             nnz_A,
+                                   const T*                  csr_val_A,
+                                   const rocsparse_int*      csr_row_ptr_A,
+                                   const rocsparse_int*      csr_col_ind_A,
+                                   const T*                  beta,
+                                   const rocsparse_mat_descr descr_B,
+                                   rocsparse_int             nnz_B,
+                                   const T*                  csr_val_B,
+                                   const rocsparse_int*      csr_row_ptr_B,
+                                   const rocsparse_int*      csr_col_ind_B,
+                                   const rocsparse_mat_descr descr_C,
+                                   T*                        csr_val_C,
+                                   const rocsparse_int*      csr_row_ptr_C,
+                                   rocsparse_int*            csr_col_ind_C);
+
 // csrgemm
 template <typename T>
 rocsparse_status rocsparse_csrgemm_buffer_size(rocsparse_handle          handle,
