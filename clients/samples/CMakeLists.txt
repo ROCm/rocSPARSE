@@ -54,8 +54,31 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
 endfunction()
 
 # Examples
+
+# Auxiliary
 add_rocsparse_example(example_handle.cpp)
+
+# Level 1
+add_rocsparse_example(example_axpyi.cpp)
+add_rocsparse_example(example_doti.cpp)
+add_rocsparse_example(example_dotci.cpp)
+add_rocsparse_example(example_gthr.cpp)
+add_rocsparse_example(example_gthrz.cpp)
+add_rocsparse_example(example_roti.cpp)
+add_rocsparse_example(example_sctr.cpp)
+
+# Level 2
+add_rocsparse_example(example_bsrmv.cpp)
 add_rocsparse_example(example_coomv.cpp)
 add_rocsparse_example(example_csrmv.cpp)
 add_rocsparse_example(example_ellmv.cpp)
 add_rocsparse_example(example_hybmv.cpp)
+add_rocsparse_example(example_csrsv.cpp)
+
+# Level 3
+add_rocsparse_example(example_csrmm.cpp)
+add_rocsparse_example(example_csrsm.cpp)
+
+# Extra
+add_rocsparse_example(example_csrgeam.cpp)
+add_rocsparse_example(example_csrgemm.cpp)
