@@ -84,8 +84,17 @@ foreach(m ${TEST_MATRICES})
   set(CMAKE_MATRICES_DIR ${PROJECT_BINARY_DIR}/matrices)
   if(NOT EXISTS "${CMAKE_MATRICES_DIR}/${mat}.csr")
     message("  Downloading and extracting test matrix ${m}.tar.gz")
-    file(DOWNLOAD https://sparse.tamu.edu/MM/${m}.tar.gz
-         ${CMAKE_MATRICES_DIR}/${mat}.tar.gz)
+    file(DOWNLOAD https://sparse.tamu.edu/MM/${m}.tar.gz ${CMAKE_MATRICES_DIR}/${mat}.tar.gz
+         INACTIVITY_TIMEOUT 3
+         STATUS DL)
+
+    list(GET DL 0 stat)
+    list(GET DL 1 msg)
+
+    if(NOT stat EQUAL 0)
+      message(FATAL_ERROR "${msg}")
+    endif()
+
     execute_process(COMMAND tar xf ${mat}.tar.gz
                     WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
     execute_process(COMMAND mv ${mat}/${mat}.mtx .
