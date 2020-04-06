@@ -98,7 +98,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
 
             // Check if value in matrix will be kept
             const bool predicate
-                = rocsparse_abs(value) > std::real(tol)
+                = rocsparse_abs(value) > rocsparse_real(tol)
                           && rocsparse_abs(value) > std::numeric_limits<float>::min()
                       ? true
                       : false;

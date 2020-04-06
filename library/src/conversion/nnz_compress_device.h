@@ -60,7 +60,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
         for(rocsparse_int i = start_A + segment_lane_id; i < end_A; i += SEGMENT_SIZE)
         {
             const T value = csr_val_A[i];
-            if(rocsparse_abs(value) > std::real(tol)
+            if(rocsparse_abs(value) > rocsparse_real(tol)
                && rocsparse_abs(value) > std::numeric_limits<float>::min())
             {
                 count++;

@@ -51,6 +51,11 @@ __device__ __forceinline__ double rocsparse_conj(const double& x) { return x; }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_conj(const rocsparse_float_complex& x) { return std::conj(x); }
 __device__ __forceinline__ rocsparse_double_complex rocsparse_conj(const rocsparse_double_complex& x) { return std::conj(x); }
 
+__device__ __forceinline__ float rocsparse_real(const float& x) { return x; }
+__device__ __forceinline__ double rocsparse_real(const double& x) { return x; }
+__device__ __forceinline__ float rocsparse_real(const rocsparse_float_complex& x) { return std::real(x); }
+__device__ __forceinline__ double rocsparse_real(const rocsparse_double_complex& x) { return std::real(x); }
+
 __device__ __forceinline__ float rocsparse_nontemporal_load(const float* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ double rocsparse_nontemporal_load(const double* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_nontemporal_load(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__builtin_nontemporal_load((const float*)ptr), __builtin_nontemporal_load((const float*)ptr + 1)); }

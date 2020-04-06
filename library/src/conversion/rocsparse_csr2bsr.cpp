@@ -33,20 +33,20 @@
  * ===========================================================================
  */
 
-#define launch_csr2bsr_nnz_fast_kernel(block_size, bsr_block_dim, segment_size)          \
-    hipLaunchKernelGGL(csr2bsr_nnz_fast_kernel<block_size, bsr_block_dim, segment_size>, \
-                       dim3(grid_size),                                                  \
-                       dim3(block_size),                                                 \
-                       0,                                                                \
-                       handle->stream,                                                   \
-                       m,                                                                \
-                       n,                                                                \
-                       mb,                                                               \
-                       nb,                                                               \
-                       csr_descr->base,                                                  \
-                       csr_row_ptr,                                                      \
-                       csr_col_ind,                                                      \
-                       bsr_descr->base,                                                  \
+#define launch_csr2bsr_nnz_fast_kernel(block_size, bsr_block_dim, segment_size)            \
+    hipLaunchKernelGGL((csr2bsr_nnz_fast_kernel<block_size, bsr_block_dim, segment_size>), \
+                       dim3(grid_size),                                                    \
+                       dim3(block_size),                                                   \
+                       0,                                                                  \
+                       handle->stream,                                                     \
+                       m,                                                                  \
+                       n,                                                                  \
+                       mb,                                                                 \
+                       nb,                                                                 \
+                       csr_descr->base,                                                    \
+                       csr_row_ptr,                                                        \
+                       csr_col_ind,                                                        \
+                       bsr_descr->base,                                                    \
                        bsr_row_ptr);
 
 extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          handle,
