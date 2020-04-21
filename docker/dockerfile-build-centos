@@ -13,7 +13,7 @@ ARG library_dependencies="rocprim"
 # * rocsparse-test: gtest gtest-devel
 # * rocsparse-bench: boost-devel
 # * libhsakmt.so: numactl-libs
-RUN yum install -y \
+RUN yum install -y --nogpgcheck\
     sudo \
     rock-dkms \
     centos-release-scl \
