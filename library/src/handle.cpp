@@ -211,13 +211,13 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
 }
 
 /********************************************************************************
- * \brief rocsparse_csrtr_info is a structure holding the rocsparse csrsv, csrsm,
- * csrilu0 and csric0 data gathered during csrsv_analysis, csrilu0_analysis and
- * csric0_analysis. It must be initialized using the
- * rocsparse_create_csrtr_info() routine. It should be destroyed at the end
- * using rocsparse_destroy_csrtr_info().
+ * \brief rocsparse_trm_info is a structure holding the rocsparse csrsv,
+ * csrsm, csrilu0 and csric0 data gathered during csrsv_analysis,
+ * csrilu0_analysis and csric0_analysis. It must be initialized using the
+ * rocsparse_create_trm_info() routine. It should be destroyed at the end
+ * using rocsparse_destroy_trm_info().
  *******************************************************************************/
-rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info)
+rocsparse_status rocsparse_create_trm_info(rocsparse_trm_info* info)
 {
     if(info == nullptr)
     {
@@ -228,7 +228,7 @@ rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info)
         // Allocate
         try
         {
-            *info = new _rocsparse_csrtr_info;
+            *info = new _rocsparse_trm_info;
         }
         catch(const rocsparse_status& status)
         {
@@ -239,9 +239,9 @@ rocsparse_status rocsparse_create_csrtr_info(rocsparse_csrtr_info* info)
 }
 
 /********************************************************************************
- * \brief Destroy csrmv info.
+ * \brief Destroy trm info.
  *******************************************************************************/
-rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
+rocsparse_status rocsparse_destroy_trm_info(rocsparse_trm_info info)
 {
     if(info == nullptr)
     {
@@ -255,29 +255,29 @@ rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
         info->row_map = nullptr;
     }
 
-    if(info->csr_diag_ind != nullptr)
+    if(info->trm_diag_ind != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->csr_diag_ind));
-        info->csr_diag_ind = nullptr;
+        RETURN_IF_HIP_ERROR(hipFree(info->trm_diag_ind));
+        info->trm_diag_ind = nullptr;
     }
 
-    // Clear csrt arrays
-    if(info->csrt_perm != nullptr)
+    // Clear trmt arrays
+    if(info->trmt_perm != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->csrt_perm));
-        info->csrt_perm = nullptr;
+        RETURN_IF_HIP_ERROR(hipFree(info->trmt_perm));
+        info->trmt_perm = nullptr;
     }
 
-    if(info->csrt_row_ptr != nullptr)
+    if(info->trmt_row_ptr != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->csrt_row_ptr));
-        info->csrt_row_ptr = nullptr;
+        RETURN_IF_HIP_ERROR(hipFree(info->trmt_row_ptr));
+        info->trmt_row_ptr = nullptr;
     }
 
-    if(info->csrt_col_ind != nullptr)
+    if(info->trmt_col_ind != nullptr)
     {
-        RETURN_IF_HIP_ERROR(hipFree(info->csrt_col_ind));
-        info->csrt_col_ind = nullptr;
+        RETURN_IF_HIP_ERROR(hipFree(info->trmt_col_ind));
+        info->trmt_col_ind = nullptr;
     }
 
     // Destruct
@@ -293,10 +293,10 @@ rocsparse_status rocsparse_destroy_csrtr_info(rocsparse_csrtr_info info)
 }
 
 /********************************************************************************
- * \brief rocsparse_check_csrtr_shared checks if the given csrtr info structure
- * shares its meta data with another csrtr info structure.
+ * \brief rocsparse_check_trm_shared checks if the given trm info structure
+ * shares its meta data with another trm info structure.
  *******************************************************************************/
-bool rocsparse_check_csrtr_shared(const rocsparse_mat_info info, rocsparse_csrtr_info csrtr)
+bool rocsparse_check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_info trm)
 {
     if(info == nullptr)
     {
@@ -305,21 +305,21 @@ bool rocsparse_check_csrtr_shared(const rocsparse_mat_info info, rocsparse_csrtr
 
     int shared = -1;
 
-    if(csrtr == info->csrilu0_info)
+    if(trm == info->csrilu0_info)
         ++shared;
-    if(csrtr == info->csric0_info)
+    if(trm == info->csric0_info)
         ++shared;
-    if(csrtr == info->csrsv_lower_info)
+    if(trm == info->csrsv_lower_info)
         ++shared;
-    if(csrtr == info->csrsv_upper_info)
+    if(trm == info->csrsv_upper_info)
         ++shared;
-    if(csrtr == info->csrsvt_lower_info)
+    if(trm == info->csrsvt_lower_info)
         ++shared;
-    if(csrtr == info->csrsvt_upper_info)
+    if(trm == info->csrsvt_upper_info)
         ++shared;
-    if(csrtr == info->csrsm_lower_info)
+    if(trm == info->csrsm_lower_info)
         ++shared;
-    if(csrtr == info->csrsm_upper_info)
+    if(trm == info->csrsm_upper_info)
         ++shared;
 
     return (shared > 0) ? true : false;

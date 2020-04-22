@@ -427,13 +427,13 @@ extern "C" rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsp
     log_trace(handle, "rocsparse_csrsm_clear", (const void*&)info);
 
     // Clear csrsm meta data (this includes lower, upper and their transposed equivalents
-    if(!rocsparse_check_csrtr_shared(info, info->csrsm_lower_info))
+    if(!rocsparse_check_trm_shared(info, info->csrsm_lower_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsm_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsm_lower_info));
     }
-    if(!rocsparse_check_csrtr_shared(info, info->csrsm_upper_info))
+    if(!rocsparse_check_trm_shared(info, info->csrsm_upper_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsm_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsm_upper_info));
     }
 
     info->csrsm_lower_info = nullptr;

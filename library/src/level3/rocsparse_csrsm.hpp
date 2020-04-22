@@ -425,23 +425,23 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
         // found to be re-used
 
         // Clear csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsm_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsm_upper_info));
 
         // Create csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrtr_info(&info->csrsm_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&info->csrsm_upper_info));
 
         // Perform analysis
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrtr_analysis(handle,
-                                                           trans_A,
-                                                           m,
-                                                           nnz,
-                                                           descr,
-                                                           csr_val,
-                                                           csr_row_ptr,
-                                                           csr_col_ind,
-                                                           info->csrsm_upper_info,
-                                                           &info->zero_pivot,
-                                                           temp_buffer));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_trm_analysis(handle,
+                                                         trans_A,
+                                                         m,
+                                                         nnz,
+                                                         descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind,
+                                                         info->csrsm_upper_info,
+                                                         &info->zero_pivot,
+                                                         temp_buffer));
     }
     else
     {
@@ -488,23 +488,23 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
         // found to be re-used
 
         // Clear csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsm_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsm_lower_info));
 
         // Create csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrtr_info(&info->csrsm_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&info->csrsm_lower_info));
 
         // Perform analysis
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrtr_analysis(handle,
-                                                           trans_A,
-                                                           m,
-                                                           nnz,
-                                                           descr,
-                                                           csr_val,
-                                                           csr_row_ptr,
-                                                           csr_col_ind,
-                                                           info->csrsm_lower_info,
-                                                           &info->zero_pivot,
-                                                           temp_buffer));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_trm_analysis(handle,
+                                                         trans_A,
+                                                         m,
+                                                         nnz,
+                                                         descr,
+                                                         csr_val,
+                                                         csr_row_ptr,
+                                                         csr_col_ind,
+                                                         info->csrsm_lower_info,
+                                                         &info->zero_pivot,
+                                                         temp_buffer));
     }
 
     return rocsparse_status_success;
@@ -756,9 +756,9 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
     // Initialize buffers
     RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * m * narrays, stream));
 
-    rocsparse_csrtr_info csrsm = (descr->fill_mode == rocsparse_fill_mode_upper)
-                                     ? info->csrsm_upper_info
-                                     : info->csrsm_lower_info;
+    rocsparse_trm_info csrsm = (descr->fill_mode == rocsparse_fill_mode_upper)
+                                   ? info->csrsm_upper_info
+                                   : info->csrsm_lower_info;
 
     if(csrsm == nullptr)
     {

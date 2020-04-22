@@ -223,21 +223,21 @@ extern "C" rocsparse_status rocsparse_csrsv_clear(rocsparse_handle          hand
     log_trace(handle, "rocsparse_csrsv_clear", (const void*&)descr, (const void*&)info);
 
     // Clear csrsv meta data (this includes lower, upper and their transposed equivalents
-    if(!rocsparse_check_csrtr_shared(info, info->csrsv_lower_info))
+    if(!rocsparse_check_trm_shared(info, info->csrsv_lower_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsv_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsv_lower_info));
     }
-    if(!rocsparse_check_csrtr_shared(info, info->csrsvt_lower_info))
+    if(!rocsparse_check_trm_shared(info, info->csrsvt_lower_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsvt_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsvt_lower_info));
     }
-    if(!rocsparse_check_csrtr_shared(info, info->csrsv_upper_info))
+    if(!rocsparse_check_trm_shared(info, info->csrsv_upper_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsv_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsv_upper_info));
     }
-    if(!rocsparse_check_csrtr_shared(info, info->csrsvt_upper_info))
+    if(!rocsparse_check_trm_shared(info, info->csrsvt_upper_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csrsvt_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsvt_upper_info));
     }
 
     info->csrsv_lower_info  = nullptr;
