@@ -235,9 +235,9 @@ extern "C" rocsparse_status rocsparse_csric0_clear(rocsparse_handle handle, rocs
     log_trace(handle, "rocsparse_csric0_clear", (const void*&)info);
 
     // If meta data is not shared, delete it
-    if(!rocsparse_check_csrtr_shared(info, info->csric0_info))
+    if(!rocsparse_check_trm_shared(info, info->csric0_info))
     {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_csrtr_info(info->csric0_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csric0_info));
     }
 
     info->csric0_info = nullptr;
