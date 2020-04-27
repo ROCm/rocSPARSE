@@ -40,13 +40,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                                      rocsparse_int             n,
                                                      const rocsparse_mat_descr descr_A,
                                                      const T*                  csr_val_A,
-                                                     const rocsparse_int*      csr_col_ind_A,
                                                      const rocsparse_int*      csr_row_ptr_A,
+                                                     const rocsparse_int*      csr_col_ind_A,
                                                      rocsparse_int             nnz_A,
                                                      const rocsparse_int*      nnz_per_row,
                                                      T*                        csr_val_C,
-                                                     rocsparse_int*            csr_col_ind_C,
                                                      rocsparse_int*            csr_row_ptr_C,
+                                                     rocsparse_int*            csr_col_ind_C,
                                                      T                         tol)
 {
     // Check for valid handle and matrix descriptor
@@ -62,13 +62,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
               n,
               descr_A,
               (const void*&)csr_val_A,
-              (const void*&)csr_col_ind_A,
               (const void*&)csr_row_ptr_A,
+              (const void*&)csr_col_ind_A,
               nnz_A,
               (const void*&)nnz_per_row,
               (const void*&)csr_val_C,
-              (const void*&)csr_col_ind_C,
               (const void*&)csr_row_ptr_C,
+              (const void*&)csr_col_ind_C,
               tol);
 
     log_bench(
@@ -172,6 +172,11 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                                 op,
                                                 stream));
 
+    if(temp_alloc)
+    {
+        RETURN_IF_HIP_ERROR(hipFree(temp_storage_ptr));
+    }
+
     // Mean number of elements per row in the input CSR matrix
     rocsparse_int mean_nnz_per_row = nnz_A / m;
 
@@ -194,13 +199,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                n,
                                descr_A->base,
                                csr_val_A,
-                               csr_col_ind_A,
                                csr_row_ptr_A,
+                               csr_col_ind_A,
                                nnz_A,
                                nnz_per_row,
                                csr_val_C,
-                               csr_col_ind_C,
                                csr_row_ptr_C,
+                               csr_col_ind_C,
                                tol);
         }
         else if(mean_nnz_per_row < 8)
@@ -217,13 +222,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                n,
                                descr_A->base,
                                csr_val_A,
-                               csr_col_ind_A,
                                csr_row_ptr_A,
+                               csr_col_ind_A,
                                nnz_A,
                                nnz_per_row,
                                csr_val_C,
-                               csr_col_ind_C,
                                csr_row_ptr_C,
+                               csr_col_ind_C,
                                tol);
         }
         else if(mean_nnz_per_row < 16)
@@ -240,13 +245,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                n,
                                descr_A->base,
                                csr_val_A,
-                               csr_col_ind_A,
                                csr_row_ptr_A,
+                               csr_col_ind_A,
                                nnz_A,
                                nnz_per_row,
                                csr_val_C,
-                               csr_col_ind_C,
                                csr_row_ptr_C,
+                               csr_col_ind_C,
                                tol);
         }
         else if(mean_nnz_per_row < 32)
@@ -263,13 +268,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                n,
                                descr_A->base,
                                csr_val_A,
-                               csr_col_ind_A,
                                csr_row_ptr_A,
+                               csr_col_ind_A,
                                nnz_A,
                                nnz_per_row,
                                csr_val_C,
-                               csr_col_ind_C,
                                csr_row_ptr_C,
+                               csr_col_ind_C,
                                tol);
         }
         else
@@ -286,13 +291,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                n,
                                descr_A->base,
                                csr_val_A,
-                               csr_col_ind_A,
                                csr_row_ptr_A,
+                               csr_col_ind_A,
                                nnz_A,
                                nnz_per_row,
                                csr_val_C,
-                               csr_col_ind_C,
                                csr_row_ptr_C,
+                               csr_col_ind_C,
                                tol);
         }
     }
@@ -312,13 +317,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                n,
                                descr_A->base,
                                csr_val_A,
-                               csr_col_ind_A,
                                csr_row_ptr_A,
+                               csr_col_ind_A,
                                nnz_A,
                                nnz_per_row,
                                csr_val_C,
-                               csr_col_ind_C,
                                csr_row_ptr_C,
+                               csr_col_ind_C,
                                tol);
         }
         else if(mean_nnz_per_row < 8)
@@ -335,13 +340,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                n,
                                descr_A->base,
                                csr_val_A,
-                               csr_col_ind_A,
                                csr_row_ptr_A,
+                               csr_col_ind_A,
                                nnz_A,
                                nnz_per_row,
                                csr_val_C,
-                               csr_col_ind_C,
                                csr_row_ptr_C,
+                               csr_col_ind_C,
                                tol);
         }
         else if(mean_nnz_per_row < 16)
@@ -358,13 +363,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                n,
                                descr_A->base,
                                csr_val_A,
-                               csr_col_ind_A,
                                csr_row_ptr_A,
+                               csr_col_ind_A,
                                nnz_A,
                                nnz_per_row,
                                csr_val_C,
-                               csr_col_ind_C,
                                csr_row_ptr_C,
+                               csr_col_ind_C,
                                tol);
         }
         else if(mean_nnz_per_row < 32)
@@ -381,13 +386,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                n,
                                descr_A->base,
                                csr_val_A,
-                               csr_col_ind_A,
                                csr_row_ptr_A,
+                               csr_col_ind_A,
                                nnz_A,
                                nnz_per_row,
                                csr_val_C,
-                               csr_col_ind_C,
                                csr_row_ptr_C,
+                               csr_col_ind_C,
                                tol);
         }
         else if(mean_nnz_per_row < 64)
@@ -404,13 +409,13 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                n,
                                descr_A->base,
                                csr_val_A,
-                               csr_col_ind_A,
                                csr_row_ptr_A,
+                               csr_col_ind_A,
                                nnz_A,
                                nnz_per_row,
                                csr_val_C,
-                               csr_col_ind_C,
                                csr_row_ptr_C,
+                               csr_col_ind_C,
                                tol);
         }
         else
@@ -427,24 +432,19 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
                                n,
                                descr_A->base,
                                csr_val_A,
-                               csr_col_ind_A,
                                csr_row_ptr_A,
+                               csr_col_ind_A,
                                nnz_A,
                                nnz_per_row,
                                csr_val_C,
-                               csr_col_ind_C,
                                csr_row_ptr_C,
+                               csr_col_ind_C,
                                tol);
         }
     }
     else
     {
         return rocsparse_status_arch_mismatch;
-    }
-
-    if(temp_alloc)
-    {
-        RETURN_IF_HIP_ERROR(hipFree(temp_storage_ptr));
     }
 
     return rocsparse_status_success;

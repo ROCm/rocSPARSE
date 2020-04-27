@@ -6440,11 +6440,11 @@ rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
  *  @param[in]
  *  csr_val_A     array of \p nnz_A elements of the sparse CSR matrix.
  *  @param[in]
- *  csr_col_ind_A array of \p nnz_A elements containing the column indices of the uncompressed 
- *                sparse CSR matrix.
- *  @param[in]
  *  csr_row_ptr_A array of \p m+1 elements that point to the start of every row of the
  *                uncompressed sparse CSR matrix.
+ *  @param[in]
+ *  csr_col_ind_A array of \p nnz_A elements containing the column indices of the uncompressed 
+ *                sparse CSR matrix.
  *  @param[in]    
  *  nnz_A         number of elements in the column indices and values arrays of the uncompressed 
  *                sparse CSR matrix.  
@@ -6454,10 +6454,10 @@ rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
  *  @param[out]
  *  csr_val_C     array of \p nnz_C elements of the compressed sparse CSC matrix.
  *  @param[out]
- *  csr_col_ind_C array of \p nnz_C elements containing the row indices of the compressed
+ *  csr_row_ptr_C array of \p m+1 elements that point to the start of every column of the compressed 
  *                sparse CSR matrix.
  *  @param[out]
- *  csr_row_ptr_C array of \p m+1 elements that point to the start of every column of the compressed 
+ *  csr_col_ind_C array of \p nnz_C elements containing the row indices of the compressed
  *                sparse CSR matrix.
  *  @param[in]
  *  tol           the non-negative tolerance used for compression. If \p tol is complex then only the magnitude
@@ -6523,13 +6523,13 @@ rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
  *                       n,
  *                       descr_A,
  *                       csr_val_A,
- *                       csr_col_ind_A,
  *                       csr_row_ptr_A,
+ *                       csr_col_ind_A,
  *                       nnz_A,
  *                       nnz_per_row,
  *                       csr_val_C,
- *                       csr_col_ind_C,
  *                       csr_row_ptr_C,
+ *                       csr_col_ind_C,
  *                       tol);
  *  \endcode
  */
@@ -6540,13 +6540,13 @@ rocsparse_status rocsparse_scsr2csr_compress(rocsparse_handle          handle,
                                              rocsparse_int             n,
                                              const rocsparse_mat_descr descr_A,
                                              const float*              csr_val_A,
-                                             const rocsparse_int*      csr_col_ind_A,
                                              const rocsparse_int*      csr_row_ptr_A,
+                                             const rocsparse_int*      csr_col_ind_A,
                                              rocsparse_int             nnz_A,
                                              const rocsparse_int*      nnz_per_row,
                                              float*                    csr_val_C,
-                                             rocsparse_int*            csr_col_ind_C,
                                              rocsparse_int*            csr_row_ptr_C,
+                                             rocsparse_int*            csr_col_ind_C,
                                              float                     tol);
 
 ROCSPARSE_EXPORT
@@ -6555,13 +6555,13 @@ rocsparse_status rocsparse_dcsr2csr_compress(rocsparse_handle          handle,
                                              rocsparse_int             n,
                                              const rocsparse_mat_descr descr_A,
                                              const double*             csr_val_A,
-                                             const rocsparse_int*      csr_col_ind_A,
                                              const rocsparse_int*      csr_row_ptr_A,
+                                             const rocsparse_int*      csr_col_ind_A,
                                              rocsparse_int             nnz_A,
                                              const rocsparse_int*      nnz_per_row,
                                              double*                   csr_val_C,
-                                             rocsparse_int*            csr_col_ind_C,
                                              rocsparse_int*            csr_row_ptr_C,
+                                             rocsparse_int*            csr_col_ind_C,
                                              double                    tol);
 
 ROCSPARSE_EXPORT
@@ -6570,13 +6570,13 @@ rocsparse_status rocsparse_ccsr2csr_compress(rocsparse_handle               hand
                                              rocsparse_int                  n,
                                              const rocsparse_mat_descr      descr_A,
                                              const rocsparse_float_complex* csr_val_A,
-                                             const rocsparse_int*           csr_col_ind_A,
                                              const rocsparse_int*           csr_row_ptr_A,
+                                             const rocsparse_int*           csr_col_ind_A,
                                              rocsparse_int                  nnz_A,
                                              const rocsparse_int*           nnz_per_row,
                                              rocsparse_float_complex*       csr_val_C,
-                                             rocsparse_int*                 csr_col_ind_C,
                                              rocsparse_int*                 csr_row_ptr_C,
+                                             rocsparse_int*                 csr_col_ind_C,
                                              rocsparse_float_complex        tol);
 
 ROCSPARSE_EXPORT
@@ -6585,13 +6585,13 @@ rocsparse_status rocsparse_zcsr2csr_compress(rocsparse_handle                han
                                              rocsparse_int                   n,
                                              const rocsparse_mat_descr       descr_A,
                                              const rocsparse_double_complex* csr_val_A,
-                                             const rocsparse_int*            csr_col_ind_A,
                                              const rocsparse_int*            csr_row_ptr_A,
+                                             const rocsparse_int*            csr_col_ind_A,
                                              rocsparse_int                   nnz_A,
                                              const rocsparse_int*            nnz_per_row,
                                              rocsparse_double_complex*       csr_val_C,
-                                             rocsparse_int*                  csr_col_ind_C,
                                              rocsparse_int*                  csr_row_ptr_C,
+                                             rocsparse_int*                  csr_col_ind_C,
                                              rocsparse_double_complex        tol);
 /**@}*/
 

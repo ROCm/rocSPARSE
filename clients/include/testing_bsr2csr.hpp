@@ -126,13 +126,13 @@ inline void rocsparse_init_csr_and_bsr_matrix(std::vector<rocsparse_int>& csr_ro
                                                         N,
                                                         csr_descr,
                                                         dcsr_val_A,
-                                                        dcsr_col_ind_A,
                                                         dcsr_row_ptr_A,
+                                                        dcsr_col_ind_A,
                                                         nnz,
                                                         dnnz_per_row,
                                                         dcsr_val_C,
-                                                        dcsr_col_ind_C,
                                                         dcsr_row_ptr_C,
+                                                        dcsr_col_ind_C,
                                                         tol));
 
     // Allocate host memory for compressed CSR matrix
@@ -604,13 +604,13 @@ void testing_bsr2csr(const Arguments& arg)
                                                             N,
                                                             csr_descr,
                                                             dcsr_val,
-                                                            dcsr_col_ind,
                                                             dcsr_row_ptr,
+                                                            dcsr_col_ind,
                                                             nnzb * block_dim * block_dim,
                                                             dnnz_per_row,
                                                             dcsr_val_C,
-                                                            dcsr_col_ind_C,
                                                             dcsr_row_ptr_C,
+                                                            dcsr_col_ind_C,
                                                             tol));
 
         // Allocate host memory for compressed CSR matrix

@@ -63,13 +63,13 @@ __launch_bounds__(BLOCK_SIZE) __global__
                                  rocsparse_int        n,
                                  rocsparse_index_base idx_base,
                                  const T* __restrict__ csr_val_A,
-                                 const rocsparse_int* __restrict__ csr_col_ind_A,
                                  const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                 const rocsparse_int* __restrict__ csr_col_ind_A,
                                  rocsparse_int nnz_A,
                                  const rocsparse_int* __restrict__ nnz_per_row,
                                  T* __restrict__ csr_val_C,
-                                 rocsparse_int* __restrict__ csr_col_ind_C,
                                  rocsparse_int* __restrict__ csr_row_ptr_C,
+                                 rocsparse_int* __restrict__ csr_col_ind_C,
                                  T tol)
 {
     const rocsparse_int warp_id         = hipThreadIdx_x / WF_SIZE;
