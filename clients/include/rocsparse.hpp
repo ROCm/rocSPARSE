@@ -675,13 +675,13 @@ rocsparse_status rocsparse_csr2csr_compress(rocsparse_handle          handle,
                                             rocsparse_int             n,
                                             const rocsparse_mat_descr descr_A,
                                             const T*                  csr_val_A,
-                                            const rocsparse_int*      csr_col_ind_A,
                                             const rocsparse_int*      csr_row_ptr_A,
+                                            const rocsparse_int*      csr_col_ind_A,
                                             rocsparse_int             nnz_A,
                                             const rocsparse_int*      nnz_per_row,
                                             T*                        csr_val_C,
-                                            rocsparse_int*            csr_col_ind_C,
                                             rocsparse_int*            csr_row_ptr_C,
+                                            rocsparse_int*            csr_col_ind_C,
                                             T                         tol);
 
 #endif // ROCSPARSE_HPP

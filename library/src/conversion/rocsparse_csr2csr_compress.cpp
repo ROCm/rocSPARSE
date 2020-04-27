@@ -35,13 +35,13 @@ extern "C" rocsparse_status rocsparse_scsr2csr_compress(rocsparse_handle        
                                                         rocsparse_int             n,
                                                         const rocsparse_mat_descr descr_A,
                                                         const float*              csr_val_A,
-                                                        const rocsparse_int*      csr_col_ind_A,
                                                         const rocsparse_int*      csr_row_ptr_A,
+                                                        const rocsparse_int*      csr_col_ind_A,
                                                         rocsparse_int             nnz_A,
                                                         const rocsparse_int*      nnz_per_row,
                                                         float*                    csr_val_C,
-                                                        rocsparse_int*            csr_col_ind_C,
                                                         rocsparse_int*            csr_row_ptr_C,
+                                                        rocsparse_int*            csr_col_ind_C,
                                                         float                     tol)
 {
     return rocsparse_csr2csr_compress_template(handle,
@@ -49,13 +49,13 @@ extern "C" rocsparse_status rocsparse_scsr2csr_compress(rocsparse_handle        
                                                n,
                                                descr_A,
                                                csr_val_A,
-                                               csr_col_ind_A,
                                                csr_row_ptr_A,
+                                               csr_col_ind_A,
                                                nnz_A,
                                                nnz_per_row,
                                                csr_val_C,
-                                               csr_col_ind_C,
                                                csr_row_ptr_C,
+                                               csr_col_ind_C,
                                                tol);
 }
 
@@ -64,13 +64,13 @@ extern "C" rocsparse_status rocsparse_dcsr2csr_compress(rocsparse_handle        
                                                         rocsparse_int             n,
                                                         const rocsparse_mat_descr descr_A,
                                                         const double*             csr_val_A,
-                                                        const rocsparse_int*      csr_col_ind_A,
                                                         const rocsparse_int*      csr_row_ptr_A,
+                                                        const rocsparse_int*      csr_col_ind_A,
                                                         rocsparse_int             nnz_A,
                                                         const rocsparse_int*      nnz_per_row,
                                                         double*                   csr_val_C,
-                                                        rocsparse_int*            csr_col_ind_C,
                                                         rocsparse_int*            csr_row_ptr_C,
+                                                        rocsparse_int*            csr_col_ind_C,
                                                         double                    tol)
 {
     return rocsparse_csr2csr_compress_template(handle,
@@ -78,13 +78,13 @@ extern "C" rocsparse_status rocsparse_dcsr2csr_compress(rocsparse_handle        
                                                n,
                                                descr_A,
                                                csr_val_A,
-                                               csr_col_ind_A,
                                                csr_row_ptr_A,
+                                               csr_col_ind_A,
                                                nnz_A,
                                                nnz_per_row,
                                                csr_val_C,
-                                               csr_col_ind_C,
                                                csr_row_ptr_C,
+                                               csr_col_ind_C,
                                                tol);
 }
 
@@ -93,13 +93,13 @@ extern "C" rocsparse_status rocsparse_ccsr2csr_compress(rocsparse_handle        
                                                         rocsparse_int                  n,
                                                         const rocsparse_mat_descr      descr_A,
                                                         const rocsparse_float_complex* csr_val_A,
-                                                        const rocsparse_int*     csr_col_ind_A,
                                                         const rocsparse_int*     csr_row_ptr_A,
+                                                        const rocsparse_int*     csr_col_ind_A,
                                                         rocsparse_int            nnz_A,
                                                         const rocsparse_int*     nnz_per_row,
                                                         rocsparse_float_complex* csr_val_C,
-                                                        rocsparse_int*           csr_col_ind_C,
                                                         rocsparse_int*           csr_row_ptr_C,
+                                                        rocsparse_int*           csr_col_ind_C,
                                                         rocsparse_float_complex  tol)
 {
     return rocsparse_csr2csr_compress_template(handle,
@@ -107,13 +107,13 @@ extern "C" rocsparse_status rocsparse_ccsr2csr_compress(rocsparse_handle        
                                                n,
                                                descr_A,
                                                csr_val_A,
-                                               csr_col_ind_A,
                                                csr_row_ptr_A,
+                                               csr_col_ind_A,
                                                nnz_A,
                                                nnz_per_row,
                                                csr_val_C,
-                                               csr_col_ind_C,
                                                csr_row_ptr_C,
+                                               csr_col_ind_C,
                                                tol);
 }
 
@@ -122,13 +122,13 @@ extern "C" rocsparse_status rocsparse_zcsr2csr_compress(rocsparse_handle        
                                                         rocsparse_int                   n,
                                                         const rocsparse_mat_descr       descr_A,
                                                         const rocsparse_double_complex* csr_val_A,
-                                                        const rocsparse_int*      csr_col_ind_A,
                                                         const rocsparse_int*      csr_row_ptr_A,
+                                                        const rocsparse_int*      csr_col_ind_A,
                                                         rocsparse_int             nnz_A,
                                                         const rocsparse_int*      nnz_per_row,
                                                         rocsparse_double_complex* csr_val_C,
-                                                        rocsparse_int*            csr_col_ind_C,
                                                         rocsparse_int*            csr_row_ptr_C,
+                                                        rocsparse_int*            csr_col_ind_C,
                                                         rocsparse_double_complex  tol)
 {
     return rocsparse_csr2csr_compress_template(handle,
@@ -136,12 +136,12 @@ extern "C" rocsparse_status rocsparse_zcsr2csr_compress(rocsparse_handle        
                                                n,
                                                descr_A,
                                                csr_val_A,
-                                               csr_col_ind_A,
                                                csr_row_ptr_A,
+                                               csr_col_ind_A,
                                                nnz_A,
                                                nnz_per_row,
                                                csr_val_C,
-                                               csr_col_ind_C,
                                                csr_row_ptr_C,
+                                               csr_col_ind_C,
                                                tol);
 }
