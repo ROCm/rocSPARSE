@@ -809,6 +809,9 @@ void testing_csrsm(const Arguments& arg)
                                 (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                               : rocsparse_status_success);
 
+        // Sync to force updated pivots
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
+
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrsm_analysis<T>(handle,
@@ -831,6 +834,9 @@ void testing_csrsm(const Arguments& arg)
         EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, info, d_analysis_pivot_2),
                                 (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                               : rocsparse_status_success);
+
+        // Sync to force updated pivots
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // Perform solve step
 
@@ -856,6 +862,9 @@ void testing_csrsm(const Arguments& arg)
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
 
+        // Sync to force updated pivots
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
+
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrsm_solve<T>(handle,
@@ -877,6 +886,9 @@ void testing_csrsm(const Arguments& arg)
         EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_zero_pivot(handle, info, d_solve_pivot_2),
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
+
+        // Sync to force updated pivots
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hB_1, dB_1, sizeof(T) * M * nrhs, hipMemcpyDeviceToHost));

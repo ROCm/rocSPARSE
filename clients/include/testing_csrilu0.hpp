@@ -501,6 +501,9 @@ void testing_csrilu0(const Arguments& arg)
                                 (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                               : rocsparse_status_success);
 
+        // Sync to force updated pivots
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
+
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis<T>(handle,
@@ -518,6 +521,9 @@ void testing_csrilu0(const Arguments& arg)
                                 (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                               : rocsparse_status_success);
 
+        // Sync to force updated pivots
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
+
         // Perform solve step
 
         // Pointer mode host
@@ -528,6 +534,9 @@ void testing_csrilu0(const Arguments& arg)
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
 
+        // Sync to force updated pivots
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
+
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0<T>(
@@ -535,6 +544,9 @@ void testing_csrilu0(const Arguments& arg)
         EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, d_solve_pivot_2),
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
+
+        // Sync to force updated pivots
+        CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hcsr_val_1, dcsr_val_1, sizeof(T) * nnz, hipMemcpyDeviceToHost));
