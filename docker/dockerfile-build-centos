@@ -15,7 +15,6 @@ ARG library_dependencies="rocprim"
 # * libhsakmt.so: numactl-libs
 RUN yum install -y --nogpgcheck\
     sudo \
-    rock-dkms \
     centos-release-scl \
     devtoolset-7 \
     ca-certificates \
