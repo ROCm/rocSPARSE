@@ -322,7 +322,7 @@ if [[ "${install_dependencies}" == true ]]; then
     printf "\033[32mBuilding \033[33mgoogletest\033[32m from source; installing into \033[33m/usr/local\033[0m\n"
     mkdir -p ${build_dir}/deps && cd ${build_dir}/deps
     ${cmake_executable} ../../deps
-    make
+    make -j$(nproc)
     elevate_if_not_root make install
   popd
 fi
@@ -396,7 +396,7 @@ pushd .
   fi
   check_exit_code
 
-  make install
+  make -j$(nproc) install
   check_exit_code
 
   # #################################################
