@@ -416,7 +416,7 @@ module rocsparse
             type(c_ptr), intent(in), value :: x_val
             type(c_ptr), intent(in), value :: x_ind
             type(c_ptr), intent(in), value :: y
-            real(c_double) :: result
+            type(c_ptr), value :: result
             integer(c_int), value :: idx_base
         end function rocsparse_ddoti
 
