@@ -48,7 +48,7 @@ if(POLICY CMP0066)
 endif()
 
 # rocSPARSE project
-project(rocsparse LANGUAGES CXX)
+project(rocsparse LANGUAGES CXX Fortran)
 
 # Determine if CXX Compiler is hcc or hip-clang
 execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--version" OUTPUT_VARIABLE CXX_OUTPUT
@@ -85,7 +85,7 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 include(cmake/Dependencies.cmake)
 
 # Setup version
-rocm_setup_version(VERSION 1.12.10)
+rocm_setup_version(VERSION 1.13.0)
 set(rocsparse_SOVERSION 0.1)
 
 # AMD targets

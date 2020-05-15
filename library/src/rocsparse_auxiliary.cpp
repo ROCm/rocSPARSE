@@ -298,7 +298,7 @@ rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr, rocsparse_mat
         return rocsparse_status_invalid_pointer;
     }
     if(type != rocsparse_matrix_type_general && type != rocsparse_matrix_type_symmetric
-       && type != rocsparse_matrix_type_hermitian)
+       && type != rocsparse_matrix_type_hermitian && type != rocsparse_matrix_type_triangular)
     {
         return rocsparse_status_invalid_value;
     }

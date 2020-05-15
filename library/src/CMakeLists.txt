@@ -21,6 +21,11 @@
 #
 # ########################################################################
 
+# rocSPARSE Fortran source
+set(rocsparse_f90_source
+  src/rocsparse_module.f90
+)
+
 # rocSPARSE source
 set(rocsparse_source
   src/handle.cpp

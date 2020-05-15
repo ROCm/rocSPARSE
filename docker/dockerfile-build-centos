@@ -23,6 +23,8 @@ RUN yum install -y --nogpgcheck\
     make \
     clang \
     clang-devel \
+    devtoolset-7-gcc-gfortran \
+    gcc-gfortran \
     gcc-c++ \
     gtest-devel \
     gtest \
