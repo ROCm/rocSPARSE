@@ -56,6 +56,12 @@ set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
 # Include sources
 include(src/CMakeLists.txt)
 
+# Set Fortran module output directory
+set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
+
+# Create rocSPARSE Fortran module
+add_library(rocsparse_fortran OBJECT ${rocsparse_f90_source})
+
 # Create rocSPARSE library
 add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
 add_library(roc::rocsparse ALIAS rocsparse)
@@ -92,6 +98,11 @@ set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")
 # Generate export header
 include(GenerateExportHeader)
 generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse-export.h)
+
+# Force installation of .f90 module file
+install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse_module.f90"
+        DESTINATION "rocsparse/include"
+)
 
 # Install targets
 rocm_install_targets(TARGETS rocsparse

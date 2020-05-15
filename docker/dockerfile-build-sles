@@ -22,6 +22,7 @@ RUN zypper -n --no-gpg-checks install \
     cmake \
     make \
     gcc-c++ \
+    gcc-fortran \
     pkg-config \
     python3-pip \
     dpkg \
