@@ -609,6 +609,8 @@ __device__ void bsrmvn_8x8_device(rocsparse_int       mb,
         if(hipThreadIdx_x < BSRDIM * BSRDIM)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * BSRDIM];
 
+        __syncthreads();
+
         // Reduce the intra block row sum
         if(lid < 4)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + 4];
