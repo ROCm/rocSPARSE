@@ -169,7 +169,7 @@ bool read_mtx_matrix(FILE*             f,
         if(!strcmp(header.data, "pattern"))
         {
             sscanf(line, "%d %d", &irow, &icol);
-            ival = 1.0;
+            rval = 1.0;
         }
         else
         {
