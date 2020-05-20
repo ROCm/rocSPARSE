@@ -127,21 +127,23 @@ install_packages( )
   fi
 
   # dependencies needed for library and clients to build
-  local library_dependencies_ubuntu=( "make" "cmake-curses-gui" "pkg-config" "libnuma1" )
-  local library_dependencies_centos=( "epel-release" "make" "cmake3" "gcc-c++" "rpm-build" "numactl-libs" )
-  local library_dependencies_fedora=( "make" "cmake" "gcc-c++" "libcxx-devel" "rpm-build" "numactl-libs" )
-  local library_dependencies_sles=( "make" "cmake" "gcc-c++" "libcxxtools9" "rpm-build" )
+  local library_dependencies_ubuntu=( "gfortran" "make" "cmake-curses-gui" "pkg-config" "libnuma1" )
+  local library_dependencies_centos=( "devtoolset-7-gcc-gfortran" "epel-release" "make" "cmake3" "gcc-c++" "rpm-build" "numactl-libs" )
+  local library_dependencies_centos8=( "gcc-gfortran" "epel-release" "make" "cmake3" "gcc-c++" "rpm-build" "numactl-libs" )
+  local library_dependencies_fedora=( "gcc-gfortran" "make" "cmake" "gcc-c++" "libcxx-devel" "rpm-build" "numactl-libs" )
+  local library_dependencies_sles=( "gcc-fortran" "make" "cmake" "gcc-c++" "libcxxtools9" "rpm-build" )
 
   local client_dependencies_ubuntu=( "libboost-program-options-dev" "python3" "python3-yaml" )
   local client_dependencies_centos=( "boost-devel" "python36" "python3-pip" )
+  local client_dependencies_centos8=( "boost-devel" "python36" "python3-pip" )
   local client_dependencies_fedora=( "boost-devel" "python36" "PyYAML" "python3-pip" )
   local client_dependencies_sles=( "libboost_program_options1_66_0-devel" "pkg-config" "dpkg" "python3-pip" )
 
   if [[ ( "${ID}" == "centos" ) || ( "${ID}" == "rhel" ) ]]; then
     if [[ "${VERSION_ID}" == "8" ]]; then
-      client_dependencies_centos+=( "python3-pyyaml" )
+      client_dependencies_centos8+=( "python3-pyyaml" )
     else
-      client_dependencies_centos+=( "PyYAML" )
+      client_dependencies_centos8+=( "PyYAML" )
     fi
   fi
 
@@ -159,11 +161,18 @@ install_packages( )
 #     yum -y update brings *all* installed packages up to date
 #     without seeking user approval
 #     elevate_if_not_root yum -y update
-      install_yum_packages "${library_dependencies_centos[@]}"
-
-      if [[ "${build_clients}" == true ]]; then
-        install_yum_packages "${client_dependencies_centos[@]}"
-        pip3 install pyyaml
+      if [[ "${VERSION_ID}" == "8" ]]; then
+        install_yum_packages "${library_dependencies_centos8[@]}"
+        if [[ "${build_clients}" == true ]]; then
+          install_yum_packages "${client_dependencies_centos8[@]}"
+          pip3 install pyyaml
+        fi
+      else
+        install_yum_packages "${library_dependencies_centos[@]}"
+        if [[ "${build_clients}" == true ]]; then
+          install_yum_packages "${client_dependencies_centos[@]}"
+          pip3 install pyyaml
+        fi
       fi
       ;;
 
