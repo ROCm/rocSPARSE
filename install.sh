@@ -381,7 +381,10 @@ pushd .
     cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_SAMPLES=ON -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON"
   fi
 
-  compiler="hipcc"
+  compiler="hcc"
+  if [[ "${build_hip_clang}" == true ]]; then
+    compiler="hipcc"
+  fi
 
   if [[ "${build_clients}" == false ]]; then
     cmake_client_options=""
