@@ -538,7 +538,7 @@ module rocsparse
             implicit none
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
-            type(c_ptr), intent(in), value :: y
+            type(c_ptr), value :: y
             type(c_ptr), value :: x_val
             type(c_ptr), intent(in), value :: x_ind
             integer(c_int), value :: idx_base
@@ -551,7 +551,7 @@ module rocsparse
             implicit none
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
-            type(c_ptr), intent(in), value :: y
+            type(c_ptr), value :: y
             type(c_ptr), value :: x_val
             type(c_ptr), intent(in), value :: x_ind
             integer(c_int), value :: idx_base
@@ -564,7 +564,7 @@ module rocsparse
             implicit none
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
-            type(c_ptr), intent(in), value :: y
+            type(c_ptr), value :: y
             type(c_ptr), value :: x_val
             type(c_ptr), intent(in), value :: x_ind
             integer(c_int), value :: idx_base
@@ -577,7 +577,7 @@ module rocsparse
             implicit none
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
-            type(c_ptr), intent(in), value :: y
+            type(c_ptr), value :: y
             type(c_ptr), value :: x_val
             type(c_ptr), intent(in), value :: x_ind
             integer(c_int), value :: idx_base
@@ -3961,7 +3961,7 @@ module rocsparse
             type(c_ptr), value :: csr_val_C
             type(c_ptr), value :: csr_col_ind_C
             type(c_ptr), value :: csr_row_ptr_C
-            real(c_float), value :: tol
+            real(c_double), value :: tol
         end function rocsparse_dcsr2csr_compress
 
         function rocsparse_ccsr2csr_compress(handle, m, n, descr_A, csr_val_A, &
@@ -3983,7 +3983,7 @@ module rocsparse
             type(c_ptr), value :: csr_val_C
             type(c_ptr), value :: csr_col_ind_C
             type(c_ptr), value :: csr_row_ptr_C
-            real(c_float), value :: tol
+            complex(c_float_complex), value :: tol
         end function rocsparse_ccsr2csr_compress
 
         function rocsparse_zcsr2csr_compress(handle, m, n, descr_A, csr_val_A, &
@@ -4005,7 +4005,7 @@ module rocsparse
             type(c_ptr), value :: csr_val_C
             type(c_ptr), value :: csr_col_ind_C
             type(c_ptr), value :: csr_row_ptr_C
-            real(c_float), value :: tol
+            complex(c_double_complex), value :: tol
         end function rocsparse_zcsr2csr_compress
 
 !       rocsparse_coo2csr
