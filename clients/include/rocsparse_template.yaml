@@ -55,6 +55,20 @@ Functions:
   rocsparse_dbsrmv: { function: bsrmv, <<: *double_precision }
   rocsparse_cbsrmv: { function: bsrmv, <<: *single_precision_complex }
   rocsparse_zbsrmv: { function: bsrmv, <<: *double_precision_complex }
+  rocsparse_sbsrsv_buffer_size: { function: bsrsv, <<: *single_precision }
+  rocsparse_dbsrsv_buffer_size: { function: bsrsv, <<: *double_precision }
+  rocsparse_cbsrsv_buffer_size: { function: bsrsv, <<: *single_precision_complex }
+  rocsparse_zbsrsv_buffer_size: { function: bsrsv, <<: *double_precision_complex }
+  rocsparse_sbsrsv_analysis: { function: bsrsv, <<: *single_precision }
+  rocsparse_dbsrsv_analysis: { function: bsrsv, <<: *double_precision }
+  rocsparse_cbsrsv_analysis: { function: bsrsv, <<: *single_precision_complex }
+  rocsparse_zbsrsv_analysis: { function: bsrsv, <<: *double_precision_complex }
+  rocsparse_sbsrsv_solve: { function: bsrsv, <<: *single_precision }
+  rocsparse_dbsrsv_solve: { function: bsrsv, <<: *double_precision }
+  rocsparse_cbsrsv_solve: { function: bsrsv, <<: *single_precision_complex }
+  rocsparse_zbsrsv_solve: { function: bsrsv, <<: *double_precision_complex }
+  rocsparse_bsrsv_zero_pivot: {function: bsrsv }
+  rocsparse_bsrsv_clear: {function: bsrsv }
   rocsparse_scoomv: { function: coomv, <<: *single_precision }
   rocsparse_dcoomv: { function: coomv, <<: *double_precision }
   rocsparse_ccoomv: { function: coomv, <<: *single_precision_complex }

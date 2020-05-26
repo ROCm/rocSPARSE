@@ -764,6 +764,302 @@ module rocsparse
             type(c_ptr), value :: y
         end function rocsparse_zbsrmv
 
+!       rocsparse_bsrsv_zero_pivot
+        function rocsparse_bsrsv_zero_pivot(handle, info, position) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_bsrsv_zero_pivot')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            type(c_ptr), value :: info
+            type(c_ptr), value :: position
+        end function rocsparse_bsrsv_zero_pivot
+
+!       rocsparse_bsrsv_buffer_size
+        function rocsparse_sbsrsv_buffer_size(handle, dir, trans, mb, nnzb, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, buffer_size) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_sbsrsv_buffer_size')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_sbsrsv_buffer_size
+
+        function rocsparse_dbsrsv_buffer_size(handle, dir, trans, mb, nnzb, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, buffer_size) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_dbsrsv_buffer_size')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_dbsrsv_buffer_size
+
+        function rocsparse_cbsrsv_buffer_size(handle, dir, trans, mb, nnzb, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, buffer_size) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_cbsrsv_buffer_size')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_cbsrsv_buffer_size
+
+        function rocsparse_zbsrsv_buffer_size(handle, dir, trans, mb, nnzb, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, buffer_size) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_zbsrsv_buffer_size')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_zbsrsv_buffer_size
+
+!       rocsparse_bsrsv_analysis
+        function rocsparse_sbsrsv_analysis(handle, dir, trans, mb, nnzb, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, analysis, solve, &
+                temp_buffer) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_sbsrsv_analysis')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            integer(c_int), value :: analysis
+            integer(c_int), value :: solve
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sbsrsv_analysis
+
+        function rocsparse_dbsrsv_analysis(handle, dir, trans, mb, nnzb, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, analysis, solve, &
+                temp_buffer) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_dbsrsv_analysis')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            integer(c_int), value :: analysis
+            integer(c_int), value :: solve
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dbsrsv_analysis
+
+        function rocsparse_cbsrsv_analysis(handle, dir, trans, mb, nnzb, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, analysis, solve, &
+                temp_buffer) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_cbsrsv_analysis')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            integer(c_int), value :: analysis
+            integer(c_int), value :: solve
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_cbsrsv_analysis
+
+        function rocsparse_zbsrsv_analysis(handle, dir, trans, mb, nnzb, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, analysis, solve, &
+                temp_buffer) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_zbsrsv_analysis')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            integer(c_int), value :: analysis
+            integer(c_int), value :: solve
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_zbsrsv_analysis
+
+!       rocsparse_bsrsv_clear
+        function rocsparse_bsrsv_clear(handle, info) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_bsrsv_clear')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            type(c_ptr), value :: info
+        end function rocsparse_bsrsv_clear
+
+!       rocsparse_bsrsv_solve
+        function rocsparse_sbsrsv_solve(handle, dir, trans, mb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, x, y, policy, &
+                temp_buffer) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_sbsrsv_solve')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            type(c_ptr), intent(in), value :: x
+            type(c_ptr), value :: y
+            integer(c_int), value :: policy
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sbsrsv_solve
+
+        function rocsparse_dbsrsv_solve(handle, dir, trans, mb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, x, y, policy, &
+                temp_buffer) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_dbsrsv_solve')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            type(c_ptr), intent(in), value :: x
+            type(c_ptr), value :: y
+            integer(c_int), value :: policy
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dbsrsv_solve
+
+        function rocsparse_cbsrsv_solve(handle, dir, trans, mb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, x, y, policy, &
+                temp_buffer) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_cbsrsv_solve')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            type(c_ptr), intent(in), value :: x
+            type(c_ptr), value :: y
+            integer(c_int), value :: policy
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_cbsrsv_solve
+
+        function rocsparse_zbsrsv_solve(handle, dir, trans, mb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, x, y, policy, &
+                temp_buffer) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_zbsrsv_solve')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: bsr_dim
+            type(c_ptr), value :: info
+            type(c_ptr), intent(in), value :: x
+            type(c_ptr), value :: y
+            integer(c_int), value :: policy
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_zbsrsv_solve
+
 !       rocsparse_coomv
         function rocsparse_scoomv(handle, trans, m, n, nnz, alpha, descr, coo_val, &
                 coo_row_ind, coo_col_ind, x, beta, y) &

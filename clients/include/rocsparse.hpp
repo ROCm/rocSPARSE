@@ -134,6 +134,55 @@ rocsparse_status rocsparse_bsrmv(rocsparse_handle          handle,
                                  const T*                  beta,
                                  T*                        y);
 
+// bsrsv
+template <typename T>
+rocsparse_status rocsparse_bsrsv_buffer_size(rocsparse_handle          handle,
+                                             rocsparse_direction       dir,
+                                             rocsparse_operation       trans,
+                                             rocsparse_int             mb,
+                                             rocsparse_int             nnzb,
+                                             const rocsparse_mat_descr descr,
+                                             const T*                  bsr_val,
+                                             const rocsparse_int*      bsr_row_ptr,
+                                             const rocsparse_int*      bsr_col_ind,
+                                             rocsparse_int             bsr_dim,
+                                             rocsparse_mat_info        info,
+                                             size_t*                   buffer_size);
+
+template <typename T>
+rocsparse_status rocsparse_bsrsv_analysis(rocsparse_handle          handle,
+                                          rocsparse_direction       dir,
+                                          rocsparse_operation       trans,
+                                          rocsparse_int             mb,
+                                          rocsparse_int             nnzb,
+                                          const rocsparse_mat_descr descr,
+                                          const T*                  bsr_val,
+                                          const rocsparse_int*      bsr_row_ptr,
+                                          const rocsparse_int*      bsr_col_ind,
+                                          rocsparse_int             bsr_dim,
+                                          rocsparse_mat_info        info,
+                                          rocsparse_analysis_policy analysis,
+                                          rocsparse_solve_policy    solve,
+                                          void*                     temp_buffer);
+
+template <typename T>
+rocsparse_status rocsparse_bsrsv_solve(rocsparse_handle          handle,
+                                       rocsparse_direction       dir,
+                                       rocsparse_operation       trans,
+                                       rocsparse_int             mb,
+                                       rocsparse_int             nnzb,
+                                       const T*                  alpha,
+                                       const rocsparse_mat_descr descr,
+                                       const T*                  bsr_val,
+                                       const rocsparse_int*      bsr_row_ptr,
+                                       const rocsparse_int*      bsr_col_ind,
+                                       rocsparse_int             bsr_dim,
+                                       rocsparse_mat_info        info,
+                                       const T*                  x,
+                                       T*                        y,
+                                       rocsparse_solve_policy    policy,
+                                       void*                     temp_buffer);
+
 // coomv
 template <typename T>
 rocsparse_status rocsparse_coomv(rocsparse_handle          handle,

@@ -68,6 +68,11 @@ __device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_float_comp
 __device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_double_complex val, rocsparse_double_complex* ptr) { __builtin_nontemporal_store(std::real(val), (double*)ptr); __builtin_nontemporal_store(std::imag(val), (double*)ptr + 1); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_int val, rocsparse_int* ptr) { __builtin_nontemporal_store(val, ptr); }
 
+__device__ __forceinline__ float rocsparse_shfl(float var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
+__device__ __forceinline__ double rocsparse_shfl(double var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
+__device__ __forceinline__ rocsparse_float_complex rocsparse_shfl(rocsparse_float_complex var, int src_lane, int width = warpSize) { return rocsparse_float_complex(__shfl(std::real(var), src_lane, width), __shfl(std::imag(var), src_lane, width)); }
+__device__ __forceinline__ rocsparse_double_complex rocsparse_shfl(rocsparse_double_complex var, int src_lane, int width = warpSize) { return rocsparse_double_complex(__shfl(std::real(var), src_lane, width), __shfl(std::imag(var), src_lane, width)); }
+
 __device__ __forceinline__ int32_t rocsparse_mul24(int32_t x, int32_t y) { return ((x << 8) >> 8) * ((y << 8) >> 8); }
 __device__ __forceinline__ int64_t rocsparse_mul24(int64_t x, int64_t y) { return ((x << 40) >> 40) * ((y << 40) >> 40); }
 
