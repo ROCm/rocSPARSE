@@ -127,8 +127,8 @@ install_packages( )
   fi
 
   # dependencies needed for library and clients to build
-  local library_dependencies_ubuntu=( "gfortran" "make" "cmake-curses-gui" "pkg-config" "libnuma1" )
-  local library_dependencies_centos=( "devtoolset-7-gcc-gfortran" "epel-release" "make" "cmake3" "gcc-c++" "rpm-build" "numactl-libs" )
+  local library_dependencies_ubuntu=( "gfortran" "make" "pkg-config" "libnuma1" )
+  local library_dependencies_centos=( "devtoolset-7-gcc-gfortran" "epel-release" "make" "cmake3" "gcc-c++" "rpm-build" )
   local library_dependencies_centos8=( "gcc-gfortran" "epel-release" "make" "cmake3" "gcc-c++" "rpm-build" "numactl-libs" )
   local library_dependencies_fedora=( "gcc-gfortran" "make" "cmake" "gcc-c++" "libcxx-devel" "rpm-build" "numactl-libs" )
   local library_dependencies_sles=( "gcc-fortran" "make" "cmake" "gcc-c++" "libcxxtools9" "rpm-build" )
@@ -140,6 +140,11 @@ install_packages( )
   local client_dependencies_sles=( "libboost_program_options1_66_0-devel" "pkg-config" "dpkg" "python3-pip" )
 
   if [[ ( "${ID}" == "centos" ) || ( "${ID}" == "rhel" ) ]]; then
+    if [[ "${VERSION_ID}" == "6" ]]; then
+      library_dependencies_centos+=( "numactl" )
+    else
+      library_dependencies_centos+=( "numactl-libs" )
+    fi
     if [[ "${VERSION_ID}" == "8" ]]; then
       client_dependencies_centos8+=( "python3-pyyaml" )
     else
