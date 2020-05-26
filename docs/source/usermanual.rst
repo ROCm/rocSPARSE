@@ -626,6 +626,11 @@ Sparse Level 2 Functions
 Function name                                                             single double single complex double complex
 ========================================================================= ====== ====== ============== ==============
 :cpp:func:`rocsparse_Xbsrmv() <rocsparse_sbsrmv>`                         x      x      x              x
+:cpp:func:`rocsparse_Xbsrsv_buffer_size() <rocsparse_sbsrsv_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_Xbsrsv_analysis() <rocsparse_sbsrsv_analysis>`       x      x      x              x
+:cpp:func:`rocsparse_bsrsv_zero_pivot`
+:cpp:func:`rocsparse_bsrsv_clear`
+:cpp:func:`rocsparse_Xbsrsv_solve() <rocsparse_sbsrsv_solve>`             x      x      x              x
 :cpp:func:`rocsparse_Xcoomv() <rocsparse_scoomv>`                         x      x      x              x
 :cpp:func:`rocsparse_Xcsrmv_analysis() <rocsparse_scsrmv_analysis>`       x      x      x              x
 :cpp:func:`rocsparse_csrmv_clear`
@@ -992,6 +997,49 @@ rocsparse_bsrmv()
   :outline:
 .. doxygenfunction:: rocsparse_zbsrmv
 
+rocsparse_bsrsv_zero_pivot()
+----------------------------
+
+.. doxygenfunction:: rocsparse_bsrsv_zero_pivot
+
+rocsparse_bsrsv_buffer_size()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_sbsrsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrsv_buffer_size
+
+rocsparse_bsrsv_analysis()
+--------------------------
+
+.. doxygenfunction:: rocsparse_sbsrsv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrsv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrsv_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrsv_analysis
+
+rocsparse_bsrsv_solve()
+-----------------------
+
+.. doxygenfunction:: rocsparse_sbsrsv_solve
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrsv_solve
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrsv_solve
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrsv_solve
+
+rocsparse_bsrsv_clear()
+-----------------------
+
+.. doxygenfunction:: rocsparse_bsrsv_clear
+
 rocsparse_coomv()
 -----------------
 
@@ -1029,28 +1077,6 @@ rocsparse_csrmv_analysis_clear()
 --------------------------------
 
 .. doxygenfunction:: rocsparse_csrmv_clear
-
-rocsparse_ellmv()
------------------
-
-.. doxygenfunction:: rocsparse_sellmv
-  :outline:
-.. doxygenfunction:: rocsparse_dellmv
-  :outline:
-.. doxygenfunction:: rocsparse_cellmv
-  :outline:
-.. doxygenfunction:: rocsparse_zellmv
-
-rocsparse_hybmv()
------------------
-
-.. doxygenfunction:: rocsparse_shybmv
-  :outline:
-.. doxygenfunction:: rocsparse_dhybmv
-  :outline:
-.. doxygenfunction:: rocsparse_chybmv
-  :outline:
-.. doxygenfunction:: rocsparse_zhybmv
 
 rocsparse_csrsv_zero_pivot()
 ----------------------------
@@ -1094,6 +1120,28 @@ rocsparse_csrsv_clear()
 -----------------------
 
 .. doxygenfunction:: rocsparse_csrsv_clear
+
+rocsparse_ellmv()
+-----------------
+
+.. doxygenfunction:: rocsparse_sellmv
+  :outline:
+.. doxygenfunction:: rocsparse_dellmv
+  :outline:
+.. doxygenfunction:: rocsparse_cellmv
+  :outline:
+.. doxygenfunction:: rocsparse_zellmv
+
+rocsparse_hybmv()
+-----------------
+
+.. doxygenfunction:: rocsparse_shybmv
+  :outline:
+.. doxygenfunction:: rocsparse_dhybmv
+  :outline:
+.. doxygenfunction:: rocsparse_chybmv
+  :outline:
+.. doxygenfunction:: rocsparse_zhybmv
 
 .. _rocsparse_level3_functions_:
 

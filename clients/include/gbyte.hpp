@@ -107,6 +107,14 @@ constexpr double
 }
 
 template <typename T>
+constexpr double bsrsv_gbyte_count(rocsparse_int mb, rocsparse_int nnzb, rocsparse_int bsr_dim)
+{
+    return ((mb + 1 + nnzb) * sizeof(rocsparse_int)
+            + (bsr_dim * (mb + mb + nnzb * bsr_dim)) * sizeof(T))
+           / 1e9;
+}
+
+template <typename T>
 constexpr double csrsv_gbyte_count(rocsparse_int M, rocsparse_int nnz)
 {
     return ((M + 1 + nnz) * sizeof(rocsparse_int) + (M + M + nnz) * sizeof(T)) / 1e9;

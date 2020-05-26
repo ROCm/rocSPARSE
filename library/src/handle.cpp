@@ -211,7 +211,7 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
 }
 
 /********************************************************************************
- * \brief rocsparse_trm_info is a structure holding the rocsparse csrsv,
+ * \brief rocsparse_trm_info is a structure holding the rocsparse bsrsv, csrsv,
  * csrsm, csrilu0 and csric0 data gathered during csrsv_analysis,
  * csrilu0_analysis and csric0_analysis. It must be initialized using the
  * rocsparse_create_trm_info() routine. It should be destroyed at the end
@@ -305,6 +305,14 @@ bool rocsparse_check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_inf
 
     int shared = -1;
 
+    if(trm == info->bsrsv_lower_info)
+        ++shared;
+    if(trm == info->bsrsv_upper_info)
+        ++shared;
+    if(trm == info->bsrsvt_lower_info)
+        ++shared;
+    if(trm == info->bsrsvt_upper_info)
+        ++shared;
     if(trm == info->csrilu0_info)
         ++shared;
     if(trm == info->csric0_info)
