@@ -33,20 +33,21 @@
  * ===========================================================================
  */
 
-#define launch_csr2bsr_nnz_fast_kernel(block_size, bsr_block_dim, segment_size)            \
-    hipLaunchKernelGGL((csr2bsr_nnz_fast_kernel<block_size, bsr_block_dim, segment_size>), \
-                       dim3(grid_size),                                                    \
-                       dim3(block_size),                                                   \
-                       0,                                                                  \
-                       handle->stream,                                                     \
-                       m,                                                                  \
-                       n,                                                                  \
-                       mb,                                                                 \
-                       nb,                                                                 \
-                       csr_descr->base,                                                    \
-                       csr_row_ptr,                                                        \
-                       csr_col_ind,                                                        \
-                       bsr_descr->base,                                                    \
+#define launch_csr2bsr_nnz_fast_kernel(block_size, segment_size, wf_size)            \
+    hipLaunchKernelGGL((csr2bsr_nnz_fast_kernel<block_size, segment_size, wf_size>), \
+                       dim3(grid_size),                                              \
+                       dim3(block_size),                                             \
+                       0,                                                            \
+                       handle->stream,                                               \
+                       m,                                                            \
+                       n,                                                            \
+                       mb,                                                           \
+                       nb,                                                           \
+                       block_dim,                                                    \
+                       csr_descr->base,                                              \
+                       csr_row_ptr,                                                  \
+                       csr_col_ind,                                                  \
+                       bsr_descr->base,                                              \
                        bsr_row_ptr);
 
 extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          handle,
@@ -186,7 +187,7 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
     }
 
     // Common case where BSR block dimension is small
-    if(block_dim <= 16)
+    if(block_dim <= 32)
     {
         // A 64 thread wavefront is decomposed as:
         //      |    bank 0        bank 1       bank 2         bank 3
@@ -195,14 +196,13 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
         // row 2| 32 33 34 35 | 36 37 38 39 | 40 41 42 43 | 44 45 46 47 |
         // row 3| 48 49 50 51 | 52 53 54 55 | 56 57 58 59 | 60 61 62 63 |
         //
-        // Segments can be of size 4 (quarter row), 8 (half row), or 16 (full row).
-        // We assign one segment per BSR block row where the segment size matches the
-        // block dimension as closely as possible while still being greater than or
-        // equal to the block dimension.
+        // Segments can be of size 4 (quarter row), 8 (half row), 16 (full row),
+        // or 32 (half wavefront). We assign one segment per BSR block row where
+        // the segment size matches the block dimension as closely as possible
+        // while still being greater than or equal to the block dimension.
 
-        constexpr rocsparse_int wf_size      = 64;
-        constexpr rocsparse_int block_size   = 1024;
-        rocsparse_int           segment_size = block_dim;
+        rocsparse_int block_size   = block_dim > 16 ? 32 : 16;
+        rocsparse_int segment_size = block_dim;
 
         // round segment_size up to next power of 2
         segment_size--;
@@ -213,113 +213,125 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
         segment_size |= segment_size >> 16;
         segment_size++;
 
-        // smallest segment size allowed is 4 as wavefront banks are 4 threads
-        if(segment_size == 2)
+        if(handle->wavefront_size == 32)
         {
-            segment_size = 4;
-        }
+            constexpr rocsparse_int wf_size = 32;
 
+            rocsparse_int segments_per_wf              = wf_size / segment_size;
+            rocsparse_int number_of_wf_segments_needed = (m + block_dim - 1) / block_dim;
+            rocsparse_int number_of_wfs_needed
+                = (number_of_wf_segments_needed + segments_per_wf - 1) / segments_per_wf;
+            rocsparse_int grid_size
+                = (wf_size * number_of_wfs_needed + block_size - 1) / block_size;
+
+            if(block_dim <= 2)
+            {
+                launch_csr2bsr_nnz_fast_kernel(16, 2, wf_size);
+            }
+            else if(block_dim <= 4)
+            {
+                launch_csr2bsr_nnz_fast_kernel(16, 4, wf_size);
+            }
+            else if(block_dim <= 8)
+            {
+                launch_csr2bsr_nnz_fast_kernel(16, 8, wf_size);
+            }
+            else if(block_dim <= 16)
+            {
+                launch_csr2bsr_nnz_fast_kernel(16, 16, wf_size);
+            }
+            else if(block_dim <= 32)
+            {
+                launch_csr2bsr_nnz_fast_kernel(32, 32, wf_size);
+            }
+        }
+        else if(handle->wavefront_size == 64)
+        {
+            constexpr rocsparse_int wf_size = 64;
+
+            rocsparse_int segments_per_wf              = wf_size / segment_size;
+            rocsparse_int number_of_wf_segments_needed = (m + block_dim - 1) / block_dim;
+            rocsparse_int number_of_wfs_needed
+                = (number_of_wf_segments_needed + segments_per_wf - 1) / segments_per_wf;
+            rocsparse_int grid_size
+                = (wf_size * number_of_wfs_needed + block_size - 1) / block_size;
+
+            if(block_dim <= 2)
+            {
+                launch_csr2bsr_nnz_fast_kernel(16, 2, wf_size);
+            }
+            else if(block_dim <= 4)
+            {
+                launch_csr2bsr_nnz_fast_kernel(16, 4, wf_size);
+            }
+            else if(block_dim <= 8)
+            {
+                launch_csr2bsr_nnz_fast_kernel(16, 8, wf_size);
+            }
+            else if(block_dim <= 16)
+            {
+                launch_csr2bsr_nnz_fast_kernel(16, 16, wf_size);
+            }
+            else if(block_dim <= 32)
+            {
+                launch_csr2bsr_nnz_fast_kernel(32, 32, wf_size);
+            }
+        }
+        else
+        {
+            return rocsparse_status_arch_mismatch;
+        }
+    }
+    // Uncommon (exceptional) case where BSR block dimension is large
+    else
+    {
+        // Each segment handles a block row where each thread in the segment
+        // can work on multiple rows in the block row (block_dim > segment_size)
+        constexpr rocsparse_int block_size   = 32;
+        constexpr rocsparse_int segment_size = 32;
+        constexpr rocsparse_int wf_size      = 32;
+
+        rocsparse_int rows_per_segment             = (block_dim + segment_size - 1) / segment_size;
         rocsparse_int segments_per_wf              = wf_size / segment_size;
         rocsparse_int number_of_wf_segments_needed = (m + block_dim - 1) / block_dim;
         rocsparse_int number_of_wfs_needed
             = (number_of_wf_segments_needed + segments_per_wf - 1) / segments_per_wf;
         rocsparse_int grid_size = (wf_size * number_of_wfs_needed + block_size - 1) / block_size;
 
-        if(block_dim == 2)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 2, 4);
-        }
-        else if(block_dim == 3)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 3, 4);
-        }
-        else if(block_dim == 4)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 4, 4);
-        }
-        else if(block_dim == 5)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 5, 8);
-        }
-        else if(block_dim == 6)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 6, 8);
-        }
-        else if(block_dim == 7)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 7, 8);
-        }
-        else if(block_dim == 8)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 8, 8);
-        }
-        else if(block_dim == 9)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 9, 16);
-        }
-        else if(block_dim == 10)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 10, 16);
-        }
-        else if(block_dim == 11)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 11, 16);
-        }
-        else if(block_dim == 12)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 12, 16);
-        }
-        else if(block_dim == 13)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 13, 16);
-        }
-        else if(block_dim == 14)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 14, 16);
-        }
-        else if(block_dim == 15)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 15, 16);
-        }
-        else if(block_dim == 16)
-        {
-            launch_csr2bsr_nnz_fast_kernel(block_size, 16, 16);
-        }
-    }
-    // Uncommon (exceptional) case where BSR block dimension is large
-    else
-    {
+        size_t buffer_size = grid_size * block_size * 2 * rows_per_segment * sizeof(rocsparse_int);
+
         bool  temp_alloc       = false;
         void* temp_storage_ptr = nullptr;
-        if(handle->buffer_size >= mb * block_dim * sizeof(rocsparse_int))
+        if(handle->buffer_size >= buffer_size)
         {
             temp_storage_ptr = handle->buffer;
             temp_alloc       = false;
         }
         else
         {
-            RETURN_IF_HIP_ERROR(
-                hipMalloc(&temp_storage_ptr, mb * block_dim * sizeof(rocsparse_int)));
+            RETURN_IF_HIP_ERROR(hipMalloc(&temp_storage_ptr, buffer_size));
             temp_alloc = true;
         }
 
-        rocsparse_int block_size = block_dim;
-        rocsparse_int grid_size  = (m + block_size - 1) / block_size;
-        hipLaunchKernelGGL(csr2bsr_nnz_slow_kernel,
+        rocsparse_int* temp1 = (rocsparse_int*)temp_storage_ptr;
+
+        hipLaunchKernelGGL((csr2bsr_nnz_general_kernel<block_size, segment_size, wf_size>),
                            dim3(grid_size),
                            dim3(block_size),
                            0,
                            handle->stream,
                            m,
                            n,
+                           mb,
                            nb,
+                           block_dim,
+                           rows_per_segment,
                            csr_descr->base,
                            csr_row_ptr,
                            csr_col_ind,
-                           block_dim,
                            bsr_descr->base,
                            bsr_row_ptr,
-                           (rocsparse_int*)temp_storage_ptr);
+                           temp1);
 
         if(temp_alloc)
         {
