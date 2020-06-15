@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -67,27 +67,20 @@ add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
 add_library(roc::rocsparse ALIAS rocsparse)
 
 # Target compile options
-target_compile_options(rocsparse PRIVATE -fno-gpu-rdc)
 foreach(target ${AMDGPU_TARGETS})
   target_compile_options(rocsparse PRIVATE --amdgpu-target=${target})
 endforeach()
 
-# Target link libraries
-if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
-  target_link_libraries(rocsparse PRIVATE hip::device)
-  foreach(target ${AMDGPU_TARGETS})
-    target_link_libraries(rocsparse PRIVATE --amdgpu-target=${target})
-  endforeach()
-endif()
-
 # Target include directories
 target_include_directories(rocsparse
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/include>
-                                   $<BUILD_INTERFACE:${ROCPRIM_INCLUDE_DIRS}>
-                           PUBLIC  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
-                                   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+                                   $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
+                           PUBLIC  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
                                    $<INSTALL_INTERFACE:include>
 )
+
+# Target link libraries
+target_link_libraries(rocsparse PRIVATE roc::rocprim)
 
 # Target properties
 rocm_set_soversion(rocsparse ${rocsparse_SOVERSION})
@@ -123,8 +116,8 @@ rocm_export_targets(TARGETS roc::rocsparse
 rocm_install_symlink_subdir(rocsparse)
 
 # Package specific CPACK vars
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "rocm-dev (>= 2.5.27)")
-set(CPACK_RPM_PACKAGE_REQUIRES "rocm-dev >= 2.5.27")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "rocm-dev (>= 3.5.0)")
+set(CPACK_RPM_PACKAGE_REQUIRES "rocm-dev >= 3.5.0")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.md")
 
 if(NOT CPACK_PACKAGING_INSTALL_PREFIX)

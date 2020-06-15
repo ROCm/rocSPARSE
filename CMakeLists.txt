@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ endif()
 # rocSPARSE project
 project(rocsparse LANGUAGES CXX Fortran)
 
-# Determine if CXX Compiler is hcc or hip-clang
+# Determine if CXX Compiler is hip-clang
 execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--version" OUTPUT_VARIABLE CXX_OUTPUT
                 OUTPUT_STRIP_TRAILING_WHITESPACE
                 ERROR_STRIP_TRAILING_WHITESPACE)
@@ -60,10 +60,8 @@ string(REGEX MATCH "[A-Za-z]+" CXX_VERSION_STRING ${TMP_CXX_VERSION})
 # Print compiler information
 if(CXX_VERSION_STRING MATCHES "clang")
   message(STATUS "Using hip-clang to build for amdgpu backend")
-elseif(CXX_VERSION_STRING MATCHES "HCC")
-  message(STATUS "HCC compiler set; ROCm backend selected [ CXX=${CMAKE_CXX_COMPILER} cmake .. ]")
 else()
-  message(FATAL_ERROR "'hcc' or 'hipcc' compiler required to compile for ROCm platform.")
+  message(FATAL_ERROR "'hipcc' compiler required to compile for ROCm platform.")
 endif()
 
 # Force library install path to lib (CentOS 7 defaults to lib64)
@@ -85,7 +83,7 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 include(cmake/Dependencies.cmake)
 
 # Setup version
-rocm_setup_version(VERSION 1.14.3)
+rocm_setup_version(VERSION 1.14.4)
 set(rocsparse_SOVERSION 0.1)
 
 # AMD targets

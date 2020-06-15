@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,20 @@ endif()
 # This project may compile dependencies for clients
 project(rocsparse-clients LANGUAGES CXX)
 
+# Determine if CXX Compiler is hip-clang
+execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--version" OUTPUT_VARIABLE CXX_OUTPUT
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                ERROR_STRIP_TRAILING_WHITESPACE)
+string(REGEX MATCH "[A-Za-z]* ?clang version" TMP_CXX_VERSION ${CXX_OUTPUT})
+string(REGEX MATCH "[A-Za-z]+" CXX_VERSION_STRING ${TMP_CXX_VERSION})
+
+# Print compiler information
+if(CXX_VERSION_STRING MATCHES "clang")
+  message(STATUS "Using hip-clang to build for amdgpu backend")
+else()
+  message(FATAL_ERROR "'hipcc' compiler required to compile for ROCm platform.")
+endif()
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # This option only works for make/nmake and the ninja generators, but no reason it shouldn't be on all the time
@@ -49,23 +63,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT TARGET rocsparse)
   find_package(rocsparse REQUIRED CONFIG PATHS /opt/rocm/rocsparse)
+
+  option(BUILD_CLIENTS_TESTS "Build tests (requires googletest)" OFF)
+  option(BUILD_CLIENTS_BENCHMARKS "Build benchmarks (requires boost)" OFF)
+  option(BUILD_CLIENTS_SAMPLES "Build examples" ON)
 endif()
 
-# Hip headers required of all clients; clients use hip to allocate device memory
+# HIP headers required of all clients; clients use hip to allocate device memory
 list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
 find_package(HIP REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH})
-
-# Determine if CXX Compiler is hcc or hip-clang
-execute_process(COMMAND ${CMAKE_CXX_COMPILER} "--version" OUTPUT_VARIABLE CXX_OUTPUT
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-                ERROR_STRIP_TRAILING_WHITESPACE)
-string(REGEX MATCH "[A-Za-z]* ?clang version" TMP_CXX_VERSION ${CXX_OUTPUT})
-string(REGEX MATCH "[A-Za-z]+" CXX_VERSION_STRING ${TMP_CXX_VERSION})
-
-# Print compiler information
-if(NOT CXX_VERSION_STRING MATCHES "clang" AND NOT CXX_VERSION_STRING MATCHES "HCC")
-  message(FATAL_ERROR "'hcc' or 'hipcc' compiler required to compile for ROCm platform.")
-endif()
 
 # Build flags
 set(CMAKE_CXX_STANDARD 14)
@@ -73,7 +79,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # If OpenMP is available, we can use it to speed up some tests
-find_package(OpenMP QUIET)
+#find_package(OpenMP QUIET)
+
+#if(OPENMP_FOUND)
+#  if(NOT TARGET OpenMP::OpenMP_CXX)
+#    # OpenMP cmake fix for cmake <= 3.9
+#    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+#    set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+#    set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+#  endif()
+#endif()
 
 if(BUILD_CLIENTS_SAMPLES)
   add_subdirectory(samples)

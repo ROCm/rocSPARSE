@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,18 +31,12 @@ find_package(rocprim REQUIRED)
 
 # Workaround until hcc & hip cmake modules fixes symlink logic in their config files.
 # (Thanks to rocBLAS devs for finding workaround for this problem!)
-list(APPEND CMAKE_PREFIX_PATH /opt/rocm/hcc /opt/rocm/hip /opt/rocm)
-
-# HIP configuration
-if(CMAKE_CXX_COMPILER MATCHES ".*/hcc$")
-  find_package(hcc REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH})
-  find_package(hip REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH})
-endif()
+list(APPEND CMAKE_PREFIX_PATH /opt/rocm/hip /opt/rocm)
 
 # ROCm cmake package
-set(PROJECT_EXTERN_DIR ${CMAKE_CURRENT_BINARY_DIR}/extern)
 find_package(ROCM QUIET CONFIG PATHS ${CMAKE_PREFIX_PATH})
 if(NOT ROCM_FOUND)
+  set(PROJECT_EXTERN_DIR ${CMAKE_CURRENT_BINARY_DIR}/extern)
   set(rocm_cmake_tag "master" CACHE STRING "rocm-cmake tag to download")
   file(DOWNLOAD https://github.com/RadeonOpenCompute/rocm-cmake/archive/${rocm_cmake_tag}.zip
        ${PROJECT_EXTERN_DIR}/rocm-cmake-${rocm_cmake_tag}.zip STATUS status LOG log)
