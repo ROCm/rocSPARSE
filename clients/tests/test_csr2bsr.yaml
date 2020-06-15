@@ -37,7 +37,7 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [-1, 0, 1, 10, 325, 1107]
   N: [-1, 0, 1, 33, 435, 1089]
-  block_dim: [-1, 0, 1, 2, 4, 5, 6, 8, 17]
+  block_dim: [-1, 0, 1, 2, 4, 5, 6, 8, 37]
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_one]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
@@ -49,7 +49,7 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [10245, 50687, 92835]
   N: [11200, 51023, 78583]
-  block_dim: [1, 5]
+  block_dim: [1, 5, 22, 71]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
@@ -61,7 +61,7 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  block_dim: [3, 8, 16]
+  block_dim: [3, 8, 16, 19, 45]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_one]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
@@ -78,7 +78,7 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [20245, 50677, 82859]
   N: [12909, 40232, 88180]
-  block_dim: [1, 5, 16]
+  block_dim: [1, 5, 16, 32]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
