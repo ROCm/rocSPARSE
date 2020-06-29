@@ -1,5 +1,5 @@
 # rocSPARSE
-rocSPARSE exposes a common interface that provides Basic Linear Algebra Subroutines for sparse computation implemented on top of AMD's Radeon Open Compute [ROCm][] runtime and toolchains. rocSPARSE is created using the [HIP][] programming language and optimized for AMD's latest discrete GPUs.
+rocSPARSE exposes a common interface that provides Basic Linear Algebra Subroutines for sparse computation implemented on top of AMD's Radeon Open eCosystem Platform [ROCm][] runtime and toolchains. rocSPARSE is created using the [HIP][] programming language and optimized for AMD's latest discrete GPUs.
 
 ## Documentation
 The latest rocSPARSE documentation and API description can be found [here][].
@@ -35,7 +35,6 @@ cd rocSPARSE
 #   -d|--dependencies - install build dependencies
 #   -c|--clients      - build library clients too (combines with -i & -d)
 #   -g|--debug        - build with debug flag
-#   --hip-clang       - build library for amdgpu backend using hip-clang
 ./install.sh -dci
 ```
 
@@ -55,7 +54,7 @@ cd rocSPARSE; mkdir -p build/release; cd build/release
 #   BUILD_CLIENTS_SAMPLES    - build examples (ON)
 #   BUILD_VERBOSE            - verbose output (OFF)
 #   BUILD_SHARED_LIBS        - build rocSPARSE as a shared library (ON)
-CXX=/opt/rocm/bin/hcc cmake -DBUILD_CLIENTS_TESTS=ON ../..
+CXX=/opt/rocm/bin/hipcc cmake -DBUILD_CLIENTS_TESTS=ON ../..
 
 # Build
 make
