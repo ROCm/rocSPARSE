@@ -23,7 +23,7 @@
 
 /*! \file
  *  \brief rocsparse-functions.h provides Sparse Linear Algebra Subprograms
- *  of Level 1, 2 and 3, using HIP optimized for AMD HCC-based GPU hardware.
+ *  of Level 1, 2 and 3, using HIP optimized for AMD GPU hardware.
  */
 
 #pragma once
@@ -5594,7 +5594,7 @@ rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
  */
 
 /*! \ingroup conv_module
- *  \brief 
+ *  \brief
  *  This function computes the number of nonzero elements per row or column and the total number of nonzero elements in a dense matrix.
  *  \details
  *  The routine does support asynchronous execution if the pointer mode is set to device.
@@ -5611,7 +5611,7 @@ rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
  *  n           number of columns of the dense matrix \p A.
  *
  *  @param[in]
- *  descr      the descriptor of the dense matrix \p A. 
+ *  descr      the descriptor of the dense matrix \p A.
  *
  *  @param[in]
  *  A           array of dimensions (\p ld, \p n)
@@ -5620,7 +5620,7 @@ rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
  *  ld         leading dimension of dense array \p A.
  *
  *  @param[out]
- *  nnz_per_row_columns 
+ *  nnz_per_row_columns
  *              array of size \p m or \p n containing the number of nonzero elements per row or column, respectively.
  *  @param[out]
  *  nnz_total_dev_host_ptr
@@ -5679,8 +5679,8 @@ rocsparse_status rocsparse_znnz(rocsparse_handle                handle,
 /**@}*/
 
 /*! \ingroup conv_module
- *  \brief 
- *  This function converts the matrix A in dense format into a sparse matrix in CSR format. 
+ *  \brief
+ *  This function converts the matrix A in dense format into a sparse matrix in CSR format.
  *  All the parameters are assumed to have been pre-allocated by the user and the arrays are filled in based on nnzPerRow, which can be pre-computed with rocsparse_xnnz().
  *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
  *  \details
@@ -5771,12 +5771,12 @@ rocsparse_status rocsparse_zdense2csr(rocsparse_handle                handle,
 /**@}*/
 
 /*! \ingroup conv_module
- *  \brief 
- * 
- *  This function converts the matrix A in dense format into a sparse matrix in CSC format. 
+ *  \brief
+ *
+ *  This function converts the matrix A in dense format into a sparse matrix in CSC format.
  *  All the parameters are assumed to have been pre-allocated by the user and the arrays are filled in based on nnz_per_columns, which can be pre-computed with rocsparse_xnnz().
  *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
- * 
+ *
  *  \details
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
@@ -5800,7 +5800,7 @@ rocsparse_status rocsparse_zdense2csr(rocsparse_handle                handle,
  *  nnz_per_columns   array of size \p n containing the number of non-zero elements per column.
  *
  *  @param[out]
- *  csc_val 
+ *  csc_val
  *              array of nnz ( = \p csc_col_ptr[m] - \p csc_col_ptr[0] ) nonzero elements of matrix \p A.
  *  @param[out]
  *  csc_col_ptr
@@ -5865,8 +5865,8 @@ rocsparse_status rocsparse_zdense2csc(rocsparse_handle                handle,
 /**@}*/
 
 /*! \ingroup conv_module
- *  \brief 
- *  This function converts the sparse matrix in CSR format into a dense matrix. 
+ *  \brief
+ *  This function converts the sparse matrix in CSR format into a dense matrix.
  *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
  *  \details
  *  @param[in]
@@ -5947,8 +5947,8 @@ rocsparse_status rocsparse_zcsr2dense(rocsparse_handle                handle,
 /**@}*/
 
 /*! \ingroup conv_module
- *  \brief 
- *  This function converts the sparse matrix in CSC format into a dense matrix. 
+ *  \brief
+ *  This function converts the sparse matrix in CSC format into a dense matrix.
  *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
  *  \details
  *  @param[in]
@@ -6029,34 +6029,34 @@ rocsparse_status rocsparse_zcsc2dense(rocsparse_handle                handle,
 /**@}*/
 
 /*! \ingroup conv_module
- *  Given a sparse CSR matrix and a non-negative tolerance, this function computes how many entries would be left 
- *  in each row of the matrix if elements less than the tolerance were removed. It also computes the total number 
+ *  Given a sparse CSR matrix and a non-negative tolerance, this function computes how many entries would be left
+ *  in each row of the matrix if elements less than the tolerance were removed. It also computes the total number
  *  of remaining elements in the matrix.
  *
  *  @param[in]
  *  handle        handle to the rocsparse library context queue.
  *
  *  @param[in]
- *  m 		      number of rows of the sparse CSR matrix.
+ *  m             number of rows of the sparse CSR matrix.
  *
  *  @param[in]
- *  descr_A	      the descriptor of the sparse CSR matrix. 
+ *  descr_A       the descriptor of the sparse CSR matrix.
  *
  *  @param[in]
  *  csr_val_A     array of \p nnz_A elements of the sparse CSR matrix.
  *  @param[in]
  *  csr_row_ptr_A array of \p m+1 elements that point to the start of every row of the
  *                uncompressed sparse CSR matrix.
- *  @param[out]    
- *  nnz_per_row   array of length \p m containing the number of entries that will be kept per row in 
+ *  @param[out]
+ *  nnz_per_row   array of length \p m containing the number of entries that will be kept per row in
  *                the final compressed CSR matrix.
- *  @param[out]    
- *  nnz_C         number of elements in the column indices and values arrays of the compressed 
+ *  @param[out]
+ *  nnz_C         number of elements in the column indices and values arrays of the compressed
  *                sparse CSR matrix. Can be either host or device pointer.
  *  @param[in]
  *  tol           the non-negative tolerance used for compression. If \p tol is complex then only the magnitude
- *                of the real part is used. Entries in the input uncompressed CSR array that are below the tolerance 
- *                are removed in output compressed CSR matrix.  
+ *                of the real part is used. Entries in the input uncompressed CSR array that are below the tolerance
+ *                are removed in output compressed CSR matrix.
  *
  *  \retval     rocsparse_status_success the operation completed successfully.
  *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -6748,38 +6748,38 @@ rocsparse_status rocsparse_zcsr2hyb(rocsparse_handle                handle,
 /**@}*/
 
 /*! \ingroup conv_module
- *  \brief 
- *  This function computes the number of nonzero block columns per row and the total number of nonzero blocks in a sparse 
+ *  \brief
+ *  This function computes the number of nonzero block columns per row and the total number of nonzero blocks in a sparse
  *  BSR matrix given a sparse CSR matrix as input.
- * 
+ *
  *  \details
  *  The routine does support asynchronous execution if the pointer mode is set to device.
- * 
+ *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *
  *  @param[in]
- *  dir 	    direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by 
+ *  dir         direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by
  *              \ref rocsparse_direction_row.
  *
  *  @param[in]
- *  m 		    number of rows of the sparse CSR matrix.
+ *  m           number of rows of the sparse CSR matrix.
  *
  *  @param[in]
- *  n 		    number of columns of the sparse CSR matrix.
+ *  n           number of columns of the sparse CSR matrix.
  *
  *  @param[in]
  *  csr_descr    descriptor of the sparse CSR matrix. Currently, only
  *               \ref rocsparse_matrix_type_general is supported.
  *  @param[in]
- *  csr_row_ptr integer array containing \p m+1 elements that point to the start of each row of the CSR matrix		
+ *  csr_row_ptr integer array containing \p m+1 elements that point to the start of each row of the CSR matrix
  *
  *  @param[in]
  *  csr_col_ind integer array of the column indices for each non-zero element in the CSR matrix
- * 
+ *
  *  @param[in]
  *  block_dim   the block dimension of the BSR matrix. Between 1 and min(m, n)
- * 
+ *
  *  @param[in]
  *  bsr_descr    descriptor of the sparse BSR matrix. Currently, only
  *               \ref rocsparse_matrix_type_general is supported.
@@ -6814,8 +6814,8 @@ rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          handle,
  *  \details
  *  \p rocsparse_csr2bsr converts a CSR matrix into a BSR matrix. It is assumed,
  *  that \p bsr_val, \p bsr_col_ind and \p bsr_row_ptr are allocated. Allocation size
- *  for \p bsr_row_ptr is computed as \p mb+1 where \p mb is the number of block rows in 
- *  the BSR matrix. Allocation size for \p bsr_val and \p bsr_col_ind is computed using 
+ *  for \p bsr_row_ptr is computed as \p mb+1 where \p mb is the number of block rows in
+ *  the BSR matrix. Allocation size for \p bsr_val and \p bsr_col_ind is computed using
  *  \p csr2bsr_nnz() which also fills in \p bsr_row_ptr.
  *
  *  \p rocsparse_csr2bsr requires extra temporary storage that is allocated internally if \p block_dim>16
@@ -6857,14 +6857,14 @@ rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          handle,
  *  \retval     rocsparse_status_invalid_pointer \p bsr_val,
  *              \p bsr_row_ptr, \p bsr_col_ind, \p csr_val, \p csr_row_ptr or
  *              \p csr_col_ind pointer is invalid.
- * 
+ *
  *  \par Example
  *  This example converts a CSR matrix into an BSR matrix.
  *  \code{.c}
  *      //     1 4 0 0 0 0
  *      // A = 0 2 3 0 0 0
  *      //     5 0 0 7 8 0
- *      //     0 0 9 0 6 0 
+ *      //     0 0 9 0 6 0
  *
  *      rocsparse_int m   = 4;
  *      rocsparse_int n   = 6;
@@ -6876,36 +6876,36 @@ rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          handle,
  *      csr_row_ptr[m+1]  = {0, 2, 4, 7, 9};             // device memory
  *      csr_col_ind[nnz]  = {0, 1, 1, 2, 0, 3, 4, 2, 4}; // device memory
  *      csr_val[nnz]      = {1, 4, 2, 3, 5, 7, 8, 9, 6}; // device memory
- * 
+ *
  *      hipMalloc(&bsr_row_ptr, sizeof(rocsparse_int) *(mb + 1));
  *      rocsparse_int nnzb;
  *      rocsparse_int* nnzTotalHostPtr = &nnzb;
- *      csr2bsr_nnz(handle, 
- *                  rocsparse_direction_row, 
- *                  m, 
- *                  n, 
- *                  csr_descr, 
- *                  csr_row_ptr, 
+ *      csr2bsr_nnz(handle,
+ *                  rocsparse_direction_row,
+ *                  m,
+ *                  n,
+ *                  csr_descr,
+ *                  csr_row_ptr,
  *                  csr_col_ind,
- *                  block_dim, 
- *                  bsr_descr, 
+ *                  block_dim,
+ *                  bsr_descr,
  *                  bsr_row_ptr,
  *                  nnzTotalHostPtr);
  *      nnzb = *nnzTotalDevHostPtr;
  *      hipMalloc(&bsr_col_ind, sizeof(int)*nnzb);
  *      hipMalloc(&bsr_val, sizeof(float)*(block_dim * block_dim) * nnzb);
- *      scsr2bsr(handle, 
- *               rocsparse_direction_row, 
- *               m, 
- *               n, 
- *               csr_descr, 
- *               csr_val, 
- *               csr_row_ptr, 
- *               csr_col_ind, 
- *               block_dim, 
- *               bsr_descr, 
- *               bsr_val, 
- *               bsr_row_ptr, 
+ *      scsr2bsr(handle,
+ *               rocsparse_direction_row,
+ *               m,
+ *               n,
+ *               csr_descr,
+ *               csr_val,
+ *               csr_row_ptr,
+ *               csr_col_ind,
+ *               block_dim,
+ *               bsr_descr,
+ *               bsr_val,
+ *               bsr_row_ptr,
  *               bsr_col_ind);
  *  \endcode
  */
@@ -6976,7 +6976,7 @@ rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
  *
  *  \details
  *  \p rocsparse_csr2csr_compress converts a CSR matrix into a compressed CSR matrix by
- *  removing entries in the input CSR matrix that are below a non-negative threshold \p tol  
+ *  removing entries in the input CSR matrix that are below a non-negative threshold \p tol
  *
  *  \note
  *  In the case of complex matrices only the magnitude of the real part of \p tol is used.
@@ -6995,26 +6995,26 @@ rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
  *  csr_row_ptr_A array of \p m+1 elements that point to the start of every row of the
  *                uncompressed sparse CSR matrix.
  *  @param[in]
- *  csr_col_ind_A array of \p nnz_A elements containing the column indices of the uncompressed 
+ *  csr_col_ind_A array of \p nnz_A elements containing the column indices of the uncompressed
  *                sparse CSR matrix.
- *  @param[in]    
- *  nnz_A         number of elements in the column indices and values arrays of the uncompressed 
- *                sparse CSR matrix.  
- *  @param[in]    
- *  nnz_per_row   array of length \p m containing the number of entries that will be kept per row in 
+ *  @param[in]
+ *  nnz_A         number of elements in the column indices and values arrays of the uncompressed
+ *                sparse CSR matrix.
+ *  @param[in]
+ *  nnz_per_row   array of length \p m containing the number of entries that will be kept per row in
  *                the final compressed CSR matrix.
  *  @param[out]
  *  csr_val_C     array of \p nnz_C elements of the compressed sparse CSC matrix.
  *  @param[out]
- *  csr_row_ptr_C array of \p m+1 elements that point to the start of every column of the compressed 
+ *  csr_row_ptr_C array of \p m+1 elements that point to the start of every column of the compressed
  *                sparse CSR matrix.
  *  @param[out]
  *  csr_col_ind_C array of \p nnz_C elements containing the row indices of the compressed
  *                sparse CSR matrix.
  *  @param[in]
  *  tol           the non-negative tolerance used for compression. If \p tol is complex then only the magnitude
- *                of the real part is used. Entries in the input uncompressed CSR array that are below the tolerance 
- *                are removed in output compressed CSR matrix.  
+ *                of the real part is used. Entries in the input uncompressed CSR array that are below the tolerance
+ *                are removed in output compressed CSR matrix.
  *
  *  \retval     rocsparse_status_success the operation completed successfully.
  *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -7025,14 +7025,14 @@ rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
  *              \p nnz_per_row pointer is invalid.
  *
  *  \par Example
- *  This example demonstrates how to compress a CSR matrix. Compressing a CSR matrix involves two steps. First we use 
+ *  This example demonstrates how to compress a CSR matrix. Compressing a CSR matrix involves two steps. First we use
  *  nnz_compress() to determine how many entries will be in the final compressed CSR matrix. Then we call csr2csr_compress()
  *  to finish the compression and fill in the column indices and values arrays of the compressed CSR matrix.
  *  \code{.c}
  *      //     1 2 0 3 0
  *      // A = 0 4 5 0 0
  *      //     6 0 0 7 8
- * 
+ *
  *      float tol = 0.0f;
  *
  *      rocsparse_int m     = 3;
@@ -7046,12 +7046,12 @@ rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
  *      // Allocate memory for the row pointer array of the compressed CSR matrix
  *      rocsparse_int* csr_row_ptr_C;
  *      hipMalloc(csr_row_ptr_C, sizeof(rocsparse_int) * (m + 1));
- * 
+ *
  *      // Allocate memory for the nnz_per_row array
  *      rocsparse_int* nnz_per_row;
  *      hipMalloc(nnz_per_row, sizeof(rocsparse_int) * m);
- * 
- *      // Call nnz_compress() which fills in nnz_per_row array and finds the number 
+ *
+ *      // Call nnz_compress() which fills in nnz_per_row array and finds the number
  *      // of entries that will be in the compressed CSR matrix
  *      rocsparse_int nnz_C;
  *      nnz_compress(handle,
@@ -7062,13 +7062,13 @@ rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
  *                   nnz_per_row,
  *                   &nnz_C,
  *                   tol);
- * 
+ *
  *      // Allocate column indices and values array for the compressed CSR matrix
  *      rocsparse_int* csr_col_ind_C;
  *      rocsparse_int* csr_val_C;
  *      hipMalloc(csr_col_ind_C, sizeof(rocsparse_int) * nnz_C;
  *      hipMalloc(csr_val_C, sizeof(rocsparse_int) * nnz_C;
- * 
+ *
  *      // Finish compression by calling csr2csr_compress()
  *      csr2csr_compress(handle,
  *                       m,
@@ -7495,7 +7495,7 @@ rocsparse_status rocsparse_hyb2csr_buffer_size(rocsparse_handle          handle,
  *  \brief Convert a sparse HYB matrix into a sparse CSR matrix
  *
  *  \details
- *  \p rocsparse_hyb2csr converts a HYB matrix into a CSR matrix. 
+ *  \p rocsparse_hyb2csr converts a HYB matrix into a CSR matrix.
  *
  *  \p rocsparse_hyb2csr requires extra temporary storage buffer that has to be allocated
  *  by the user. Storage buffer size can be determined by
@@ -8204,7 +8204,7 @@ rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,
  *  \p rocsparse_bsr2csr converts a BSR matrix into a CSR matrix. It is assumed,
  *  that \p csr_val, \p csr_col_ind and \p csr_row_ptr are allocated. Allocation size
  *  for \p csr_row_ptr is computed by the number of block rows multiplied by the block
- *  dimension plus one. Allocation for \p csr_val and \p csr_col_ind is computed by the  
+ *  dimension plus one. Allocation for \p csr_val and \p csr_col_ind is computed by the
  *  the number of blocks in the BSR matrix multiplied by the block dimension squared.
  *
  *  \note
@@ -8255,7 +8255,7 @@ rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,
  *      //     1 4 0 0 0 0
  *      // A = 0 2 3 0 0 0
  *      //     5 0 0 7 8 0
- *      //     0 0 9 0 6 0 
+ *      //     0 0 9 0 6 0
  *
  *      rocsparse_int mb   = 2;
  *      rocsparse_int nb   = 3;
@@ -8268,7 +8268,7 @@ rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,
  *      bsr_val[nnzb*block_dim*block_dim] = {1, 0, 4, 2, 0, 3, 0, 0, 5, 0, 0, 0, 0, 9, 7, 0, 8, 6, 0, 0}; // device memory
  *
  *      rocsparse_int nnzb = bsr_row_ptr[mb] - bsr_row_ptr[0];
- * 
+ *
  *      // Create CSR arrays on device
  *      rocsparse_int* csr_row_ptr;
  *      rocsparse_int* csr_col_ind;
@@ -8276,19 +8276,19 @@ rocsparse_status rocsparse_coosort_by_column(rocsparse_handle handle,
  *      hipMalloc((void**)&csr_row_ptr, sizeof(rocsparse_int) * (m + 1));
  *      hipMalloc((void**)&csr_col_ind, sizeof(rocsparse_int) * nnzb * block_dim * block_dim);
  *      hipMalloc((void**)&csr_val, sizeof(float) * nnzb * block_dim * block_dim);
- * 
+ *
  *      // Create rocsparse handle
  *      rocsparse_local_handle handle;
- * 
+ *
  *      rocsparse_mat_descr bsr_descr = nullptr;
  *      rocsparse_create_mat_descr(&bsr_descr);
- * 
+ *
  *      rocsparse_mat_descr csr_descr = nullptr;
  *      rocsparse_create_mat_descr(&csr_descr);
- * 
+ *
  *      rocsparse_set_mat_index_base(bsr_descr, rocsparse_base_index_zero);
  *      rocsparse_set_mat_index_base(csr_descr, rocsparse_base_index_zero);
- * 
+ *
  *      // Format conversion
  *      rocsparse_sbsr2csr(handle,
  *                         rocsparse_direction_column,
