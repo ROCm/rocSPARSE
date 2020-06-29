@@ -119,7 +119,7 @@ rocSPARSE can be built using the following commands:
   $ mkdir -p build/release ; cd build/release
 
   # Default install path is /opt/rocm, use -DCMAKE_INSTALL_PREFIX=<path> to adjust it
-  $ CXX=/opt/rocm/bin/hcc cmake ../..
+  $ CXX=/opt/rocm/bin/hipcc cmake ../..
 
   # Compile rocSPARSE library
   $ make -j$(nproc)
@@ -145,9 +145,9 @@ rocSPARSE with dependencies and clients can be built using the following command
   $ cd ..
 
   # Default install path is /opt/rocm, use -DCMAKE_INSTALL_PREFIX=<path> to adjust it
-  $ CXX=/opt/rocm/bin/hcc cmake ../.. -DBUILD_CLIENTS_TESTS=ON \
-                                      -DBUILD_CLIENTS_BENCHMARKS=ON \
-                                      -DBUILD_CLIENTS_SAMPLES=ON
+  $ CXX=/opt/rocm/bin/hipcc cmake ../.. -DBUILD_CLIENTS_TESTS=ON \
+                                        -DBUILD_CLIENTS_BENCHMARKS=ON \
+                                        -DBUILD_CLIENTS_SAMPLES=ON
 
   # Compile rocSPARSE library
   $ make -j$(nproc)
@@ -157,14 +157,6 @@ rocSPARSE with dependencies and clients can be built using the following command
 
 Common build problems
 `````````````````````
-#. **Issue:** HIP (`/opt/rocm/hip`) was built using `hcc` 1.0.xxx-xxx-xxx-xxx, but you are using `/opt/rocm/bin/hcc` with version 1.0.yyy-yyy-yyy-yyy from `hipcc` (version mismatch). Please rebuild HIP including cmake or update HCC_HOME variable.
-
-   **Solution:** Download HIP from GitHub and use `hcc` to `build from source <https://github.com/ROCm-Developer-Tools/HIP/blob/master/INSTALL.md>`_ and then use the built HIP instead of `/opt/rocm/hip`.
-
-#. **Issue:** HCC RUNTIME ERROR: Failed to find compatible kernel
-
-   **Solution:** Add the following to the cmake command when configuring: `-DCMAKE_CXX_FLAGS="--amdgpu-target=gfx803,gfx900,gfx906,gfx908"`
-
 #. **Issue:** Could not find a package configuration file provided by "ROCM" with any of the following names: ROCMConfig.cmake, rocm-config.cmake
 
    **Solution:** Install `ROCm cmake modules <https://github.com/RadeonOpenCompute/rocm-cmake>`_
