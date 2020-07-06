@@ -79,6 +79,16 @@ constexpr double csrsv_gflop_count(rocsparse_int M, rocsparse_int nnz, rocsparse
  * ===========================================================================
  */
 template <typename T>
+constexpr double bsrmm_gflop_count(rocsparse_int N,
+                                   rocsparse_int nnzb,
+                                   rocsparse_int block_dim,
+                                   rocsparse_int nnz_C,
+                                   bool          beta = false)
+{
+    return (3.0 * nnzb * block_dim * block_dim * N + (beta ? nnz_C : 0)) / 1e9;
+}
+
+template <typename T>
 constexpr double
     csrmm_gflop_count(rocsparse_int N, rocsparse_int nnz_A, rocsparse_int nnz_C, bool beta = false)
 {

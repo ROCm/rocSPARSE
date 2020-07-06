@@ -51,6 +51,7 @@ set(rocsparse_source
   src/level2/rocsparse_hybmv.cpp
 
 # Level3
+  src/level3/rocsparse_bsrmm.cpp
   src/level3/rocsparse_csrmm.cpp
   src/level3/rocsparse_csrsm.cpp
 

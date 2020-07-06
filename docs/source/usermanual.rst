@@ -642,6 +642,7 @@ Sparse Level 3 Functions
 ========================================================================= ====== ====== ============== ==============
 Function name                                                             single double single complex double complex
 ========================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xbsrmm() <rocsparse_sbsrmm>`                         x      x      x              x
 :cpp:func:`rocsparse_Xcsrmm() <rocsparse_scsrmm>`                         x      x      x              x
 :cpp:func:`rocsparse_Xcsrsm_buffer_size() <rocsparse_scsrsm_buffer_size>` x      x      x              x
 :cpp:func:`rocsparse_Xcsrsm_analysis() <rocsparse_scsrsm_analysis>`       x      x      x              x
@@ -1143,6 +1144,17 @@ Sparse Level 3 Functions
 This module holds all sparse level 3 routines.
 
 The sparse level 3 routines describe operations between a matrix in sparse format and multiple vectors in dense format that can also be seen as a dense matrix.
+
+rocsparse_bsrmm()
+-----------------
+
+.. doxygenfunction:: rocsparse_sbsrmm
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrmm
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrmm
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrmm
 
 rocsparse_csrmm()
 -----------------

@@ -302,6 +302,28 @@ rocsparse_status rocsparse_hybmv(rocsparse_handle          handle,
  *    level 3 SPARSE
  * ===========================================================================
  */
+// bsrmm
+template <typename T>
+rocsparse_status rocsparse_bsrmm(rocsparse_handle          handle,
+                                 rocsparse_direction       dir,
+                                 rocsparse_operation       trans_A,
+                                 rocsparse_operation       trans_B,
+                                 rocsparse_int             mb,
+                                 rocsparse_int             n,
+                                 rocsparse_int             kb,
+                                 rocsparse_int             nnzb,
+                                 const T*                  alpha,
+                                 const rocsparse_mat_descr descr,
+                                 const T*                  bsr_val,
+                                 const rocsparse_int*      bsr_row_ptr,
+                                 const rocsparse_int*      bsr_col_ind,
+                                 rocsparse_int             block_dim,
+                                 const T*                  B,
+                                 rocsparse_int             ldb,
+                                 const T*                  beta,
+                                 T*                        C,
+                                 rocsparse_int             ldc);
+
 // csrmm
 template <typename T>
 rocsparse_status rocsparse_csrmm(rocsparse_handle          handle,
