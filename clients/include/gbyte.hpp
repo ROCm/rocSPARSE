@@ -133,6 +133,24 @@ constexpr double
  * ===========================================================================
  */
 template <typename T>
+constexpr double bsrmm_gbyte_count(rocsparse_int Mb,
+                                   rocsparse_int nnzb,
+                                   rocsparse_int block_dim,
+                                   rocsparse_int nnz_B,
+                                   rocsparse_int nnz_C,
+                                   bool          beta = false)
+{
+    //reads
+    size_t reads = (Mb + 1 + nnzb) * sizeof(rocsparse_int)
+                   + (block_dim * block_dim * nnzb + nnz_B + (beta ? nnz_C : 0)) * sizeof(T);
+
+    //writes
+    size_t writes = nnz_C * sizeof(T);
+
+    return (reads + writes) / 1e9;
+}
+
+template <typename T>
 constexpr double csrmm_gbyte_count(rocsparse_int M,
                                    rocsparse_int nnz_A,
                                    rocsparse_int nnz_B,

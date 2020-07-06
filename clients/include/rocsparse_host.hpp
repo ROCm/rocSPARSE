@@ -1234,6 +1234,83 @@ inline void host_hybmv(rocsparse_int        M,
  * ===========================================================================
  */
 template <typename T>
+inline void host_bsrmm(rocsparse_int                     Mb,
+                       rocsparse_int                     N,
+                       rocsparse_int                     Kb,
+                       rocsparse_int                     block_dim,
+                       rocsparse_direction               dir,
+                       rocsparse_operation               transA,
+                       rocsparse_operation               transB,
+                       T                                 alpha,
+                       const std::vector<rocsparse_int>& bsr_row_ptr_A,
+                       const std::vector<rocsparse_int>& bsr_col_ind_A,
+                       const std::vector<T>&             bsr_val_A,
+                       const std::vector<T>&             B,
+                       rocsparse_int                     ldb,
+                       T                                 beta,
+                       std::vector<T>&                   C,
+                       rocsparse_int                     ldc,
+                       rocsparse_index_base              base)
+{
+    if(transA != rocsparse_operation_none)
+    {
+        return;
+    }
+
+    if(transB != rocsparse_operation_none && transB != rocsparse_operation_transpose)
+    {
+        return;
+    }
+
+    rocsparse_int M = Mb * block_dim;
+    rocsparse_int K = Kb * block_dim;
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int i = 0; i < M; i++)
+    {
+        rocsparse_int local_row = i % block_dim;
+
+        rocsparse_int row_begin = bsr_row_ptr_A[i / block_dim] - base;
+        rocsparse_int row_end   = bsr_row_ptr_A[i / block_dim + 1] - base;
+
+        for(rocsparse_int j = 0; j < N; j++)
+        {
+            rocsparse_int idx_C = i + j * ldc;
+
+            T sum = static_cast<T>(0);
+
+            for(rocsparse_int s = row_begin; s < row_end; s++)
+            {
+                for(rocsparse_int t = 0; t < block_dim; t++)
+                {
+                    rocsparse_int idx_A
+                        = (dir == rocsparse_direction_row)
+                            ? block_dim * block_dim * s + block_dim * local_row + t
+                            : block_dim * block_dim * s + block_dim * t + local_row;
+                    rocsparse_int idx_B
+                        = (transB == rocsparse_operation_none)
+                            ? j * ldb + block_dim * (bsr_col_ind_A[s] - base) + t
+                            : (block_dim * (bsr_col_ind_A[s] - base) + t) * ldb + j;
+
+                    sum = std::fma(bsr_val_A[idx_A], B[idx_B], sum);
+                }
+            }
+
+            if(beta == static_cast<T>(0))
+            {
+                C[idx_C] = alpha * sum;
+            }
+            else
+            {
+                C[idx_C] = std::fma(beta, C[idx_C], alpha * sum);
+            }
+        }
+    }
+}
+
+template <typename T>
 inline void host_csrmm(rocsparse_int                     M,
                        rocsparse_int                     N,
                        rocsparse_operation               transB,
@@ -1267,16 +1344,16 @@ inline void host_csrmm(rocsparse_int                     M,
                                           ? (csr_col_ind_A[k] - base + j * ldb)
                                           : (j + (csr_col_ind_A[k] - base) * ldb);
 
-                sum = std::fma(alpha * csr_val_A[k], B[idx_B], sum);
+                sum = std::fma(csr_val_A[k], B[idx_B], sum);
             }
 
             if(beta == static_cast<T>(0))
             {
-                C[idx_C] = sum;
+                C[idx_C] = alpha * sum;
             }
             else
             {
-                C[idx_C] = std::fma(beta, C[idx_C], sum);
+                C[idx_C] = std::fma(beta, C[idx_C], alpha * sum);
             }
         }
     }

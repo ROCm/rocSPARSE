@@ -72,7 +72,7 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
             __syncthreads();
 
             shared_col[wid][lid] = (k < row_end) ? csr_col_ind[k] - idx_base : 0;
-            shared_val[wid][lid] = (k < row_end) ? alpha * csr_val[k] : static_cast<T>(0);
+            shared_val[wid][lid] = (k < row_end) ? csr_val[k] : static_cast<T>(0);
 
             __syncthreads();
 
@@ -86,11 +86,11 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
         {
             if(beta == static_cast<T>(0))
             {
-                C[row + colC] = sum;
+                C[row + colC] = alpha * sum;
             }
             else
             {
-                C[row + colC] = rocsparse_fma(beta, C[row + colC], sum);
+                C[row + colC] = rocsparse_fma(beta, C[row + colC], alpha * sum);
             }
         }
     }
@@ -143,7 +143,7 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
             __syncthreads();
 
             shared_col[wid][lid] = (k < row_end) ? N * (csr_col_ind[k] - idx_base) : 0;
-            shared_val[wid][lid] = (k < row_end) ? alpha * csr_val[k] : static_cast<T>(0);
+            shared_val[wid][lid] = (k < row_end) ? csr_val[k] : static_cast<T>(0);
 
             __syncthreads();
 
@@ -159,11 +159,11 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
         {
             if(beta == static_cast<T>(0))
             {
-                C[row + col * ldc] = sum;
+                C[row + col * ldc] = alpha * sum;
             }
             else
             {
-                C[row + col * ldc] = rocsparse_fma(beta, C[row + col * ldc], sum);
+                C[row + col * ldc] = rocsparse_fma(beta, C[row + col * ldc], alpha * sum);
             }
         }
     }

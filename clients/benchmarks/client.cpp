@@ -43,6 +43,7 @@
 #include "testing_hybmv.hpp"
 
 // Level3
+#include "testing_bsrmm.hpp"
 #include "testing_csrmm.hpp"
 #include "testing_csrsm.hpp"
 
@@ -209,7 +210,7 @@ int main(int argc, char* argv[])
          "SPARSE function to test. Options:\n"
          "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
          "  Level2: bsrmv, bsrsv, coomv, csrmv, csrsv, ellmv, hybmv\n"
-         "  Level3: csrmm, csrsm\n"
+         "  Level3: bsrmm, csrmm, csrsm\n"
          "  Extra: csrgeam, csrgemm\n"
          "  Preconditioner: csric0, csrilu0\n"
          "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb, csr2bsr\n"
@@ -566,6 +567,17 @@ int main(int argc, char* argv[])
             testing_hybmv<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_hybmv<rocsparse_double_complex>(arg);
+    }
+    else if(function == "bsrmm")
+    {
+        if(precision == 's')
+            testing_bsrmm<float>(arg);
+        else if(precision == 'd')
+            testing_bsrmm<double>(arg);
+        else if(precision == 'c')
+            testing_bsrmm<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_bsrmm<rocsparse_double_complex>(arg);
     }
     else if(function == "csrmm")
     {

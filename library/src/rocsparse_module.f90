@@ -1728,6 +1728,114 @@ module rocsparse
 ! ===========================================================================
 !   level 3 SPARSE
 ! ===========================================================================
+!       rocsparse_bsrmm
+        function rocsparse_sbsrmm(handle, dir, trans_A, trans_B, mb, n, kb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, B, ldb, beta, C, ldc) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_sbsrmm')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans_A
+            integer(c_int), value :: trans_B
+            integer(c_int), value :: mb
+            integer(c_int), value :: n
+            integer(c_int), value :: kb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: block_dim
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: C
+            integer(c_int), value :: ldc
+        end function rocsparse_sbsrmm
+
+        function rocsparse_dbsrmm(handle, dir, trans_A, trans_B, mb, n, kb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, B, ldb, beta, C, ldc) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_dbsrmm')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans_A
+            integer(c_int), value :: trans_B
+            integer(c_int), value :: mb
+            integer(c_int), value :: n
+            integer(c_int), value :: kb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: block_dim
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: C
+            integer(c_int), value :: ldc
+        end function rocsparse_dbsrmm
+
+        function rocsparse_cbsrmm(handle, dir, trans_A, trans_B, mb, n, kb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, B, ldb, beta, C, ldc) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_cbsrmm')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans_A
+            integer(c_int), value :: trans_B
+            integer(c_int), value :: mb
+            integer(c_int), value :: n
+            integer(c_int), value :: kb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: block_dim
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: C
+            integer(c_int), value :: ldc
+        end function rocsparse_cbsrmm
+
+        function rocsparse_zbsrmm(handle, dir, trans_A, trans_B, mb, n, kb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, B, ldb, beta, C, ldc) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_zbsrmm')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans_A
+            integer(c_int), value :: trans_B
+            integer(c_int), value :: mb
+            integer(c_int), value :: n
+            integer(c_int), value :: kb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: block_dim
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: C
+            integer(c_int), value :: ldc
+        end function rocsparse_zbsrmm
 
 !       rocsparse_csrmm
         function rocsparse_scsrmm(handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, &

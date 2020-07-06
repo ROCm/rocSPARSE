@@ -62,6 +62,8 @@ add_rocsparse_example(example_hybmv.cpp)
 add_rocsparse_example(example_csrsv.cpp)
 
 # Level 3
+add_rocsparse_example(example_bsrmm.cpp)
+add_rocsparse_example(example_fortran_bsrmm.f90)
 add_rocsparse_example(example_csrmm.cpp)
 add_rocsparse_example(example_csrsm.cpp)
 
