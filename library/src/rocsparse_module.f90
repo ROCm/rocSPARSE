@@ -2266,6 +2266,107 @@ module rocsparse
             type(c_ptr), value :: temp_buffer
         end function rocsparse_zcsrsm_solve
 
+!       rocsparse_gemmi
+        function rocsparse_sgemmi(handle, trans_A, trans_B, m, n, k, nnz, alpha, A, &
+                lda, descr, csr_val, csr_row_ptr, csr_col_ind, beta, C, ldc) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_sgemmi')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: trans_A
+            integer(c_int), value :: trans_B
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: k
+            integer(c_int), value :: nnz
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: C
+            integer(c_int), value :: ldc
+        end function rocsparse_sgemmi
+
+        function rocsparse_dgemmi(handle, trans_A, trans_B, m, n, k, nnz, alpha, A, &
+                lda, descr, csr_val, csr_row_ptr, csr_col_ind, beta, C, ldc) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_dgemmi')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: trans_A
+            integer(c_int), value :: trans_B
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: k
+            integer(c_int), value :: nnz
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: C
+            integer(c_int), value :: ldc
+        end function rocsparse_dgemmi
+
+        function rocsparse_cgemmi(handle, trans_A, trans_B, m, n, k, nnz, alpha, A, &
+                lda, descr, csr_val, csr_row_ptr, csr_col_ind, beta, C, ldc) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_cgemmi')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: trans_A
+            integer(c_int), value :: trans_B
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: k
+            integer(c_int), value :: nnz
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: C
+            integer(c_int), value :: ldc
+        end function rocsparse_cgemmi
+
+        function rocsparse_zgemmi(handle, trans_A, trans_B, m, n, k, nnz, alpha, A, &
+                lda, descr, csr_val, csr_row_ptr, csr_col_ind, beta, C, ldc) &
+                result(c_int) &
+                bind(c, name = 'rocsparse_zgemmi')
+            use iso_c_binding
+            implicit none
+            type(c_ptr), value :: handle
+            integer(c_int), value :: trans_A
+            integer(c_int), value :: trans_B
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: k
+            integer(c_int), value :: nnz
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: C
+            integer(c_int), value :: ldc
+        end function rocsparse_zgemmi
+
 ! ===========================================================================
 !   extra SPARSE
 ! ===========================================================================

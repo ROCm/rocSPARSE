@@ -400,6 +400,26 @@ rocsparse_status rocsparse_csrsm_solve(rocsparse_handle          handle,
                                        rocsparse_solve_policy    policy,
                                        void*                     temp_buffer);
 
+// gemmi
+template <typename T>
+rocsparse_status rocsparse_gemmi(rocsparse_handle          handle,
+                                 rocsparse_operation       trans_A,
+                                 rocsparse_operation       trans_B,
+                                 rocsparse_int             m,
+                                 rocsparse_int             n,
+                                 rocsparse_int             k,
+                                 rocsparse_int             nnz,
+                                 const T*                  alpha,
+                                 const T*                  A,
+                                 rocsparse_int             lda,
+                                 const rocsparse_mat_descr descr,
+                                 const T*                  csr_val,
+                                 const rocsparse_int*      csr_row_ptr,
+                                 const rocsparse_int*      csr_col_ind,
+                                 const T*                  beta,
+                                 T*                        C,
+                                 rocsparse_int             ldc);
+
 /*
  * ===========================================================================
  *    extra SPARSE

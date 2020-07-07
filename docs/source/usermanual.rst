@@ -649,6 +649,7 @@ Function name                                                             single
 :cpp:func:`rocsparse_csrsm_zero_pivot`
 :cpp:func:`rocsparse_csrsm_clear`
 :cpp:func:`rocsparse_Xcsrsm_solve() <rocsparse_scsrsm_solve>`             x      x      x              x
+:cpp:func:`rocsparse_Xgemmi() <rocsparse_sgemmi>`                         x      x      x              x
 ========================================================================= ====== ====== ============== ==============
 
 Sparse Extra Functions
@@ -1211,6 +1212,17 @@ rocsparse_csrsm_clear()
 .. doxygenfunction:: rocsparse_csrsm_clear
 
 .. _rocsparse_extra_functions_:
+
+rocsparse_gemmi()
+-----------------
+
+.. doxygenfunction:: rocsparse_sgemmi
+  :outline:
+.. doxygenfunction:: rocsparse_dgemmi
+  :outline:
+.. doxygenfunction:: rocsparse_cgemmi
+  :outline:
+.. doxygenfunction:: rocsparse_zgemmi
 
 Sparse Extra Functions
 ======================
