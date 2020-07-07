@@ -54,6 +54,7 @@ set(rocsparse_source
   src/level3/rocsparse_bsrmm.cpp
   src/level3/rocsparse_csrmm.cpp
   src/level3/rocsparse_csrsm.cpp
+  src/level3/rocsparse_gemmi.cpp
 
 # Extra
   src/extra/rocsparse_csrgeam.cpp

@@ -1653,6 +1653,48 @@ inline void host_csrsm(rocsparse_int                     M,
     *numeric_pivot = (*numeric_pivot == M + 1) ? -1 : *numeric_pivot;
 }
 
+template <typename T>
+inline void host_gemmi(rocsparse_int        M,
+                       rocsparse_int        N,
+                       rocsparse_operation  transA,
+                       rocsparse_operation  transB,
+                       T                    alpha,
+                       const T*             A,
+                       rocsparse_int        lda,
+                       const rocsparse_int* csr_row_ptr,
+                       const rocsparse_int* csr_col_ind,
+                       const T*             csr_val,
+                       T                    beta,
+                       T*                   C,
+                       rocsparse_int        ldc,
+                       rocsparse_index_base base)
+{
+    if(transB == rocsparse_operation_transpose)
+    {
+        for(rocsparse_int i = 0; i < M; ++i)
+        {
+            for(rocsparse_int j = 0; j < N; ++j)
+            {
+                T sum = static_cast<T>(0);
+
+                rocsparse_int row_begin = csr_row_ptr[j] - base;
+                rocsparse_int row_end   = csr_row_ptr[j + 1] - base;
+
+                for(rocsparse_int k = row_begin; k < row_end; ++k)
+                {
+                    rocsparse_int col_B = csr_col_ind[k] - base;
+                    T             val_B = csr_val[k];
+                    T             val_A = A[col_B * lda + i];
+
+                    sum = std::fma(val_A, val_B, sum);
+                }
+
+                C[j * ldc + i] = std::fma(beta, C[j * ldc + i], alpha * sum);
+            }
+        }
+    }
+}
+
 /*
  * ===========================================================================
  *    extra SPARSE
