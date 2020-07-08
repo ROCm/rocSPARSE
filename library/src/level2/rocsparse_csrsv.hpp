@@ -316,8 +316,9 @@ static rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     // Wait for device transfer to finish
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
-    // Determine gcnArch
+    // Determine gcnArch and ASIC revision
     int gcnArch = handle->properties.gcnArch;
+    int asicRev = handle->asic_rev;
 
 // Run analysis
 #define CSRSV_DIM 1024
@@ -326,7 +327,7 @@ static rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
 
     if(trans == rocsparse_operation_none)
     {
-        if(gcnArch == 908)
+        if(gcnArch == 908 && asicRev < 2)
         {
             if(descr->fill_mode == rocsparse_fill_mode_upper)
             {
@@ -447,7 +448,7 @@ static rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     }
     else if(trans == rocsparse_operation_transpose)
     {
-        if(gcnArch == 908)
+        if(gcnArch == 908 && asicRev < 2)
         {
             if(descr->fill_mode == rocsparse_fill_mode_upper)
             {
@@ -1121,6 +1122,7 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
 
     // Determine gcnArch
     int gcnArch = handle->properties.gcnArch;
+    int asicRev = handle->asic_rev;
 
 #define CSRSV_DIM 1024
     dim3 csrsv_blocks((handle->wavefront_size * m - 1) / CSRSV_DIM + 1);
@@ -1129,7 +1131,7 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
         // gfx908
-        if(gcnArch == 908)
+        if(gcnArch == 908 && asicRev < 2)
         {
             hipLaunchKernelGGL((csrsv_device_pointer<T, CSRSV_DIM, 64, true>),
                                csrsv_blocks,
@@ -1207,7 +1209,7 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
     else
     {
         // gfx908
-        if(gcnArch == 908)
+        if(gcnArch == 908 && asicRev < 2)
         {
             hipLaunchKernelGGL((csrsv_host_pointer<T, CSRSV_DIM, 64, true>),
                                csrsv_blocks,

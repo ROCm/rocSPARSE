@@ -65,12 +65,12 @@
         LAUNCH_BSRSV_GTHR_DIM(bsize, 64, 8)   \
     }
 
-#define LAUNCH_BSRSV_SHARED(fill, ptr, bsize, wfsize, dim, arch)              \
+#define LAUNCH_BSRSV_SHARED(fill, ptr, bsize, wfsize, dim, arch, asic)        \
     if(fill == rocsparse_fill_mode_lower)                                     \
     {                                                                         \
         if(ptr == rocsparse_pointer_mode_host)                                \
         {                                                                     \
-            if(arch == 908)                                                   \
+            if(arch == 908 && asic < 2)                                       \
             {                                                                 \
                 LAUNCH_BSRSV_LOWER_SHARED_HOSTPTR(bsize, wfsize, dim, true);  \
             }                                                                 \
@@ -81,7 +81,7 @@
         }                                                                     \
         else                                                                  \
         {                                                                     \
-            if(arch == 908)                                                   \
+            if(arch == 908 && asic < 2)                                       \
             {                                                                 \
                 LAUNCH_BSRSV_LOWER_SHARED_DEVPTR(bsize, wfsize, dim, true);   \
             }                                                                 \
@@ -95,7 +95,7 @@
     {                                                                         \
         if(ptr == rocsparse_pointer_mode_host)                                \
         {                                                                     \
-            if(arch == 908)                                                   \
+            if(arch == 908 && asic < 2)                                       \
             {                                                                 \
                 LAUNCH_BSRSV_UPPER_SHARED_HOSTPTR(bsize, wfsize, dim, true);  \
             }                                                                 \
@@ -106,7 +106,7 @@
         }                                                                     \
         else                                                                  \
         {                                                                     \
-            if(arch == 908)                                                   \
+            if(arch == 908 && asic < 2)                                       \
             {                                                                 \
                 LAUNCH_BSRSV_UPPER_SHARED_DEVPTR(bsize, wfsize, dim, true);   \
             }                                                                 \
@@ -201,12 +201,12 @@
                        descr->diag_type,                                                 \
                        dir)
 
-#define LAUNCH_BSRSV_GENERAL(fill, ptr, bsize, wfsize, arch)              \
+#define LAUNCH_BSRSV_GENERAL(fill, ptr, bsize, wfsize, arch, asic)        \
     if(fill == rocsparse_fill_mode_lower)                                 \
     {                                                                     \
         if(ptr == rocsparse_pointer_mode_host)                            \
         {                                                                 \
-            if(arch == 908)                                               \
+            if(arch == 908 && asic < 2)                                   \
             {                                                             \
                 LAUNCH_BSRSV_LOWER_GENERAL_HOSTPTR(bsize, wfsize, true);  \
             }                                                             \
@@ -217,7 +217,7 @@
         }                                                                 \
         else                                                              \
         {                                                                 \
-            if(arch == 908)                                               \
+            if(arch == 908 && asic < 2)                                   \
             {                                                             \
                 LAUNCH_BSRSV_LOWER_GENERAL_DEVPTR(bsize, wfsize, true);   \
             }                                                             \
@@ -229,7 +229,7 @@
     }                                                                     \
     else if(ptr == rocsparse_pointer_mode_host)                           \
     {                                                                     \
-        if(arch == 908)                                                   \
+        if(arch == 908 && asic < 2)                                       \
         {                                                                 \
             LAUNCH_BSRSV_UPPER_GENERAL_HOSTPTR(bsize, wfsize, true);      \
         }                                                                 \
@@ -240,7 +240,7 @@
     }                                                                     \
     else                                                                  \
     {                                                                     \
-        if(arch == 908)                                                   \
+        if(arch == 908 && asic < 2)                                       \
         {                                                                 \
             LAUNCH_BSRSV_UPPER_GENERAL_DEVPTR(bsize, wfsize, true);       \
         }                                                                 \
@@ -1063,30 +1063,31 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
                                                              : rocsparse_fill_mode_lower;
     }
 
-    // Determine gcnArch
+    // Determine gcnArch and ASIC revision
     int gcnArch = handle->properties.gcnArch;
+    int asicRev = handle->asic_rev;
 
     if(handle->wavefront_size == 64)
     {
         if(bsr_dim <= 8)
         {
             // Launch shared memory based kernel for small BSR block dimensions
-            LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 8, gcnArch);
+            LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 8, gcnArch, asicRev);
         }
         else if(bsr_dim <= 16)
         {
             // Launch shared memory based kernel for small BSR block dimensions
-            LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 16, gcnArch);
+            LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 16, gcnArch, asicRev);
         }
         else if(bsr_dim <= 32)
         {
             // Launch shared memory based kernel for small BSR block dimensions
-            LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 32, gcnArch);
+            LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 32, gcnArch, asicRev);
         }
         else
         {
             // Launch general algorithm for large BSR block dimensions (> 32x32)
-            LAUNCH_BSRSV_GENERAL(fill_mode, handle->pointer_mode, 128, 64, gcnArch);
+            LAUNCH_BSRSV_GENERAL(fill_mode, handle->pointer_mode, 128, 64, gcnArch, asicRev);
         }
     }
     else

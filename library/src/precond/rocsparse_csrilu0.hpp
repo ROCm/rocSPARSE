@@ -298,14 +298,15 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
     // Max nnz per row
     rocsparse_int max_nnz = info->csrilu0_info->max_nnz;
 
-    // Determine gcnArch
+    // Determine gcnArch and ASIC revision
     int gcnArch = handle->properties.gcnArch;
+    int asicRev = handle->asic_rev;
 
 #define CSRILU0_DIM 256
     dim3 csrilu0_blocks((m * handle->wavefront_size - 1) / CSRILU0_DIM + 1);
     dim3 csrilu0_threads(CSRILU0_DIM);
 
-    if(gcnArch == 908)
+    if(gcnArch == 908 && asicRev < 2)
     {
         hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 64, true>),
                            csrilu0_blocks,
