@@ -79,16 +79,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # If OpenMP is available, we can use it to speed up some tests
-#find_package(OpenMP QUIET)
+find_package(OpenMP QUIET)
 
-#if(OPENMP_FOUND)
-#  if(NOT TARGET OpenMP::OpenMP_CXX)
-#    # OpenMP cmake fix for cmake <= 3.9
-#    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
-#    set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
-#    set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
-#  endif()
-#endif()
+if(OPENMP_FOUND)
+  if(NOT TARGET OpenMP::OpenMP_CXX)
+    # OpenMP cmake fix for cmake <= 3.9
+    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
+    set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
+    set_property(TARGET OpenMP::OpenMP_CXX PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+  endif()
+endif()
 
 if(BUILD_CLIENTS_SAMPLES)
   add_subdirectory(samples)

@@ -221,7 +221,7 @@ target_link_libraries(rocsparse-test PRIVATE GTest::GTest Boost::program_options
 
 # Add OpenMP if available
 if(OPENMP_FOUND)
-  target_link_libraries(rocsparse-test PRIVATE OpenMP::OpenMP_CXX)
+  target_link_libraries(rocsparse-test PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
 endif()
 
 # Set test output directory

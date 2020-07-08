@@ -53,7 +53,7 @@ target_link_libraries(rocsparse-bench PRIVATE Boost::program_options roc::rocspa
 
 # Add OpenMP if available
 if(OPENMP_FOUND)
-  target_link_libraries(rocsparse-bench PRIVATE OpenMP::OpenMP_CXX)
+  target_link_libraries(rocsparse-bench PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
 endif()
 
 # Set benchmark output directory
