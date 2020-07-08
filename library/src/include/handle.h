@@ -62,6 +62,8 @@ struct _rocsparse_handle
     hipDeviceProp_t properties;
     // device wavefront size
     int wavefront_size;
+    // asic revision
+    int asic_rev;
     // stream ; default stream is system stream NULL
     hipStream_t stream = 0;
     // pointer mode ; default mode is host

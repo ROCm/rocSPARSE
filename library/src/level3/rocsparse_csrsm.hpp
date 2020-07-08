@@ -808,8 +808,9 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
     dim3 csrsm_blocks(((nrhs - 1) / blockdim + 1) * m);
     dim3 csrsm_threads(blockdim);
 
-    // Determine gcnArch
+    // Determine gcnArch and ASIC revision
     int gcnArch = handle->properties.gcnArch;
+    int asicRev = handle->asic_rev;
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
@@ -817,7 +818,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
 
         if(blockdim == 64)
         {
-            if(gcnArch == 908)
+            if(gcnArch == 908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm_device_pointer<T, 64, 64, true>),
                                    csrsm_blocks,
@@ -864,7 +865,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
         }
         else if(blockdim == 128)
         {
-            if(gcnArch == 908)
+            if(gcnArch == 908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm_device_pointer<T, 128, 64, true>),
                                    csrsm_blocks,
@@ -911,7 +912,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
         }
         else if(blockdim == 256)
         {
-            if(gcnArch == 908)
+            if(gcnArch == 908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm_device_pointer<T, 256, 64, true>),
                                    csrsm_blocks,
@@ -958,7 +959,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
         }
         else if(blockdim == 512)
         {
-            if(gcnArch == 908)
+            if(gcnArch == 908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm_device_pointer<T, 512, 64, true>),
                                    csrsm_blocks,
@@ -1005,7 +1006,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
         }
         else if(blockdim == 1024)
         {
-            if(gcnArch == 908)
+            if(gcnArch == 908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm_device_pointer<T, 1024, 64, true>),
                                    csrsm_blocks,
@@ -1061,7 +1062,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
 
         if(blockdim == 64)
         {
-            if(gcnArch == 908)
+            if(gcnArch == 908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm_host_pointer<T, 64, 64, true>),
                                    csrsm_blocks,
@@ -1108,7 +1109,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
         }
         else if(blockdim == 128)
         {
-            if(gcnArch == 908)
+            if(gcnArch == 908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm_host_pointer<T, 128, 64, true>),
                                    csrsm_blocks,
@@ -1155,7 +1156,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
         }
         else if(blockdim == 256)
         {
-            if(gcnArch == 908)
+            if(gcnArch == 908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm_host_pointer<T, 256, 64, true>),
                                    csrsm_blocks,
@@ -1202,7 +1203,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
         }
         else if(blockdim == 512)
         {
-            if(gcnArch == 908)
+            if(gcnArch == 908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm_host_pointer<T, 512, 64, true>),
                                    csrsm_blocks,
@@ -1249,7 +1250,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
         }
         else if(blockdim == 1024)
         {
-            if(gcnArch == 908)
+            if(gcnArch == 908 && asicRev < 2)
             {
                 hipLaunchKernelGGL((csrsm_host_pointer<T, 1024, 64, true>),
                                    csrsm_blocks,

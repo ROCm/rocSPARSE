@@ -41,6 +41,13 @@ _rocsparse_handle::_rocsparse_handle()
     // Device wavefront size
     wavefront_size = properties.warpSize;
 
+#if HIP_VERSION >= 307
+    // ASIC revision
+    asic_rev = properties.asicRevision;
+#else
+    asic_rev = 0;
+#endif
+
     // Layer mode
     char* str_layer_mode;
     if((str_layer_mode = getenv("ROCSPARSE_LAYER")) == NULL)
