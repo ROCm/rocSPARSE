@@ -19,7 +19,7 @@ doxygen Doxyfile
 cd source
 make clean
 make html
-#make latexpdf
+make latexpdf
 cd ..
 
 rm rocsparse-functions.h
