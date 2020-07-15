@@ -78,11 +78,11 @@ static unsigned long long numThreadsForReduction(unsigned long long num_rows)
 #endif
 }
 
-static void ComputeRowBlocks(unsigned long long*  rowBlocks,
-                             size_t&              rowBlockSize,
-                             const rocsparse_int* rowDelimiters,
-                             rocsparse_int        nRows,
-                             bool                 allocate_row_blocks = true)
+static inline void ComputeRowBlocks(unsigned long long*  rowBlocks,
+                                    size_t&              rowBlockSize,
+                                    const rocsparse_int* rowDelimiters,
+                                    rocsparse_int        nRows,
+                                    bool                 allocate_row_blocks = true)
 {
     unsigned long long* rowBlocksBase;
 
