@@ -32,33 +32,34 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T>
-__global__ void roti_kernel_host_scalar(rocsparse_int        nnz,
-                                        T*                   x_val,
-                                        const rocsparse_int* x_ind,
-                                        T*                   y,
-                                        T                    c,
-                                        T                    s,
-                                        rocsparse_index_base idx_base)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void roti_kernel_host_scalar(rocsparse_int        nnz,
+                                                                     T*                   x_val,
+                                                                     const rocsparse_int* x_ind,
+                                                                     T*                   y,
+                                                                     T                    c,
+                                                                     T                    s,
+                                                                     rocsparse_index_base idx_base)
 {
-    roti_device(nnz, x_val, x_ind, y, c, s, idx_base);
+    roti_device<T, BLOCKSIZE>(nnz, x_val, x_ind, y, c, s, idx_base);
 }
 
-template <typename T>
-__global__ void roti_kernel_device_scalar(rocsparse_int        nnz,
-                                          T*                   x_val,
-                                          const rocsparse_int* x_ind,
-                                          T*                   y,
-                                          const T*             c,
-                                          const T*             s,
-                                          rocsparse_index_base idx_base)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void roti_kernel_device_scalar(rocsparse_int        nnz,
+                                   T*                   x_val,
+                                   const rocsparse_int* x_ind,
+                                   T*                   y,
+                                   const T*             c,
+                                   const T*             s,
+                                   rocsparse_index_base idx_base)
 {
     if(*c == static_cast<T>(1) && *s == static_cast<T>(0))
     {
         return;
     }
 
-    roti_device(nnz, x_val, x_ind, y, *c, *s, idx_base);
+    roti_device<T, BLOCKSIZE>(nnz, x_val, x_ind, y, *c, *s, idx_base);
 }
 
 template <typename T>
@@ -152,7 +153,7 @@ rocsparse_status rocsparse_roti_template(rocsparse_handle     handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((roti_kernel_device_scalar<T>),
+        hipLaunchKernelGGL((roti_kernel_device_scalar<T, ROTI_DIM>),
                            roti_blocks,
                            roti_threads,
                            0,
@@ -172,7 +173,7 @@ rocsparse_status rocsparse_roti_template(rocsparse_handle     handle,
             return rocsparse_status_success;
         }
 
-        hipLaunchKernelGGL((roti_kernel_host_scalar<T>),
+        hipLaunchKernelGGL((roti_kernel_host_scalar<T, ROTI_DIM>),
                            roti_blocks,
                            roti_threads,
                            0,

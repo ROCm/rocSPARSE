@@ -486,13 +486,14 @@ __launch_bounds__(BLOCK_SIZE) __global__
     }
 }
 
-__global__ void
-    csr2bsr_nnz_block_dim_equals_one_kernel(rocsparse_int        m,
-                                            rocsparse_index_base csr_base,
-                                            const rocsparse_int* __restrict__ csr_row_ptr,
-                                            rocsparse_index_base bsr_base,
-                                            rocsparse_int* __restrict__ bsr_row_ptr,
-                                            rocsparse_int* __restrict__ bsr_nnz)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void csr2bsr_nnz_block_dim_equals_one_kernel(rocsparse_int        m,
+                                                 rocsparse_index_base csr_base,
+                                                 const rocsparse_int* __restrict__ csr_row_ptr,
+                                                 rocsparse_index_base bsr_base,
+                                                 rocsparse_int* __restrict__ bsr_row_ptr,
+                                                 rocsparse_int* __restrict__ bsr_nnz)
 {
     rocsparse_int thread_id = hipThreadIdx_x + hipBlockDim_x * hipBlockIdx_x;
 
@@ -507,12 +508,13 @@ __global__ void
     }
 }
 
-__global__ void
-    csr2bsr_nnz_block_dim_equals_one_kernel(rocsparse_int        m,
-                                            rocsparse_index_base csr_base,
-                                            const rocsparse_int* __restrict__ csr_row_ptr,
-                                            rocsparse_index_base bsr_base,
-                                            rocsparse_int* __restrict__ bsr_row_ptr)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void csr2bsr_nnz_block_dim_equals_one_kernel(rocsparse_int        m,
+                                                 rocsparse_index_base csr_base,
+                                                 const rocsparse_int* __restrict__ csr_row_ptr,
+                                                 rocsparse_index_base bsr_base,
+                                                 rocsparse_int* __restrict__ bsr_row_ptr)
 {
     rocsparse_int thread_id = hipThreadIdx_x + hipBlockDim_x * hipBlockIdx_x;
 
@@ -522,9 +524,11 @@ __global__ void
     }
 }
 
-__global__ void csr2bsr_nnz_compute_nnz_total_kernel(rocsparse_int mb,
-                                                     const rocsparse_int* __restrict__ bsr_row_ptr,
-                                                     rocsparse_int* __restrict__ bsr_nnz)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void csr2bsr_nnz_compute_nnz_total_kernel(rocsparse_int mb,
+                                              const rocsparse_int* __restrict__ bsr_row_ptr,
+                                              rocsparse_int* __restrict__ bsr_nnz)
 {
     rocsparse_int thread_id = hipThreadIdx_x + hipBlockDim_x * hipBlockIdx_x;
 

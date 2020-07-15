@@ -29,7 +29,7 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, rocsparse_int WF_SIZE>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
 static __device__ void csrmvn_general_device(rocsparse_int        m,
                                              T                    alpha,
                                              const rocsparse_int* row_offset,
@@ -41,9 +41,9 @@ static __device__ void csrmvn_general_device(rocsparse_int        m,
                                              rocsparse_index_base idx_base)
 {
     rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
+    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + tid;
     rocsparse_int lid = tid & (WF_SIZE - 1);
-    rocsparse_int nwf = hipGridDim_x * hipBlockDim_x / WF_SIZE;
+    rocsparse_int nwf = hipGridDim_x * BLOCKSIZE / WF_SIZE;
 
     // Loop over rows
     for(rocsparse_int row = gid / WF_SIZE; row < m; row += nwf)

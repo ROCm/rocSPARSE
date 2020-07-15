@@ -33,34 +33,37 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T>
-__global__ void ellmvn_kernel_host_pointer(rocsparse_int m,
-                                           rocsparse_int n,
-                                           rocsparse_int ell_width,
-                                           T             alpha,
-                                           const rocsparse_int* __restrict__ ell_col_ind,
-                                           const T* __restrict__ ell_val,
-                                           const T* __restrict__ x,
-                                           T beta,
-                                           T* __restrict__ y,
-                                           rocsparse_index_base idx_base)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void ellmvn_kernel_host_pointer(rocsparse_int m,
+                                    rocsparse_int n,
+                                    rocsparse_int ell_width,
+                                    T             alpha,
+                                    const rocsparse_int* __restrict__ ell_col_ind,
+                                    const T* __restrict__ ell_val,
+                                    const T* __restrict__ x,
+                                    T beta,
+                                    T* __restrict__ y,
+                                    rocsparse_index_base idx_base)
 {
-    ellmvn_device(m, n, ell_width, alpha, ell_col_ind, ell_val, x, beta, y, idx_base);
+    ellmvn_device<T, BLOCKSIZE>(m, n, ell_width, alpha, ell_col_ind, ell_val, x, beta, y, idx_base);
 }
 
-template <typename T>
-__global__ void ellmvn_kernel_device_pointer(rocsparse_int m,
-                                             rocsparse_int n,
-                                             rocsparse_int ell_width,
-                                             const T*      alpha,
-                                             const rocsparse_int* __restrict__ ell_col_ind,
-                                             const T* __restrict__ ell_val,
-                                             const T* __restrict__ x,
-                                             const T* beta,
-                                             T* __restrict__ y,
-                                             rocsparse_index_base idx_base)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void ellmvn_kernel_device_pointer(rocsparse_int m,
+                                      rocsparse_int n,
+                                      rocsparse_int ell_width,
+                                      const T*      alpha,
+                                      const rocsparse_int* __restrict__ ell_col_ind,
+                                      const T* __restrict__ ell_val,
+                                      const T* __restrict__ x,
+                                      const T* beta,
+                                      T* __restrict__ y,
+                                      rocsparse_index_base idx_base)
 {
-    ellmvn_device(m, n, ell_width, *alpha, ell_col_ind, ell_val, x, *beta, y, idx_base);
+    ellmvn_device<T, BLOCKSIZE>(
+        m, n, ell_width, *alpha, ell_col_ind, ell_val, x, *beta, y, idx_base);
 }
 
 template <typename T>
@@ -205,7 +208,7 @@ rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            hipLaunchKernelGGL((ellmvn_kernel_device_pointer<T>),
+            hipLaunchKernelGGL((ellmvn_kernel_device_pointer<T, ELLMVN_DIM>),
                                ellmvn_blocks,
                                ellmvn_threads,
                                0,
@@ -228,7 +231,7 @@ rocsparse_status rocsparse_ellmv_template(rocsparse_handle          handle,
                 return rocsparse_status_success;
             }
 
-            hipLaunchKernelGGL((ellmvn_kernel_host_pointer<T>),
+            hipLaunchKernelGGL((ellmvn_kernel_host_pointer<T, ELLMVN_DIM>),
                                ellmvn_blocks,
                                ellmvn_threads,
                                0,

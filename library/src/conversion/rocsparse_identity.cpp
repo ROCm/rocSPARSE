@@ -68,7 +68,8 @@ extern "C" rocsparse_status rocsparse_create_identity_permutation(rocsparse_hand
     dim3 identity_blocks((n - 1) / IDENTITY_DIM + 1);
     dim3 identity_threads(IDENTITY_DIM);
 
-    hipLaunchKernelGGL((identity_kernel), identity_blocks, identity_threads, 0, stream, n, p);
+    hipLaunchKernelGGL(
+        (identity_kernel<IDENTITY_DIM>), identity_blocks, identity_threads, 0, stream, n, p);
 #undef IDENTITY_DIM
     return rocsparse_status_success;
 }

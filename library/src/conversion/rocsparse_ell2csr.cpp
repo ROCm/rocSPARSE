@@ -139,7 +139,7 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle          hand
     dim3 ell2csr_blocks((m + 1) / ELL2CSR_DIM + 1);
     dim3 ell2csr_threads(ELL2CSR_DIM);
 
-    hipLaunchKernelGGL((ell2csr_nnz_per_row),
+    hipLaunchKernelGGL((ell2csr_nnz_per_row<ELL2CSR_DIM>),
                        ell2csr_blocks,
                        ell2csr_threads,
                        0,
@@ -199,7 +199,7 @@ extern "C" rocsparse_status rocsparse_ell2csr_nnz(rocsparse_handle          hand
                 csr_nnz, csr_row_ptr + m, sizeof(rocsparse_int), hipMemcpyDeviceToDevice, stream));
 
             // Adjust nnz according to index base
-            hipLaunchKernelGGL((ell2csr_index_base), dim3(1), dim3(1), 0, stream, csr_nnz);
+            hipLaunchKernelGGL((ell2csr_index_base<1>), dim3(1), dim3(1), 0, stream, csr_nnz);
         }
         else
         {

@@ -236,7 +236,7 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle          handle,
         dim3 csrsort_blocks(m / CSRSORT_DIM + 1);
         dim3 csrsort_threads(CSRSORT_DIM);
 
-        hipLaunchKernelGGL((csrsort_shift_kernel),
+        hipLaunchKernelGGL((csrsort_shift_kernel<CSRSORT_DIM>),
                            csrsort_blocks,
                            csrsort_threads,
                            0,

@@ -85,7 +85,7 @@ extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle     handle,
     dim3 coo2csr_blocks((m - 1) / COO2CSR_DIM + 1);
     dim3 coo2csr_threads(COO2CSR_DIM);
 
-    hipLaunchKernelGGL((coo2csr_kernel),
+    hipLaunchKernelGGL((coo2csr_kernel<COO2CSR_DIM>),
                        coo2csr_blocks,
                        coo2csr_threads,
                        0,

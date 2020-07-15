@@ -31,7 +31,7 @@
 #include <hip/hip_runtime.h>
 
 // ELL SpMV for general, non-transposed matrices
-template <typename T>
+template <typename T, unsigned int BLOCKSIZE>
 static __device__ void ellmvn_device(rocsparse_int        m,
                                      rocsparse_int        n,
                                      rocsparse_int        ell_width,
@@ -43,7 +43,7 @@ static __device__ void ellmvn_device(rocsparse_int        m,
                                      T*                   y,
                                      rocsparse_index_base idx_base)
 {
-    rocsparse_int ai = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
+    rocsparse_int ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 
     if(ai >= m)
     {

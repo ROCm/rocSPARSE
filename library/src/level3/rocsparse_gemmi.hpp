@@ -33,20 +33,20 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T>
-__launch_bounds__(256) __global__
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
     void gemmi_scale_kernel_host_pointer(rocsparse_int size, T alpha, T* __restrict__ data)
 {
-    gemmi_scale_kernel(size, alpha, data);
+    gemmi_scale_kernel<T, BLOCKSIZE>(size, alpha, data);
 }
 
-template <typename T>
-__launch_bounds__(256) __global__
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
     void gemmi_scale_kernel_device_pointer(rocsparse_int size,
                                            const T* __restrict__ alpha,
                                            T* __restrict__ data)
 {
-    gemmi_scale_kernel(size, *alpha, data);
+    gemmi_scale_kernel<T, BLOCKSIZE>(size, *alpha, data);
 }
 
 template <typename T, unsigned int BLOCKSIZE>
@@ -229,11 +229,10 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
 #define SCALE_DIM 256
         dim3 scale_blocks((m * n - 1) / SCALE_DIM + 1);
         dim3 scale_threads(SCALE_DIM);
-#undef SCALE_DIM
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            hipLaunchKernelGGL((gemmi_scale_kernel_device_pointer<T>),
+            hipLaunchKernelGGL((gemmi_scale_kernel_device_pointer<T, SCALE_DIM>),
                                scale_blocks,
                                scale_threads,
                                0,
@@ -250,7 +249,7 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
             }
             else if(*beta != static_cast<T>(1))
             {
-                hipLaunchKernelGGL((gemmi_scale_kernel_host_pointer<T>),
+                hipLaunchKernelGGL((gemmi_scale_kernel_host_pointer<T, SCALE_DIM>),
                                    scale_blocks,
                                    scale_threads,
                                    0,
@@ -260,6 +259,7 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
                                    C);
             }
         }
+#undef SCALE_DIM
 
         return rocsparse_status_success;
     }
@@ -305,9 +305,8 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
 #define SCALE_DIM 256
                 dim3 scale_blocks((m * n - 1) / SCALE_DIM + 1);
                 dim3 scale_threads(SCALE_DIM);
-#undef SCALE_DIM
 
-                hipLaunchKernelGGL((gemmi_scale_kernel_host_pointer<T>),
+                hipLaunchKernelGGL((gemmi_scale_kernel_host_pointer<T, SCALE_DIM>),
                                    scale_blocks,
                                    scale_threads,
                                    0,
@@ -315,6 +314,7 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
                                    m * n,
                                    *beta,
                                    C);
+#undef SCALE_DIM
             }
 
             return rocsparse_status_success;

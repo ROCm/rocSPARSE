@@ -32,15 +32,16 @@
 extern "C" void __builtin_amdgcn_s_sleep(int);
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
-__global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
-                                            const rocsparse_int* __restrict__ csr_row_ptr,
-                                            const rocsparse_int* __restrict__ csr_col_ind,
-                                            rocsparse_int* __restrict__ csr_diag_ind,
-                                            int* __restrict__ done_array,
-                                            rocsparse_int* __restrict__ max_nnz,
-                                            rocsparse_int* __restrict__ zero_pivot,
-                                            rocsparse_index_base idx_base,
-                                            rocsparse_diag_type  diag_type)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrsv_analysis_lower_kernel(rocsparse_int m,
+                                     const rocsparse_int* __restrict__ csr_row_ptr,
+                                     const rocsparse_int* __restrict__ csr_col_ind,
+                                     rocsparse_int* __restrict__ csr_diag_ind,
+                                     int* __restrict__ done_array,
+                                     rocsparse_int* __restrict__ max_nnz,
+                                     rocsparse_int* __restrict__ zero_pivot,
+                                     rocsparse_index_base idx_base,
+                                     rocsparse_diag_type  diag_type)
 {
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
     int wid = hipThreadIdx_x / WF_SIZE;
@@ -185,15 +186,16 @@ __global__ void csrsv_analysis_lower_kernel(rocsparse_int m,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
-__global__ void csrsv_analysis_upper_kernel(rocsparse_int m,
-                                            const rocsparse_int* __restrict__ csr_row_ptr,
-                                            const rocsparse_int* __restrict__ csr_col_ind,
-                                            rocsparse_int* __restrict__ csr_diag_ind,
-                                            int* __restrict__ done_array,
-                                            rocsparse_int* __restrict__ max_nnz,
-                                            rocsparse_int* __restrict__ zero_pivot,
-                                            rocsparse_index_base idx_base,
-                                            rocsparse_diag_type  diag_type)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrsv_analysis_upper_kernel(rocsparse_int m,
+                                     const rocsparse_int* __restrict__ csr_row_ptr,
+                                     const rocsparse_int* __restrict__ csr_col_ind,
+                                     rocsparse_int* __restrict__ csr_diag_ind,
+                                     int* __restrict__ done_array,
+                                     rocsparse_int* __restrict__ max_nnz,
+                                     rocsparse_int* __restrict__ zero_pivot,
+                                     rocsparse_index_base idx_base,
+                                     rocsparse_diag_type  diag_type)
 {
     int lid = hipThreadIdx_x & (WF_SIZE - 1);
     int wid = hipThreadIdx_x / WF_SIZE;

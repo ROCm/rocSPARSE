@@ -30,12 +30,12 @@
 #include <hip/hip_runtime.h>
 
 template <typename T, unsigned int DIM_X, unsigned int DIM_Y>
-__global__ void csrsm_transpose(rocsparse_int m,
-                                rocsparse_int n,
-                                const T* __restrict__ A,
-                                rocsparse_int lda,
-                                T* __restrict__ B,
-                                rocsparse_int ldb)
+__launch_bounds__(DIM_X* DIM_Y) __global__ void csrsm_transpose(rocsparse_int m,
+                                                                rocsparse_int n,
+                                                                const T* __restrict__ A,
+                                                                rocsparse_int lda,
+                                                                T* __restrict__ B,
+                                                                rocsparse_int ldb)
 {
     rocsparse_int lid = hipThreadIdx_x & (DIM_X - 1);
     rocsparse_int wid = hipThreadIdx_x / DIM_X;
@@ -74,12 +74,12 @@ __global__ void csrsm_transpose(rocsparse_int m,
 }
 
 template <typename T, unsigned int DIM_X, unsigned int DIM_Y>
-__global__ void csrsm_transpose_back(rocsparse_int m,
-                                     rocsparse_int n,
-                                     const T* __restrict__ A,
-                                     rocsparse_int lda,
-                                     T* __restrict__ B,
-                                     rocsparse_int ldb)
+__launch_bounds__(DIM_X* DIM_Y) __global__ void csrsm_transpose_back(rocsparse_int m,
+                                                                     rocsparse_int n,
+                                                                     const T* __restrict__ A,
+                                                                     rocsparse_int lda,
+                                                                     T* __restrict__ B,
+                                                                     rocsparse_int ldb)
 {
     rocsparse_int lid = hipThreadIdx_x & (DIM_X - 1);
     rocsparse_int wid = hipThreadIdx_x / DIM_X;
@@ -148,7 +148,7 @@ __device__ void csrsm_device(rocsparse_int m,
     rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Column index into B
-    rocsparse_int col_B = hipBlockIdx_x / m * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int col_B = hipBlockIdx_x / m * BLOCKSIZE + hipThreadIdx_x;
 
     // Index into B (i,j)
     rocsparse_int idx_B = row * ldb + col_B;

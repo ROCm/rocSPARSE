@@ -30,15 +30,16 @@
 #include <hip/hip_runtime.h>
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH>
-__global__ void csric0_hash_kernel(rocsparse_int m,
-                                   const rocsparse_int* __restrict__ csr_row_ptr,
-                                   const rocsparse_int* __restrict__ csr_col_ind,
-                                   T* __restrict__ csr_val,
-                                   const rocsparse_int* __restrict__ csr_diag_ind,
-                                   int* __restrict__ done,
-                                   const rocsparse_int* __restrict__ map,
-                                   rocsparse_int* __restrict__ zero_pivot,
-                                   rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csric0_hash_kernel(rocsparse_int m,
+                            const rocsparse_int* __restrict__ csr_row_ptr,
+                            const rocsparse_int* __restrict__ csr_col_ind,
+                            T* __restrict__ csr_val,
+                            const rocsparse_int* __restrict__ csr_diag_ind,
+                            int* __restrict__ done,
+                            const rocsparse_int* __restrict__ map,
+                            rocsparse_int* __restrict__ zero_pivot,
+                            rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -216,15 +217,16 @@ __global__ void csric0_hash_kernel(rocsparse_int m,
 }
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
-__global__ void csric0_binsearch_kernel(rocsparse_int m,
-                                        const rocsparse_int* __restrict__ csr_row_ptr,
-                                        const rocsparse_int* __restrict__ csr_col_ind,
-                                        T* __restrict__ csr_val,
-                                        const rocsparse_int* __restrict__ csr_diag_ind,
-                                        int* __restrict__ done,
-                                        const rocsparse_int* __restrict__ map,
-                                        rocsparse_int* __restrict__ zero_pivot,
-                                        rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csric0_binsearch_kernel(rocsparse_int m,
+                                 const rocsparse_int* __restrict__ csr_row_ptr,
+                                 const rocsparse_int* __restrict__ csr_col_ind,
+                                 T* __restrict__ csr_val,
+                                 const rocsparse_int* __restrict__ csr_diag_ind,
+                                 int* __restrict__ done,
+                                 const rocsparse_int* __restrict__ map,
+                                 rocsparse_int* __restrict__ zero_pivot,
+                                 rocsparse_index_base idx_base)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;

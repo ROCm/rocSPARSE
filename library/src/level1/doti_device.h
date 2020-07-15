@@ -29,30 +29,30 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, rocsparse_int NB>
-__global__ void doti_kernel_part1(rocsparse_int        nnz,
-                                  const T*             x_val,
-                                  const rocsparse_int* x_ind,
-                                  const T*             y,
-                                  T*                   workspace,
-                                  rocsparse_index_base idx_base)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void doti_kernel_part1(rocsparse_int        nnz,
+                                                               const T*             x_val,
+                                                               const rocsparse_int* x_ind,
+                                                               const T*             y,
+                                                               T*                   workspace,
+                                                               rocsparse_index_base idx_base)
 {
     rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockDim_x * hipBlockIdx_x + tid;
+    rocsparse_int gid = BLOCKSIZE * hipBlockIdx_x + tid;
 
     T dot = static_cast<T>(0);
 
-    for(rocsparse_int idx = gid; idx < nnz; idx += hipGridDim_x * hipBlockDim_x)
+    for(rocsparse_int idx = gid; idx < nnz; idx += hipGridDim_x * BLOCKSIZE)
     {
         dot = rocsparse_fma(y[x_ind[idx] - idx_base], x_val[idx], dot);
     }
 
-    __shared__ T sdata[NB];
+    __shared__ T sdata[BLOCKSIZE];
     sdata[tid] = dot;
 
     __syncthreads();
 
-    rocsparse_blockreduce_sum<T, NB>(tid, sdata);
+    rocsparse_blockreduce_sum<T, BLOCKSIZE>(tid, sdata);
 
     if(tid == 0)
     {
@@ -60,17 +60,18 @@ __global__ void doti_kernel_part1(rocsparse_int        nnz,
     }
 }
 
-template <typename T, rocsparse_int NB>
-__global__ void doti_kernel_part2(rocsparse_int n, T* workspace, T* result)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void doti_kernel_part2(rocsparse_int n, T* workspace, T* result)
 {
     rocsparse_int tid = hipThreadIdx_x;
 
-    __shared__ T sdata[NB];
+    __shared__ T sdata[BLOCKSIZE];
 
     sdata[tid] = workspace[tid];
     __syncthreads();
 
-    rocsparse_blockreduce_sum<T, NB>(tid, sdata);
+    rocsparse_blockreduce_sum<T, BLOCKSIZE>(tid, sdata);
 
     if(tid == 0)
     {

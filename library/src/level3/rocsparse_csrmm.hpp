@@ -32,8 +32,8 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
-__launch_bounds__(256) __global__
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+__launch_bounds__(BLOCKSIZE) __global__
     void csrmmnn_kernel_host_pointer(rocsparse_int m,
                                      rocsparse_int n,
                                      rocsparse_int k,
@@ -53,8 +53,8 @@ __launch_bounds__(256) __global__
         m, n, k, nnz, alpha, csr_row_ptr, csr_col_ind, csr_val, B, ldb, beta, C, ldc, idx_base);
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
-__launch_bounds__(256) __global__
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+__launch_bounds__(BLOCKSIZE) __global__
     void csrmmnn_kernel_device_pointer(rocsparse_int m,
                                        rocsparse_int n,
                                        rocsparse_int k,
@@ -79,8 +79,8 @@ __launch_bounds__(256) __global__
         m, n, k, nnz, *alpha, csr_row_ptr, csr_col_ind, csr_val, B, ldb, *beta, C, ldc, idx_base);
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
-__launch_bounds__(256) __global__
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+__launch_bounds__(BLOCKSIZE) __global__
     void csrmmnt_kernel_host_pointer(rocsparse_int offset,
                                      rocsparse_int ncol,
                                      rocsparse_int m,
@@ -116,8 +116,8 @@ __launch_bounds__(256) __global__
                                                   idx_base);
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
-__launch_bounds__(256) __global__
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+__launch_bounds__(BLOCKSIZE) __global__
     void csrmmnt_kernel_device_pointer(rocsparse_int offset,
                                        rocsparse_int ncol,
                                        rocsparse_int m,

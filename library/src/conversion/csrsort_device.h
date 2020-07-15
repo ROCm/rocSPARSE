@@ -28,10 +28,11 @@
 #include <hip/hip_runtime.h>
 
 // Shift CSR offsets
-__global__ void
-    csrsort_shift_kernel(rocsparse_int size, const rocsparse_int* in, rocsparse_int* out)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrsort_shift_kernel(rocsparse_int size, const rocsparse_int* in, rocsparse_int* out)
 {
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(gid >= size)
     {
