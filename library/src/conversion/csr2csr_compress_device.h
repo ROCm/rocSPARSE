@@ -72,9 +72,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
                                  rocsparse_int* __restrict__ csr_col_ind_C,
                                  T tol)
 {
-    const rocsparse_int warp_id         = hipThreadIdx_x / WF_SIZE;
     const rocsparse_int segment_id      = hipThreadIdx_x / SEGMENT_SIZE;
-    const rocsparse_int warp_lane_id    = hipThreadIdx_x % WF_SIZE;
     const rocsparse_int segment_lane_id = hipThreadIdx_x % SEGMENT_SIZE;
 
     const rocsparse_int id_of_segment_within_warp = segment_id % (WF_SIZE / SEGMENT_SIZE);

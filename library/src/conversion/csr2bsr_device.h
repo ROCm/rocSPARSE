@@ -44,7 +44,6 @@ __launch_bounds__(BLOCK_SIZE) __global__
                                     rocsparse_int* __restrict__ bsr_row_ptr,
                                     rocsparse_int* __restrict__ temp1)
 {
-    constexpr rocsparse_int WF_PER_BLOCK       = (BLOCK_SIZE / WF_SIZE);
     constexpr rocsparse_int SEGMENTS_PER_WF    = (WF_SIZE / WF_SEGMENT_SIZE);
     constexpr rocsparse_int SEGMENTS_PER_BLOCK = (BLOCK_SIZE / WF_SEGMENT_SIZE);
 
@@ -153,7 +152,6 @@ __launch_bounds__(BLOCK_SIZE) __global__
                                 rocsparse_int* __restrict__ temp1,
                                 T* __restrict__ temp2)
 {
-    constexpr rocsparse_int WF_PER_BLOCK       = (BLOCK_SIZE / WF_SIZE);
     constexpr rocsparse_int SEGMENTS_PER_WF    = (WF_SIZE / WF_SEGMENT_SIZE);
     constexpr rocsparse_int SEGMENTS_PER_BLOCK = (BLOCK_SIZE / WF_SEGMENT_SIZE);
 
@@ -296,7 +294,6 @@ __launch_bounds__(BLOCK_SIZE) __global__
                                  rocsparse_index_base bsr_base,
                                  rocsparse_int* __restrict__ bsr_row_ptr)
 {
-    constexpr rocsparse_int WF_PER_BLOCK       = (BLOCK_SIZE / WF_SIZE);
     constexpr rocsparse_int SEGMENTS_PER_WF    = (WF_SIZE / WF_SEGMENT_SIZE);
     constexpr rocsparse_int SEGMENTS_PER_BLOCK = (BLOCK_SIZE / WF_SEGMENT_SIZE);
 
@@ -384,7 +381,6 @@ __launch_bounds__(BLOCK_SIZE) __global__
                              rocsparse_int* __restrict__ bsr_row_ptr,
                              rocsparse_int* __restrict__ bsr_col_ind)
 {
-    constexpr rocsparse_int WF_PER_BLOCK       = (BLOCK_SIZE / WF_SIZE);
     constexpr rocsparse_int SEGMENTS_PER_WF    = (WF_SIZE / WF_SEGMENT_SIZE);
     constexpr rocsparse_int SEGMENTS_PER_BLOCK = (BLOCK_SIZE / WF_SEGMENT_SIZE);
 
