@@ -91,7 +91,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
     {
         if(nnz_per_row < 4)
         {
-            hipLaunchKernelGGL((csr2coo_kernel<2>),
+            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 2>),
                                csr2coo_blocks,
                                csr2coo_threads,
                                0,
@@ -103,7 +103,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
         }
         else if(nnz_per_row < 8)
         {
-            hipLaunchKernelGGL((csr2coo_kernel<4>),
+            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 4>),
                                csr2coo_blocks,
                                csr2coo_threads,
                                0,
@@ -115,7 +115,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
         }
         else if(nnz_per_row < 16)
         {
-            hipLaunchKernelGGL((csr2coo_kernel<8>),
+            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 8>),
                                csr2coo_blocks,
                                csr2coo_threads,
                                0,
@@ -127,7 +127,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
         }
         else if(nnz_per_row < 32)
         {
-            hipLaunchKernelGGL((csr2coo_kernel<16>),
+            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 16>),
                                csr2coo_blocks,
                                csr2coo_threads,
                                0,
@@ -139,7 +139,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
         }
         else
         {
-            hipLaunchKernelGGL((csr2coo_kernel<32>),
+            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 32>),
                                csr2coo_blocks,
                                csr2coo_threads,
                                0,
@@ -154,7 +154,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
     {
         if(nnz_per_row < 4)
         {
-            hipLaunchKernelGGL((csr2coo_kernel<2>),
+            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 2>),
                                csr2coo_blocks,
                                csr2coo_threads,
                                0,
@@ -166,7 +166,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
         }
         else if(nnz_per_row < 8)
         {
-            hipLaunchKernelGGL((csr2coo_kernel<4>),
+            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 4>),
                                csr2coo_blocks,
                                csr2coo_threads,
                                0,
@@ -178,7 +178,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
         }
         else if(nnz_per_row < 16)
         {
-            hipLaunchKernelGGL((csr2coo_kernel<8>),
+            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 8>),
                                csr2coo_blocks,
                                csr2coo_threads,
                                0,
@@ -190,7 +190,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
         }
         else if(nnz_per_row < 32)
         {
-            hipLaunchKernelGGL((csr2coo_kernel<16>),
+            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 16>),
                                csr2coo_blocks,
                                csr2coo_threads,
                                0,
@@ -202,7 +202,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
         }
         else if(nnz_per_row < 64)
         {
-            hipLaunchKernelGGL((csr2coo_kernel<32>),
+            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 32>),
                                csr2coo_blocks,
                                csr2coo_threads,
                                0,
@@ -214,7 +214,7 @@ extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
         }
         else
         {
-            hipLaunchKernelGGL((csr2coo_kernel<64>),
+            hipLaunchKernelGGL((csr2coo_kernel<CSR2COO_DIM, 64>),
                                csr2coo_blocks,
                                csr2coo_threads,
                                0,

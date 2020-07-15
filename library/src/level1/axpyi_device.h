@@ -30,7 +30,7 @@
 #include <hip/hip_runtime.h>
 
 // y = a * x + y kernel for sparse x and dense y
-template <typename T>
+template <typename T, unsigned int BLOCKSIZE>
 __device__ void axpyi_device(rocsparse_int        nnz,
                              T                    alpha,
                              const T*             x_val,
@@ -38,7 +38,7 @@ __device__ void axpyi_device(rocsparse_int        nnz,
                              T*                   y,
                              rocsparse_index_base idx_base)
 {
-    rocsparse_int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(idx >= nnz)
     {

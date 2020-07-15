@@ -27,15 +27,15 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T>
-__global__ void csr2csc_permute_kernel(rocsparse_int        nnz,
-                                       const rocsparse_int* in1,
-                                       const T*             in2,
-                                       const rocsparse_int* map,
-                                       rocsparse_int*       out1,
-                                       T*                   out2)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void csr2csc_permute_kernel(rocsparse_int        nnz,
+                                                                    const rocsparse_int* in1,
+                                                                    const T*             in2,
+                                                                    const rocsparse_int* map,
+                                                                    rocsparse_int*       out1,
+                                                                    T*                   out2)
 {
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(gid >= nnz)
     {

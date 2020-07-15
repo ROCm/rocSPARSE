@@ -46,7 +46,7 @@ __device__ void coomv_scale_device(rocsparse_int size, T beta, T* __restrict__ d
 // Implementation motivated by papers 'Efficient Sparse Matrix-Vector Multiplication on CUDA',
 // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
 // 'Segmented operations for sparse matrix computation on vector multiprocessors'
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
 static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
                                                 rocsparse_int        loops,
                                                 T                    alpha,
@@ -59,7 +59,7 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
                                                 T*                   val_block_red,
                                                 rocsparse_index_base idx_base)
 {
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
     rocsparse_int tid = hipThreadIdx_x;
 
     // Lane index (0,...,WF_SIZE)
@@ -182,7 +182,7 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
 }
 
 // Segmented block reduction kernel
-template <typename T, rocsparse_int BLOCKSIZE>
+template <typename T, unsigned int BLOCKSIZE>
 static __device__ void segmented_blockreduce(const rocsparse_int* rows, T* vals)
 {
     rocsparse_int tid = hipThreadIdx_x;
@@ -206,11 +206,12 @@ static __device__ void segmented_blockreduce(const rocsparse_int* rows, T* vals)
 }
 
 // Do the final block reduction of the block reduction buffers back into global memory
-template <typename T, rocsparse_int BLOCKSIZE>
-__global__ void coomvn_general_block_reduce(rocsparse_int nnz,
-                                            const rocsparse_int* __restrict__ row_block_red,
-                                            const T* __restrict__ val_block_red,
-                                            T* y)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void coomvn_general_block_reduce(rocsparse_int nnz,
+                                     const rocsparse_int* __restrict__ row_block_red,
+                                     const T* __restrict__ val_block_red,
+                                     T* y)
 {
     rocsparse_int tid = hipThreadIdx_x;
 

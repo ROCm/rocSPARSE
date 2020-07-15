@@ -60,7 +60,7 @@ __device__ void bsrmvn_general_device(rocsparse_direction dir,
     // If the number of BSR block rows exceed the number of wavefronts, each wavefront
     // processes multiple rows. 'bi' is the row index into the BSR block and 'bj' is
     // the column index.
-    // hipBlockDim_x must be the square of WFSIZE.
+    // BLOCKSIZE must be the square of WFSIZE.
 
     // Loop over the rows of the BSR block in chunks of WFSIZE, such that each
     // wavefront will process a row
@@ -136,8 +136,8 @@ __device__ void bsrmvn_2x2_device(rocsparse_int       mb,
     // Wavefront id
     rocsparse_int wid = hipThreadIdx_x / WFSIZE;
 
-    // Each thread block processes (hipBlockDim_x / WFSIZE) BSR rows
-    rocsparse_int row = hipBlockIdx_x * (hipBlockDim_x / WFSIZE) + wid;
+    // Each thread block processes (BLOCKSIZE / WFSIZE) BSR rows
+    rocsparse_int row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
 
     // Do not run out of bounds
     if(row >= mb)
@@ -223,7 +223,7 @@ __device__ void bsrmvn_3x3_device(rocsparse_int       mb,
     rocsparse_int wid = hipThreadIdx_x / WFSIZE;
 
     // Each thread block processes a BSR row
-    rocsparse_int row = hipBlockIdx_x * (hipBlockDim_x / WFSIZE) + wid;
+    rocsparse_int row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
 
     if(row >= mb)
     {
@@ -325,8 +325,8 @@ __device__ void bsrmvn_4x4_device(rocsparse_int       mb,
     // Wavefront id
     rocsparse_int wid = hipThreadIdx_x / WFSIZE;
 
-    // Each thread block processes (hipBlockDim_x / WFSIZE) BSR rows
-    rocsparse_int row = hipBlockIdx_x * (hipBlockDim_x / WFSIZE) + wid;
+    // Each thread block processes (BLOCKSIZE / WFSIZE) BSR rows
+    rocsparse_int row = hipBlockIdx_x * (BLOCKSIZE / WFSIZE) + wid;
 
     // Do not run out of bounds
     if(row >= mb)

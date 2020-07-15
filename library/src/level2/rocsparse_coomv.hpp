@@ -33,15 +33,17 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T>
-__global__ void coomv_scale_host_pointer(rocsparse_int size, T beta, T* __restrict__ data)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void coomv_scale_host_pointer(rocsparse_int size, T beta, T* __restrict__ data)
 {
     coomv_scale_device<T>(size, beta, data);
 }
 
-template <typename T>
-__global__ void
-    coomv_scale_device_pointer(rocsparse_int size, const T* __restrict__ beta, T* __restrict__ data)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void coomv_scale_device_pointer(rocsparse_int size,
+                                                                        const T* __restrict__ beta,
+                                                                        T* __restrict__ data)
 {
     if(*beta == static_cast<T>(1))
     {
@@ -51,8 +53,8 @@ __global__ void
     coomv_scale_device<T>(size, *beta, data);
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
-__launch_bounds__(128) __global__
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+__launch_bounds__(BLOCKSIZE) __global__
     void coomvn_wf_host_pointer(rocsparse_int nnz,
                                 rocsparse_int loops,
                                 T             alpha,
@@ -78,8 +80,8 @@ __launch_bounds__(128) __global__
                                                     idx_base);
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
-__launch_bounds__(128) __global__
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+__launch_bounds__(BLOCKSIZE) __global__
     void coomvn_wf_device_pointer(rocsparse_int nnz,
                                   rocsparse_int loops,
                                   const T*      alpha,
@@ -270,7 +272,7 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
             // Scale y with beta
-            hipLaunchKernelGGL((coomv_scale_device_pointer<T>),
+            hipLaunchKernelGGL((coomv_scale_device_pointer<T, 1024>),
                                dim3((m - 1) / 1024 + 1),
                                dim3(1024),
                                0,
@@ -336,7 +338,7 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
             }
             else if(*beta != static_cast<T>(1))
             {
-                hipLaunchKernelGGL((coomv_scale_host_pointer<T>),
+                hipLaunchKernelGGL((coomv_scale_host_pointer<T, 1024>),
                                    dim3((m - 1) / 1024 + 1),
                                    dim3(1024),
                                    0,

@@ -264,9 +264,8 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
 #define COOSORT_DIM 512
         dim3 coosort_blocks((nnz - 1) / COOSORT_DIM + 1);
         dim3 coosort_threads(COOSORT_DIM);
-#undef COOSORT_DIM
 
-        hipLaunchKernelGGL((coosort_permute_kernel),
+        hipLaunchKernelGGL((coosort_permute_kernel<COOSORT_DIM>),
                            coosort_blocks,
                            coosort_threads,
                            0,
@@ -276,7 +275,7 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
                            mapping,
                            work3);
 
-        hipLaunchKernelGGL((coosort_permute_kernel),
+        hipLaunchKernelGGL((coosort_permute_kernel<COOSORT_DIM>),
                            coosort_blocks,
                            coosort_threads,
                            0,
@@ -285,6 +284,7 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
                            perm,
                            mapping,
                            alt_map);
+#undef COOSORT_DIM
 
         // Sort columns per row
         endbit = rocsparse_clz(n);

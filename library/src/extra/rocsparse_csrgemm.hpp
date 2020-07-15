@@ -44,31 +44,31 @@ template <typename T,
           unsigned int WFSIZE,
           unsigned int HASHSIZE,
           unsigned int HASHVAL>
-__global__ void
-    csrgemm_fill_wf_per_row_host_pointer(rocsparse_int m,
-                                         rocsparse_int nk,
-                                         const rocsparse_int* __restrict__ offset,
-                                         const rocsparse_int* __restrict__ perm,
-                                         T alpha,
-                                         const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                         const rocsparse_int* __restrict__ csr_col_ind_A,
-                                         const T* __restrict__ csr_val_A,
-                                         const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                         const rocsparse_int* __restrict__ csr_col_ind_B,
-                                         const T* __restrict__ csr_val_B,
-                                         T beta,
-                                         const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                         const rocsparse_int* __restrict__ csr_col_ind_D,
-                                         const T* __restrict__ csr_val_D,
-                                         const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                         rocsparse_int* __restrict__ csr_col_ind_C,
-                                         T* __restrict__ csr_val_C,
-                                         rocsparse_index_base idx_base_A,
-                                         rocsparse_index_base idx_base_B,
-                                         rocsparse_index_base idx_base_C,
-                                         rocsparse_index_base idx_base_D,
-                                         bool                 mul,
-                                         bool                 add)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_fill_wf_per_row_host_pointer(rocsparse_int m,
+                                              rocsparse_int nk,
+                                              const rocsparse_int* __restrict__ offset,
+                                              const rocsparse_int* __restrict__ perm,
+                                              T alpha,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                              const rocsparse_int* __restrict__ csr_col_ind_A,
+                                              const T* __restrict__ csr_val_A,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                              const rocsparse_int* __restrict__ csr_col_ind_B,
+                                              const T* __restrict__ csr_val_B,
+                                              T beta,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                              const rocsparse_int* __restrict__ csr_col_ind_D,
+                                              const T* __restrict__ csr_val_D,
+                                              const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                              rocsparse_int* __restrict__ csr_col_ind_C,
+                                              T* __restrict__ csr_val_C,
+                                              rocsparse_index_base idx_base_A,
+                                              rocsparse_index_base idx_base_B,
+                                              rocsparse_index_base idx_base_C,
+                                              rocsparse_index_base idx_base_D,
+                                              bool                 mul,
+                                              bool                 add)
 {
     csrgemm_fill_wf_per_row_device<T, BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(m,
                                                                             nk,
@@ -101,31 +101,31 @@ template <typename T,
           unsigned int WFSIZE,
           unsigned int HASHSIZE,
           unsigned int HASHVAL>
-__global__ void
-    csrgemm_fill_wf_per_row_device_pointer(rocsparse_int m,
-                                           rocsparse_int nk,
-                                           const rocsparse_int* __restrict__ offset,
-                                           const rocsparse_int* __restrict__ perm,
-                                           const T* __restrict__ alpha,
-                                           const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                           const rocsparse_int* __restrict__ csr_col_ind_A,
-                                           const T* __restrict__ csr_val_A,
-                                           const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                           const rocsparse_int* __restrict__ csr_col_ind_B,
-                                           const T* __restrict__ csr_val_B,
-                                           const T* __restrict__ beta,
-                                           const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                           const rocsparse_int* __restrict__ csr_col_ind_D,
-                                           const T* __restrict__ csr_val_D,
-                                           const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                           rocsparse_int* __restrict__ csr_col_ind_C,
-                                           T* __restrict__ csr_val_C,
-                                           rocsparse_index_base idx_base_A,
-                                           rocsparse_index_base idx_base_B,
-                                           rocsparse_index_base idx_base_C,
-                                           rocsparse_index_base idx_base_D,
-                                           bool                 mul,
-                                           bool                 add)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_fill_wf_per_row_device_pointer(rocsparse_int m,
+                                                rocsparse_int nk,
+                                                const rocsparse_int* __restrict__ offset,
+                                                const rocsparse_int* __restrict__ perm,
+                                                const T* __restrict__ alpha,
+                                                const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                                const rocsparse_int* __restrict__ csr_col_ind_A,
+                                                const T* __restrict__ csr_val_A,
+                                                const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                                const rocsparse_int* __restrict__ csr_col_ind_B,
+                                                const T* __restrict__ csr_val_B,
+                                                const T* __restrict__ beta,
+                                                const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                                const rocsparse_int* __restrict__ csr_col_ind_D,
+                                                const T* __restrict__ csr_val_D,
+                                                const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                                rocsparse_int* __restrict__ csr_col_ind_C,
+                                                T* __restrict__ csr_val_C,
+                                                rocsparse_index_base idx_base_A,
+                                                rocsparse_index_base idx_base_B,
+                                                rocsparse_index_base idx_base_C,
+                                                rocsparse_index_base idx_base_D,
+                                                bool                 mul,
+                                                bool                 add)
 {
     csrgemm_fill_wf_per_row_device<T, BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
         m,
@@ -159,30 +159,30 @@ template <typename T,
           unsigned int WFSIZE,
           unsigned int HASHSIZE,
           unsigned int HASHVAL>
-__attribute__((amdgpu_flat_work_group_size(128, 1024))) __global__ void
-    csrgemm_fill_block_per_row_host_pointer(rocsparse_int nk,
-                                            const rocsparse_int* __restrict__ offset,
-                                            const rocsparse_int* __restrict__ perm,
-                                            T alpha,
-                                            const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                            const rocsparse_int* __restrict__ csr_col_ind_A,
-                                            const T* __restrict__ csr_val_A,
-                                            const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                            const rocsparse_int* __restrict__ csr_col_ind_B,
-                                            const T* __restrict__ csr_val_B,
-                                            T beta,
-                                            const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                            const rocsparse_int* __restrict__ csr_col_ind_D,
-                                            const T* __restrict__ csr_val_D,
-                                            const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                            rocsparse_int* __restrict__ csr_col_ind_C,
-                                            T* __restrict__ csr_val_C,
-                                            rocsparse_index_base idx_base_A,
-                                            rocsparse_index_base idx_base_B,
-                                            rocsparse_index_base idx_base_C,
-                                            rocsparse_index_base idx_base_D,
-                                            bool                 mul,
-                                            bool                 add)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_fill_block_per_row_host_pointer(rocsparse_int nk,
+                                                 const rocsparse_int* __restrict__ offset,
+                                                 const rocsparse_int* __restrict__ perm,
+                                                 T alpha,
+                                                 const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                                 const rocsparse_int* __restrict__ csr_col_ind_A,
+                                                 const T* __restrict__ csr_val_A,
+                                                 const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                                 const rocsparse_int* __restrict__ csr_col_ind_B,
+                                                 const T* __restrict__ csr_val_B,
+                                                 T beta,
+                                                 const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                                 const rocsparse_int* __restrict__ csr_col_ind_D,
+                                                 const T* __restrict__ csr_val_D,
+                                                 const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                                 rocsparse_int* __restrict__ csr_col_ind_C,
+                                                 T* __restrict__ csr_val_C,
+                                                 rocsparse_index_base idx_base_A,
+                                                 rocsparse_index_base idx_base_B,
+                                                 rocsparse_index_base idx_base_C,
+                                                 rocsparse_index_base idx_base_D,
+                                                 bool                 mul,
+                                                 bool                 add)
 {
     csrgemm_fill_block_per_row_device<T, BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(nk,
                                                                                offset,
@@ -214,30 +214,30 @@ template <typename T,
           unsigned int WFSIZE,
           unsigned int HASHSIZE,
           unsigned int HASHVAL>
-__attribute__((amdgpu_flat_work_group_size(128, 1024))) __global__ void
-    csrgemm_fill_block_per_row_device_pointer(rocsparse_int nk,
-                                              const rocsparse_int* __restrict__ offset,
-                                              const rocsparse_int* __restrict__ perm,
-                                              const T* __restrict__ alpha,
-                                              const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                              const rocsparse_int* __restrict__ csr_col_ind_A,
-                                              const T* __restrict__ csr_val_A,
-                                              const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                              const rocsparse_int* __restrict__ csr_col_ind_B,
-                                              const T* __restrict__ csr_val_B,
-                                              const T* __restrict__ beta,
-                                              const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                              const rocsparse_int* __restrict__ csr_col_ind_D,
-                                              const T* __restrict__ csr_val_D,
-                                              const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                              rocsparse_int* __restrict__ csr_col_ind_C,
-                                              T* __restrict__ csr_val_C,
-                                              rocsparse_index_base idx_base_A,
-                                              rocsparse_index_base idx_base_B,
-                                              rocsparse_index_base idx_base_C,
-                                              rocsparse_index_base idx_base_D,
-                                              bool                 mul,
-                                              bool                 add)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_fill_block_per_row_device_pointer(rocsparse_int nk,
+                                                   const rocsparse_int* __restrict__ offset,
+                                                   const rocsparse_int* __restrict__ perm,
+                                                   const T* __restrict__ alpha,
+                                                   const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                                   const rocsparse_int* __restrict__ csr_col_ind_A,
+                                                   const T* __restrict__ csr_val_A,
+                                                   const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                                   const rocsparse_int* __restrict__ csr_col_ind_B,
+                                                   const T* __restrict__ csr_val_B,
+                                                   const T* __restrict__ beta,
+                                                   const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                                   const rocsparse_int* __restrict__ csr_col_ind_D,
+                                                   const T* __restrict__ csr_val_D,
+                                                   const rocsparse_int* __restrict__ csr_row_ptr_C,
+                                                   rocsparse_int* __restrict__ csr_col_ind_C,
+                                                   T* __restrict__ csr_val_C,
+                                                   rocsparse_index_base idx_base_A,
+                                                   rocsparse_index_base idx_base_B,
+                                                   rocsparse_index_base idx_base_C,
+                                                   rocsparse_index_base idx_base_D,
+                                                   bool                 mul,
+                                                   bool                 add)
 {
     csrgemm_fill_block_per_row_device<T, BLOCKSIZE, WFSIZE, HASHSIZE, HASHVAL>(
         nk,
@@ -266,32 +266,31 @@ __attribute__((amdgpu_flat_work_group_size(128, 1024))) __global__ void
 }
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int CHUNKSIZE>
-__attribute__((amdgpu_flat_work_group_size(128, 1024))) __global__ void
-    csrgemm_fill_block_per_row_multipass_host_pointer(
-        rocsparse_int n,
-        const rocsparse_int* __restrict__ offset,
-        const rocsparse_int* __restrict__ perm,
-        T alpha,
-        const rocsparse_int* __restrict__ csr_row_ptr_A,
-        const rocsparse_int* __restrict__ csr_col_ind_A,
-        const T* __restrict__ csr_val_A,
-        const rocsparse_int* __restrict__ csr_row_ptr_B,
-        const rocsparse_int* __restrict__ csr_col_ind_B,
-        const T* __restrict__ csr_val_B,
-        T beta,
-        const rocsparse_int* __restrict__ csr_row_ptr_D,
-        const rocsparse_int* __restrict__ csr_col_ind_D,
-        const T* __restrict__ csr_val_D,
-        const rocsparse_int* __restrict__ csr_row_ptr_C,
-        rocsparse_int* __restrict__ csr_col_ind_C,
-        T* __restrict__ csr_val_C,
-        rocsparse_int* __restrict__ workspace_B,
-        rocsparse_index_base idx_base_A,
-        rocsparse_index_base idx_base_B,
-        rocsparse_index_base idx_base_C,
-        rocsparse_index_base idx_base_D,
-        bool                 mul,
-        bool                 add)
+__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_fill_block_per_row_multipass_host_pointer(
+    rocsparse_int n,
+    const rocsparse_int* __restrict__ offset,
+    const rocsparse_int* __restrict__ perm,
+    T alpha,
+    const rocsparse_int* __restrict__ csr_row_ptr_A,
+    const rocsparse_int* __restrict__ csr_col_ind_A,
+    const T* __restrict__ csr_val_A,
+    const rocsparse_int* __restrict__ csr_row_ptr_B,
+    const rocsparse_int* __restrict__ csr_col_ind_B,
+    const T* __restrict__ csr_val_B,
+    T beta,
+    const rocsparse_int* __restrict__ csr_row_ptr_D,
+    const rocsparse_int* __restrict__ csr_col_ind_D,
+    const T* __restrict__ csr_val_D,
+    const rocsparse_int* __restrict__ csr_row_ptr_C,
+    rocsparse_int* __restrict__ csr_col_ind_C,
+    T* __restrict__ csr_val_C,
+    rocsparse_int* __restrict__ workspace_B,
+    rocsparse_index_base idx_base_A,
+    rocsparse_index_base idx_base_B,
+    rocsparse_index_base idx_base_C,
+    rocsparse_index_base idx_base_D,
+    bool                 mul,
+    bool                 add)
 {
     csrgemm_fill_block_per_row_multipass_device<T, BLOCKSIZE, WFSIZE, CHUNKSIZE>(n,
                                                                                  offset,
@@ -320,32 +319,31 @@ __attribute__((amdgpu_flat_work_group_size(128, 1024))) __global__ void
 }
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int CHUNKSIZE>
-__attribute__((amdgpu_flat_work_group_size(128, 1024))) __global__ void
-    csrgemm_fill_block_per_row_multipass_device_pointer(
-        rocsparse_int n,
-        const rocsparse_int* __restrict__ offset,
-        const rocsparse_int* __restrict__ perm,
-        const T* __restrict__ alpha,
-        const rocsparse_int* __restrict__ csr_row_ptr_A,
-        const rocsparse_int* __restrict__ csr_col_ind_A,
-        const T* __restrict__ csr_val_A,
-        const rocsparse_int* __restrict__ csr_row_ptr_B,
-        const rocsparse_int* __restrict__ csr_col_ind_B,
-        const T* __restrict__ csr_val_B,
-        const T* __restrict__ beta,
-        const rocsparse_int* __restrict__ csr_row_ptr_D,
-        const rocsparse_int* __restrict__ csr_col_ind_D,
-        const T* __restrict__ csr_val_D,
-        const rocsparse_int* __restrict__ csr_row_ptr_C,
-        rocsparse_int* __restrict__ csr_col_ind_C,
-        T* __restrict__ csr_val_C,
-        rocsparse_int* __restrict__ workspace_B,
-        rocsparse_index_base idx_base_A,
-        rocsparse_index_base idx_base_B,
-        rocsparse_index_base idx_base_C,
-        rocsparse_index_base idx_base_D,
-        bool                 mul,
-        bool                 add)
+__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_fill_block_per_row_multipass_device_pointer(
+    rocsparse_int n,
+    const rocsparse_int* __restrict__ offset,
+    const rocsparse_int* __restrict__ perm,
+    const T* __restrict__ alpha,
+    const rocsparse_int* __restrict__ csr_row_ptr_A,
+    const rocsparse_int* __restrict__ csr_col_ind_A,
+    const T* __restrict__ csr_val_A,
+    const rocsparse_int* __restrict__ csr_row_ptr_B,
+    const rocsparse_int* __restrict__ csr_col_ind_B,
+    const T* __restrict__ csr_val_B,
+    const T* __restrict__ beta,
+    const rocsparse_int* __restrict__ csr_row_ptr_D,
+    const rocsparse_int* __restrict__ csr_col_ind_D,
+    const T* __restrict__ csr_val_D,
+    const rocsparse_int* __restrict__ csr_row_ptr_C,
+    rocsparse_int* __restrict__ csr_col_ind_C,
+    T* __restrict__ csr_val_C,
+    rocsparse_int* __restrict__ workspace_B,
+    rocsparse_index_base idx_base_A,
+    rocsparse_index_base idx_base_B,
+    rocsparse_index_base idx_base_C,
+    rocsparse_index_base idx_base_D,
+    bool                 mul,
+    bool                 add)
 {
     csrgemm_fill_block_per_row_multipass_device<T, BLOCKSIZE, WFSIZE, CHUNKSIZE>(
         n,
@@ -1868,22 +1866,18 @@ rocsparse_status rocsparse_csrgemm_mult_template(rocsparse_handle          handl
                                               temp_buffer);
 }
 
-template <typename T>
-__global__ void csrgemm_copy_scale_host_pointer(rocsparse_int size,
-                                                T             alpha,
-                                                const T* __restrict__ in,
-                                                T* __restrict__ out)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_copy_scale_host_pointer(
+    rocsparse_int size, T alpha, const T* __restrict__ in, T* __restrict__ out)
 {
-    csrgemm_copy_scale_device(size, alpha, in, out);
+    csrgemm_copy_scale_device<T, BLOCKSIZE>(size, alpha, in, out);
 }
 
-template <typename T>
-__global__ void csrgemm_copy_scale_device_pointer(rocsparse_int size,
-                                                  const T* __restrict__ alpha,
-                                                  const T* __restrict__ in,
-                                                  T* __restrict__ out)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_copy_scale_device_pointer(
+    rocsparse_int size, const T* __restrict__ alpha, const T* __restrict__ in, T* __restrict__ out)
 {
-    csrgemm_copy_scale_device(size, *alpha, in, out);
+    csrgemm_copy_scale_device<T, BLOCKSIZE>(size, *alpha, in, out);
 }
 
 template <typename T>
@@ -1958,7 +1952,7 @@ rocsparse_status rocsparse_csrgemm_scal_template(rocsparse_handle          handl
     dim3 csrgemm_blocks((nnz_D - 1) / CSRGEMM_DIM + 1);
     dim3 csrgemm_threads(CSRGEMM_DIM);
 
-    hipLaunchKernelGGL((csrgemm_copy),
+    hipLaunchKernelGGL((csrgemm_copy<CSRGEMM_DIM>),
                        csrgemm_blocks,
                        csrgemm_threads,
                        0,
@@ -1972,7 +1966,7 @@ rocsparse_status rocsparse_csrgemm_scal_template(rocsparse_handle          handl
     // Scale the matrix
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((csrgemm_copy_scale_device_pointer),
+        hipLaunchKernelGGL((csrgemm_copy_scale_device_pointer<T, CSRGEMM_DIM>),
                            csrgemm_blocks,
                            csrgemm_threads,
                            0,
@@ -1984,7 +1978,7 @@ rocsparse_status rocsparse_csrgemm_scal_template(rocsparse_handle          handl
     }
     else
     {
-        hipLaunchKernelGGL((csrgemm_copy_scale_host_pointer),
+        hipLaunchKernelGGL((csrgemm_copy_scale_host_pointer<T, CSRGEMM_DIM>),
                            csrgemm_blocks,
                            csrgemm_threads,
                            0,

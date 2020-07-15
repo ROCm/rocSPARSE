@@ -27,14 +27,14 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T>
-__global__ void sctr_kernel(rocsparse_int        nnz,
-                            const T*             x_val,
-                            const rocsparse_int* x_ind,
-                            T*                   y,
-                            rocsparse_index_base idx_base)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void sctr_kernel(rocsparse_int        nnz,
+                                                         const T*             x_val,
+                                                         const rocsparse_int* x_ind,
+                                                         T*                   y,
+                                                         rocsparse_index_base idx_base)
 {
-    rocsparse_int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(idx >= nnz)
     {

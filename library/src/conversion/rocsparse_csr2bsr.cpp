@@ -149,7 +149,7 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
         rocsparse_int           grid_size  = ((m + 1) + block_size - 1) / block_size;
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            hipLaunchKernelGGL(csr2bsr_nnz_block_dim_equals_one_kernel,
+            hipLaunchKernelGGL(csr2bsr_nnz_block_dim_equals_one_kernel<block_size>,
                                dim3(grid_size),
                                dim3(block_size),
                                0,
@@ -163,7 +163,7 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
         }
         else
         {
-            hipLaunchKernelGGL(csr2bsr_nnz_block_dim_equals_one_kernel,
+            hipLaunchKernelGGL(csr2bsr_nnz_block_dim_equals_one_kernel<block_size>,
                                dim3(grid_size),
                                dim3(block_size),
                                0,
@@ -374,7 +374,7 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
     // Compute bsr_nnz
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL(csr2bsr_nnz_compute_nnz_total_kernel,
+        hipLaunchKernelGGL(csr2bsr_nnz_compute_nnz_total_kernel<1>,
                            dim3(1),
                            dim3(1),
                            0,

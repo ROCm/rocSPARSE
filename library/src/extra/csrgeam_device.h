@@ -30,7 +30,8 @@
 
 #include <hip/hip_runtime.h>
 
-__global__ void csrgeam_index_base(rocsparse_int* nnz)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void csrgeam_index_base(rocsparse_int* nnz)
 {
     --(*nnz);
 }

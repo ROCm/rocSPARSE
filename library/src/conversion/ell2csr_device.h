@@ -29,20 +29,23 @@
 
 #include <hip/hip_runtime.h>
 
-__global__ void ell2csr_index_base(rocsparse_int* __restrict__ nnz)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void ell2csr_index_base(rocsparse_int* __restrict__ nnz)
 {
     --(*nnz);
 }
 
-__global__ void ell2csr_nnz_per_row(rocsparse_int m,
-                                    rocsparse_int n,
-                                    rocsparse_int ell_width,
-                                    const rocsparse_int* __restrict__ ell_col_ind,
-                                    rocsparse_index_base ell_base,
-                                    rocsparse_int* __restrict__ csr_row_ptr,
-                                    rocsparse_index_base csr_base)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void ell2csr_nnz_per_row(rocsparse_int m,
+                             rocsparse_int n,
+                             rocsparse_int ell_width,
+                             const rocsparse_int* __restrict__ ell_col_ind,
+                             rocsparse_index_base ell_base,
+                             rocsparse_int* __restrict__ csr_row_ptr,
+                             rocsparse_index_base csr_base)
 {
-    rocsparse_int ai = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
+    rocsparse_int ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 
     if(ai >= m)
     {
@@ -74,19 +77,20 @@ __global__ void ell2csr_nnz_per_row(rocsparse_int m,
     csr_row_ptr[ai + 1] = nnz;
 }
 
-template <typename T>
-__global__ void ell2csr_fill(rocsparse_int m,
-                             rocsparse_int n,
-                             rocsparse_int ell_width,
-                             const rocsparse_int* __restrict__ ell_col_ind,
-                             const T* __restrict__ ell_val,
-                             rocsparse_index_base ell_base,
-                             const rocsparse_int* __restrict__ csr_row_ptr,
-                             rocsparse_int* __restrict__ csr_col_ind,
-                             T* __restrict__ csr_val,
-                             rocsparse_index_base csr_base)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void ell2csr_fill(rocsparse_int m,
+                      rocsparse_int n,
+                      rocsparse_int ell_width,
+                      const rocsparse_int* __restrict__ ell_col_ind,
+                      const T* __restrict__ ell_val,
+                      rocsparse_index_base ell_base,
+                      const rocsparse_int* __restrict__ csr_row_ptr,
+                      rocsparse_int* __restrict__ csr_col_ind,
+                      T* __restrict__ csr_val,
+                      rocsparse_index_base csr_base)
 {
-    rocsparse_int ai = hipBlockDim_x * hipBlockIdx_x + hipThreadIdx_x;
+    rocsparse_int ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 
     if(ai >= m)
     {

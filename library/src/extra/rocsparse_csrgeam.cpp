@@ -239,7 +239,7 @@ extern "C" rocsparse_status rocsparse_csrgeam_nnz(rocsparse_handle          hand
         // Adjust index base of nnz_C
         if(descr_C->base == rocsparse_index_base_one)
         {
-            hipLaunchKernelGGL((csrgeam_index_base), dim3(1), dim3(1), 0, stream, nnz_C);
+            hipLaunchKernelGGL((csrgeam_index_base<1>), dim3(1), dim3(1), 0, stream, nnz_C);
         }
     }
 

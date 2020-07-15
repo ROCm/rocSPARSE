@@ -29,10 +29,10 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T>
+template <typename T, unsigned int BLOCKSIZE>
 __device__ void gemmi_scale_kernel(rocsparse_int size, T alpha, T* __restrict__ data)
 {
-    rocsparse_int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(idx >= size)
     {

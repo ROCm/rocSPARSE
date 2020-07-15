@@ -29,12 +29,12 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, unsigned int DIMY, unsigned int BSRDIM>
-__global__ void bsrsv_gather(rocsparse_int nnzb,
-                             const rocsparse_int* __restrict__ perm,
-                             const T* __restrict__ bsr_val_A,
-                             T* __restrict__ bsr_val_T,
-                             rocsparse_int bsr_dim)
+template <typename T, unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM>
+__launch_bounds__(WFSIZE* DIMY) __global__ void bsrsv_gather(rocsparse_int nnzb,
+                                                             const rocsparse_int* __restrict__ perm,
+                                                             const T* __restrict__ bsr_val_A,
+                                                             T* __restrict__ bsr_val_T,
+                                                             rocsparse_int bsr_dim)
 {
     rocsparse_int lid = hipThreadIdx_x & (BSRDIM - 1);
     rocsparse_int wid = hipThreadIdx_x / BSRDIM;

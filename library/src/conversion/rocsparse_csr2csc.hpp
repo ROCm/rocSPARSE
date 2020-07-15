@@ -212,7 +212,7 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
         dim3 csr2csc_blocks((nnz - 1) / CSR2CSC_DIM + 1);
         dim3 csr2csc_threads(CSR2CSC_DIM);
 
-        hipLaunchKernelGGL((csr2csc_permute_kernel<T>),
+        hipLaunchKernelGGL((csr2csc_permute_kernel<T, CSR2CSC_DIM>),
                            csr2csc_blocks,
                            csr2csc_threads,
                            0,

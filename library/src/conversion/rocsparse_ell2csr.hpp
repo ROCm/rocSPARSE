@@ -139,7 +139,7 @@ rocsparse_status rocsparse_ell2csr_template(rocsparse_handle          handle,
     dim3 ell2csr_blocks((m - 1) / ELL2CSR_DIM + 1);
     dim3 ell2csr_threads(ELL2CSR_DIM);
 
-    hipLaunchKernelGGL((ell2csr_fill<T>),
+    hipLaunchKernelGGL((ell2csr_fill<T, ELL2CSR_DIM>),
                        ell2csr_blocks,
                        ell2csr_threads,
                        0,

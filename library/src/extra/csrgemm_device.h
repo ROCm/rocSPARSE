@@ -31,13 +31,14 @@
 #include <hip/hip_runtime.h>
 
 // Copy an array
-__global__ void csrgemm_copy(rocsparse_int size,
-                             const rocsparse_int* __restrict__ in,
-                             rocsparse_int* __restrict__ out,
-                             rocsparse_index_base idx_base_in,
-                             rocsparse_index_base idx_base_out)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_copy(rocsparse_int size,
+                                                          const rocsparse_int* __restrict__ in,
+                                                          rocsparse_int* __restrict__ out,
+                                                          rocsparse_index_base idx_base_in,
+                                                          rocsparse_index_base idx_base_out)
 {
-    rocsparse_int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(idx >= size)
     {
@@ -48,10 +49,10 @@ __global__ void csrgemm_copy(rocsparse_int size,
 }
 
 // Copy and scale an array
-template <typename T>
+template <typename T, unsigned int BLOCKSIZE>
 __device__ void csrgemm_copy_scale_device(rocsparse_int size, T alpha, const T* in, T* out)
 {
-    rocsparse_int idx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(idx >= size)
     {
@@ -62,22 +63,23 @@ __device__ void csrgemm_copy_scale_device(rocsparse_int size, T alpha, const T* 
 }
 
 // Compute number of intermediate products of each row
-template <unsigned int WFSIZE>
-__global__ void csrgemm_intermediate_products(rocsparse_int m,
-                                              const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                              const rocsparse_int* __restrict__ csr_col_ind_A,
-                                              const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                              const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                              rocsparse_int* __restrict__ int_prod,
-                                              rocsparse_index_base idx_base_A,
-                                              bool                 mul,
-                                              bool                 add)
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_intermediate_products(rocsparse_int m,
+                                       const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                       const rocsparse_int* __restrict__ csr_col_ind_A,
+                                       const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                       const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                       rocsparse_int* __restrict__ int_prod,
+                                       rocsparse_index_base idx_base_A,
+                                       bool                 mul,
+                                       bool                 add)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
 
     // Each (sub)wavefront processes a row
-    rocsparse_int row = (hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x) / WFSIZE;
+    rocsparse_int row = (hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x) / WFSIZE;
 
     // Bounds check
     if(row >= m)
@@ -142,11 +144,12 @@ static __device__ __forceinline__ void csrgemm_group_reduce(rocsparse_int tid,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS>
-__global__ void csrgemm_group_reduce_part1(rocsparse_int m,
-                                           rocsparse_int* __restrict__ int_prod,
-                                           rocsparse_int* __restrict__ group_size)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_group_reduce_part1(rocsparse_int m,
+                                    rocsparse_int* __restrict__ int_prod,
+                                    rocsparse_int* __restrict__ group_size)
 {
-    rocsparse_int row = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     // Shared memory for block reduction
     __shared__ rocsparse_int sdata[BLOCKSIZE * GROUPS];
@@ -158,7 +161,7 @@ __global__ void csrgemm_group_reduce_part1(rocsparse_int m,
     }
 
     // Loop over rows
-    for(; row < m; row += hipGridDim_x * hipBlockDim_x)
+    for(; row < m; row += hipGridDim_x * BLOCKSIZE)
     {
         rocsparse_int nprod = int_prod[row];
 
@@ -188,12 +191,13 @@ __global__ void csrgemm_group_reduce_part1(rocsparse_int m,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS, bool CPLX>
-__global__ void csrgemm_group_reduce_part2(rocsparse_int m,
-                                           const rocsparse_int* __restrict__ csr_row_ptr,
-                                           rocsparse_int* __restrict__ group_size,
-                                           rocsparse_int* __restrict__ workspace)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_group_reduce_part2(rocsparse_int m,
+                                    const rocsparse_int* __restrict__ csr_row_ptr,
+                                    rocsparse_int* __restrict__ group_size,
+                                    rocsparse_int* __restrict__ workspace)
 {
-    rocsparse_int row = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     // Shared memory for block reduction
     __shared__ rocsparse_int sdata[BLOCKSIZE * GROUPS];
@@ -205,7 +209,7 @@ __global__ void csrgemm_group_reduce_part2(rocsparse_int m,
     }
 
     // Loop over rows
-    for(; row < m; row += hipGridDim_x * hipBlockDim_x)
+    for(; row < m; row += hipGridDim_x * BLOCKSIZE)
     {
         rocsparse_int nnz = csr_row_ptr[row + 1] - csr_row_ptr[row];
 
@@ -237,7 +241,8 @@ __global__ void csrgemm_group_reduce_part2(rocsparse_int m,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS>
-__global__ void csrgemm_group_reduce_part3(rocsparse_int* __restrict__ group_size)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_group_reduce_part3(rocsparse_int* __restrict__ group_size)
 {
     // Shared memory for block reduction
     __shared__ rocsparse_int sdata[BLOCKSIZE * GROUPS];
@@ -262,17 +267,18 @@ __global__ void csrgemm_group_reduce_part3(rocsparse_int* __restrict__ group_siz
 }
 
 template <unsigned int BLOCKSIZE>
-__global__ void csrgemm_max_row_nnz_part1(rocsparse_int m,
-                                          const rocsparse_int* __restrict__ csr_row_ptr,
-                                          rocsparse_int* __restrict__ workspace)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_max_row_nnz_part1(rocsparse_int m,
+                                   const rocsparse_int* __restrict__ csr_row_ptr,
+                                   rocsparse_int* __restrict__ workspace)
 {
-    rocsparse_int row = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     // Initialize local maximum
     rocsparse_int local_max = 0;
 
     // Loop over rows
-    for(; row < m; row += hipGridDim_x * hipBlockDim_x)
+    for(; row < m; row += hipGridDim_x * BLOCKSIZE)
     {
         // Determine local maximum
         local_max = max(local_max, csr_row_ptr[row + 1] - csr_row_ptr[row]);
@@ -298,7 +304,8 @@ __global__ void csrgemm_max_row_nnz_part1(rocsparse_int m,
 }
 
 template <unsigned int BLOCKSIZE>
-__global__ void csrgemm_max_row_nnz_part2(rocsparse_int* __restrict__ workspace)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_max_row_nnz_part2(rocsparse_int* __restrict__ workspace)
 {
     // Shared memory for block reduction
     __shared__ rocsparse_int sdata[BLOCKSIZE];
@@ -395,21 +402,22 @@ static __device__ __forceinline__ void insert_pair(rocsparse_int key,
 
 // Compute non-zero entries per row, where each row is processed by a single wavefront
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASHSIZE, unsigned int HASHVAL>
-__global__ void csrgemm_nnz_wf_per_row(rocsparse_int m,
-                                       const rocsparse_int* __restrict__ offset,
-                                       const rocsparse_int* __restrict__ perm,
-                                       const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                       const rocsparse_int* __restrict__ csr_col_ind_A,
-                                       const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                       const rocsparse_int* __restrict__ csr_col_ind_B,
-                                       const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                       const rocsparse_int* __restrict__ csr_col_ind_D,
-                                       rocsparse_int* __restrict__ row_nnz,
-                                       rocsparse_index_base idx_base_A,
-                                       rocsparse_index_base idx_base_B,
-                                       rocsparse_index_base idx_base_D,
-                                       bool                 mul,
-                                       bool                 add)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_nnz_wf_per_row(rocsparse_int m,
+                                const rocsparse_int* __restrict__ offset,
+                                const rocsparse_int* __restrict__ perm,
+                                const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                const rocsparse_int* __restrict__ csr_col_ind_A,
+                                const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                const rocsparse_int* __restrict__ csr_col_ind_B,
+                                const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                const rocsparse_int* __restrict__ csr_col_ind_D,
+                                rocsparse_int* __restrict__ row_nnz,
+                                rocsparse_index_base idx_base_A,
+                                rocsparse_index_base idx_base_B,
+                                rocsparse_index_base idx_base_D,
+                                bool                 mul,
+                                bool                 add)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -497,20 +505,21 @@ __global__ void csrgemm_nnz_wf_per_row(rocsparse_int m,
 
 // Compute non-zero entries per row, where each row is processed by a single block
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASHSIZE, unsigned int HASHVAL>
-__global__ void csrgemm_nnz_block_per_row(const rocsparse_int* __restrict__ offset,
-                                          const rocsparse_int* __restrict__ perm,
-                                          const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                          const rocsparse_int* __restrict__ csr_col_ind_A,
-                                          const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                          const rocsparse_int* __restrict__ csr_col_ind_B,
-                                          const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                          const rocsparse_int* __restrict__ csr_col_ind_D,
-                                          rocsparse_int* __restrict__ row_nnz,
-                                          rocsparse_index_base idx_base_A,
-                                          rocsparse_index_base idx_base_B,
-                                          rocsparse_index_base idx_base_D,
-                                          bool                 mul,
-                                          bool                 add)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_nnz_block_per_row(const rocsparse_int* __restrict__ offset,
+                                   const rocsparse_int* __restrict__ perm,
+                                   const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                   const rocsparse_int* __restrict__ csr_col_ind_A,
+                                   const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                   const rocsparse_int* __restrict__ csr_col_ind_B,
+                                   const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                   const rocsparse_int* __restrict__ csr_col_ind_D,
+                                   rocsparse_int* __restrict__ row_nnz,
+                                   rocsparse_index_base idx_base_A,
+                                   rocsparse_index_base idx_base_B,
+                                   rocsparse_index_base idx_base_D,
+                                   bool                 mul,
+                                   bool                 add)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -609,22 +618,23 @@ __global__ void csrgemm_nnz_block_per_row(const rocsparse_int* __restrict__ offs
 // a column index is populated or not.
 // Each row has at least 8193 intermediate products to compute.
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int CHUNKSIZE>
-__global__ void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
-                                                    const rocsparse_int* __restrict__ offset,
-                                                    const rocsparse_int* __restrict__ perm,
-                                                    const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                                    const rocsparse_int* __restrict__ csr_col_ind_A,
-                                                    const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                                    const rocsparse_int* __restrict__ csr_col_ind_B,
-                                                    const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                                    const rocsparse_int* __restrict__ csr_col_ind_D,
-                                                    rocsparse_int* __restrict__ row_nnz,
-                                                    rocsparse_int* __restrict__ workspace_B,
-                                                    rocsparse_index_base idx_base_A,
-                                                    rocsparse_index_base idx_base_B,
-                                                    rocsparse_index_base idx_base_D,
-                                                    bool                 mul,
-                                                    bool                 add)
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
+                                             const rocsparse_int* __restrict__ offset,
+                                             const rocsparse_int* __restrict__ perm,
+                                             const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                             const rocsparse_int* __restrict__ csr_col_ind_A,
+                                             const rocsparse_int* __restrict__ csr_row_ptr_B,
+                                             const rocsparse_int* __restrict__ csr_col_ind_B,
+                                             const rocsparse_int* __restrict__ csr_row_ptr_D,
+                                             const rocsparse_int* __restrict__ csr_col_ind_D,
+                                             rocsparse_int* __restrict__ row_nnz,
+                                             rocsparse_int* __restrict__ workspace_B,
+                                             rocsparse_index_base idx_base_A,
+                                             rocsparse_index_base idx_base_B,
+                                             rocsparse_index_base idx_base_D,
+                                             bool                 mul,
+                                             bool                 add)
 {
     // Lane id
     rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
@@ -1100,7 +1110,7 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
         __syncthreads();
 
         // Each thread accumulates the offset of all previous wavefronts to obtain its offset
-        for(unsigned int j = 1; j < hipBlockDim_x / warpSize; ++j)
+        for(unsigned int j = 1; j < BLOCKSIZE / warpSize; ++j)
         {
             if(hipThreadIdx_x >= j * warpSize)
             {
@@ -1121,16 +1131,16 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
 
         // Last thread in block writes the block-wide offset such that all subsequent
         // entries are shifted by this offset
-        if(hipThreadIdx_x == hipBlockDim_x - 1)
+        if(hipThreadIdx_x == BLOCKSIZE - 1)
         {
-            scan_offsets[hipBlockDim_x / warpSize - 1] = offset;
+            scan_offsets[BLOCKSIZE / warpSize - 1] = offset;
         }
 
         // Wait for last thread in block to finish writing
         __syncthreads();
 
         // Each thread reads the block-wide offset and adds it to its local offset
-        hash_offset += scan_offsets[hipBlockDim_x / warpSize - 1];
+        hash_offset += scan_offsets[BLOCKSIZE / warpSize - 1];
     }
 
     // Entry point into row of C
@@ -1380,7 +1390,7 @@ __device__ void
 
             // Last thread in block writes the block-wide offset into C such that all subsequent
             // entries are shifted by this offset
-            if(hipThreadIdx_x == hipBlockDim_x - 1)
+            if(hipThreadIdx_x == BLOCKSIZE - 1)
             {
                 scan_offsets[BLOCKSIZE / warpSize - 1] = offset;
             }

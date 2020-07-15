@@ -28,9 +28,10 @@
 #include <hip/hip_runtime.h>
 
 // Create identity permutation
-__global__ void identity_kernel(rocsparse_int n, rocsparse_int* p)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void identity_kernel(rocsparse_int n, rocsparse_int* p)
 {
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(gid >= n)
     {

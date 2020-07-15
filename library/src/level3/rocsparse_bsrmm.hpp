@@ -25,206 +25,203 @@
 #ifndef ROCSPARSE_BSRMM_HPP
 #define ROCSPARSE_BSRMM_HPP
 
+#include "../level2/rocsparse_bsrmv.hpp"
 #include "bsrmm_device.h"
 #include "handle.h"
 #include "rocsparse.h"
 #include "rocsparse_csrmm.hpp"
-#include "../level2/rocsparse_bsrmv.hpp"
 #include "utility.h"
 
 #include <hip/hip_runtime.h>
 
 #define launch_bsrmmnn_small_blockdim_kernel_host_pointer(T, block_size, wf_size, bsr_block_dim) \
-    hipLaunchKernelGGL(                                                                         \
+    hipLaunchKernelGGL(                                                                          \
         (bsrmmnn_small_blockdim_kernel_host_pointer<T, block_size, wf_size, bsr_block_dim>),     \
-        bsrmmnn_blocks,                                                                         \
-        bsrmmnn_threads,                                                                        \
-        0,                                                                                      \
-        stream,                                                                                 \
-        dir,                                                                                    \
-        mb,                                                                                     \
-        n,                                                                                      \
-        *alpha,                                                                                 \
-        bsr_row_ptr,                                                                            \
-        bsr_col_ind,                                                                            \
-        bsr_val,                                                                                \
-        B,                                                                                      \
-        ldb,                                                                                    \
-        *beta,                                                                                  \
-        C,                                                                                      \
-        ldc,                                                                                    \
+        bsrmmnn_blocks,                                                                          \
+        bsrmmnn_threads,                                                                         \
+        0,                                                                                       \
+        stream,                                                                                  \
+        dir,                                                                                     \
+        mb,                                                                                      \
+        n,                                                                                       \
+        *alpha,                                                                                  \
+        bsr_row_ptr,                                                                             \
+        bsr_col_ind,                                                                             \
+        bsr_val,                                                                                 \
+        B,                                                                                       \
+        ldb,                                                                                     \
+        *beta,                                                                                   \
+        C,                                                                                       \
+        ldc,                                                                                     \
         descr->base);
 
 #define launch_bsrmmnn_small_blockdim_kernel_device_pointer(T, block_size, wf_size, bsr_block_dim) \
-    hipLaunchKernelGGL(                                                                           \
+    hipLaunchKernelGGL(                                                                            \
         (bsrmmnn_small_blockdim_kernel_device_pointer<T, block_size, wf_size, bsr_block_dim>),     \
-        bsrmmnn_blocks,                                                                           \
-        bsrmmnn_threads,                                                                          \
-        0,                                                                                        \
-        stream,                                                                                   \
-        dir,                                                                                      \
-        mb,                                                                                       \
-        n,                                                                                        \
-        alpha,                                                                                    \
-        bsr_row_ptr,                                                                              \
-        bsr_col_ind,                                                                              \
-        bsr_val,                                                                                  \
-        B,                                                                                        \
-        ldb,                                                                                      \
-        beta,                                                                                     \
-        C,                                                                                        \
-        ldc,                                                                                      \
+        bsrmmnn_blocks,                                                                            \
+        bsrmmnn_threads,                                                                           \
+        0,                                                                                         \
+        stream,                                                                                    \
+        dir,                                                                                       \
+        mb,                                                                                        \
+        n,                                                                                         \
+        alpha,                                                                                     \
+        bsr_row_ptr,                                                                               \
+        bsr_col_ind,                                                                               \
+        bsr_val,                                                                                   \
+        B,                                                                                         \
+        ldb,                                                                                       \
+        beta,                                                                                      \
+        C,                                                                                         \
+        ldc,                                                                                       \
         descr->base);
 
 #define launch_bsrmmnt_small_blockdim_kernel_host_pointer(T, block_size, wf_size, bsr_block_dim) \
-    hipLaunchKernelGGL(                                                                         \
+    hipLaunchKernelGGL(                                                                          \
         (bsrmmnt_small_blockdim_kernel_host_pointer<T, block_size, wf_size, bsr_block_dim>),     \
-        bsrmmnt_blocks,                                                                         \
-        bsrmmnt_threads,                                                                        \
-        0,                                                                                      \
-        stream,                                                                                 \
-        dir,                                                                                    \
-        mb,                                                                                     \
-        n,                                                                                      \
-        *alpha,                                                                                 \
-        bsr_row_ptr,                                                                            \
-        bsr_col_ind,                                                                            \
-        bsr_val,                                                                                \
-        B,                                                                                      \
-        ldb,                                                                                    \
-        *beta,                                                                                  \
-        C,                                                                                      \
-        ldc,                                                                                    \
+        bsrmmnt_blocks,                                                                          \
+        bsrmmnt_threads,                                                                         \
+        0,                                                                                       \
+        stream,                                                                                  \
+        dir,                                                                                     \
+        mb,                                                                                      \
+        n,                                                                                       \
+        *alpha,                                                                                  \
+        bsr_row_ptr,                                                                             \
+        bsr_col_ind,                                                                             \
+        bsr_val,                                                                                 \
+        B,                                                                                       \
+        ldb,                                                                                     \
+        *beta,                                                                                   \
+        C,                                                                                       \
+        ldc,                                                                                     \
         descr->base);
 
 #define launch_bsrmmnt_small_blockdim_kernel_device_pointer(T, block_size, wf_size, bsr_block_dim) \
-    hipLaunchKernelGGL(                                                                           \
+    hipLaunchKernelGGL(                                                                            \
         (bsrmmnt_small_blockdim_kernel_device_pointer<T, block_size, wf_size, bsr_block_dim>),     \
-        bsrmmnt_blocks,                                                                           \
-        bsrmmnt_threads,                                                                          \
-        0,                                                                                        \
-        stream,                                                                                   \
-        dir,                                                                                      \
-        mb,                                                                                       \
-        n,                                                                                        \
-        alpha,                                                                                    \
-        bsr_row_ptr,                                                                              \
-        bsr_col_ind,                                                                              \
-        bsr_val,                                                                                  \
-        B,                                                                                        \
-        ldb,                                                                                      \
-        beta,                                                                                     \
-        C,                                                                                        \
-        ldc,                                                                                      \
-        descr->base);    
-
- #define launch_bsrmm_large_blockdim_kernel_host_pointer(T, bsr_block_dim, blk_size_y) \
-    hipLaunchKernelGGL(                                                     \
-        (bsrmm_large_blockdim_kernel_host_pointer<T, bsr_block_dim, blk_size_y>),     \
-        bsrmm_blocks,                                                     \
-        bsrmm_threads,                                                    \
-        0,                                                                  \
-        stream,                                                             \
-        dir,                                                                \
-        trans_B,                                                            \
-        mb,                                                                 \
-        n,                                                                  \
-        *alpha,                                                             \
-        bsr_row_ptr,                                                        \
-        bsr_col_ind,                                                        \
-        bsr_val,                                                            \
-        block_dim,                                                          \
-        B,                                                                  \
-        ldb,                                                                \
-        *beta,                                                              \
-        C,                                                                  \
-        ldc,                                                                \
+        bsrmmnt_blocks,                                                                            \
+        bsrmmnt_threads,                                                                           \
+        0,                                                                                         \
+        stream,                                                                                    \
+        dir,                                                                                       \
+        mb,                                                                                        \
+        n,                                                                                         \
+        alpha,                                                                                     \
+        bsr_row_ptr,                                                                               \
+        bsr_col_ind,                                                                               \
+        bsr_val,                                                                                   \
+        B,                                                                                         \
+        ldb,                                                                                       \
+        beta,                                                                                      \
+        C,                                                                                         \
+        ldc,                                                                                       \
         descr->base);
 
-#define launch_bsrmm_large_blockdim_kernel_device_pointer(T, bsr_block_dim, blk_size_y) \
-    hipLaunchKernelGGL(                                                       \
-        (bsrmm_large_blockdim_kernel_device_pointer<T, bsr_block_dim, blk_size_y>),     \
-        bsrmm_blocks,                                                      \
-        bsrmm_threads,                                                      \
-        0,                                                                    \
-        stream,                                                               \
-        dir,                                                                  \
-        trans_B,                                                              \
-        mb,                                                                   \
-        n,                                                                    \
-        alpha,                                                                \
-        bsr_row_ptr,                                                          \
-        bsr_col_ind,                                                          \
-        bsr_val,                                                              \
-        block_dim,                                                            \
-        B,                                                                    \
-        ldb,                                                                  \
-        beta,                                                                 \
-        C,                                                                    \
-        ldc,                                                                  \
-        descr->base);
+#define launch_bsrmm_large_blockdim_kernel_host_pointer(T, bsr_block_dim, blk_size_y)            \
+    hipLaunchKernelGGL((bsrmm_large_blockdim_kernel_host_pointer<T, bsr_block_dim, blk_size_y>), \
+                       bsrmm_blocks,                                                             \
+                       bsrmm_threads,                                                            \
+                       0,                                                                        \
+                       stream,                                                                   \
+                       dir,                                                                      \
+                       trans_B,                                                                  \
+                       mb,                                                                       \
+                       n,                                                                        \
+                       *alpha,                                                                   \
+                       bsr_row_ptr,                                                              \
+                       bsr_col_ind,                                                              \
+                       bsr_val,                                                                  \
+                       block_dim,                                                                \
+                       B,                                                                        \
+                       ldb,                                                                      \
+                       *beta,                                                                    \
+                       C,                                                                        \
+                       ldc,                                                                      \
+                       descr->base);
 
-#define launch_bsrmm_general_blockdim_kernel_host_pointer(T, bsr_block_dim, blk_size_y) \
-    hipLaunchKernelGGL(                                                     \
-        (bsrmm_general_blockdim_kernel_host_pointer<T, bsr_block_dim, blk_size_y>),     \
-        bsrmm_blocks,                                                     \
-        bsrmm_threads,                                                    \
-        0,                                                                  \
-        stream,                                                             \
-        dir,                                                                \
-        trans_B,                                                            \
-        mb,                                                                 \
-        n,                                                                  \
-        *alpha,                                                             \
-        bsr_row_ptr,                                                        \
-        bsr_col_ind,                                                        \
-        bsr_val,                                                            \
-        block_dim,                                                          \
-        B,                                                                  \
-        ldb,                                                                \
-        *beta,                                                              \
-        C,                                                                  \
-        ldc,                                                                \
-        descr->base);
+#define launch_bsrmm_large_blockdim_kernel_device_pointer(T, bsr_block_dim, blk_size_y)            \
+    hipLaunchKernelGGL((bsrmm_large_blockdim_kernel_device_pointer<T, bsr_block_dim, blk_size_y>), \
+                       bsrmm_blocks,                                                               \
+                       bsrmm_threads,                                                              \
+                       0,                                                                          \
+                       stream,                                                                     \
+                       dir,                                                                        \
+                       trans_B,                                                                    \
+                       mb,                                                                         \
+                       n,                                                                          \
+                       alpha,                                                                      \
+                       bsr_row_ptr,                                                                \
+                       bsr_col_ind,                                                                \
+                       bsr_val,                                                                    \
+                       block_dim,                                                                  \
+                       B,                                                                          \
+                       ldb,                                                                        \
+                       beta,                                                                       \
+                       C,                                                                          \
+                       ldc,                                                                        \
+                       descr->base);
+
+#define launch_bsrmm_general_blockdim_kernel_host_pointer(T, bsr_block_dim, blk_size_y)            \
+    hipLaunchKernelGGL((bsrmm_general_blockdim_kernel_host_pointer<T, bsr_block_dim, blk_size_y>), \
+                       bsrmm_blocks,                                                               \
+                       bsrmm_threads,                                                              \
+                       0,                                                                          \
+                       stream,                                                                     \
+                       dir,                                                                        \
+                       trans_B,                                                                    \
+                       mb,                                                                         \
+                       n,                                                                          \
+                       *alpha,                                                                     \
+                       bsr_row_ptr,                                                                \
+                       bsr_col_ind,                                                                \
+                       bsr_val,                                                                    \
+                       block_dim,                                                                  \
+                       B,                                                                          \
+                       ldb,                                                                        \
+                       *beta,                                                                      \
+                       C,                                                                          \
+                       ldc,                                                                        \
+                       descr->base);
 
 #define launch_bsrmm_general_blockdim_kernel_device_pointer(T, bsr_block_dim, blk_size_y) \
-    hipLaunchKernelGGL(                                                       \
+    hipLaunchKernelGGL(                                                                   \
         (bsrmm_general_blockdim_kernel_device_pointer<T, bsr_block_dim, blk_size_y>),     \
-        bsrmm_blocks,                                                      \
-        bsrmm_threads,                                                      \
-        0,                                                                    \
-        stream,                                                               \
-        dir,                                                                  \
-        trans_B,                                                              \
-        mb,                                                                   \
-        n,                                                                    \
-        alpha,                                                                \
-        bsr_row_ptr,                                                          \
-        bsr_col_ind,                                                          \
-        bsr_val,                                                              \
-        block_dim,                                                            \
-        B,                                                                    \
-        ldb,                                                                  \
-        beta,                                                                 \
-        C,                                                                    \
-        ldc,                                                                  \
+        bsrmm_blocks,                                                                     \
+        bsrmm_threads,                                                                    \
+        0,                                                                                \
+        stream,                                                                           \
+        dir,                                                                              \
+        trans_B,                                                                          \
+        mb,                                                                               \
+        n,                                                                                \
+        alpha,                                                                            \
+        bsr_row_ptr,                                                                      \
+        bsr_col_ind,                                                                      \
+        bsr_val,                                                                          \
+        block_dim,                                                                        \
+        B,                                                                                \
+        ldb,                                                                              \
+        beta,                                                                             \
+        C,                                                                                \
+        ldc,                                                                              \
         descr->base);
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE, rocsparse_int BSR_BLOCK_DIM>
 __launch_bounds__(BLOCKSIZE) __global__
     void bsrmmnn_small_blockdim_kernel_host_pointer(rocsparse_direction direction,
-                                                   rocsparse_int       mb,
-                                                   rocsparse_int       n,
-                                                   T                   alpha,
-                                                   const rocsparse_int* __restrict__ bsr_row_ptr,
-                                                   const rocsparse_int* __restrict__ bsr_col_ind,
-                                                   const T* __restrict__ bsr_val,
-                                                   const T* __restrict__ B,
-                                                   rocsparse_int ldb,
-                                                   T             beta,
-                                                   T* __restrict__ C,
-                                                   rocsparse_int        ldc,
-                                                   rocsparse_index_base idx_base)
+                                                    rocsparse_int       mb,
+                                                    rocsparse_int       n,
+                                                    T                   alpha,
+                                                    const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                    const rocsparse_int* __restrict__ bsr_col_ind,
+                                                    const T* __restrict__ bsr_val,
+                                                    const T* __restrict__ B,
+                                                    rocsparse_int ldb,
+                                                    T             beta,
+                                                    T* __restrict__ C,
+                                                    rocsparse_int        ldc,
+                                                    rocsparse_index_base idx_base)
 {
     if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
     {
@@ -232,24 +229,24 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 
     bsrmmnn_small_blockdim_device<T, BLOCKSIZE, WF_SIZE, BSR_BLOCK_DIM>(
-      direction, mb, n, alpha, bsr_row_ptr, bsr_col_ind, bsr_val, B, ldb, beta, C, ldc, idx_base);
+        direction, mb, n, alpha, bsr_row_ptr, bsr_col_ind, bsr_val, B, ldb, beta, C, ldc, idx_base);
 }
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE, rocsparse_int BSR_BLOCK_DIM>
 __launch_bounds__(BLOCKSIZE) __global__
     void bsrmmnn_small_blockdim_kernel_device_pointer(rocsparse_direction direction,
-                                                     rocsparse_int       mb,
-                                                     rocsparse_int       n,
-                                                     const T*            alpha,
-                                                     const rocsparse_int* __restrict__ bsr_row_ptr,
-                                                     const rocsparse_int* __restrict__ bsr_col_ind,
-                                                     const T* __restrict__ bsr_val,
-                                                     const T* __restrict__ B,
-                                                     rocsparse_int ldb,
-                                                     const T*      beta,
-                                                     T* __restrict__ C,
-                                                     rocsparse_int        ldc,
-                                                     rocsparse_index_base idx_base)
+                                                      rocsparse_int       mb,
+                                                      rocsparse_int       n,
+                                                      const T*            alpha,
+                                                      const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                      const rocsparse_int* __restrict__ bsr_col_ind,
+                                                      const T* __restrict__ bsr_val,
+                                                      const T* __restrict__ B,
+                                                      rocsparse_int ldb,
+                                                      const T*      beta,
+                                                      T* __restrict__ C,
+                                                      rocsparse_int        ldc,
+                                                      rocsparse_index_base idx_base)
 {
     if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
     {
@@ -257,71 +254,60 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 
     bsrmmnn_small_blockdim_device<T, BLOCKSIZE, WF_SIZE, BSR_BLOCK_DIM>(direction,
-                                                                       mb,
-                                                                       n,
-                                                                       *alpha,
-                                                                       bsr_row_ptr,
-                                                                       bsr_col_ind,
-                                                                       bsr_val,
-                                                                       B,
-                                                                       ldb,
-                                                                       *beta,
-                                                                       C,
-                                                                       ldc,
-                                                                       idx_base);
+                                                                        mb,
+                                                                        n,
+                                                                        *alpha,
+                                                                        bsr_row_ptr,
+                                                                        bsr_col_ind,
+                                                                        bsr_val,
+                                                                        B,
+                                                                        ldb,
+                                                                        *beta,
+                                                                        C,
+                                                                        ldc,
+                                                                        idx_base);
 }
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE, rocsparse_int BSR_BLOCK_DIM>
 __launch_bounds__(BLOCKSIZE) __global__
     void bsrmmnt_small_blockdim_kernel_host_pointer(rocsparse_direction direction,
-                                                   rocsparse_int       mb,
-                                                   rocsparse_int       n,
-                                                   T                   alpha,
-                                                   const rocsparse_int* __restrict__ bsr_row_ptr,
-                                                   const rocsparse_int* __restrict__ bsr_col_ind,
-                                                   const T* __restrict__ bsr_val,
-                                                   const T* __restrict__ B,
-                                                   rocsparse_int ldb,
-                                                   T             beta,
-                                                   T* __restrict__ C,
-                                                   rocsparse_int        ldc,
-                                                   rocsparse_index_base idx_base)
+                                                    rocsparse_int       mb,
+                                                    rocsparse_int       n,
+                                                    T                   alpha,
+                                                    const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                    const rocsparse_int* __restrict__ bsr_col_ind,
+                                                    const T* __restrict__ bsr_val,
+                                                    const T* __restrict__ B,
+                                                    rocsparse_int ldb,
+                                                    T             beta,
+                                                    T* __restrict__ C,
+                                                    rocsparse_int        ldc,
+                                                    rocsparse_index_base idx_base)
 {
     if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
     {
         return;
     }
 
-    bsrmmnt_small_blockdim_device<T, BLOCKSIZE, WF_SIZE, BSR_BLOCK_DIM>(direction,
-                                                                       mb,
-                                                                       n,
-                                                                       alpha,
-                                                                       bsr_row_ptr,
-                                                                       bsr_col_ind,
-                                                                       bsr_val,
-                                                                       B,
-                                                                       ldb,
-                                                                       beta,
-                                                                       C,
-                                                                       ldc,
-                                                                       idx_base);
+    bsrmmnt_small_blockdim_device<T, BLOCKSIZE, WF_SIZE, BSR_BLOCK_DIM>(
+        direction, mb, n, alpha, bsr_row_ptr, bsr_col_ind, bsr_val, B, ldb, beta, C, ldc, idx_base);
 }
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE, rocsparse_int BSR_BLOCK_DIM>
 __launch_bounds__(BLOCKSIZE) __global__
     void bsrmmnt_small_blockdim_kernel_device_pointer(rocsparse_direction direction,
-                                                     rocsparse_int       mb,
-                                                     rocsparse_int       n,
-                                                     const T*            alpha,
-                                                     const rocsparse_int* __restrict__ bsr_row_ptr,
-                                                     const rocsparse_int* __restrict__ bsr_col_ind,
-                                                     const T* __restrict__ bsr_val,
-                                                     const T* __restrict__ B,
-                                                     rocsparse_int ldb,
-                                                     const T*      beta,
-                                                     T* __restrict__ C,
-                                                     rocsparse_int        ldc,
-                                                     rocsparse_index_base idx_base)
+                                                      rocsparse_int       mb,
+                                                      rocsparse_int       n,
+                                                      const T*            alpha,
+                                                      const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                      const rocsparse_int* __restrict__ bsr_col_ind,
+                                                      const T* __restrict__ bsr_val,
+                                                      const T* __restrict__ B,
+                                                      rocsparse_int ldb,
+                                                      const T*      beta,
+                                                      T* __restrict__ C,
+                                                      rocsparse_int        ldc,
+                                                      rocsparse_index_base idx_base)
 {
     if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
     {
@@ -329,23 +315,103 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 
     bsrmmnt_small_blockdim_device<T, BLOCKSIZE, WF_SIZE, BSR_BLOCK_DIM>(direction,
-                                                                       mb,
-                                                                       n,
-                                                                       *alpha,
-                                                                       bsr_row_ptr,
-                                                                       bsr_col_ind,
-                                                                       bsr_val,
-                                                                       B,
-                                                                       ldb,
-                                                                       *beta,
-                                                                       C,
-                                                                       ldc,
-                                                                       idx_base);
+                                                                        mb,
+                                                                        n,
+                                                                        *alpha,
+                                                                        bsr_row_ptr,
+                                                                        bsr_col_ind,
+                                                                        bsr_val,
+                                                                        B,
+                                                                        ldb,
+                                                                        *beta,
+                                                                        C,
+                                                                        ldc,
+                                                                        idx_base);
 }
 
 template <typename T, rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y>
-__launch_bounds__(BSR_BLOCK_DIM * BLK_SIZE_Y) __global__
+__launch_bounds__(BSR_BLOCK_DIM* BLK_SIZE_Y) __global__
     void bsrmm_large_blockdim_kernel_host_pointer(rocsparse_direction direction,
+                                                  rocsparse_operation trans_B,
+                                                  rocsparse_int       mb,
+                                                  rocsparse_int       n,
+                                                  T                   alpha,
+                                                  const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                  const rocsparse_int* __restrict__ bsr_col_ind,
+                                                  const T* __restrict__ bsr_val,
+                                                  rocsparse_int block_dim,
+                                                  const T* __restrict__ B,
+                                                  rocsparse_int ldb,
+                                                  T             beta,
+                                                  T* __restrict__ C,
+                                                  rocsparse_int        ldc,
+                                                  rocsparse_index_base idx_base)
+{
+    if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
+    {
+        return;
+    }
+
+    bsrmm_large_blockdim_device<T, BSR_BLOCK_DIM, BLK_SIZE_Y>(direction,
+                                                              trans_B,
+                                                              mb,
+                                                              n,
+                                                              alpha,
+                                                              bsr_row_ptr,
+                                                              bsr_col_ind,
+                                                              bsr_val,
+                                                              block_dim,
+                                                              B,
+                                                              ldb,
+                                                              beta,
+                                                              C,
+                                                              ldc,
+                                                              idx_base);
+}
+
+template <typename T, rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y>
+__launch_bounds__(BSR_BLOCK_DIM* BLK_SIZE_Y) __global__
+    void bsrmm_large_blockdim_kernel_device_pointer(rocsparse_direction direction,
+                                                    rocsparse_operation trans_B,
+                                                    rocsparse_int       mb,
+                                                    rocsparse_int       n,
+                                                    const T*            alpha,
+                                                    const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                    const rocsparse_int* __restrict__ bsr_col_ind,
+                                                    const T* __restrict__ bsr_val,
+                                                    rocsparse_int block_dim,
+                                                    const T* __restrict__ B,
+                                                    rocsparse_int ldb,
+                                                    const T*      beta,
+                                                    T* __restrict__ C,
+                                                    rocsparse_int        ldc,
+                                                    rocsparse_index_base idx_base)
+{
+    if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
+    {
+        return;
+    }
+
+    bsrmm_large_blockdim_device<T, BSR_BLOCK_DIM, BLK_SIZE_Y>(direction,
+                                                              trans_B,
+                                                              mb,
+                                                              n,
+                                                              *alpha,
+                                                              bsr_row_ptr,
+                                                              bsr_col_ind,
+                                                              bsr_val,
+                                                              block_dim,
+                                                              B,
+                                                              ldb,
+                                                              *beta,
+                                                              C,
+                                                              ldc,
+                                                              idx_base);
+}
+
+template <typename T, rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y>
+__launch_bounds__(BSR_BLOCK_DIM* BLK_SIZE_Y) __global__
+    void bsrmm_general_blockdim_kernel_host_pointer(rocsparse_direction direction,
                                                     rocsparse_operation trans_B,
                                                     rocsparse_int       mb,
                                                     rocsparse_int       n,
@@ -366,94 +432,40 @@ __launch_bounds__(BSR_BLOCK_DIM * BLK_SIZE_Y) __global__
         return;
     }
 
-    bsrmm_large_blockdim_device<T, BSR_BLOCK_DIM, BLK_SIZE_Y>(
-        direction, trans_B, mb, n, alpha, bsr_row_ptr, bsr_col_ind, bsr_val, block_dim, B, ldb, beta, C, ldc, idx_base);
+    bsrmm_general_blockdim_device<T, BSR_BLOCK_DIM, BLK_SIZE_Y>(direction,
+                                                                trans_B,
+                                                                mb,
+                                                                n,
+                                                                alpha,
+                                                                bsr_row_ptr,
+                                                                bsr_col_ind,
+                                                                bsr_val,
+                                                                block_dim,
+                                                                B,
+                                                                ldb,
+                                                                beta,
+                                                                C,
+                                                                ldc,
+                                                                idx_base);
 }
 
 template <typename T, rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y>
-__launch_bounds__(BSR_BLOCK_DIM * BLK_SIZE_Y) __global__
-    void bsrmm_large_blockdim_kernel_device_pointer(rocsparse_direction direction,
-                                                      rocsparse_operation trans_B,
-                                                     rocsparse_int       mb,
-                                                     rocsparse_int       n,
-                                                     const T*            alpha,
-                                                     const rocsparse_int* __restrict__ bsr_row_ptr,
-                                                     const rocsparse_int* __restrict__ bsr_col_ind,
-                                                     const T* __restrict__ bsr_val,
-                                                     rocsparse_int block_dim,
-                                                     const T* __restrict__ B,
-                                                     rocsparse_int ldb,
-                                                     const T*      beta,
-                                                     T* __restrict__ C,
-                                                     rocsparse_int        ldc,
-                                                     rocsparse_index_base idx_base)
-{
-    if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
-    {
-        return;
-    }
-
-    bsrmm_large_blockdim_device<T, BSR_BLOCK_DIM, BLK_SIZE_Y>(direction,
-                                                    trans_B,
-                                                    mb,
-                                                    n,
-                                                    *alpha,
-                                                    bsr_row_ptr,
-                                                    bsr_col_ind,
-                                                    bsr_val,
-                                                    block_dim,
-                                                    B,
-                                                    ldb,
-                                                    *beta,
-                                                    C,
-                                                    ldc,
-                                                    idx_base);
-}
-
-template <typename T, rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y>
-__launch_bounds__(BSR_BLOCK_DIM * BLK_SIZE_Y) __global__
-    void bsrmm_general_blockdim_kernel_host_pointer(rocsparse_direction direction,
-                                                      rocsparse_operation trans_B,
-                                                    rocsparse_int       mb,
-                                                    rocsparse_int       n,
-                                                    T                   alpha,
-                                                    const rocsparse_int* __restrict__ bsr_row_ptr,
-                                                    const rocsparse_int* __restrict__ bsr_col_ind,
-                                                    const T* __restrict__ bsr_val,
-                                                    rocsparse_int block_dim,
-                                                    const T* __restrict__ B,
-                                                    rocsparse_int ldb,
-                                                    T             beta,
-                                                    T* __restrict__ C,
-                                                    rocsparse_int        ldc,
-                                                    rocsparse_index_base idx_base)
-{
-    if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
-    {
-        return;
-    }
-
-    bsrmm_general_blockdim_device<T, BSR_BLOCK_DIM, BLK_SIZE_Y>(
-        direction, trans_B, mb, n, alpha, bsr_row_ptr, bsr_col_ind, bsr_val, block_dim, B, ldb, beta, C, ldc, idx_base);
-}
-
-template <typename T, rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y>
-__launch_bounds__(BSR_BLOCK_DIM * BLK_SIZE_Y) __global__
+__launch_bounds__(BSR_BLOCK_DIM* BLK_SIZE_Y) __global__
     void bsrmm_general_blockdim_kernel_device_pointer(rocsparse_direction direction,
-                                                        rocsparse_operation trans_B,
-                                                        rocsparse_int       mb,
-                                                        rocsparse_int       n,
-                                                        const T*            alpha,
-                                                        const rocsparse_int* __restrict__ bsr_row_ptr,
-                                                        const rocsparse_int* __restrict__ bsr_col_ind,
-                                                        const T* __restrict__ bsr_val,
-                                                        rocsparse_int block_dim,
-                                                        const T* __restrict__ B,
-                                                        rocsparse_int ldb,
-                                                        const T*      beta,
-                                                        T* __restrict__ C,
-                                                        rocsparse_int        ldc,
-                                                        rocsparse_index_base idx_base)
+                                                      rocsparse_operation trans_B,
+                                                      rocsparse_int       mb,
+                                                      rocsparse_int       n,
+                                                      const T*            alpha,
+                                                      const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                      const rocsparse_int* __restrict__ bsr_col_ind,
+                                                      const T* __restrict__ bsr_val,
+                                                      rocsparse_int block_dim,
+                                                      const T* __restrict__ B,
+                                                      rocsparse_int ldb,
+                                                      const T*      beta,
+                                                      T* __restrict__ C,
+                                                      rocsparse_int        ldc,
+                                                      rocsparse_index_base idx_base)
 {
     if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
     {
@@ -461,7 +473,7 @@ __launch_bounds__(BSR_BLOCK_DIM * BLK_SIZE_Y) __global__
     }
 
     bsrmm_general_blockdim_device<T, BSR_BLOCK_DIM, BLK_SIZE_Y>(direction,
-                                                                  trans_B,
+                                                                trans_B,
                                                                 mb,
                                                                 n,
                                                                 *alpha,
@@ -633,20 +645,20 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
         if(trans_B == rocsparse_operation_none)
         {
             return rocsparse_bsrmv_template(handle,
-                                        dir,
-                                        trans_A,
-                                        mb,
-                                        kb,
-                                        nnzb,
-                                        alpha,
-                                        descr,
-                                        bsr_val,
-                                        bsr_row_ptr,
-                                        bsr_col_ind,
-                                        block_dim,
-                                        B,
-                                        beta,
-                                        C);
+                                            dir,
+                                            trans_A,
+                                            mb,
+                                            kb,
+                                            nnzb,
+                                            alpha,
+                                            descr,
+                                            bsr_val,
+                                            bsr_row_ptr,
+                                            bsr_col_ind,
+                                            block_dim,
+                                            B,
+                                            beta,
+                                            C);
         }
     }
 
@@ -681,7 +693,8 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
                 constexpr rocsparse_int BSRMMNN_DIM = 64;
                 constexpr rocsparse_int SUB_WF_SIZE = 8;
 
-                dim3 bsrmmnn_blocks((SUB_WF_SIZE * m - 1) / BSRMMNN_DIM + 1, (n - 1) / SUB_WF_SIZE + 1);
+                dim3 bsrmmnn_blocks((SUB_WF_SIZE * m - 1) / BSRMMNN_DIM + 1,
+                                    (n - 1) / SUB_WF_SIZE + 1);
                 dim3 bsrmmnn_threads(BSRMMNN_DIM);
                 launch_bsrmmnn_small_blockdim_kernel_device_pointer(T, BSRMMNN_DIM, SUB_WF_SIZE, 2);
             }
@@ -730,7 +743,8 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
                 constexpr rocsparse_int BSRMMNN_DIM = 64;
                 constexpr rocsparse_int SUB_WF_SIZE = 8;
 
-                dim3 bsrmmnn_blocks((SUB_WF_SIZE * m - 1) / BSRMMNN_DIM + 1, (n - 1) / SUB_WF_SIZE + 1);
+                dim3 bsrmmnn_blocks((SUB_WF_SIZE * m - 1) / BSRMMNN_DIM + 1,
+                                    (n - 1) / SUB_WF_SIZE + 1);
                 dim3 bsrmmnn_threads(BSRMMNN_DIM);
                 launch_bsrmmnn_small_blockdim_kernel_host_pointer(T, BSRMMNN_DIM, SUB_WF_SIZE, 2);
             }

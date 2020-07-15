@@ -29,14 +29,15 @@
 #include <iostream>
 
 template <rocsparse_int NUMROWS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
-static __global__ void dense2csr_kernel(rocsparse_int base,
-                                        rocsparse_int m,
-                                        rocsparse_int n,
-                                        const T* __restrict__ dense_val,
-                                        rocsparse_int ld,
-                                        T* __restrict__ csr_val,
-                                        rocsparse_int* __restrict__ csr_row_ptr,
-                                        rocsparse_int* __restrict__ csr_col_ind)
+__launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) static __global__
+    void dense2csr_kernel(rocsparse_int base,
+                          rocsparse_int m,
+                          rocsparse_int n,
+                          const T* __restrict__ dense_val,
+                          rocsparse_int ld,
+                          T* __restrict__ csr_val,
+                          rocsparse_int* __restrict__ csr_row_ptr,
+                          rocsparse_int* __restrict__ csr_col_ind)
 {
     const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE,
                         lane_index      = hipThreadIdx_x % WF_SIZE;
@@ -99,14 +100,15 @@ static __global__ void dense2csr_kernel(rocsparse_int base,
     }
 }
 template <rocsparse_int NUMCOLUMNS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
-static __global__ void dense2csc_kernel(rocsparse_int base,
-                                        rocsparse_int m,
-                                        rocsparse_int n,
-                                        const T* __restrict__ dense_val,
-                                        rocsparse_int ld,
-                                        T* __restrict__ csc_val,
-                                        rocsparse_int* __restrict__ csc_col_ptr,
-                                        rocsparse_int* __restrict__ csc_row_ind)
+__launch_bounds__(WF_SIZE* NUMCOLUMNS_PER_BLOCK) static __global__
+    void dense2csc_kernel(rocsparse_int base,
+                          rocsparse_int m,
+                          rocsparse_int n,
+                          const T* __restrict__ dense_val,
+                          rocsparse_int ld,
+                          T* __restrict__ csc_val,
+                          rocsparse_int* __restrict__ csc_col_ptr,
+                          rocsparse_int* __restrict__ csc_row_ind)
 {
     const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE,
                         lane_index      = hipThreadIdx_x % WF_SIZE;

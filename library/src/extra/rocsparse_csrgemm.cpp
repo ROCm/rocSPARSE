@@ -30,7 +30,8 @@
 #include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 
-__global__ void csrgemm_index_base(rocsparse_int* nnz)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_index_base(rocsparse_int* nnz)
 {
     --(*nnz);
 }
@@ -80,7 +81,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
     // Compute number of intermediate products for each row
 #define CSRGEMM_DIM 256
 #define CSRGEMM_SUB 8
-    hipLaunchKernelGGL((csrgemm_intermediate_products<CSRGEMM_SUB>),
+    hipLaunchKernelGGL((csrgemm_intermediate_products<CSRGEMM_DIM, CSRGEMM_SUB>),
                        dim3((m - 1) / (CSRGEMM_DIM / CSRGEMM_SUB) + 1),
                        dim3(CSRGEMM_DIM),
                        0,
@@ -532,7 +533,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle          han
         // Adjust nnz by index base
         if(descr_C->base == rocsparse_index_base_one)
         {
-            hipLaunchKernelGGL((csrgemm_index_base), dim3(1), dim3(1), 0, stream, nnz_C);
+            hipLaunchKernelGGL((csrgemm_index_base<1>), dim3(1), dim3(1), 0, stream, nnz_C);
         }
     }
     else
@@ -744,7 +745,7 @@ static rocsparse_status rocsparse_csrgemm_nnz_scal(rocsparse_handle          han
 
     // Copy row pointers
 #define CSRGEMM_DIM 1024
-    hipLaunchKernelGGL((csrgemm_copy),
+    hipLaunchKernelGGL((csrgemm_copy<CSRGEMM_DIM>),
                        dim3(m / CSRGEMM_DIM + 1),
                        dim3(CSRGEMM_DIM),
                        0,

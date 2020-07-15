@@ -32,31 +32,32 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T>
-__global__ void axpyi_kernel_host_scalar(rocsparse_int        nnz,
-                                         T                    alpha,
-                                         const T*             x_val,
-                                         const rocsparse_int* x_ind,
-                                         T*                   y,
-                                         rocsparse_index_base idx_base)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void axpyi_kernel_host_scalar(rocsparse_int        nnz,
+                                                                      T                    alpha,
+                                                                      const T*             x_val,
+                                                                      const rocsparse_int* x_ind,
+                                                                      T*                   y,
+                                                                      rocsparse_index_base idx_base)
 {
-    axpyi_device(nnz, alpha, x_val, x_ind, y, idx_base);
+    axpyi_device<T, BLOCKSIZE>(nnz, alpha, x_val, x_ind, y, idx_base);
 }
 
-template <typename T>
-__global__ void axpyi_kernel_device_scalar(rocsparse_int        nnz,
-                                           const T*             alpha,
-                                           const T*             x_val,
-                                           const rocsparse_int* x_ind,
-                                           T*                   y,
-                                           rocsparse_index_base idx_base)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void axpyi_kernel_device_scalar(rocsparse_int        nnz,
+                                    const T*             alpha,
+                                    const T*             x_val,
+                                    const rocsparse_int* x_ind,
+                                    T*                   y,
+                                    rocsparse_index_base idx_base)
 {
     if(*alpha == static_cast<T>(0))
     {
         return;
     }
 
-    axpyi_device(nnz, *alpha, x_val, x_ind, y, idx_base);
+    axpyi_device<T, BLOCKSIZE>(nnz, *alpha, x_val, x_ind, y, idx_base);
 }
 
 template <typename T>
@@ -148,7 +149,7 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((axpyi_kernel_device_scalar<T>),
+        hipLaunchKernelGGL((axpyi_kernel_device_scalar<T, AXPYI_DIM>),
                            axpyi_blocks,
                            axpyi_threads,
                            0,
@@ -167,7 +168,7 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
             return rocsparse_status_success;
         }
 
-        hipLaunchKernelGGL((axpyi_kernel_host_scalar<T>),
+        hipLaunchKernelGGL((axpyi_kernel_host_scalar<T, AXPYI_DIM>),
                            axpyi_blocks,
                            axpyi_threads,
                            0,

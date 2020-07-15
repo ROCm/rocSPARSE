@@ -32,25 +32,26 @@
 
 // Compute non-zero entries per CSR row and do a block reduction over the maximum
 // Store result in a workspace for final reduction on part2
-template <rocsparse_int NB>
-__global__ void ell_width_kernel_part1(rocsparse_int        m,
-                                       const rocsparse_int* csr_row_ptr,
-                                       rocsparse_int*       workspace)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void ell_width_kernel_part1(rocsparse_int        m,
+                                const rocsparse_int* csr_row_ptr,
+                                rocsparse_int*       workspace)
 {
     rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
-    __shared__ rocsparse_int sdata[NB];
+    __shared__ rocsparse_int sdata[BLOCKSIZE];
     sdata[tid] = 0;
 
-    for(rocsparse_int idx = gid; idx < m; idx += hipGridDim_x * hipBlockDim_x)
+    for(rocsparse_int idx = gid; idx < m; idx += hipGridDim_x * BLOCKSIZE)
     {
         sdata[tid] = max(sdata[tid], csr_row_ptr[idx + 1] - csr_row_ptr[idx]);
     }
 
     __syncthreads();
 
-    rocsparse_blockreduce_max<rocsparse_int, NB>(tid, sdata);
+    rocsparse_blockreduce_max<rocsparse_int, BLOCKSIZE>(tid, sdata);
 
     if(tid == 0)
     {
@@ -59,22 +60,23 @@ __global__ void ell_width_kernel_part1(rocsparse_int        m,
 }
 
 // Part2 kernel for final reduction over the maximum CSR nnz row entries
-template <rocsparse_int NB>
-__global__ void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace)
+template <unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__
+    void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace)
 {
     rocsparse_int tid = hipThreadIdx_x;
 
-    __shared__ rocsparse_int sdata[NB];
+    __shared__ rocsparse_int sdata[BLOCKSIZE];
     sdata[tid] = 0;
 
-    for(rocsparse_int i = tid; i < m; i += NB)
+    for(rocsparse_int i = tid; i < m; i += BLOCKSIZE)
     {
         sdata[tid] = max(sdata[tid], workspace[i]);
     }
 
     __syncthreads();
 
-    rocsparse_blockreduce_max<rocsparse_int, NB>(tid, sdata);
+    rocsparse_blockreduce_max<rocsparse_int, BLOCKSIZE>(tid, sdata);
 
     if(tid == 0)
     {
@@ -83,18 +85,18 @@ __global__ void ell_width_kernel_part2(rocsparse_int m, rocsparse_int* workspace
 }
 
 // CSR to ELL format conversion kernel
-template <typename T>
-__global__ void csr2ell_kernel(rocsparse_int        m,
-                               const T*             csr_val,
-                               const rocsparse_int* csr_row_ptr,
-                               const rocsparse_int* csr_col_ind,
-                               rocsparse_index_base csr_idx_base,
-                               rocsparse_int        ell_width,
-                               rocsparse_int*       ell_col_ind,
-                               T*                   ell_val,
-                               rocsparse_index_base ell_idx_base)
+template <typename T, unsigned int BLOCKSIZE>
+__launch_bounds__(BLOCKSIZE) __global__ void csr2ell_kernel(rocsparse_int        m,
+                                                            const T*             csr_val,
+                                                            const rocsparse_int* csr_row_ptr,
+                                                            const rocsparse_int* csr_col_ind,
+                                                            rocsparse_index_base csr_idx_base,
+                                                            rocsparse_int        ell_width,
+                                                            rocsparse_int*       ell_col_ind,
+                                                            T*                   ell_val,
+                                                            rocsparse_index_base ell_idx_base)
 {
-    rocsparse_int ai = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    rocsparse_int ai = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(ai >= m)
     {

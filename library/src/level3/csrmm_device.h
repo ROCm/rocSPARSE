@@ -29,7 +29,7 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
 static __device__ void csrmmnn_general_device(rocsparse_int M,
                                               rocsparse_int N,
                                               rocsparse_int K,
@@ -46,10 +46,10 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
                                               rocsparse_index_base idx_base)
 {
     rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
+    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + tid;
     rocsparse_int lid = gid & (WF_SIZE - 1);
     rocsparse_int wid = tid / WF_SIZE;
-    rocsparse_int nwf = hipGridDim_x * hipBlockDim_x / WF_SIZE;
+    rocsparse_int nwf = hipGridDim_x * BLOCKSIZE / WF_SIZE;
     rocsparse_int col = lid + hipBlockIdx_y * WF_SIZE;
 
     rocsparse_int colB = col * ldb;
@@ -96,7 +96,7 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
     }
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE>
+template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
 static __device__ void csrmmnt_general_device(rocsparse_int offset,
                                               rocsparse_int ncol,
                                               rocsparse_int M,
@@ -115,7 +115,7 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
                                               rocsparse_index_base idx_base)
 {
     rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + tid;
+    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + tid;
     rocsparse_int row = gid / WF_SIZE;
     rocsparse_int lid = tid & (WF_SIZE - 1);
     rocsparse_int wid = tid / WF_SIZE;
