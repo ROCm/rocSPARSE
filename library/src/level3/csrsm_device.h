@@ -251,7 +251,7 @@ __device__ void csrsm_device(rocsparse_int m,
         // Spin loop until dependency has been resolved
         if(hipThreadIdx_x == 0)
         {
-            int local_done = rocsparse_atomic_load(&done_array[local_col + id], __ATOMIC_ACQUIRE);
+            int          local_done    = atomicOr(&done_array[local_col + id], 0);
             unsigned int times_through = 0;
             while(!local_done)
             {
@@ -268,12 +268,15 @@ __device__ void csrsm_device(rocsparse_int m,
                     }
                 }
 
-                local_done = rocsparse_atomic_load(&done_array[local_col + id], __ATOMIC_ACQUIRE);
+                local_done = atomicOr(&done_array[local_col + id], 0);
             }
         }
 
         // Wait for spin looping thread to finish as the whole block depends on this row
         __syncthreads();
+
+        // Make sure updated B is visible globally
+        __threadfence();
 
         // Index into X
         rocsparse_int idx_X = local_col * ldb + col_B;
@@ -299,10 +302,13 @@ __device__ void csrsm_device(rocsparse_int m,
     // Wait for all threads to finish writing into global memory before we mark the row "done"
     __syncthreads();
 
+    // Make sure B is written to global memory before setting row is done flag
+    __threadfence();
+
     if(hipThreadIdx_x == 0)
     {
         // Write the "row is done" flag
-        rocsparse_atomic_store(&done_array[row + id], 1, __ATOMIC_RELEASE);
+        atomicOr(&done_array[row + id], 1);
     }
 }
 

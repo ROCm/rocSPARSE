@@ -488,14 +488,19 @@ __device__ void bsrmvn_5x5_device(rocsparse_int       mb,
 
     sdata[hipThreadIdx_x] = sum;
 
+    __threadfence_block();
+
     if(dir == rocsparse_direction_column)
     {
         if(hipThreadIdx_x < BLOCKSIZE - BSRDIM * 8)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * 8];
+        __threadfence_block();
         if(hipThreadIdx_x < BSRDIM * 4)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * 4];
+        __threadfence_block();
         if(hipThreadIdx_x < BSRDIM * 2)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * 2];
+        __threadfence_block();
         if(hipThreadIdx_x < BSRDIM * 1)
             sum = sdata[hipThreadIdx_x] + sdata[hipThreadIdx_x + BSRDIM * 1];
     }
@@ -504,12 +509,15 @@ __device__ void bsrmvn_5x5_device(rocsparse_int       mb,
         // Accumulate the row sum for different blocks
         if(hipThreadIdx_x < BSRDIM * BSRDIM)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * BSRDIM];
+        __threadfence_block();
 
         // Reduce the intra block row sum
         if(lid < 1)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + 4];
+        __threadfence_block();
         if(lid < 2)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + 2];
+        __threadfence_block();
 
         // Final reduction
         if(hipThreadIdx_x < BSRDIM)
@@ -596,10 +604,13 @@ __device__ void bsrmvn_8x8_device(rocsparse_int       mb,
     {
         if(hipThreadIdx_x < BSRDIM * 8)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * 8];
+        __threadfence_block();
         if(hipThreadIdx_x < BSRDIM * 4)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * 4];
+        __threadfence_block();
         if(hipThreadIdx_x < BSRDIM * 2)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * 2];
+        __threadfence_block();
         if(hipThreadIdx_x < BSRDIM * 1)
             sum = sdata[hipThreadIdx_x] + sdata[hipThreadIdx_x + BSRDIM * 1];
     }
@@ -608,14 +619,15 @@ __device__ void bsrmvn_8x8_device(rocsparse_int       mb,
         // Accumulate the row sum for different blocks
         if(hipThreadIdx_x < BSRDIM * BSRDIM)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * BSRDIM];
-
         __syncthreads();
 
         // Reduce the intra block row sum
         if(lid < 4)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + 4];
+        __threadfence_block();
         if(lid < 2)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + 2];
+        __threadfence_block();
 
         // Final reduction
         if(hipThreadIdx_x < BSRDIM)
@@ -702,8 +714,10 @@ __device__ void bsrmvn_16x16_device(rocsparse_int       mb,
         __syncthreads();
         if(hipThreadIdx_x < BSRDIM * 4)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * 4];
+        __threadfence_block();
         if(hipThreadIdx_x < BSRDIM * 2)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * 2];
+        __threadfence_block();
         if(hipThreadIdx_x < BSRDIM * 1)
             sum = sdata[hipThreadIdx_x] + sdata[hipThreadIdx_x + BSRDIM * 1];
     }
@@ -712,10 +726,13 @@ __device__ void bsrmvn_16x16_device(rocsparse_int       mb,
         // Reduce the intra block row sum
         if(lid < 8)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + 8];
+        __syncthreads();
         if(lid < 4)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + 4];
+        __syncthreads();
         if(lid < 2)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + 2];
+        __syncthreads();
 
         // Final reduction
         if(hipThreadIdx_x < BSRDIM)
@@ -805,6 +822,7 @@ __device__ void bsrmvn_17_32_device(rocsparse_int       mb,
         __syncthreads();
         if(hipThreadIdx_x < BSRDIM * 2)
             sdata[hipThreadIdx_x] += sdata[hipThreadIdx_x + BSRDIM * 2];
+        __threadfence_block();
         if(hipThreadIdx_x < BSRDIM * 1)
             sum = sdata[hipThreadIdx_x] + sdata[hipThreadIdx_x + BSRDIM * 1];
     }
