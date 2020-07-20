@@ -63,7 +63,6 @@ add_rocsparse_example(example_csrsv.cpp)
 
 # Level 3
 add_rocsparse_example(example_bsrmm.cpp)
-add_rocsparse_example(example_fortran_bsrmm.f90)
 add_rocsparse_example(example_csrmm.cpp)
 add_rocsparse_example(example_csrsm.cpp)
 add_rocsparse_example(example_gemmi.cpp)
@@ -78,6 +77,8 @@ if(TARGET rocsparse)
   # else the Fortran module file is not generated
   add_rocsparse_example(example_fortran_csric0.f90)
   add_rocsparse_example(example_fortran_csrilu0.f90)
+  add_rocsparse_example(example_fortran_bsrmm.f90)
+  add_rocsparse_example(example_fortran_bsric0.f90)
   add_rocsparse_example(example_fortran_bsrsv.f90)
   add_rocsparse_example(example_fortran_csrsv.f90)
   add_rocsparse_example(example_fortran_spmv.f90)

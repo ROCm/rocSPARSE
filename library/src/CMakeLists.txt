@@ -61,6 +61,7 @@ set(rocsparse_source
   src/extra/rocsparse_csrgemm.cpp
 
 # Preconditioner
+  src/precond/rocsparse_bsric0.cpp
   src/precond/rocsparse_csric0.cpp
   src/precond/rocsparse_csrilu0.cpp
 

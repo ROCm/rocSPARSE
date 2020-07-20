@@ -68,4 +68,25 @@ inline bool rocsparse_isinf(rocsparse_double_complex arg)
     return std::isinf(std::real(arg)) || std::isinf(std::imag(arg));
 }
 
+/* =================================================================================== */
+/*! \brief  returns complex conjugate */
+template <typename T>
+inline T rocsparse_conj(T arg)
+{
+    return arg;
+}
+
+template <>
+inline rocsparse_float_complex rocsparse_conj(rocsparse_float_complex arg)
+{
+    return std::conj(arg);
+}
+
+template <>
+inline rocsparse_double_complex rocsparse_conj(rocsparse_double_complex arg)
+{
+    return std::conj(arg);
+}
+
+
 #endif // ROCSPARSE_MATH_HPP
