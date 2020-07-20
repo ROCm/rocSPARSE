@@ -1287,12 +1287,12 @@ inline void host_bsrmm(rocsparse_int                     Mb,
                 {
                     rocsparse_int idx_A
                         = (dir == rocsparse_direction_row)
-                            ? block_dim * block_dim * s + block_dim * local_row + t
-                            : block_dim * block_dim * s + block_dim * t + local_row;
+                              ? block_dim * block_dim * s + block_dim * local_row + t
+                              : block_dim * block_dim * s + block_dim * t + local_row;
                     rocsparse_int idx_B
                         = (transB == rocsparse_operation_none)
-                            ? j * ldb + block_dim * (bsr_col_ind_A[s] - base) + t
-                            : (block_dim * (bsr_col_ind_A[s] - base) + t) * ldb + j;
+                              ? j * ldb + block_dim * (bsr_col_ind_A[s] - base) + t
+                              : (block_dim * (bsr_col_ind_A[s] - base) + t) * ldb + j;
 
                     sum = std::fma(bsr_val_A[idx_A], B[idx_B], sum);
                 }
@@ -2179,6 +2179,241 @@ inline void host_csrgemm(rocsparse_int                     M,
  * ===========================================================================
  */
 template <typename T>
+inline void host_bsric0(rocsparse_direction               direction,
+                        rocsparse_int                     Mb,
+                        rocsparse_int                     block_dim,
+                        const std::vector<rocsparse_int>& bsr_row_ptr,
+                        const std::vector<rocsparse_int>& bsr_col_ind,
+                        std::vector<T>&                   bsr_val,
+                        rocsparse_index_base              base,
+                        rocsparse_int*                    struct_pivot,
+                        rocsparse_int*                    numeric_pivot)
+
+{
+    rocsparse_int M = Mb * block_dim;
+
+    // Initialize pivot
+    *struct_pivot  = -1;
+    *numeric_pivot = -1;
+
+    if(bsr_col_ind.size() == 0 && bsr_val.size() == 0)
+    {
+        return;
+    }
+
+    // pointer of upper part of each row
+    std::vector<rocsparse_int> diag_block_offset(Mb);
+    std::vector<rocsparse_int> diag_offset(M, -1);
+    std::vector<rocsparse_int> nnz_entries(M, -1);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int i = 0; i < Mb; i++)
+    {
+        rocsparse_int row_begin = bsr_row_ptr[i] - base;
+        rocsparse_int row_end   = bsr_row_ptr[i + 1] - base;
+
+        for(rocsparse_int j = row_begin; j < row_end; j++)
+        {
+            if(bsr_col_ind[j] - base == i)
+            {
+                diag_block_offset[i] = j;
+                break;
+            }
+        }
+    }
+
+    for(rocsparse_int i = 0; i < M; i++)
+    {
+        rocsparse_int local_row = i % block_dim;
+
+        rocsparse_int row_begin = bsr_row_ptr[i / block_dim] - base;
+        rocsparse_int row_end   = bsr_row_ptr[i / block_dim + 1] - base;
+
+        for(rocsparse_int j = row_begin; j < row_end; j++)
+        {
+            rocsparse_int block_col_j = bsr_col_ind[j] - base;
+
+            for(rocsparse_int k = 0; k < block_dim; k++)
+            {
+                if(direction == rocsparse_direction_row)
+                {
+                    nnz_entries[block_dim * block_col_j + k]
+                        = block_dim * block_dim * j + block_dim * local_row + k;
+                }
+                else
+                {
+                    nnz_entries[block_dim * block_col_j + k]
+                        = block_dim * block_dim * j + block_dim * k + local_row;
+                }
+            }
+        }
+
+        T             sum            = static_cast<T>(0);
+        rocsparse_int diag_val_index = -1;
+
+        bool has_diag         = false;
+        bool break_outer_loop = false;
+
+        for(rocsparse_int j = row_begin; j < row_end; j++)
+        {
+            rocsparse_int block_col_j = bsr_col_ind[j] - base;
+
+            for(rocsparse_int k = 0; k < block_dim; k++)
+            {
+                rocsparse_int col_j = block_dim * block_col_j + k;
+
+                // Mark diagonal and skip row
+                if(col_j == i)
+                {
+                    diag_val_index = block_dim * block_dim * j + block_dim * k + k;
+
+                    has_diag         = true;
+                    break_outer_loop = true;
+                    break;
+                }
+
+                // Skip upper triangular
+                if(col_j > i)
+                {
+                    break_outer_loop = true;
+                    break;
+                }
+
+                T val_j = static_cast<T>(0);
+                if(direction == rocsparse_direction_row)
+                {
+                    val_j = bsr_val[block_dim * block_dim * j + block_dim * local_row + k];
+                }
+                else
+                {
+                    val_j = bsr_val[block_dim * block_dim * j + block_dim * k + local_row];
+                }
+
+                rocsparse_int local_row_j = col_j % block_dim;
+
+                rocsparse_int row_begin_j = bsr_row_ptr[col_j / block_dim] - base;
+                rocsparse_int row_end_j   = diag_block_offset[col_j / block_dim];
+                rocsparse_int row_diag_j  = diag_offset[col_j];
+
+                T local_sum = static_cast<T>(0);
+                T inv_diag  = row_diag_j != -1 ? bsr_val[row_diag_j] : static_cast<T>(0);
+
+                // Check for numeric zero
+                if(inv_diag == static_cast<T>(0))
+                {
+                    // Numerical non-invertible block diagonal
+                    if(*numeric_pivot == -1)
+                    {
+                        *numeric_pivot = block_col_j + base;
+                    }
+
+                    *numeric_pivot = std::min(*numeric_pivot, block_col_j + base);
+
+                    inv_diag = static_cast<T>(1);
+                }
+
+                inv_diag = static_cast<T>(1) / inv_diag;
+
+                // loop over upper offset pointer and do linear combination for nnz entry
+                for(rocsparse_int l = row_begin_j; l < row_end_j + 1; l++)
+                {
+                    rocsparse_int block_col_l = bsr_col_ind[l] - base;
+
+                    for(rocsparse_int m = 0; m < block_dim; m++)
+                    {
+                        rocsparse_int idx = nnz_entries[block_dim * block_col_l + m];
+
+                        if(idx != -1 && block_dim * block_col_l + m < col_j)
+                        {
+                            if(direction == rocsparse_direction_row)
+                            {
+                                local_sum = std::fma(bsr_val[block_dim * block_dim * l
+                                                             + block_dim * local_row_j + m],
+                                                     rocsparse_conj(bsr_val[idx]),
+                                                     local_sum);
+                            }
+                            else
+                            {
+                                local_sum = std::fma(bsr_val[block_dim * block_dim * l
+                                                             + block_dim * m + local_row_j],
+                                                     rocsparse_conj(bsr_val[idx]),
+                                                     local_sum);
+                            }
+                        }
+                    }
+                }
+
+                val_j = (val_j - local_sum) * inv_diag;
+                sum   = std::fma(val_j, rocsparse_conj(val_j), sum);
+
+                if(direction == rocsparse_direction_row)
+                {
+                    bsr_val[block_dim * block_dim * j + block_dim * local_row + k] = val_j;
+                }
+                else
+                {
+                    bsr_val[block_dim * block_dim * j + block_dim * k + local_row] = val_j;
+                }
+            }
+
+            if(break_outer_loop)
+            {
+                break;
+            }
+        }
+
+        if(!has_diag)
+        {
+            // Structural missing block diagonal
+            if(*struct_pivot == -1)
+            {
+                *struct_pivot = i / block_dim + base;
+            }
+        }
+
+        // Process diagonal entry
+        if(has_diag)
+        {
+            T diag_entry            = std::sqrt(std::abs(bsr_val[diag_val_index] - sum));
+            bsr_val[diag_val_index] = diag_entry;
+
+            if(diag_entry == static_cast<T>(0))
+            {
+                // Numerical non-invertible block diagonal
+                if(*numeric_pivot == -1)
+                {
+                    *numeric_pivot = i / block_dim + base;
+                }
+
+                *numeric_pivot = std::min(*numeric_pivot, i / block_dim + base);
+            }
+
+            // Store diagonal offset
+            diag_offset[i] = diag_val_index;
+        }
+
+        for(rocsparse_int j = row_begin; j < row_end; j++)
+        {
+            rocsparse_int block_col_j = bsr_col_ind[j] - base;
+
+            for(rocsparse_int k = 0; k < block_dim; k++)
+            {
+                if(direction == rocsparse_direction_row)
+                {
+                    nnz_entries[block_dim * block_col_j + k] = -1;
+                }
+                else
+                {
+                    nnz_entries[block_dim * block_col_j + k] = -1;
+                }
+            }
+        }
+    }
+}
+
+template <typename T>
 inline void host_csric0(rocsparse_int                     M,
                         const std::vector<rocsparse_int>& csr_row_ptr,
                         const std::vector<rocsparse_int>& csr_col_ind,
@@ -2257,12 +2492,12 @@ inline void host_csric0(rocsparse_int                     M,
                 if(nnz_entries[col_k] != 0)
                 {
                     rocsparse_int idx = nnz_entries[col_k];
-                    local_sum         = std::fma(csr_val[k], csr_val[idx], local_sum);
+                    local_sum = std::fma(csr_val[k], rocsparse_conj(csr_val[idx]), local_sum);
                 }
             }
 
             val_j = (val_j - local_sum) * inv_diag;
-            sum   = std::fma(val_j, val_j, sum);
+            sum   = std::fma(val_j, rocsparse_conj(val_j), sum);
 
             csr_val[j] = val_j;
         }

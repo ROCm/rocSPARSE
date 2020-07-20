@@ -207,6 +207,14 @@ constexpr double csrgemm_gbyte_count(rocsparse_int M,
  * ===========================================================================
  */
 template <typename T>
+constexpr double bsric0_gbyte_count(rocsparse_int Mb, rocsparse_int block_dim, rocsparse_int nnzb)
+{
+    return ((Mb + 1 + nnzb) * sizeof(rocsparse_int)
+            + 2.0 * block_dim * block_dim * nnzb * sizeof(T))
+           / 1e9;
+}
+
+template <typename T>
 constexpr double csric0_gbyte_count(rocsparse_int M, rocsparse_int nnz)
 {
     return ((M + 1 + nnz) * sizeof(rocsparse_int) + 2.0 * nnz * sizeof(T)) / 1e9;

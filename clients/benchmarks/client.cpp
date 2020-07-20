@@ -53,6 +53,7 @@
 #include "testing_csrgemm.hpp"
 
 // Preconditioner
+#include "testing_bsric0.hpp"
 #include "testing_csric0.hpp"
 #include "testing_csrilu0.hpp"
 
@@ -213,7 +214,7 @@ int main(int argc, char* argv[])
          "  Level2: bsrmv, bsrsv, coomv, csrmv, csrsv, ellmv, hybmv\n"
          "  Level3: bsrmm, csrmm, csrsm, gemmi\n"
          "  Extra: csrgeam, csrgemm\n"
-         "  Preconditioner: csric0, csrilu0\n"
+         "  Preconditioner: bsric0, csric0, csrilu0\n"
          "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb, csr2bsr\n"
          "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2csc\n"
          "              csr2dense, csc2dense, bsr2csr, csr2csr_compress\n"
@@ -639,6 +640,17 @@ int main(int argc, char* argv[])
             testing_csrgemm<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_csrgemm<rocsparse_double_complex>(arg);
+    }
+    else if(function == "bsric0")
+    {
+        if(precision == 's')
+            testing_bsric0<float>(arg);
+        else if(precision == 'd')
+            testing_bsric0<double>(arg);
+        else if(precision == 'c')
+            testing_bsric0<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_bsric0<rocsparse_double_complex>(arg);
     }
     else if(function == "csric0")
     {

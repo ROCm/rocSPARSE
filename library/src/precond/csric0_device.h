@@ -186,7 +186,7 @@ __launch_bounds__(BLOCKSIZE) __global__
                 {
                     // Entry found, do linear combination
                     rocsparse_int idx = data[hash];
-                    local_sum         = rocsparse_fma(csr_val[k], csr_val[idx], local_sum);
+                    local_sum = rocsparse_fma(csr_val[k], rocsparse_conj(csr_val[idx]), local_sum);
                     break;
                 }
                 else
@@ -204,7 +204,7 @@ __launch_bounds__(BLOCKSIZE) __global__
         if(lid == WFSIZE - 1)
         {
             local_val = (local_val - local_sum) * diag_val;
-            sum       = rocsparse_fma(local_val, local_val, sum);
+            sum       = rocsparse_fma(local_val, rocsparse_conj(local_val), sum);
 
             csr_val[j] = local_val;
         }
@@ -307,6 +307,7 @@ __launch_bounds__(BLOCKSIZE) __global__
                 }
             }
 
+            // local_done = rocsparse_atomic_load(&done[local_col], __ATOMIC_ACQUIRE);
             local_done = atomicOr(&done[local_col], 0);
         }
 
@@ -364,7 +365,7 @@ __launch_bounds__(BLOCKSIZE) __global__
             if(col_j == col_k)
             {
                 // If a match has been found, do linear combination
-                local_sum = rocsparse_fma(csr_val[k], csr_val[m], local_sum);
+                local_sum = rocsparse_fma(csr_val[k], rocsparse_conj(csr_val[m]), local_sum);
             }
         }
 
@@ -375,7 +376,7 @@ __launch_bounds__(BLOCKSIZE) __global__
         if(lid == WFSIZE - 1)
         {
             local_val = (local_val - local_sum) * diag_val;
-            sum       = rocsparse_fma(local_val, local_val, sum);
+            sum       = rocsparse_fma(local_val, rocsparse_conj(local_val), sum);
 
             csr_val[j] = local_val;
         }

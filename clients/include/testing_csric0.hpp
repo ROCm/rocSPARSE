@@ -404,6 +404,7 @@ void testing_csric0(const Arguments& arg)
     // Allocate host memory for matrix
     host_vector<rocsparse_int> hcsr_row_ptr;
     host_vector<rocsparse_int> hcsr_col_ind;
+    host_vector<T>             hcsr_val;
     host_vector<T>             hcsr_val_gold;
 
     rocsparse_seedrand();
@@ -412,7 +413,7 @@ void testing_csric0(const Arguments& arg)
     rocsparse_int nnz;
     rocsparse_init_csr_matrix(hcsr_row_ptr,
                               hcsr_col_ind,
-                              hcsr_val_gold,
+                              hcsr_val,
                               M,
                               N,
                               K,
@@ -425,6 +426,8 @@ void testing_csric0(const Arguments& arg)
                               filename.c_str(),
                               arg.timing ? false : true,
                               full_rank);
+
+    hcsr_val_gold = hcsr_val;
 
     // Allocate host memory for vectors
     host_vector<T>             hcsr_val_1(nnz);
@@ -456,7 +459,7 @@ void testing_csric0(const Arguments& arg)
         dcsr_row_ptr, hcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(
         hipMemcpy(dcsr_col_ind, hcsr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_val_1, hcsr_val_gold, sizeof(T) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcsr_val_1, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
 
     // Obtain required buffer size
     size_t buffer_size;
@@ -469,8 +472,7 @@ void testing_csric0(const Arguments& arg)
     if(arg.unit_check)
     {
         // Copy data from CPU to device
-        CHECK_HIP_ERROR(
-            hipMemcpy(dcsr_val_2, hcsr_val_gold, sizeof(T) * nnz, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dcsr_val_2, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
 
         rocsparse_status status_analysis_1;
         rocsparse_status status_analysis_2;
@@ -584,6 +586,9 @@ void testing_csric0(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
+            CHECK_HIP_ERROR(
+                hipMemcpy(dcsr_val_1, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
+
             CHECK_ROCSPARSE_ERROR(rocsparse_csric0_analysis<T>(handle,
                                                                M,
                                                                nnz,
@@ -608,27 +613,36 @@ void testing_csric0(const Arguments& arg)
             CHECK_ROCSPARSE_ERROR(rocsparse_csric0_clear(handle, info));
         }
 
+        CHECK_HIP_ERROR(hipMemcpy(dcsr_val_1, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
+
         double gpu_analysis_time_used = get_time_us();
 
         CHECK_ROCSPARSE_ERROR(rocsparse_csric0_analysis<T>(handle,
-                                                           M,
-                                                           nnz,
-                                                           descr,
-                                                           dcsr_val_1,
-                                                           dcsr_row_ptr,
-                                                           dcsr_col_ind,
-                                                           info,
-                                                           apol,
-                                                           spol,
-                                                           dbuffer));
+                                                            M,
+                                                            nnz,
+                                                            descr,
+                                                            dcsr_val_1,
+                                                            dcsr_row_ptr,
+                                                            dcsr_col_ind,
+                                                            info,
+                                                            apol,
+                                                            spol,
+                                                            dbuffer));
+        gpu_analysis_time_used = (get_time_us() - gpu_analysis_time_used);
 
-        gpu_analysis_time_used = get_time_us() - gpu_analysis_time_used;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, h_analysis_pivot_1),
+                                (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                              : rocsparse_status_success);
 
-        double gpu_solve_time_used = get_time_us();
-
-        // Performance run
+        double gpu_solve_time_used = 0;
+    
+        // Solve run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
+            CHECK_HIP_ERROR(
+                hipMemcpy(dcsr_val_1, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
+
+            double temp = get_time_us();
             CHECK_ROCSPARSE_ERROR(rocsparse_csric0<T>(handle,
                                                       M,
                                                       nnz,
@@ -639,11 +653,31 @@ void testing_csric0(const Arguments& arg)
                                                       info,
                                                       spol,
                                                       dbuffer));
+            gpu_solve_time_used += (get_time_us() - temp);
         }
 
-        gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, h_solve_pivot_1),
+                                (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                           : rocsparse_status_success);
+
+        gpu_analysis_time_used = gpu_analysis_time_used;
+        gpu_solve_time_used    = gpu_solve_time_used / number_hot_calls;
 
         double gpu_gbyte = csric0_gbyte_count<T>(M, nnz) / gpu_solve_time_used * 1e6;
+
+        rocsparse_int pivot = -1;
+        if(h_analysis_pivot_1[0] == -1)
+        {
+            pivot = h_solve_pivot_1[0];
+        }
+        else if(h_solve_pivot_1[0] == -1)
+        {
+            pivot = h_analysis_pivot_1[0];
+        }
+        else
+        {
+            pivot = std::min(h_analysis_pivot_1[0], h_solve_pivot_1[0]);
+        }
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
@@ -655,9 +689,8 @@ void testing_csric0(const Arguments& arg)
                   << "solve msec" << std::setw(12) << "iter" << std::setw(12) << "verified"
                   << std::endl;
 
-        std::cout << std::setw(12) << M << std::setw(12) << nnz << std::setw(12)
-                  << std::min(h_analysis_pivot_gold[0], h_solve_pivot_gold[0]) << std::setw(16)
-                  << rocsparse_analysis2string(apol) << std::setw(16)
+        std::cout << std::setw(12) << M << std::setw(12) << nnz << std::setw(12) << pivot
+                  << std::setw(16) << rocsparse_analysis2string(apol) << std::setw(16)
                   << rocsparse_solve2string(spol) << std::setw(12) << gpu_gbyte << std::setw(16)
                   << gpu_analysis_time_used / 1e3 << std::setw(16) << gpu_solve_time_used / 1e3
                   << std::setw(12) << number_hot_calls << std::setw(12)

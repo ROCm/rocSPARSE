@@ -146,10 +146,13 @@ struct _rocsparse_hyb_mat
 struct _rocsparse_mat_info
 {
     // info structs
-    rocsparse_trm_info     bsrsv_upper_info  = nullptr;
-    rocsparse_trm_info     bsrsv_lower_info  = nullptr;
-    rocsparse_trm_info     bsrsvt_upper_info = nullptr;
-    rocsparse_trm_info     bsrsvt_lower_info = nullptr;
+    rocsparse_trm_info bsrsv_upper_info  = nullptr;
+    rocsparse_trm_info bsrsv_lower_info  = nullptr;
+    rocsparse_trm_info bsrsvt_upper_info = nullptr;
+    rocsparse_trm_info bsrsvt_lower_info = nullptr;
+    rocsparse_trm_info bsric0_info       = nullptr;
+    rocsparse_trm_info bsrilu0_info      = nullptr;
+
     rocsparse_csrmv_info   csrmv_info        = nullptr;
     rocsparse_trm_info     csric0_info       = nullptr;
     rocsparse_trm_info     csrilu0_info      = nullptr;
