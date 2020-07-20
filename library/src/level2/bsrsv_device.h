@@ -123,7 +123,7 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
         }
 
         // Spin loop until dependency has been resolved
-        int          local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+        int          local_done    = atomicOr(&done_array[local_col], 0);
         unsigned int times_through = 0;
         while(!local_done)
         {
@@ -140,8 +140,11 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
                 }
             }
 
-            local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+            local_done = atomicOr(&done_array[local_col], 0);
         }
+
+        // Wait for y to be visible globally
+        __threadfence();
 
         // Local sum computation
         for(rocsparse_int bi = lid; bi < bsr_dim; bi += WFSIZE)
@@ -213,10 +216,13 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
         }
     }
 
+    // Make sure y is written to global memory before setting "row is done" flag
+    __threadfence();
+
     // Write "row is done" flag
     if(lid == 0)
     {
-        rocsparse_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE);
+        atomicOr(&done_array[row], 1);
 
         if(pivot == true)
         {
@@ -285,7 +291,7 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
         }
 
         // Spin loop until dependency has been resolved
-        int          local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+        int          local_done    = atomicOr(&done_array[local_col], 0);
         unsigned int times_through = 0;
         while(!local_done)
         {
@@ -302,8 +308,11 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
                 }
             }
 
-            local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+            local_done = atomicOr(&done_array[local_col], 0);
         }
+
+        // Wait for y to be visible globally
+        __threadfence();
 
         // Local sum computation
         for(rocsparse_int bi = lid; bi < bsr_dim; bi += WFSIZE)
@@ -375,10 +384,13 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
         }
     }
 
+    // Make sure y is written to global memory before setting "row is done" flag
+    __threadfence();
+
     // Write "row is done" flag
     if(lid == 0)
     {
-        rocsparse_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE);
+        atomicOr(&done_array[row], 1);
 
         if(pivot == true)
         {
@@ -479,7 +491,7 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
         }
 
         // Spin loop until dependency has been resolved
-        int          local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+        int          local_done    = atomicOr(&done_array[local_col], 0);
         unsigned int times_through = 0;
         while(!local_done)
         {
@@ -496,8 +508,11 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
                 }
             }
 
-            local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+            local_done = atomicOr(&done_array[local_col], 0);
         }
+
+        // Wait for y to be visible globally
+        __threadfence();
 
         // Load all updated dependencies into shared memory
         if(lid < BSRDIM)
@@ -565,10 +580,13 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
         y[row * bsr_dim + lid] = local_sum;
     }
 
+    // Make sure y is written to global memory before setting "row is done" flag
+    __threadfence();
+
     if(lid == 0)
     {
         // Write "row is done" flag
-        rocsparse_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE);
+        atomicOr(&done_array[row], 1);
 
         // Find the minimum pivot, if applicable
         if(pivot == true)
@@ -670,7 +688,7 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
         }
 
         // Spin loop until dependency has been resolved
-        int          local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+        int          local_done    = atomicOr(&done_array[local_col], 0);
         unsigned int times_through = 0;
         while(!local_done)
         {
@@ -687,8 +705,11 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
                 }
             }
 
-            local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+            local_done = atomicOr(&done_array[local_col], 0);
         }
+
+        // Wait for y to be visible globally
+        __threadfence();
 
         // Load all updated dependencies into shared memory
         if(lid < BSRDIM)
@@ -756,10 +777,13 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
         y[row * bsr_dim + lid] = local_sum;
     }
 
+    // Make sure y is written to global memory before setting "row is done" flag
+    __threadfence();
+
     if(lid == 0)
     {
         // Write "row is done" flag
-        rocsparse_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE);
+        atomicOr(&done_array[row], 1);
 
         // Find the minimum pivot, if applicable
         if(pivot == true)

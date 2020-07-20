@@ -453,7 +453,7 @@ __device__ void csrsv_device(rocsparse_int m,
         }
 
         // Spin loop until dependency has been resolved
-        int          local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+        int          local_done    = atomicOr(&done_array[local_col], 0);
         unsigned int times_through = 0;
         while(!local_done)
         {
@@ -470,8 +470,11 @@ __device__ void csrsv_device(rocsparse_int m,
                 }
             }
 
-            local_done = rocsparse_atomic_load(&done_array[local_col], __ATOMIC_ACQUIRE);
+            local_done = atomicOr(&done_array[local_col], 0);
         }
+
+        // Wait for y to be visible globally
+        __threadfence();
 
         // Local sum computation for each lane
         local_sum = rocsparse_fma(-local_val, y[local_col], local_sum);
@@ -484,14 +487,21 @@ __device__ void csrsv_device(rocsparse_int m,
     // For unit diagonal, this would be multiplication with one
     if(diag_type == rocsparse_diag_type_non_unit)
     {
+        __threadfence_block();
+
         local_sum = local_sum * diagonal[wid];
     }
 
     if(lid == WF_SIZE - 1)
     {
-        // Write the "row is done" flag and store the rows result in y
+        // Store the rows result in y
         rocsparse_nontemporal_store(local_sum, &y[row]);
-        rocsparse_atomic_store(&done_array[row], 1, __ATOMIC_RELEASE);
+
+        // Make sure y is written to global memory before setting "row is done" flag
+        __threadfence();
+
+        // Mark row as done
+        atomicOr(&done_array[row], 1);
     }
 }
 

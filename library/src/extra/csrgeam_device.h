@@ -100,6 +100,8 @@ __launch_bounds__(BLOCKSIZE) __global__
         // Initialize row nnz table
         table[lid] = false;
 
+        __threadfence_block();
+
         // Initialize the beginning of the next chunk
         rocsparse_int min_col = n;
 
@@ -150,6 +152,8 @@ __launch_bounds__(BLOCKSIZE) __global__
                 break;
             }
         }
+
+        __threadfence_block();
 
         // Compute the chunk's number of non-zeros of the row and add it to the global
         // row nnz counter
@@ -256,6 +260,8 @@ __device__ void csrgeam_fill_multipass(rocsparse_int m,
         table[lid] = false;
         data[lid]  = static_cast<T>(0);
 
+        __threadfence_block();
+
         // Initialize the beginning of the next chunk
         rocsparse_int min_col = n;
 
@@ -312,6 +318,8 @@ __device__ void csrgeam_fill_multipass(rocsparse_int m,
                 break;
             }
         }
+
+        __threadfence_block();
 
         // Each lane checks whether there is an non-zero entry to fill or not
         bool has_nnz = table[lid];

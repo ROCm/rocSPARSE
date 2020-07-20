@@ -160,6 +160,8 @@ __launch_bounds__(BLOCKSIZE) __global__
         sdata[hipThreadIdx_x * GROUPS + i] = 0;
     }
 
+    __threadfence_block();
+
     // Loop over rows
     for(; row < m; row += hipGridDim_x * BLOCKSIZE)
     {
@@ -207,6 +209,8 @@ __launch_bounds__(BLOCKSIZE) __global__
     {
         sdata[hipThreadIdx_x * GROUPS + i] = 0;
     }
+
+    __threadfence_block();
 
     // Loop over rows
     for(; row < m; row += hipGridDim_x * BLOCKSIZE)
@@ -438,6 +442,8 @@ __launch_bounds__(BLOCKSIZE) __global__
     {
         table[i] = -1;
     }
+
+    __threadfence_block();
 
     // Bounds check
     if(row >= m)
@@ -871,6 +877,8 @@ __device__ void csrgemm_fill_wf_per_row_device(rocsparse_int m,
         data[i]  = static_cast<T>(0);
     }
 
+    __threadfence_block();
+
     // Bounds check
     if(row >= m)
     {
@@ -924,6 +932,8 @@ __device__ void csrgemm_fill_wf_per_row_device(rocsparse_int m,
                 csr_col_ind_D[j] - idx_base_D, beta * csr_val_D[j], table, data, nk);
         }
     }
+
+    __threadfence_block();
 
     // Entry point of current row into C
     rocsparse_int row_begin_C = csr_row_ptr_C[row] - idx_base_C;

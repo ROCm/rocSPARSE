@@ -370,8 +370,6 @@ Device function                   Description
 ``rocsparse_nontemporal_store()`` Non-temporal memory store access for int, int64, single, double real and complex types.
 ``rocsparse_mul24()``             Multiply 24-bit integer values.
 ``rocsparse_mad24()``             Multiply 24-bit integers and add a 32-bit value.
-``rocsparse_atomic_load()``       Memory model aware atomic load operation for int type.
-``rocsparse_atomic_store()``      Memory model aware atomic store operation for int type.
 ``rocsparse_blockreduce_sum()``   Block-wide reduction sum for int, int64, single, double real and complex types.
 ``rocsparse_blockreduce_max()``   Block-wide reduction max for int, int64, single, double real and complex types.
 ``rocsparse_blockreduce_min()``   Block-wide reduction min for int, int64, single, double real and complex types.

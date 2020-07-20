@@ -57,6 +57,8 @@ __launch_bounds__(BLOCKSIZE) __global__
         table[j] = -1;
     }
 
+    __threadfence_block();
+
     rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
 
     // Do not run out of bounds
@@ -110,6 +112,8 @@ __launch_bounds__(BLOCKSIZE) __global__
         }
     }
 
+    __threadfence_block();
+
     // Loop over column of current row
     for(rocsparse_int j = row_begin; j < row_diag; ++j)
     {
@@ -135,8 +139,11 @@ __launch_bounds__(BLOCKSIZE) __global__
         }
 
         // Spin loop until dependency has been resolved
-        while(!rocsparse_atomic_load(&done[local_col], __ATOMIC_ACQUIRE))
+        while(!atomicOr(&done[local_col], 0))
             ;
+
+        // Make sure updated csr_val is visible globally
+        __threadfence();
 
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
@@ -210,9 +217,15 @@ __launch_bounds__(BLOCKSIZE) __global__
         {
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
         }
+    }
 
+    // Make sure csr_val is written to global memory
+    __threadfence();
+
+    if(lid == WFSIZE - 1)
+    {
         // Last lane writes "we are done" flag
-        rocsparse_atomic_store(&done[row], 1, __ATOMIC_RELEASE);
+        atomicOr(&done[row], 1);
     }
 }
 
@@ -277,7 +290,7 @@ __launch_bounds__(BLOCKSIZE) __global__
         }
 
         // Spin loop until dependency has been resolved
-        int          local_done    = rocsparse_atomic_load(&done[local_col], __ATOMIC_ACQUIRE);
+        int          local_done    = atomicOr(&done[local_col], 0);
         unsigned int times_through = 0;
         while(!local_done)
         {
@@ -294,8 +307,11 @@ __launch_bounds__(BLOCKSIZE) __global__
                 }
             }
 
-            local_done = rocsparse_atomic_load(&done[local_col], __ATOMIC_ACQUIRE);
+            local_done = atomicOr(&done[local_col], 0);
         }
+
+        // Make sure updated csr_val is visible globally
+        __threadfence();
 
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
@@ -372,9 +388,15 @@ __launch_bounds__(BLOCKSIZE) __global__
         {
             csr_val[row_diag] = sqrt(rocsparse_abs(csr_val[row_diag] - sum));
         }
+    }
 
+    // Make sure csr_val is written to global memory
+    __threadfence();
+
+    if(lid == WFSIZE - 1)
+    {
         // Last lane writes "we are done" flag
-        rocsparse_atomic_store(&done[row], 1, __ATOMIC_RELEASE);
+        atomicOr(&done[row], 1);
     }
 }
 
