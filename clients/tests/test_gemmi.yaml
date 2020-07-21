@@ -38,7 +38,7 @@ Definitions:
   - &alpha_beta_range_nightly
     - { alpha:   0.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
     - { alpha:   2.0, beta:  0.67, alphai:  0.0, betai:  1.5 }
-    - { alpha:   3.0, beta:  1.0,  alphai:  1.5, betai:  0.0 }
+    - { alpha:   1.0, beta:  1.0,  alphai:  0.1, betai:  0.0 }
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
 
 Tests:
