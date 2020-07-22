@@ -9,8 +9,6 @@ import com.amd.project.*
 import com.amd.docker.*
 import java.nio.file.Path
 
-properties(auxiliary.setProperties())
-
 def runCI = 
 {
     nodeDetails, jobName->
@@ -32,7 +30,7 @@ def runCI =
     {
         platform, project->
 
-        commonGroovy = load "${project.paths.project_src_prefix}/.jenkins/Common.groovy"
+        commonGroovy = load "${project.paths.project_src_prefix}/.jenkins/common.groovy"
         commonGroovy.runCompileCommand(platform, project, jobName)
     }
 
@@ -42,38 +40,28 @@ def runCI =
 ci: { 
     String urlJobName = auxiliary.getTopJobName(env.BUILD_URL)
 
-    def propertyList = ["compute-rocm-dkms-no-npi":[pipelineTriggers([cron('0 1 * * 6')])], 
-                        "compute-rocm-dkms-no-npi-hipclang":[pipelineTriggers([cron('0 1 * * 6')])],
-                        "rocm-docker":[]]
+    def propertyList = ["compute-rocm-dkms-no-npi-hipclang":[pipelineTriggers([cron('0 1 * * 6')])]]
     propertyList = auxiliary.appendPropertyList(propertyList)
+    def jobNameList = ["compute-rocm-dkms-no-npi-hipclang":([ubuntu18:['any']])]
 
-    def jobNameList = ["compute-rocm-dkms-no-npi":([ubuntu16:[any]]), 
-                       "compute-rocm-dkms-no-npi-hipclang":([ubuntu16:['any']]), 
-                       "rocm-docker":([ubuntu16:['any']])]
-    jobNameList = auxiliary.appendJobNameList(jobNameList)
-
-    propertyList.each 
-    {
-        jobName, property->
-        if (urlJobName == jobName)
-            properties(auxiliary.addCommonProperties(property))
-    }
 
     jobNameList.each
     {
-        jobName, nodeDetails->
-        if (urlJobName == jobName)
-            stage(jobName) {
-                runCI(nodeDetails, jobName)
-            }
+       jobName, nodeDetails->
+       if (urlJobName == jobName)
+          stage(jobName)
+	  {
+	     runCI(nodeDetails, jobName)
+	  }
     }
 
     // For url job names that are not listed by the jobNameList i.e. compute-rocm-dkms-no-npi-1901
     if(!jobNameList.keySet().contains(urlJobName))
     {
         properties(auxiliary.addCommonProperties([pipelineTriggers([cron('0 1 * * *')])]))
-        stage(urlJobName) {
-            runCI([ubuntu16:['any']], urlJobName)
+        stage(urlJobName)
+	{
+	   runCI([ubuntu18:['gfx900', 'gfx906']], urlJobName)
         }
-    }
+    }   
 }
