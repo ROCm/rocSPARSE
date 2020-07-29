@@ -30,6 +30,12 @@
 #include <hip/hip_runtime.h>
 
 // clang-format off
+
+// BSR indexing macros
+#define BSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? BSR_IND_R(j, bi, bj) : BSR_IND_C(j, bi, bj))
+#define BSR_IND_R(j, bi, bj) (bsr_dim * bsr_dim * (j) + (bi) * bsr_dim + (bj))
+#define BSR_IND_C(j, bi, bj) (bsr_dim * bsr_dim * (j) + (bi) + (bj) * bsr_dim)
+
 __device__ __forceinline__ float rocsparse_ldg(const float* ptr) { return __ldg(ptr); }
 __device__ __forceinline__ double rocsparse_ldg(const double* ptr) { return __ldg(ptr); }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_ldg(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__ldg((const float*)ptr), __ldg((const float*)ptr + 1)); }

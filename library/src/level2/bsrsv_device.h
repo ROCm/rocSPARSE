@@ -154,18 +154,9 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
 
             for(rocsparse_int bj = 0; bj < bsr_dim; ++bj)
             {
-                if(dir == rocsparse_direction_row)
-                {
-                    local_sum = rocsparse_fma(bsr_val[bsr_dim * bsr_dim * j + bj + bi * bsr_dim],
-                                              y[local_col * bsr_dim + bj],
-                                              local_sum);
-                }
-                else
-                {
-                    local_sum = rocsparse_fma(bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim],
-                                              y[local_col * bsr_dim + bj],
-                                              local_sum);
-                }
+                local_sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
+                                          y[local_col * bsr_dim + bj],
+                                          local_sum);
             }
 
             // Write local sum to y
@@ -202,16 +193,7 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
             // Update remaining non-diagonal entries
             for(rocsparse_int bj = bi + lid + 1; bj < bsr_dim; bj += WFSIZE)
             {
-                if(dir == rocsparse_direction_row)
-                {
-                    y[row * bsr_dim + bj]
-                        -= val * bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim];
-                }
-                else
-                {
-                    y[row * bsr_dim + bj]
-                        -= val * bsr_val[bsr_dim * bsr_dim * j + bj + bi * bsr_dim];
-                }
+                y[row * bsr_dim + bj] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
             }
         }
     }
@@ -322,18 +304,9 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
 
             for(rocsparse_int bj = 0; bj < bsr_dim; ++bj)
             {
-                if(dir == rocsparse_direction_row)
-                {
-                    local_sum = rocsparse_fma(bsr_val[bsr_dim * bsr_dim * j + bj + bi * bsr_dim],
-                                              y[local_col * bsr_dim + bj],
-                                              local_sum);
-                }
-                else
-                {
-                    local_sum = rocsparse_fma(bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim],
-                                              y[local_col * bsr_dim + bj],
-                                              local_sum);
-                }
+                local_sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
+                                          y[local_col * bsr_dim + bj],
+                                          local_sum);
             }
 
             // Write local sum to y
@@ -370,16 +343,7 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
             // Update remaining non-diagonal entries
             for(rocsparse_int bj = lid; bj < bi; bj += WFSIZE)
             {
-                if(dir == rocsparse_direction_row)
-                {
-                    y[row * bsr_dim + bj]
-                        -= val * bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim];
-                }
-                else
-                {
-                    y[row * bsr_dim + bj]
-                        -= val * bsr_val[bsr_dim * bsr_dim * j + bj + bi * bsr_dim];
-                }
+                y[row * bsr_dim + bj] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
             }
         }
     }
@@ -459,27 +423,12 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
         int bi = lid & (BSRDIM - 1);
         int bj = lid / BSRDIM;
 
-        if(dir == rocsparse_direction_row)
+        for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
         {
-            // Row major storage
-            for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
-            {
-                bsr_values[bi + k * BSRDIM]
-                    = (bi < bsr_dim && k < bsr_dim)
-                          ? bsr_val[bsr_dim * bsr_dim * j + bi * bsr_dim + k]
-                          : static_cast<T>(0);
-            }
-        }
-        else
-        {
-            // Column major storage
-            for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
-            {
-                bsr_values[bi + k * BSRDIM]
-                    = (bi < bsr_dim && k < bsr_dim)
-                          ? bsr_val[bsr_dim * bsr_dim * j + bi + k * bsr_dim]
-                          : static_cast<T>(0);
-            }
+            bsr_values[bi + k * BSRDIM]
+                = (bi < bsr_dim && k < bsr_dim)
+                      ? bsr_val[BSR_IND(j, bi, k, dir)]
+                      : static_cast<T>(0);
         }
 
         // Processing lower triangular
@@ -656,27 +605,12 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
         int bi = lid & (BSRDIM - 1);
         int bj = lid / BSRDIM;
 
-        if(dir == rocsparse_direction_row)
+        for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
         {
-            // Row major storage
-            for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
-            {
-                bsr_values[bi + k * BSRDIM]
-                    = (bi < bsr_dim && k < bsr_dim)
-                          ? bsr_val[bsr_dim * bsr_dim * j + bi * bsr_dim + k]
-                          : static_cast<T>(0);
-            }
-        }
-        else
-        {
-            // Column major storage
-            for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
-            {
-                bsr_values[bi + k * BSRDIM]
-                    = (bi < bsr_dim && k < bsr_dim)
-                          ? bsr_val[bsr_dim * bsr_dim * j + bi + k * bsr_dim]
-                          : static_cast<T>(0);
-            }
+            bsr_values[bi + k * BSRDIM]
+                = (bi < bsr_dim && k < bsr_dim)
+                      ? bsr_val[BSR_IND(j, bi, k, dir)]
+                      : static_cast<T>(0);
         }
 
         // Processing upper triangular
