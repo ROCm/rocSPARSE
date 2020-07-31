@@ -32,6 +32,9 @@ else()
   set(CMAKE_INSTALL_PREFIX "/opt/rocm" CACHE PATH "Install path prefix, prepended onto install directories")
 endif()
 
+# Adding CMAKE_PREFIX_PATH, needed for static builds
+list( APPEND CMAKE_PREFIX_PATH /opt/rocm/llvm /opt/rocm )
+
 # CMake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake /opt/rocm/hip/cmake)
 

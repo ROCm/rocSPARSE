@@ -12,10 +12,10 @@ import java.nio.file.Path
 def runCI = 
 {
     nodeDetails, jobName->
-    def prj  = new rocProject('rocSPARSE', 'PreCheckin')
+    def prj  = new rocProject('rocSPARSE', 'Static Library PreCheckin')
 
     // customize for project
-    prj.paths.build_command = './install.sh -c'
+    prj.paths.build_command = './install.sh -c --static'
     prj.libraryDependencies = ['rocPRIM']
 
     // Define test architectures, optional rocm version argument is available
@@ -23,14 +23,14 @@ def runCI =
 
     def commonGroovy
 
-    boolean formatCheck = true
+    boolean formatCheck = false
 
     def compileCommand =
     {
         platform, project->
 
         commonGroovy = load "${project.paths.project_src_prefix}/.jenkins/common.groovy"
-        commonGroovy.runCompileCommand(platform, project, jobName)
+        commonGroovy.runCompileCommand(platform, project, jobName, true)
     }
 
     def testCommand =
@@ -61,7 +61,7 @@ ci: {
 
     def jobNameList = ["compute-rocm-dkms-no-npi":([ubuntu18:['gfx900'],centos7:['gfx908'],sles15sp1:['gfx906']]), 
                        "compute-rocm-dkms-no-npi-hipclang":([ubuntu18:['gfx900'],centos7:['gfx908'],sles15sp1:['gfx906']]), 
-                       "rocm-docker":([ubuntu18:['gfx900'],centos7:['gfx906'],sles15sp1:['gfx908']])]
+                       "rocm-docker":([ubuntu18:['gfx900'],centos7:['gfx908'],sles15sp1:['gfx906']])]
     jobNameList = auxiliary.appendJobNameList(jobNameList)
 
     propertyList.each 
@@ -85,7 +85,7 @@ ci: {
     {
         properties(auxiliary.addCommonProperties([pipelineTriggers([cron('0 1 * * *')])]))
         stage(urlJobName) {
-            runCI([ubuntu18:['gfx900', 'gfx906']], urlJobName)
+            runCI([ubuntu18:['gfx906']], urlJobName)
         }
     }
 }
