@@ -81,9 +81,7 @@ __device__ void bsrmvn_general_device(rocsparse_direction dir,
             {
                 // Each lane computes the sum of a specific entry over all BSR blocks in
                 // the current row
-                sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
-                                    x[bsr_dim * col + bj],
-                                    sum);
+                sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)], x[bsr_dim * col + bj], sum);
             }
         }
 

@@ -152,10 +152,10 @@ int main(int argc, char* argv[])
          "laplacian matrix with dimensions <dimx dimy dimz>. dimz is optional. This "
          "will override parameters -m, -n, -z and --mtx.")
 
-        ("alpha", 
+        ("alpha",
           po::value<double>(&arg.alpha)->default_value(1.0), "specifies the scalar alpha")
 
-        ("beta", 
+        ("beta",
           po::value<double>(&arg.beta)->default_value(0.0), "specifies the scalar beta")
 
         ("transposeA",

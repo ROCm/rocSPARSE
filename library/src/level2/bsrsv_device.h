@@ -154,9 +154,8 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
 
             for(rocsparse_int bj = 0; bj < bsr_dim; ++bj)
             {
-                local_sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
-                                          y[local_col * bsr_dim + bj],
-                                          local_sum);
+                local_sum = rocsparse_fma(
+                    bsr_val[BSR_IND(j, bi, bj, dir)], y[local_col * bsr_dim + bj], local_sum);
             }
 
             // Write local sum to y
@@ -304,9 +303,8 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
 
             for(rocsparse_int bj = 0; bj < bsr_dim; ++bj)
             {
-                local_sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
-                                          y[local_col * bsr_dim + bj],
-                                          local_sum);
+                local_sum = rocsparse_fma(
+                    bsr_val[BSR_IND(j, bi, bj, dir)], y[local_col * bsr_dim + bj], local_sum);
             }
 
             // Write local sum to y
@@ -425,10 +423,9 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
 
         for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
         {
-            bsr_values[bi + k * BSRDIM]
-                = (bi < bsr_dim && k < bsr_dim)
-                      ? bsr_val[BSR_IND(j, bi, k, dir)]
-                      : static_cast<T>(0);
+            bsr_values[bi + k * BSRDIM] = (bi < bsr_dim && k < bsr_dim)
+                                              ? bsr_val[BSR_IND(j, bi, k, dir)]
+                                              : static_cast<T>(0);
         }
 
         // Processing lower triangular
@@ -607,10 +604,9 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
 
         for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
         {
-            bsr_values[bi + k * BSRDIM]
-                = (bi < bsr_dim && k < bsr_dim)
-                      ? bsr_val[BSR_IND(j, bi, k, dir)]
-                      : static_cast<T>(0);
+            bsr_values[bi + k * BSRDIM] = (bi < bsr_dim && k < bsr_dim)
+                                              ? bsr_val[BSR_IND(j, bi, k, dir)]
+                                              : static_cast<T>(0);
         }
 
         // Processing upper triangular

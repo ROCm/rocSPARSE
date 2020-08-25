@@ -2545,7 +2545,7 @@ rocsparse_status rocsparse_zhybmv(rocsparse_handle                handle,
  *  \details
  *  \p rocsparse_bsrmm multiplies the scalar \f$\alpha\f$ with a sparse \f$mb \times kb\f$
  *  matrix \f$A\f$, defined in BSR storage format, and the dense \f$k \times n\f$
- *  matrix \f$B\f$ (where \f$k = block\_dim \times kb\f$) and adds the result to the dense 
+ *  matrix \f$B\f$ (where \f$k = block\_dim \times kb\f$) and adds the result to the dense
  *  \f$m \times n\f$ matrix \f$C\f$ (where \f$m = block\_dim \times mb\f$) that
  *  is multiplied by the scalar \f$\beta\f$, such that
  *  \f[
@@ -2568,7 +2568,7 @@ rocsparse_status rocsparse_zhybmv(rocsparse_handle                handle,
  *    \end{array}
  *    \right.
  *  \f]
- * 
+ *
  *  \note
  *  This function is non blocking and executed asynchronously with respect to the host.
  *  It may return before the actual computation has finished.
@@ -2583,7 +2583,7 @@ rocsparse_status rocsparse_zhybmv(rocsparse_handle                handle,
  *  @param[in]
  *  trans_A     matrix \f$A\f$ operation type. Currently, only \ref rocsparse_operation_none is supported.
  *  @param[in]
- *  trans_B     matrix \f$B\f$ operation type. Currently, only \ref rocsparse_operation_none and rocsparse_operation_transpose 
+ *  trans_B     matrix \f$B\f$ operation type. Currently, only \ref rocsparse_operation_none and rocsparse_operation_transpose
  *              are supported.
  *  @param[in]
  *  mb          number of block rows of the sparse BSR matrix \f$A\f$.
@@ -2628,7 +2628,7 @@ rocsparse_status rocsparse_zhybmv(rocsparse_handle                handle,
  *              \p bsr_row_ptr, \p bsr_col_ind, \p B, \p beta or \p C pointer is invalid.
  *  \retval     rocsparse_status_arch_mismatch the device is not supported.
  *  \retval     rocsparse_status_not_implemented
- *              \p trans_A != \ref rocsparse_operation_none or 
+ *              \p trans_A != \ref rocsparse_operation_none or
  *              \p trans_B == \ref rocsparse_operation_conjugate_transpose or
  *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
  *
@@ -4912,9 +4912,9 @@ rocsparse_status rocsparse_zcsrgemm(rocsparse_handle                handle,
  *
  *  \details
  *  \p rocsparse_bsric0_zero_pivot returns \ref rocsparse_status_zero_pivot, if either a
- *  structural or numerical zero has been found during rocsparse_sbsric0(), 
- *  rocsparse_dbsric0(), rocsparse_cbsric0() or rocsparse_zbsric0() computation. 
- *  The first zero pivot \f$j\f$ at \f$A_{j,j}\f$ is stored in \p position, using same 
+ *  structural or numerical zero has been found during rocsparse_sbsric0(),
+ *  rocsparse_dbsric0(), rocsparse_cbsric0() or rocsparse_zbsric0() computation.
+ *  The first zero pivot \f$j\f$ at \f$A_{j,j}\f$ is stored in \p position, using same
  *  index base as the BSR matrix.
  *
  *  \p position can be in host or device memory. If no zero pivot has been found,
@@ -4954,19 +4954,19 @@ rocsparse_status rocsparse_bsric0_zero_pivot(rocsparse_handle   handle,
  *  \details
  *  \p rocsparse_bsric0_buffer_size returns the size of the temporary storage buffer
  *  that is required by rocsparse_sbsric0_analysis(), rocsparse_dbsric0_analysis(),
- *  rocsparse_cbsric0_analysis(), rocsparse_zbsric0_analysis(), rocsparse_sbsric0(), 
- *  rocsparse_dbsric0(), rocsparse_sbsric0() and rocsparse_dbsric0(). The temporary 
- *  storage buffer must be allocated by the user. The size of the temporary storage 
- *  buffer is identical to the size returned by rocsparse_sbsrsv_buffer_size(), 
+ *  rocsparse_cbsric0_analysis(), rocsparse_zbsric0_analysis(), rocsparse_sbsric0(),
+ *  rocsparse_dbsric0(), rocsparse_sbsric0() and rocsparse_dbsric0(). The temporary
+ *  storage buffer must be allocated by the user. The size of the temporary storage
+ *  buffer is identical to the size returned by rocsparse_sbsrsv_buffer_size(),
  *  rocsparse_dbsrsv_buffer_size(), rocsparse_cbsrsv_buffer_size(), rocsparse_zbsrsv_buffer_size(),
  *  rocsparse_sbsrilu0_buffer_size(), rocsparse_dbsrilu0_buffer_size(), rocsparse_cbsrilu0_buffer_size()
- *  and rocsparse_zbsrilu0_buffer_size() if the matrix sparsity pattern is identical. The user 
+ *  and rocsparse_zbsrilu0_buffer_size() if the matrix sparsity pattern is identical. The user
  *  allocated buffer can thus be shared between subsequent calls to those functions.
  *
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
- *  dir 	    direction that specifies whether to count nonzero elements by \ref rocsparse_direction_row or by 
+ *  dir 	    direction that specifies whether to count nonzero elements by \ref rocsparse_direction_row or by
  *              \ref rocsparse_direction_row.
  *  @param[in]
  *  mb          number of block rows in the sparse BSR matrix.
@@ -4989,7 +4989,7 @@ rocsparse_status rocsparse_bsric0_zero_pivot(rocsparse_handle   handle,
  *  buffer_size number of bytes of the temporary storage buffer required by
  *              rocsparse_sbsric0_analysis(), rocsparse_dbsric0_analysis(),
  *              rocsparse_cbsric0_analysis(), rocsparse_zbsric0_analysis(),
- *              rocsparse_sbsric0(), rocsparse_dbsric0(), rocsparse_cbsric0() 
+ *              rocsparse_sbsric0(), rocsparse_dbsric0(), rocsparse_cbsric0()
  *              and rocsparse_zbsric0().
  *
  *  \retval     rocsparse_status_success the operation completed successfully.
@@ -5061,8 +5061,8 @@ rocsparse_status rocsparse_zbsric0_buffer_size(rocsparse_handle                h
  *
  *  \details
  *  \p rocsparse_bsric0_analysis performs the analysis step for rocsparse_sbsric0()
- *  rocsparse_dbsric0(), rocsparse_cbsric0(), and rocsparse_zbsric0(). It is expected 
- *  that this function will be executed only once for a given matrix and particular 
+ *  rocsparse_dbsric0(), rocsparse_cbsric0(), and rocsparse_zbsric0(). It is expected
+ *  that this function will be executed only once for a given matrix and particular
  *  operation type. The analysis meta data can be cleared by rocsparse_bsric0_clear().
  *
  *  \p rocsparse_bsric0_analysis can share its meta data with
@@ -5087,7 +5087,7 @@ rocsparse_status rocsparse_zbsric0_buffer_size(rocsparse_handle                h
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
- *  dir 	    direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by 
+ *  dir 	    direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by
  *              \ref rocsparse_direction_row.
  *  @param[in]
  *  mb          number of block rows in the sparse BSR matrix.
@@ -5192,8 +5192,8 @@ rocsparse_status rocsparse_zbsric0_analysis(rocsparse_handle                hand
  *
  *  \details
  *  \p rocsparse_bsric0_clear deallocates all memory that was allocated by
- *  rocsparse_sbsric0_analysis(), rocsparse_dbsric0_analysis(), rocsparse_cbsric0_analysis() 
- *  or rocsparse_zbsric0_analysis(). This is especially useful, if memory is an issue and 
+ *  rocsparse_sbsric0_analysis(), rocsparse_dbsric0_analysis(), rocsparse_cbsric0_analysis()
+ *  or rocsparse_zbsric0_analysis(). This is especially useful, if memory is an issue and
  *  the analysis data is not required for further computation.
  *
  *  \note
@@ -5228,11 +5228,11 @@ rocsparse_status rocsparse_bsric0_clear(rocsparse_handle handle, rocsparse_mat_i
  *  \f]
  *
  *  \p rocsparse_bsric0 requires a user allocated temporary buffer. Its size is returned
- *  by rocsparse_sbsric0_buffer_size(), rocsparse_dbsric0_buffer_size(), 
+ *  by rocsparse_sbsric0_buffer_size(), rocsparse_dbsric0_buffer_size(),
  *  rocsparse_cbsric0_buffer_size() or rocsparse_zbsric0_buffer_size(). Furthermore,
  *  analysis meta data is required. It can be obtained by rocsparse_sbsric0_analysis(),
- *  rocsparse_dbsric0_analysis(), rocsparse_cbsric0_analysis() or rocsparse_zbsric0_analysis(). 
- *  \p rocsparse_bsric0 reports the first zero pivot (either numerical or structural zero). 
+ *  rocsparse_dbsric0_analysis(), rocsparse_cbsric0_analysis() or rocsparse_zbsric0_analysis().
+ *  \p rocsparse_bsric0 reports the first zero pivot (either numerical or structural zero).
  *  The zero pivot status can be obtained by calling rocsparse_bsric0_zero_pivot().
  *
  *  \note
@@ -5242,7 +5242,7 @@ rocsparse_status rocsparse_bsric0_clear(rocsparse_handle handle, rocsparse_mat_i
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
- *  dir 	    direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by 
+ *  dir 	    direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by
  *              \ref rocsparse_direction_row.
  *  @param[in]
  *  mb          number of block rows in the sparse BSR matrix.
@@ -5406,7 +5406,7 @@ rocsparse_status rocsparse_bsric0_clear(rocsparse_handle handle, rocsparse_mat_i
  *
  *      // Compute incomplete Cholesky factorization M = LL'
  *      rocsparse_dbsric0(handle,
- *                         rocsparse_direction_row, 
+ *                         rocsparse_direction_row,
  *                         mb,
  *                         nnzb,
  *                         descr_M,
@@ -5430,7 +5430,7 @@ rocsparse_status rocsparse_bsric0_clear(rocsparse_handle handle, rocsparse_mat_i
  *
  *      // Solve Lz = x
  *      rocsparse_dbsrsv_solve(handle,
- *                             rocsparse_direction_row, 
+ *                             rocsparse_direction_row,
  *                             rocsparse_operation_none,
  *                             mb,
  *                             nnzb,
@@ -8085,7 +8085,7 @@ rocsparse_status rocsparse_zcsr2bsr(rocsparse_handle                handle,
  *  @param[in]
  *  nnz_A         number of elements in the column indices and values arrays of the uncompressed
  *                sparse CSR matrix.
- *  @param[in]     
+ *  @param[in]
  *  nnz_per_row   array of length \p m containing the number of entries that will be kept per row in
  *                the final compressed CSR matrix.
  *  @param[out]

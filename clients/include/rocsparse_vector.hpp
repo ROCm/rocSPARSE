@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,7 +122,7 @@ protected:
 };
 
 /* ============================================================================================ */
-/*! \brief  pseudo-vector subclass which uses a batch of device memory pointers and 
+/*! \brief  pseudo-vector subclass which uses a batch of device memory pointers and
             an array of pointers in host memory*/
 template <typename T, size_t PAD = 4096, typename U = T>
 class device_batch_vector : private d_vector<T, PAD, U>
@@ -152,7 +152,7 @@ public:
         return data[n];
     }
 
-    operator T**()
+    operator T* *()
     {
         return data;
     }
