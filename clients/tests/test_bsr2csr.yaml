@@ -97,7 +97,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
-  matrix: [rocsparse_matrix_random] 
+  matrix: [rocsparse_matrix_random]
 
 - name: bsr2csr_file
   category: nightly
@@ -111,7 +111,7 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron2,
              Chevron3,
-             Chevron4] 
+             Chevron4]
 
 - name: bsr2csr_file
   category: nightly
@@ -124,8 +124,8 @@ Tests:
   baseB: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [amazon0312,
-             bmwcra_1,    
-             mac_econ_fwd500, 
+             bmwcra_1,
+             mac_econ_fwd500,
              sme3Dc,
              webbase-1M,
              Chebyshev4]

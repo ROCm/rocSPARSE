@@ -503,8 +503,10 @@ void testing_bsric0(const Arguments& arg)
                               hcsr_row_ptr_orig.data(),
                               sizeof(rocsparse_int) * (M + 1),
                               hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_col_ind_orig, hcsr_col_ind_orig.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcsr_col_ind_orig,
+                              hcsr_col_ind_orig.data(),
+                              sizeof(rocsparse_int) * nnz,
+                              hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(
         hipMemcpy(dcsr_val_orig, hcsr_val_orig.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
 
@@ -558,18 +560,28 @@ void testing_bsric0(const Arguments& arg)
     host_vector<T>             hbsr_val_2(nnzb * block_dim * block_dim);
 
     // Copy BSR matrix output to host
-    CHECK_HIP_ERROR(hipMemcpy(
-        hbsr_row_ptr.data(), dbsr_row_ptr, sizeof(rocsparse_int) * (Mb + 1), hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(hbsr_row_ptr.data(),
+                              dbsr_row_ptr,
+                              sizeof(rocsparse_int) * (Mb + 1),
+                              hipMemcpyDeviceToHost));
     CHECK_HIP_ERROR(hipMemcpy(
         hbsr_col_ind.data(), dbsr_col_ind, sizeof(rocsparse_int) * nnzb, hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(
-        hbsr_val_orig.data(), dbsr_val_1, sizeof(T) * nnzb * block_dim * block_dim, hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(
-        hbsr_val_gold.data(), dbsr_val_1, sizeof(T) * nnzb * block_dim * block_dim, hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(
-        hbsr_val_1.data(), dbsr_val_1, sizeof(T) * nnzb * block_dim * block_dim, hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(
-        hbsr_val_2.data(), dbsr_val_2, sizeof(T) * nnzb * block_dim * block_dim, hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(hbsr_val_orig.data(),
+                              dbsr_val_1,
+                              sizeof(T) * nnzb * block_dim * block_dim,
+                              hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(hbsr_val_gold.data(),
+                              dbsr_val_1,
+                              sizeof(T) * nnzb * block_dim * block_dim,
+                              hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(hbsr_val_1.data(),
+                              dbsr_val_1,
+                              sizeof(T) * nnzb * block_dim * block_dim,
+                              hipMemcpyDeviceToHost));
+    CHECK_HIP_ERROR(hipMemcpy(hbsr_val_2.data(),
+                              dbsr_val_2,
+                              sizeof(T) * nnzb * block_dim * block_dim,
+                              hipMemcpyDeviceToHost));
 
     // Allocate host memory for pivots
     host_vector<rocsparse_int> hanalysis_pivot_1(1);
@@ -792,8 +804,10 @@ void testing_bsric0(const Arguments& arg)
             CHECK_ROCSPARSE_ERROR(rocsparse_bsric0_clear(handle, info));
         }
 
-        CHECK_HIP_ERROR(hipMemcpy(
-           dbsr_val_1, hbsr_val_orig, sizeof(T) * nnzb * block_dim * block_dim, hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(dbsr_val_1,
+                                  hbsr_val_orig,
+                                  sizeof(T) * nnzb * block_dim * block_dim,
+                                  hipMemcpyHostToDevice));
 
         double gpu_analysis_time_used = get_time_us();
 

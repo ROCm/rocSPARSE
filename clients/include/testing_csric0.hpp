@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -618,16 +618,16 @@ void testing_csric0(const Arguments& arg)
         double gpu_analysis_time_used = get_time_us();
 
         CHECK_ROCSPARSE_ERROR(rocsparse_csric0_analysis<T>(handle,
-                                                            M,
-                                                            nnz,
-                                                            descr,
-                                                            dcsr_val_1,
-                                                            dcsr_row_ptr,
-                                                            dcsr_col_ind,
-                                                            info,
-                                                            apol,
-                                                            spol,
-                                                            dbuffer));
+                                                           M,
+                                                           nnz,
+                                                           descr,
+                                                           dcsr_val_1,
+                                                           dcsr_row_ptr,
+                                                           dcsr_col_ind,
+                                                           info,
+                                                           apol,
+                                                           spol,
+                                                           dbuffer));
         gpu_analysis_time_used = (get_time_us() - gpu_analysis_time_used);
 
         EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, h_analysis_pivot_1),
@@ -635,7 +635,7 @@ void testing_csric0(const Arguments& arg)
                                                               : rocsparse_status_success);
 
         double gpu_solve_time_used = 0;
-    
+
         // Solve run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {

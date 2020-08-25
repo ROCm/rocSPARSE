@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -405,8 +405,8 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         std::cout.setf(std::ios::left);
         // clang-format off
         std::cout
-	  << std::setw(20) << "M" 
-	  << std::setw(20) << "N" 
+	  << std::setw(20) << "M"
+	  << std::setw(20) << "N"
 	  << std::setw(20) << "LD"
 	  << std::setw(20) << "nnz"
 	  << std::setw(20) << "GB/s"
@@ -416,8 +416,8 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
 	  << std::endl;
 
         std::cout
-	  << std::setw(20) << M 
-	  << std::setw(20) << N 
+	  << std::setw(20) << M
+	  << std::setw(20) << N
 	  << std::setw(20) << LD
 	  << std::setw(20) << nnz
 	  << std::setw(20) << gpu_gbyte

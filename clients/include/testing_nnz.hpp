@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -414,8 +414,8 @@ void testing_nnz(const Arguments& arg)
         std::cout.setf(std::ios::left);
         // clang-format off
         std::cout
-            << std::setw(20) << "M" 
-            << std::setw(20) << "N" 
+            << std::setw(20) << "M"
+            << std::setw(20) << "N"
             << std::setw(20) << "LD"
 	    << std::setw(20) << "nnz"
 	    << std::setw(20) << "dir"
@@ -426,8 +426,8 @@ void testing_nnz(const Arguments& arg)
 	    << std::endl;
 
         std::cout
-            << std::setw(20) << M 
-            << std::setw(20) << N 
+            << std::setw(20) << M
+            << std::setw(20) << N
             << std::setw(20) << LD
 	    << std::setw(20) << h_nnz
 	    << std::setw(20) << rocsparse_direction2string(dirA)

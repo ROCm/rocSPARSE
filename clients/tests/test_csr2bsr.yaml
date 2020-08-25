@@ -96,7 +96,7 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron2,
              Chevron3,
-             Chevron4] 
+             Chevron4]
 
 - name: csr2bsr_file
   category: nightly
@@ -109,7 +109,7 @@ Tests:
   baseB: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [amazon0312,
-             bmwcra_1,    
+             bmwcra_1,
              mac_econ_fwd500,
              sme3Dc,
              webbase-1M,

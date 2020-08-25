@@ -9,7 +9,7 @@ import com.amd.project.*
 import com.amd.docker.*
 import java.nio.file.Path
 
-def runCI = 
+def runCI =
 {
     nodeDetails, jobName->
 
@@ -24,7 +24,7 @@ def runCI =
 
     def commonGroovy
 
-    boolean formatCheck = true
+    boolean formatCheck = false
 
     def compileCommand =
     {
@@ -37,7 +37,7 @@ def runCI =
     buildProject(prj, formatCheck, nodes.dockerArray, compileCommand, null, null)
 }
 
-ci: { 
+ci: {
     String urlJobName = auxiliary.getTopJobName(env.BUILD_URL)
 
     def propertyList = ["compute-rocm-dkms-no-npi-hipclang":[pipelineTriggers([cron('0 1 * * 6')])]]
@@ -63,5 +63,5 @@ ci: {
 	{
 	   runCI([ubuntu18:['gfx900', 'gfx906']], urlJobName)
         }
-    }   
+    }
 }
