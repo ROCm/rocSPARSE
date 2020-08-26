@@ -75,10 +75,10 @@ add_rocsparse_example(example_csrgemm.cpp)
 if(TARGET rocsparse)
   # Compile Fortran examples only if built directly with package
   # else the Fortran module file is not generated
+  add_rocsparse_example(example_fortran_bsric0.f90)
   add_rocsparse_example(example_fortran_csric0.f90)
   add_rocsparse_example(example_fortran_csrilu0.f90)
   add_rocsparse_example(example_fortran_bsrmm.f90)
-  add_rocsparse_example(example_fortran_bsric0.f90)
   add_rocsparse_example(example_fortran_bsrsv.f90)
   add_rocsparse_example(example_fortran_csrsv.f90)
   add_rocsparse_example(example_fortran_spmv.f90)

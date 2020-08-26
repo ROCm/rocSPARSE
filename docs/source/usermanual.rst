@@ -691,24 +691,24 @@ Function name                                                                 si
 Conversion Functions
 --------------------
 
-======================================================================= ====== ====== ============== ==============
-Function name                                                           single double single complex double complex
-======================================================================= ====== ====== ============== ==============
+============================================================================================= ====== ====== ============== ==============
+Function name                                                                                 single double single complex double complex
+============================================================================================= ====== ====== ============== ==============
 :cpp:func:`rocsparse_csr2coo`
 :cpp:func:`rocsparse_csr2csc_buffer_size`
-:cpp:func:`rocsparse_Xcsr2csc() <rocsparse_scsr2csc>`                   x      x      x              x
+:cpp:func:`rocsparse_Xcsr2csc() <rocsparse_scsr2csc>`                                         x      x      x              x
 :cpp:func:`rocsparse_csr2ell_width`
-:cpp:func:`rocsparse_Xcsr2ell() <rocsparse_scsr2ell>`                   x      x      x              x
-:cpp:func:`rocsparse_Xcsr2hyb() <rocsparse_scsr2hyb>`                   x      x      x              x
+:cpp:func:`rocsparse_Xcsr2ell() <rocsparse_scsr2ell>`                                         x      x      x              x
+:cpp:func:`rocsparse_Xcsr2hyb() <rocsparse_scsr2hyb>`                                         x      x      x              x
 :cpp:func:`rocsparse_csr2bsr_nnz`
-:cpp:func:`rocsparse_Xcsr2bsr() <rocsparse_scsr2bsr>`                   x      x      x              x
+:cpp:func:`rocsparse_Xcsr2bsr() <rocsparse_scsr2bsr>`                                         x      x      x              x
 :cpp:func:`rocsparse_coo2csr`
 :cpp:func:`rocsparse_ell2csr_nnz`
-:cpp:func:`rocsparse_Xell2csr() <rocsparse_sell2csr>`                   x      x      x              x
+:cpp:func:`rocsparse_Xell2csr() <rocsparse_sell2csr>`                                         x      x      x              x
 :cpp:func:`rocsparse_hyb2csr_buffer_size`
-:cpp:func:`rocsparse_Xhyb2csr() <rocsparse_shyb2csr>`                   x      x      x              x
-:cpp:func:`rocsparse_Xbsr2csr() <rocsparse_sbsr2csr>`                   x      x      x              x
-:cpp:func:`rocsparse_Xcsr2csr_compress() <rocsparse_scsr2csr_compress>` x      x      x              x
+:cpp:func:`rocsparse_Xhyb2csr() <rocsparse_shyb2csr>`                                         x      x      x              x
+:cpp:func:`rocsparse_Xbsr2csr() <rocsparse_sbsr2csr>`                                         x      x      x              x
+:cpp:func:`rocsparse_Xcsr2csr_compress() <rocsparse_scsr2csr_compress>`                       x      x      x              x
 :cpp:func:`rocsparse_create_identity_permutation`
 :cpp:func:`rocsparse_cscsort_buffer_size`
 :cpp:func:`rocsparse_cscsort`
@@ -717,13 +717,16 @@ Function name                                                           single d
 :cpp:func:`rocsparse_coosort_buffer_size`
 :cpp:func:`rocsparse_coosort_by_row`
 :cpp:func:`rocsparse_coosort_by_column`
-:cpp:func:`rocsparse_Xdense2csr() <rocsparse_sdense2csr>`               x      x      x              x
-:cpp:func:`rocsparse_Xdense2csc() <rocsparse_sdense2csc>`               x      x      x              x
-:cpp:func:`rocsparse_Xcsr2dense() <rocsparse_scsr2dense>`               x      x      x              x
-:cpp:func:`rocsparse_Xcsc2dense() <rocsparse_scsc2dense>`               x      x      x              x
-:cpp:func:`rocsparse_Xnnz_compress() <rocsparse_snnz_compress>`         x      x      x              x
-:cpp:func:`rocsparse_Xnnz() <rocsparse_snnz>`                           x      x      x              x
-======================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xdense2csr() <rocsparse_sdense2csr>`                                     x      x      x              x
+:cpp:func:`rocsparse_Xdense2csc() <rocsparse_sdense2csc>`                                     x      x      x              x
+:cpp:func:`rocsparse_Xcsr2dense() <rocsparse_scsr2dense>`                                     x      x      x              x
+:cpp:func:`rocsparse_Xcsc2dense() <rocsparse_scsc2dense>`                                     x      x      x              x
+:cpp:func:`rocsparse_Xnnz_compress() <rocsparse_snnz_compress>`                               x      x      x              x
+:cpp:func:`rocsparse_Xnnz() <rocsparse_snnz>`                                                 x      x      x              x
+:cpp:func:`rocsparse_Xprune_dense2csr_buffer_size() <rocsparse_sprune_dense2csr_buffer_size>` x      x
+:cpp:func:`rocsparse_Xprune_dense2csr_nnz() <rocsparse_sprune_dense2csr_nnz>`                 x      x
+:cpp:func:`rocsparse_Xprune_dense2csr() <rocsparse_sprune_dense2csr>`                         x      x
+============================================================================================= ====== ====== ============== ==============
 
 Storage schemes and indexing base
 ---------------------------------
@@ -1658,3 +1661,27 @@ rocsparse_csc2dense()
 .. doxygenfunction:: rocsparse_ccsc2dense
   :outline:
 .. doxygenfunction:: rocsparse_zcsc2dense
+
+rocsparse_prune_dense2csr_buffer_size()
+---------------------------------------
+
+.. doxygenfunction:: rocsparse_sprune_dense2csr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dprune_dense2csr_buffer_size
+  :outline:
+
+rocsparse_prune_dense2csr_nnz()
+-------------------------------
+
+.. doxygenfunction:: rocsparse_sprune_dense2csr_nnz
+  :outline:
+.. doxygenfunction:: rocsparse_dprune_dense2csr_nnz
+  :outline:
+
+rocsparse_prune_dense2csr()
+---------------------------
+
+.. doxygenfunction:: rocsparse_sprune_dense2csr
+  :outline:
+.. doxygenfunction:: rocsparse_dprune_dense2csr
+  :outline:

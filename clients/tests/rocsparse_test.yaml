@@ -46,6 +46,7 @@ include: test_csric0.yaml
 include: test_csrilu0.yaml
 include: test_nnz.yaml
 include: test_dense2csr.yaml
+include: test_prune_dense2csr.yaml
 include: test_dense2csc.yaml
 include: test_csr2dense.yaml
 include: test_csc2dense.yaml
