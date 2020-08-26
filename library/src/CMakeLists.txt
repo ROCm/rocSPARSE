@@ -68,6 +68,7 @@ set(rocsparse_source
 # Conversion
   src/conversion/rocsparse_nnz.cpp
   src/conversion/rocsparse_dense2csr.cpp
+  src/conversion/rocsparse_prune_dense2csr.cpp
   src/conversion/rocsparse_dense2csc.cpp
   src/conversion/rocsparse_csr2dense.cpp
   src/conversion/rocsparse_csc2dense.cpp

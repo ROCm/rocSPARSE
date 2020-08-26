@@ -197,6 +197,8 @@ Functions:
   rocsparse_ddense2csr: { function: dense2csr, <<: *double_precision }
   rocsparse_cdense2csr: { function: dense2csr, <<: *single_precision_complex }
   rocsparse_zdense2csr: { function: dense2csr, <<: *double_precision_complex }
+  rocsparse_sdense2csr: { function: prune_dense2csr, <<: *single_precision }
+  rocsparse_ddense2csr: { function: prune_dense2csr, <<: *double_precision }
   rocsparse_sdense2csc: { function: dense2csc, <<: *single_precision }
   rocsparse_ddense2csc: { function: dense2csc, <<: *double_precision }
   rocsparse_cdense2csc: { function: dense2csc, <<: *single_precision_complex }

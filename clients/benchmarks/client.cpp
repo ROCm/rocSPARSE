@@ -1,25 +1,25 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * ************************************************************************ */
+* Copyright (c) 2020 Advanced Micro Devices, Inc.
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+* THE SOFTWARE.
+*
+* ************************************************************************ */
 
 #include "rocsparse.hpp"
 #include "utility.hpp"
@@ -77,6 +77,7 @@
 #include "testing_hyb2csr.hpp"
 #include "testing_identity.hpp"
 #include "testing_nnz.hpp"
+#include "testing_prune_dense2csr.hpp"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -117,132 +118,132 @@ int main(int argc, char* argv[])
     desc.add_options()("help,h", "produces this help message")
         // clang-format off
         ("sizem,m",
-         po::value<rocsparse_int>(&arg.M)->default_value(128),
-         "Specific matrix size testing: sizem is only applicable to SPARSE-2 "
-         "& SPARSE-3: the number of rows.")
+        po::value<rocsparse_int>(&arg.M)->default_value(128),
+        "Specific matrix size testing: sizem is only applicable to SPARSE-2 "
+        "& SPARSE-3: the number of rows.")
 
         ("sizen,n",
-         po::value<rocsparse_int>(&arg.N)->default_value(128),
-         "Specific matrix/vector size testing: SPARSE-1: the length of the "
-         "dense vector. SPARSE-2 & SPARSE-3: the number of columns")
+        po::value<rocsparse_int>(&arg.N)->default_value(128),
+        "Specific matrix/vector size testing: SPARSE-1: the length of the "
+        "dense vector. SPARSE-2 & SPARSE-3: the number of columns")
 
         ("sizek,k",
-         po::value<rocsparse_int>(&arg.K)->default_value(128),
-         "Specific matrix/vector size testing: SPARSE-3: the number of columns")
+        po::value<rocsparse_int>(&arg.K)->default_value(128),
+        "Specific matrix/vector size testing: SPARSE-3: the number of columns")
 
         ("sizennz,z",
-         po::value<rocsparse_int>(&arg.nnz)->default_value(32),
-         "Specific vector size testing, LEVEL-1: the number of non-zero elements "
-         "of the sparse vector.")
+        po::value<rocsparse_int>(&arg.nnz)->default_value(32),
+        "Specific vector size testing, LEVEL-1: the number of non-zero elements "
+        "of the sparse vector.")
 
         ("blockdim",
-         po::value<rocsparse_int>(&arg.block_dim)->default_value(2),
-         "BSR block dimension (default: 2)")
+        po::value<rocsparse_int>(&arg.block_dim)->default_value(2),
+        "BSR block dimension (default: 2)")
 
         ("mtx",
-         po::value<std::string>(&filename)->default_value(""), "read from matrix "
-         "market (.mtx) format. This will override parameters -m, -n, and -z.")
+        po::value<std::string>(&filename)->default_value(""), "read from matrix "
+        "market (.mtx) format. This will override parameters -m, -n, and -z.")
 
         ("rocalution",
-         po::value<std::string>(&rocalution)->default_value(""),
-         "read from rocalution matrix binary file. This will override parameter --mtx")
+        po::value<std::string>(&rocalution)->default_value(""),
+        "read from rocalution matrix binary file. This will override parameter --mtx")
 
         ("laplacian-dim",
-         po::value<std::vector<rocsparse_int> >(&laplace)->multitoken(), "assemble "
-         "laplacian matrix with dimensions <dimx dimy dimz>. dimz is optional. This "
-         "will override parameters -m, -n, -z and --mtx.")
+        po::value<std::vector<rocsparse_int> >(&laplace)->multitoken(), "assemble "
+        "laplacian matrix with dimensions <dimx dimy dimz>. dimz is optional. This "
+        "will override parameters -m, -n, -z and --mtx.")
 
         ("alpha",
-          po::value<double>(&arg.alpha)->default_value(1.0), "specifies the scalar alpha")
+        po::value<double>(&arg.alpha)->default_value(1.0), "specifies the scalar alpha")
 
         ("beta",
-          po::value<double>(&arg.beta)->default_value(0.0), "specifies the scalar beta")
+        po::value<double>(&arg.beta)->default_value(0.0), "specifies the scalar beta")
 
         ("transposeA",
-          po::value<char>(&transA)->default_value('N'),
-          "N = no transpose, T = transpose, C = conjugate transpose")
+        po::value<char>(&transA)->default_value('N'),
+        "N = no transpose, T = transpose, C = conjugate transpose")
 
         ("transposeB",
-          po::value<char>(&transB)->default_value('N'),
-          "N = no transpose, T = transpose, C = conjugate transpose, (default = N)")
+        po::value<char>(&transB)->default_value('N'),
+        "N = no transpose, T = transpose, C = conjugate transpose, (default = N)")
 
         ("indexbaseA",
-          po::value<int>(&baseA)->default_value(0),
-          "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
+        po::value<int>(&baseA)->default_value(0),
+        "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
 
         ("indexbaseB",
-          po::value<int>(&baseB)->default_value(0),
-          "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
+        po::value<int>(&baseB)->default_value(0),
+        "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
 
         ("indexbaseC",
-          po::value<int>(&baseC)->default_value(0),
-          "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
+        po::value<int>(&baseC)->default_value(0),
+        "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
 
         ("indexbaseD",
-          po::value<int>(&baseD)->default_value(0),
-          "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
+        po::value<int>(&baseD)->default_value(0),
+        "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
 
         ("action",
-          po::value<int>(&action)->default_value(0),
-          "0 = rocsparse_action_numeric, 1 = rocsparse_action_symbolic, (default: 0)")
+        po::value<int>(&action)->default_value(0),
+        "0 = rocsparse_action_numeric, 1 = rocsparse_action_symbolic, (default: 0)")
 
         ("hybpart",
-          po::value<int>(&part)->default_value(0),
-          "0 = rocsparse_hyb_partition_auto, 1 = rocsparse_hyb_partition_user,\n"
-          "2 = rocsparse_hyb_partition_max, (default: 0)")
+        po::value<int>(&part)->default_value(0),
+        "0 = rocsparse_hyb_partition_auto, 1 = rocsparse_hyb_partition_user,\n"
+        "2 = rocsparse_hyb_partition_max, (default: 0)")
 
         ("diag",
-          po::value<char>(&diag)->default_value('N'),
-          "N = non-unit diagonal, U = unit diagonal, (default = N)")
+        po::value<char>(&diag)->default_value('N'),
+        "N = non-unit diagonal, U = unit diagonal, (default = N)")
 
         ("uplo",
-          po::value<char>(&uplo)->default_value('L'),
-          "L = lower fill, U = upper fill, (default = L)")
+        po::value<char>(&uplo)->default_value('L'),
+        "L = lower fill, U = upper fill, (default = L)")
 
         ("apolicy",
-          po::value<char>(&apol)->default_value('R'),
-          "R = reuse meta data, F = force re-build, (default = R)")
+        po::value<char>(&apol)->default_value('R'),
+        "R = reuse meta data, F = force re-build, (default = R)")
 
 //        ("spolicy",
 //          po::value<char>(&spol)->default_value('A'),
 //          "A = auto, (default = A)")
 
         ("function,f",
-         po::value<std::string>(&function)->default_value("axpyi"),
-         "SPARSE function to test. Options:\n"
-         "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
-         "  Level2: bsrmv, bsrsv, coomv, csrmv, csrsv, ellmv, hybmv\n"
-         "  Level3: bsrmm, csrmm, csrsm, gemmi\n"
-         "  Extra: csrgeam, csrgemm\n"
-         "  Preconditioner: bsric0, csric0, csrilu0\n"
-         "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb, csr2bsr\n"
-         "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2csc\n"
-         "              csr2dense, csc2dense, bsr2csr, csr2csr_compress\n"
-         "  Sorting: cscsort, csrsort, coosort\n"
-         "  Misc: identity, nnz")
+        po::value<std::string>(&function)->default_value("axpyi"),
+        "SPARSE function to test. Options:\n"
+        "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
+        "  Level2: bsrmv, bsrsv, coomv, csrmv, csrsv, ellmv, hybmv\n"
+        "  Level3: bsrmm, csrmm, csrsm, gemmi\n"
+        "  Extra: csrgeam, csrgemm\n"
+        "  Preconditioner: bsric0, csric0, csrilu0\n"
+        "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb, csr2bsr\n"
+        "              coo2csr, ell2csr, hyb2csr, dense2csr, prune_dense2csr, dense2csc\n"
+        "              csr2dense, csc2dense, bsr2csr, csr2csr_compress\n"
+        "  Sorting: cscsort, csrsort, coosort\n"
+        "  Misc: identity, nnz")
 
         ("precision,r",
-         po::value<char>(&precision)->default_value('s'), "Options: s,d,c,z")
+        po::value<char>(&precision)->default_value('s'), "Options: s,d,c,z")
 
         ("verify,v",
-         po::value<rocsparse_int>(&arg.unit_check)->default_value(0),
-         "Validate GPU results with CPU? 0 = No, 1 = Yes (default: No)")
+        po::value<rocsparse_int>(&arg.unit_check)->default_value(0),
+        "Validate GPU results with CPU? 0 = No, 1 = Yes (default: No)")
 
         ("iters,i",
-         po::value<int>(&arg.iters)->default_value(10),
-         "Iterations to run inside timing loop")
+        po::value<int>(&arg.iters)->default_value(10),
+        "Iterations to run inside timing loop")
 
         ("device,d",
-         po::value<rocsparse_int>(&device_id)->default_value(0),
-         "Set default device to be used for subsequent program runs")
+        po::value<rocsparse_int>(&device_id)->default_value(0),
+        "Set default device to be used for subsequent program runs")
 
         ("direction",
-         po::value<rocsparse_int>(&dir)->default_value(rocsparse_direction_row),
-         "Indicates whether a dense matrix should be parsed by rows or by columns, assuming column-major storage: row = 0, column = 1 (default: 0)")
+        po::value<rocsparse_int>(&dir)->default_value(rocsparse_direction_row),
+        "Indicates whether a dense matrix should be parsed by rows or by columns, assuming column-major storage: row = 0, column = 1 (default: 0)")
 
         ("denseld",
-         po::value<rocsparse_int>(&arg.denseld)->default_value(128),
-         "Indicates the leading dimension of a dense matrix >= M, assuming a column-oriented storage.");
+        po::value<rocsparse_int>(&arg.denseld)->default_value(128),
+        "Indicates the leading dimension of a dense matrix >= M, assuming a column-oriented storage.");
 
     // clang-format on
 
@@ -405,7 +406,7 @@ int main(int argc, char* argv[])
     rocsparse_destroy_handle(handle);
 
     /* ============================================================================================
-     */
+    */
     if(arg.M < 0 || arg.N < 0)
     {
         std::cerr << "Invalid dimension" << std::endl;
@@ -695,6 +696,13 @@ int main(int argc, char* argv[])
             testing_dense2csr<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_dense2csr<rocsparse_double_complex>(arg);
+    }
+    else if(function == "prune_dense2csr")
+    {
+        if(precision == 's')
+            testing_prune_dense2csr<float>(arg);
+        else if(precision == 'd')
+            testing_prune_dense2csr<double>(arg);
     }
     else if(function == "dense2csc")
     {
