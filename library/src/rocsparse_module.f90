@@ -99,9 +99,9 @@ module rocsparse
 
 !   rocsparse_layer_mode
     enum, bind(c)
-        enumerator :: rocsparse_layer_mode_none = x'0'
-        enumerator :: rocsparse_layer_mode_log_trace = x'1'
-        enumerator :: rocsparse_layer_mode_log_bench = x'2'
+        enumerator :: rocsparse_layer_mode_none = 0
+        enumerator :: rocsparse_layer_mode_log_trace = 1
+        enumerator :: rocsparse_layer_mode_log_bench = 2
     end enum
 
 !   rocsparse_status
