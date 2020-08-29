@@ -67,7 +67,7 @@ add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
 add_library(roc::rocsparse ALIAS rocsparse)
 
 # Target compile options
-target_compile_options(rocsparse PRIVATE -mno-xnack)
+target_compile_options(rocsparse PRIVATE -mno-xnack -Xarch_gfx906 -mno-sram-ecc -Xarch_gfx908 -msram-ecc)
 foreach(target ${AMDGPU_TARGETS})
   target_compile_options(rocsparse PRIVATE --amdgpu-target=${target})
 endforeach()
