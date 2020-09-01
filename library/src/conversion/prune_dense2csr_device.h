@@ -21,8 +21,8 @@
 *
 * ************************************************************************ */
 #pragma once
-#ifndef PRUNE_DENSE2CSR_NNZ_DEVICE_H
-#define PRUNE_DENSE2CSR_NNZ_DEVICE_H
+#ifndef PRUNE_DENSE2CSR_DEVICE_H
+#define PRUNE_DENSE2CSR_DEVICE_H
 
 #include "common.h"
 #include "handle.h"

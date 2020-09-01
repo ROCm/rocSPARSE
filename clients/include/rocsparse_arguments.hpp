@@ -58,6 +58,7 @@ struct Arguments
     double alphai;
     double beta;
     double betai;
+    double threshold;
 
     rocsparse_operation       transA;
     rocsparse_operation       transB;
@@ -138,6 +139,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(alphai);
         ROCSPARSE_FORMAT_CHECK(beta);
         ROCSPARSE_FORMAT_CHECK(betai);
+        ROCSPARSE_FORMAT_CHECK(threshold);
         ROCSPARSE_FORMAT_CHECK(transA);
         ROCSPARSE_FORMAT_CHECK(transB);
         ROCSPARSE_FORMAT_CHECK(baseA);
@@ -177,6 +179,12 @@ struct Arguments
         return (rocsparse_isnan(beta) || rocsparse_isnan(betai))
                    ? static_cast<T>(0)
                    : convert_alpha_beta<T>(beta, betai);
+    }
+
+    template <typename T>
+    T get_threshold() const
+    {
+        return (rocsparse_isnan(threshold)) ? static_cast<T>(0) : threshold;
     }
 
 private:
@@ -284,6 +292,7 @@ private:
         print("alphai", arg.alphai);
         print("beta", arg.beta);
         print("betai", arg.betai);
+        print("threshold", arg.threshold);
         print("action", rocsparse_action2string(arg.action));
         print("part", rocsparse_partition2string(arg.part));
         print("diag", rocsparse_diagtype2string(arg.diag));

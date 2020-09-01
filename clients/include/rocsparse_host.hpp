@@ -2671,48 +2671,43 @@ rocsparse_status host_nnz(rocsparse_direction       dirA,
 }
 
 template <typename T>
-void host_prune_dense2csr(rocsparse_int               m,
-                          rocsparse_int               n,
-                          const std::vector<T>&       A,
-                          rocsparse_int               lda,
-                          rocsparse_index_base        base,
-                          T                           threshold,
-                          rocsparse_int&              nnz,
-                          std::vector<T>&             csr_val,
-                          std::vector<rocsparse_int>& csr_row_ptr,
-                          std::vector<rocsparse_int>& csr_col_ind)
+inline void host_prune_dense2csr(rocsparse_int               m,
+                                 rocsparse_int               n,
+                                 const std::vector<T>&       A,
+                                 rocsparse_int               lda,
+                                 rocsparse_index_base        base,
+                                 T                           threshold,
+                                 rocsparse_int&              nnz,
+                                 std::vector<T>&             csr_val,
+                                 std::vector<rocsparse_int>& csr_row_ptr,
+                                 std::vector<rocsparse_int>& csr_col_ind)
 {
-    if(m < 0 || n < 0 || lda < m)
-    {
-        return;
-    }
+    csr_row_ptr.resize(m + 1, 0);
+    csr_row_ptr[0] = base;
 
-    std::vector<rocsparse_int> nnz_per_row(m, 0);
-
-    nnz = 0;
-
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
     for(rocsparse_int i = 0; i < m; i++)
     {
         for(rocsparse_int j = 0; j < n; j++)
         {
             if(std::abs(A[lda * j + i]) > threshold)
             {
-                nnz_per_row[i]++;
-                nnz++;
+                csr_row_ptr[i + 1]++;
             }
         }
     }
 
-    csr_row_ptr.resize(m + 1, 0);
+    for(rocsparse_int i = 1; i <= m; i++)
+    {
+        csr_row_ptr[i] += csr_row_ptr[i - 1];
+    }
+
+    nnz = csr_row_ptr[m] - csr_row_ptr[0];
+
     csr_col_ind.resize(nnz);
     csr_val.resize(nnz);
-
-    csr_row_ptr[0] = base;
-
-    for(rocsparse_int i = 0; i < m; i++)
-    {
-        csr_row_ptr[i + 1] = csr_row_ptr[i] + nnz_per_row[i];
-    }
 
     rocsparse_int index = 0;
     for(rocsparse_int i = 0; i < m; i++)
@@ -3233,6 +3228,68 @@ inline void host_csr_to_csr_compress(rocsparse_int                     M,
             {
                 csr_col_ind_C[index] = csr_col_ind_A[j];
                 csr_val_C[index]     = csr_val_A[j];
+                index++;
+            }
+        }
+    }
+}
+
+template <typename T>
+inline void host_prune_csr_to_csr(rocsparse_int                     M,
+                                  rocsparse_int                     N,
+                                  rocsparse_int                     nnz_A,
+                                  const std::vector<rocsparse_int>& csr_row_ptr_A,
+                                  const std::vector<rocsparse_int>& csr_col_ind_A,
+                                  const std::vector<T>&             csr_val_A,
+                                  rocsparse_int&                    nnz_C,
+                                  std::vector<rocsparse_int>&       csr_row_ptr_C,
+                                  std::vector<rocsparse_int>&       csr_col_ind_C,
+                                  std::vector<T>&                   csr_val_C,
+                                  rocsparse_index_base              csr_base_A,
+                                  rocsparse_index_base              csr_base_C,
+                                  T                                 threshold)
+{
+    csr_row_ptr_C.resize(M + 1, 0);
+    csr_row_ptr_C[0] = csr_base_C;
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int i = 0; i < M; i++)
+    {
+        for(rocsparse_int j = csr_row_ptr_A[i] - csr_base_A; j < csr_row_ptr_A[i + 1] - csr_base_A;
+            j++)
+        {
+            if(std::abs(csr_val_A[j]) > threshold
+               && std::abs(csr_val_A[j]) > std::numeric_limits<float>::min())
+            {
+                csr_row_ptr_C[i + 1]++;
+            }
+        }
+    }
+
+    for(rocsparse_int i = 1; i <= M; i++)
+    {
+        csr_row_ptr_C[i] += csr_row_ptr_C[i - 1];
+    }
+
+    nnz_C = csr_row_ptr_C[M] - csr_row_ptr_C[0];
+
+    csr_col_ind_C.resize(nnz_C);
+    csr_val_C.resize(nnz_C);
+
+    rocsparse_int index = 0;
+    for(rocsparse_int i = 0; i < M; i++)
+    {
+        for(rocsparse_int j = csr_row_ptr_A[i] - csr_base_A; j < csr_row_ptr_A[i + 1] - csr_base_A;
+            j++)
+        {
+            if(std::abs(csr_val_A[j]) > threshold
+               && std::abs(csr_val_A[j]) > std::numeric_limits<float>::min())
+            {
+                csr_col_ind_C[index] = (csr_col_ind_A[j] - csr_base_A) + csr_base_C;
+                csr_val_C[index]     = csr_val_A[j];
+
                 index++;
             }
         }

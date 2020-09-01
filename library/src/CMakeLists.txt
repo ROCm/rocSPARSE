@@ -79,6 +79,7 @@ set(rocsparse_source
   src/conversion/rocsparse_csr2ell.cpp
   src/conversion/rocsparse_csr2hyb.cpp
   src/conversion/rocsparse_csr2csr_compress.cpp
+  src/conversion/rocsparse_prune_csr2csr.cpp
   src/conversion/rocsparse_coo2csr.cpp
   src/conversion/rocsparse_ell2csr.cpp
   src/conversion/rocsparse_hyb2csr.cpp

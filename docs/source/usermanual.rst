@@ -726,6 +726,9 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xprune_dense2csr_buffer_size() <rocsparse_sprune_dense2csr_buffer_size>` x      x
 :cpp:func:`rocsparse_Xprune_dense2csr_nnz() <rocsparse_sprune_dense2csr_nnz>`                 x      x
 :cpp:func:`rocsparse_Xprune_dense2csr() <rocsparse_sprune_dense2csr>`                         x      x
+:cpp:func:`rocsparse_Xprune_csr2csr_buffer_size() <rocsparse_sprune_csr2csr_buffer_size>`     x      x
+:cpp:func:`rocsparse_Xprune_csr2csr_nnz() <rocsparse_sprune_csr2csr_nnz>`                     x      x
+:cpp:func:`rocsparse_Xprune_csr2csr() <rocsparse_sprune_csr2csr>`                             x      x
 ============================================================================================= ====== ====== ============== ==============
 
 Storage schemes and indexing base
@@ -1684,4 +1687,28 @@ rocsparse_prune_dense2csr()
 .. doxygenfunction:: rocsparse_sprune_dense2csr
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr
+  :outline:
+
+rocsparse_prune_csr2csr_buffer_size()
+---------------------------------------
+
+.. doxygenfunction:: rocsparse_sprune_csr2csr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dprune_csr2csr_buffer_size
+  :outline:
+
+rocsparse_prune_csr2csr_nnz()
+-------------------------------
+
+.. doxygenfunction:: rocsparse_sprune_csr2csr_nnz
+  :outline:
+.. doxygenfunction:: rocsparse_dprune_csr2csr_nnz
+  :outline:
+
+rocsparse_prune_csr2csr()
+---------------------------
+
+.. doxygenfunction:: rocsparse_sprune_csr2csr
+  :outline:
+.. doxygenfunction:: rocsparse_dprune_csr2csr
   :outline:

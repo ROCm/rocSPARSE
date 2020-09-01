@@ -197,8 +197,8 @@ Functions:
   rocsparse_ddense2csr: { function: dense2csr, <<: *double_precision }
   rocsparse_cdense2csr: { function: dense2csr, <<: *single_precision_complex }
   rocsparse_zdense2csr: { function: dense2csr, <<: *double_precision_complex }
-  rocsparse_sdense2csr: { function: prune_dense2csr, <<: *single_precision }
-  rocsparse_ddense2csr: { function: prune_dense2csr, <<: *double_precision }
+  rocsparse_sprune_dense2csr: { function: prune_dense2csr, <<: *single_precision }
+  rocsparse_dprune_dense2csr: { function: prune_dense2csr, <<: *double_precision }
   rocsparse_sdense2csc: { function: dense2csc, <<: *single_precision }
   rocsparse_ddense2csc: { function: dense2csc, <<: *double_precision }
   rocsparse_cdense2csc: { function: dense2csc, <<: *single_precision_complex }
@@ -250,6 +250,8 @@ Functions:
   rocsparse_dcsr2csr_compress: { function: csr2csr_compress, <<: *double_precision }
   rocsparse_ccsr2csr_compress: { function: csr2csr_compress, <<: *single_precision_complex }
   rocsparse_zcsr2csr_compress: { function: csr2csr_compress, <<: *double_precision_complex }
+  rocsparse_sprune_csr2csr: { function: prune_csr2csr, <<: *single_precision }
+  rocsparse_dprune_csr2csr: { function: prune_csr2csr, <<: *double_precision }
   rocsparse_create_identity_permutation: { function: rocsparse_create_identity_permutation }
   rocsparse_csrsort: { function: csrsort }
   rocsparse_cscsort: { function: cscsort }

@@ -77,6 +77,7 @@
 #include "testing_hyb2csr.hpp"
 #include "testing_identity.hpp"
 #include "testing_nnz.hpp"
+#include "testing_prune_csr2csr.hpp"
 #include "testing_prune_dense2csr.hpp"
 
 #include <boost/program_options.hpp>
@@ -92,6 +93,7 @@ int main(int argc, char* argv[])
     arg.timing     = 1;
     arg.alphai     = 0.0;
     arg.betai      = 0.0;
+    arg.threshold  = 0.0;
 
     std::string   function;
     std::string   filename;
@@ -159,6 +161,9 @@ int main(int argc, char* argv[])
         ("beta",
         po::value<double>(&arg.beta)->default_value(0.0), "specifies the scalar beta")
 
+        ("threshold",
+        po::value<double>(&arg.threshold)->default_value(1.0), "specifies the scalar threshold")
+
         ("transposeA",
         po::value<char>(&transA)->default_value('N'),
         "N = no transpose, T = transpose, C = conjugate transpose")
@@ -218,7 +223,7 @@ int main(int argc, char* argv[])
         "  Preconditioner: bsric0, csric0, csrilu0\n"
         "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb, csr2bsr\n"
         "              coo2csr, ell2csr, hyb2csr, dense2csr, prune_dense2csr, dense2csc\n"
-        "              csr2dense, csc2dense, bsr2csr, csr2csr_compress\n"
+        "              csr2dense, csc2dense, bsr2csr, csr2csr_compress, prune_csr2csr\n"
         "  Sorting: cscsort, csrsort, coosort\n"
         "  Misc: identity, nnz")
 
@@ -832,6 +837,13 @@ int main(int argc, char* argv[])
             testing_csr2csr_compress<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_csr2csr_compress<rocsparse_double_complex>(arg);
+    }
+    else if(function == "prune_csr2csr")
+    {
+        if(precision == 's')
+            testing_prune_csr2csr<float>(arg);
+        else if(precision == 'd')
+            testing_prune_csr2csr<double>(arg);
     }
     else if(function == "csrsort")
     {

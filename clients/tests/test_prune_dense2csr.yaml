@@ -25,22 +25,6 @@
 include: rocsparse_common.yaml
 include: known_bugs.yaml
 
-Definitions:
-  - &alpha_range_quick
-    - { alpha:   0.1, alphai:  0.0}
-    - { alpha:  -0.5, alphai:  0.0}
-
-  - &alpha_range_checkin
-    - { alpha:   0.5, alphai:  0.0 }
-    - { alpha:   0.0, alphai:  0.0 }
-    - { alpha:   0.9, alphai:  0.0 }
-
-  - &alpha_range_nightly
-    - { alpha:   0.7, alphai:  0.0 }
-    - { alpha:   0.2, alphai:  0.0 }
-    - { alpha:   0.33, alphai:  0.0 }
-    - { alpha:  -0.5, alphai:  0.0 }
-
 Tests:
 - name: prune_dense2csr_bad_arg
   category: pre_checkin
@@ -54,7 +38,7 @@ Tests:
   M: [0, 3, 8, 13, 64, 256]
   N: [0, 3, 8, 13, 64, 256]
   denseld: [-8, 64, 512]
-  alpha_alphai: *alpha_range_quick
+  threshold: [0.1, -0.5, 1.2]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
 
 - name: prune_dense2csr
@@ -64,7 +48,7 @@ Tests:
   M: [-1, 0, 531, 1000]
   N: [-3, 0, 241, 1000]
   denseld: [100, 1000, 2000]
-  alpha_alphai: *alpha_range_checkin
+  threshold: [0.5, 0.0, 0.9, 0.001]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
 
 - name: prune_dense2csr
@@ -74,7 +58,7 @@ Tests:
   M: [2000, 4000, 8000]
   N: [2000, 4000]
   denseld: [ 8000 ]
-  alpha_alphai: *alpha_range_nightly
+  threshold: [0.7, 0.2, 0.33, -0.5]
   baseA: [rocsparse_index_base_zero]
 
 - name: prune_dense2csr
@@ -84,7 +68,7 @@ Tests:
   M: [5, 7, 10]
   N: [2, 17, 33]
   denseld: [50]
-  alpha_alphai: *alpha_range_quick
+  threshold: [0.6, -0.9, 1.0]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
 
 - name: prune_dense2csr
@@ -94,7 +78,7 @@ Tests:
   M: [500, 872]
   N: [242, 623]
   denseld: [500]
-  alpha_alphai: *alpha_range_checkin
+  threshold: [0.67, 0.003, 0.75, 0.999]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
 
 - name: prune_dense2csr
@@ -104,5 +88,5 @@ Tests:
   M: [1000]
   N: [1000]
   denseld: [ 1000 ]
-  alpha_alphai: *alpha_range_nightly
+  threshold: [0.4, 0.25, 0.23, -0.3]
   baseA: [rocsparse_index_base_one]
