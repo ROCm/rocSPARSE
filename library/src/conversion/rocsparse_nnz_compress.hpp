@@ -34,6 +34,23 @@
 #include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 
+template <typename T,
+          rocsparse_int BLOCK_SIZE,
+          rocsparse_int SEGMENTS_PER_BLOCK,
+          rocsparse_int SEGMENT_SIZE,
+          rocsparse_int WF_SIZE>
+__launch_bounds__(BLOCK_SIZE) __global__
+    void nnz_compress_kernel_host_pointer(rocsparse_int        m,
+                                          rocsparse_index_base idx_base_A,
+                                          const T* __restrict__ csr_val_A,
+                                          const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                          rocsparse_int* __restrict__ nnz_per_row,
+                                          T threshold)
+{
+    nnz_compress_kernel<T, BLOCK_SIZE, SEGMENTS_PER_BLOCK, SEGMENT_SIZE, WF_SIZE>(
+        m, idx_base_A, csr_val_A, csr_row_ptr_A, nnz_per_row, threshold);
+}
+
 template <typename T>
 rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handle,
                                                  rocsparse_int             m,
@@ -141,85 +158,90 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             constexpr rocsparse_int segments_per_block = block_size / 2;
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
-            hipLaunchKernelGGL((nnz_compress_kernel<T, block_size, segments_per_block, 2, 32>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               nnz_per_row,
-                               tol);
+            hipLaunchKernelGGL(
+                (nnz_compress_kernel_host_pointer<T, block_size, segments_per_block, 2, 32>),
+                dim3(grid_size),
+                dim3(block_size),
+                0,
+                stream,
+                m,
+                descr_A->base,
+                csr_val_A,
+                csr_row_ptr_A,
+                nnz_per_row,
+                tol);
         }
         else if(mean_nnz_per_row < 8)
         {
             constexpr rocsparse_int segments_per_block = block_size / 4;
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
-            hipLaunchKernelGGL((nnz_compress_kernel<T, block_size, segments_per_block, 4, 32>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               nnz_per_row,
-                               tol);
+            hipLaunchKernelGGL(
+                (nnz_compress_kernel_host_pointer<T, block_size, segments_per_block, 4, 32>),
+                dim3(grid_size),
+                dim3(block_size),
+                0,
+                stream,
+                m,
+                descr_A->base,
+                csr_val_A,
+                csr_row_ptr_A,
+                nnz_per_row,
+                tol);
         }
         else if(mean_nnz_per_row < 16)
         {
             constexpr rocsparse_int segments_per_block = block_size / 8;
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
-            hipLaunchKernelGGL((nnz_compress_kernel<T, block_size, segments_per_block, 8, 32>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               nnz_per_row,
-                               tol);
+            hipLaunchKernelGGL(
+                (nnz_compress_kernel_host_pointer<T, block_size, segments_per_block, 8, 32>),
+                dim3(grid_size),
+                dim3(block_size),
+                0,
+                stream,
+                m,
+                descr_A->base,
+                csr_val_A,
+                csr_row_ptr_A,
+                nnz_per_row,
+                tol);
         }
         else if(mean_nnz_per_row < 32)
         {
             constexpr rocsparse_int segments_per_block = block_size / 16;
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
-            hipLaunchKernelGGL((nnz_compress_kernel<T, block_size, segments_per_block, 16, 32>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               nnz_per_row,
-                               tol);
+            hipLaunchKernelGGL(
+                (nnz_compress_kernel_host_pointer<T, block_size, segments_per_block, 16, 32>),
+                dim3(grid_size),
+                dim3(block_size),
+                0,
+                stream,
+                m,
+                descr_A->base,
+                csr_val_A,
+                csr_row_ptr_A,
+                nnz_per_row,
+                tol);
         }
         else
         {
             constexpr rocsparse_int segments_per_block = block_size / 32;
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
-            hipLaunchKernelGGL((nnz_compress_kernel<T, block_size, segments_per_block, 32, 32>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               nnz_per_row,
-                               tol);
+            hipLaunchKernelGGL(
+                (nnz_compress_kernel_host_pointer<T, block_size, segments_per_block, 32, 32>),
+                dim3(grid_size),
+                dim3(block_size),
+                0,
+                stream,
+                m,
+                descr_A->base,
+                csr_val_A,
+                csr_row_ptr_A,
+                nnz_per_row,
+                tol);
         }
     }
     else if(handle->wavefront_size == 64)
@@ -229,102 +251,108 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
             constexpr rocsparse_int segments_per_block = block_size / 2;
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
-            hipLaunchKernelGGL((nnz_compress_kernel<T, block_size, segments_per_block, 2, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               nnz_per_row,
-                               tol);
+            hipLaunchKernelGGL(
+                (nnz_compress_kernel_host_pointer<T, block_size, segments_per_block, 2, 64>),
+                dim3(grid_size),
+                dim3(block_size),
+                0,
+                stream,
+                m,
+                descr_A->base,
+                csr_val_A,
+                csr_row_ptr_A,
+                nnz_per_row,
+                tol);
         }
         else if(mean_nnz_per_row < 8)
         {
             constexpr rocsparse_int segments_per_block = block_size / 4;
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
-            hipLaunchKernelGGL((nnz_compress_kernel<T, block_size, segments_per_block, 4, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               nnz_per_row,
-                               tol);
+            hipLaunchKernelGGL(
+                (nnz_compress_kernel_host_pointer<T, block_size, segments_per_block, 4, 64>),
+                dim3(grid_size),
+                dim3(block_size),
+                0,
+                stream,
+                m,
+                descr_A->base,
+                csr_val_A,
+                csr_row_ptr_A,
+                nnz_per_row,
+                tol);
         }
         else if(mean_nnz_per_row < 16)
         {
             constexpr rocsparse_int segments_per_block = block_size / 8;
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
-            hipLaunchKernelGGL((nnz_compress_kernel<T, block_size, segments_per_block, 8, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               nnz_per_row,
-                               tol);
+            hipLaunchKernelGGL(
+                (nnz_compress_kernel_host_pointer<T, block_size, segments_per_block, 8, 64>),
+                dim3(grid_size),
+                dim3(block_size),
+                0,
+                stream,
+                m,
+                descr_A->base,
+                csr_val_A,
+                csr_row_ptr_A,
+                nnz_per_row,
+                tol);
         }
         else if(mean_nnz_per_row < 32)
         {
             constexpr rocsparse_int segments_per_block = block_size / 16;
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
-            hipLaunchKernelGGL((nnz_compress_kernel<T, block_size, segments_per_block, 16, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               nnz_per_row,
-                               tol);
+            hipLaunchKernelGGL(
+                (nnz_compress_kernel_host_pointer<T, block_size, segments_per_block, 16, 64>),
+                dim3(grid_size),
+                dim3(block_size),
+                0,
+                stream,
+                m,
+                descr_A->base,
+                csr_val_A,
+                csr_row_ptr_A,
+                nnz_per_row,
+                tol);
         }
         else if(mean_nnz_per_row < 64)
         {
             constexpr rocsparse_int segments_per_block = block_size / 32;
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
-            hipLaunchKernelGGL((nnz_compress_kernel<T, block_size, segments_per_block, 32, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               nnz_per_row,
-                               tol);
+            hipLaunchKernelGGL(
+                (nnz_compress_kernel_host_pointer<T, block_size, segments_per_block, 32, 64>),
+                dim3(grid_size),
+                dim3(block_size),
+                0,
+                stream,
+                m,
+                descr_A->base,
+                csr_val_A,
+                csr_row_ptr_A,
+                nnz_per_row,
+                tol);
         }
         else
         {
             constexpr rocsparse_int segments_per_block = block_size / 64;
             rocsparse_int           grid_size = (m + segments_per_block - 1) / segments_per_block;
 
-            hipLaunchKernelGGL((nnz_compress_kernel<T, block_size, segments_per_block, 64, 64>),
-                               dim3(grid_size),
-                               dim3(block_size),
-                               0,
-                               stream,
-                               m,
-                               descr_A->base,
-                               csr_val_A,
-                               csr_row_ptr_A,
-                               nnz_per_row,
-                               tol);
+            hipLaunchKernelGGL(
+                (nnz_compress_kernel_host_pointer<T, block_size, segments_per_block, 64, 64>),
+                dim3(grid_size),
+                dim3(block_size),
+                0,
+                stream,
+                m,
+                descr_A->base,
+                csr_val_A,
+                csr_row_ptr_A,
+                nnz_per_row,
+                tol);
         }
     }
     else

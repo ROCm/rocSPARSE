@@ -22,9 +22,10 @@
 * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_NNZ_COMPRESS_HPP
-#define ROCSPARSE_NNZ_COMPRESS_HPP
+#ifndef ROCSPARSE_PRUNE_DENSE2CSR_HPP
+#define ROCSPARSE_PRUNE_DENSE2CSR_HPP
 
+#include "csr2csr_compress_device.h"
 #include "definitions.h"
 #include "handle.h"
 #include "prune_dense2csr_device.h"
@@ -33,8 +34,6 @@
 
 #include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
-
-#include <vector>
 
 template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename T>
 __launch_bounds__(DIM_X* DIM_Y) __global__
@@ -188,6 +187,8 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
         return rocsparse_status_invalid_size;
     }
 
+    hipStream_t stream = handle->stream;
+
     // Quick return if possible
     if(m == 0 || n == 0)
     {
@@ -199,6 +200,17 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
             {
                 return status;
             }
+
+            constexpr rocsparse_int block_size = 1024;
+            rocsparse_int           grid_size  = (m + block_size - 1) / block_size;
+            hipLaunchKernelGGL((fill_row_ptr_kernel<block_size>),
+                               dim3(grid_size),
+                               dim3(block_size),
+                               0,
+                               stream,
+                               m,
+                               descr->base,
+                               csr_row_ptr);
 
             if(rocsparse_pointer_mode_device == mode)
             {
@@ -221,12 +233,6 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
         return rocsparse_status_invalid_pointer;
     }
 
-    hipStream_t stream = handle->stream;
-
-    rocsparse_int* d_nnz_per_rows;
-    RETURN_IF_HIP_ERROR(hipMalloc(&d_nnz_per_rows, m * sizeof(rocsparse_int)));
-    RETURN_IF_HIP_ERROR(hipMemset(d_nnz_per_rows, 0, m * sizeof(rocsparse_int)));
-
     static constexpr int NNZ_DIM_X = 64;
     static constexpr int NNZ_DIM_Y = 16;
     rocsparse_int        blocks    = (m - 1) / (NNZ_DIM_X * 4) + 1;
@@ -246,7 +252,7 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
                            A,
                            lda,
                            threshold,
-                           d_nnz_per_rows);
+                           &csr_row_ptr[1]);
     }
     else
     {
@@ -260,16 +266,13 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
                            A,
                            lda,
                            *threshold,
-                           d_nnz_per_rows);
+                           &csr_row_ptr[1]);
     }
 
     // Compute csr_row_ptr with the right index base.
     rocsparse_int first_value = descr->base;
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
         csr_row_ptr, &first_value, sizeof(rocsparse_int), hipMemcpyHostToDevice, handle->stream));
-
-    RETURN_IF_HIP_ERROR(hipMemcpy(
-        csr_row_ptr + 1, d_nnz_per_rows, sizeof(rocsparse_int) * m, hipMemcpyDeviceToDevice));
 
     // Obtain rocprim buffer size
     size_t temp_storage_bytes = 0;
@@ -332,9 +335,6 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
 
         *nnz_total_dev_host_ptr -= descr->base;
     }
-
-    // Free nnz per row array
-    RETURN_IF_HIP_ERROR(hipFree(d_nnz_per_rows));
 
     return rocsparse_status_success;
 }

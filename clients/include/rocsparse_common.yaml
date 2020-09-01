@@ -133,6 +133,7 @@ Arguments:
   - alphai: c_double
   - beta: c_double
   - betai: c_double
+  - threshold: c_double
   - transA: rocsparse_operation
   - transB: rocsparse_operation
   - baseA: rocsparse_index_base
@@ -209,6 +210,7 @@ Defaults:
   alphai: 0.0
   beta: 0.0
   betai: 0.0
+  threshold: 1.0
   transA: rocsparse_operation_none
   transB: rocsparse_operation_none
   baseA: rocsparse_index_base_zero

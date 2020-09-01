@@ -31,18 +31,31 @@
 
 #include <hip/hip_runtime.h>
 
+template <rocsparse_int BLOCK_SIZE>
+__launch_bounds__(BLOCK_SIZE) __global__
+    void compute_nnz_from_row_ptr_array_kernel(rocsparse_int m,
+                                               const rocsparse_int* __restrict__ csr_row_ptr,
+                                               rocsparse_int* nnz)
+{
+    rocsparse_int thread_id = hipThreadIdx_x + hipBlockIdx_x * hipBlockDim_x;
+
+    if(thread_id == 0)
+    {
+        *nnz = csr_row_ptr[m] - csr_row_ptr[0];
+    }
+}
+
 template <typename T,
           rocsparse_int BLOCK_SIZE,
           rocsparse_int SEGMENTS_PER_BLOCK,
           rocsparse_int SEGMENT_SIZE,
           rocsparse_int WF_SIZE>
-__launch_bounds__(BLOCK_SIZE) __global__
-    void nnz_compress_kernel(rocsparse_int        m,
-                             rocsparse_index_base idx_base,
-                             const T* __restrict__ csr_val_A,
-                             const rocsparse_int* __restrict__ csr_row_ptr_A,
-                             rocsparse_int* __restrict__ nnz_per_row,
-                             T tol)
+__device__ void nnz_compress_kernel(rocsparse_int        m,
+                                    rocsparse_index_base idx_base_A,
+                                    const T* __restrict__ csr_val_A,
+                                    const rocsparse_int* __restrict__ csr_row_ptr_A,
+                                    rocsparse_int* __restrict__ nnz_per_row,
+                                    T tol)
 {
     const rocsparse_int segment_id      = hipThreadIdx_x / SEGMENT_SIZE;
     const rocsparse_int segment_lane_id = hipThreadIdx_x % SEGMENT_SIZE;
@@ -51,8 +64,8 @@ __launch_bounds__(BLOCK_SIZE) __global__
 
     if(row_index < m)
     {
-        const rocsparse_int start_A = csr_row_ptr_A[row_index] - idx_base;
-        const rocsparse_int end_A   = csr_row_ptr_A[row_index + 1] - idx_base;
+        const rocsparse_int start_A = csr_row_ptr_A[row_index] - idx_base_A;
+        const rocsparse_int end_A   = csr_row_ptr_A[row_index + 1] - idx_base_A;
 
         rocsparse_int count = 0;
 

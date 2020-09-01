@@ -6879,7 +6879,7 @@ rocsparse_status rocsparse_zdense2csr(rocsparse_handle                handle,
 *  lda         leading dimension of dense array \p A.
 *
 *  @param[in]
-*  threshold   pointer to the pruning threshold which can exist in either host or device memory.
+*  threshold   pointer to the pruning non-negative threshold which can exist in either host or device memory.
 *
 *  @param[in]
 *  descr      the descriptor of the dense matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
@@ -6954,7 +6954,7 @@ rocsparse_status rocsparse_dprune_dense2csr_buffer_size(rocsparse_handle        
 *  lda         leading dimension of dense array \p A.
 *
 *  @param[in]
-*  threshold   pointer to the pruning threshold which can exist in either host or device memory.
+*  threshold   pointer to the pruning non-negative threshold which can exist in either host or device memory.
 *
 *  @param[in]
 *  descr      the descriptor of the dense matrix \p A.
@@ -7007,10 +7007,12 @@ rocsparse_status rocsparse_dprune_dense2csr_nnz(rocsparse_handle          handle
 *  This function converts the matrix A in dense format into a sparse matrix in CSR format while pruning values
 *  that are less than the threshold. All the parameters are assumed to have been pre-allocated by the user.
 *  The user first allocates \p csr_row_ptr to have \p m+1 elements and then calls rocsparse_xprune_dense2csr_nnz()
-*  which fills in the \p csr_row_ptr array stores then number of elements that are larger than the pruning threshold
-*  in \p nnz_total_dev_host_ptr. The user then calls rocsparse_xprune_dense2csr_buffer_size() to determine the size
-*  of the buffer used by rocsparse_xprune_dense2csr(). It is executed asynchronously with respect to the host and may
-*  return control to the application on the host before the entire result is ready.
+*  which fills in the \p csr_row_ptr array and stores the number of elements that are larger than the pruning threshold
+*  in \p nnz_total_dev_host_ptr. The user then allocates \p csr_col_ind and \p csr_val to have size \p nnz_total_dev_host_ptr
+*  and completes the conversion by calling rocsparse_xprune_dense2csr(). A temporary storage buffer is used by both
+*  rocsparse_xprune_dense2csr_nnz() and rocsparse_xprune_dense2csr() and must be allocated by the user and whose size is determined
+*  by rocsparse_xprune_dense2csr_buffer_size(). The routine rocsparse_xprune_dense2csr() is executed asynchronously with
+*  respect to the host and may return control to the application on the host before the entire result is ready.
 *  \details
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
@@ -7028,7 +7030,7 @@ rocsparse_status rocsparse_dprune_dense2csr_nnz(rocsparse_handle          handle
 *  lda         leading dimension of dense array \p A.
 *
 *  @param[in]
-*  threshold   pointer to the pruning threshold which can exist in either host or device memory.
+*  threshold   pointer to the non-negative pruning threshold which can exist in either host or device memory.
 *
 *  @param[in]
 *  descr      the descriptor of the dense matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
@@ -8459,86 +8461,338 @@ rocsparse_status rocsparse_zcsr2csr_compress(rocsparse_handle                han
 /**@}*/
 
 /*! \ingroup conv_module
-*  \brief Convert a sparse COO matrix into a sparse CSR matrix
-*
-*  \details
-*  \p rocsparse_coo2csr converts the COO array containing the row indices into a
-*  CSR array of row offsets, that point to the start of every row.
-*  It is assumed that the COO row index array is sorted.
-*
-*  \note It can also be used, to convert a COO array containing the column indices into
-*  a CSC array of column offsets, that point to the start of every column. Then, it is
-*  assumed that the COO column index array is sorted, instead.
-*
-*  \note
-*  This function is non blocking and executed asynchronously with respect to the host.
-*  It may return before the actual computation has finished.
-*
-*  @param[in]
-*  handle      handle to the rocsparse library context queue.
-*  @param[in]
-*  coo_row_ind array of \p nnz elements containing the row indices of the sparse COO
-*              matrix.
-*  @param[in]
-*  nnz         number of non-zero entries of the sparse CSR matrix.
-*  @param[in]
-*  m           number of rows of the sparse CSR matrix.
-*  @param[out]
-*  csr_row_ptr array of \p m+1 elements that point to the start of every row of the
-*              sparse CSR matrix.
-*  @param[in]
-*  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
-*
-*  \retval     rocsparse_status_success the operation completed successfully.
-*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval     rocsparse_status_invalid_size \p m or \p nnz is invalid.
-*  \retval     rocsparse_status_invalid_pointer \p coo_row_ind or \p csr_row_ptr
-*              pointer is invalid.
-*
-*  \par Example
-*  This example converts a COO matrix into a CSR matrix.
-*  \code{.c}
-*      //     1 2 0 3 0
-*      // A = 0 4 5 0 0
-*      //     6 0 0 7 8
-*
-*      rocsparse_int m   = 3;
-*      rocsparse_int n   = 5;
-*      rocsparse_int nnz = 8;
-*
-*      coo_row_ind[nnz] = {0, 0, 0, 1, 1, 2, 2, 2}; // device memory
-*      coo_col_ind[nnz] = {0, 1, 3, 1, 2, 0, 3, 4}; // device memory
-*      coo_val[nnz]     = {1, 2, 3, 4, 5, 6, 7, 8}; // device memory
-*
-*      // Allocate CSR matrix arrays
-*      rocsparse_int* csr_row_ptr;
-*      rocsparse_int* csr_col_ind;
-*      float* csr_val;
-*
-*      hipMalloc((void**)&csr_row_ptr, sizeof(rocsparse_int) * (m + 1));
-*      hipMalloc((void**)&csr_col_ind, sizeof(rocsparse_int) * nnz);
-*      hipMalloc((void**)&csr_val, sizeof(float) * nnz);
-*
-*      // Convert the coo row indices into csr row offsets
-*      rocsparse_coo2csr(handle,
-*                        coo_row_ind,
-*                        nnz,
-*                        m,
-*                        csr_row_ptr,
-*                        rocsparse_index_base_zero);
-*
-*      // Copy the column and value arrays
-*      hipMemcpy(csr_col_ind,
-*                coo_col_ind,
-*                sizeof(rocsparse_int) * nnz,
-*                hipMemcpyDeviceToDevice);
-*
-*      hipMemcpy(csr_val,
-*                coo_val,
-*                sizeof(float) * nnz,
-*                hipMemcpyDeviceToDevice);
-*  \endcode
-*/
+ *  \brief Convert and prune sparse CSR matrix into a sparse CSR matrix
+ *
+ *  \details
+ *  \p rocsparse_prune_csr2csr_buffer_size returns the size of the temporary buffer that
+ *  is required by \p rocsparse_sprune_csr2csr_nnz, \p rocsparse_dprune_csr2csr_nnz,
+ *  \p rocsparse_sprune_csr2csr, and \p rocsparse_dprune_csr2csr. The temporary storage
+ *  buffer must be allocated by the user.
+ *
+ *  @param[in]
+ *  handle        handle to the rocsparse library context queue.
+ *  @param[in]
+ *  m             number of rows in the sparse CSR matrix.
+ *  @param[in]
+ *  n             number of columns in the sparse CSR matrix.
+ *  @param[in]
+ *  nnz_A         number of non-zeros in the sparse CSR matrix A.
+ *  @param[in]
+ *  csr_descr_A   descriptor of the sparse CSR matrix A. Currently, only
+ *                \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  csr_val_A     array of \p nnz_A elements containing the values of the sparse CSR matrix A.
+ *  @param[in]
+ *  csr_row_ptr_A array of \p m+1 elements that point to the start of every row of the
+ *                sparse CSR matrix A.
+ *  @param[in]
+ *  csr_col_ind_A array of \p nnz_A elements containing the column indices of the sparse CSR matrix A.
+ *  @param[in]
+ *  threshold     pointer to the non-negative pruning threshold which can exist in either host or device memory.
+ *  @param[in]
+ *  csr_descr_C   descriptor of the sparse CSR matrix C. Currently, only
+ *                \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  csr_val_C     array of \p nnz_C elements containing the values of the sparse CSR matrix C.
+ *  @param[in]
+ *  csr_row_ptr_C array of \p m+1 elements that point to the start of every row of the
+ *                sparse CSR matrix C.
+ *  @param[in]
+ *  csr_col_ind_C array of \p nnz_C elements containing the column indices of the sparse CSR matrix C.
+ *  @param[out]
+ *  buffer_size   number of bytes of the temporary storage buffer required by \p rocsparse_sprune_csr2csr_nnz,
+ *                \p rocsparse_dprune_csr2csr_nnz, \p rocsparse_sprune_csr2csr, and \p rocsparse_dprune_csr2csr.
+ *
+ *  \retval     rocsparse_status_success the operation completed successfully.
+ *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval     rocsparse_status_invalid_pointer \p buffer_size pointer is invalid.
+ *  \retval     rocsparse_status_internal_error an internal error occurred.
+ *
+ */
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sprune_csr2csr_buffer_size(rocsparse_handle          handle,
+                                                      rocsparse_int             m,
+                                                      rocsparse_int             n,
+                                                      rocsparse_int             nnz_A,
+                                                      const rocsparse_mat_descr csr_descr_A,
+                                                      const float*              csr_val_A,
+                                                      const rocsparse_int*      csr_row_ptr_A,
+                                                      const rocsparse_int*      csr_col_ind_A,
+                                                      const float*              threshold,
+                                                      const rocsparse_mat_descr csr_descr_C,
+                                                      const float*              csr_val_C,
+                                                      const rocsparse_int*      csr_row_ptr_C,
+                                                      const rocsparse_int*      csr_col_ind_C,
+                                                      size_t*                   buffer_size);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dprune_csr2csr_buffer_size(rocsparse_handle          handle,
+                                                      rocsparse_int             m,
+                                                      rocsparse_int             n,
+                                                      rocsparse_int             nnz_A,
+                                                      const rocsparse_mat_descr csr_descr_A,
+                                                      const double*             csr_val_A,
+                                                      const rocsparse_int*      csr_row_ptr_A,
+                                                      const rocsparse_int*      csr_col_ind_A,
+                                                      const double*             threshold,
+                                                      const rocsparse_mat_descr csr_descr_C,
+                                                      const double*             csr_val_C,
+                                                      const rocsparse_int*      csr_row_ptr_C,
+                                                      const rocsparse_int*      csr_col_ind_C,
+                                                      size_t*                   buffer_size);
+/**@}*/
+
+/*! \ingroup conv_module
+ *  \brief Convert and prune sparse CSR matrix into a sparse CSR matrix
+ *
+ *  \details
+ *  \p rocsparse_prune_csr2csr_nnz computes the number of nonzero elements per row and the total
+ *  number of nonzero elements in a sparse CSR matrix once elements less than the threshold are
+ *  pruned from the matrix.
+ *
+ *  \note The routine does support asynchronous execution if the pointer mode is set to device.
+ *
+ *  @param[in]
+ *  handle        handle to the rocsparse library context queue.
+ *  @param[in]
+ *  m             number of rows in the sparse CSR matrix.
+ *  @param[in]
+ *  n             number of columns in the sparse CSR matrix.
+ *  @param[in]
+ *  nnz_A         number of non-zeros in the sparse CSR matrix A.
+ *  @param[in]
+ *  csr_descr_A   descriptor of the sparse CSR matrix A. Currently, only
+ *                \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  csr_val_A     array of \p nnz_A elements containing the values of the sparse CSR matrix A.
+ *  @param[in]
+ *  csr_row_ptr_A array of \p m+1 elements that point to the start of every row of the
+ *                sparse CSR matrix A.
+ *  @param[in]
+ *  csr_col_ind_A array of \p nnz_A elements containing the column indices of the sparse CSR matrix A.
+ *  @param[in]
+ *  threshold     pointer to the non-negative pruning threshold which can exist in either host or device memory.
+ *  @param[in]
+ *  csr_descr_C   descriptor of the sparse CSR matrix C. Currently, only
+ *                \ref rocsparse_matrix_type_general is supported.
+ *  @param[out]
+ *  csr_row_ptr_C array of \p m+1 elements that point to the start of every row of the
+ *                sparse CSR matrix C.
+ *  @param[out]
+ *  nnz_total_dev_host_ptr total number of nonzero elements in device or host memory.
+ *  @param[out]
+ *  temp_buffer   buffer allocated by the user whose size is determined by calling \p rocsparse_xprune_csr2csr_buffer_size().
+ *
+ *  \retval     rocsparse_status_success the operation completed successfully.
+ *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval     rocsparse_status_invalid_size \p m or \p n or \p nnz_A is invalid.
+ *  \retval     rocsparse_status_invalid_pointer \p threshold or \p csr_descr_A or \p csr_descr_C or \p csr_val_A
+ *              or \p csr_row_ptr_A or \p csr_col_ind_A or \p csr_row_ptr_C or \p nnz_total_dev_host_ptr
+ *              or \p temp_buffer pointer is invalid.
+ *
+ */
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sprune_csr2csr_nnz(rocsparse_handle          handle,
+                                              rocsparse_int             m,
+                                              rocsparse_int             n,
+                                              rocsparse_int             nnz_A,
+                                              const rocsparse_mat_descr csr_descr_A,
+                                              const float*              csr_val_A,
+                                              const rocsparse_int*      csr_row_ptr_A,
+                                              const rocsparse_int*      csr_col_ind_A,
+                                              const float*              threshold,
+                                              const rocsparse_mat_descr csr_descr_C,
+                                              rocsparse_int*            csr_row_ptr_C,
+                                              rocsparse_int*            nnz_total_dev_host_ptr,
+                                              void*                     buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dprune_csr2csr_nnz(rocsparse_handle          handle,
+                                              rocsparse_int             m,
+                                              rocsparse_int             n,
+                                              rocsparse_int             nnz_A,
+                                              const rocsparse_mat_descr csr_descr_A,
+                                              const double*             csr_val_A,
+                                              const rocsparse_int*      csr_row_ptr_A,
+                                              const rocsparse_int*      csr_col_ind_A,
+                                              const double*             threshold,
+                                              const rocsparse_mat_descr csr_descr_C,
+                                              rocsparse_int*            csr_row_ptr_C,
+                                              rocsparse_int*            nnz_total_dev_host_ptr,
+                                              void*                     buffer);
+/**@}*/
+
+/*! \ingroup conv_module
+ *  \brief Convert and prune sparse CSR matrix into a sparse CSR matrix
+ *
+ *  \details
+ *  This function converts the sparse CSR matrix A into a sparse CSR matrix C by pruning values in A
+ *  that are less than the threshold. All the parameters are assumed to have been pre-allocated by the user.
+ *  The user first calls rocsparse_xprune_csr2csr_buffer_size() to determine the size of the buffer used
+ *  by rocsparse_xprune_csr2csr_nnz() and rocsparse_xprune_csr2csr() which the user then allocates. The user then
+ *  allocates \p csr_row_ptr_C to have \p m+1 elements and then calls rocsparse_xprune_csr2csr_nnz() which fills
+ *  in the \p csr_row_ptr_C array stores then number of elements that are larger than the pruning threshold
+ *  in \p nnz_total_dev_host_ptr. The user then calls rocsparse_xprune_csr2csr() to complete the conversion. It
+ *  is executed asynchronously with respect to the host and may return control to the application on the host
+ *  before the entire result is ready.
+ *
+ *  @param[in]
+ *  handle        handle to the rocsparse library context queue.
+ *  @param[in]
+ *  m             number of rows in the sparse CSR matrix.
+ *  @param[in]
+ *  n             number of columns in the sparse CSR matrix.
+ *  @param[in]
+ *  nnz_A         number of non-zeros in the sparse CSR matrix A.
+ *  @param[in]
+ *  csr_descr_A   descriptor of the sparse CSR matrix A. Currently, only
+ *                \ref rocsparse_matrix_type_general is supported.
+ *  @param[in]
+ *  csr_val_A     array of \p nnz_A elements containing the values of the sparse CSR matrix A.
+ *  @param[in]
+ *  csr_row_ptr_A array of \p m+1 elements that point to the start of every row of the
+ *                sparse CSR matrix A.
+ *  @param[in]
+ *  csr_col_ind_A array of \p nnz_A elements containing the column indices of the sparse CSR matrix A.
+ *  @param[in]
+ *  threshold     pointer to the non-negative pruning threshold which can exist in either host or device memory.
+ *  @param[in]
+ *  csr_descr_C   descriptor of the sparse CSR matrix C. Currently, only
+ *                \ref rocsparse_matrix_type_general is supported.
+ *  @param[out]
+ *  csr_val_C     array of \p nnz_C elements containing the values of the sparse CSR matrix C.
+ *  @param[in]
+ *  csr_row_ptr_C array of \p m+1 elements that point to the start of every row of the
+ *                sparse CSR matrix C.
+ *  @param[out]
+ *  csr_col_ind_C array of \p nnz_C elements containing the column indices of the sparse CSR matrix C.
+ *  @param[in]
+ *  temp_buffer   buffer allocated by the user whose size is determined by calling \p rocsparse_xprune_csr2csr_buffer_size().
+ *
+ *  \retval     rocsparse_status_success the operation completed successfully.
+ *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval     rocsparse_status_invalid_size \p m or \p n or \p nnz_A is invalid.
+ *  \retval     rocsparse_status_invalid_pointer \p threshold or \p csr_descr_A or \p csr_descr_C or \p csr_val_A
+ *              or \p csr_row_ptr_A or \p csr_col_ind_A or \p csr_val_C or \p csr_row_ptr_C or \p csr_col_ind_C
+ *              or \p temp_buffer pointer is invalid.
+ */
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sprune_csr2csr(rocsparse_handle          handle,
+                                          rocsparse_int             m,
+                                          rocsparse_int             n,
+                                          rocsparse_int             nnz_A,
+                                          const rocsparse_mat_descr csr_descr_A,
+                                          const float*              csr_val_A,
+                                          const rocsparse_int*      csr_row_ptr_A,
+                                          const rocsparse_int*      csr_col_ind_A,
+                                          const float*              threshold,
+                                          const rocsparse_mat_descr csr_descr_C,
+                                          float*                    csr_val_C,
+                                          const rocsparse_int*      csr_row_ptr_C,
+                                          rocsparse_int*            csr_col_ind_C,
+                                          void*                     buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dprune_csr2csr(rocsparse_handle          handle,
+                                          rocsparse_int             m,
+                                          rocsparse_int             n,
+                                          rocsparse_int             nnz_A,
+                                          const rocsparse_mat_descr csr_descr_A,
+                                          const double*             csr_val_A,
+                                          const rocsparse_int*      csr_row_ptr_A,
+                                          const rocsparse_int*      csr_col_ind_A,
+                                          const double*             threshold,
+                                          const rocsparse_mat_descr csr_descr_C,
+                                          double*                   csr_val_C,
+                                          const rocsparse_int*      csr_row_ptr_C,
+                                          rocsparse_int*            csr_col_ind_C,
+                                          void*                     buffer);
+/**@}*/
+
+/*! \ingroup conv_module
+ *  \brief Convert a sparse COO matrix into a sparse CSR matrix
+ *
+ *  \details
+ *  \p rocsparse_coo2csr converts the COO array containing the row indices into a
+ *  CSR array of row offsets, that point to the start of every row.
+ *  It is assumed that the COO row index array is sorted.
+ *
+ *  \note It can also be used, to convert a COO array containing the column indices into
+ *  a CSC array of column offsets, that point to the start of every column. Then, it is
+ *  assumed that the COO column index array is sorted, instead.
+ *
+ *  \note
+ *  This function is non blocking and executed asynchronously with respect to the host.
+ *  It may return before the actual computation has finished.
+ *
+ *  @param[in]
+ *  handle      handle to the rocsparse library context queue.
+ *  @param[in]
+ *  coo_row_ind array of \p nnz elements containing the row indices of the sparse COO
+ *              matrix.
+ *  @param[in]
+ *  nnz         number of non-zero entries of the sparse CSR matrix.
+ *  @param[in]
+ *  m           number of rows of the sparse CSR matrix.
+ *  @param[out]
+ *  csr_row_ptr array of \p m+1 elements that point to the start of every row of the
+ *              sparse CSR matrix.
+ *  @param[in]
+ *  idx_base    \ref rocsparse_index_base_zero or \ref rocsparse_index_base_one.
+ *
+ *  \retval     rocsparse_status_success the operation completed successfully.
+ *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval     rocsparse_status_invalid_size \p m or \p nnz is invalid.
+ *  \retval     rocsparse_status_invalid_pointer \p coo_row_ind or \p csr_row_ptr
+ *              pointer is invalid.
+ *
+ *  \par Example
+ *  This example converts a COO matrix into a CSR matrix.
+ *  \code{.c}
+ *      //     1 2 0 3 0
+ *      // A = 0 4 5 0 0
+ *      //     6 0 0 7 8
+ *
+ *      rocsparse_int m   = 3;
+ *      rocsparse_int n   = 5;
+ *      rocsparse_int nnz = 8;
+ *
+ *      coo_row_ind[nnz] = {0, 0, 0, 1, 1, 2, 2, 2}; // device memory
+ *      coo_col_ind[nnz] = {0, 1, 3, 1, 2, 0, 3, 4}; // device memory
+ *      coo_val[nnz]     = {1, 2, 3, 4, 5, 6, 7, 8}; // device memory
+ *
+ *      // Allocate CSR matrix arrays
+ *      rocsparse_int* csr_row_ptr;
+ *      rocsparse_int* csr_col_ind;
+ *      float* csr_val;
+ *
+ *      hipMalloc((void**)&csr_row_ptr, sizeof(rocsparse_int) * (m + 1));
+ *      hipMalloc((void**)&csr_col_ind, sizeof(rocsparse_int) * nnz);
+ *      hipMalloc((void**)&csr_val, sizeof(float) * nnz);
+ *
+ *      // Convert the coo row indices into csr row offsets
+ *      rocsparse_coo2csr(handle,
+ *                        coo_row_ind,
+ *                        nnz,
+ *                        m,
+ *                        csr_row_ptr,
+ *                        rocsparse_index_base_zero);
+ *
+ *      // Copy the column and value arrays
+ *      hipMemcpy(csr_col_ind,
+ *                coo_col_ind,
+ *                sizeof(rocsparse_int) * nnz,
+ *                hipMemcpyDeviceToDevice);
+ *
+ *      hipMemcpy(csr_val,
+ *                coo_val,
+ *                sizeof(float) * nnz,
+ *                hipMemcpyDeviceToDevice);
+ *  \endcode
+ */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coo2csr(rocsparse_handle     handle,
                                    const rocsparse_int* coo_row_ind,

@@ -363,7 +363,7 @@ void testing_prune_dense2csr(const Arguments& arg)
     rocsparse_int        N         = arg.N;
     rocsparse_int        LDA       = arg.denseld;
     rocsparse_index_base base      = arg.baseA;
-    T                    threshold = static_cast<T>(arg.alpha);
+    T                    threshold = static_cast<T>(arg.threshold);
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -542,6 +542,8 @@ void testing_prune_dense2csr(const Arguments& arg)
         int number_cold_calls = 2;
         int number_hot_calls  = arg.iters;
 
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
@@ -585,13 +587,15 @@ void testing_prune_dense2csr(const Arguments& arg)
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
 
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "nnz"
-                  << std::setw(12) << "GB/s" << std::setw(12) << "msec" << std::setw(12) << "iter"
-                  << std::setw(12) << "verified" << std::endl;
+        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "denseld"
+                  << std::setw(12) << "nnz" << std::setw(12) << "threshold" << std::setw(12)
+                  << "GB/s" << std::setw(12) << "msec" << std::setw(12) << "iter" << std::setw(12)
+                  << "verified" << std::endl;
 
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12)
-                  << h_nnz_total_dev_host_ptr[0] << std::setw(12) << gpu_gbyte << std::setw(12)
-                  << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls << std::setw(12)
+        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << LDA
+                  << std::setw(12) << h_nnz_total_dev_host_ptr[0] << std::setw(12) << threshold
+                  << std::setw(12) << gpu_gbyte << std::setw(12) << gpu_time_used / 1e3
+                  << std::setw(12) << number_hot_calls << std::setw(12)
                   << (arg.unit_check ? "yes" : "no") << std::endl;
     }
 
