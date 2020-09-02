@@ -153,6 +153,10 @@ Arguments:
   - iters: rocsparse_int
   - denseld: rocsparse_int
   - algo: c_uint
+  - numericboost: c_int
+  - boosttol: c_double
+  - boostval: c_double
+  - boostvali: c_double
   - filename: c_char*64
   - function: c_char*64
   - name: c_char*64
@@ -186,6 +190,7 @@ Dictionary lists to expand:
   - alpha_alphai
   - beta_betai
   - alphai_betai
+  - boostval_boostvali
   - matrix_size
   - precision
   - function: precision
@@ -230,6 +235,10 @@ Defaults:
   iters: 10
   denseld: -1
   algo: 0
+  numericboost: 0
+  boosttol: 0.0
+  boostval: 1.0
+  boostvali: 0.0
   workspace_size: 0
   category: nightly
   filename: '*'

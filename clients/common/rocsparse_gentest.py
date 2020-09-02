@@ -304,7 +304,7 @@ def instantiate(test):
             if COMPLEX_RE.match(test[typename]):
                 break
         else:
-            for name in ('alphai', 'betai'):
+            for name in ('alphai', 'betai', 'boostvali'):
                 if name in test:
                     test[name] = 0.0
 

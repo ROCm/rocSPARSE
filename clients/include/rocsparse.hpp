@@ -551,6 +551,56 @@ rocsparse_status rocsparse_bsric0(rocsparse_handle          handle,
                                   rocsparse_solve_policy    policy,
                                   void*                     temp_buffer);
 
+// bsrilu0
+template <typename T>
+rocsparse_status rocsparse_bsrilu0_buffer_size(rocsparse_handle          handle,
+                                               rocsparse_direction       dir,
+                                               rocsparse_int             mb,
+                                               rocsparse_int             nnzb,
+                                               const rocsparse_mat_descr descr,
+                                               const T*                  bsr_val,
+                                               const rocsparse_int*      bsr_row_ptr,
+                                               const rocsparse_int*      bsr_col_ind,
+                                               rocsparse_int             block_dim,
+                                               rocsparse_mat_info        info,
+                                               size_t*                   buffer_size);
+
+template <typename T, typename U>
+rocsparse_status rocsparse_bsrilu0_numeric_boost(rocsparse_handle   handle,
+                                                 rocsparse_mat_info info,
+                                                 int                enable_boost,
+                                                 const U*           boost_tol,
+                                                 const T*           boost_val);
+
+template <typename T>
+rocsparse_status rocsparse_bsrilu0_analysis(rocsparse_handle          handle,
+                                            rocsparse_direction       dir,
+                                            rocsparse_int             mb,
+                                            rocsparse_int             nnzb,
+                                            const rocsparse_mat_descr descr,
+                                            const T*                  bsr_val,
+                                            const rocsparse_int*      bsr_row_ptr,
+                                            const rocsparse_int*      bsr_col_ind,
+                                            rocsparse_int             block_dim,
+                                            rocsparse_mat_info        info,
+                                            rocsparse_analysis_policy analysis,
+                                            rocsparse_solve_policy    solve,
+                                            void*                     temp_buffer);
+
+template <typename T>
+rocsparse_status rocsparse_bsrilu0(rocsparse_handle          handle,
+                                   rocsparse_direction       dir,
+                                   rocsparse_int             mb,
+                                   rocsparse_int             nnzb,
+                                   const rocsparse_mat_descr descr,
+                                   T*                        bsr_val,
+                                   const rocsparse_int*      bsr_row_ptr,
+                                   const rocsparse_int*      bsr_col_ind,
+                                   rocsparse_int             block_dim,
+                                   rocsparse_mat_info        info,
+                                   rocsparse_solve_policy    policy,
+                                   void*                     temp_buffer);
+
 // csric0
 template <typename T>
 rocsparse_status rocsparse_csric0_buffer_size(rocsparse_handle          handle,
