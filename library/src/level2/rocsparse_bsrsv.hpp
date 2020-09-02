@@ -537,12 +537,12 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
                 info->bsrsv_lower_info = info->bsric0_info;
                 return rocsparse_status_success;
             }
-            // else if(trans == rocsparse_operation_none && info->bsrilu0_info != nullptr)
-            // {
-            //     // bsrilu0 meta data
-            //     info->bsrsv_lower_info = info->bsrilu0_info;
-            //     return rocsparse_status_success;
-            // }
+            else if(trans == rocsparse_operation_none && info->bsrilu0_info != nullptr)
+            {
+                // bsrilu0 meta data
+                info->bsrsv_lower_info = info->bsrilu0_info;
+                return rocsparse_status_success;
+            }
             // else if(trans == rocsparse_operation_none && info->bsrsm_lower_info != nullptr)
             // {
             //     // bsrsm meta data

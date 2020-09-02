@@ -42,6 +42,7 @@ include: test_gemmi.yaml
 include: test_csrgeam.yaml
 include: test_csrgemm.yaml
 include: test_bsric0.yaml
+include: test_bsrilu0.yaml
 include: test_csric0.yaml
 include: test_csrilu0.yaml
 include: test_nnz.yaml

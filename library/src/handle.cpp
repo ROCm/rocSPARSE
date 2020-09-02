@@ -320,6 +320,10 @@ bool rocsparse_check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_inf
         ++shared;
     if(trm == info->bsrsvt_upper_info)
         ++shared;
+    if(trm == info->bsrilu0_info)
+        ++shared;
+    if(trm == info->bsric0_info)
+        ++shared;
     if(trm == info->csrilu0_info)
         ++shared;
     if(trm == info->csric0_info)

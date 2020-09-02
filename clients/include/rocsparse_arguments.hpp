@@ -84,6 +84,11 @@ struct Arguments
 
     uint32_t algo;
 
+    int    numericboost;
+    double boosttol;
+    double boostval;
+    double boostvali;
+
     char filename[64];
     char function[64];
     char name[64];
@@ -159,6 +164,10 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(iters);
         ROCSPARSE_FORMAT_CHECK(denseld);
         ROCSPARSE_FORMAT_CHECK(algo);
+        ROCSPARSE_FORMAT_CHECK(numericboost);
+        ROCSPARSE_FORMAT_CHECK(boosttol);
+        ROCSPARSE_FORMAT_CHECK(boostval);
+        ROCSPARSE_FORMAT_CHECK(boostvali);
         ROCSPARSE_FORMAT_CHECK(filename);
         ROCSPARSE_FORMAT_CHECK(function);
         ROCSPARSE_FORMAT_CHECK(name);
@@ -179,6 +188,14 @@ struct Arguments
         return (rocsparse_isnan(beta) || rocsparse_isnan(betai))
                    ? static_cast<T>(0)
                    : convert_alpha_beta<T>(beta, betai);
+    }
+
+    template <typename T>
+    T get_boostval() const
+    {
+        return (rocsparse_isnan(boostval) || rocsparse_isnan(boostvali))
+                   ? static_cast<T>(0)
+                   : convert_alpha_beta<T>(boostval, boostvali);
     }
 
     template <typename T>
@@ -303,6 +320,10 @@ private:
         print("matrix", rocsparse_matrix2string(arg.matrix));
         print("file", arg.filename);
         print("algo", arg.algo);
+        print("numeric_boost", arg.numericboost);
+        print("boost_tol", arg.boosttol);
+        print("boost_val", arg.boostval);
+        print("boost_vali", arg.boostvali);
         print("name", arg.name);
         print("category", arg.category);
         print("unit_check", arg.unit_check);
