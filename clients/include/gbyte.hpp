@@ -271,6 +271,17 @@ constexpr double prune_dense2csr_gbyte_count(rocsparse_int M, rocsparse_int N, r
     return (reads + writes) / 1e9;
 }
 
+template <typename T>
+constexpr double
+    prune_dense2csr_by_percentage_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz)
+{
+    size_t reads = M * N * sizeof(T);
+
+    size_t writes = (M + 1 + nnz) * sizeof(rocsparse_int) + nnz * sizeof(T);
+
+    return (reads + writes) / 1e9;
+}
+
 template <rocsparse_direction DIRA, typename T>
 constexpr double csx2dense_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz)
 {

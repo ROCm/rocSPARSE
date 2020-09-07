@@ -70,6 +70,7 @@ set(rocsparse_source
   src/conversion/rocsparse_nnz.cpp
   src/conversion/rocsparse_dense2csr.cpp
   src/conversion/rocsparse_prune_dense2csr.cpp
+  src/conversion/rocsparse_prune_dense2csr_by_percentage.cpp
   src/conversion/rocsparse_dense2csc.cpp
   src/conversion/rocsparse_csr2dense.cpp
   src/conversion/rocsparse_csc2dense.cpp

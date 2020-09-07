@@ -2945,6 +2945,38 @@ inline void host_prune_dense2csr(rocsparse_int               m,
     }
 }
 
+template <typename T>
+void host_prune_dense2csr_by_percentage(rocsparse_int               m,
+                                        rocsparse_int               n,
+                                        const std::vector<T>&       A,
+                                        rocsparse_int               lda,
+                                        rocsparse_index_base        base,
+                                        T                           percentage,
+                                        rocsparse_int&              nnz,
+                                        std::vector<T>&             csr_val,
+                                        std::vector<rocsparse_int>& csr_row_ptr,
+                                        std::vector<rocsparse_int>& csr_col_ind)
+{
+    rocsparse_int nnz_A = m * n;
+    rocsparse_int pos   = std::ceil(nnz_A * (percentage / 100)) - 1;
+    pos                 = std::min(pos, nnz_A - 1);
+    pos                 = std::max(pos, 0);
+
+    std::vector<T> sorted_A(m * n);
+    for(rocsparse_int i = 0; i < n; i++)
+    {
+        for(rocsparse_int j = 0; j < m; j++)
+        {
+            sorted_A[m * i + j] = std::abs(A[lda * i + j]);
+        }
+    }
+
+    std::sort(sorted_A.begin(), sorted_A.end());
+
+    T threshold = sorted_A[pos];
+    host_prune_dense2csr<T>(m, n, A, lda, base, threshold, nnz, csr_val, csr_row_ptr, csr_col_ind);
+}
+
 template <rocsparse_direction DIRA, typename T>
 rocsparse_status host_dense2csx(rocsparse_int        m,
                                 rocsparse_int        n,
