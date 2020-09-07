@@ -59,6 +59,7 @@ struct Arguments
     double beta;
     double betai;
     double threshold;
+    double percentage;
 
     rocsparse_operation       transA;
     rocsparse_operation       transB;
@@ -145,6 +146,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(beta);
         ROCSPARSE_FORMAT_CHECK(betai);
         ROCSPARSE_FORMAT_CHECK(threshold);
+        ROCSPARSE_FORMAT_CHECK(percentage);
         ROCSPARSE_FORMAT_CHECK(transA);
         ROCSPARSE_FORMAT_CHECK(transB);
         ROCSPARSE_FORMAT_CHECK(baseA);
@@ -202,6 +204,12 @@ struct Arguments
     T get_threshold() const
     {
         return (rocsparse_isnan(threshold)) ? static_cast<T>(0) : threshold;
+    }
+
+    template <typename T>
+    T get_percentage() const
+    {
+        return (rocsparse_isnan(percentage)) ? static_cast<T>(0) : percentage;
     }
 
 private:
@@ -310,6 +318,7 @@ private:
         print("beta", arg.beta);
         print("betai", arg.betai);
         print("threshold", arg.threshold);
+        print("percentage", arg.percentage);
         print("action", rocsparse_action2string(arg.action));
         print("part", rocsparse_partition2string(arg.part));
         print("diag", rocsparse_diagtype2string(arg.diag));

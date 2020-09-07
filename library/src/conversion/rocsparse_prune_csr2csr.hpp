@@ -277,7 +277,7 @@ rocsparse_status rocsparse_prune_csr2csr_buffer_size_template(rocsparse_handle  
 
     // Logging
     log_trace(handle,
-              replaceX<T>("rocsparse_Xprune_csr2csr_nnz"),
+              replaceX<T>("rocsparse_Xprune_csr2csr_buffer_size"),
               m,
               n,
               nnz_A,
@@ -293,7 +293,7 @@ rocsparse_status rocsparse_prune_csr2csr_buffer_size_template(rocsparse_handle  
               (void*&)buffer_size);
 
     log_bench(handle,
-              "./rocsparse-bench -f prune_csr2csr_nnz -r",
+              "./rocsparse-bench -f prune_csr2csr_buffer_size -r",
               replaceX<T>("X"),
               "--mtx <matrix.mtx>");
 
@@ -636,7 +636,7 @@ rocsparse_status rocsparse_prune_csr2csr_template(rocsparse_handle          hand
 
     // Logging
     log_trace(handle,
-              replaceX<T>("rocsparse_Xprune_csr2csr_nnz"),
+              replaceX<T>("rocsparse_Xprune_csr2csr"),
               m,
               n,
               nnz_A,
@@ -651,10 +651,8 @@ rocsparse_status rocsparse_prune_csr2csr_template(rocsparse_handle          hand
               (void*&)csr_col_ind_C,
               (void*&)temp_buffer);
 
-    log_bench(handle,
-              "./rocsparse-bench -f prune_csr2csr_nnz -r",
-              replaceX<T>("X"),
-              "--mtx <matrix.mtx>");
+    log_bench(
+        handle, "./rocsparse-bench -f prune_csr2csr -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
     // Check matrix descriptor
     if(csr_descr_A == nullptr || csr_descr_C == nullptr)

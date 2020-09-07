@@ -758,6 +758,51 @@ rocsparse_status rocsparse_prune_dense2csr(rocsparse_handle          handle,
                                            rocsparse_int*            csr_col_ind,
                                            void*                     temp_buffer);
 
+// prune_dense2csr_by_percentage_buffer_size
+template <typename T>
+rocsparse_status
+    rocsparse_prune_dense2csr_by_percentage_buffer_size(rocsparse_handle          handle,
+                                                        rocsparse_int             m,
+                                                        rocsparse_int             n,
+                                                        const T*                  A,
+                                                        rocsparse_int             lda,
+                                                        T                         percentage,
+                                                        const rocsparse_mat_descr descr,
+                                                        const T*                  csr_val,
+                                                        const rocsparse_int*      csr_row_ptr,
+                                                        const rocsparse_int*      csr_col_ind,
+                                                        rocsparse_mat_info        info,
+                                                        size_t*                   buffer_size);
+
+// prune_dense2csr_nnz_by_percentage
+template <typename T>
+rocsparse_status rocsparse_prune_dense2csr_nnz_by_percentage(rocsparse_handle          handle,
+                                                             rocsparse_int             m,
+                                                             rocsparse_int             n,
+                                                             const T*                  A,
+                                                             rocsparse_int             lda,
+                                                             T                         percentage,
+                                                             const rocsparse_mat_descr descr,
+                                                             rocsparse_int*            csr_row_ptr,
+                                                             rocsparse_int* nnz_total_dev_host_ptr,
+                                                             rocsparse_mat_info info,
+                                                             void*              temp_buffer);
+
+// prune_dense2csr_by_percentage
+template <typename T>
+rocsparse_status rocsparse_prune_dense2csr_by_percentage(rocsparse_handle          handle,
+                                                         rocsparse_int             m,
+                                                         rocsparse_int             n,
+                                                         const T*                  A,
+                                                         rocsparse_int             lda,
+                                                         T                         percentage,
+                                                         const rocsparse_mat_descr descr,
+                                                         T*                        csr_val,
+                                                         const rocsparse_int*      csr_row_ptr,
+                                                         rocsparse_int*            csr_col_ind,
+                                                         rocsparse_mat_info        info,
+                                                         void*                     temp_buffer);
+
 // dense2csc
 template <typename T>
 rocsparse_status rocsparse_dense2csc(rocsparse_handle          handle,
