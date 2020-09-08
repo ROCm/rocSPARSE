@@ -317,11 +317,9 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
     // Extract nnz_total_dev_host_ptr
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        dim3 grid(1);
-        dim3 threads(1);
         hipLaunchKernelGGL(nnz_total_device_kernel,
-                           grid,
-                           threads,
+                           dim3(1),
+                           dim3(1),
                            0,
                            stream,
                            m,
