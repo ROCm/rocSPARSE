@@ -1004,4 +1004,58 @@ rocsparse_status rocsparse_prune_csr2csr(rocsparse_handle          handle,
                                          rocsparse_int*            csr_col_ind_C,
                                          void*                     buffer);
 
+// prune_csr2csr_by_percentage_buffer_size
+template <typename T>
+rocsparse_status
+    rocsparse_prune_csr2csr_by_percentage_buffer_size(rocsparse_handle          handle,
+                                                      rocsparse_int             m,
+                                                      rocsparse_int             n,
+                                                      rocsparse_int             nnz_A,
+                                                      const rocsparse_mat_descr csr_descr_A,
+                                                      const T*                  csr_val_A,
+                                                      const rocsparse_int*      csr_row_ptr_A,
+                                                      const rocsparse_int*      csr_col_ind_A,
+                                                      T                         percentage,
+                                                      const rocsparse_mat_descr csr_descr_C,
+                                                      const T*                  csr_val_C,
+                                                      const rocsparse_int*      csr_row_ptr_C,
+                                                      const rocsparse_int*      csr_col_ind_C,
+                                                      rocsparse_mat_info        info,
+                                                      size_t*                   buffer_size);
+
+// prune_csr2csr_nnz_by_percentage
+template <typename T>
+rocsparse_status rocsparse_prune_csr2csr_nnz_by_percentage(rocsparse_handle          handle,
+                                                           rocsparse_int             m,
+                                                           rocsparse_int             n,
+                                                           rocsparse_int             nnz_A,
+                                                           const rocsparse_mat_descr csr_descr_A,
+                                                           const T*                  csr_val_A,
+                                                           const rocsparse_int*      csr_row_ptr_A,
+                                                           const rocsparse_int*      csr_col_ind_A,
+                                                           T                         percentage,
+                                                           const rocsparse_mat_descr csr_descr_C,
+                                                           rocsparse_int*            csr_row_ptr_C,
+                                                           rocsparse_int* nnz_total_dev_host_ptr,
+                                                           rocsparse_mat_info info,
+                                                           void*              buffer);
+
+// prune_csr2csr_by_percentage
+template <typename T>
+rocsparse_status rocsparse_prune_csr2csr_by_percentage(rocsparse_handle          handle,
+                                                       rocsparse_int             m,
+                                                       rocsparse_int             n,
+                                                       rocsparse_int             nnz_A,
+                                                       const rocsparse_mat_descr csr_descr_A,
+                                                       const T*                  csr_val_A,
+                                                       const rocsparse_int*      csr_row_ptr_A,
+                                                       const rocsparse_int*      csr_col_ind_A,
+                                                       T                         percentage,
+                                                       const rocsparse_mat_descr csr_descr_C,
+                                                       T*                        csr_val_C,
+                                                       const rocsparse_int*      csr_row_ptr_C,
+                                                       rocsparse_int*            csr_col_ind_C,
+                                                       rocsparse_mat_info        info,
+                                                       void*                     buffer);
+
 #endif // ROCSPARSE_HPP

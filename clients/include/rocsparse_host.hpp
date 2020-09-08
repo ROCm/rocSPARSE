@@ -3548,6 +3548,54 @@ inline void host_prune_csr_to_csr(rocsparse_int                     M,
     }
 }
 
+template <typename T>
+void host_prune_csr_to_csr_by_percentage(rocsparse_int                     M,
+                                         rocsparse_int                     N,
+                                         rocsparse_int                     nnz_A,
+                                         const std::vector<rocsparse_int>& csr_row_ptr_A,
+                                         const std::vector<rocsparse_int>& csr_col_ind_A,
+                                         const std::vector<T>&             csr_val_A,
+                                         rocsparse_int&                    nnz_C,
+                                         std::vector<rocsparse_int>&       csr_row_ptr_C,
+                                         std::vector<rocsparse_int>&       csr_col_ind_C,
+                                         std::vector<T>&                   csr_val_C,
+                                         rocsparse_index_base              csr_base_A,
+                                         rocsparse_index_base              csr_base_C,
+                                         T                                 percentage)
+{
+    rocsparse_int pos = std::ceil(nnz_A * (percentage / 100)) - 1;
+    pos               = std::min(pos, nnz_A - 1);
+    pos               = std::max(pos, 0);
+
+    std::vector<T> sorted_A(nnz_A);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int i = 0; i < nnz_A; i++)
+    {
+        sorted_A[i] = std::abs(csr_val_A[i]);
+    }
+
+    std::sort(sorted_A.begin(), sorted_A.end());
+
+    T threshold = sorted_A[pos];
+
+    host_prune_csr_to_csr<T>(M,
+                             N,
+                             nnz_A,
+                             csr_row_ptr_A,
+                             csr_col_ind_A,
+                             csr_val_A,
+                             nnz_C,
+                             csr_row_ptr_C,
+                             csr_col_ind_C,
+                             csr_val_C,
+                             csr_base_A,
+                             csr_base_C,
+                             threshold);
+}
+
 inline void host_coo_to_csr(rocsparse_int                     M,
                             rocsparse_int                     nnz,
                             const std::vector<rocsparse_int>& coo_row_ind,

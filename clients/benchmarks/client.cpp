@@ -79,6 +79,7 @@
 #include "testing_identity.hpp"
 #include "testing_nnz.hpp"
 #include "testing_prune_csr2csr.hpp"
+#include "testing_prune_csr2csr_by_percentage.hpp"
 #include "testing_prune_dense2csr.hpp"
 #include "testing_prune_dense2csr_by_percentage.hpp"
 
@@ -229,7 +230,7 @@ int main(int argc, char* argv[])
         "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0\n"
         "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb, csr2bsr\n"
         "              coo2csr, ell2csr, hyb2csr, dense2csr, prune_dense2csr, prune_dense2csr_by_percentage, dense2csc\n"
-        "              csr2dense, csc2dense, bsr2csr, csr2csr_compress, prune_csr2csr\n"
+        "              csr2dense, csc2dense, bsr2csr, csr2csr_compress, prune_csr2csr, prune_csr2csr_by_percentage\n"
         "  Sorting: cscsort, csrsort, coosort\n"
         "  Misc: identity, nnz")
 
@@ -868,6 +869,13 @@ int main(int argc, char* argv[])
             testing_prune_csr2csr<float>(arg);
         else if(precision == 'd')
             testing_prune_csr2csr<double>(arg);
+    }
+    else if(function == "prune_csr2csr_by_percentage")
+    {
+        if(precision == 's')
+            testing_prune_csr2csr_by_percentage<float>(arg);
+        else if(precision == 'd')
+            testing_prune_csr2csr_by_percentage<double>(arg);
     }
     else if(function == "csrsort")
     {

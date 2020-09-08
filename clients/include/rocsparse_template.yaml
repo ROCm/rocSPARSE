@@ -272,6 +272,8 @@ Functions:
   rocsparse_zcsr2csr_compress: { function: csr2csr_compress, <<: *double_precision_complex }
   rocsparse_sprune_csr2csr: { function: prune_csr2csr, <<: *single_precision }
   rocsparse_dprune_csr2csr: { function: prune_csr2csr, <<: *double_precision }
+  rocsparse_sprune_csr2csr_by_percentage: { function: prune_csr2csr_by_percentage, <<: *single_precision }
+  rocsparse_dprune_csr2csr_by_percentage: { function: prune_csr2csr_by_percentage, <<: *double_precision }
   rocsparse_create_identity_permutation: { function: rocsparse_create_identity_permutation }
   rocsparse_csrsort: { function: csrsort }
   rocsparse_cscsort: { function: cscsort }

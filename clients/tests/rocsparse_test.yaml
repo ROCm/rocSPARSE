@@ -63,6 +63,7 @@ include: test_hyb2csr.yaml
 include: test_bsr2csr.yaml
 include: test_csr2csr_compress.yaml
 include: test_prune_csr2csr.yaml
+include: test_prune_csr2csr_by_percentage.yaml
 include: test_identity.yaml
 include: test_csrsort.yaml
 include: test_cscsort.yaml

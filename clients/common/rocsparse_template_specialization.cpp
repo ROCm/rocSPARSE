@@ -5925,3 +5925,208 @@ rocsparse_status rocsparse_prune_csr2csr(rocsparse_handle          handle,
                                     csr_col_ind_C,
                                     temp_buffer);
 }
+
+// prune_csr2csr_by_percentage_buffer_size
+template <>
+rocsparse_status
+    rocsparse_prune_csr2csr_by_percentage_buffer_size(rocsparse_handle          handle,
+                                                      rocsparse_int             m,
+                                                      rocsparse_int             n,
+                                                      rocsparse_int             nnz_A,
+                                                      const rocsparse_mat_descr csr_descr_A,
+                                                      const float*              csr_val_A,
+                                                      const rocsparse_int*      csr_row_ptr_A,
+                                                      const rocsparse_int*      csr_col_ind_A,
+                                                      float                     percentage,
+                                                      const rocsparse_mat_descr csr_descr_C,
+                                                      const float*              csr_val_C,
+                                                      const rocsparse_int*      csr_row_ptr_C,
+                                                      const rocsparse_int*      csr_col_ind_C,
+                                                      rocsparse_mat_info        info,
+                                                      size_t*                   buffer_size)
+{
+    return rocsparse_sprune_csr2csr_by_percentage_buffer_size(handle,
+                                                              m,
+                                                              n,
+                                                              nnz_A,
+                                                              csr_descr_A,
+                                                              csr_val_A,
+                                                              csr_row_ptr_A,
+                                                              csr_col_ind_A,
+                                                              percentage,
+                                                              csr_descr_C,
+                                                              csr_val_C,
+                                                              csr_row_ptr_C,
+                                                              csr_col_ind_C,
+                                                              info,
+                                                              buffer_size);
+}
+
+template <>
+rocsparse_status
+    rocsparse_prune_csr2csr_by_percentage_buffer_size(rocsparse_handle          handle,
+                                                      rocsparse_int             m,
+                                                      rocsparse_int             n,
+                                                      rocsparse_int             nnz_A,
+                                                      const rocsparse_mat_descr csr_descr_A,
+                                                      const double*             csr_val_A,
+                                                      const rocsparse_int*      csr_row_ptr_A,
+                                                      const rocsparse_int*      csr_col_ind_A,
+                                                      double                    percentage,
+                                                      const rocsparse_mat_descr csr_descr_C,
+                                                      const double*             csr_val_C,
+                                                      const rocsparse_int*      csr_row_ptr_C,
+                                                      const rocsparse_int*      csr_col_ind_C,
+                                                      rocsparse_mat_info        info,
+                                                      size_t*                   buffer_size)
+{
+    return rocsparse_dprune_csr2csr_by_percentage_buffer_size(handle,
+                                                              m,
+                                                              n,
+                                                              nnz_A,
+                                                              csr_descr_A,
+                                                              csr_val_A,
+                                                              csr_row_ptr_A,
+                                                              csr_col_ind_A,
+                                                              percentage,
+                                                              csr_descr_C,
+                                                              csr_val_C,
+                                                              csr_row_ptr_C,
+                                                              csr_col_ind_C,
+                                                              info,
+                                                              buffer_size);
+}
+
+// prune_csr2csr_nnz_by_percentage
+template <>
+rocsparse_status rocsparse_prune_csr2csr_nnz_by_percentage(rocsparse_handle          handle,
+                                                           rocsparse_int             m,
+                                                           rocsparse_int             n,
+                                                           rocsparse_int             nnz_A,
+                                                           const rocsparse_mat_descr csr_descr_A,
+                                                           const float*              csr_val_A,
+                                                           const rocsparse_int*      csr_row_ptr_A,
+                                                           const rocsparse_int*      csr_col_ind_A,
+                                                           float                     percentage,
+                                                           const rocsparse_mat_descr csr_descr_C,
+                                                           rocsparse_int*            csr_row_ptr_C,
+                                                           rocsparse_int* nnz_total_dev_host_ptr,
+                                                           rocsparse_mat_info info,
+                                                           void*              temp_buffer)
+{
+    return rocsparse_sprune_csr2csr_nnz_by_percentage(handle,
+                                                      m,
+                                                      n,
+                                                      nnz_A,
+                                                      csr_descr_A,
+                                                      csr_val_A,
+                                                      csr_row_ptr_A,
+                                                      csr_col_ind_A,
+                                                      percentage,
+                                                      csr_descr_C,
+                                                      csr_row_ptr_C,
+                                                      nnz_total_dev_host_ptr,
+                                                      info,
+                                                      temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_prune_csr2csr_nnz_by_percentage(rocsparse_handle          handle,
+                                                           rocsparse_int             m,
+                                                           rocsparse_int             n,
+                                                           rocsparse_int             nnz_A,
+                                                           const rocsparse_mat_descr csr_descr_A,
+                                                           const double*             csr_val_A,
+                                                           const rocsparse_int*      csr_row_ptr_A,
+                                                           const rocsparse_int*      csr_col_ind_A,
+                                                           double                    percentage,
+                                                           const rocsparse_mat_descr csr_descr_C,
+                                                           rocsparse_int*            csr_row_ptr_C,
+                                                           rocsparse_int* nnz_total_dev_host_ptr,
+                                                           rocsparse_mat_info info,
+                                                           void*              temp_buffer)
+{
+    return rocsparse_dprune_csr2csr_nnz_by_percentage(handle,
+                                                      m,
+                                                      n,
+                                                      nnz_A,
+                                                      csr_descr_A,
+                                                      csr_val_A,
+                                                      csr_row_ptr_A,
+                                                      csr_col_ind_A,
+                                                      percentage,
+                                                      csr_descr_C,
+                                                      csr_row_ptr_C,
+                                                      nnz_total_dev_host_ptr,
+                                                      info,
+                                                      temp_buffer);
+}
+
+// prune_csr2csr
+template <>
+rocsparse_status rocsparse_prune_csr2csr_by_percentage(rocsparse_handle          handle,
+                                                       rocsparse_int             m,
+                                                       rocsparse_int             n,
+                                                       rocsparse_int             nnz_A,
+                                                       const rocsparse_mat_descr csr_descr_A,
+                                                       const float*              csr_val_A,
+                                                       const rocsparse_int*      csr_row_ptr_A,
+                                                       const rocsparse_int*      csr_col_ind_A,
+                                                       float                     percentage,
+                                                       const rocsparse_mat_descr csr_descr_C,
+                                                       float*                    csr_val_C,
+                                                       const rocsparse_int*      csr_row_ptr_C,
+                                                       rocsparse_int*            csr_col_ind_C,
+                                                       rocsparse_mat_info        info,
+                                                       void*                     temp_buffer)
+{
+    return rocsparse_sprune_csr2csr_by_percentage(handle,
+                                                  m,
+                                                  n,
+                                                  nnz_A,
+                                                  csr_descr_A,
+                                                  csr_val_A,
+                                                  csr_row_ptr_A,
+                                                  csr_col_ind_A,
+                                                  percentage,
+                                                  csr_descr_C,
+                                                  csr_val_C,
+                                                  csr_row_ptr_C,
+                                                  csr_col_ind_C,
+                                                  info,
+                                                  temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_prune_csr2csr_by_percentage(rocsparse_handle          handle,
+                                                       rocsparse_int             m,
+                                                       rocsparse_int             n,
+                                                       rocsparse_int             nnz_A,
+                                                       const rocsparse_mat_descr csr_descr_A,
+                                                       const double*             csr_val_A,
+                                                       const rocsparse_int*      csr_row_ptr_A,
+                                                       const rocsparse_int*      csr_col_ind_A,
+                                                       double                    percentage,
+                                                       const rocsparse_mat_descr csr_descr_C,
+                                                       double*                   csr_val_C,
+                                                       const rocsparse_int*      csr_row_ptr_C,
+                                                       rocsparse_int*            csr_col_ind_C,
+                                                       rocsparse_mat_info        info,
+                                                       void*                     temp_buffer)
+{
+    return rocsparse_dprune_csr2csr_by_percentage(handle,
+                                                  m,
+                                                  n,
+                                                  nnz_A,
+                                                  csr_descr_A,
+                                                  csr_val_A,
+                                                  csr_row_ptr_A,
+                                                  csr_col_ind_A,
+                                                  percentage,
+                                                  csr_descr_C,
+                                                  csr_val_C,
+                                                  csr_row_ptr_C,
+                                                  csr_col_ind_C,
+                                                  info,
+                                                  temp_buffer);
+}
