@@ -38,6 +38,26 @@
 #include "rocsparse_vector.hpp"
 #include "utility.hpp"
 
+static inline const float* get_boost_tol(const float* tol)
+{
+    return tol;
+}
+
+static inline const double* get_boost_tol(const double* tol)
+{
+    return tol;
+}
+
+static inline const float* get_boost_tol(const rocsparse_float_complex* tol)
+{
+    return reinterpret_cast<const float*>(tol);
+}
+
+static inline const double* get_boost_tol(const rocsparse_double_complex* tol)
+{
+    return reinterpret_cast<const double*>(tol);
+}
+
 template <typename T>
 void testing_csrilu0_bad_arg(const Arguments& arg)
 {
@@ -57,8 +77,10 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
     device_vector<rocsparse_int> dcsr_col_ind(safe_size);
     device_vector<T>             dcsr_val(safe_size);
     device_vector<T>             dbuffer(safe_size);
+    device_vector<T>             dboost_tol(1);
+    device_vector<T>             dboost_val(1);
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dbuffer)
+    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dbuffer || !dboost_tol || !dboost_val)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -136,6 +158,20 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
                                                              info,
                                                              nullptr),
                             rocsparse_status_invalid_pointer);
+
+    // Test rocsparse_csrilu0_numeric_boost()
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csrilu0_numeric_boost<T>(nullptr, info, 1, get_boost_tol(dboost_tol), dboost_val),
+        rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_numeric_boost<T>(
+                                handle, nullptr, 1, get_boost_tol(dboost_tol), dboost_val),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csrilu0_numeric_boost<T>(handle, info, 1, get_boost_tol((T*)nullptr), dboost_val),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csrilu0_numeric_boost<T>(handle, info, 1, get_boost_tol(dboost_tol), nullptr),
+        rocsparse_status_invalid_pointer);
 
     // Test rocsparse_csrilu0_analysis()
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_analysis<T>(nullptr,
@@ -321,19 +357,23 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_csrilu0(const Arguments& arg)
 {
-    rocsparse_int             M         = arg.M;
-    rocsparse_int             N         = arg.N;
-    rocsparse_int             K         = arg.K;
-    rocsparse_int             dim_x     = arg.dimx;
-    rocsparse_int             dim_y     = arg.dimy;
-    rocsparse_int             dim_z     = arg.dimz;
-    rocsparse_analysis_policy apol      = arg.apol;
-    rocsparse_solve_policy    spol      = arg.spol;
-    rocsparse_index_base      base      = arg.baseA;
-    rocsparse_matrix_init     mat       = arg.matrix;
-    bool                      full_rank = true;
+    rocsparse_int             M           = arg.M;
+    rocsparse_int             N           = arg.N;
+    rocsparse_int             K           = arg.K;
+    rocsparse_int             dim_x       = arg.dimx;
+    rocsparse_int             dim_y       = arg.dimy;
+    rocsparse_int             dim_z       = arg.dimz;
+    rocsparse_analysis_policy apol        = arg.apol;
+    rocsparse_solve_policy    spol        = arg.spol;
+    int                       boost       = arg.numericboost;
+    T                         h_boost_tol = static_cast<T>(arg.boosttol);
+    rocsparse_index_base      base        = arg.baseA;
+    rocsparse_matrix_init     mat         = arg.matrix;
+    bool                      full_rank   = true;
     std::string               filename
         = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+
+    T h_boost_val = arg.get_boostval<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -448,9 +488,11 @@ void testing_csrilu0(const Arguments& arg)
     device_vector<T>             dcsr_val_2(nnz);
     device_vector<rocsparse_int> d_analysis_pivot_2(1);
     device_vector<rocsparse_int> d_solve_pivot_2(1);
+    device_vector<T>             d_boost_tol(1);
+    device_vector<T>             d_boost_val(1);
 
     if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val_1 || !dcsr_val_2 || !d_analysis_pivot_2
-       || !d_solve_pivot_2)
+       || !d_solve_pivot_2 || !d_boost_tol || !d_boost_val)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -473,6 +515,9 @@ void testing_csrilu0(const Arguments& arg)
 
     if(arg.unit_check)
     {
+        CHECK_HIP_ERROR(hipMemcpy(d_boost_tol, &h_boost_tol, sizeof(T), hipMemcpyHostToDevice));
+        CHECK_HIP_ERROR(hipMemcpy(d_boost_val, &h_boost_val, sizeof(T), hipMemcpyHostToDevice));
+
         // Copy data from CPU to device
         CHECK_HIP_ERROR(
             hipMemcpy(dcsr_val_2, hcsr_val_gold, sizeof(T) * nnz, hipMemcpyHostToDevice));
@@ -528,6 +573,8 @@ void testing_csrilu0(const Arguments& arg)
 
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_numeric_boost<T>(
+            handle, info, boost, get_boost_tol(&h_boost_tol), &h_boost_val));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0<T>(
             handle, M, nnz, descr, dcsr_val_1, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
         EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, h_solve_pivot_1),
@@ -539,6 +586,8 @@ void testing_csrilu0(const Arguments& arg)
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_numeric_boost<T>(
+            handle, info, boost, get_boost_tol(d_boost_tol), d_boost_val));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0<T>(
             handle, M, nnz, descr, dcsr_val_2, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
         EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, d_solve_pivot_2),
@@ -563,7 +612,10 @@ void testing_csrilu0(const Arguments& arg)
                         hcsr_val_gold,
                         base,
                         h_analysis_pivot_gold,
-                        h_solve_pivot_gold);
+                        h_solve_pivot_gold,
+                        boost,
+                        std::real(h_boost_tol),
+                        h_boost_val);
 
         // Check pivots
         unit_check_general<rocsparse_int>(1, 1, 1, h_analysis_pivot_gold, h_analysis_pivot_1);

@@ -6823,6 +6823,68 @@ rocsparse_status rocsparse_csrilu0_zero_pivot(rocsparse_handle   handle,
                                               rocsparse_int*     position);
 
 /*! \ingroup precond_module
+ *  \brief Incomplete LU factorization with 0 fill-ins and no pivoting using CSR storage
+ *  format
+ *
+ *  \details
+ *  \p rocsparse_csrilu0_numeric_boost enables the user to replace a numerical value in
+ *  an incomplete LU factorization. \p tol is used to determine whether a numerical value
+ *  is replaced by \p boost_val, such that \f$A_{j,j} = \text{boost_val}\f$ if
+ *  \f$\text{tol} \ge \left|A_{j,j}\right|\f$.
+ *
+ *  \note The boost value is enabled by setting \p enable_boost to 1 or disabled by
+ *  setting \p enable_boost to 0.
+ *
+ *  \note \p tol and \p boost_val can be in host or device memory.
+ *
+ *  @param[in]
+ *  handle          handle to the rocsparse library context queue.
+ *  @param[in]
+ *  info            structure that holds the information collected during the analysis step.
+ *  @param[in]
+ *  enable_boost    enable/disable numeric boost.
+ *  @param[in]
+ *  boost_tol       tolerance to determine whether a numerical value is replaced or not.
+ *  @param[in]
+ *  boost_val       boost value to replace a numerical value.
+ *
+ *  \retval     rocsparse_status_success the operation completed successfully.
+ *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+ *  \retval     rocsparse_status_invalid_pointer \p info, \p tol or \p boost_val pointer
+ *              is invalid.
+ *  \retval     rocsparse_status_internal_error an internal error occurred.
+ */
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scsrilu0_numeric_boost(rocsparse_handle   handle,
+                                                  rocsparse_mat_info info,
+                                                  int                enable_boost,
+                                                  const float*       boost_tol,
+                                                  const float*       boost_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcsrilu0_numeric_boost(rocsparse_handle   handle,
+                                                  rocsparse_mat_info info,
+                                                  int                enable_boost,
+                                                  const double*      boost_tol,
+                                                  const double*      boost_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ccsrilu0_numeric_boost(rocsparse_handle               handle,
+                                                  rocsparse_mat_info             info,
+                                                  int                            enable_boost,
+                                                  const float*                   boost_tol,
+                                                  const rocsparse_float_complex* boost_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zcsrilu0_numeric_boost(rocsparse_handle                handle,
+                                                  rocsparse_mat_info              info,
+                                                  int                             enable_boost,
+                                                  const double*                   boost_tol,
+                                                  const rocsparse_double_complex* boost_val);
+/**@}*/
+
+/*! \ingroup precond_module
 *  \brief Incomplete LU factorization with 0 fill-ins and no pivoting using CSR
 *  storage format
 *

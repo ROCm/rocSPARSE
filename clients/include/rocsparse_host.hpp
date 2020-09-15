@@ -2752,7 +2752,10 @@ inline void host_csrilu0(rocsparse_int                     M,
                          std::vector<T>&                   csr_val,
                          rocsparse_index_base              base,
                          rocsparse_int*                    struct_pivot,
-                         rocsparse_int*                    numeric_pivot)
+                         rocsparse_int*                    numeric_pivot,
+                         bool                              boost,
+                         double                            boost_tol,
+                         T                                 boost_val)
 {
     // Initialize pivot
     *struct_pivot  = -1;
@@ -2788,27 +2791,35 @@ inline void host_csrilu0(rocsparse_int                     M,
                 rocsparse_int col_j  = csr_col_ind[j] - base;
                 rocsparse_int diag_j = diag_offset[col_j];
 
-                if(csr_val[diag_j] != static_cast<T>(0))
-                {
-                    // multiplication factor
-                    csr_val[j] = csr_val[j] / csr_val[diag_j];
+                T diag_val = csr_val[diag_j];
 
-                    // loop over upper offset pointer and do linear combination for nnz entry
-                    for(rocsparse_int k = diag_j + 1; k < csr_row_ptr[col_j + 1] - base; ++k)
-                    {
-                        // if nnz at this position do linear combination
-                        if(nnz_entries[csr_col_ind[k] - base] != 0)
-                        {
-                            rocsparse_int idx = nnz_entries[csr_col_ind[k] - base];
-                            csr_val[idx]      = std::fma(-csr_val[j], csr_val[k], csr_val[idx]);
-                        }
-                    }
+                if(boost)
+                {
+                    diag_val        = (boost_tol >= std::abs(diag_val)) ? boost_val : diag_val;
+                    csr_val[diag_j] = diag_val;
                 }
                 else
                 {
-                    // Numerical zero diagonal
-                    *numeric_pivot = col_j + base;
-                    return;
+                    // Check for numeric pivot
+                    if(diag_val == static_cast<T>(0))
+                    {
+                        *numeric_pivot = col_j + base;
+                        return;
+                    }
+                }
+
+                // multiplication factor
+                csr_val[j] = csr_val[j] / diag_val;
+
+                // loop over upper offset pointer and do linear combination for nnz entry
+                for(rocsparse_int k = diag_j + 1; k < csr_row_ptr[col_j + 1] - base; ++k)
+                {
+                    // if nnz at this position do linear combination
+                    if(nnz_entries[csr_col_ind[k] - base] != 0)
+                    {
+                        rocsparse_int idx = nnz_entries[csr_col_ind[k] - base];
+                        csr_val[idx]      = std::fma(-csr_val[j], csr_val[k], csr_val[idx]);
+                    }
                 }
             }
             else if(csr_col_ind[j] - base == ai)

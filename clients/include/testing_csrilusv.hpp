@@ -128,7 +128,10 @@ void testing_csrilusv(const Arguments& arg)
                     hcsr_val_gold,
                     base,
                     h_struct_pivot_gold,
-                    h_numeric_pivot_gold);
+                    h_numeric_pivot_gold,
+                    false,
+                    std::real(static_cast<T>(0)),
+                    static_cast<T>(0));
 
     // Obtain csrilu0 buffer size
     size_t buffer_size;

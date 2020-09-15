@@ -196,6 +196,10 @@ Functions:
   rocsparse_dcsrilu0_buffer_size: { function: csrilu0, <<: *double_precision }
   rocsparse_ccsrilu0_buffer_size: { function: csrilu0, <<: *single_precision_complex }
   rocsparse_zcsrilu0_buffer_size: { function: csrilu0, <<: *double_precision_complex }
+  rocsparse_scsrilu0_numeric_boost: { function: csrilu0, <<: *single_precision }
+  rocsparse_dcsrilu0_numeric_boost: { function: csrilu0, <<: *double_precision }
+  rocsparse_ccsrilu0_numeric_boost: { function: csrilu0, <<: *single_precision_complex }
+  rocsparse_zcsrilu0_numeric_boost: { function: csrilu0, <<: *double_precision_complex }
   rocsparse_scsrilu0_analysis: { function: csrilu0, <<: *single_precision }
   rocsparse_dcsrilu0_analysis: { function: csrilu0, <<: *double_precision }
   rocsparse_ccsrilu0_analysis: { function: csrilu0, <<: *single_precision_complex }

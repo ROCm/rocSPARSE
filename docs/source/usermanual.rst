@@ -688,6 +688,7 @@ Function name                                                                   
 :cpp:func:`rocsparse_csric0_clear`
 :cpp:func:`rocsparse_Xcsric0() <rocsparse_scsric0>`                               x      x      x              x
 :cpp:func:`rocsparse_Xcsrilu0_buffer_size() <rocsparse_scsrilu0_buffer_size>`     x      x      x              x
+:cpp:func:`rocsparse_Xcsrilu0_numeric_boost() <rocsparse_scsrilu0_numeric_boost>` x      x      x              x
 :cpp:func:`rocsparse_Xcsrilu0_analysis() <rocsparse_scsrilu0_analysis>`           x      x      x              x
 :cpp:func:`rocsparse_csrilu0_zero_pivot`
 :cpp:func:`rocsparse_csrilu0_clear`
@@ -1450,6 +1451,17 @@ rocsparse_csrilu0_zero_pivot()
 ------------------------------
 
 .. doxygenfunction:: rocsparse_csrilu0_zero_pivot
+
+rocsparse_csrilu0_numeric_boost()
+---------------------------------
+
+.. doxygenfunction:: rocsparse_scsrilu0_numeric_boost
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrilu0_numeric_boost
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrilu0_numeric_boost
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrilu0_numeric_boost
 
 rocsparse_csrilu0_buffer_size()
 -------------------------------

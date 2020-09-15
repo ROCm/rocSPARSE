@@ -650,6 +650,13 @@ rocsparse_status rocsparse_csrilu0_buffer_size(rocsparse_handle          handle,
                                                rocsparse_mat_info        info,
                                                size_t*                   buffer_size);
 
+template <typename T, typename U>
+rocsparse_status rocsparse_csrilu0_numeric_boost(rocsparse_handle   handle,
+                                                 rocsparse_mat_info info,
+                                                 int                enable_boost,
+                                                 const U*           boost_tol,
+                                                 const T*           boost_val);
+
 template <typename T>
 rocsparse_status rocsparse_csrilu0_analysis(rocsparse_handle          handle,
                                             rocsparse_int             m,

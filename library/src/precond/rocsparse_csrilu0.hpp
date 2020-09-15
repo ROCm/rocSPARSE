@@ -33,6 +33,55 @@
 
 #include <hip/hip_runtime.h>
 
+template <typename T, typename U>
+rocsparse_status rocsparse_csrilu0_numeric_boost_template(rocsparse_handle   handle,
+                                                          rocsparse_mat_info info,
+                                                          int                enable_boost,
+                                                          const U*           boost_tol,
+                                                          const T*           boost_val)
+{
+    // Check for valid handle
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+    else if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xcsrilu0_numeric_boost"),
+              (const void*&)info,
+              enable_boost,
+              (const void*&)boost_tol,
+              (const void*&)boost_val);
+
+    // Reset boost
+    info->boost_enable = 0;
+
+    // Numeric boost
+    if(enable_boost)
+    {
+        // Check pointer arguments
+        if(boost_tol == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+        else if(boost_val == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        info->boost_enable = enable_boost;
+        info->boost_tol    = reinterpret_cast<const void*>(boost_tol);
+        info->boost_val    = reinterpret_cast<const void*>(boost_val);
+    }
+
+    return rocsparse_status_success;
+}
+
 template <typename T>
 rocsparse_status rocsparse_csrilu0_analysis_template(rocsparse_handle          handle,
                                                      rocsparse_int             m,
@@ -190,7 +239,125 @@ rocsparse_status rocsparse_csrilu0_analysis_template(rocsparse_handle          h
     return rocsparse_status_success;
 }
 
-template <typename T>
+template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrilu0_binsearch_device_kernel(rocsparse_int        m,
+                                         const rocsparse_int* csr_row_ptr,
+                                         const rocsparse_int* csr_col_ind,
+                                         T*                   csr_val,
+                                         const rocsparse_int* csr_diag_ind,
+                                         int*                 done,
+                                         const rocsparse_int* map,
+                                         rocsparse_int*       zero_pivot,
+                                         rocsparse_index_base idx_base,
+                                         int                  enable_boost,
+                                         const U*             boost_tol,
+                                         const T*             boost_val)
+{
+    csrilu0_binsearch_kernel<T, U, BLOCKSIZE, WFSIZE, SLEEP>(
+        m,
+        csr_row_ptr,
+        csr_col_ind,
+        csr_val,
+        csr_diag_ind,
+        done,
+        map,
+        zero_pivot,
+        idx_base,
+        enable_boost,
+        (enable_boost != 0) ? *boost_tol : static_cast<U>(0),
+        (enable_boost != 0) ? *boost_val : static_cast<T>(0));
+}
+
+template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrilu0_binsearch_host_kernel(rocsparse_int        m,
+                                       const rocsparse_int* csr_row_ptr,
+                                       const rocsparse_int* csr_col_ind,
+                                       T*                   csr_val,
+                                       const rocsparse_int* csr_diag_ind,
+                                       int*                 done,
+                                       const rocsparse_int* map,
+                                       rocsparse_int*       zero_pivot,
+                                       rocsparse_index_base idx_base,
+                                       int                  enable_boost,
+                                       U                    boost_tol,
+                                       T                    boost_val)
+{
+    csrilu0_binsearch_kernel<T, U, BLOCKSIZE, WFSIZE, SLEEP>(m,
+                                                             csr_row_ptr,
+                                                             csr_col_ind,
+                                                             csr_val,
+                                                             csr_diag_ind,
+                                                             done,
+                                                             map,
+                                                             zero_pivot,
+                                                             idx_base,
+                                                             enable_boost,
+                                                             boost_tol,
+                                                             boost_val);
+}
+
+template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH>
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrilu0_hash_device_kernel(rocsparse_int        m,
+                                    const rocsparse_int* csr_row_ptr,
+                                    const rocsparse_int* csr_col_ind,
+                                    T*                   csr_val,
+                                    const rocsparse_int* csr_diag_ind,
+                                    int*                 done,
+                                    const rocsparse_int* map,
+                                    rocsparse_int*       zero_pivot,
+                                    rocsparse_index_base idx_base,
+                                    int                  enable_boost,
+                                    const U*             boost_tol,
+                                    const T*             boost_val)
+{
+    csrilu0_hash_kernel<T, U, BLOCKSIZE, WFSIZE, HASH>(
+        m,
+        csr_row_ptr,
+        csr_col_ind,
+        csr_val,
+        csr_diag_ind,
+        done,
+        map,
+        zero_pivot,
+        idx_base,
+        enable_boost,
+        (enable_boost != 0) ? *boost_tol : static_cast<U>(0),
+        (enable_boost != 0) ? *boost_val : static_cast<T>(0));
+}
+
+template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH>
+__launch_bounds__(BLOCKSIZE) __global__
+    void csrilu0_hash_host_kernel(rocsparse_int        m,
+                                  const rocsparse_int* csr_row_ptr,
+                                  const rocsparse_int* csr_col_ind,
+                                  T*                   csr_val,
+                                  const rocsparse_int* csr_diag_ind,
+                                  int*                 done,
+                                  const rocsparse_int* map,
+                                  rocsparse_int*       zero_pivot,
+                                  rocsparse_index_base idx_base,
+                                  int                  enable_boost,
+                                  U                    boost_tol,
+                                  T                    boost_val)
+{
+    csrilu0_hash_kernel<T, U, BLOCKSIZE, WFSIZE, HASH>(m,
+                                                       csr_row_ptr,
+                                                       csr_col_ind,
+                                                       csr_val,
+                                                       csr_diag_ind,
+                                                       done,
+                                                       map,
+                                                       zero_pivot,
+                                                       idx_base,
+                                                       enable_boost,
+                                                       boost_tol,
+                                                       boost_val);
+}
+
+template <typename T, typename U>
 rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
                                             rocsparse_int             m,
                                             rocsparse_int             nnz,
@@ -308,20 +475,49 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
 
     if(gcnArch == 908 && asicRev < 2)
     {
-        hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 64, true>),
-                           csrilu0_blocks,
-                           csrilu0_threads,
-                           0,
-                           stream,
-                           m,
-                           csr_row_ptr,
-                           csr_col_ind,
-                           csr_val,
-                           info->csrilu0_info->trm_diag_ind,
-                           d_done_array,
-                           info->csrilu0_info->row_map,
-                           info->zero_pivot,
-                           descr->base);
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            hipLaunchKernelGGL((csrilu0_binsearch_device_kernel<T, U, CSRILU0_DIM, 64, true>),
+                               csrilu0_blocks,
+                               csrilu0_threads,
+                               0,
+                               stream,
+                               m,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               info->csrilu0_info->trm_diag_ind,
+                               d_done_array,
+                               info->csrilu0_info->row_map,
+                               info->zero_pivot,
+                               descr->base,
+                               info->boost_enable,
+                               reinterpret_cast<const U*>(info->boost_tol),
+                               reinterpret_cast<const T*>(info->boost_val));
+        }
+        else
+        {
+            hipLaunchKernelGGL(
+                (csrilu0_binsearch_host_kernel<T, U, CSRILU0_DIM, 64, true>),
+                csrilu0_blocks,
+                csrilu0_threads,
+                0,
+                stream,
+                m,
+                csr_row_ptr,
+                csr_col_ind,
+                csr_val,
+                info->csrilu0_info->trm_diag_ind,
+                d_done_array,
+                info->csrilu0_info->row_map,
+                info->zero_pivot,
+                descr->base,
+                info->boost_enable,
+                (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                          : static_cast<U>(0),
+                (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                          : static_cast<T>(0));
+        }
     }
     else
     {
@@ -329,210 +525,560 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
         {
             if(max_nnz <= 32)
             {
-                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 1>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL((csrilu0_hash_device_kernel<T, U, CSRILU0_DIM, 32, 1>),
+                                       csrilu0_blocks,
+                                       csrilu0_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       info->csrilu0_info->trm_diag_ind,
+                                       d_done_array,
+                                       info->csrilu0_info->row_map,
+                                       info->zero_pivot,
+                                       descr->base,
+                                       info->boost_enable,
+                                       reinterpret_cast<const U*>(info->boost_tol),
+                                       reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_hash_host_kernel<T, U, CSRILU0_DIM, 32, 1>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
             else if(max_nnz <= 64)
             {
-                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 2>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL((csrilu0_hash_device_kernel<T, U, CSRILU0_DIM, 32, 2>),
+                                       csrilu0_blocks,
+                                       csrilu0_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       info->csrilu0_info->trm_diag_ind,
+                                       d_done_array,
+                                       info->csrilu0_info->row_map,
+                                       info->zero_pivot,
+                                       descr->base,
+                                       info->boost_enable,
+                                       reinterpret_cast<const U*>(info->boost_tol),
+                                       reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_hash_host_kernel<T, U, CSRILU0_DIM, 32, 2>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
             else if(max_nnz <= 128)
             {
-                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 4>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL((csrilu0_hash_device_kernel<T, U, CSRILU0_DIM, 32, 4>),
+                                       csrilu0_blocks,
+                                       csrilu0_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       info->csrilu0_info->trm_diag_ind,
+                                       d_done_array,
+                                       info->csrilu0_info->row_map,
+                                       info->zero_pivot,
+                                       descr->base,
+                                       info->boost_enable,
+                                       reinterpret_cast<const U*>(info->boost_tol),
+                                       reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_hash_host_kernel<T, U, CSRILU0_DIM, 32, 4>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
             else if(max_nnz <= 256)
             {
-                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 8>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL((csrilu0_hash_device_kernel<T, U, CSRILU0_DIM, 32, 8>),
+                                       csrilu0_blocks,
+                                       csrilu0_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       info->csrilu0_info->trm_diag_ind,
+                                       d_done_array,
+                                       info->csrilu0_info->row_map,
+                                       info->zero_pivot,
+                                       descr->base,
+                                       info->boost_enable,
+                                       reinterpret_cast<const U*>(info->boost_tol),
+                                       reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_hash_host_kernel<T, U, CSRILU0_DIM, 32, 8>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
             else if(max_nnz <= 512)
             {
-                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 32, 16>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL((csrilu0_hash_device_kernel<T, U, CSRILU0_DIM, 32, 16>),
+                                       csrilu0_blocks,
+                                       csrilu0_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       info->csrilu0_info->trm_diag_ind,
+                                       d_done_array,
+                                       info->csrilu0_info->row_map,
+                                       info->zero_pivot,
+                                       descr->base,
+                                       info->boost_enable,
+                                       reinterpret_cast<const U*>(info->boost_tol),
+                                       reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_hash_host_kernel<T, U, CSRILU0_DIM, 32, 16>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
             else
             {
-                hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 32, false>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_binsearch_device_kernel<T, U, CSRILU0_DIM, 32, false>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        reinterpret_cast<const U*>(info->boost_tol),
+                        reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_binsearch_host_kernel<T, U, CSRILU0_DIM, 32, false>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
         }
         else if(handle->wavefront_size == 64)
         {
             if(max_nnz <= 64)
             {
-                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 1>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL((csrilu0_hash_device_kernel<T, U, CSRILU0_DIM, 64, 1>),
+                                       csrilu0_blocks,
+                                       csrilu0_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       info->csrilu0_info->trm_diag_ind,
+                                       d_done_array,
+                                       info->csrilu0_info->row_map,
+                                       info->zero_pivot,
+                                       descr->base,
+                                       info->boost_enable,
+                                       reinterpret_cast<const U*>(info->boost_tol),
+                                       reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_hash_host_kernel<T, U, CSRILU0_DIM, 64, 1>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
             else if(max_nnz <= 128)
             {
-                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 2>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL((csrilu0_hash_device_kernel<T, U, CSRILU0_DIM, 64, 2>),
+                                       csrilu0_blocks,
+                                       csrilu0_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       info->csrilu0_info->trm_diag_ind,
+                                       d_done_array,
+                                       info->csrilu0_info->row_map,
+                                       info->zero_pivot,
+                                       descr->base,
+                                       info->boost_enable,
+                                       reinterpret_cast<const U*>(info->boost_tol),
+                                       reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_hash_host_kernel<T, U, CSRILU0_DIM, 64, 2>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
             else if(max_nnz <= 256)
             {
-                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 4>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL((csrilu0_hash_device_kernel<T, U, CSRILU0_DIM, 64, 4>),
+                                       csrilu0_blocks,
+                                       csrilu0_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       info->csrilu0_info->trm_diag_ind,
+                                       d_done_array,
+                                       info->csrilu0_info->row_map,
+                                       info->zero_pivot,
+                                       descr->base,
+                                       info->boost_enable,
+                                       reinterpret_cast<const U*>(info->boost_tol),
+                                       reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_hash_host_kernel<T, U, CSRILU0_DIM, 64, 4>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
             else if(max_nnz <= 512)
             {
-                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 8>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL((csrilu0_hash_device_kernel<T, U, CSRILU0_DIM, 64, 8>),
+                                       csrilu0_blocks,
+                                       csrilu0_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       info->csrilu0_info->trm_diag_ind,
+                                       d_done_array,
+                                       info->csrilu0_info->row_map,
+                                       info->zero_pivot,
+                                       descr->base,
+                                       info->boost_enable,
+                                       reinterpret_cast<const U*>(info->boost_tol),
+                                       reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_hash_host_kernel<T, U, CSRILU0_DIM, 64, 8>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
             else if(max_nnz <= 1024)
             {
-                hipLaunchKernelGGL((csrilu0_hash_kernel<T, CSRILU0_DIM, 64, 16>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL((csrilu0_hash_device_kernel<T, U, CSRILU0_DIM, 64, 16>),
+                                       csrilu0_blocks,
+                                       csrilu0_threads,
+                                       0,
+                                       stream,
+                                       m,
+                                       csr_row_ptr,
+                                       csr_col_ind,
+                                       csr_val,
+                                       info->csrilu0_info->trm_diag_ind,
+                                       d_done_array,
+                                       info->csrilu0_info->row_map,
+                                       info->zero_pivot,
+                                       descr->base,
+                                       info->boost_enable,
+                                       reinterpret_cast<const U*>(info->boost_tol),
+                                       reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_hash_host_kernel<T, U, CSRILU0_DIM, 64, 16>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
             else
             {
-                hipLaunchKernelGGL((csrilu0_binsearch_kernel<T, CSRILU0_DIM, 64, false>),
-                                   csrilu0_blocks,
-                                   csrilu0_threads,
-                                   0,
-                                   stream,
-                                   m,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   info->csrilu0_info->trm_diag_ind,
-                                   d_done_array,
-                                   info->csrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base);
+                if(handle->pointer_mode == rocsparse_pointer_mode_device)
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_binsearch_device_kernel<T, U, CSRILU0_DIM, 64, false>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        reinterpret_cast<const U*>(info->boost_tol),
+                        reinterpret_cast<const T*>(info->boost_val));
+                }
+                else
+                {
+                    hipLaunchKernelGGL(
+                        (csrilu0_binsearch_host_kernel<T, U, CSRILU0_DIM, 64, false>),
+                        csrilu0_blocks,
+                        csrilu0_threads,
+                        0,
+                        stream,
+                        m,
+                        csr_row_ptr,
+                        csr_col_ind,
+                        csr_val,
+                        info->csrilu0_info->trm_diag_ind,
+                        d_done_array,
+                        info->csrilu0_info->row_map,
+                        info->zero_pivot,
+                        descr->base,
+                        info->boost_enable,
+                        (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                                  : static_cast<U>(0),
+                        (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
+                                                  : static_cast<T>(0));
+                }
             }
         }
         else

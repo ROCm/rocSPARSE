@@ -86,7 +86,8 @@ namespace
             {
                 return RocSPARSE_TestName<csrilu0>{}
                        << rocsparse_datatype2string(arg.compute_type) << '_'
-                       << rocsparse_operation2string(arg.transA) << '_'
+                       << rocsparse_operation2string(arg.transA) << '_' << arg.boosttol << '_'
+                       << arg.boostval << '_' << arg.boostvali << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_analysis2string(arg.apol) << '_'
                        << rocsparse_solve2string(arg.spol) << '_'
@@ -96,7 +97,8 @@ namespace
             {
                 return RocSPARSE_TestName<csrilu0>{}
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
-                       << rocsparse_operation2string(arg.transA) << '_'
+                       << rocsparse_operation2string(arg.transA) << '_' << arg.boosttol << '_'
+                       << arg.boostval << '_' << arg.boostvali << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_analysis2string(arg.apol) << '_'
                        << rocsparse_solve2string(arg.spol) << '_'

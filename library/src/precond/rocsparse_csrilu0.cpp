@@ -119,6 +119,48 @@ extern "C" rocsparse_status rocsparse_zcsrilu0_buffer_size(rocsparse_handle     
                                         buffer_size);
 }
 
+extern "C" rocsparse_status rocsparse_scsrilu0_numeric_boost(rocsparse_handle   handle,
+                                                             rocsparse_mat_info info,
+                                                             int                enable_boost,
+                                                             const float*       boost_tol,
+                                                             const float*       boost_val)
+{
+    return rocsparse_csrilu0_numeric_boost_template(
+        handle, info, enable_boost, boost_tol, boost_val);
+}
+
+extern "C" rocsparse_status rocsparse_dcsrilu0_numeric_boost(rocsparse_handle   handle,
+                                                             rocsparse_mat_info info,
+                                                             int                enable_boost,
+                                                             const double*      boost_tol,
+                                                             const double*      boost_val)
+{
+    return rocsparse_csrilu0_numeric_boost_template(
+        handle, info, enable_boost, boost_tol, boost_val);
+}
+
+extern "C" rocsparse_status
+    rocsparse_ccsrilu0_numeric_boost(rocsparse_handle               handle,
+                                     rocsparse_mat_info             info,
+                                     int                            enable_boost,
+                                     const float*                   boost_tol,
+                                     const rocsparse_float_complex* boost_val)
+{
+    return rocsparse_csrilu0_numeric_boost_template(
+        handle, info, enable_boost, boost_tol, boost_val);
+}
+
+extern "C" rocsparse_status
+    rocsparse_zcsrilu0_numeric_boost(rocsparse_handle                handle,
+                                     rocsparse_mat_info              info,
+                                     int                             enable_boost,
+                                     const double*                   boost_tol,
+                                     const rocsparse_double_complex* boost_val)
+{
+    return rocsparse_csrilu0_numeric_boost_template(
+        handle, info, enable_boost, boost_tol, boost_val);
+}
+
 extern "C" rocsparse_status rocsparse_scsrilu0_analysis(rocsparse_handle          handle,
                                                         rocsparse_int             m,
                                                         rocsparse_int             nnz,
@@ -257,7 +299,7 @@ extern "C" rocsparse_status rocsparse_scsrilu0(rocsparse_handle          handle,
                                                rocsparse_solve_policy    policy,
                                                void*                     temp_buffer)
 {
-    return rocsparse_csrilu0_template(
+    return rocsparse_csrilu0_template<float, float>(
         handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
 }
 
@@ -272,7 +314,7 @@ extern "C" rocsparse_status rocsparse_dcsrilu0(rocsparse_handle          handle,
                                                rocsparse_solve_policy    policy,
                                                void*                     temp_buffer)
 {
-    return rocsparse_csrilu0_template(
+    return rocsparse_csrilu0_template<double, double>(
         handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
 }
 
@@ -287,7 +329,7 @@ extern "C" rocsparse_status rocsparse_ccsrilu0(rocsparse_handle          handle,
                                                rocsparse_solve_policy    policy,
                                                void*                     temp_buffer)
 {
-    return rocsparse_csrilu0_template(
+    return rocsparse_csrilu0_template<rocsparse_float_complex, float>(
         handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
 }
 
@@ -302,7 +344,7 @@ extern "C" rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
                                                rocsparse_solve_policy    policy,
                                                void*                     temp_buffer)
 {
-    return rocsparse_csrilu0_template(
+    return rocsparse_csrilu0_template<rocsparse_double_complex, double>(
         handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
 }
 

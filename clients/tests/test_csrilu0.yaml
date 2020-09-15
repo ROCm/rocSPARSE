@@ -86,15 +86,18 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
+  numericboost: [0, 1]
+  boosttol: [0.01]
+  boostval: [1.2]
   transA: [rocsparse_operation_none]
-  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  apol: [rocsparse_analysis_policy_reuse]
   spol: [rocsparse_solve_policy_auto]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mac_econ_fwd500,
-             nos2,
-             nos4,
+  filename: [nos4,
              nos6,
+             nos1,
+             nos2,
              scircuit]
 
 - name: csrilu0_file
@@ -140,10 +143,13 @@ Tests:
   precision: *single_double_precisions_complex
   M: 1
   N: 1
+  numericboost: [0, 1]
+  boosttol: [0.01]
+  boostval: [1.2]
   transA: [rocsparse_operation_none]
   apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
   spol: [rocsparse_solve_policy_auto]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron2]
 
