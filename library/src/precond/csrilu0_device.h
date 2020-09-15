@@ -29,17 +29,19 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH>
-__launch_bounds__(BLOCKSIZE) __global__
-    void csrilu0_hash_kernel(rocsparse_int m,
-                             const rocsparse_int* __restrict__ csr_row_ptr,
-                             const rocsparse_int* __restrict__ csr_col_ind,
-                             T* __restrict__ csr_val,
-                             const rocsparse_int* __restrict__ csr_diag_ind,
-                             int* __restrict__ done,
-                             const rocsparse_int* __restrict__ map,
-                             rocsparse_int* __restrict__ zero_pivot,
-                             rocsparse_index_base idx_base)
+template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH>
+__device__ void csrilu0_hash_kernel(rocsparse_int m,
+                                    const rocsparse_int* __restrict__ csr_row_ptr,
+                                    const rocsparse_int* __restrict__ csr_col_ind,
+                                    T* __restrict__ csr_val,
+                                    const rocsparse_int* __restrict__ csr_diag_ind,
+                                    int* __restrict__ done,
+                                    const rocsparse_int* __restrict__ map,
+                                    rocsparse_int* __restrict__ zero_pivot,
+                                    rocsparse_index_base idx_base,
+                                    int                  boost,
+                                    U                    boost_tol,
+                                    T                    boost_val)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -142,17 +144,32 @@ __launch_bounds__(BLOCKSIZE) __global__
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
 
-        // Row has numerical zero diagonal
-        if(diag_val == static_cast<T>(0))
+        // Numeric boost
+        if(boost)
         {
+            diag_val = (boost_tol >= rocsparse_abs(diag_val)) ? boost_val : diag_val;
+
+            __threadfence();
+
             if(lid == 0)
             {
-                // We are looking for the first zero pivot
-                atomicMin(zero_pivot, local_col + idx_base);
+                csr_val[local_diag] = diag_val;
             }
+        }
+        else
+        {
+            // Row has numerical zero diagonal
+            if(diag_val == static_cast<T>(0))
+            {
+                if(lid == 0)
+                {
+                    // We are looking for the first zero pivot
+                    atomicMin(zero_pivot, local_col + idx_base);
+                }
 
-            // Skip this row if it has a zero pivot
-            break;
+                // Skip this row if it has a zero pivot
+                break;
+            }
         }
 
         csr_val[j] = local_val = local_val / diag_val;
@@ -201,17 +218,19 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
-__launch_bounds__(BLOCKSIZE) __global__
-    void csrilu0_binsearch_kernel(rocsparse_int m,
-                                  const rocsparse_int* __restrict__ csr_row_ptr,
-                                  const rocsparse_int* __restrict__ csr_col_ind,
-                                  T* __restrict__ csr_val,
-                                  const rocsparse_int* __restrict__ csr_diag_ind,
-                                  int* __restrict__ done,
-                                  const rocsparse_int* __restrict__ map,
-                                  rocsparse_int* __restrict__ zero_pivot,
-                                  rocsparse_index_base idx_base)
+template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
+__device__ void csrilu0_binsearch_kernel(rocsparse_int m,
+                                         const rocsparse_int* __restrict__ csr_row_ptr,
+                                         const rocsparse_int* __restrict__ csr_col_ind,
+                                         T* __restrict__ csr_val,
+                                         const rocsparse_int* __restrict__ csr_diag_ind,
+                                         int* __restrict__ done,
+                                         const rocsparse_int* __restrict__ map,
+                                         rocsparse_int* __restrict__ zero_pivot,
+                                         rocsparse_index_base idx_base,
+                                         int                  boost,
+                                         U                    boost_tol,
+                                         T                    boost_val)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -282,17 +301,32 @@ __launch_bounds__(BLOCKSIZE) __global__
         // Load diagonal entry
         T diag_val = csr_val[local_diag];
 
-        // Row has numerical zero diagonal
-        if(diag_val == static_cast<T>(0))
+        // Numeric boost
+        if(boost)
         {
+            diag_val = (boost_tol >= rocsparse_abs(diag_val)) ? boost_val : diag_val;
+
+            __threadfence();
+
             if(lid == 0)
             {
-                // We are looking for the first zero pivot
-                atomicMin(zero_pivot, local_col + idx_base);
+                csr_val[local_diag] = diag_val;
             }
+        }
+        else
+        {
+            // Row has numerical zero diagonal
+            if(diag_val == static_cast<T>(0))
+            {
+                if(lid == 0)
+                {
+                    // We are looking for the first zero pivot
+                    atomicMin(zero_pivot, local_col + idx_base);
+                }
 
-            // Skip this row if it has a zero pivot
-            break;
+                // Skip this row if it has a zero pivot
+                break;
+            }
         }
 
         csr_val[j] = local_val = local_val / diag_val;

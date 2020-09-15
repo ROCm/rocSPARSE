@@ -40,25 +40,7 @@
 #include "rocsparse_vector.hpp"
 #include "utility.hpp"
 
-static inline const float* get_boost_tol(const float* tol)
-{
-    return tol;
-}
-
-static inline const double* get_boost_tol(const double* tol)
-{
-    return tol;
-}
-
-static inline const float* get_boost_tol(const rocsparse_float_complex* tol)
-{
-    return reinterpret_cast<const float*>(tol);
-}
-
-static inline const double* get_boost_tol(const rocsparse_double_complex* tol)
-{
-    return reinterpret_cast<const double*>(tol);
-}
+#include "testing_csrilu0.hpp"
 
 template <typename T>
 void testing_bsrilu0_bad_arg(const Arguments& arg)
