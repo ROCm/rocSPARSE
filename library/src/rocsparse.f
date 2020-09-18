@@ -22,101 +22,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 module rocsparse
+    use rocsparse_enums
     use iso_c_binding
-
-! ===========================================================================
-!   types SPARSE
-! ===========================================================================
-
-!   rocsparse_operation
-    enum, bind(c)
-        enumerator :: rocsparse_operation_none = 111
-        enumerator :: rocsparse_operation_transpose = 112
-        enumerator :: rocsparse_operation_conjugate_transpose = 113
-    end enum
-
-!   rocsparse_index_base
-    enum, bind(c)
-        enumerator :: rocsparse_index_base_zero = 0
-        enumerator :: rocsparse_index_base_one = 1
-    end enum
-
-!   rocsparse_matrix_type
-    enum, bind(c)
-        enumerator :: rocsparse_matrix_type_general = 0
-        enumerator :: rocsparse_matrix_type_symmetric = 1
-        enumerator :: rocsparse_matrix_type_hermitian = 2
-        enumerator :: rocsparse_matrix_type_triangular = 3
-    end enum
-
-!   rocsparse_diag_type
-    enum, bind(c)
-        enumerator :: rocsparse_diag_type_non_unit = 0
-        enumerator :: rocsparse_diag_type_unit = 1
-    end enum
-
-!   rocsparse_fill_mode
-    enum, bind(c)
-        enumerator :: rocsparse_fill_mode_lower = 0
-        enumerator :: rocsparse_fill_mode_upper = 1
-    end enum
-
-!   rocsparse_action
-    enum, bind(c)
-        enumerator :: rocsparse_action_symbolic = 0
-        enumerator :: rocsparse_action_numeric = 1
-    end enum
-
-!   rocsparse_direction
-    enum, bind(c)
-        enumerator :: rocsparse_direction_row = 0
-        enumerator :: rocsparse_direction_column = 1
-    end enum
-
-!   rocsparse_hyb_partition
-    enum, bind(c)
-        enumerator :: rocsparse_hyb_partition_auto = 0
-        enumerator :: rocsparse_hyb_partition_user = 1
-        enumerator :: rocsparse_hyb_partition_max = 2
-    end enum
-
-!   rocsparse_analysis_policy
-    enum, bind(c)
-        enumerator :: rocsparse_analysis_policy_reuse = 0
-        enumerator :: rocsparse_analysis_policy_force = 1
-    end enum
-
-!   rocsparse_solve_policy
-    enum, bind(c)
-        enumerator :: rocsparse_solve_policy_auto = 0
-    end enum
-
-!   rocsparse_pointer_mode
-    enum, bind(c)
-        enumerator :: rocsparse_pointer_mode_host = 0
-        enumerator :: rocsparse_pointer_mode_device = 1
-    end enum
-
-!   rocsparse_layer_mode
-    enum, bind(c)
-        enumerator :: rocsparse_layer_mode_none = 0
-        enumerator :: rocsparse_layer_mode_log_trace = 1
-        enumerator :: rocsparse_layer_mode_log_bench = 2
-    end enum
-
-!   rocsparse_status
-    enum, bind(c)
-        enumerator :: rocsparse_status_success = 0
-        enumerator :: rocsparse_status_invalid_handle = 1
-        enumerator :: rocsparse_status_not_implemented = 2
-        enumerator :: rocsparse_status_invalid_pointer = 3
-        enumerator :: rocsparse_status_invalid_size = 4
-        enumerator :: rocsparse_status_memory_error = 5
-        enumerator :: rocsparse_status_internal_error = 6
-        enumerator :: rocsparse_status_invalid_value = 7
-        enumerator :: rocsparse_status_arch_mismatch = 8
-        enumerator :: rocsparse_status_zero_pivot = 9
-    end enum
+    implicit none
 
 ! ===========================================================================
 !   auxiliary SPARSE
@@ -126,207 +34,230 @@ module rocsparse
 
 !       rocsparse_handle
         function rocsparse_create_handle(handle) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_create_handle')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_create_handle
             type(c_ptr) :: handle
         end function rocsparse_create_handle
 
         function rocsparse_destroy_handle(handle) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_destroy_handle')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_destroy_handle
             type(c_ptr), value :: handle
         end function rocsparse_destroy_handle
 
 !       rocsparse_stream
         function rocsparse_set_stream(handle, stream) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_set_stream')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_set_stream
             type(c_ptr), value :: handle
             type(c_ptr), value :: stream
         end function rocsparse_set_stream
 
         function rocsparse_get_stream(handle, stream) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_get_stream')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_get_stream
             type(c_ptr), value :: handle
             type(c_ptr) :: stream
-        end function
+        end function rocsparse_get_stream
 
 !       rocsparse_pointer_mode
         function rocsparse_set_pointer_mode(handle, pointer_mode) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_set_pointer_mode')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_set_pointer_mode
             type(c_ptr), value :: handle
             integer(c_int), value :: pointer_mode
         end function rocsparse_set_pointer_mode
 
         function rocsparse_get_pointer_mode(handle, pointer_mode) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_get_pointer_mode')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_get_pointer_mode
             type(c_ptr), value :: handle
             integer(c_int) :: pointer_mode
-        end function
+        end function rocsparse_get_pointer_mode
 
 !       rocsparse_version
         function rocsparse_get_version(handle, version) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_get_version')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_get_version
             type(c_ptr), value :: handle
             integer(c_int) :: version
         end function rocsparse_get_version
 
         function rocsparse_get_git_rev(handle, rev) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_get_git_rev')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_get_git_rev
             type(c_ptr), value :: handle
             character(c_char) :: rev(*)
         end function rocsparse_get_git_rev
 
 !       rocsparse_mat_descr
         function rocsparse_create_mat_descr(descr) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_create_mat_descr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_create_mat_descr
             type(c_ptr) :: descr
         end function rocsparse_create_mat_descr
 
         function rocsparse_copy_mat_descr(dest, src) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_copy_mat_descr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_copy_mat_descr
             type(c_ptr), value :: dest
             type(c_ptr), intent(in), value :: src
         end function rocsparse_copy_mat_descr
 
         function rocsparse_destroy_mat_descr(descr) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_destroy_mat_descr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_destroy_mat_descr
             type(c_ptr), value :: descr
         end function rocsparse_destroy_mat_descr
 
 !       rocsparse_index_base
         function rocsparse_set_mat_index_base(descr, base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_set_mat_index_base')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_set_mat_index_base
             type(c_ptr), value :: descr
             integer(c_int), value :: base
         end function rocsparse_set_mat_index_base
 
         function rocsparse_get_mat_index_base(descr) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_get_mat_index_base')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_get_mat_index_base
             type(c_ptr), intent(in), value :: descr
         end function rocsparse_get_mat_index_base
 
 !       rocsparse_matrix_type
         function rocsparse_set_mat_type(descr, mat_type) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_set_mat_type')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_set_mat_type
             type(c_ptr), value :: descr
             integer(c_int), value :: mat_type
         end function rocsparse_set_mat_type
 
         function rocsparse_get_mat_type(descr) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_get_mat_type')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_get_mat_type
             type(c_ptr), intent(in), value :: descr
         end function rocsparse_get_mat_type
 
 !       rocsparse_fill_mode
         function rocsparse_set_mat_fill_mode(descr, fill_mode) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_set_mat_fill_mode')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_set_mat_fill_mode
             type(c_ptr), value :: descr
             integer(c_int), value :: fill_mode
         end function rocsparse_set_mat_fill_mode
 
         function rocsparse_get_mat_fill_mode(descr) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_get_mat_fill_mode')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_get_mat_fill_mode
             type(c_ptr), intent(in), value :: descr
         end function rocsparse_get_mat_fill_mode
 
 !       rocsparse_diag_type
         function rocsparse_set_mat_diag_type(descr, diag_type) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_set_mat_diag_type')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_set_mat_diag_type
             type(c_ptr), value :: descr
             integer(c_int), value :: diag_type
         end function rocsparse_set_mat_diag_type
 
         function rocsparse_get_mat_diag_type(descr) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_get_mat_diag_type')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_get_mat_diag_type
             type(c_ptr), intent(in), value :: descr
         end function rocsparse_get_mat_diag_type
 
 !       rocsparse_hyb_mat
         function rocsparse_create_hyb_mat(hyb) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_create_hyb_mat')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_create_hyb_mat
             type(c_ptr) :: hyb
         end function rocsparse_create_hyb_mat
 
         function rocsparse_destroy_hyb_mat(hyb) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_destroy_hyb_mat')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_destroy_hyb_mat
             type(c_ptr), value :: hyb
         end function rocsparse_destroy_hyb_mat
 
 !       rocsparse_mat_info
         function rocsparse_create_mat_info(info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_create_mat_info')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_create_mat_info
             type(c_ptr) :: info
         end function rocsparse_create_mat_info
 
         function rocsparse_destroy_mat_info(info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_destroy_mat_info')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_destroy_mat_info
             type(c_ptr), value :: info
         end function rocsparse_destroy_mat_info
 
@@ -336,10 +267,11 @@ module rocsparse
 
 !       rocsparse_axpyi
         function rocsparse_saxpyi(handle, nnz, alpha, x_val, x_ind, y, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_saxpyi')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_saxpyi
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: alpha
@@ -350,10 +282,11 @@ module rocsparse
         end function rocsparse_saxpyi
 
         function rocsparse_daxpyi(handle, nnz, alpha, x_val, x_ind, y, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_daxpyi')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_daxpyi
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: alpha
@@ -364,10 +297,11 @@ module rocsparse
         end function rocsparse_daxpyi
 
         function rocsparse_caxpyi(handle, nnz, alpha, x_val, x_ind, y, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_caxpyi')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_caxpyi
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: alpha
@@ -378,10 +312,11 @@ module rocsparse
         end function rocsparse_caxpyi
 
         function rocsparse_zaxpyi(handle, nnz, alpha, x_val, x_ind, y, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zaxpyi')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zaxpyi
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: alpha
@@ -393,10 +328,11 @@ module rocsparse
 
 !       rocsparse_doti
         function rocsparse_sdoti(handle, nnz, x_val, x_ind, y, result, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sdoti')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sdoti
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: x_val
@@ -407,10 +343,11 @@ module rocsparse
         end function rocsparse_sdoti
 
         function rocsparse_ddoti(handle, nnz, x_val, x_ind, y, result, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ddoti')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ddoti
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: x_val
@@ -421,10 +358,11 @@ module rocsparse
         end function rocsparse_ddoti
 
         function rocsparse_cdoti(handle, nnz, x_val, x_ind, y, result, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cdoti')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cdoti
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: x_val
@@ -435,10 +373,11 @@ module rocsparse
         end function rocsparse_cdoti
 
         function rocsparse_zdoti(handle, nnz, x_val, x_ind, y, result, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zdoti')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zdoti
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: x_val
@@ -450,10 +389,11 @@ module rocsparse
 
 !       rocsparse_dotci
         function rocsparse_cdotci(handle, nnz, x_val, x_ind, y, result, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cdotci')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cdotci
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: x_val
@@ -464,10 +404,11 @@ module rocsparse
         end function rocsparse_cdotci
 
         function rocsparse_zdotci(handle, nnz, x_val, x_ind, y, result, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zdotci')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zdotci
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: x_val
@@ -479,10 +420,11 @@ module rocsparse
 
 !       rocsparse_gthr
         function rocsparse_sgthr(handle, nnz, y, x_val, x_ind, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sgthr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgthr
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: y
@@ -492,10 +434,11 @@ module rocsparse
         end function rocsparse_sgthr
 
         function rocsparse_dgthr(handle, nnz, y, x_val, x_ind, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dgthr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgthr
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: y
@@ -505,10 +448,11 @@ module rocsparse
         end function rocsparse_dgthr
 
         function rocsparse_cgthr(handle, nnz, y, x_val, x_ind, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cgthr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgthr
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: y
@@ -518,10 +462,11 @@ module rocsparse
         end function rocsparse_cgthr
 
         function rocsparse_zgthr(handle, nnz, y, x_val, x_ind, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zgthr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgthr
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: y
@@ -532,10 +477,11 @@ module rocsparse
 
 !       rocsparse_gthrz
         function rocsparse_sgthrz(handle, nnz, y, x_val, x_ind, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sgthrz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgthrz
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), value :: y
@@ -545,10 +491,11 @@ module rocsparse
         end function rocsparse_sgthrz
 
         function rocsparse_dgthrz(handle, nnz, y, x_val, x_ind, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dgthrz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgthrz
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), value :: y
@@ -558,10 +505,11 @@ module rocsparse
         end function rocsparse_dgthrz
 
         function rocsparse_cgthrz(handle, nnz, y, x_val, x_ind, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cgthrz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgthrz
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), value :: y
@@ -571,10 +519,11 @@ module rocsparse
         end function rocsparse_cgthrz
 
         function rocsparse_zgthrz(handle, nnz, y, x_val, x_ind, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zgthrz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgthrz
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), value :: y
@@ -585,10 +534,11 @@ module rocsparse
 
 !       rocsparse_roti
         function rocsparse_sroti(handle, nnz, x_val, x_ind, y, c, s, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sroti')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sroti
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), value :: x_val
@@ -600,10 +550,11 @@ module rocsparse
         end function rocsparse_sroti
 
         function rocsparse_droti(handle, nnz, x_val, x_ind, y, c, s, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_droti')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_droti
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), value :: x_val
@@ -616,10 +567,11 @@ module rocsparse
 
 !       rocsparse_sctr
         function rocsparse_ssctr(handle, nnz, x_val, x_ind, y, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ssctr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ssctr
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: x_val
@@ -629,10 +581,11 @@ module rocsparse
         end function rocsparse_ssctr
 
         function rocsparse_dsctr(handle, nnz, x_val, x_ind, y, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dsctr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dsctr
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: x_val
@@ -642,10 +595,11 @@ module rocsparse
         end function rocsparse_dsctr
 
         function rocsparse_csctr(handle, nnz, x_val, x_ind, y, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csctr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csctr
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: x_val
@@ -655,10 +609,11 @@ module rocsparse
         end function rocsparse_csctr
 
         function rocsparse_zsctr(handle, nnz, x_val, x_ind, y, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zsctr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zsctr
             type(c_ptr), value :: handle
             integer(c_int), value :: nnz
             type(c_ptr), intent(in), value :: x_val
@@ -674,10 +629,11 @@ module rocsparse
 !       rocsparse_bsrmv
         function rocsparse_sbsrmv(handle, dir, trans, mb, nb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsrmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsrmv
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -697,10 +653,11 @@ module rocsparse
 
         function rocsparse_dbsrmv(handle, dir, trans, mb, nb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsrmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsrmv
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -720,10 +677,11 @@ module rocsparse
 
         function rocsparse_cbsrmv(handle, dir, trans, mb, nb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsrmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsrmv
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -743,10 +701,11 @@ module rocsparse
 
         function rocsparse_zbsrmv(handle, dir, trans, mb, nb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsrmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsrmv
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -766,10 +725,11 @@ module rocsparse
 
 !       rocsparse_bsrsv_zero_pivot
         function rocsparse_bsrsv_zero_pivot(handle, info, position) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_bsrsv_zero_pivot')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_bsrsv_zero_pivot
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
             type(c_ptr), value :: position
@@ -778,10 +738,11 @@ module rocsparse
 !       rocsparse_bsrsv_buffer_size
         function rocsparse_sbsrsv_buffer_size(handle, dir, trans, mb, nnzb, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsrsv_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsrsv_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -798,10 +759,11 @@ module rocsparse
 
         function rocsparse_dbsrsv_buffer_size(handle, dir, trans, mb, nnzb, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsrsv_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsrsv_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -818,10 +780,11 @@ module rocsparse
 
         function rocsparse_cbsrsv_buffer_size(handle, dir, trans, mb, nnzb, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsrsv_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsrsv_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -838,10 +801,11 @@ module rocsparse
 
         function rocsparse_zbsrsv_buffer_size(handle, dir, trans, mb, nnzb, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsrsv_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsrsv_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -860,10 +824,11 @@ module rocsparse
         function rocsparse_sbsrsv_analysis(handle, dir, trans, mb, nnzb, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, analysis, solve, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsrsv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsrsv_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -883,10 +848,11 @@ module rocsparse
         function rocsparse_dbsrsv_analysis(handle, dir, trans, mb, nnzb, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, analysis, solve, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsrsv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsrsv_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -906,10 +872,11 @@ module rocsparse
         function rocsparse_cbsrsv_analysis(handle, dir, trans, mb, nnzb, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, analysis, solve, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsrsv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsrsv_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -929,10 +896,11 @@ module rocsparse
         function rocsparse_zbsrsv_analysis(handle, dir, trans, mb, nnzb, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, analysis, solve, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsrsv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsrsv_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -951,10 +919,11 @@ module rocsparse
 
 !       rocsparse_bsrsv_clear
         function rocsparse_bsrsv_clear(handle, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_bsrsv_clear')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_bsrsv_clear
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
         end function rocsparse_bsrsv_clear
@@ -963,10 +932,11 @@ module rocsparse
         function rocsparse_sbsrsv_solve(handle, dir, trans, mb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, x, y, policy, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsrsv_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsrsv_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -988,10 +958,11 @@ module rocsparse
         function rocsparse_dbsrsv_solve(handle, dir, trans, mb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, x, y, policy, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsrsv_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsrsv_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -1013,10 +984,11 @@ module rocsparse
         function rocsparse_cbsrsv_solve(handle, dir, trans, mb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, x, y, policy, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsrsv_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsrsv_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -1038,10 +1010,11 @@ module rocsparse
         function rocsparse_zbsrsv_solve(handle, dir, trans, mb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, bsr_dim, info, x, y, policy, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsrsv_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsrsv_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans
@@ -1063,10 +1036,11 @@ module rocsparse
 !       rocsparse_coomv
         function rocsparse_scoomv(handle, trans, m, n, nnz, alpha, descr, coo_val, &
                 coo_row_ind, coo_col_ind, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scoomv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scoomv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1084,10 +1058,11 @@ module rocsparse
 
         function rocsparse_dcoomv(handle, trans, m, n, nnz, alpha, descr, coo_val, &
                 coo_row_ind, coo_col_ind, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcoomv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcoomv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1105,10 +1080,11 @@ module rocsparse
 
         function rocsparse_ccoomv(handle, trans, m, n, nnz, alpha, descr, coo_val, &
                 coo_row_ind, coo_col_ind, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccoomv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccoomv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1126,10 +1102,11 @@ module rocsparse
 
         function rocsparse_zcoomv(handle, trans, m, n, nnz, alpha, descr, coo_val, &
                 coo_row_ind, coo_col_ind, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcoomv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcoomv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1148,10 +1125,11 @@ module rocsparse
 !       rocsparse_csrmv_analysis
         function rocsparse_scsrmv_analysis(handle, trans, m, n, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrmv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrmv_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1166,10 +1144,11 @@ module rocsparse
 
         function rocsparse_dcsrmv_analysis(handle, trans, m, n, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrmv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrmv_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1184,10 +1163,11 @@ module rocsparse
 
         function rocsparse_ccsrmv_analysis(handle, trans, m, n, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrmv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrmv_analysis
             type(c_ptr), intent(in), value :: handle
             integer(c_int), intent(in), value :: trans
             integer(c_int), intent(in), value :: m
@@ -1202,10 +1182,11 @@ module rocsparse
 
         function rocsparse_zcsrmv_analysis(handle, trans, m, n, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrmv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrmv_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1220,10 +1201,11 @@ module rocsparse
 
 !       rocsparse_csrmv_clear
         function rocsparse_csrmv_clear(handle, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csrmv_clear')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csrmv_clear
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
         end function rocsparse_csrmv_clear
@@ -1231,10 +1213,11 @@ module rocsparse
 !       rocsparse_csrmv
         function rocsparse_scsrmv(handle, trans, m, n, nnz, alpha, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1253,10 +1236,11 @@ module rocsparse
 
         function rocsparse_dcsrmv(handle, trans, m, n, nnz, alpha, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1275,10 +1259,11 @@ module rocsparse
 
         function rocsparse_ccsrmv(handle, trans, m, n, nnz, alpha, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1297,10 +1282,11 @@ module rocsparse
 
         function rocsparse_zcsrmv(handle, trans, m, n, nnz, alpha, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1319,10 +1305,11 @@ module rocsparse
 
 !       rocsparse_csrsv_zero_pivot
         function rocsparse_csrsv_zero_pivot(handle, descr, info, position) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csrsv_zero_pivot')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csrsv_zero_pivot
             type(c_ptr), value :: handle
             type(c_ptr), intent(in), value :: descr
             type(c_ptr), value :: info
@@ -1332,10 +1319,11 @@ module rocsparse
 !       rocsparse_csrsv_buffer_size
         function rocsparse_scsrsv_buffer_size(handle, trans, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrsv_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrsv_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1350,10 +1338,11 @@ module rocsparse
 
         function rocsparse_dcsrsv_buffer_size(handle, trans, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrsv_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrsv_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1368,10 +1357,11 @@ module rocsparse
 
         function rocsparse_ccsrsv_buffer_size(handle, trans, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrsv_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrsv_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1386,10 +1376,11 @@ module rocsparse
 
         function rocsparse_zcsrsv_buffer_size(handle, trans, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrsv_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrsv_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1405,10 +1396,11 @@ module rocsparse
 !       rocsparse_csrsv_analysis
         function rocsparse_scsrsv_analysis(handle, trans, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrsv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrsv_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1425,10 +1417,11 @@ module rocsparse
 
         function rocsparse_dcsrsv_analysis(handle, trans, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrsv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrsv_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1445,10 +1438,11 @@ module rocsparse
 
         function rocsparse_ccsrsv_analysis(handle, trans, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrsv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrsv_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1465,10 +1459,11 @@ module rocsparse
 
         function rocsparse_zcsrsv_analysis(handle, trans, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrsv_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrsv_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1485,10 +1480,11 @@ module rocsparse
 
 !       rocsparse_csrsv_clear
         function rocsparse_csrsv_clear(handle, descr, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csrsv_clear')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csrsv_clear
             type(c_ptr), value :: handle
             type(c_ptr), intent(in), value :: descr
             type(c_ptr), value :: info
@@ -1497,10 +1493,11 @@ module rocsparse
 !       rocsparse_csrsv_solve
         function rocsparse_scsrsv_solve(handle, trans, m, nnz, alpha, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, x, y, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrsv_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrsv_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1519,10 +1516,11 @@ module rocsparse
 
         function rocsparse_dcsrsv_solve(handle, trans, m, nnz, alpha, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, x, y, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrsv_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrsv_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1541,10 +1539,11 @@ module rocsparse
 
         function rocsparse_ccsrsv_solve(handle, trans, m, nnz, alpha, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, x, y, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrsv_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrsv_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1563,10 +1562,11 @@ module rocsparse
 
         function rocsparse_zcsrsv_solve(handle, trans, m, nnz, alpha, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, x, y, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrsv_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrsv_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1586,10 +1586,11 @@ module rocsparse
 !       rocsparse_ellmv
         function rocsparse_sellmv(handle, trans, m, n, alpha, descr, ell_val, &
                 ell_col_ind, ell_width, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sellmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sellmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1606,10 +1607,11 @@ module rocsparse
 
         function rocsparse_dellmv(handle, trans, m, n, alpha, descr, ell_val, &
                 ell_col_ind, ell_width, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dellmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dellmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1626,10 +1628,11 @@ module rocsparse
 
         function rocsparse_cellmv(handle, trans, m, n, alpha, descr, ell_val, &
                 ell_col_ind, ell_width, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cellmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cellmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1646,10 +1649,11 @@ module rocsparse
 
         function rocsparse_zellmv(handle, trans, m, n, alpha, descr, ell_val, &
                 ell_col_ind, ell_width, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zellmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zellmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             integer(c_int), value :: m
@@ -1666,10 +1670,11 @@ module rocsparse
 
 !       rocsparse_hybmv
         function rocsparse_shybmv(handle, trans, alpha, descr, hyb, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_shybmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_shybmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             type(c_ptr), intent(in), value :: alpha
@@ -1681,10 +1686,11 @@ module rocsparse
         end function rocsparse_shybmv
 
         function rocsparse_dhybmv(handle, trans, alpha, descr, hyb, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dhybmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dhybmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             type(c_ptr), intent(in), value :: alpha
@@ -1696,10 +1702,11 @@ module rocsparse
         end function rocsparse_dhybmv
 
         function rocsparse_chybmv(handle, trans, alpha, descr, hyb, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_chybmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_chybmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             type(c_ptr), intent(in), value :: alpha
@@ -1711,10 +1718,11 @@ module rocsparse
         end function rocsparse_chybmv
 
         function rocsparse_zhybmv(handle, trans, alpha, descr, hyb, x, beta, y) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zhybmv')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zhybmv
             type(c_ptr), value :: handle
             integer(c_int), value :: trans
             type(c_ptr), intent(in), value :: alpha
@@ -1731,10 +1739,11 @@ module rocsparse
 !       rocsparse_bsrmm
         function rocsparse_sbsrmm(handle, dir, trans_A, trans_B, mb, n, kb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, B, ldb, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsrmm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsrmm
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans_A
@@ -1758,10 +1767,11 @@ module rocsparse
 
         function rocsparse_dbsrmm(handle, dir, trans_A, trans_B, mb, n, kb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, B, ldb, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsrmm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsrmm
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans_A
@@ -1785,10 +1795,11 @@ module rocsparse
 
         function rocsparse_cbsrmm(handle, dir, trans_A, trans_B, mb, n, kb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, B, ldb, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsrmm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsrmm
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans_A
@@ -1812,10 +1823,11 @@ module rocsparse
 
         function rocsparse_zbsrmm(handle, dir, trans_A, trans_B, mb, n, kb, nnzb, alpha, descr, &
                 bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, B, ldb, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsrmm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsrmm
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: trans_A
@@ -1840,10 +1852,11 @@ module rocsparse
 !       rocsparse_csrmm
         function rocsparse_scsrmm(handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, &
                 csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrmm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrmm
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -1865,10 +1878,11 @@ module rocsparse
 
         function rocsparse_dcsrmm(handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, &
                 csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrmm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrmm
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -1890,10 +1904,11 @@ module rocsparse
 
         function rocsparse_ccsrmm(handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, &
                 csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrmm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrmm
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -1915,10 +1930,11 @@ module rocsparse
 
         function rocsparse_zcsrmm(handle, trans_A, trans_B, m, n, k, nnz, alpha, descr, &
                 csr_val, csr_row_ptr, csr_col_ind, B, ldb, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrmm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrmm
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -1940,10 +1956,11 @@ module rocsparse
 
 !       rocsparse_csrsm_zero_pivot
         function rocsparse_csrsm_zero_pivot(handle, info, position) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csrsm_zero_pivot')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csrsm_zero_pivot
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
             type(c_ptr), value :: position
@@ -1953,10 +1970,11 @@ module rocsparse
         function rocsparse_scsrsm_buffer_size(handle, trans_A, trans_B, m, nrhs, nnz, &
                 alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, policy, &
                 buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrsm_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrsm_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -1978,10 +1996,11 @@ module rocsparse
         function rocsparse_dcsrsm_buffer_size(handle, trans_A, trans_B, m, nrhs, nnz, &
                 alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, policy, &
                 buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrsm_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrsm_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2003,10 +2022,11 @@ module rocsparse
         function rocsparse_ccsrsm_buffer_size(handle, trans_A, trans_B, m, nrhs, nnz, &
                 alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, policy, &
                 buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrsm_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrsm_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2028,10 +2048,11 @@ module rocsparse
         function rocsparse_zcsrsm_buffer_size(handle, trans_A, trans_B, m, nrhs, nnz, &
                 alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, policy, &
                 buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrsm_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrsm_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2054,10 +2075,11 @@ module rocsparse
         function rocsparse_scsrsm_analysis(handle, trans_A, trans_B, m, nrhs, nnz, &
                 alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, &
                 analysis, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrsm_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrsm_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2080,10 +2102,11 @@ module rocsparse
         function rocsparse_dcsrsm_analysis(handle, trans_A, trans_B, m, nrhs, nnz, &
                 alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, &
                 analysis, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrsm_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrsm_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2106,10 +2129,11 @@ module rocsparse
         function rocsparse_ccsrsm_analysis(handle, trans_A, trans_B, m, nrhs, nnz, &
                 alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, &
                 analysis, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrsm_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrsm_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2132,10 +2156,11 @@ module rocsparse
         function rocsparse_zcsrsm_analysis(handle, trans_A, trans_B, m, nrhs, nnz, &
                 alpha, descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, &
                 analysis, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrsm_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrsm_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2157,10 +2182,11 @@ module rocsparse
 
 !       rocsparse_csrsm_clear
         function rocsparse_csrsm_clear(handle, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csrsm_clear')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csrsm_clear
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
         end function rocsparse_csrsm_clear
@@ -2169,10 +2195,11 @@ module rocsparse
         function rocsparse_scsrsm_solve(handle, trans_A, trans_B, m, nrhs, nnz, alpha, &
                 descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, policy, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrsm_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrsm_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2194,10 +2221,11 @@ module rocsparse
         function rocsparse_dcsrsm_solve(handle, trans_A, trans_B, m, nrhs, nnz, alpha, &
                 descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, policy, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrsm_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrsm_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2219,10 +2247,11 @@ module rocsparse
         function rocsparse_ccsrsm_solve(handle, trans_A, trans_B, m, nrhs, nnz, alpha, &
                 descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, policy, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrsm_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrsm_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2244,10 +2273,11 @@ module rocsparse
         function rocsparse_zcsrsm_solve(handle, trans_A, trans_B, m, nrhs, nnz, alpha, &
                 descr, csr_val, csr_row_ptr, csr_col_ind, B, ldb, info, policy, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrsm_solve')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrsm_solve
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2269,10 +2299,11 @@ module rocsparse
 !       rocsparse_gemmi
         function rocsparse_sgemmi(handle, trans_A, trans_B, m, n, k, nnz, alpha, A, &
                 lda, descr, csr_val, csr_row_ptr, csr_col_ind, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sgemmi')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgemmi
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2294,10 +2325,11 @@ module rocsparse
 
         function rocsparse_dgemmi(handle, trans_A, trans_B, m, n, k, nnz, alpha, A, &
                 lda, descr, csr_val, csr_row_ptr, csr_col_ind, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dgemmi')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgemmi
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2319,10 +2351,11 @@ module rocsparse
 
         function rocsparse_cgemmi(handle, trans_A, trans_B, m, n, k, nnz, alpha, A, &
                 lda, descr, csr_val, csr_row_ptr, csr_col_ind, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cgemmi')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgemmi
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2344,10 +2377,11 @@ module rocsparse
 
         function rocsparse_zgemmi(handle, trans_A, trans_B, m, n, k, nnz, alpha, A, &
                 lda, descr, csr_val, csr_row_ptr, csr_col_ind, beta, C, ldc) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zgemmi')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgemmi
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2375,10 +2409,11 @@ module rocsparse
         function rocsparse_csrgeam_nnz(handle, m, n, descr_A, nnz_A, csr_row_ptr_A, &
                 csr_col_ind_A, descr_B, nnz_B, csr_row_ptr_B, csr_col_ind_B, descr_C, &
                 csr_row_ptr_C, nnz_C) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csrgeam_nnz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csrgeam_nnz
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -2400,10 +2435,11 @@ module rocsparse
                 csr_row_ptr_A, csr_col_ind_A, beta, descr_B, nnz_B, csr_val_B, &
                 csr_row_ptr_B, csr_col_ind_B, descr_C, csr_val_C, csr_row_ptr_C, &
                 csr_col_ind_C) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrgeam')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrgeam
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -2429,10 +2465,11 @@ module rocsparse
                 csr_row_ptr_A, csr_col_ind_A, beta, descr_B, nnz_B, csr_val_B, &
                 csr_row_ptr_B, csr_col_ind_B, descr_C, csr_val_C, csr_row_ptr_C, &
                 csr_col_ind_C) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrgeam')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrgeam
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -2458,10 +2495,11 @@ module rocsparse
                 csr_row_ptr_A, csr_col_ind_A, beta, descr_B, nnz_B, csr_val_B, &
                 csr_row_ptr_B, csr_col_ind_B, descr_C, csr_val_C, csr_row_ptr_C, &
                 csr_col_ind_C) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrgeam')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrgeam
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -2487,10 +2525,11 @@ module rocsparse
                 csr_row_ptr_A, csr_col_ind_A, beta, descr_B, nnz_B, csr_val_B, &
                 csr_row_ptr_B, csr_col_ind_B, descr_C, csr_val_C, csr_row_ptr_C, &
                 csr_col_ind_C) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrgeam')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrgeam
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -2517,10 +2556,11 @@ module rocsparse
                 descr_A, nnz_A, csr_row_ptr_A, csr_col_ind_A, descr_B, nnz_B, csr_row_ptr_B, &
                 csr_col_ind_B, beta, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D, info_C, &
                 buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrgemm_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrgemm_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2549,10 +2589,11 @@ module rocsparse
                 descr_A, nnz_A, csr_row_ptr_A, csr_col_ind_A, descr_B, nnz_B, csr_row_ptr_B, &
                 csr_col_ind_B, beta, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D, info_C, &
                 buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrgemm_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrgemm_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2581,10 +2622,11 @@ module rocsparse
                 descr_A, nnz_A, csr_row_ptr_A, csr_col_ind_A, descr_B, nnz_B, csr_row_ptr_B, &
                 csr_col_ind_B, beta, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D, info_C, &
                 buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrgemm_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrgemm_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2613,10 +2655,11 @@ module rocsparse
                 descr_A, nnz_A, csr_row_ptr_A, csr_col_ind_A, descr_B, nnz_B, csr_row_ptr_B, &
                 csr_col_ind_B, beta, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D, info_C, &
                 buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrgemm_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrgemm_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2646,10 +2689,11 @@ module rocsparse
                 nnz_A, csr_row_ptr_A, csr_col_ind_A, descr_B, nnz_B, csr_row_ptr_B, &
                 csr_col_ind_B, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D, descr_C, &
                 csr_row_ptr_C, nnz_C, info_C, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csrgemm_nnz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csrgemm_nnz
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2681,10 +2725,11 @@ module rocsparse
                 csr_row_ptr_B, csr_col_ind_B, beta, descr_D, nnz_D, csr_val_D, csr_row_ptr_D, &
                 csr_col_ind_D, descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, info_C, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrgemm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrgemm
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2721,10 +2766,11 @@ module rocsparse
                 csr_row_ptr_B, csr_col_ind_B, beta, descr_D, nnz_D, csr_val_D, csr_row_ptr_D, &
                 csr_col_ind_D, descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, info_C, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrgemm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrgemm
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2761,10 +2807,11 @@ module rocsparse
                 csr_row_ptr_B, csr_col_ind_B, beta, descr_D, nnz_D, csr_val_D, csr_row_ptr_D, &
                 csr_col_ind_D, descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, info_C, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrgemm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrgemm
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2801,10 +2848,11 @@ module rocsparse
                 csr_row_ptr_B, csr_col_ind_B, beta, descr_D, nnz_D, csr_val_D, csr_row_ptr_D, &
                 csr_col_ind_D, descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, info_C, &
                 temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrgemm')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrgemm
             type(c_ptr), value :: handle
             integer(c_int), value :: trans_A
             integer(c_int), value :: trans_B
@@ -2842,10 +2890,11 @@ module rocsparse
 
 !       rocsparse_bsric0_zero_pivot
         function rocsparse_bsric0_zero_pivot(handle, info, position) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_bsric0_zero_pivot')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_bsric0_zero_pivot
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
             type(c_ptr), value :: position
@@ -2854,10 +2903,11 @@ module rocsparse
 !       rocsparse_bsric0_buffer_size
         function rocsparse_sbsric0_buffer_size(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsric0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsric0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -2873,10 +2923,11 @@ module rocsparse
 
         function rocsparse_dbsric0_buffer_size(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsric0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsric0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -2892,10 +2943,11 @@ module rocsparse
 
         function rocsparse_cbsric0_buffer_size(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsric0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsric0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -2911,10 +2963,11 @@ module rocsparse
 
         function rocsparse_zbsric0_buffer_size(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsric0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsric0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -2931,10 +2984,11 @@ module rocsparse
 !       rocsparse_bsric0_analysis
         function rocsparse_sbsric0_analysis(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsric0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsric0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -2952,10 +3006,11 @@ module rocsparse
 
         function rocsparse_dbsric0_analysis(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsric0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsric0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -2973,10 +3028,11 @@ module rocsparse
 
         function rocsparse_cbsric0_analysis(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsric0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsric0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -2994,10 +3050,11 @@ module rocsparse
 
         function rocsparse_zbsric0_analysis(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsric0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsric0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3015,10 +3072,11 @@ module rocsparse
 
 !       rocsparse_bsric0_clear
         function rocsparse_bsric0_clear(handle, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_bsric0_clear')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_bsric0_clear
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
         end function rocsparse_bsric0_clear
@@ -3026,10 +3084,11 @@ module rocsparse
 !       rocsparse_bsric0
         function rocsparse_sbsric0(handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsric0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsric0
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3046,10 +3105,11 @@ module rocsparse
 
         function rocsparse_dbsric0(handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsric0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsric0
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3066,10 +3126,11 @@ module rocsparse
 
         function rocsparse_cbsric0(handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsric0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsric0
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3086,10 +3147,11 @@ module rocsparse
 
         function rocsparse_zbsric0(handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsric0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsric0
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3106,10 +3168,11 @@ module rocsparse
 
 !       rocsparse_bsrilu0_zero_pivot
         function rocsparse_bsrilu0_zero_pivot(handle, info, position) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_bsrilu0_zero_pivot')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_bsrilu0_zero_pivot
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
             type(c_ptr), value :: position
@@ -3118,10 +3181,11 @@ module rocsparse
 !       rocsparse_bsrilu0_buffer_size
         function rocsparse_sbsrilu0_buffer_size(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsrilu0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsrilu0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3137,10 +3201,11 @@ module rocsparse
 
         function rocsparse_dbsrilu0_buffer_size(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsrilu0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsrilu0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3156,10 +3221,11 @@ module rocsparse
 
         function rocsparse_cbsrilu0_buffer_size(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsrilu0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsrilu0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3175,10 +3241,11 @@ module rocsparse
 
         function rocsparse_zbsrilu0_buffer_size(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsrilu0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsrilu0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3195,10 +3262,11 @@ module rocsparse
 !       rocsparse_bsrilu0_analysis
         function rocsparse_sbsrilu0_analysis(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsrilu0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsrilu0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3216,10 +3284,11 @@ module rocsparse
 
         function rocsparse_dbsrilu0_analysis(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsrilu0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsrilu0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3237,10 +3306,11 @@ module rocsparse
 
         function rocsparse_cbsrilu0_analysis(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsrilu0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsrilu0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3258,10 +3328,11 @@ module rocsparse
 
         function rocsparse_zbsrilu0_analysis(handle, dir, mb, nnzb, descr, bsr_val, &
                 bsr_row_ptr, bsr_col_ind, block_dim, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsrilu0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsrilu0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3279,10 +3350,11 @@ module rocsparse
 
 !       rocsparse_bsrilu0_clear
         function rocsparse_bsrilu0_clear(handle, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_bsrilu0_clear')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_bsrilu0_clear
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
         end function rocsparse_bsrilu0_clear
@@ -3290,10 +3362,11 @@ module rocsparse
 !       rocsparse_bsrilu0
         function rocsparse_sbsrilu0(handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsrilu0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsrilu0
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3310,10 +3383,11 @@ module rocsparse
 
         function rocsparse_dbsrilu0(handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsrilu0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsrilu0
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3330,10 +3404,11 @@ module rocsparse
 
         function rocsparse_cbsrilu0(handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsrilu0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsrilu0
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3350,10 +3425,11 @@ module rocsparse
 
         function rocsparse_zbsrilu0(handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsrilu0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsrilu0
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -3370,10 +3446,11 @@ module rocsparse
 
 !       rocsparse_csric0_zero_pivot
         function rocsparse_csric0_zero_pivot(handle, info, position) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csric0_zero_pivot')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csric0_zero_pivot
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
             type(c_ptr), value :: position
@@ -3382,10 +3459,11 @@ module rocsparse
 !       rocsparse_csric0_buffer_size
         function rocsparse_scsric0_buffer_size(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsric0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsric0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3399,10 +3477,11 @@ module rocsparse
 
         function rocsparse_dcsric0_buffer_size(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsric0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsric0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3416,10 +3495,11 @@ module rocsparse
 
         function rocsparse_ccsric0_buffer_size(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsric0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsric0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3433,10 +3513,11 @@ module rocsparse
 
         function rocsparse_zcsric0_buffer_size(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsric0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsric0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3451,10 +3532,11 @@ module rocsparse
 !       rocsparse_csric0_analysis
         function rocsparse_scsric0_analysis(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsric0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsric0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3470,10 +3552,11 @@ module rocsparse
 
         function rocsparse_dcsric0_analysis(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsric0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsric0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3489,10 +3572,11 @@ module rocsparse
 
         function rocsparse_ccsric0_analysis(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsric0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsric0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3508,10 +3592,11 @@ module rocsparse
 
         function rocsparse_zcsric0_analysis(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsric0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsric0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3527,10 +3612,11 @@ module rocsparse
 
 !       rocsparse_csric0_clear
         function rocsparse_csric0_clear(handle, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csric0_clear')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csric0_clear
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
         end function rocsparse_csric0_clear
@@ -3538,10 +3624,11 @@ module rocsparse
 !       rocsparse_csric0
         function rocsparse_scsric0(handle, m, nnz, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsric0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsric0
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3556,10 +3643,11 @@ module rocsparse
 
         function rocsparse_dcsric0(handle, m, nnz, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsric0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsric0
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3574,10 +3662,11 @@ module rocsparse
 
         function rocsparse_ccsric0(handle, m, nnz, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsric0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsric0
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3592,10 +3681,11 @@ module rocsparse
 
         function rocsparse_zcsric0(handle, m, nnz, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsric0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsric0
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3610,10 +3700,11 @@ module rocsparse
 
 !       rocsparse_csrilu0_zero_pivot
         function rocsparse_csrilu0_zero_pivot(handle, info, position) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csrilu0_zero_pivot')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csrilu0_zero_pivot
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
             type(c_ptr), value :: position
@@ -3622,10 +3713,11 @@ module rocsparse
 !       rocsparse_csrilu0_buffer_size
         function rocsparse_scsrilu0_buffer_size(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrilu0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrilu0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3639,10 +3731,11 @@ module rocsparse
 
         function rocsparse_dcsrilu0_buffer_size(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrilu0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrilu0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3656,10 +3749,11 @@ module rocsparse
 
         function rocsparse_ccsrilu0_buffer_size(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrilu0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrilu0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3673,10 +3767,11 @@ module rocsparse
 
         function rocsparse_zcsrilu0_buffer_size(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrilu0_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrilu0_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3691,10 +3786,11 @@ module rocsparse
 !       rocsparse_csrilu0_analysis
         function rocsparse_scsrilu0_analysis(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrilu0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrilu0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3710,10 +3806,11 @@ module rocsparse
 
         function rocsparse_dcsrilu0_analysis(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrilu0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrilu0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3729,10 +3826,11 @@ module rocsparse
 
         function rocsparse_ccsrilu0_analysis(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrilu0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrilu0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3748,10 +3846,11 @@ module rocsparse
 
         function rocsparse_zcsrilu0_analysis(handle, m, nnz, descr, csr_val, &
                 csr_row_ptr, csr_col_ind, info, analysis, solve, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrilu0_analysis')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrilu0_analysis
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3767,10 +3866,11 @@ module rocsparse
 
 !       rocsparse_csrilu0_clear
         function rocsparse_csrilu0_clear(handle, info) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csrilu0_clear')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csrilu0_clear
             type(c_ptr), value :: handle
             type(c_ptr), value :: info
         end function rocsparse_csrilu0_clear
@@ -3778,10 +3878,11 @@ module rocsparse
 !       rocsparse_csrilu0
         function rocsparse_scsrilu0(handle, m, nnz, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsrilu0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsrilu0
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3796,10 +3897,11 @@ module rocsparse
 
         function rocsparse_dcsrilu0(handle, m, nnz, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsrilu0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsrilu0
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3814,10 +3916,11 @@ module rocsparse
 
         function rocsparse_ccsrilu0(handle, m, nnz, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsrilu0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsrilu0
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3832,10 +3935,11 @@ module rocsparse
 
         function rocsparse_zcsrilu0(handle, m, nnz, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, info, policy, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsrilu0')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsrilu0
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: nnz
@@ -3855,10 +3959,11 @@ module rocsparse
 !       rocsparse_nnz
         function rocsparse_snnz(handle, dir, m, n, descr, A, ld, nnz_per_row_columns, &
                 nnz_total_dev_host_ptr) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_snnz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_snnz
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: m
@@ -3872,10 +3977,11 @@ module rocsparse
 
         function rocsparse_dnnz(handle, dir, m, n, descr, A, ld, nnz_per_row_columns, &
                 nnz_total_dev_host_ptr) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dnnz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dnnz
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: m
@@ -3889,10 +3995,11 @@ module rocsparse
 
         function rocsparse_cnnz(handle, dir, m, n, descr, A, ld, nnz_per_row_columns, &
                 nnz_total_dev_host_ptr) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cnnz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cnnz
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: m
@@ -3906,10 +4013,11 @@ module rocsparse
 
         function rocsparse_znnz(handle, dir, m, n, descr, A, ld, nnz_per_row_columns, &
                 nnz_total_dev_host_ptr) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_znnz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_znnz
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: m
@@ -3924,10 +4032,11 @@ module rocsparse
 !       rocsparse_dense2csr
         function rocsparse_sdense2csr(handle, m, n, descr, A, ld, nnz_per_rows, csr_val, &
                 csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sdense2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sdense2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -3942,10 +4051,11 @@ module rocsparse
 
         function rocsparse_ddense2csr(handle, m, n, descr, A, ld, nnz_per_rows, csr_val, &
                 csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ddense2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ddense2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -3960,10 +4070,11 @@ module rocsparse
 
         function rocsparse_cdense2csr(handle, m, n, descr, A, ld, nnz_per_rows, csr_val, &
                 csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cdense2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cdense2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -3978,10 +4089,11 @@ module rocsparse
 
         function rocsparse_zdense2csr(handle, m, n, descr, A, ld, nnz_per_rows, csr_val, &
                 csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zdense2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zdense2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -3997,10 +4109,11 @@ module rocsparse
 !       rocsparse_dense2csc
         function rocsparse_sdense2csc(handle, m, n, descr, A, ld, nnz_per_columns, &
                 csc_val, csc_col_ptr, csc_row_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sdense2csc')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sdense2csc
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4015,10 +4128,11 @@ module rocsparse
 
         function rocsparse_ddense2csc(handle, m, n, descr, A, ld, nnz_per_columns, &
                 csc_val, csc_col_ptr, csc_row_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ddense2csc')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ddense2csc
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4033,10 +4147,11 @@ module rocsparse
 
         function rocsparse_cdense2csc(handle, m, n, descr, A, ld, nnz_per_columns, &
                 csc_val, csc_col_ptr, csc_row_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cdense2csc')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cdense2csc
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4051,10 +4166,11 @@ module rocsparse
 
         function rocsparse_zdense2csc(handle, m, n, descr, A, ld, nnz_per_columns, &
                 csc_val, csc_col_ptr, csc_row_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zdense2csc')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zdense2csc
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4070,10 +4186,11 @@ module rocsparse
 !       rocsparse_csr2dense
         function rocsparse_scsr2dense(handle, m, n, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, A, ld) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsr2dense')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsr2dense
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4087,10 +4204,11 @@ module rocsparse
 
         function rocsparse_dcsr2dense(handle, m, n, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, A, ld) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsr2dense')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsr2dense
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4104,10 +4222,11 @@ module rocsparse
 
         function rocsparse_ccsr2dense(handle, m, n, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, A, ld) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsr2dense')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsr2dense
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4121,10 +4240,11 @@ module rocsparse
 
         function rocsparse_zcsr2dense(handle, m, n, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, A, ld) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsr2dense')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsr2dense
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4139,10 +4259,11 @@ module rocsparse
 !       rocsparse_csc2dense
         function rocsparse_scsc2dense(handle, m, n, descr, csc_val, csc_col_ptr, &
                 csc_row_ind, A, ld) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsc2dense')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsc2dense
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4156,10 +4277,11 @@ module rocsparse
 
         function rocsparse_dcsc2dense(handle, m, n, descr, csc_val, csc_col_ptr, &
                 csc_row_ind, A, ld) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsc2dense')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsc2dense
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4173,10 +4295,11 @@ module rocsparse
 
         function rocsparse_ccsc2dense(handle, m, n, descr, csc_val, csc_col_ptr, &
                 csc_row_ind, A, ld) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsc2dense')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsc2dense
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4190,10 +4313,11 @@ module rocsparse
 
         function rocsparse_zcsc2dense(handle, m, n, descr, csc_val, csc_col_ptr, &
                 csc_row_ind, A, ld) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsc2dense')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsc2dense
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4208,10 +4332,11 @@ module rocsparse
 !       rocsparse_nnz_compress
         function rocsparse_snnz_compress(handle, m, descr_A, csr_val_A, csr_row_ptr_A, &
                 nnz_per_row, nnz_C, tol) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_snnz_compress')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_snnz_compress
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             type(c_ptr), intent(in), value :: descr_A
@@ -4224,10 +4349,11 @@ module rocsparse
 
         function rocsparse_dnnz_compress(handle, m, descr_A, csr_val_A, csr_row_ptr_A, &
                 nnz_per_row, nnz_C, tol) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dnnz_compress')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dnnz_compress
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             type(c_ptr), intent(in), value :: descr_A
@@ -4240,10 +4366,11 @@ module rocsparse
 
         function rocsparse_cnnz_compress(handle, m, descr_A, csr_val_A, csr_row_ptr_A, &
                 nnz_per_row, nnz_C, tol) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cnnz_compress')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cnnz_compress
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             type(c_ptr), intent(in), value :: descr_A
@@ -4256,10 +4383,11 @@ module rocsparse
 
         function rocsparse_znnz_compress(handle, m, descr_A, csr_val_A, csr_row_ptr_A, &
                 nnz_per_row, nnz_C, tol) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_znnz_compress')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_znnz_compress
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             type(c_ptr), intent(in), value :: descr_A
@@ -4272,10 +4400,11 @@ module rocsparse
 
 !       rocsparse_csr2coo
         function rocsparse_csr2coo(handle, csr_row_ptr, nnz, m, coo_row_ind, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csr2coo')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csr2coo
             type(c_ptr), value :: handle
             type(c_ptr), intent(in), value :: csr_row_ptr
             integer(c_int), value :: nnz
@@ -4287,10 +4416,11 @@ module rocsparse
 !       rocsparse_csr2csc_buffer_size
         function rocsparse_csr2csc_buffer_size(handle, m, n, nnz, csr_row_ptr, &
                 csr_col_ind, copy_values, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csr2csc_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csr2csc_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4305,10 +4435,11 @@ module rocsparse
         function rocsparse_scsr2csc(handle, m, n, nnz, csr_val, csr_row_ptr, &
                 csr_col_ind, csc_val, csc_row_ind, csc_col_ptr, copy_values, &
                 idx_base, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsr2csc')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsr2csc
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4327,10 +4458,11 @@ module rocsparse
         function rocsparse_dcsr2csc(handle, m, n, nnz, csr_val, csr_row_ptr, &
                 csr_col_ind, csc_val, csc_row_ind, csc_col_ptr, copy_values, &
                 idx_base, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsr2csc')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsr2csc
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4349,10 +4481,11 @@ module rocsparse
         function rocsparse_ccsr2csc(handle, m, n, nnz, csr_val, csr_row_ptr, &
                 csr_col_ind, csc_val, csc_row_ind, csc_col_ptr, copy_values, &
                 idx_base, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsr2csc')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsr2csc
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4371,10 +4504,11 @@ module rocsparse
         function rocsparse_zcsr2csc(handle, m, n, nnz, csr_val, csr_row_ptr, &
                 csr_col_ind, csc_val, csc_row_ind, csc_col_ptr, copy_values, &
                 idx_base, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsr2csc')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsr2csc
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4393,10 +4527,11 @@ module rocsparse
 !       rocsparse_csr2ell_width
         function rocsparse_csr2ell_width(handle, m, csr_descr, csr_row_ptr, &
                 ell_descr, ell_width) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csr2ell_width')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csr2ell_width
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             type(c_ptr), intent(in), value :: csr_descr
@@ -4408,10 +4543,11 @@ module rocsparse
 !       rocsparse_csr2ell
         function rocsparse_scsr2ell(handle, m, csr_descr, csr_val, csr_row_ptr, &
                 csr_col_ind, ell_descr, ell_width, ell_val, ell_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsr2ell')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsr2ell
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             type(c_ptr), intent(in), value :: csr_descr
@@ -4426,10 +4562,11 @@ module rocsparse
 
         function rocsparse_dcsr2ell(handle, m, csr_descr, csr_val, csr_row_ptr, &
                 csr_col_ind, ell_descr, ell_width, ell_val, ell_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsr2ell')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsr2ell
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             type(c_ptr), intent(in), value :: csr_descr
@@ -4444,10 +4581,11 @@ module rocsparse
 
         function rocsparse_ccsr2ell(handle, m, csr_descr, csr_val, csr_row_ptr, &
                 csr_col_ind, ell_descr, ell_width, ell_val, ell_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsr2ell')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsr2ell
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             type(c_ptr), intent(in), value :: csr_descr
@@ -4462,10 +4600,11 @@ module rocsparse
 
         function rocsparse_zcsr2ell(handle, m, csr_descr, csr_val, csr_row_ptr, &
                 csr_col_ind, ell_descr, ell_width, ell_val, ell_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsr2ell')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsr2ell
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             type(c_ptr), intent(in), value :: csr_descr
@@ -4481,10 +4620,11 @@ module rocsparse
 !       rocsparse_csr2hyb
         function rocsparse_scsr2hyb(handle, m, n, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, hyb, user_ell_width, partition_type) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsr2hyb')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsr2hyb
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4499,10 +4639,11 @@ module rocsparse
 
         function rocsparse_dcsr2hyb(handle, m, n, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, hyb, user_ell_width, partition_type) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsr2hyb')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsr2hyb
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4517,10 +4658,11 @@ module rocsparse
 
         function rocsparse_ccsr2hyb(handle, m, n, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, hyb, user_ell_width, partition_type) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsr2hyb')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsr2hyb
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4535,10 +4677,11 @@ module rocsparse
 
         function rocsparse_zcsr2hyb(handle, m, n, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, hyb, user_ell_width, partition_type) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsr2hyb')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsr2hyb
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4554,10 +4697,11 @@ module rocsparse
 !       rocsparse_csr2bsr_nnz
         function rocsparse_csr2bsr_nnz(handle, dir, m, n, csr_descr, csr_row_ptr, &
                 csr_col_ind, block_dim, bsr_descr, bsr_row_ptr, bsr_nnz) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csr2bsr_nnz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csr2bsr_nnz
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: m
@@ -4574,10 +4718,11 @@ module rocsparse
 !       rocsparse_csr2bsr
         function rocsparse_scsr2bsr(handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, &
                 csr_col_ind, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsr2bsr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsr2bsr
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: m
@@ -4595,10 +4740,11 @@ module rocsparse
 
         function rocsparse_dcsr2bsr(handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, &
                 csr_col_ind, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsr2bsr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsr2bsr
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: m
@@ -4616,10 +4762,11 @@ module rocsparse
 
         function rocsparse_ccsr2bsr(handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, &
                 csr_col_ind, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsr2bsr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsr2bsr
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: m
@@ -4637,10 +4784,11 @@ module rocsparse
 
         function rocsparse_zcsr2bsr(handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, &
                 csr_col_ind, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsr2bsr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsr2bsr
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: m
@@ -4660,10 +4808,11 @@ module rocsparse
         function rocsparse_scsr2csr_compress(handle, m, n, descr_A, csr_val_A, &
                 csr_col_ind_A, csr_row_ptr_A, nnz_A, nnz_per_row, csr_val_C, &
                 csr_col_ind_C, csr_row_ptr_C, tol) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_scsr2csr_compress')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsr2csr_compress
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4682,10 +4831,11 @@ module rocsparse
         function rocsparse_dcsr2csr_compress(handle, m, n, descr_A, csr_val_A, &
                 csr_col_ind_A, csr_row_ptr_A, nnz_A, nnz_per_row, csr_val_C, &
                 csr_col_ind_C, csr_row_ptr_C, tol) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dcsr2csr_compress')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsr2csr_compress
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4704,10 +4854,11 @@ module rocsparse
         function rocsparse_ccsr2csr_compress(handle, m, n, descr_A, csr_val_A, &
                 csr_col_ind_A, csr_row_ptr_A, nnz_A, nnz_per_row, csr_val_C, &
                 csr_col_ind_C, csr_row_ptr_C, tol) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ccsr2csr_compress')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsr2csr_compress
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4726,10 +4877,11 @@ module rocsparse
         function rocsparse_zcsr2csr_compress(handle, m, n, descr_A, csr_val_A, &
                 csr_col_ind_A, csr_row_ptr_A, nnz_A, nnz_per_row, csr_val_C, &
                 csr_col_ind_C, csr_row_ptr_C, tol) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zcsr2csr_compress')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsr2csr_compress
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4747,10 +4899,11 @@ module rocsparse
 
 !       rocsparse_coo2csr
         function rocsparse_coo2csr(handle, coo_row_ind, nnz, m, csr_row_ptr, idx_base) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_coo2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_coo2csr
             type(c_ptr), value :: handle
             type(c_ptr), intent(in), value :: coo_row_ind
             integer(c_int), value :: nnz
@@ -4762,10 +4915,11 @@ module rocsparse
 !       rocsparse_ell2csr_nnz
         function rocsparse_ell2csr_nnz(handle, m, n, ell_descr, ell_width, ell_col_ind, &
                 csr_descr, csr_row_ptr, csr_nnz) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_ell2csr_nnz')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ell2csr_nnz
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4780,10 +4934,11 @@ module rocsparse
 !       rocsparse_ell2csr
         function rocsparse_sell2csr(handle, m, n, ell_descr, ell_width, ell_val, &
                 ell_col_ind, csr_descr, csr_val, csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sell2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sell2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4799,10 +4954,11 @@ module rocsparse
 
         function rocsparse_dell2csr(handle, m, n, ell_descr, ell_width, ell_val, &
                 ell_col_ind, csr_descr, csr_val, csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dell2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dell2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4818,10 +4974,11 @@ module rocsparse
 
         function rocsparse_cell2csr(handle, m, n, ell_descr, ell_width, ell_val, &
                 ell_col_ind, csr_descr, csr_val, csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cell2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cell2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4837,10 +4994,11 @@ module rocsparse
 
         function rocsparse_zell2csr(handle, m, n, ell_descr, ell_width, ell_val, &
                 ell_col_ind, csr_descr, csr_val, csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zell2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zell2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4857,10 +5015,11 @@ module rocsparse
 !       rocsparse_hyb2csr_buffer_size
         function rocsparse_hyb2csr_buffer_size(handle, descr, hyb, csr_row_ptr, &
                 buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_hyb2csr_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_hyb2csr_buffer_size
             type(c_ptr), value :: handle
             type(c_ptr), intent(in), value :: descr
             type(c_ptr), intent(in), value :: hyb
@@ -4871,10 +5030,11 @@ module rocsparse
 !       rocsparse_hyb2csr
         function rocsparse_shyb2csr(handle, descr, hyb, csr_val, csr_row_ptr, &
                 csr_col_ind, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_shyb2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_shyb2csr
             type(c_ptr), value :: handle
             type(c_ptr), intent(in), value :: descr
             type(c_ptr), intent(in), value :: hyb
@@ -4886,10 +5046,11 @@ module rocsparse
 
         function rocsparse_dhyb2csr(handle, descr, hyb, csr_val, csr_row_ptr, &
                 csr_col_ind, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dhyb2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dhyb2csr
             type(c_ptr), value :: handle
             type(c_ptr), intent(in), value :: descr
             type(c_ptr), intent(in), value :: hyb
@@ -4901,10 +5062,11 @@ module rocsparse
 
         function rocsparse_chyb2csr(handle, descr, hyb, csr_val, csr_row_ptr, &
                 csr_col_ind, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_chyb2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_chyb2csr
             type(c_ptr), value :: handle
             type(c_ptr), intent(in), value :: descr
             type(c_ptr), intent(in), value :: hyb
@@ -4916,10 +5078,11 @@ module rocsparse
 
         function rocsparse_zhyb2csr(handle, descr, hyb, csr_val, csr_row_ptr, &
                 csr_col_ind, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zhyb2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zhyb2csr
             type(c_ptr), value :: handle
             type(c_ptr), intent(in), value :: descr
             type(c_ptr), intent(in), value :: hyb
@@ -4931,10 +5094,11 @@ module rocsparse
 
 !       rocsparse_create_identity_permutation
         function rocsparse_create_identity_permutation(handle, n, p) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_create_identity_permutation')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_create_identity_permutation
             type(c_ptr), value :: handle
             integer(c_int), value :: n
             type(c_ptr), value :: p
@@ -4943,10 +5107,11 @@ module rocsparse
 !       rocsparse_csrsort_buffer_size
         function rocsparse_csrsort_buffer_size(handle, m, n, nnz, csr_row_ptr, &
                 csr_col_ind, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csrsort_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csrsort_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4959,10 +5124,11 @@ module rocsparse
 !       rocsparse_csrsort
         function rocsparse_csrsort(handle, m, n, nnz, csr_row_ptr, &
                 csr_col_ind, perm, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_csrsort')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csrsort
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4976,10 +5142,11 @@ module rocsparse
 !       rocsparse_cscsort_buffer_size
         function rocsparse_cscsort_buffer_size(handle, m, n, nnz, csc_col_ptr, &
                 csc_row_ind, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cscsort_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cscsort_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -4992,10 +5159,11 @@ module rocsparse
 !       rocsparse_cscsort
         function rocsparse_cscsort(handle, m, n, nnz, csc_col_ptr, &
                 csc_row_ind, perm, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cscsort')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cscsort
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -5009,10 +5177,11 @@ module rocsparse
 !       rocsparse_coosort_buffer_size
         function rocsparse_coosort_buffer_size(handle, m, n, nnz, coo_row_ind, &
                 coo_col_ind, buffer_size) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_coosort_buffer_size')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_coosort_buffer_size
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -5025,10 +5194,11 @@ module rocsparse
 !       rocsparse_coosort_by_row
         function rocsparse_coosort_by_row(handle, m, n, nnz, coo_row_ind, &
                 coo_col_ind, perm, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_coosort_by_row')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_coosort_by_row
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -5042,10 +5212,11 @@ module rocsparse
 !       rocsparse_coosort_by_column
         function rocsparse_coosort_by_column(handle, m, n, nnz, coo_row_ind, &
                 coo_col_ind, perm, temp_buffer) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_coosort_by_column')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_coosort_by_column
             type(c_ptr), value :: handle
             integer(c_int), value :: m
             integer(c_int), value :: n
@@ -5059,10 +5230,11 @@ module rocsparse
 !       rocsparse_bsr2csr
         function rocsparse_sbsr2csr(handle, dir, mb, nb, bsr_descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, csr_descr, csr_val, csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_sbsr2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sbsr2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -5080,10 +5252,11 @@ module rocsparse
 
         function rocsparse_dbsr2csr(handle, dir, mb, nb, bsr_descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, csr_descr, csr_val, csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_dbsr2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dbsr2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -5101,10 +5274,11 @@ module rocsparse
 
         function rocsparse_cbsr2csr(handle, dir, mb, nb, bsr_descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, csr_descr, csr_val, csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_cbsr2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cbsr2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb
@@ -5122,10 +5296,11 @@ module rocsparse
 
         function rocsparse_zbsr2csr(handle, dir, mb, nb, bsr_descr, bsr_val, bsr_row_ptr, &
                 bsr_col_ind, block_dim, csr_descr, csr_val, csr_row_ptr, csr_col_ind) &
-                result(c_int) &
                 bind(c, name = 'rocsparse_zbsr2csr')
+            use rocsparse_enums
             use iso_c_binding
             implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zbsr2csr
             type(c_ptr), value :: handle
             integer(c_int), value :: dir
             integer(c_int), value :: mb

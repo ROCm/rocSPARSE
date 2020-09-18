@@ -60,7 +60,10 @@ include(src/CMakeLists.txt)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 
 # Create rocSPARSE Fortran module
-add_library(rocsparse_fortran OBJECT ${rocsparse_f90_source})
+add_library(rocsparse_fortran OBJECT ${rocsparse_fortran_source})
+
+# Target compile options
+target_compile_options(rocsparse_fortran PRIVATE -std=f2003 -ffree-form -cpp)
 
 # Create rocSPARSE library
 add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
@@ -93,8 +96,9 @@ set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")
 include(GenerateExportHeader)
 generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse-export.h)
 
-# Force installation of .f90 module file
-install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse_module.f90"
+# Force installation of .f module file
+install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse.f"
+              "${CMAKE_SOURCE_DIR}/library/src/rocsparse_enums.f"
         DESTINATION "rocsparse/include"
 )
 

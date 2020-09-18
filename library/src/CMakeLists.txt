@@ -22,8 +22,9 @@
 # ########################################################################
 
 # rocSPARSE Fortran source
-set(rocsparse_f90_source
-  src/rocsparse_module.f90
+set(rocsparse_fortran_source
+  src/rocsparse_enums.f
+  src/rocsparse.f
 )
 
 # rocSPARSE source
