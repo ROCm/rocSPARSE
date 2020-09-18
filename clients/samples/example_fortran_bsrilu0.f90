@@ -57,27 +57,27 @@ program example_fortran_bsrilu0
 
     interface
         function hipMalloc(ptr, size) &
-                result(c_int) &
                 bind(c, name = 'hipMalloc')
             use iso_c_binding
             implicit none
+            integer :: hipMalloc
             type(c_ptr) :: ptr
             integer(c_size_t), value :: size
         end function hipMalloc
 
         function hipFree(ptr) &
-                result(c_int) &
                 bind(c, name = 'hipFree')
             use iso_c_binding
             implicit none
+            integer :: hipFree
             type(c_ptr), value :: ptr
         end function hipFree
 
         function hipMemcpy(dst, src, size, kind) &
-                result(c_int) &
                 bind(c, name = 'hipMemcpy')
             use iso_c_binding
             implicit none
+            integer :: hipMemcpy
             type(c_ptr), value :: dst
             type(c_ptr), intent(in), value :: src
             integer(c_size_t), value :: size
@@ -85,27 +85,27 @@ program example_fortran_bsrilu0
         end function hipMemcpy
 
         function hipMemset(dst, val, size) &
-                result(c_int) &
                 bind(c, name = 'hipMemset')
             use iso_c_binding
             implicit none
+            integer :: hipMemset
             type(c_ptr), value :: dst
             integer(c_int), value :: val
             integer(c_size_t), value :: size
         end function hipMemset
 
         function hipDeviceSynchronize() &
-                result(c_int) &
                 bind(c, name = 'hipDeviceSynchronize')
             use iso_c_binding
             implicit none
+            integer :: hipDeviceSynchronize
         end function hipDeviceSynchronize
 
         function hipDeviceReset() &
-                result(c_int) &
                 bind(c, name = 'hipDeviceReset')
             use iso_c_binding
             implicit none
+            integer :: hipDeviceReset
         end function hipDeviceReset
     end interface
 
