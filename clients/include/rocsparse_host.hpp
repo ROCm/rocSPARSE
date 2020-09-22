@@ -2419,7 +2419,7 @@ inline void host_bsric0(rocsparse_direction               direction,
     }
 }
 
-template <typename T>
+template <typename T, typename U>
 inline void host_bsrilu0(rocsparse_direction               dir,
                          rocsparse_int                     mb,
                          const std::vector<rocsparse_int>& bsr_row_ptr,
@@ -2430,7 +2430,7 @@ inline void host_bsrilu0(rocsparse_direction               dir,
                          rocsparse_int*                    struct_pivot,
                          rocsparse_int*                    numeric_pivot,
                          bool                              boost,
-                         double                            boost_tol,
+                         U                                 boost_tol,
                          T                                 boost_val)
 
 {
@@ -2745,7 +2745,7 @@ inline void host_csric0(rocsparse_int                     M,
     }
 }
 
-template <typename T>
+template <typename T, typename U>
 inline void host_csrilu0(rocsparse_int                     M,
                          const std::vector<rocsparse_int>& csr_row_ptr,
                          const std::vector<rocsparse_int>& csr_col_ind,
@@ -2754,7 +2754,7 @@ inline void host_csrilu0(rocsparse_int                     M,
                          rocsparse_int*                    struct_pivot,
                          rocsparse_int*                    numeric_pivot,
                          bool                              boost,
-                         double                            boost_tol,
+                         U                                 boost_tol,
                          T                                 boost_val)
 {
     // Initialize pivot

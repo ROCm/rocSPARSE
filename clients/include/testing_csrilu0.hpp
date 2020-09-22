@@ -614,7 +614,7 @@ void testing_csrilu0(const Arguments& arg)
                         h_analysis_pivot_gold,
                         h_solve_pivot_gold,
                         boost,
-                        std::real(h_boost_tol),
+                        *get_boost_tol(&h_boost_tol),
                         h_boost_val);
 
         // Check pivots
