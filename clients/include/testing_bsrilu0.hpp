@@ -751,7 +751,7 @@ void testing_bsrilu0(const Arguments& arg)
                         &structural_pivot,
                         &numerical_pivot,
                         boost,
-                        std::real(h_boost_tol),
+                        *get_boost_tol(&h_boost_tol),
                         h_boost_val);
 
         hanalysis_pivot_gold[0] = structural_pivot;

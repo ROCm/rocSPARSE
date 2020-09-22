@@ -169,6 +169,28 @@ extern "C" rocsparse_status
         handle, info, enable_boost, boost_tol, boost_val);
 }
 
+extern "C" rocsparse_status __attribute__((visibility("default")))
+rocsparse_dsbsrilu0_numeric_boost(rocsparse_handle   handle,
+                                  rocsparse_mat_info info,
+                                  int                enable_boost,
+                                  const double*      boost_tol,
+                                  const float*       boost_val)
+{
+    return rocsparse_bsrilu0_numeric_boost_template(
+        handle, info, enable_boost, boost_tol, boost_val);
+}
+
+extern "C" rocsparse_status __attribute__((visibility("default")))
+rocsparse_dcbsrilu0_numeric_boost(rocsparse_handle               handle,
+                                  rocsparse_mat_info             info,
+                                  int                            enable_boost,
+                                  const double*                  boost_tol,
+                                  const rocsparse_float_complex* boost_val)
+{
+    return rocsparse_bsrilu0_numeric_boost_template(
+        handle, info, enable_boost, boost_tol, boost_val);
+}
+
 extern "C" rocsparse_status rocsparse_sbsrilu0_analysis(rocsparse_handle          handle,
                                                         rocsparse_direction       dir,
                                                         rocsparse_int             mb,
@@ -325,18 +347,36 @@ extern "C" rocsparse_status rocsparse_sbsrilu0(rocsparse_handle          handle,
                                                rocsparse_solve_policy    policy,
                                                void*                     temp_buffer)
 {
-    return rocsparse_bsrilu0_template<float, float>(handle,
-                                                    dir,
-                                                    mb,
-                                                    nnzb,
-                                                    descr,
-                                                    bsr_val,
-                                                    bsr_row_ptr,
-                                                    bsr_col_ind,
-                                                    block_dim,
-                                                    info,
-                                                    policy,
-                                                    temp_buffer);
+    if(info != nullptr && info->use_double_prec_tol)
+    {
+        return rocsparse_bsrilu0_template<float, double>(handle,
+                                                         dir,
+                                                         mb,
+                                                         nnzb,
+                                                         descr,
+                                                         bsr_val,
+                                                         bsr_row_ptr,
+                                                         bsr_col_ind,
+                                                         block_dim,
+                                                         info,
+                                                         policy,
+                                                         temp_buffer);
+    }
+    else
+    {
+        return rocsparse_bsrilu0_template<float, float>(handle,
+                                                        dir,
+                                                        mb,
+                                                        nnzb,
+                                                        descr,
+                                                        bsr_val,
+                                                        bsr_row_ptr,
+                                                        bsr_col_ind,
+                                                        block_dim,
+                                                        info,
+                                                        policy,
+                                                        temp_buffer);
+    }
 }
 
 extern "C" rocsparse_status rocsparse_dbsrilu0(rocsparse_handle          handle,
@@ -379,18 +419,36 @@ extern "C" rocsparse_status rocsparse_cbsrilu0(rocsparse_handle          handle,
                                                rocsparse_solve_policy    policy,
                                                void*                     temp_buffer)
 {
-    return rocsparse_bsrilu0_template<rocsparse_float_complex, float>(handle,
-                                                                      dir,
-                                                                      mb,
-                                                                      nnzb,
-                                                                      descr,
-                                                                      bsr_val,
-                                                                      bsr_row_ptr,
-                                                                      bsr_col_ind,
-                                                                      block_dim,
-                                                                      info,
-                                                                      policy,
-                                                                      temp_buffer);
+    if(info != nullptr && info->use_double_prec_tol)
+    {
+        return rocsparse_bsrilu0_template<rocsparse_float_complex, double>(handle,
+                                                                           dir,
+                                                                           mb,
+                                                                           nnzb,
+                                                                           descr,
+                                                                           bsr_val,
+                                                                           bsr_row_ptr,
+                                                                           bsr_col_ind,
+                                                                           block_dim,
+                                                                           info,
+                                                                           policy,
+                                                                           temp_buffer);
+    }
+    else
+    {
+        return rocsparse_bsrilu0_template<rocsparse_float_complex, float>(handle,
+                                                                          dir,
+                                                                          mb,
+                                                                          nnzb,
+                                                                          descr,
+                                                                          bsr_val,
+                                                                          bsr_row_ptr,
+                                                                          bsr_col_ind,
+                                                                          block_dim,
+                                                                          info,
+                                                                          policy,
+                                                                          temp_buffer);
+    }
 }
 
 extern "C" rocsparse_status rocsparse_zbsrilu0(rocsparse_handle          handle,

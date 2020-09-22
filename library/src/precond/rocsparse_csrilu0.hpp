@@ -25,6 +25,8 @@
 #ifndef ROCSPARSE_CSRILU0_HPP
 #define ROCSPARSE_CSRILU0_HPP
 
+#include <type_traits>
+
 #include "../level2/rocsparse_csrsv.hpp"
 #include "csrilu0_device.h"
 #include "definitions.h"
@@ -59,7 +61,8 @@ rocsparse_status rocsparse_csrilu0_numeric_boost_template(rocsparse_handle   han
               (const void*&)boost_val);
 
     // Reset boost
-    info->boost_enable = 0;
+    info->boost_enable        = 0;
+    info->use_double_prec_tol = 0;
 
     // Numeric boost
     if(enable_boost)
@@ -74,9 +77,10 @@ rocsparse_status rocsparse_csrilu0_numeric_boost_template(rocsparse_handle   han
             return rocsparse_status_invalid_pointer;
         }
 
-        info->boost_enable = enable_boost;
-        info->boost_tol    = reinterpret_cast<const void*>(boost_tol);
-        info->boost_val    = reinterpret_cast<const void*>(boost_val);
+        info->boost_enable        = enable_boost;
+        info->use_double_prec_tol = std::is_same<U, double>();
+        info->boost_tol           = reinterpret_cast<const void*>(boost_tol);
+        info->boost_val           = reinterpret_cast<const void*>(boost_val);
     }
 
     return rocsparse_status_success;

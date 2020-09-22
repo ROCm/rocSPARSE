@@ -170,9 +170,10 @@ struct _rocsparse_mat_info
     rocsparse_int* zero_pivot = nullptr;
 
     // numeric boost for ilu0
-    int         boost_enable = 0;
-    const void* boost_tol    = nullptr;
-    const void* boost_val    = nullptr;
+    int         boost_enable        = 0;
+    int         use_double_prec_tol = 0;
+    const void* boost_tol           = nullptr;
+    const void* boost_val           = nullptr;
 };
 
 /********************************************************************************
