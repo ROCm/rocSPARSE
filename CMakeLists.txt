@@ -86,7 +86,7 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 include(cmake/Dependencies.cmake)
 
 # Setup version
-set(VERSION_STRING "1.17.7")
+set(VERSION_STRING "1.17.8")
 rocm_setup_version(VERSION ${VERSION_STRING})
 set(rocsparse_SOVERSION 0.1)
 
