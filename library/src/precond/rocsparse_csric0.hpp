@@ -157,10 +157,22 @@ rocsparse_status rocsparse_csric0_analysis_template(rocsparse_handle          ha
             info->csric0_info = info->csrsv_lower_info;
             return rocsparse_status_success;
         }
+        else if(info->csrsvt_upper_info != nullptr)
+        {
+            // csrsvt meta data
+            info->csric0_info = info->csrsvt_upper_info;
+            return rocsparse_status_success;
+        }
         else if(info->csrsm_lower_info != nullptr)
         {
             // csrsm meta data
             info->csric0_info = info->csrsm_lower_info;
+            return rocsparse_status_success;
+        }
+        else if(info->csrsmt_upper_info != nullptr)
+        {
+            // csrsmt meta data
+            info->csric0_info = info->csrsmt_upper_info;
             return rocsparse_status_success;
         }
     }

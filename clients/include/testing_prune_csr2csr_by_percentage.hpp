@@ -725,8 +725,6 @@ void testing_prune_csr2csr_by_percentage(const Arguments& arg)
                               false,
                               full_rank);
 
-    //std::cout << "M: " << M << " N: " << N << " nnz_A: " << nnz_A << " percentage: " << percentage << std::endl;
-
     // Argument sanity check before allocating invalid memory
     if(nnz_A <= 0)
     {
@@ -750,20 +748,6 @@ void testing_prune_csr2csr_by_percentage(const Arguments& arg)
 
         return;
     }
-
-    // std::cout << "h_csr_row_ptr_A" << std::endl;
-    // for(size_t i = 0; i < h_csr_row_ptr_A.size(); i++)
-    // {
-    //     std::cout << h_csr_row_ptr_A[i] << " ";
-    // }
-    // std::cout << "" << std::endl;
-
-    // std::cout << "h_csr_val_A" << std::endl;
-    // for(size_t i = 0; i < h_csr_val_A.size(); i++)
-    // {
-    //     std::cout << h_csr_val_A[i] << " ";
-    // }
-    // std::cout << "" << std::endl;
 
     // Allocate device memory for input CSR matrix
     device_vector<rocsparse_int> d_nnz_total_dev_host_ptr(1);

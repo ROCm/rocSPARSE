@@ -750,6 +750,13 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
                 info->csrsv_upper_info = info->csrsm_upper_info;
                 return rocsparse_status_success;
             }
+
+            if(trans == rocsparse_operation_transpose && info->csrsmt_upper_info != nullptr)
+            {
+                // csrsv meta data
+                info->csrsvt_upper_info = info->csrsmt_upper_info;
+                return rocsparse_status_success;
+            }
         }
 
         // User is explicitly asking to force a re-analysis, or no valid data has been
@@ -818,6 +825,12 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
             {
                 // csrsm meta data
                 info->csrsv_lower_info = info->csrsm_lower_info;
+                return rocsparse_status_success;
+            }
+            else if(trans == rocsparse_operation_transpose && info->csrsmt_lower_info != nullptr)
+            {
+                // csrsm meta data
+                info->csrsvt_lower_info = info->csrsmt_lower_info;
                 return rocsparse_status_success;
             }
         }

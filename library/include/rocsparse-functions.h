@@ -3119,7 +3119,7 @@ rocsparse_status rocsparse_csrsm_zero_pivot(rocsparse_handle   handle,
 *              is invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 *  \retval     rocsparse_status_not_implemented
-*              \p trans_A != \ref rocsparse_operation_none,
+*              \p trans_A == \ref rocsparse_operation_conjugate_transpose,
 *              \p trans_B == \ref rocsparse_operation_conjugate_transpose or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
@@ -3272,7 +3272,7 @@ rocsparse_status rocsparse_zcsrsm_buffer_size(rocsparse_handle                ha
 *              is invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 *  \retval     rocsparse_status_not_implemented
-*              \p trans_A != \ref rocsparse_operation_none,
+*              \p trans_A == \ref rocsparse_operation_conjugate_transpose,
 *              \p trans_B == \ref rocsparse_operation_conjugate_transpose or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
@@ -3442,7 +3442,7 @@ rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *  It may return before the actual computation has finished.
 *
 *  \note
-*  Currently, only \p trans_A == \ref rocsparse_operation_none and
+*  Currently, only \p trans_A != \ref rocsparse_operation_conjugate_transpose and
 *  \p trans_B != \ref rocsparse_operation_conjugate_transpose is supported.
 *
 *  @param[in]
@@ -3488,7 +3488,7 @@ rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsparse_mat_in
 *              is invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 *  \retval     rocsparse_status_not_implemented
-*              \p trans_A != \ref rocsparse_operation_none,
+*              \p trans_A == \ref rocsparse_operation_conjugate_transpose,
 *              \p trans_B == \ref rocsparse_operation_conjugate_transpose or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 *
