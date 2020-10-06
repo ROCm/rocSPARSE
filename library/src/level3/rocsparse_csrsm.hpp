@@ -121,7 +121,7 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     }
 
     // Check operation type
-    if(trans_A != rocsparse_operation_none)
+    if(trans_A != rocsparse_operation_none && trans_A != rocsparse_operation_transpose)
     {
         return rocsparse_status_not_implemented;
     }
@@ -230,6 +230,22 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
         *buffer_size += sizeof(T) * ((m * nrhs - 1) / 256 + 1) * 256;
     }
 
+    // Additional buffer to store transpose A, if transA == rocsparse_operation_transpose
+    if(trans_A == rocsparse_operation_transpose)
+    {
+        size_t transpose_size;
+
+        // Determine rocprim buffer size
+        RETURN_IF_HIP_ERROR(
+            rocprim::radix_sort_pairs(nullptr, transpose_size, dummy, dummy, nnz, 0, 32, stream));
+
+        // rocPRIM does not support in-place sorting, so we need an additional buffer
+        transpose_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+        transpose_size += sizeof(T) * ((nnz - 1) / 256 + 1) * 256;
+
+        *buffer_size += transpose_size;
+    }
+
     return rocsparse_status_success;
 }
 
@@ -311,7 +327,7 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
     }
 
     // Check operation type
-    if(trans_A != rocsparse_operation_none)
+    if(trans_A != rocsparse_operation_none && trans_A != rocsparse_operation_transpose)
     {
         return rocsparse_status_not_implemented;
     }
@@ -406,10 +422,10 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
             {
                 return rocsparse_status_success;
             }
-            //            else if(trans_A == rocsparse_operation_transpose && info->csrsmt_upper_info != nullptr)
-            //            {
-            //                return rocsparse_status_success;
-            //            }
+            else if(trans_A == rocsparse_operation_transpose && info->csrsmt_upper_info != nullptr)
+            {
+                return rocsparse_status_success;
+            }
 
             // Check for other upper analysis meta data
 
@@ -419,16 +435,27 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
                 info->csrsm_upper_info = info->csrsv_upper_info;
                 return rocsparse_status_success;
             }
+
+            if(trans_A == rocsparse_operation_transpose && info->csrsvt_upper_info != nullptr)
+            {
+                // csrsv meta data
+                info->csrsmt_upper_info = info->csrsvt_upper_info;
+                return rocsparse_status_success;
+            }
         }
 
         // User is explicitly asking to force a re-analysis, or no valid data has been
         // found to be re-used
 
         // Clear csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsm_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info((trans_A == rocsparse_operation_none)
+                                                                 ? info->csrsm_upper_info
+                                                                 : info->csrsmt_upper_info));
 
         // Create csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&info->csrsm_upper_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info((trans_A == rocsparse_operation_none)
+                                                                ? &info->csrsm_upper_info
+                                                                : &info->csrsmt_upper_info));
 
         // Perform analysis
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_trm_analysis(handle,
@@ -439,7 +466,9 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
                                                          csr_val,
                                                          csr_row_ptr,
                                                          csr_col_ind,
-                                                         info->csrsm_upper_info,
+                                                         (trans_A == rocsparse_operation_none)
+                                                             ? info->csrsm_upper_info
+                                                             : info->csrsmt_upper_info,
                                                          &info->zero_pivot,
                                                          temp_buffer));
     }
@@ -457,10 +486,10 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
             {
                 return rocsparse_status_success;
             }
-            //            else if(trans_A == rocsparse_operation_transpose && info->csrsmt_lower_info != nullptr)
-            //            {
-            //                return rocsparse_status_success;
-            //            }
+            else if(trans_A == rocsparse_operation_transpose && info->csrsmt_lower_info != nullptr)
+            {
+                return rocsparse_status_success;
+            }
 
             // Check for other lower analysis meta data
 
@@ -482,16 +511,27 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
                 info->csrsm_lower_info = info->csrsv_lower_info;
                 return rocsparse_status_success;
             }
+
+            if(trans_A == rocsparse_operation_transpose && info->csrsvt_lower_info != nullptr)
+            {
+                // csrsv meta data
+                info->csrsm_upper_info = info->csrsvt_lower_info;
+                return rocsparse_status_success;
+            }
         }
 
         // User is explicitly asking to force a re-analysis, or no valid data has been
         // found to be re-used
 
         // Clear csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsm_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info((trans_A == rocsparse_operation_none)
+                                                                 ? info->csrsm_lower_info
+                                                                 : info->csrsmt_lower_info));
 
         // Create csrsm info
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&info->csrsm_lower_info));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info((trans_A == rocsparse_operation_none)
+                                                                ? &info->csrsm_lower_info
+                                                                : &info->csrsmt_lower_info));
 
         // Perform analysis
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_trm_analysis(handle,
@@ -502,7 +542,9 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
                                                          csr_val,
                                                          csr_row_ptr,
                                                          csr_col_ind,
-                                                         info->csrsm_lower_info,
+                                                         (trans_A == rocsparse_operation_none)
+                                                             ? info->csrsm_lower_info
+                                                             : info->csrsmt_lower_info,
                                                          &info->zero_pivot,
                                                          temp_buffer));
     }
@@ -658,7 +700,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
     }
 
     // Check operation type
-    if(trans_A != rocsparse_operation_none)
+    if(trans_A != rocsparse_operation_none && trans_A != rocsparse_operation_transpose)
     {
         return rocsparse_status_not_implemented;
     }
@@ -750,15 +792,30 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
     int* done_array = reinterpret_cast<int*>(ptr);
     ptr += sizeof(int) * ((m * narrays - 1) / 256 + 1) * 256;
 
-    // Temporary array to store transpoe of B
-    T* Bt = (trans_B == rocsparse_operation_none) ? reinterpret_cast<T*>(ptr) : B;
+    // Temporary array to store transpose of B
+    T* Bt = B;
+    if(trans_B == rocsparse_operation_none)
+    {
+        Bt = reinterpret_cast<T*>(ptr);
+        ptr += sizeof(T) * ((m * nrhs - 1) / 256 + 1) * 256;
+    }
+
+    // Temporary array to store transpose of A
+    T* At = nullptr;
+    if(trans_A == rocsparse_operation_transpose)
+    {
+        At = reinterpret_cast<T*>(ptr);
+    }
 
     // Initialize buffers
     RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * m * narrays, stream));
 
-    rocsparse_trm_info csrsm = (descr->fill_mode == rocsparse_fill_mode_upper)
-                                   ? info->csrsm_upper_info
-                                   : info->csrsm_lower_info;
+    rocsparse_trm_info csrsm
+        = (descr->fill_mode == rocsparse_fill_mode_upper)
+              ? ((trans_A == rocsparse_operation_none) ? info->csrsm_upper_info
+                                                       : info->csrsmt_upper_info)
+              : ((trans_A == rocsparse_operation_none) ? info->csrsm_lower_info
+                                                       : info->csrsmt_lower_info);
 
     if(csrsm == nullptr)
     {
@@ -805,6 +862,31 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
 #undef CSRSM_DIM_Y
     }
 
+    // Pointers to differentiate between transpose mode
+    const rocsparse_int* local_csr_row_ptr = csr_row_ptr;
+    const rocsparse_int* local_csr_col_ind = csr_col_ind;
+    const T*             local_csr_val     = csr_val;
+
+    rocsparse_fill_mode fill_mode = descr->fill_mode;
+
+    // When computing transposed triangular solve, we first need to update the
+    // transposed matrix values
+    if(trans_A == rocsparse_operation_transpose)
+    {
+        T* csrt_val = At;
+
+        // Gather values
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(
+            handle, nnz, csr_val, csrt_val, csrsm->trmt_perm, rocsparse_index_base_zero));
+
+        local_csr_row_ptr = csrsm->trmt_row_ptr;
+        local_csr_col_ind = csrsm->trmt_col_ind;
+        local_csr_val     = csrt_val;
+
+        fill_mode = (fill_mode == rocsparse_fill_mode_lower) ? rocsparse_fill_mode_upper
+                                                             : rocsparse_fill_mode_lower;
+    }
+
     dim3 csrsm_blocks(((nrhs - 1) / blockdim + 1) * m);
     dim3 csrsm_threads(blockdim);
 
@@ -828,16 +910,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
             else
@@ -850,16 +932,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
         }
@@ -875,16 +957,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
             else
@@ -897,16 +979,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
         }
@@ -922,16 +1004,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
             else
@@ -944,16 +1026,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
         }
@@ -969,16 +1051,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
             else
@@ -991,16 +1073,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
         }
@@ -1016,16 +1098,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
             else
@@ -1038,16 +1120,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
         }
@@ -1072,16 +1154,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    *alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
             else
@@ -1094,16 +1176,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    *alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
         }
@@ -1119,16 +1201,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    *alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
             else
@@ -1141,16 +1223,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    *alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
         }
@@ -1166,16 +1248,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    *alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
             else
@@ -1188,16 +1270,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    *alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
         }
@@ -1213,16 +1295,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    *alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
             else
@@ -1235,16 +1317,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    *alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
         }
@@ -1260,16 +1342,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    *alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
             else
@@ -1282,16 +1364,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
                                    m,
                                    nrhs,
                                    *alpha,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
+                                   local_csr_row_ptr,
+                                   local_csr_col_ind,
+                                   local_csr_val,
                                    Bt,
                                    ldimB,
                                    done_array,
                                    csrsm->row_map,
                                    info->zero_pivot,
                                    descr->base,
-                                   descr->fill_mode,
+                                   fill_mode,
                                    descr->diag_type);
             }
         }

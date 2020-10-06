@@ -68,7 +68,7 @@ Tests:
   M_N: *M_N_range_quick
   K: [1, 23, 65, 153, 280]
   alpha_alphai: *alpha_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]
   diag: [rocsparse_diag_type_non_unit]
   uplo: [rocsparse_fill_mode_lower]
@@ -139,7 +139,7 @@ Tests:
   N: 1
   K: [-1, 0, 7, 141]
   alpha_alphai: *alpha_range_checkin
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]
   diag: [rocsparse_diag_type_non_unit]
   uplo: [rocsparse_fill_mode_upper]
@@ -163,7 +163,7 @@ Tests:
   N: 1
   K: [16, 96, 218]
   alpha_alphai: *alpha_range_nightly
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_transpose]
   diag: [rocsparse_diag_type_non_unit]
   uplo: [rocsparse_fill_mode_lower]
@@ -220,7 +220,7 @@ Tests:
   N: 1
   K: [23, 71, 111]
   alpha_alphai: *alpha_range_nightly
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]
   diag: [rocsparse_diag_type_unit]
   uplo: [rocsparse_fill_mode_upper]
