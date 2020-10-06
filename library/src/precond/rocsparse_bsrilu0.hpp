@@ -33,6 +33,202 @@
 #include "rocsparse.h"
 #include "utility.h"
 
+#define LAUNCH_BSRILU28()                                                            \
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)                        \
+    {                                                                                \
+        hipLaunchKernelGGL((bsrilu0_2_8_device_pointer<T, U, 64, 64, 8>),            \
+                           dim3(mb),                                                 \
+                           dim3(8, 8),                                               \
+                           0,                                                        \
+                           handle->stream,                                           \
+                           dir,                                                      \
+                           mb,                                                       \
+                           bsr_row_ptr,                                              \
+                           bsr_col_ind,                                              \
+                           bsr_val,                                                  \
+                           info->bsrilu0_info->trm_diag_ind,                         \
+                           block_dim,                                                \
+                           done_array,                                               \
+                           info->bsrilu0_info->row_map,                              \
+                           info->zero_pivot,                                         \
+                           base,                                                     \
+                           info->boost_enable,                                       \
+                           reinterpret_cast<const U*>(info->boost_tol),              \
+                           reinterpret_cast<const T*>(info->boost_val));             \
+    }                                                                                \
+    else                                                                             \
+    {                                                                                \
+        hipLaunchKernelGGL(                                                          \
+            (bsrilu0_2_8_host_pointer<T, U, 64, 64, 8>),                             \
+            dim3(mb),                                                                \
+            dim3(8, 8),                                                              \
+            0,                                                                       \
+            handle->stream,                                                          \
+            dir,                                                                     \
+            mb,                                                                      \
+            bsr_row_ptr,                                                             \
+            bsr_col_ind,                                                             \
+            bsr_val,                                                                 \
+            info->bsrilu0_info->trm_diag_ind,                                        \
+            block_dim,                                                               \
+            done_array,                                                              \
+            info->bsrilu0_info->row_map,                                             \
+            info->zero_pivot,                                                        \
+            base,                                                                    \
+            info->boost_enable,                                                      \
+            (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol) \
+                                      : static_cast<U>(0),                           \
+            (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val) \
+                                      : static_cast<T>(0));                          \
+    }
+
+#define LAUNCH_BSRILU932(dim)                                                        \
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)                        \
+    {                                                                                \
+        hipLaunchKernelGGL((bsrilu0_9_32_device_pointer<T, U, 64, 64, dim>),         \
+                           dim3(mb),                                                 \
+                           dim3(dim, 64 / dim),                                      \
+                           0,                                                        \
+                           handle->stream,                                           \
+                           dir,                                                      \
+                           mb,                                                       \
+                           bsr_row_ptr,                                              \
+                           bsr_col_ind,                                              \
+                           bsr_val,                                                  \
+                           info->bsrilu0_info->trm_diag_ind,                         \
+                           block_dim,                                                \
+                           done_array,                                               \
+                           info->bsrilu0_info->row_map,                              \
+                           info->zero_pivot,                                         \
+                           base,                                                     \
+                           info->boost_enable,                                       \
+                           reinterpret_cast<const U*>(info->boost_tol),              \
+                           reinterpret_cast<const T*>(info->boost_val));             \
+    }                                                                                \
+    else                                                                             \
+    {                                                                                \
+        hipLaunchKernelGGL(                                                          \
+            (bsrilu0_9_32_host_pointer<T, U, 64, 64, dim>),                          \
+            dim3(mb),                                                                \
+            dim3(dim, 64 / dim),                                                     \
+            0,                                                                       \
+            handle->stream,                                                          \
+            dir,                                                                     \
+            mb,                                                                      \
+            bsr_row_ptr,                                                             \
+            bsr_col_ind,                                                             \
+            bsr_val,                                                                 \
+            info->bsrilu0_info->trm_diag_ind,                                        \
+            block_dim,                                                               \
+            done_array,                                                              \
+            info->bsrilu0_info->row_map,                                             \
+            info->zero_pivot,                                                        \
+            base,                                                                    \
+            info->boost_enable,                                                      \
+            (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol) \
+                                      : static_cast<U>(0),                           \
+            (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val) \
+                                      : static_cast<T>(0));                          \
+    }
+
+#define LAUNCH_BSRILU3364()                                                          \
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)                        \
+    {                                                                                \
+        hipLaunchKernelGGL((bsrilu0_33_64_device_pointer<T, U, 64, 64, 64>),         \
+                           dim3(mb),                                                 \
+                           dim3(64),                                                 \
+                           0,                                                        \
+                           handle->stream,                                           \
+                           dir,                                                      \
+                           mb,                                                       \
+                           bsr_row_ptr,                                              \
+                           bsr_col_ind,                                              \
+                           bsr_val,                                                  \
+                           info->bsrilu0_info->trm_diag_ind,                         \
+                           block_dim,                                                \
+                           done_array,                                               \
+                           info->bsrilu0_info->row_map,                              \
+                           info->zero_pivot,                                         \
+                           base,                                                     \
+                           info->boost_enable,                                       \
+                           reinterpret_cast<const U*>(info->boost_tol),              \
+                           reinterpret_cast<const T*>(info->boost_val));             \
+    }                                                                                \
+    else                                                                             \
+    {                                                                                \
+        hipLaunchKernelGGL(                                                          \
+            (bsrilu0_33_64_host_pointer<T, U, 64, 64, 64>),                          \
+            dim3(mb),                                                                \
+            dim3(64),                                                                \
+            0,                                                                       \
+            handle->stream,                                                          \
+            dir,                                                                     \
+            mb,                                                                      \
+            bsr_row_ptr,                                                             \
+            bsr_col_ind,                                                             \
+            bsr_val,                                                                 \
+            info->bsrilu0_info->trm_diag_ind,                                        \
+            block_dim,                                                               \
+            done_array,                                                              \
+            info->bsrilu0_info->row_map,                                             \
+            info->zero_pivot,                                                        \
+            base,                                                                    \
+            info->boost_enable,                                                      \
+            (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol) \
+                                      : static_cast<U>(0),                           \
+            (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val) \
+                                      : static_cast<T>(0));                          \
+    }
+
+#define LAUNCH_BSRILU65inf(sleep)                                                    \
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)                        \
+    {                                                                                \
+        hipLaunchKernelGGL((bsrilu0_general_device_pointer<T, U, 128, 64, sleep>),   \
+                           dim3((64 * mb - 1) / 128 + 1),                            \
+                           dim3(128),                                                \
+                           0,                                                        \
+                           handle->stream,                                           \
+                           dir,                                                      \
+                           mb,                                                       \
+                           bsr_row_ptr,                                              \
+                           bsr_col_ind,                                              \
+                           bsr_val,                                                  \
+                           info->bsrilu0_info->trm_diag_ind,                         \
+                           block_dim,                                                \
+                           done_array,                                               \
+                           info->bsrilu0_info->row_map,                              \
+                           info->zero_pivot,                                         \
+                           base,                                                     \
+                           info->boost_enable,                                       \
+                           reinterpret_cast<const U*>(info->boost_tol),              \
+                           reinterpret_cast<const T*>(info->boost_val));             \
+    }                                                                                \
+    else                                                                             \
+    {                                                                                \
+        hipLaunchKernelGGL(                                                          \
+            (bsrilu0_general_host_pointer<T, U, 128, 64, false>),                    \
+            dim3((64 * mb - 1) / 128 + 1),                                           \
+            dim3(128),                                                               \
+            0,                                                                       \
+            handle->stream,                                                          \
+            dir,                                                                     \
+            mb,                                                                      \
+            bsr_row_ptr,                                                             \
+            bsr_col_ind,                                                             \
+            bsr_val,                                                                 \
+            info->bsrilu0_info->trm_diag_ind,                                        \
+            block_dim,                                                               \
+            done_array,                                                              \
+            info->bsrilu0_info->row_map,                                             \
+            info->zero_pivot,                                                        \
+            base,                                                                    \
+            info->boost_enable,                                                      \
+            (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol) \
+                                      : static_cast<U>(0),                           \
+            (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val) \
+                                      : static_cast<T>(0));                          \
+    }
+
 template <typename T, typename U>
 rocsparse_status rocsparse_bsrilu0_numeric_boost_template(rocsparse_handle   handle,
                                                           rocsparse_mat_info info,
@@ -376,6 +572,73 @@ __launch_bounds__(BLOCKSIZE) __global__
                                                          boost_val);
 }
 
+template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM>
+__launch_bounds__(BLOCKSIZE) __global__
+    void bsrilu0_33_64_device_pointer(rocsparse_direction dir,
+                                      rocsparse_int       mb,
+                                      const rocsparse_int* __restrict__ bsr_row_ptr,
+                                      const rocsparse_int* __restrict__ bsr_col_ind,
+                                      T* __restrict__ bsr_val,
+                                      const rocsparse_int* __restrict__ bsr_diag_ind,
+                                      rocsparse_int bsr_dim,
+                                      int* __restrict__ done_array,
+                                      const rocsparse_int* __restrict__ map,
+                                      rocsparse_int* __restrict__ zero_pivot,
+                                      rocsparse_index_base idx_base,
+                                      int                  enable_boost,
+                                      const U* __restrict__ boost_tol,
+                                      const T* __restrict__ boost_val)
+{
+    bsrilu0_33_64_device<T, U, BLOCKSIZE, WFSIZE, BSRDIM>(dir,
+                                                          mb,
+                                                          bsr_row_ptr,
+                                                          bsr_col_ind,
+                                                          bsr_val,
+                                                          bsr_diag_ind,
+                                                          bsr_dim,
+                                                          done_array,
+                                                          map,
+                                                          zero_pivot,
+                                                          idx_base,
+                                                          enable_boost,
+                                                          enable_boost ? *boost_tol : 0.0,
+                                                          enable_boost ? *boost_val
+                                                                       : static_cast<T>(0));
+}
+
+template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM>
+__launch_bounds__(BLOCKSIZE) __global__
+    void bsrilu0_33_64_host_pointer(rocsparse_direction  dir,
+                                    rocsparse_int        mb,
+                                    const rocsparse_int* bsr_row_ptr,
+                                    const rocsparse_int* bsr_col_ind,
+                                    T*                   bsr_val,
+                                    const rocsparse_int* bsr_diag_ind,
+                                    rocsparse_int        bsr_dim,
+                                    int*                 done_array,
+                                    const rocsparse_int* map,
+                                    rocsparse_int*       zero_pivot,
+                                    rocsparse_index_base idx_base,
+                                    int                  enable_boost,
+                                    U                    boost_tol,
+                                    T                    boost_val)
+{
+    bsrilu0_33_64_device<T, U, BLOCKSIZE, WFSIZE, BSRDIM>(dir,
+                                                          mb,
+                                                          bsr_row_ptr,
+                                                          bsr_col_ind,
+                                                          bsr_val,
+                                                          bsr_diag_ind,
+                                                          bsr_dim,
+                                                          done_array,
+                                                          map,
+                                                          zero_pivot,
+                                                          idx_base,
+                                                          enable_boost,
+                                                          boost_tol,
+                                                          boost_val);
+}
+
 template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
 __launch_bounds__(BLOCKSIZE) __global__
     void bsrilu0_general_device_pointer(rocsparse_direction  dir,
@@ -441,6 +704,91 @@ __launch_bounds__(BLOCKSIZE) __global__
                                                            enable_boost,
                                                            boost_tol,
                                                            boost_val);
+}
+
+template <typename T,
+          typename U,
+          typename std::enable_if<std::is_same<T, float>::value || std::is_same<T, double>::value
+                                      || std::is_same<T, rocsparse_float_complex>::value,
+                                  int>::type
+          = 0>
+inline void bsrilu0_launcher(rocsparse_handle     handle,
+                             rocsparse_direction  dir,
+                             rocsparse_int        mb,
+                             rocsparse_index_base base,
+                             T*                   bsr_val,
+                             const rocsparse_int* bsr_row_ptr,
+                             const rocsparse_int* bsr_col_ind,
+                             rocsparse_int        block_dim,
+                             rocsparse_mat_info   info,
+                             int*                 done_array)
+{
+    if(handle->properties.gcnArch == 908 && handle->asic_rev < 2)
+    {
+        LAUNCH_BSRILU65inf(true);
+    }
+    else
+    {
+        if(block_dim <= 8)
+        {
+            LAUNCH_BSRILU28();
+        }
+        else if(block_dim <= 16)
+        {
+            LAUNCH_BSRILU932(16);
+        }
+        else if(block_dim <= 32)
+        {
+            LAUNCH_BSRILU932(32);
+        }
+        else if(block_dim <= 64)
+        {
+            LAUNCH_BSRILU3364();
+        }
+        else
+        {
+            LAUNCH_BSRILU65inf(false);
+        }
+    }
+}
+
+template <typename T,
+          typename U,
+          typename std::enable_if<std::is_same<T, rocsparse_double_complex>::value, int>::type = 0>
+inline void bsrilu0_launcher(rocsparse_handle     handle,
+                             rocsparse_direction  dir,
+                             rocsparse_int        mb,
+                             rocsparse_index_base base,
+                             T*                   bsr_val,
+                             const rocsparse_int* bsr_row_ptr,
+                             const rocsparse_int* bsr_col_ind,
+                             rocsparse_int        block_dim,
+                             rocsparse_mat_info   info,
+                             int*                 done_array)
+{
+    if(handle->properties.gcnArch == 908 && handle->asic_rev < 2)
+    {
+        LAUNCH_BSRILU65inf(true);
+    }
+    else
+    {
+        if(block_dim <= 8)
+        {
+            LAUNCH_BSRILU28();
+        }
+        else if(block_dim <= 16)
+        {
+            LAUNCH_BSRILU932(16);
+        }
+        else if(block_dim <= 32)
+        {
+            LAUNCH_BSRILU932(32);
+        }
+        else
+        {
+            LAUNCH_BSRILU65inf(false);
+        }
+    }
 }
 
 template <typename T, typename U>
@@ -546,270 +894,16 @@ rocsparse_status rocsparse_bsrilu0_template(rocsparse_handle          handle,
     // Initialize buffers
     RETURN_IF_HIP_ERROR(hipMemsetAsync(d_done_array, 0, sizeof(int) * mb, stream));
 
-    // Determine gcnArch
-    int gcnArch = handle->properties.gcnArch;
-    int asicRev = handle->asic_rev;
-
-    if(gcnArch == 908 && asicRev < 2)
-    {
-#define BSRILU0_DIM 128
-        if(handle->pointer_mode == rocsparse_pointer_mode_device)
-        {
-            hipLaunchKernelGGL((bsrilu0_general_device_pointer<T, U, BSRILU0_DIM, 64, true>),
-                               dim3((64 * mb - 1) / BSRILU0_DIM + 1),
-                               dim3(BSRILU0_DIM),
-                               0,
-                               stream,
-                               dir,
-                               mb,
-                               bsr_row_ptr,
-                               bsr_col_ind,
-                               bsr_val,
-                               info->bsrilu0_info->trm_diag_ind,
-                               block_dim,
-                               d_done_array,
-                               info->bsrilu0_info->row_map,
-                               info->zero_pivot,
-                               descr->base,
-                               info->boost_enable,
-                               reinterpret_cast<const U*>(info->boost_tol),
-                               reinterpret_cast<const T*>(info->boost_val));
-        }
-        else
-        {
-            hipLaunchKernelGGL(
-                (bsrilu0_general_host_pointer<T, U, BSRILU0_DIM, 64, true>),
-                dim3((64 * mb - 1) / BSRILU0_DIM + 1),
-                dim3(BSRILU0_DIM),
-                0,
-                stream,
-                dir,
-                mb,
-                bsr_row_ptr,
-                bsr_col_ind,
-                bsr_val,
-                info->bsrilu0_info->trm_diag_ind,
-                block_dim,
-                d_done_array,
-                info->bsrilu0_info->row_map,
-                info->zero_pivot,
-                descr->base,
-                info->boost_enable,
-                (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
-                                          : static_cast<U>(0),
-                (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
-                                          : static_cast<T>(0));
-        }
-#undef BSRILU0_DIM
-    }
-    else
-    {
-        if(block_dim <= 8)
-        {
-            // block_dim <= 8
-            if(handle->pointer_mode == rocsparse_pointer_mode_device)
-            {
-                hipLaunchKernelGGL((bsrilu0_2_8_device_pointer<T, U, 64, 64, 8>),
-                                   dim3(mb),
-                                   dim3(8, 8),
-                                   0,
-                                   stream,
-                                   dir,
-                                   mb,
-                                   bsr_row_ptr,
-                                   bsr_col_ind,
-                                   bsr_val,
-                                   info->bsrilu0_info->trm_diag_ind,
-                                   block_dim,
-                                   d_done_array,
-                                   info->bsrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base,
-                                   info->boost_enable,
-                                   reinterpret_cast<const U*>(info->boost_tol),
-                                   reinterpret_cast<const T*>(info->boost_val));
-            }
-            else
-            {
-                hipLaunchKernelGGL(
-                    (bsrilu0_2_8_host_pointer<T, U, 64, 64, 8>),
-                    dim3(mb),
-                    dim3(8, 8),
-                    0,
-                    stream,
-                    dir,
-                    mb,
-                    bsr_row_ptr,
-                    bsr_col_ind,
-                    bsr_val,
-                    info->bsrilu0_info->trm_diag_ind,
-                    block_dim,
-                    d_done_array,
-                    info->bsrilu0_info->row_map,
-                    info->zero_pivot,
-                    descr->base,
-                    info->boost_enable,
-                    (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
-                                              : static_cast<U>(0),
-                    (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
-                                              : static_cast<T>(0));
-            }
-        }
-        else if(block_dim <= 16)
-        {
-            // block_dim <= 16
-            if(handle->pointer_mode == rocsparse_pointer_mode_device)
-            {
-                hipLaunchKernelGGL((bsrilu0_9_32_device_pointer<T, U, 64, 64, 16>),
-                                   dim3(mb),
-                                   dim3(16, 4),
-                                   0,
-                                   stream,
-                                   dir,
-                                   mb,
-                                   bsr_row_ptr,
-                                   bsr_col_ind,
-                                   bsr_val,
-                                   info->bsrilu0_info->trm_diag_ind,
-                                   block_dim,
-                                   d_done_array,
-                                   info->bsrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base,
-                                   info->boost_enable,
-                                   reinterpret_cast<const U*>(info->boost_tol),
-                                   reinterpret_cast<const T*>(info->boost_val));
-            }
-            else
-            {
-                hipLaunchKernelGGL(
-                    (bsrilu0_9_32_host_pointer<T, U, 64, 64, 16>),
-                    dim3(mb),
-                    dim3(16, 4),
-                    0,
-                    stream,
-                    dir,
-                    mb,
-                    bsr_row_ptr,
-                    bsr_col_ind,
-                    bsr_val,
-                    info->bsrilu0_info->trm_diag_ind,
-                    block_dim,
-                    d_done_array,
-                    info->bsrilu0_info->row_map,
-                    info->zero_pivot,
-                    descr->base,
-                    info->boost_enable,
-                    (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
-                                              : static_cast<U>(0),
-                    (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
-                                              : static_cast<T>(0));
-            }
-        }
-        else if(block_dim <= 32)
-        {
-            // block_dim <= 32
-            if(handle->pointer_mode == rocsparse_pointer_mode_device)
-            {
-                hipLaunchKernelGGL((bsrilu0_9_32_device_pointer<T, U, 64, 64, 32>),
-                                   dim3(mb),
-                                   dim3(32, 2),
-                                   0,
-                                   stream,
-                                   dir,
-                                   mb,
-                                   bsr_row_ptr,
-                                   bsr_col_ind,
-                                   bsr_val,
-                                   info->bsrilu0_info->trm_diag_ind,
-                                   block_dim,
-                                   d_done_array,
-                                   info->bsrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base,
-                                   info->boost_enable,
-                                   reinterpret_cast<const U*>(info->boost_tol),
-                                   reinterpret_cast<const T*>(info->boost_val));
-            }
-            else
-            {
-                hipLaunchKernelGGL(
-                    (bsrilu0_9_32_host_pointer<T, U, 64, 64, 32>),
-                    dim3(mb),
-                    dim3(32, 2),
-                    0,
-                    stream,
-                    dir,
-                    mb,
-                    bsr_row_ptr,
-                    bsr_col_ind,
-                    bsr_val,
-                    info->bsrilu0_info->trm_diag_ind,
-                    block_dim,
-                    d_done_array,
-                    info->bsrilu0_info->row_map,
-                    info->zero_pivot,
-                    descr->base,
-                    info->boost_enable,
-                    (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
-                                              : static_cast<U>(0),
-                    (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
-                                              : static_cast<T>(0));
-            }
-        }
-        else
-        {
-#define BSRILU0_DIM 128
-            if(handle->pointer_mode == rocsparse_pointer_mode_device)
-            {
-                hipLaunchKernelGGL((bsrilu0_general_device_pointer<T, U, BSRILU0_DIM, 64, false>),
-                                   dim3((64 * mb - 1) / BSRILU0_DIM + 1),
-                                   dim3(BSRILU0_DIM),
-                                   0,
-                                   stream,
-                                   dir,
-                                   mb,
-                                   bsr_row_ptr,
-                                   bsr_col_ind,
-                                   bsr_val,
-                                   info->bsrilu0_info->trm_diag_ind,
-                                   block_dim,
-                                   d_done_array,
-                                   info->bsrilu0_info->row_map,
-                                   info->zero_pivot,
-                                   descr->base,
-                                   info->boost_enable,
-                                   reinterpret_cast<const U*>(info->boost_tol),
-                                   reinterpret_cast<const T*>(info->boost_val));
-            }
-            else
-            {
-                hipLaunchKernelGGL(
-                    (bsrilu0_general_host_pointer<T, U, BSRILU0_DIM, 64, false>),
-                    dim3((64 * mb - 1) / BSRILU0_DIM + 1),
-                    dim3(BSRILU0_DIM),
-                    0,
-                    stream,
-                    dir,
-                    mb,
-                    bsr_row_ptr,
-                    bsr_col_ind,
-                    bsr_val,
-                    info->bsrilu0_info->trm_diag_ind,
-                    block_dim,
-                    d_done_array,
-                    info->bsrilu0_info->row_map,
-                    info->zero_pivot,
-                    descr->base,
-                    info->boost_enable,
-                    (info->boost_enable != 0) ? *reinterpret_cast<const U*>(info->boost_tol)
-                                              : static_cast<U>(0),
-                    (info->boost_enable != 0) ? *reinterpret_cast<const T*>(info->boost_val)
-                                              : static_cast<T>(0));
-            }
-#undef BSRILU0_DIM
-        }
-    }
+    bsrilu0_launcher<T, U>(handle,
+                           dir,
+                           mb,
+                           descr->base,
+                           bsr_val,
+                           bsr_row_ptr,
+                           bsr_col_ind,
+                           block_dim,
+                           info,
+                           d_done_array);
 
     return rocsparse_status_success;
 }
