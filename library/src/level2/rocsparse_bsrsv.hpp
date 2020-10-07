@@ -1092,7 +1092,8 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
     }
     else
     {
-        return rocsparse_status_arch_mismatch;
+        // Launch general algorithm
+        LAUNCH_BSRSV_GENERAL(fill_mode, handle->pointer_mode, 128, 32, gcnArch, asicRev);
     }
 
     return rocsparse_status_success;

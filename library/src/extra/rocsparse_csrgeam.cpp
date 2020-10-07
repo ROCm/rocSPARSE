@@ -166,20 +166,40 @@ extern "C" rocsparse_status rocsparse_csrgeam_nnz(rocsparse_handle          hand
     hipStream_t stream = handle->stream;
 
 #define CSRGEAM_DIM 256
-    hipLaunchKernelGGL((csrgeam_nnz_multipass<CSRGEAM_DIM, 64>),
-                       dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
-                       dim3(CSRGEAM_DIM),
-                       0,
-                       stream,
-                       m,
-                       n,
-                       csr_row_ptr_A,
-                       csr_col_ind_A,
-                       csr_row_ptr_B,
-                       csr_col_ind_B,
-                       csr_row_ptr_C,
-                       descr_A->base,
-                       descr_B->base);
+    if(handle->wavefront_size == 32)
+    {
+        hipLaunchKernelGGL((csrgeam_nnz_multipass<CSRGEAM_DIM, 32>),
+                           dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
+                           dim3(CSRGEAM_DIM),
+                           0,
+                           stream,
+                           m,
+                           n,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_row_ptr_C,
+                           descr_A->base,
+                           descr_B->base);
+    }
+    else
+    {
+        hipLaunchKernelGGL((csrgeam_nnz_multipass<CSRGEAM_DIM, 64>),
+                           dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
+                           dim3(CSRGEAM_DIM),
+                           0,
+                           stream,
+                           m,
+                           n,
+                           csr_row_ptr_A,
+                           csr_col_ind_A,
+                           csr_row_ptr_B,
+                           csr_col_ind_B,
+                           csr_row_ptr_C,
+                           descr_A->base,
+                           descr_B->base);
+    }
 #undef CSRGEAM_DIM
 
     // Exclusive sum to obtain row pointers of C

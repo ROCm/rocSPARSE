@@ -134,7 +134,7 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  block_dim: [-1, 2, 6, 15]
+  block_dim: [-1, 2, 6]
   alpha_alphai: *alpha_range_checkin
   direction: [rocsparse_direction_column]
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]

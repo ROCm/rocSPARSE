@@ -32,7 +32,6 @@
 #include "utility.h"
 
 #include <hip/hip_runtime.h>
-#include <rocprim/rocprim.hpp>
 
 #define launch_csr2bsr_fast_kernel(T, direction, block_size, segment_size, wf_size)            \
     hipLaunchKernelGGL((csr2bsr_fast_kernel<T, direction, block_size, segment_size, wf_size>), \

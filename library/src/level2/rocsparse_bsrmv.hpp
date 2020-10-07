@@ -1941,6 +1941,7 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
     // Run different bsrmv kernels
     if(trans == rocsparse_operation_none)
     {
+#ifndef __HIP_ARCH_GFX1030__
         if(bsr_dim == 2)
         {
             bsrmvn_2x2(handle,
@@ -2048,6 +2049,7 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
                          descr->base);
         }
         else
+#endif
         {
             bsrmvn_general(handle,
                            dir,

@@ -44,46 +44,94 @@ rocsparse_status rocsparse_dense2csx_template(rocsparse_handle          handle,
     {
     case rocsparse_direction_row:
     {
+        if(handle->wavefront_size == 32)
+        {
+            static constexpr rocsparse_int WF_SIZE         = 32;
+            static constexpr rocsparse_int NROWS_PER_BLOCK = 16 / (data_ratio > 0 ? data_ratio : 1);
+            rocsparse_int                  blocks          = (m - 1) / NROWS_PER_BLOCK + 1;
+            dim3                           k_blocks(blocks), k_threads(WF_SIZE * NROWS_PER_BLOCK);
+            hipLaunchKernelGGL((dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
+                               k_blocks,
+                               k_threads,
+                               0,
+                               stream,
+                               descr->base,
+                               m,
+                               n,
+                               A,
+                               ld,
+                               csx_val,
+                               csx_row_col_ptr,
+                               csx_col_row_ind);
+        }
+        else
+        {
+            static constexpr rocsparse_int WF_SIZE         = 64;
+            static constexpr rocsparse_int NROWS_PER_BLOCK = 16 / (data_ratio > 0 ? data_ratio : 1);
+            rocsparse_int                  blocks          = (m - 1) / NROWS_PER_BLOCK + 1;
+            dim3                           k_blocks(blocks), k_threads(WF_SIZE * NROWS_PER_BLOCK);
+            hipLaunchKernelGGL((dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
+                               k_blocks,
+                               k_threads,
+                               0,
+                               stream,
+                               descr->base,
+                               m,
+                               n,
+                               A,
+                               ld,
+                               csx_val,
+                               csx_row_col_ptr,
+                               csx_col_row_ind);
+        }
 
-        static constexpr rocsparse_int WF_SIZE         = 64;
-        static constexpr rocsparse_int NROWS_PER_BLOCK = 16 / (data_ratio > 0 ? data_ratio : 1);
-        rocsparse_int                  blocks          = (m - 1) / NROWS_PER_BLOCK + 1;
-        dim3                           k_blocks(blocks), k_threads(WF_SIZE * NROWS_PER_BLOCK);
-        hipLaunchKernelGGL((dense2csr_kernel<NROWS_PER_BLOCK, WF_SIZE, T>),
-                           k_blocks,
-                           k_threads,
-                           0,
-                           stream,
-                           descr->base,
-                           m,
-                           n,
-                           A,
-                           ld,
-                           csx_val,
-                           csx_row_col_ptr,
-                           csx_col_row_ind);
         return rocsparse_status_success;
     }
 
     case rocsparse_direction_column:
     {
-        static constexpr rocsparse_int WF_SIZE            = 64;
-        static constexpr rocsparse_int NCOLUMNS_PER_BLOCK = 16 / (data_ratio > 0 ? data_ratio : 1);
-        rocsparse_int                  blocks             = (n - 1) / NCOLUMNS_PER_BLOCK + 1;
-        dim3                           k_blocks(blocks), k_threads(WF_SIZE * NCOLUMNS_PER_BLOCK);
-        hipLaunchKernelGGL((dense2csc_kernel<NCOLUMNS_PER_BLOCK, WF_SIZE, T>),
-                           k_blocks,
-                           k_threads,
-                           0,
-                           stream,
-                           descr->base,
-                           m,
-                           n,
-                           A,
-                           ld,
-                           csx_val,
-                           csx_row_col_ptr,
-                           csx_col_row_ind);
+        if(handle->wavefront_size == 32)
+        {
+            static constexpr rocsparse_int WF_SIZE = 32;
+            static constexpr rocsparse_int NCOLUMNS_PER_BLOCK
+                = 16 / (data_ratio > 0 ? data_ratio : 1);
+            rocsparse_int blocks = (n - 1) / NCOLUMNS_PER_BLOCK + 1;
+            dim3          k_blocks(blocks), k_threads(WF_SIZE * NCOLUMNS_PER_BLOCK);
+            hipLaunchKernelGGL((dense2csc_kernel<NCOLUMNS_PER_BLOCK, WF_SIZE, T>),
+                               k_blocks,
+                               k_threads,
+                               0,
+                               stream,
+                               descr->base,
+                               m,
+                               n,
+                               A,
+                               ld,
+                               csx_val,
+                               csx_row_col_ptr,
+                               csx_col_row_ind);
+        }
+        else
+        {
+            static constexpr rocsparse_int WF_SIZE = 64;
+            static constexpr rocsparse_int NCOLUMNS_PER_BLOCK
+                = 16 / (data_ratio > 0 ? data_ratio : 1);
+            rocsparse_int blocks = (n - 1) / NCOLUMNS_PER_BLOCK + 1;
+            dim3          k_blocks(blocks), k_threads(WF_SIZE * NCOLUMNS_PER_BLOCK);
+            hipLaunchKernelGGL((dense2csc_kernel<NCOLUMNS_PER_BLOCK, WF_SIZE, T>),
+                               k_blocks,
+                               k_threads,
+                               0,
+                               stream,
+                               descr->base,
+                               m,
+                               n,
+                               A,
+                               ld,
+                               csx_val,
+                               csx_row_col_ptr,
+                               csx_col_row_ind);
+        }
 
         return rocsparse_status_success;
     }

@@ -330,8 +330,17 @@ __device__ void csrgeam_fill_multipass(rocsparse_int m,
         // If the lane has an nnz assign, it must be filled into C
         if(has_nnz)
         {
+            rocsparse_int offset;
+
             // Compute the lane's fill position in C
-            rocsparse_int offset = __popcll(mask & (0xffffffffffffffff >> (WFSIZE - 1 - lid)));
+            if(WFSIZE == 32)
+            {
+                offset = __popc(mask & (0xffffffff >> (WFSIZE - 1 - lid)));
+            }
+            else
+            {
+                offset = __popcll(mask & (0xffffffffffffffff >> (WFSIZE - 1 - lid)));
+            }
 
             // Fill C
             csr_col_ind_C[row_begin_C + offset - 1] = lid + chunk_begin + idx_base_C;
