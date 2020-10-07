@@ -75,6 +75,7 @@
 #include "testing_dense2csc.hpp"
 #include "testing_dense2csr.hpp"
 #include "testing_ell2csr.hpp"
+#include "testing_gebsr2csr.hpp"
 #include "testing_hyb2csr.hpp"
 #include "testing_identity.hpp"
 #include "testing_nnz.hpp"
@@ -145,6 +146,14 @@ int main(int argc, char* argv[])
         ("blockdim",
         po::value<rocsparse_int>(&arg.block_dim)->default_value(2),
         "BSR block dimension (default: 2)")
+
+        ("row-blockdim",
+        po::value<rocsparse_int>(&arg.row_block_dim)->default_value(2),
+        "General BSR row block dimension (default: 2)")
+
+       ("col-blockdim",
+        po::value<rocsparse_int>(&arg.col_block_dim)->default_value(2),
+        "General BSR col block dimension (default: 2)")
 
         ("mtx",
         po::value<std::string>(&filename)->default_value(""), "read from matrix "
@@ -230,7 +239,7 @@ int main(int argc, char* argv[])
         "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0\n"
         "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb, csr2bsr\n"
         "              coo2csr, ell2csr, hyb2csr, dense2csr, prune_dense2csr, prune_dense2csr_by_percentage, dense2csc\n"
-        "              csr2dense, csc2dense, bsr2csr, csr2csr_compress, prune_csr2csr, prune_csr2csr_by_percentage\n"
+        "              csr2dense, csc2dense, bsr2csr, gebsr2csr, csr2csr_compress, prune_csr2csr, prune_csr2csr_by_percentage\n"
         "  Sorting: cscsort, csrsort, coosort\n"
         "  Misc: identity, nnz")
 
@@ -428,6 +437,18 @@ int main(int argc, char* argv[])
     if(arg.block_dim < 2)
     {
         std::cerr << "Invalid value for --blockdim" << std::endl;
+        return -1;
+    }
+
+    if(arg.row_block_dim < 2)
+    {
+        std::cerr << "Invalid value for --row-blockdim" << std::endl;
+        return -1;
+    }
+
+    if(arg.col_block_dim < 2)
+    {
+        std::cerr << "Invalid value for --col-blockdim" << std::endl;
         return -1;
     }
 
@@ -851,6 +872,17 @@ int main(int argc, char* argv[])
             testing_bsr2csr<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_bsr2csr<rocsparse_double_complex>(arg);
+    }
+    else if(function == "gebsr2csr")
+    {
+        if(precision == 's')
+            testing_gebsr2csr<float>(arg);
+        else if(precision == 'd')
+            testing_gebsr2csr<double>(arg);
+        else if(precision == 'c')
+            testing_gebsr2csr<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_gebsr2csr<rocsparse_double_complex>(arg);
     }
     else if(function == "csr2csr_compress")
     {

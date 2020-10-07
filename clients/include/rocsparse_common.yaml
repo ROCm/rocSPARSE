@@ -125,6 +125,8 @@ Arguments:
   - K: rocsparse_int
   - nnz: rocsparse_int
   - block_dim: rocsparse_int
+  - row_block_dim: rocsparse_int
+  - col_block_dim: rocsparse_int
   - dimx: rocsparse_int
   - dimy: rocsparse_int
   - dimz: rocsparse_int
@@ -209,6 +211,8 @@ Defaults:
   K: -1
   nnz: -1
   block_dim: 2
+  row_block_dim: 2
+  col_block_dim: 2
   dimx: 0
   dimy: 0
   dimz: 0
