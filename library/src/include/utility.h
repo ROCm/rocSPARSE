@@ -161,4 +161,18 @@ catch(...)
     return rocsparse_status_internal_error;
 }
 
+// For host scalars
+template <typename T>
+__forceinline__ __device__ __host__ T load_scalar_device_host(T x)
+{
+    return x;
+}
+
+// For device scalars
+template <typename T>
+__forceinline__ __device__ __host__ T load_scalar_device_host(const T* xp)
+{
+    return *xp;
+}
+
 #endif // UTILITY_H
