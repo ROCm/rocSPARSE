@@ -230,7 +230,7 @@ namespace std
 
     template <typename T>
     __device__ __host__ inline rocsparse_complex_num<T>
-               fma(rocsparse_complex_num<T> p, rocsparse_complex_num<T> q, rocsparse_complex_num<T> r)
+        fma(rocsparse_complex_num<T> p, rocsparse_complex_num<T> q, rocsparse_complex_num<T> r)
     {
         T real = rocsparse_complex_num<T>::fma(
             -p.y, q.y, rocsparse_complex_num<T>::fma(p.x, q.x, r.x));
@@ -252,10 +252,9 @@ namespace std
         T real = rocsparse_complex_num<T>::abs(z.x);
         T imag = rocsparse_complex_num<T>::abs(z.y);
 
-        return real > imag
-                   ? (imag /= real, real * rocsparse_complex_num<T>::sqrt(imag * imag + 1))
-                   : imag ? (real /= imag, imag * rocsparse_complex_num<T>::sqrt(real * real + 1))
-                          : 0;
+        return real > imag ? (imag /= real, real * rocsparse_complex_num<T>::sqrt(imag * imag + 1))
+               : imag      ? (real /= imag, imag * rocsparse_complex_num<T>::sqrt(real * real + 1))
+                           : 0;
     }
 }
 

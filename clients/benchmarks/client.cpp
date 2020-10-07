@@ -314,13 +314,13 @@ int main(int argc, char* argv[])
     arg.baseD = (baseD == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
 
     arg.action = (action == 0) ? rocsparse_action_numeric : rocsparse_action_symbolic;
-    arg.part   = (part == 0)
-                   ? rocsparse_hyb_partition_auto
-                   : (part == 1) ? rocsparse_hyb_partition_user : rocsparse_hyb_partition_max;
-    arg.diag = (diag == 'N') ? rocsparse_diag_type_non_unit : rocsparse_diag_type_unit;
-    arg.uplo = (uplo == 'L') ? rocsparse_fill_mode_lower : rocsparse_fill_mode_upper;
-    arg.apol = (apol == 'R') ? rocsparse_analysis_policy_reuse : rocsparse_analysis_policy_force;
-    arg.spol = rocsparse_solve_policy_auto;
+    arg.part   = (part == 0)   ? rocsparse_hyb_partition_auto
+                 : (part == 1) ? rocsparse_hyb_partition_user
+                               : rocsparse_hyb_partition_max;
+    arg.diag   = (diag == 'N') ? rocsparse_diag_type_non_unit : rocsparse_diag_type_unit;
+    arg.uplo   = (uplo == 'L') ? rocsparse_fill_mode_lower : rocsparse_fill_mode_upper;
+    arg.apol   = (apol == 'R') ? rocsparse_analysis_policy_reuse : rocsparse_analysis_policy_force;
+    arg.spol   = rocsparse_solve_policy_auto;
     arg.direction
         = (dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
 

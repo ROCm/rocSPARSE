@@ -422,8 +422,8 @@ static inline void host_bsr_lsolve(rocsparse_direction               dir,
                 {
                     rocsparse_int local_col = bsr_col * bsr_dim + bj;
                     T             local_val = (dir == rocsparse_direction_row)
-                                      ? bsr_val[bsr_dim * bsr_dim * j + bi * bsr_dim + bj]
-                                      : bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim];
+                                                  ? bsr_val[bsr_dim * bsr_dim * j + bi * bsr_dim + bj]
+                                                  : bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim];
 
                     if(local_val == static_cast<T>(0) && local_col == local_row
                        && diag_type == rocsparse_diag_type_non_unit)
@@ -514,8 +514,8 @@ static inline void host_bsr_usolve(rocsparse_direction               dir,
                 {
                     rocsparse_int local_col = bsr_col * bsr_dim + bj;
                     T             local_val = dir == rocsparse_direction_row
-                                      ? bsr_val[bsr_dim * bsr_dim * j + bi * bsr_dim + bj]
-                                      : bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim];
+                                                  ? bsr_val[bsr_dim * bsr_dim * j + bi * bsr_dim + bj]
+                                                  : bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim];
 
                     // Ignore all entries that are below the diagonal
                     if(local_col < local_row)
@@ -1436,7 +1436,7 @@ static inline void host_lssolve(rocsparse_int                     M,
                 // Lower triangular part
                 rocsparse_int idx = (transB == rocsparse_operation_none) ? i * ldb + local_col
                                                                          : local_col * ldb + i;
-                sum = std::fma(-local_val, B[idx], sum);
+                sum               = std::fma(-local_val, B[idx], sum);
             }
 
             if(diag_type == rocsparse_diag_type_non_unit)
@@ -1523,7 +1523,7 @@ static inline void host_ussolve(rocsparse_int                     M,
                 // Upper triangular part
                 rocsparse_int idx = (transB == rocsparse_operation_none) ? i * ldb + local_col
                                                                          : local_col * ldb + i;
-                sum = std::fma(-local_val, B[idx], sum);
+                sum               = std::fma(-local_val, B[idx], sum);
             }
 
             if(diag_type == rocsparse_diag_type_non_unit)
