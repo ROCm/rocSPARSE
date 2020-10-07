@@ -152,7 +152,7 @@ public:
         return data[n];
     }
 
-    operator T* *()
+    operator T**()
     {
         return data;
     }
