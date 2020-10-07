@@ -31,7 +31,6 @@
 #include "utility.h"
 
 #include <hip/hip_runtime.h>
-#include <rocprim/rocprim.hpp>
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE>
 __launch_bounds__(BLOCKSIZE) __global__
@@ -287,53 +286,105 @@ rocsparse_status rocsparse_csrgeam_template(rocsparse_handle          handle,
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
 #define CSRGEAM_DIM 256
-        hipLaunchKernelGGL((csrgeam_fill_multipass_device_pointer<T, CSRGEAM_DIM, 64>),
-                           dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
-                           dim3(CSRGEAM_DIM),
-                           0,
-                           stream,
-                           m,
-                           n,
-                           alpha,
-                           csr_row_ptr_A,
-                           csr_col_ind_A,
-                           csr_val_A,
-                           beta,
-                           csr_row_ptr_B,
-                           csr_col_ind_B,
-                           csr_val_B,
-                           csr_row_ptr_C,
-                           csr_col_ind_C,
-                           csr_val_C,
-                           descr_A->base,
-                           descr_B->base,
-                           descr_C->base);
-#undef CSRGEAM_DIM
+        if(handle->wavefront_size == 32)
+        {
+            hipLaunchKernelGGL((csrgeam_fill_multipass_device_pointer<T, CSRGEAM_DIM, 32>),
+                               dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
+                               dim3(CSRGEAM_DIM),
+                               0,
+                               stream,
+                               m,
+                               n,
+                               alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               beta,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               descr_A->base,
+                               descr_B->base,
+                               descr_C->base);
+        }
+        else
+        {
+            hipLaunchKernelGGL((csrgeam_fill_multipass_device_pointer<T, CSRGEAM_DIM, 64>),
+                               dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
+                               dim3(CSRGEAM_DIM),
+                               0,
+                               stream,
+                               m,
+                               n,
+                               alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               beta,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               descr_A->base,
+                               descr_B->base,
+                               descr_C->base);
+        }
     }
     else
     {
-#define CSRGEAM_DIM 256
-        hipLaunchKernelGGL((csrgeam_fill_multipass_host_pointer<T, CSRGEAM_DIM, 64>),
-                           dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
-                           dim3(CSRGEAM_DIM),
-                           0,
-                           stream,
-                           m,
-                           n,
-                           *alpha,
-                           csr_row_ptr_A,
-                           csr_col_ind_A,
-                           csr_val_A,
-                           *beta,
-                           csr_row_ptr_B,
-                           csr_col_ind_B,
-                           csr_val_B,
-                           csr_row_ptr_C,
-                           csr_col_ind_C,
-                           csr_val_C,
-                           descr_A->base,
-                           descr_B->base,
-                           descr_C->base);
+        if(handle->wavefront_size == 32)
+        {
+            hipLaunchKernelGGL((csrgeam_fill_multipass_host_pointer<T, CSRGEAM_DIM, 32>),
+                               dim3((m - 1) / (CSRGEAM_DIM / 32) + 1),
+                               dim3(CSRGEAM_DIM),
+                               0,
+                               stream,
+                               m,
+                               n,
+                               *alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               *beta,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               descr_A->base,
+                               descr_B->base,
+                               descr_C->base);
+        }
+        else
+        {
+            hipLaunchKernelGGL((csrgeam_fill_multipass_host_pointer<T, CSRGEAM_DIM, 64>),
+                               dim3((m - 1) / (CSRGEAM_DIM / 64) + 1),
+                               dim3(CSRGEAM_DIM),
+                               0,
+                               stream,
+                               m,
+                               n,
+                               *alpha,
+                               csr_row_ptr_A,
+                               csr_col_ind_A,
+                               csr_val_A,
+                               *beta,
+                               csr_row_ptr_B,
+                               csr_col_ind_B,
+                               csr_val_B,
+                               csr_row_ptr_C,
+                               csr_col_ind_C,
+                               csr_val_C,
+                               descr_A->base,
+                               descr_B->base,
+                               descr_C->base);
+        }
 #undef CSRGEAM_DIM
     }
 

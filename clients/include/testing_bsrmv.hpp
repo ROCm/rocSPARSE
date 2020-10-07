@@ -343,7 +343,11 @@ void testing_bsrmv(const Arguments& arg)
                               base,
                               mat,
                               filename.c_str(),
+#ifdef __HIP_ARCH_GFX1030__
+                              arg.timing ? false : true,
+#else
                               false,
+#endif
                               full_rank);
 
     // Update BSR block dimensions from generated matrix

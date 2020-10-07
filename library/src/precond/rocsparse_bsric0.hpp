@@ -461,6 +461,17 @@ rocsparse_status rocsparse_bsric0_template(rocsparse_handle          handle,
         return rocsparse_status_success;
     }
 
+    if(handle->wavefront_size == 32)
+    {
+#define BSRIC0_DIM 32
+        dim3 bsric0_blocks((mb * 32 - 1) / 32 + 1);
+        dim3 bsric0_threads(32);
+        launch_bsric0_binsearch_kernel(T, 32, 32, 1, false);
+#undef BSRIC0_DIM
+
+        return rocsparse_status_success;
+    }
+
     if(handle->wavefront_size == 64)
     {
 #define BSRIC0_DIM 64

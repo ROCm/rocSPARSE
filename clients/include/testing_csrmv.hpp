@@ -400,7 +400,11 @@ void testing_csrmv(const Arguments& arg)
                               base,
                               mat,
                               filename.c_str(),
+#ifdef __HIP_ARCH_GFX1030__
+                              arg.timing ? false : true,
+#else
                               arg.timing ? false : adaptive,
+#endif
                               full_rank);
 
     // Allocate host memory for vectors

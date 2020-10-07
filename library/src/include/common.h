@@ -148,6 +148,7 @@ __device__ __forceinline__ void rocsparse_blockreduce_min(int i, T* data)
     if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = min(data[i], data[i +   1]); } __syncthreads(); }
 }
 
+#ifndef __HIP_ARCH_GFX1030__
 // DPP-based wavefront reduction maximum
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
@@ -413,6 +414,74 @@ __device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
     sum = temp_sum.val;
     return sum;
 }
+#else
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
+{
+    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
+    {
+        *maximum = max(*maximum, __shfl_xor(*maximum, i));
+    }
+}
+
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void rocsparse_wfreduce_min(int* minimum)
+{
+    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
+    {
+        *minimum = min(*minimum, __shfl_xor(*minimum, i));
+    }
+}
+
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void rocsparse_wfreduce_min(int64_t* minimum)
+{
+    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
+    {
+        *minimum = min(*minimum, __shfl_xor(*minimum, i));
+    }
+}
+
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void rocsparse_wfreduce_sum(int* sum)
+{
+    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
+    {
+        *sum += __shfl_xor(*sum, i);
+    }
+}
+
+template <unsigned int WFSIZE>
+__device__ __forceinline__ void rocsparse_wfreduce_sum(int64_t* sum)
+{
+    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
+    {
+        *sum += __shfl_xor(*sum, i);
+    }
+}
+
+template <unsigned int WFSIZE>
+__device__ __forceinline__ float rocsparse_wfreduce_sum(float sum)
+{
+    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
+    {
+        sum += __shfl_xor(sum, i);
+    }
+
+    return sum;
+}
+
+template <unsigned int WFSIZE>
+__device__ __forceinline__ double rocsparse_wfreduce_sum(double sum)
+{
+    for(int i = WFSIZE >> 1; i > 0; i >>= 1)
+    {
+        sum += __shfl_xor(sum, i);
+    }
+
+    return sum;
+}
+#endif
 
 // DPP-based complex float wavefront reduction sum
 template <unsigned int WFSIZE>
