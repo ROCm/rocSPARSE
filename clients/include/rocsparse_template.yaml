@@ -274,6 +274,10 @@ Functions:
   rocsparse_dbsr2csr: { function: bsr2csr, <<: *double_precision }
   rocsparse_cbsr2csr: { function: bsr2csr, <<: *single_precision_complex }
   rocsparse_zbsr2csr: { function: bsr2csr, <<: *double_precision_complex }
+  rocsparse_sgebsr2csr: { function: gebsr2csr, <<: *single_precision }
+  rocsparse_dgebsr2csr: { function: gebsr2csr, <<: *double_precision }
+  rocsparse_cgebsr2csr: { function: gebsr2csr, <<: *single_precision_complex }
+  rocsparse_zgebsr2csr: { function: gebsr2csr, <<: *double_precision_complex }
   rocsparse_scsr2csr_compress: { function: csr2csr_compress, <<: *single_precision }
   rocsparse_dcsr2csr_compress: { function: csr2csr_compress, <<: *double_precision }
   rocsparse_ccsr2csr_compress: { function: csr2csr_compress, <<: *single_precision_complex }
