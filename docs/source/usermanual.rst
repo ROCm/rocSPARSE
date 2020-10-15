@@ -1749,7 +1749,6 @@ rocsparse_prune_dense2csr_buffer_size()
 .. doxygenfunction:: rocsparse_sprune_dense2csr_buffer_size
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr_buffer_size
-  :outline:
 
 rocsparse_prune_dense2csr_nnz()
 -------------------------------
@@ -1757,7 +1756,6 @@ rocsparse_prune_dense2csr_nnz()
 .. doxygenfunction:: rocsparse_sprune_dense2csr_nnz
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr_nnz
-  :outline:
 
 rocsparse_prune_dense2csr()
 ---------------------------
@@ -1765,7 +1763,6 @@ rocsparse_prune_dense2csr()
 .. doxygenfunction:: rocsparse_sprune_dense2csr
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr
-  :outline:
 
 rocsparse_prune_csr2csr_buffer_size()
 -------------------------------------
@@ -1773,7 +1770,6 @@ rocsparse_prune_csr2csr_buffer_size()
 .. doxygenfunction:: rocsparse_sprune_csr2csr_buffer_size
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_buffer_size
-  :outline:
 
 rocsparse_prune_csr2csr_nnz()
 -----------------------------
@@ -1781,7 +1777,6 @@ rocsparse_prune_csr2csr_nnz()
 .. doxygenfunction:: rocsparse_sprune_csr2csr_nnz
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_nnz
-  :outline:
 
 rocsparse_prune_csr2csr()
 -------------------------
@@ -1789,14 +1784,13 @@ rocsparse_prune_csr2csr()
 .. doxygenfunction:: rocsparse_sprune_csr2csr
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr
-  :outline:
+
 rocsparse_prune_dense2csr_by_percentage_buffer_size()
 -----------------------------------------------------
 
 .. doxygenfunction:: rocsparse_sprune_dense2csr_by_percentage_buffer_size
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr_by_percentage_buffer_size
-  :outline:
 
 rocsparse_prune_dense2csr_nnz_by_percentage()
 ---------------------------------------------
@@ -1804,7 +1798,6 @@ rocsparse_prune_dense2csr_nnz_by_percentage()
 .. doxygenfunction:: rocsparse_sprune_dense2csr_nnz_by_percentage
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr_nnz_by_percentage
-  :outline:
 
 rocsparse_prune_dense2csr_by_percentage()
 -----------------------------------------
@@ -1812,7 +1805,6 @@ rocsparse_prune_dense2csr_by_percentage()
 .. doxygenfunction:: rocsparse_sprune_dense2csr_by_percentage
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr_by_percentage
-  :outline:
 
 rocsparse_prune_csr2csr_by_percentage_buffer_size()
 ---------------------------------------------------
@@ -1820,7 +1812,6 @@ rocsparse_prune_csr2csr_by_percentage_buffer_size()
 .. doxygenfunction:: rocsparse_sprune_csr2csr_by_percentage_buffer_size
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_by_percentage_buffer_size
-  :outline:
 
 rocsparse_prune_csr2csr_nnz_by_percentage()
 -------------------------------------------
@@ -1828,7 +1819,6 @@ rocsparse_prune_csr2csr_nnz_by_percentage()
 .. doxygenfunction:: rocsparse_sprune_csr2csr_nnz_by_percentage
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_nnz_by_percentage
-  :outline:
 
 rocsparse_prune_csr2csr_by_percentage()
 ---------------------------------------
@@ -1836,4 +1826,3 @@ rocsparse_prune_csr2csr_by_percentage()
 .. doxygenfunction:: rocsparse_sprune_csr2csr_by_percentage
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_by_percentage
-  :outline:
