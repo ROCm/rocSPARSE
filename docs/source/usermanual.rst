@@ -715,6 +715,7 @@ Function name                                                                   
 :cpp:func:`rocsparse_hyb2csr_buffer_size`
 :cpp:func:`rocsparse_Xhyb2csr() <rocsparse_shyb2csr>`                                                                     x      x      x              x
 :cpp:func:`rocsparse_Xbsr2csr() <rocsparse_sbsr2csr>`                                                                     x      x      x              x
+:cpp:func:`rocsparse_Xgebsr2csr() <rocsparse_sgebsr2csr>`                                                                 x      x      x              x
 :cpp:func:`rocsparse_Xcsr2csr_compress() <rocsparse_scsr2csr_compress>`                                                   x      x      x              x
 :cpp:func:`rocsparse_create_identity_permutation`
 :cpp:func:`rocsparse_cscsort_buffer_size`
@@ -1605,6 +1606,18 @@ rocsparse_bsr2csr()
 .. doxygenfunction:: rocsparse_cbsr2csr
   :outline:
 .. doxygenfunction:: rocsparse_zbsr2csr
+
+rocsparse_gebsr2csr()
+---------------------
+
+.. doxygenfunction:: rocsparse_sgebsr2csr
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsr2csr
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsr2csr
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsr2csr
+
 
 rocsparse_csr2bsr_nnz()
 -----------------------
