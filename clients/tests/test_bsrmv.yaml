@@ -167,8 +167,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron3,
-             mplate]
+  filename: [Chevron3]
 
 - name: bsrmv_file
   category: nightly

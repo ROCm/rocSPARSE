@@ -1941,7 +1941,24 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
     // Run different bsrmv kernels
     if(trans == rocsparse_operation_none)
     {
-#ifndef __HIP_ARCH_GFX1030__
+        if(handle->wavefront_size == 32)
+        {
+            bsrmvn_general(handle,
+                           dir,
+                           mb,
+                           alpha,
+                           bsr_row_ptr,
+                           bsr_col_ind,
+                           bsr_val,
+                           bsr_dim,
+                           x,
+                           beta,
+                           y,
+                           descr->base);
+
+            return rocsparse_status_success;
+        }
+
         if(bsr_dim == 2)
         {
             bsrmvn_2x2(handle,
@@ -2049,7 +2066,6 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
                          descr->base);
         }
         else
-#endif
         {
             bsrmvn_general(handle,
                            dir,
