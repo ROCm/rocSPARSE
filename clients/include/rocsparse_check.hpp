@@ -227,19 +227,11 @@ inline void near_check_general(rocsparse_int            M,
     {
         for(rocsparse_int i = 0; i < M; ++i)
         {
-#ifdef __HIP_ARCH_GFX1030__
-            rocsparse_float_complex compare_val
-                = rocsparse_float_complex(std::max(std::abs(std::real(hCPU[i + j * lda]) * 1e-2f),
-                                                   10 * std::numeric_limits<float>::epsilon()),
-                                          std::max(std::abs(std::imag(hCPU[i + j * lda]) * 1e-2f),
-                                                   10 * std::numeric_limits<float>::epsilon()));
-#else
             rocsparse_float_complex compare_val
                 = rocsparse_float_complex(std::max(std::abs(std::real(hCPU[i + j * lda]) * 1e-3f),
                                                    10 * std::numeric_limits<float>::epsilon()),
                                           std::max(std::abs(std::imag(hCPU[i + j * lda]) * 1e-3f),
                                                    10 * std::numeric_limits<float>::epsilon()));
-#endif
 #ifdef GOOGLE_TEST
             if(rocsparse_isnan(hCPU[i + j * lda]))
             {

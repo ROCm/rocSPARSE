@@ -328,6 +328,15 @@ void testing_bsrmv(const Arguments& arg)
 
     rocsparse_seedrand();
 
+    // Wavefront size
+    int dev;
+    hipGetDevice(&dev);
+
+    hipDeviceProp_t prop;
+    hipGetDeviceProperties(&prop, dev);
+
+    bool type = (prop.warpSize == 32) ? (arg.timing ? false : true) : false;
+
     // Sample matrix
     rocsparse_int nnz;
     rocsparse_init_csr_matrix(hcsr_row_ptr,
@@ -343,11 +352,7 @@ void testing_bsrmv(const Arguments& arg)
                               base,
                               mat,
                               filename.c_str(),
-#ifdef __HIP_ARCH_GFX1030__
-                              arg.timing ? false : true,
-#else
-                              false,
-#endif
+                              type,
                               full_rank);
 
     // Update BSR block dimensions from generated matrix
