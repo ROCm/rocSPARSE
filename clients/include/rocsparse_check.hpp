@@ -34,6 +34,9 @@
 #include "rocsparse_math.hpp"
 
 #ifndef GOOGLE_TEST
+
+#include <iostream>
+
 #define ASSERT_TRUE(cond)                                      \
     do                                                         \
     {                                                          \

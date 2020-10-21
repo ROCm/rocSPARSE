@@ -90,6 +90,7 @@ set(TEST_MD5HASH
   01e49e63fa0ac2204baef0f5f33974ad
 )
 
+
 if(NOT TARGET rocsparse)
   set(CONVERT ${CMAKE_SOURCE_DIR}/../deps/convert)
 else()
@@ -152,8 +153,8 @@ foreach(i RANGE 0 ${len1})
   endif()
 endforeach()
 
+
 set(ROCSPARSE_TEST_SOURCES
-  rocsparse_test_main.cpp
   test_axpyi.cpp
   test_doti.cpp
   test_dotci.cpp
@@ -206,13 +207,82 @@ set(ROCSPARSE_TEST_SOURCES
   test_csc2dense.cpp
 )
 
+set(ROCSPARSE_TEST_SOURCES_TEMPLATE_INSTANCES
+  testing_axpyi.instances.cpp
+)
+
+set(ROCSPARSE_CLIENTS_TESTINGS
+../testings/testing_axpyi.cpp
+../testings/testing_doti.cpp
+../testings/testing_dotci.cpp
+../testings/testing_gthr.cpp
+../testings/testing_gthrz.cpp
+../testings/testing_roti.cpp
+../testings/testing_sctr.cpp
+../testings/testing_bsrmv.cpp
+../testings/testing_bsrsv.cpp
+../testings/testing_coomv.cpp
+../testings/testing_csrmv.cpp
+../testings/testing_csrsv.cpp
+../testings/testing_ellmv.cpp
+../testings/testing_hybmv.cpp
+../testings/testing_bsrmm.cpp
+../testings/testing_csrmm.cpp
+../testings/testing_csrsm.cpp
+../testings/testing_gemmi.cpp
+../testings/testing_csrgeam.cpp
+../testings/testing_csrgemm.cpp
+../testings/testing_bsric0.cpp
+../testings/testing_bsrilu0.cpp
+../testings/testing_csric0.cpp
+../testings/testing_csrilu0.cpp
+../testings/testing_csr2coo.cpp
+../testings/testing_csr2csc.cpp
+../testings/testing_csr2ell.cpp
+../testings/testing_csr2hyb.cpp
+../testings/testing_csr2bsr.cpp
+../testings/testing_coo2csr.cpp
+../testings/testing_ell2csr.cpp
+../testings/testing_hyb2csr.cpp
+../testings/testing_bsr2csr.cpp
+../testings/testing_gebsr2csr.cpp
+../testings/testing_csr2csr_compress.cpp
+../testings/testing_prune_csr2csr.cpp
+../testings/testing_prune_csr2csr_by_percentage.cpp
+../testings/testing_identity.cpp
+../testings/testing_csrsort.cpp
+../testings/testing_cscsort.cpp
+../testings/testing_coosort.cpp
+../testings/testing_csricsv.cpp
+../testings/testing_csrilusv.cpp
+../testings/testing_nnz.cpp
+../testings/testing_dense2csr.cpp
+../testings/testing_prune_dense2csr.cpp
+../testings/testing_prune_dense2csr_by_percentage.cpp
+../testings/testing_dense2csc.cpp
+../testings/testing_csr2dense.cpp
+../testings/testing_csc2dense.cpp
+  )
+
+
+#
+# remove pragma once
+# remove ifndef
+# remove define
+# remove last line
+# add specialization
+#
+
+
 set(ROCSPARSE_CLIENTS_COMMON
   ../common/utility.cpp
   ../common/rocsparse_parse_data.cpp
   ../common/rocsparse_template_specialization.cpp
+  ../common/rocsparse_init.cpp
+  ../common/rocsparse_host.cpp
 )
 
-add_executable(rocsparse-test ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON})
+add_executable(rocsparse-test rocsparse_test_main.cpp ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})
 
 # Set GOOGLE_TEST definition
 target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
