@@ -423,7 +423,7 @@ pushd .
 
     case "${ID}" in
       ubuntu)
-        elevate_if_not_root dpkg -i rocsparse-*.deb
+        elevate_if_not_root dpkg -i rocsparse[-\_]*.deb
       ;;
       centos|rhel)
         elevate_if_not_root yum -y localinstall rocsparse-*.rpm
