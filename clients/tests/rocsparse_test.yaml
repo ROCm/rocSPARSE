@@ -57,6 +57,7 @@ include: test_csr2csc.yaml
 include: test_csr2ell.yaml
 include: test_csr2hyb.yaml
 include: test_csr2bsr.yaml
+include: test_csr2gebsr.yaml
 include: test_coo2csr.yaml
 include: test_ell2csr.yaml
 include: test_hyb2csr.yaml

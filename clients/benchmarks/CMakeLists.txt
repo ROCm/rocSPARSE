@@ -76,6 +76,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_csr2ell.cpp
 ../testings/testing_csr2hyb.cpp
 ../testings/testing_csr2bsr.cpp
+../testings/testing_csr2gebsr.cpp
 ../testings/testing_coo2csr.cpp
 ../testings/testing_ell2csr.cpp
 ../testings/testing_hyb2csr.cpp

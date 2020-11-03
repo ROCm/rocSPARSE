@@ -135,6 +135,7 @@ void rocsparse_init_nan(T* A, size_t N)
 
 template void rocsparse_init_nan<int>(int* A, size_t N);
 template void rocsparse_init_nan<char>(char* A, size_t N);
+template void rocsparse_init_nan<size_t>(size_t* A, size_t N);
 
 template <typename T>
 void rocsparse_init_nan(
