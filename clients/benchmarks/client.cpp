@@ -70,6 +70,7 @@
 #include "testing_csr2csr_compress.hpp"
 #include "testing_csr2dense.hpp"
 #include "testing_csr2ell.hpp"
+#include "testing_csr2gebsr.hpp"
 #include "testing_csr2hyb.hpp"
 #include "testing_csrsort.hpp"
 #include "testing_dense2csc.hpp"
@@ -237,7 +238,7 @@ int main(int argc, char* argv[])
         "  Level3: bsrmm, csrmm, csrsm, gemmi\n"
         "  Extra: csrgeam, csrgemm\n"
         "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0\n"
-        "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb, csr2bsr\n"
+        "  Conversion: csr2coo, csr2csc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
         "              coo2csr, ell2csr, hyb2csr, dense2csr, prune_dense2csr, prune_dense2csr_by_percentage, dense2csc\n"
         "              csr2dense, csc2dense, bsr2csr, gebsr2csr, csr2csr_compress, prune_csr2csr, prune_csr2csr_by_percentage\n"
         "  Sorting: cscsort, csrsort, coosort\n"
@@ -835,6 +836,17 @@ int main(int argc, char* argv[])
             testing_csr2bsr<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_csr2bsr<rocsparse_double_complex>(arg);
+    }
+    else if(function == "csr2gebsr")
+    {
+        if(precision == 's')
+            testing_csr2gebsr<float>(arg);
+        else if(precision == 'd')
+            testing_csr2gebsr<double>(arg);
+        else if(precision == 'c')
+            testing_csr2gebsr<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_csr2gebsr<rocsparse_double_complex>(arg);
     }
     else if(function == "coo2csr")
     {

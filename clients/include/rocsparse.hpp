@@ -905,6 +905,38 @@ rocsparse_status rocsparse_csr2bsr(rocsparse_handle          handle,
                                    rocsparse_int*            bsr_row_ptr,
                                    rocsparse_int*            bsr_col_ind);
 
+// csr2gebsr_buffer_size
+template <typename T>
+rocsparse_status rocsparse_csr2gebsr_buffer_size(rocsparse_handle          handle,
+                                                 rocsparse_direction       direction,
+                                                 rocsparse_int             m,
+                                                 rocsparse_int             n,
+                                                 const rocsparse_mat_descr csr_descr,
+                                                 const T*                  csr_val,
+                                                 const rocsparse_int*      csr_row_ptr,
+                                                 const rocsparse_int*      csr_col_ind,
+                                                 rocsparse_int             row_block_dim,
+                                                 rocsparse_int             col_block_dim,
+                                                 size_t*                   p_buffer_size);
+
+// csr2gebsr
+template <typename T>
+rocsparse_status rocsparse_csr2gebsr(rocsparse_handle          handle,
+                                     rocsparse_direction       direction,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr csr_descr,
+                                     const T*                  csr_val,
+                                     const rocsparse_int*      csr_row_ptr,
+                                     const rocsparse_int*      csr_col_ind,
+                                     const rocsparse_mat_descr bsr_descr,
+                                     T*                        bsr_val,
+                                     rocsparse_int*            bsr_row_ptr,
+                                     rocsparse_int*            bsr_col_ind,
+                                     rocsparse_int             row_block_dim,
+                                     rocsparse_int             col_block_dim,
+                                     void*                     p_buffer);
+
 // ell2csr
 template <typename T>
 rocsparse_status rocsparse_ell2csr(rocsparse_handle          handle,
