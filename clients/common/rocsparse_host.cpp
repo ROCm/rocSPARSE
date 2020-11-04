@@ -1489,7 +1489,8 @@ static inline void host_ussolve(rocsparse_int                     M,
                 // Upper triangular part
                 rocsparse_int idx = (transB == rocsparse_operation_none) ? i * ldb + local_col
                                                                          : local_col * ldb + i;
-                sum               = std::fma(-local_val, B[idx], sum);
+
+                sum = std::fma(-local_val, B[idx], sum);
             }
 
             if(diag_type == rocsparse_diag_type_non_unit)
@@ -3127,6 +3128,72 @@ void host_csr_to_csc(rocsparse_int                     M,
 }
 
 template <typename T>
+
+void host_gebsr_to_gebsc(rocsparse_int                     Mb,
+                         rocsparse_int                     Nb,
+                         rocsparse_int                     nnzb,
+                         const std::vector<rocsparse_int>& bsr_row_ptr,
+                         const std::vector<rocsparse_int>& bsr_col_ind,
+                         const std::vector<T>&             bsr_val,
+                         rocsparse_int                     row_block_dim,
+                         rocsparse_int                     col_block_dim,
+                         std::vector<rocsparse_int>&       bsc_row_ind,
+                         std::vector<rocsparse_int>&       bsc_col_ptr,
+                         std::vector<T>&                   bsc_val,
+                         rocsparse_action                  action,
+                         rocsparse_index_base              base)
+{
+    bsc_row_ind.resize(nnzb);
+    bsc_col_ptr.resize(Nb + 1, 0);
+    bsc_val.resize(nnzb);
+
+    const rocsparse_int block_shift = row_block_dim * col_block_dim;
+
+    //
+    // Determine nnz per column
+    //
+    for(rocsparse_int i = 0; i < nnzb; ++i)
+    {
+        ++bsc_col_ptr[bsr_col_ind[i] + 1 - base];
+    }
+
+    // Scan
+    for(rocsparse_int i = 0; i < Nb; ++i)
+    {
+        bsc_col_ptr[i + 1] += bsc_col_ptr[i];
+    }
+
+    // Fill row indices and values
+    for(rocsparse_int i = 0; i < Mb; ++i)
+    {
+        const rocsparse_int row_begin = bsr_row_ptr[i] - base;
+        const rocsparse_int row_end   = bsr_row_ptr[i + 1] - base;
+
+        for(rocsparse_int j = row_begin; j < row_end; ++j)
+        {
+            const rocsparse_int col = bsr_col_ind[j] - base;
+            const rocsparse_int idx = bsc_col_ptr[col];
+
+            bsc_row_ind[idx] = i + base;
+            for(rocsparse_int k = 0; k < block_shift; ++k)
+            {
+                bsc_val[idx * block_shift + k] = bsr_val[j * block_shift + k];
+            }
+
+            ++bsc_col_ptr[col];
+        }
+    }
+
+    // Shift column pointer array
+    for(rocsparse_int i = Nb; i > 0; --i)
+    {
+        bsc_col_ptr[i] = bsc_col_ptr[i - 1] + base;
+    }
+
+    bsc_col_ptr[0] = base;
+}
+
+template <typename T>
 void host_gebsr_to_csr(rocsparse_direction               direction,
                        rocsparse_int                     mb,
                        rocsparse_int                     nb,
@@ -4149,6 +4216,20 @@ template void host_csr_to_csc(rocsparse_int                     M,
                               rocsparse_action                  action,
                               rocsparse_index_base              base);
 
+template void host_gebsr_to_gebsc(rocsparse_int                     Mb,
+                                  rocsparse_int                     Nb,
+                                  rocsparse_int                     nnzb,
+                                  const std::vector<rocsparse_int>& bsr_row_ptr,
+                                  const std::vector<rocsparse_int>& bsr_col_ind,
+                                  const std::vector<float>&         bsr_val,
+                                  rocsparse_int                     row_block_dim,
+                                  rocsparse_int                     col_block_dim,
+                                  std::vector<rocsparse_int>&       bsc_row_ind,
+                                  std::vector<rocsparse_int>&       bsc_col_ptr,
+                                  std::vector<float>&               bsc_val,
+                                  rocsparse_action                  action,
+                                  rocsparse_index_base              base);
+
 template void host_gebsr_to_csr(rocsparse_direction               direction,
                                 rocsparse_int                     mb,
                                 rocsparse_int                     nb,
@@ -4687,6 +4768,20 @@ template void host_csr_to_csc(rocsparse_int                     M,
                               rocsparse_action                  action,
                               rocsparse_index_base              base);
 
+template void host_gebsr_to_gebsc(rocsparse_int                     Mb,
+                                  rocsparse_int                     Nb,
+                                  rocsparse_int                     nnzb,
+                                  const std::vector<rocsparse_int>& bsr_row_ptr,
+                                  const std::vector<rocsparse_int>& bsr_col_ind,
+                                  const std::vector<double>&        bsr_val,
+                                  rocsparse_int                     row_block_dim,
+                                  rocsparse_int                     col_block_dim,
+                                  std::vector<rocsparse_int>&       bsc_row_ind,
+                                  std::vector<rocsparse_int>&       bsc_col_ptr,
+                                  std::vector<double>&              bsc_val,
+                                  rocsparse_action                  action,
+                                  rocsparse_index_base              base);
+
 template void host_gebsr_to_csr(rocsparse_direction               direction,
                                 rocsparse_int                     mb,
                                 rocsparse_int                     nb,
@@ -5209,6 +5304,20 @@ template void host_csr_to_csc(rocsparse_int                                M,
                               rocsparse_action                             action,
                               rocsparse_index_base                         base);
 
+template void host_gebsr_to_gebsc(rocsparse_int                                Mb,
+                                  rocsparse_int                                Nb,
+                                  rocsparse_int                                nnzb,
+                                  const std::vector<rocsparse_int>&            bsr_row_ptr,
+                                  const std::vector<rocsparse_int>&            bsr_col_ind,
+                                  const std::vector<rocsparse_double_complex>& bsr_val,
+                                  rocsparse_int                                row_block_dim,
+                                  rocsparse_int                                col_block_dim,
+                                  std::vector<rocsparse_int>&                  bsc_row_ind,
+                                  std::vector<rocsparse_int>&                  bsc_col_ptr,
+                                  std::vector<rocsparse_double_complex>&       bsc_val,
+                                  rocsparse_action                             action,
+                                  rocsparse_index_base                         base);
+
 template void host_gebsr_to_csr(rocsparse_direction                          direction,
                                 rocsparse_int                                mb,
                                 rocsparse_int                                nb,
@@ -5704,6 +5813,20 @@ template void host_csr_to_csc(rocsparse_int                               M,
                               std::vector<rocsparse_float_complex>&       csc_val,
                               rocsparse_action                            action,
                               rocsparse_index_base                        base);
+
+template void host_gebsr_to_gebsc(rocsparse_int                               Mb,
+                                  rocsparse_int                               Nb,
+                                  rocsparse_int                               nnzb,
+                                  const std::vector<rocsparse_int>&           bsr_row_ptr,
+                                  const std::vector<rocsparse_int>&           bsr_col_ind,
+                                  const std::vector<rocsparse_float_complex>& bsr_val,
+                                  rocsparse_int                               row_block_dim,
+                                  rocsparse_int                               col_block_dim,
+                                  std::vector<rocsparse_int>&                 bsc_row_ind,
+                                  std::vector<rocsparse_int>&                 bsc_col_ptr,
+                                  std::vector<rocsparse_float_complex>&       bsc_val,
+                                  rocsparse_action                            action,
+                                  rocsparse_index_base                        base);
 
 template void host_gebsr_to_csr(rocsparse_direction                         direction,
                                 rocsparse_int                               mb,

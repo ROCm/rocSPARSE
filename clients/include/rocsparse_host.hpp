@@ -483,6 +483,21 @@ void host_csr_to_csc(rocsparse_int                     M,
                      rocsparse_index_base              base);
 
 template <typename T>
+void host_gebsr_to_gebsc(rocsparse_int                     Mb,
+                         rocsparse_int                     Nb,
+                         rocsparse_int                     nnzb,
+                         const std::vector<rocsparse_int>& bsr_row_ptr,
+                         const std::vector<rocsparse_int>& bsr_col_ind,
+                         const std::vector<T>&             bsr_val,
+                         rocsparse_int                     row_block_dim,
+                         rocsparse_int                     col_block_dim,
+                         std::vector<rocsparse_int>&       bsc_row_ind,
+                         std::vector<rocsparse_int>&       bsc_col_ptr,
+                         std::vector<T>&                   bsc_val,
+                         rocsparse_action                  action,
+                         rocsparse_index_base              base);
+
+template <typename T>
 void host_gebsr_to_csr(rocsparse_direction               direction,
                        rocsparse_int                     mb,
                        rocsparse_int                     nb,
