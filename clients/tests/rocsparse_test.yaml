@@ -54,6 +54,7 @@ include: test_csr2dense.yaml
 include: test_csc2dense.yaml
 include: test_csr2coo.yaml
 include: test_csr2csc.yaml
+include: test_gebsr2gebsc.yaml
 include: test_csr2ell.yaml
 include: test_csr2hyb.yaml
 include: test_csr2bsr.yaml

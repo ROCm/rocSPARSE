@@ -82,6 +82,7 @@ set(rocsparse_source
   src/conversion/rocsparse_nnz_compress.cpp
   src/conversion/rocsparse_csr2coo.cpp
   src/conversion/rocsparse_csr2csc.cpp
+  src/conversion/rocsparse_gebsr2gebsc.cpp
   src/conversion/rocsparse_csr2bsr.cpp
   src/conversion/rocsparse_csr2gebsr.cpp
   src/conversion/rocsparse_csr2ell.cpp

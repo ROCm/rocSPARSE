@@ -704,6 +704,8 @@ Function name                                                                   
 :cpp:func:`rocsparse_csr2coo`
 :cpp:func:`rocsparse_csr2csc_buffer_size`
 :cpp:func:`rocsparse_Xcsr2csc() <rocsparse_scsr2csc>`                                                                     x      x      x              x
+:cpp:func:`rocsparse_Xgebsr2gebsc_buffer_size`                                                                            x      x      x              x
+:cpp:func:`rocsparse_Xgebsr2gebsc() <rocsparse_sgebsr2gebsc>`                                                             x      x      x              x
 :cpp:func:`rocsparse_csr2ell_width`
 :cpp:func:`rocsparse_Xcsr2ell() <rocsparse_scsr2ell>`                                                                     x      x      x              x
 :cpp:func:`rocsparse_Xcsr2hyb() <rocsparse_scsr2hyb>`                                                                     x      x      x              x
@@ -1539,6 +1541,28 @@ rocsparse_csr2csc()
 .. doxygenfunction:: rocsparse_ccsr2csc
   :outline:
 .. doxygenfunction:: rocsparse_zcsr2csc
+
+rocsparse_gebsr2gebsc_buffer_size()
+-------------------
+
+.. doxygenfunction:: rocsparse_sgebsr2gebsc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsr2gebsc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsr2gebsc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsr2gebsc_buffer_size
+
+		     rocsparse_gebsr2gebsc()
+-------------------
+
+.. doxygenfunction:: rocsparse_sgebsr2gebsc
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsr2gebsc
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsr2gebsc
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsr2gebsc
 
 rocsparse_csr2ell_width()
 -------------------------

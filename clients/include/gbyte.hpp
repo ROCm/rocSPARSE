@@ -317,6 +317,21 @@ constexpr double csr2csc_gbyte_count(rocsparse_int    M,
 }
 
 template <typename T>
+constexpr double gebsr2gebsc_gbyte_count(rocsparse_int    Mb,
+                                         rocsparse_int    Nb,
+                                         rocsparse_int    nnzb,
+                                         rocsparse_int    row_block_dim,
+                                         rocsparse_int    col_block_dim,
+                                         rocsparse_action action)
+{
+    return ((Mb + Nb + 2 + 2.0 * nnzb) * sizeof(rocsparse_int)
+            + (action == rocsparse_action_numeric
+                   ? (2.0 * nnzb * row_block_dim * col_block_dim) * sizeof(T)
+                   : 0.0))
+           / 1e9;
+}
+
+template <typename T>
 constexpr double csr2ell_gbyte_count(rocsparse_int M, rocsparse_int nnz, rocsparse_int ell_nnz)
 {
     return ((M + 1.0 + ell_nnz) * sizeof(rocsparse_int) + (nnz + ell_nnz) * sizeof(T)) / 1e9;
