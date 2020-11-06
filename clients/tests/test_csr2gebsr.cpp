@@ -87,7 +87,8 @@ namespace
                 return RocSPARSE_TestName<csr2gebsr>{}
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.row_block_dim
                        << '_' << arg.col_block_dim << '_' << rocsparse_indexbase2string(arg.baseA)
-                       << '_' << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
+                       << '_' << rocsparse_matrix2string(arg.matrix) << '_'
+                       << rocsparse_filename2string(arg.filename);
             }
             else
             {
