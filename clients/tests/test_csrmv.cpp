@@ -90,7 +90,7 @@ namespace
                        << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_matrix2string(arg.matrix) << '_' << arg.algo << '_'
-                       << arg.filename;
+                       << rocsparse_filename2string(arg.filename);
             }
             else
             {

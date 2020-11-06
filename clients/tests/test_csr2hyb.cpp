@@ -84,11 +84,12 @@ namespace
             if(arg.matrix == rocsparse_matrix_file_rocalution
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
-                return RocSPARSE_TestName<csr2hyb>{}
-                       << rocsparse_datatype2string(arg.compute_type) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_partition2string(arg.part) << '_' << arg.algo << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
+                return RocSPARSE_TestName<csr2hyb>{} << rocsparse_datatype2string(arg.compute_type)
+                                                     << '_' << rocsparse_indexbase2string(arg.baseA)
+                                                     << '_' << rocsparse_partition2string(arg.part)
+                                                     << '_' << arg.algo << '_'
+                                                     << rocsparse_matrix2string(arg.matrix) << '_'
+                                                     << rocsparse_filename2string(arg.filename);
             }
             else
             {
