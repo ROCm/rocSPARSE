@@ -78,9 +78,9 @@ Tests:
   function: bsric0
   precision: *single_double_precisions_complex_real
   M_N: *M_N_range_nightly
-  block_dim: [5]
+  block_dim: [5, 35]
   transA: [rocsparse_operation_none]
-  apol: [rocsparse_analysis_policy_reuse, rocsparse_analysis_policy_force]
+  apol: [rocsparse_analysis_policy_reuse]
   spol: [rocsparse_solve_policy_auto]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
@@ -92,7 +92,7 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  block_dim: [5]
+  block_dim: [5, 21]
   transA: [rocsparse_operation_none]
   apol: [rocsparse_analysis_policy_reuse]
   spol: [rocsparse_solve_policy_auto]
