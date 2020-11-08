@@ -721,6 +721,9 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xhyb2csr() <rocsparse_shyb2csr>`                                                                     x      x      x              x
 :cpp:func:`rocsparse_Xbsr2csr() <rocsparse_sbsr2csr>`                                                                     x      x      x              x
 :cpp:func:`rocsparse_Xgebsr2csr() <rocsparse_sgebsr2csr>`                                                                 x      x      x              x
+:cpp:func:`rocsparse_Xgebsr2gebsr_buffer_size() <rocsparse_sgebsr2gebsr_buffer_size>`                                     x      x      x              x
+:cpp:func:`rocsparse_gebsr2gebsr_nnz()`
+:cpp:func:`rocsparse_Xgebsr2gebsr() <rocsparse_sgebsr2gebsr>`                                                             x      x      x              x
 :cpp:func:`rocsparse_Xcsr2csr_compress() <rocsparse_scsr2csr_compress>`                                                   x      x      x              x
 :cpp:func:`rocsparse_create_identity_permutation`
 :cpp:func:`rocsparse_cscsort_buffer_size`
@@ -1644,6 +1647,33 @@ rocsparse_gebsr2csr()
 .. doxygenfunction:: rocsparse_cgebsr2csr
   :outline:
 .. doxygenfunction:: rocsparse_zgebsr2csr
+
+rocsparse_gebsr2gebsr_buffer_size()
+-----------------------------------
+
+.. doxygenfunction:: rocsparse_sgebsr2gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsr2gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsr2gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsr2gebsr_buffer_size
+
+rocsparse_gebsr2gebsr_nnz()
+---------------------------
+
+.. doxygenfunction:: rocsparse_gebsr2gebsr_nnz
+
+rocsparse_gebsr2gebsr()
+-----------------------
+
+.. doxygenfunction:: rocsparse_sgebsr2gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsr2gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsr2gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsr2gebsr
 
 
 rocsparse_csr2bsr_nnz()

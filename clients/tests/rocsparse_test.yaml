@@ -64,6 +64,7 @@ include: test_ell2csr.yaml
 include: test_hyb2csr.yaml
 include: test_bsr2csr.yaml
 include: test_gebsr2csr.yaml
+include: test_gebsr2gebsr.yaml
 include: test_csr2csr_compress.yaml
 include: test_prune_csr2csr.yaml
 include: test_prune_csr2csr_by_percentage.yaml
