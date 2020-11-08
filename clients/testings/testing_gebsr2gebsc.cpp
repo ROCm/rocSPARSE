@@ -435,12 +435,12 @@ void testing_gebsr2gebsc(const Arguments& arg)
     rocsparse_local_handle handle;
 
     // Argument sanity check before allocating invalid memory
-    if(arg.M <= 0 || arg.N <= 0 || arg.row_block_dim <= 0 || arg.col_block_dim <= 0)
+    if(arg.M <= 0 || arg.N <= 0 || arg.row_block_dimA <= 0 || arg.col_block_dimA <= 0)
     {
         rocsparse_int        M             = arg.M;
         rocsparse_int        N             = arg.N;
-        rocsparse_int        row_block_dim = arg.row_block_dim;
-        rocsparse_int        col_block_dim = arg.col_block_dim;
+        rocsparse_int        row_block_dim = arg.row_block_dimA;
+        rocsparse_int        col_block_dim = arg.col_block_dimA;
         rocsparse_index_base base          = arg.baseA;
 
         static const size_t safe_size = 100;
