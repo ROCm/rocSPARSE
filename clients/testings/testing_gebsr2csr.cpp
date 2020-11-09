@@ -33,6 +33,112 @@
 #include "rocsparse_test.hpp"
 #include "rocsparse_vector.hpp"
 
+//
+// Transform a csr matrix in a general bsr matrix.
+// It fills the values such as the conversion to the csr matrix
+// will give to 1,2,3,4,5,6,7,8,9, etc...
+//
+template <typename T>
+inline void rocsparse_init_gebsr_matrix_from_csr(std::vector<rocsparse_int>& bsr_row_ptr,
+                                                 std::vector<rocsparse_int>& bsr_col_ind,
+                                                 std::vector<T>&             bsr_val,
+                                                 rocsparse_direction         direction,
+                                                 rocsparse_int&              Mb,
+                                                 rocsparse_int&              Nb,
+                                                 rocsparse_int               row_block_dim,
+                                                 rocsparse_int               col_block_dim,
+                                                 rocsparse_int&              K,
+                                                 rocsparse_int               dim_x,
+                                                 rocsparse_int               dim_y,
+                                                 rocsparse_int               dim_z,
+                                                 rocsparse_int&              nnzb,
+                                                 rocsparse_index_base        bsr_base,
+                                                 rocsparse_matrix_init       matrix,
+                                                 const char*                 filename,
+                                                 bool                        toint     = false,
+                                                 bool                        full_rank = false)
+{
+
+    // Matrix handle and descriptors used for conversion
+    rocsparse_local_handle handle;
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
+    rocsparse_local_mat_descr csr_descr;
+    rocsparse_local_mat_descr bsr_descr;
+
+    //  rocsparse_set_mat_index_base(csr_descr, csr_base);
+    rocsparse_set_mat_index_base(bsr_descr, bsr_base);
+
+    // Uncompressed CSR matrix on host
+    host_vector<T> hcsr_val_A;
+
+    // Generate uncompressed CSR matrix on host (or read from file)
+
+    rocsparse_init_csr_matrix(bsr_row_ptr,
+                              bsr_col_ind,
+                              hcsr_val_A,
+                              Mb,
+                              Nb,
+                              K,
+                              dim_x,
+                              dim_y,
+                              dim_z,
+                              nnzb,
+                              bsr_base,
+                              matrix,
+                              filename,
+                              false,
+                              full_rank);
+
+    bsr_val.resize(row_block_dim * col_block_dim * nnzb);
+    rocsparse_int idx = 0;
+    switch(direction)
+    {
+    case rocsparse_direction_column:
+    {
+        for(rocsparse_int i = 0; i < Mb; ++i)
+        {
+            for(rocsparse_int r = 0; r < row_block_dim; ++r)
+            {
+                for(rocsparse_int k = bsr_row_ptr[i] - bsr_base; k < bsr_row_ptr[i + 1] - bsr_base;
+                    ++k)
+                {
+                    rocsparse_int j = bsr_col_ind[k] - bsr_base;
+                    for(rocsparse_int c = 0; c < col_block_dim; ++c)
+                    {
+                        bsr_val[k * row_block_dim * col_block_dim + c * row_block_dim + r]
+                            = static_cast<T>(++idx);
+                    }
+                }
+            }
+        }
+        break;
+    }
+
+    case rocsparse_direction_row:
+    {
+        for(rocsparse_int i = 0; i < Mb; ++i)
+        {
+            for(rocsparse_int r = 0; r < row_block_dim; ++r)
+            {
+                for(rocsparse_int k = bsr_row_ptr[i] - bsr_base; k < bsr_row_ptr[i + 1] - bsr_base;
+                    ++k)
+                {
+                    rocsparse_int j = bsr_col_ind[k] - bsr_base;
+                    for(rocsparse_int c = 0; c < col_block_dim; ++c)
+                    {
+                        bsr_val[k * row_block_dim * col_block_dim + r * col_block_dim + c]
+                            = static_cast<T>(++idx);
+                    }
+                }
+            }
+        }
+        break;
+    }
+    }
+}
+
 template <typename T>
 void testing_gebsr2csr_bad_arg(const Arguments& arg)
 {
@@ -302,8 +408,8 @@ void testing_gebsr2csr(const Arguments& arg)
     rocsparse_index_base  csr_base      = arg.baseB;
     rocsparse_matrix_init mat           = arg.matrix;
     rocsparse_direction   direction     = arg.direction;
-    rocsparse_int         row_block_dim = arg.row_block_dimA;
-    rocsparse_int         col_block_dim = arg.col_block_dimA;
+    rocsparse_int         row_block_dim = arg.row_block_dim;
+    rocsparse_int         col_block_dim = arg.col_block_dim;
     bool                  full_rank     = false;
     std::string           filename
         = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";

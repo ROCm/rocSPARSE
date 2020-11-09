@@ -1023,44 +1023,6 @@ rocsparse_status rocsparse_gebsr2csr(rocsparse_handle          handle,
                                      rocsparse_int*            csr_row_ptr,
                                      rocsparse_int*            csr_col_ind);
 
-// gebsr2csr_buffer_size
-template <typename T>
-rocsparse_status rocsparse_gebsr2gebsr_buffer_size(rocsparse_handle          handle,
-                                                   rocsparse_direction       dir,
-                                                   rocsparse_int             mb,
-                                                   rocsparse_int             nb,
-                                                   rocsparse_int             nnzb,
-                                                   const rocsparse_mat_descr descr_A,
-                                                   const T*                  bsr_val_A,
-                                                   const rocsparse_int*      bsr_row_ptr_A,
-                                                   const rocsparse_int*      bsr_col_ind_A,
-                                                   rocsparse_int             row_block_dim_A,
-                                                   rocsparse_int             col_block_dim_A,
-                                                   rocsparse_int             row_block_dim_C,
-                                                   rocsparse_int             col_block_dim_C,
-                                                   size_t*                   buffer_size);
-
-// gebsr2gebsr
-template <typename T>
-rocsparse_status rocsparse_gebsr2gebsr(rocsparse_handle          handle,
-                                       rocsparse_direction       dir,
-                                       rocsparse_int             mb,
-                                       rocsparse_int             nb,
-                                       rocsparse_int             nnzb,
-                                       const rocsparse_mat_descr descr_A,
-                                       const T*                  bsr_val_A,
-                                       const rocsparse_int*      bsr_row_ptr_A,
-                                       const rocsparse_int*      bsr_col_ind_A,
-                                       rocsparse_int             row_block_dim_A,
-                                       rocsparse_int             col_block_dim_A,
-                                       const rocsparse_mat_descr descr_C,
-                                       T*                        bsr_val_C,
-                                       rocsparse_int*            bsr_row_ptr_C,
-                                       rocsparse_int*            bsr_col_ind_C,
-                                       rocsparse_int             row_block_dim_C,
-                                       rocsparse_int             col_block_dim_C,
-                                       void*                     temp_buffer);
-
 // csr2csr_compress
 template <typename T>
 rocsparse_status rocsparse_csr2csr_compress(rocsparse_handle          handle,

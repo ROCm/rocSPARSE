@@ -85,8 +85,8 @@ namespace
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
                 return RocSPARSE_TestName<csr2gebsr>{}
-                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.row_block_dimA
-                       << '_' << arg.col_block_dimA << '_' << rocsparse_indexbase2string(arg.baseA)
+                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.row_block_dim
+                       << '_' << arg.col_block_dim << '_' << rocsparse_indexbase2string(arg.baseA)
                        << '_' << rocsparse_matrix2string(arg.matrix) << '_'
                        << rocsparse_filename2string(arg.filename);
             }
@@ -94,7 +94,7 @@ namespace
             {
                 return RocSPARSE_TestName<csr2gebsr>{}
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
-                       << arg.N << '_' << arg.row_block_dimA << '_' << arg.col_block_dimA
+                       << arg.N << '_' << arg.row_block_dim << '_' << arg.col_block_dim
                        << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_matrix2string(arg.matrix);
             }

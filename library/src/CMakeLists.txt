@@ -95,7 +95,6 @@ set(rocsparse_source
   src/conversion/rocsparse_hyb2csr.cpp
   src/conversion/rocsparse_bsr2csr.cpp
   src/conversion/rocsparse_gebsr2csr.cpp
-  src/conversion/rocsparse_gebsr2gebsr.cpp
   src/conversion/rocsparse_identity.cpp
   src/conversion/rocsparse_csrsort.cpp
   src/conversion/rocsparse_cscsort.cpp
