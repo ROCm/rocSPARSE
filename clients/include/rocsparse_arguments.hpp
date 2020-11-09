@@ -47,10 +47,8 @@ struct Arguments
     rocsparse_int K;
     rocsparse_int nnz;
     rocsparse_int block_dim;
-    rocsparse_int row_block_dimA;
-    rocsparse_int col_block_dimA;
-    rocsparse_int row_block_dimB;
-    rocsparse_int col_block_dimB;
+    rocsparse_int row_block_dim;
+    rocsparse_int col_block_dim;
 
     rocsparse_int dimx;
     rocsparse_int dimy;
@@ -141,10 +139,8 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(K);
         ROCSPARSE_FORMAT_CHECK(nnz);
         ROCSPARSE_FORMAT_CHECK(block_dim);
-        ROCSPARSE_FORMAT_CHECK(row_block_dimA);
-        ROCSPARSE_FORMAT_CHECK(col_block_dimA);
-        ROCSPARSE_FORMAT_CHECK(row_block_dimB);
-        ROCSPARSE_FORMAT_CHECK(col_block_dimB);
+        ROCSPARSE_FORMAT_CHECK(row_block_dim);
+        ROCSPARSE_FORMAT_CHECK(col_block_dim);
         ROCSPARSE_FORMAT_CHECK(dimx);
         ROCSPARSE_FORMAT_CHECK(dimy);
         ROCSPARSE_FORMAT_CHECK(dimz);
@@ -318,10 +314,8 @@ private:
         print("K", arg.K);
         print("nnz", arg.nnz);
         print("block_dim", arg.block_dim);
-        print("row_block_dimA", arg.row_block_dimA);
-        print("col_block_dimA", arg.col_block_dimA);
-        print("row_block_dimB", arg.row_block_dimB);
-        print("col_block_dimB", arg.col_block_dimB);
+        print("row_block_dim", arg.row_block_dim);
+        print("col_block_dim", arg.col_block_dim);
         print("dim_x", arg.dimx);
         print("dim_y", arg.dimy);
         print("dim_z", arg.dimz);
