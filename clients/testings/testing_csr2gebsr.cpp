@@ -391,8 +391,8 @@ void testing_csr2gebsr(const Arguments& arg)
     rocsparse_index_base  bsr_base      = arg.baseB;
     rocsparse_matrix_init mat           = arg.matrix;
     rocsparse_direction   direction     = arg.direction;
-    rocsparse_int         row_block_dim = arg.row_block_dim;
-    rocsparse_int         col_block_dim = arg.col_block_dim;
+    rocsparse_int         row_block_dim = arg.row_block_dimA;
+    rocsparse_int         col_block_dim = arg.col_block_dimA;
     bool                  full_rank     = false;
     std::string           filename
         = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";

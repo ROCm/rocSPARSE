@@ -398,6 +398,27 @@ constexpr double gebsr2csr_gbyte_count(rocsparse_int Mb,
 }
 
 template <typename T>
+constexpr double gebsr2gebsr_gbyte_count(rocsparse_int Mb_A,
+                                         rocsparse_int Mb_C,
+                                         rocsparse_int row_block_dim_A,
+                                         rocsparse_int col_block_dim_A,
+                                         rocsparse_int row_block_dim_C,
+                                         rocsparse_int col_block_dim_C,
+                                         rocsparse_int nnzb_A,
+                                         rocsparse_int nnzb_C)
+{
+    // reads
+    size_t reads = nnzb_A * row_block_dim_A * col_block_dim_A * sizeof(T)
+                   + (Mb_A + 1 + nnzb_A) * sizeof(rocsparse_int);
+
+    // writes
+    size_t writes = nnzb_C * row_block_dim_C * col_block_dim_C * sizeof(T)
+                    + (Mb_C + 1 + nnzb_C) * sizeof(rocsparse_int);
+
+    return (reads + writes) / 1e9;
+}
+
+template <typename T>
 constexpr double csr2bsr_gbyte_count(rocsparse_int M,
                                      rocsparse_int Mb,
                                      rocsparse_int nnz,
