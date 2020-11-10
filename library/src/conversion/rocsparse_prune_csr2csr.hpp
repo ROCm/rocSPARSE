@@ -680,8 +680,6 @@ rocsparse_status rocsparse_prune_csr2csr_template(rocsparse_handle          hand
         return rocsparse_status_invalid_pointer;
     }
 
-    hipStream_t stream = handle->stream;
-
     constexpr rocsparse_int block_size = 1024;
 
     // Mean number of elements per row in the input CSR matrix

@@ -4413,6 +4413,519 @@ module rocsparse
             integer(c_int), value :: idx_base
         end function rocsparse_csr2coo
 
+!       rocsparse_gebsr2csr
+        function rocsparse_sgebsr2csr(handle, dir, mb, nb, bsr_descr, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind) &
+                bind(c, name = 'rocsparse_sgebsr2csr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgebsr2csr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            type(c_ptr), intent(in), value :: bsr_descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), value :: csr_val
+            type(c_ptr), value :: csr_row_ptr
+            type(c_ptr), value :: csr_col_ind
+        end function rocsparse_sgebsr2csr
+
+        function rocsparse_dgebsr2csr(handle, dir, mb, nb, bsr_descr, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind) &
+                bind(c, name = 'rocsparse_dgebsr2csr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgebsr2csr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            type(c_ptr), intent(in), value :: bsr_descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), value :: csr_val
+            type(c_ptr), value :: csr_row_ptr
+            type(c_ptr), value :: csr_col_ind
+        end function rocsparse_dgebsr2csr
+
+        function rocsparse_cgebsr2csr(handle, dir, mb, nb, bsr_descr, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind) &
+                bind(c, name = 'rocsparse_cgebsr2csr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgebsr2csr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            type(c_ptr), intent(in), value :: bsr_descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), value :: csr_val
+            type(c_ptr), value :: csr_row_ptr
+            type(c_ptr), value :: csr_col_ind
+        end function rocsparse_cgebsr2csr
+
+        function rocsparse_zgebsr2csr(handle, dir, mb, nb, bsr_descr, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind) &
+                bind(c, name = 'rocsparse_zgebsr2csr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgebsr2csr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            type(c_ptr), intent(in), value :: bsr_descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), value :: csr_val
+            type(c_ptr), value :: csr_row_ptr
+            type(c_ptr), value :: csr_col_ind
+        end function rocsparse_zgebsr2csr
+
+!       rocsparse_gebsr2gebsc_buffer_size
+        function rocsparse_sgebsr2gebsc_buffer_size(handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, buffer_size) &
+                bind(c, name = 'rocsparse_sgebsr2gebsc_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgebsr2gebsc_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_sgebsr2gebsc_buffer_size
+
+      function rocsparse_dgebsr2gebsc_buffer_size(handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, buffer_size) &
+                bind(c, name = 'rocsparse_dgebsr2gebsc_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgebsr2gebsc_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: buffer_size
+      end function rocsparse_dgebsr2gebsc_buffer_size
+
+      function rocsparse_cgebsr2gebsc_buffer_size(handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, buffer_size) &
+                bind(c, name = 'rocsparse_cgebsr2gebsc_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgebsr2gebsc_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: buffer_size
+      end function rocsparse_cgebsr2gebsc_buffer_size
+
+      function rocsparse_zgebsr2gebsc_buffer_size(handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, buffer_size) &
+                bind(c, name = 'rocsparse_zgebsr2gebsc_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgebsr2gebsc_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_zgebsr2gebsc_buffer_size
+
+      
+!       rocsparse_gebsr2gebsc
+        function rocsparse_sgebsr2gebsc(handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, bsc_val, bsc_row_ind, bsc_col_ptr, copy_values, &
+                idx_base, temp_buffer) &
+                bind(c, name = 'rocsparse_sgebsr2gebsc')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgebsr2gebsc
+            type(c_ptr), value :: handle
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: bsc_val
+            type(c_ptr), value :: bsc_row_ind
+            type(c_ptr), value :: bsc_col_ptr
+            integer(c_int), value :: copy_values
+            integer(c_int), value :: idx_base
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sgebsr2gebsc
+
+       
+       function rocsparse_dgebsr2gebsc(handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, bsc_val, bsc_row_ind, bsc_col_ptr, copy_values, &
+                idx_base, temp_buffer) &
+                bind(c, name = 'rocsparse_dgebsr2gebsc')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgebsr2gebsc
+            type(c_ptr), value :: handle
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: bsc_val
+            type(c_ptr), value :: bsc_row_ind
+            type(c_ptr), value :: bsc_col_ptr
+            integer(c_int), value :: copy_values
+            integer(c_int), value :: idx_base
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dgebsr2gebsc
+
+      function rocsparse_cgebsr2gebsc(handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, bsc_val, bsc_row_ind, bsc_col_ptr, copy_values, &
+                idx_base, temp_buffer) &
+                bind(c, name = 'rocsparse_cgebsr2gebsc')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgebsr2gebsc
+            type(c_ptr), value :: handle
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: bsc_val
+            type(c_ptr), value :: bsc_row_ind
+            type(c_ptr), value :: bsc_col_ptr
+            integer(c_int), value :: copy_values
+            integer(c_int), value :: idx_base
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_cgebsr2gebsc
+
+      function rocsparse_zgebsr2gebsc(handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, &
+                bsr_col_ind, row_block_dim, col_block_dim, bsc_val, bsc_row_ind, bsc_col_ptr, copy_values, &
+                idx_base, temp_buffer) &
+                bind(c, name = 'rocsparse_zgebsr2gebsc')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgebsr2gebsc
+            type(c_ptr), value :: handle
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: bsc_val
+            type(c_ptr), value :: bsc_row_ind
+            type(c_ptr), value :: bsc_col_ptr
+            integer(c_int), value :: copy_values
+            integer(c_int), value :: idx_base
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_zgebsr2gebsc
+
+
+!       rocsparse_gebsr2gebsr_buffer_size
+        function rocsparse_sgebsr2gebsr_buffer_size(handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, &
+                bsr_col_ind_A, row_block_dim_A, col_block_dim_A, row_block_dim_C, col_block_dim_C, buffer_size) &
+                bind(c, name = 'rocsparse_sgebsr2gebsr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgebsr2gebsr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr_A
+            type(c_ptr), intent(in), value :: bsr_val_A
+            type(c_ptr), intent(in), value :: bsr_row_ptr_A
+            type(c_ptr), intent(in), value :: bsr_col_ind_A
+            integer(c_int), value :: row_block_dim_A
+            integer(c_int), value :: col_block_dim_A
+            integer(c_int), value :: row_block_dim_C
+            integer(c_int), value :: col_block_dim_C
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_sgebsr2gebsr_buffer_size
+
+        function rocsparse_dgebsr2gebsr_buffer_size(handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, &
+                bsr_col_ind_A, row_block_dim_A, col_block_dim_A, row_block_dim_C, col_block_dim_C, buffer_size) &
+                bind(c, name = 'rocsparse_dgebsr2gebsr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgebsr2gebsr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr_A
+            type(c_ptr), intent(in), value :: bsr_val_A
+            type(c_ptr), intent(in), value :: bsr_row_ptr_A
+            type(c_ptr), intent(in), value :: bsr_col_ind_A
+            integer(c_int), value :: row_block_dim_A
+            integer(c_int), value :: col_block_dim_A
+            integer(c_int), value :: row_block_dim_C
+            integer(c_int), value :: col_block_dim_C
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_dgebsr2gebsr_buffer_size
+
+      function rocsparse_cgebsr2gebsr_buffer_size(handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, &
+                bsr_col_ind_A, row_block_dim_A, col_block_dim_A, row_block_dim_C, col_block_dim_C, buffer_size) &
+                bind(c, name = 'rocsparse_cgebsr2gebsr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgebsr2gebsr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr_A
+            type(c_ptr), intent(in), value :: bsr_val_A
+            type(c_ptr), intent(in), value :: bsr_row_ptr_A
+            type(c_ptr), intent(in), value :: bsr_col_ind_A
+            integer(c_int), value :: row_block_dim_A
+            integer(c_int), value :: col_block_dim_A
+            integer(c_int), value :: row_block_dim_C
+            integer(c_int), value :: col_block_dim_C
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_cgebsr2gebsr_buffer_size
+
+      function rocsparse_zgebsr2gebsr_buffer_size(handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, &
+                bsr_col_ind_A, row_block_dim_A, col_block_dim_A, row_block_dim_C, col_block_dim_C, buffer_size) &
+                bind(c, name = 'rocsparse_zgebsr2gebsr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgebsr2gebsr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr_A
+            type(c_ptr), intent(in), value :: bsr_val_A
+            type(c_ptr), intent(in), value :: bsr_row_ptr_A
+            type(c_ptr), intent(in), value :: bsr_col_ind_A
+            integer(c_int), value :: row_block_dim_A
+            integer(c_int), value :: col_block_dim_A
+            integer(c_int), value :: row_block_dim_C
+            integer(c_int), value :: col_block_dim_C
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_zgebsr2gebsr_buffer_size
+
+!       rocsparse_gebsr2gebsr_nnz
+        function rocsparse_gebsr2gebsr_nnz(handle, dir, mb, nb, nnzb, descr_A, bsr_row_ptr_A, bsr_col_ind_A, &
+                  row_block_dim_A, col_block_dim_A, descr_C, bsr_row_ptr_C, row_block_dim_C, col_block_dim_C, &
+                  nnz_total_dev_host_ptr, temp_buffer) &
+                bind(c, name = 'rocsparse_gebsr2gebsr_nnz')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_gebsr2gebsr_nnz
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr_A
+            type(c_ptr), intent(in), value :: bsr_row_ptr_A
+            type(c_ptr), intent(in), value :: bsr_col_ind_A
+            integer(c_int), value :: row_block_dim_A
+            integer(c_int), value :: col_block_dim_A
+            type(c_ptr), intent(in), value :: descr_C
+            type(c_ptr), value :: bsr_row_ptr_C
+            integer(c_int), value :: row_block_dim_C
+            integer(c_int), value :: col_block_dim_C
+            type(c_ptr), value :: nnz_total_dev_host_ptr
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_gebsr2gebsr_nnz
+      
+!       rocsparse_gebsr2gebsr
+        function rocsparse_sgebsr2gebsr(handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, &
+                bsr_col_ind_A, row_block_dim_A, col_block_dim_A, descr_C, bsr_val_C, bsr_row_ptr_C, &
+                bsr_col_ind_C, row_block_dim_C, col_block_dim_C, temp_buffer) &
+                bind(c, name = 'rocsparse_sgebsr2gebsr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgebsr2gebsr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr_A
+            type(c_ptr), intent(in), value :: bsr_val_A
+            type(c_ptr), intent(in), value :: bsr_row_ptr_A
+            type(c_ptr), intent(in), value :: bsr_col_ind_A
+            integer(c_int), value :: row_block_dim_A
+            integer(c_int), value :: col_block_dim_A
+            type(c_ptr), intent(in), value :: descr_C
+            type(c_ptr), value :: bsr_val_C
+            type(c_ptr), value :: bsr_row_ptr_C
+            type(c_ptr), value :: bsr_col_ind_C
+            integer(c_int), value :: row_block_dim_C
+            integer(c_int), value :: col_block_dim_C
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sgebsr2gebsr
+
+       
+       function rocsparse_dgebsr2gebsr(handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, &
+                bsr_col_ind_A, row_block_dim_A, col_block_dim_A, descr_C, bsr_val_C, bsr_row_ptr_C, &
+                bsr_col_ind_C, row_block_dim_C, col_block_dim_C, temp_buffer) &
+                bind(c, name = 'rocsparse_dgebsr2gebsr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgebsr2gebsr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr_A
+            type(c_ptr), intent(in), value :: bsr_val_A
+            type(c_ptr), intent(in), value :: bsr_row_ptr_A
+            type(c_ptr), intent(in), value :: bsr_col_ind_A
+            integer(c_int), value :: row_block_dim_A
+            integer(c_int), value :: col_block_dim_A
+            type(c_ptr), intent(in), value :: descr_C
+            type(c_ptr), value :: bsr_val_C
+            type(c_ptr), value :: bsr_row_ptr_C
+            type(c_ptr), value :: bsr_col_ind_C
+            integer(c_int), value :: row_block_dim_C
+            integer(c_int), value :: col_block_dim_C
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dgebsr2gebsr
+
+      function rocsparse_cgebsr2gebsr(handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, &
+                bsr_col_ind_A, row_block_dim_A, col_block_dim_A, descr_C, bsr_val_C, bsr_row_ptr_C, &
+                bsr_col_ind_C, row_block_dim_C, col_block_dim_C, temp_buffer) &
+                bind(c, name = 'rocsparse_cgebsr2gebsr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgebsr2gebsr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr_A
+            type(c_ptr), intent(in), value :: bsr_val_A
+            type(c_ptr), intent(in), value :: bsr_row_ptr_A
+            type(c_ptr), intent(in), value :: bsr_col_ind_A
+            integer(c_int), value :: row_block_dim_A
+            integer(c_int), value :: col_block_dim_A
+            type(c_ptr), intent(in), value :: descr_C
+            type(c_ptr), value :: bsr_val_C
+            type(c_ptr), value :: bsr_row_ptr_C
+            type(c_ptr), value :: bsr_col_ind_C
+            integer(c_int), value :: row_block_dim_C
+            integer(c_int), value :: col_block_dim_C
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_cgebsr2gebsr
+
+      function rocsparse_zgebsr2gebsr(handle, dir, mb, nb, nnzb, descr_A, bsr_val_A, bsr_row_ptr_A, &
+                bsr_col_ind_A, row_block_dim_A, col_block_dim_A, descr_C, bsr_val_C, bsr_row_ptr_C, &
+                bsr_col_ind_C, row_block_dim_C, col_block_dim_C, temp_buffer) &
+                bind(c, name = 'rocsparse_zgebsr2gebsr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgebsr2gebsr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: descr_A
+            type(c_ptr), intent(in), value :: bsr_val_A
+            type(c_ptr), intent(in), value :: bsr_row_ptr_A
+            type(c_ptr), intent(in), value :: bsr_col_ind_A
+            integer(c_int), value :: row_block_dim_A
+            integer(c_int), value :: col_block_dim_A
+            type(c_ptr), intent(in), value :: descr_C
+            type(c_ptr), value :: bsr_val_C
+            type(c_ptr), value :: bsr_row_ptr_C
+            type(c_ptr), value :: bsr_col_ind_C
+            integer(c_int), value :: row_block_dim_C
+            integer(c_int), value :: col_block_dim_C
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_zgebsr2gebsr
+
+
 !       rocsparse_csr2csc_buffer_size
         function rocsparse_csr2csc_buffer_size(handle, m, n, nnz, csr_row_ptr, &
                 csr_col_ind, copy_values, buffer_size) &
@@ -4737,7 +5250,7 @@ module rocsparse
             type(c_ptr), value :: bsr_row_ptr
             type(c_ptr), value :: bsr_col_ind
         end function rocsparse_scsr2bsr
-
+      
         function rocsparse_dcsr2bsr(handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, &
                 csr_col_ind, block_dim, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind) &
                 bind(c, name = 'rocsparse_dcsr2bsr')
@@ -4804,6 +5317,227 @@ module rocsparse
             type(c_ptr), value :: bsr_col_ind
         end function rocsparse_zcsr2bsr
 
+!       rocsparse_csr2gebsr_nnz
+        function rocsparse_csr2gebsr_nnz(handle, dir, m, n, csr_descr, csr_row_ptr, &
+                csr_col_ind, bsr_descr, bsr_row_ptr, row_block_dim, &
+                col_block_dim, bsr_nnz, temp_buffer) &
+                bind(c, name = 'rocsparse_csr2gebsr_nnz')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_csr2gebsr_nnz
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), intent(in), value :: bsr_descr
+            type(c_ptr), value :: bsr_row_ptr
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: bsr_nnz
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_csr2gebsr_nnz
+
+!       rocsparse_csr2gebsr_buffer_size
+      function rocsparse_scsr2gebsr_buffer_size(handle, &
+                dir, m, n, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind, row_block_dim, col_block_dim, &
+                buffer_size) &
+                bind(c, name = 'rocsparse_scsr2gebsr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsr2gebsr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_scsr2gebsr_buffer_size
+
+      function rocsparse_dcsr2gebsr_buffer_size(handle, &
+                dir, m, n, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind, row_block_dim, col_block_dim, &
+                buffer_size) &
+                bind(c, name = 'rocsparse_dcsr2gebsr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsr2gebsr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_dcsr2gebsr_buffer_size
+
+
+      function rocsparse_ccsr2gebsr_buffer_size(handle, &
+                dir, m, n, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind, row_block_dim, col_block_dim, &
+                buffer_size) &
+                bind(c, name = 'rocsparse_ccsr2gebsr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsr2gebsr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_ccsr2gebsr_buffer_size
+
+
+      function rocsparse_zcsr2gebsr_buffer_size(handle, &
+                dir, m, n, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind, row_block_dim, col_block_dim, &
+                buffer_size) &
+                bind(c, name = 'rocsparse_zcsr2gebsr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsr2gebsr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_zcsr2gebsr_buffer_size
+
+      
+!     rocsparse_csr2gebsr
+        function rocsparse_scsr2gebsr(handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind, & 
+                row_block_dim, col_block_dim, temp_buffer) &
+                bind(c, name = 'rocsparse_scsr2gebsr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scsr2gebsr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), intent(in), value :: bsr_descr
+            type(c_ptr), value :: bsr_val
+            type(c_ptr), value :: bsr_row_ptr
+            type(c_ptr), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_scsr2gebsr
+
+
+        function rocsparse_dcsr2gebsr(handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind, & 
+                row_block_dim, col_block_dim, temp_buffer) &
+                bind(c, name = 'rocsparse_dcsr2gebsr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcsr2gebsr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), intent(in), value :: bsr_descr
+            type(c_ptr), value :: bsr_val
+            type(c_ptr), value :: bsr_row_ptr
+            type(c_ptr), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dcsr2gebsr
+
+
+      function rocsparse_ccsr2gebsr(handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind, & 
+                row_block_dim, col_block_dim, temp_buffer) &
+                bind(c, name = 'rocsparse_ccsr2gebsr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccsr2gebsr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), intent(in), value :: bsr_descr
+            type(c_ptr), value :: bsr_val
+            type(c_ptr), value :: bsr_row_ptr
+            type(c_ptr), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_ccsr2gebsr
+
+
+      function rocsparse_zcsr2gebsr(handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, &
+                csr_col_ind, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind, & 
+                row_block_dim, col_block_dim, temp_buffer) &
+                bind(c, name = 'rocsparse_zcsr2gebsr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcsr2gebsr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: csr_descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), intent(in), value :: bsr_descr
+            type(c_ptr), value :: bsr_val
+            type(c_ptr), value :: bsr_row_ptr
+            type(c_ptr), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_zcsr2gebsr
+
+      
 !       rocsparse_csr2csr_compress
         function rocsparse_scsr2csr_compress(handle, m, n, descr_A, csr_val_A, &
                 csr_col_ind_A, csr_row_ptr_A, nnz_A, nnz_per_row, csr_val_C, &
@@ -5315,6 +6049,540 @@ module rocsparse
             type(c_ptr), value :: csr_row_ptr
             type(c_ptr), value :: csr_col_ind
         end function rocsparse_zbsr2csr
+
+!       rocsparse_prune_dense2csr_buffer_size
+        function rocsparse_sprune_dense2csr_buffer_size(handle, m, n, A, lda, threshold, descr, csr_val, csr_row_ptr, &
+                csr_col_ind, buffer_size) &
+                bind(c, name = 'rocsparse_sprune_dense2csr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_dense2csr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_sprune_dense2csr_buffer_size
+
+        function rocsparse_dprune_dense2csr_buffer_size(handle, m, n, A, lda, threshold, descr, csr_val, csr_row_ptr, &
+                csr_col_ind, buffer_size) &
+                bind(c, name = 'rocsparse_dprune_dense2csr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_dense2csr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_dprune_dense2csr_buffer_size
+
+!       rocsparse_prune_dense2csr_nnz
+        function rocsparse_sprune_dense2csr_nnz(handle, m, n, A, lda, threshold, descr, csr_row_ptr, &
+                nnz_total_dev_host_ptr, temp_buffer) &
+                bind(c, name = 'rocsparse_sprune_dense2csr_nnz')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_dense2csr_nnz
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), value :: csr_row_ptr
+            type(c_ptr), value :: nnz_total_dev_host_ptr
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sprune_dense2csr_nnz
+
+        function rocsparse_dprune_dense2csr_nnz(handle, m, n, A, lda, threshold, descr, csr_row_ptr, &
+                nnz_total_dev_host_ptr, temp_buffer) &
+                bind(c, name = 'rocsparse_dprune_dense2csr_nnz')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_dense2csr_nnz
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), value :: csr_row_ptr
+            type(c_ptr), value :: nnz_total_dev_host_ptr
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dprune_dense2csr_nnz
+
+!       rocsparse_prune_dense2csr
+        function rocsparse_sprune_dense2csr(handle, m, n, A, lda, threshold, descr, csr_val, csr_row_ptr, &
+                csr_col_ind, temp_buffer) &
+                bind(c, name = 'rocsparse_sprune_dense2csr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_dense2csr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), value :: csr_col_ind
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sprune_dense2csr
+
+        function rocsparse_dprune_dense2csr(handle, m, n, A, lda, threshold, descr, csr_val, csr_row_ptr, &
+                csr_col_ind, temp_buffer) &
+                bind(c, name = 'rocsparse_dprune_dense2csr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_dense2csr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), value :: csr_col_ind
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dprune_dense2csr
+
+!       rocsparse_prune_dense2csr_by_percentage_buffer_size
+        function rocsparse_sprune_dense2csr_by_percentage_buffer_size(handle, m, n, A, lda, percentage, descr, & 
+                csr_val, csr_row_ptr, csr_col_ind, info, buffer_size) &
+                bind(c, name = 'rocsparse_sprune_dense2csr_by_percentage_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_dense2csr_by_percentage_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            real(c_float), value :: percentage
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), value :: info
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_sprune_dense2csr_by_percentage_buffer_size
+
+        function rocsparse_dprune_dense2csr_by_percentage_buffer_size(handle, m, n, A, lda, percentage, descr, &
+                csr_val, csr_row_ptr, csr_col_ind, info, buffer_size) &
+                bind(c, name = 'rocsparse_dprune_dense2csr_by_percentage_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_dense2csr_by_percentage_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            real(c_double), value :: percentage
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), intent(in), value :: csr_col_ind
+            type(c_ptr), value :: info
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_dprune_dense2csr_by_percentage_buffer_size
+
+!       rocsparse_prune_dense2csr_nnz_by_percentage
+        function rocsparse_sprune_dense2csr_nnz_by_percentage(handle, m, n, A, lda, percentage, descr, csr_row_ptr, &
+                nnz_total_dev_host_ptr, info, temp_buffer) &
+                bind(c, name = 'rocsparse_sprune_dense2csr_nnz_by_percentage')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_dense2csr_nnz_by_percentage
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            real(c_float), value :: percentage
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), value :: csr_row_ptr
+            type(c_ptr), value :: nnz_total_dev_host_ptr
+            type(c_ptr), value :: info
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sprune_dense2csr_nnz_by_percentage
+
+        function rocsparse_dprune_dense2csr_nnz_by_percentage(handle, m, n, A, lda, percentage, descr, csr_row_ptr, &
+                nnz_total_dev_host_ptr, info, temp_buffer) &
+                bind(c, name = 'rocsparse_dprune_dense2csr_nnz_by_percentage')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_dense2csr_nnz_by_percentage
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            real(c_double), value :: percentage
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), value :: csr_row_ptr
+            type(c_ptr), value :: nnz_total_dev_host_ptr
+            type(c_ptr), value :: info
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dprune_dense2csr_nnz_by_percentage
+
+!       rocsparse_prune_dense2csr_by_percentage
+        function rocsparse_sprune_dense2csr_by_percentage(handle, m, n, A, lda, percentage, descr, csr_val, csr_row_ptr, &
+                csr_col_ind, info, temp_buffer) &
+                bind(c, name = 'rocsparse_sprune_dense2csr_by_percentage')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_dense2csr_by_percentage
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            real(c_float), value :: percentage
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), value :: csr_col_ind
+            type(c_ptr), value :: info
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sprune_dense2csr_by_percentage
+
+        function rocsparse_dprune_dense2csr_by_percentage(handle, m, n, A, lda, percentage, descr, csr_val, csr_row_ptr, &
+                csr_col_ind, info, temp_buffer) &
+                bind(c, name = 'rocsparse_dprune_dense2csr_by_percentage')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_dense2csr_by_percentage
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: lda
+            real(c_double), value :: percentage
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), value :: csr_val
+            type(c_ptr), intent(in), value :: csr_row_ptr
+            type(c_ptr), value :: csr_col_ind
+            type(c_ptr), value :: info
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dprune_dense2csr_by_percentage
+
+
+!       rocsparse_prune_csr2csr_buffer_size
+        function rocsparse_sprune_csr2csr_buffer_size(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, &
+                csr_col_ind_A, threshold, csr_descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, buffer_size) &
+                bind(c, name = 'rocsparse_sprune_csr2csr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_csr2csr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), intent(in), value :: csr_val_C
+            type(c_ptr), intent(in), value :: csr_row_ptr_C
+            type(c_ptr), intent(in), value :: csr_col_ind_C
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_sprune_csr2csr_buffer_size
+
+        function rocsparse_dprune_csr2csr_buffer_size(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, &
+                csr_col_ind_A, threshold, csr_descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, buffer_size) &
+                bind(c, name = 'rocsparse_dprune_csr2csr_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_csr2csr_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), intent(in), value :: csr_val_C
+            type(c_ptr), intent(in), value :: csr_row_ptr_C
+            type(c_ptr), intent(in), value :: csr_col_ind_C
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_dprune_csr2csr_buffer_size
+
+!       rocsparse_prune_csr2csr_nnz
+        function rocsparse_sprune_csr2csr_nnz(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, &
+                csr_col_ind_A, threshold, csr_descr_C, csr_row_ptr_C, nnz_total_dev_host_ptr, temp_buffer) &
+                bind(c, name = 'rocsparse_sprune_csr2csr_nnz')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_csr2csr_nnz
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), value :: csr_row_ptr_C
+            type(c_ptr), value :: nnz_total_dev_host_ptr
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sprune_csr2csr_nnz
+
+        function rocsparse_dprune_csr2csr_nnz(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, &
+                csr_col_ind_A, threshold, csr_descr_C, csr_row_ptr_C, nnz_total_dev_host_ptr, temp_buffer) &
+                bind(c, name = 'rocsparse_dprune_csr2csr_nnz')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_csr2csr_nnz
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), value :: csr_row_ptr_C
+            type(c_ptr), value :: nnz_total_dev_host_ptr
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dprune_csr2csr_nnz
+
+!       rocsparse_prune_csr2csr
+        function rocsparse_sprune_csr2csr(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, &
+                threshold, csr_descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, temp_buffer) &
+                bind(c, name = 'rocsparse_sprune_csr2csr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_csr2csr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), value :: csr_val_C
+            type(c_ptr), intent(in), value :: csr_row_ptr_C
+            type(c_ptr), value :: csr_col_ind_C
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sprune_csr2csr
+
+        function rocsparse_dprune_csr2csr(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, &
+                threshold, csr_descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, temp_buffer) &
+                bind(c, name = 'rocsparse_dprune_csr2csr')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_csr2csr
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            type(c_ptr), intent(in), value :: threshold
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), value :: csr_val_C
+            type(c_ptr), intent(in), value :: csr_row_ptr_C
+            type(c_ptr), value :: csr_col_ind_C
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dprune_csr2csr
+
+
+!       rocsparse_prune_csr2csr_by_percentage_buffer_size
+        function rocsparse_sprune_csr2csr_by_percentage_buffer_size(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, &
+                csr_col_ind_A, percentage, csr_descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, info, buffer_size) &
+                bind(c, name = 'rocsparse_sprune_csr2csr_by_percentage_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_csr2csr_by_percentage_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            real(c_float), value :: percentage
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), intent(in), value :: csr_val_C
+            type(c_ptr), intent(in), value :: csr_row_ptr_C
+            type(c_ptr), intent(in), value :: csr_col_ind_C
+            type(c_ptr), value :: info
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_sprune_csr2csr_by_percentage_buffer_size
+
+        function rocsparse_dprune_csr2csr_by_percentage_buffer_size(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, &
+                csr_col_ind_A, percentage, csr_descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, info, buffer_size) &
+                bind(c, name = 'rocsparse_dprune_csr2csr_by_percentage_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_csr2csr_by_percentage_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            real(c_double), value :: percentage
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), intent(in), value :: csr_val_C
+            type(c_ptr), intent(in), value :: csr_row_ptr_C
+            type(c_ptr), intent(in), value :: csr_col_ind_C
+            type(c_ptr), value :: info
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_dprune_csr2csr_by_percentage_buffer_size
+
+!       rocsparse_prune_csr2csr_nnz_by_percentage
+        function rocsparse_sprune_csr2csr_nnz_by_percentage(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, &
+                csr_col_ind_A, percentage, csr_descr_C, csr_row_ptr_C, nnz_total_dev_host_ptr, info, temp_buffer) &
+                bind(c, name = 'rocsparse_sprune_csr2csr_nnz_by_percentage')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_csr2csr_nnz_by_percentage
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            real(c_float), value :: percentage
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), value :: csr_row_ptr_C
+            type(c_ptr), value :: nnz_total_dev_host_ptr
+            type(c_ptr), value :: info
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sprune_csr2csr_nnz_by_percentage
+
+        function rocsparse_dprune_csr2csr_nnz_by_percentage(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, &
+                csr_col_ind_A, percentage, csr_descr_C, csr_row_ptr_C, nnz_total_dev_host_ptr, info, temp_buffer) &
+                bind(c, name = 'rocsparse_dprune_csr2csr_nnz_by_percentage')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_csr2csr_nnz_by_percentage
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            real(c_double), value :: percentage
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), value :: csr_row_ptr_C
+            type(c_ptr), value :: nnz_total_dev_host_ptr
+            type(c_ptr), value :: info
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dprune_csr2csr_nnz_by_percentage
+
+!       rocsparse_prune_csr2csr_by_percentage
+        function rocsparse_sprune_csr2csr_by_percentage(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, &
+                percentage, csr_descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, info, temp_buffer) &
+                bind(c, name = 'rocsparse_sprune_csr2csr_by_percentage')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sprune_csr2csr_by_percentage
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            real(c_float), value :: percentage
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), value :: csr_val_C
+            type(c_ptr), intent(in), value :: csr_row_ptr_C
+            type(c_ptr), value :: csr_col_ind_C
+            type(c_ptr), value :: info
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sprune_csr2csr_by_percentage
+
+        function rocsparse_dprune_csr2csr_by_percentage(handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, &
+                percentage, csr_descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, info, temp_buffer) &
+                bind(c, name = 'rocsparse_dprune_csr2csr_by_percentage')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dprune_csr2csr_by_percentage
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz_A
+            type(c_ptr), intent(in), value :: csr_descr_A
+            type(c_ptr), intent(in), value :: csr_val_A
+            type(c_ptr), intent(in), value :: csr_row_ptr_A
+            type(c_ptr), intent(in), value :: csr_col_ind_A
+            real(c_float), value :: percentage
+            type(c_ptr), intent(in), value :: csr_descr_C
+            type(c_ptr), value :: csr_val_C
+            type(c_ptr), intent(in), value :: csr_row_ptr_C
+            type(c_ptr), value :: csr_col_ind_C
+            type(c_ptr), value :: info
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dprune_csr2csr_by_percentage
 
     end interface
 

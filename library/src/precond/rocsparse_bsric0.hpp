@@ -29,22 +29,88 @@
 #include "bsric0_device.h"
 #include "definitions.h"
 #include "rocsparse.h"
-#include "rocsparse_csric0.hpp"
 #include "utility.h"
 
 #include <hip/hip_runtime.h>
 
-#define launch_bsric0_small_maxnnzb_unrolled8x8_kernel(                          \
-    T, block_size, wf_size, maz_nnzb, bsr_block_dim)                             \
-    hipLaunchKernelGGL((bsric0_small_maxnnzb_unrolled8x8_kernel<T,               \
-                                                                block_size,      \
-                                                                wf_size,         \
-                                                                maz_nnzb,        \
-                                                                bsr_block_dim>), \
-                       bsric0_blocks,                                            \
-                       bsric0_threads,                                           \
+#define LAUNCH_BSRIC_2_8_UNROLLED(T, block_size, maz_nnzb, bsr_block_dim)                    \
+    hipLaunchKernelGGL((bsric0_2_8_unrolled_kernel<T, block_size, maz_nnzb, bsr_block_dim>), \
+                       dim3(mb),                                                             \
+                       dim3(bsr_block_dim, bsr_block_dim),                                   \
+                       0,                                                                    \
+                       handle->stream,                                                       \
+                       dir,                                                                  \
+                       mb,                                                                   \
+                       block_dim,                                                            \
+                       bsr_row_ptr,                                                          \
+                       bsr_col_ind,                                                          \
+                       bsr_val,                                                              \
+                       info->bsric0_info->trm_diag_ind,                                      \
+                       done_array,                                                           \
+                       info->bsric0_info->row_map,                                           \
+                       info->zero_pivot,                                                     \
+                       base);
+
+#define LAUNCH_BSRIC_2_8(T, block_size, maz_nnzb, bsr_block_dim)                    \
+    hipLaunchKernelGGL((bsric0_2_8_kernel<T, block_size, maz_nnzb, bsr_block_dim>), \
+                       dim3(mb),                                                    \
+                       dim3(8, 8),                                                  \
+                       0,                                                           \
+                       handle->stream,                                              \
+                       dir,                                                         \
+                       mb,                                                          \
+                       block_dim,                                                   \
+                       bsr_row_ptr,                                                 \
+                       bsr_col_ind,                                                 \
+                       bsr_val,                                                     \
+                       info->bsric0_info->trm_diag_ind,                             \
+                       done_array,                                                  \
+                       info->bsric0_info->row_map,                                  \
+                       info->zero_pivot,                                            \
+                       base);
+
+#define LAUNCH_BSRIC_9_16(T, block_size, maz_nnzb, bsr_block_dim)                    \
+    hipLaunchKernelGGL((bsric0_9_16_kernel<T, block_size, maz_nnzb, bsr_block_dim>), \
+                       dim3(mb),                                                     \
+                       dim3(4, 16),                                                  \
+                       0,                                                            \
+                       handle->stream,                                               \
+                       dir,                                                          \
+                       mb,                                                           \
+                       block_dim,                                                    \
+                       bsr_row_ptr,                                                  \
+                       bsr_col_ind,                                                  \
+                       bsr_val,                                                      \
+                       info->bsric0_info->trm_diag_ind,                              \
+                       done_array,                                                   \
+                       info->bsric0_info->row_map,                                   \
+                       info->zero_pivot,                                             \
+                       base);
+
+#define LAUNCH_BSRIC_17_32(T, block_size, maz_nnzb, bsr_block_dim)                    \
+    hipLaunchKernelGGL((bsric0_17_32_kernel<T, block_size, maz_nnzb, bsr_block_dim>), \
+                       dim3(mb),                                                      \
+                       dim3(2, 32),                                                   \
+                       0,                                                             \
+                       handle->stream,                                                \
+                       dir,                                                           \
+                       mb,                                                            \
+                       block_dim,                                                     \
+                       bsr_row_ptr,                                                   \
+                       bsr_col_ind,                                                   \
+                       bsr_val,                                                       \
+                       info->bsric0_info->trm_diag_ind,                               \
+                       done_array,                                                    \
+                       info->bsric0_info->row_map,                                    \
+                       info->zero_pivot,                                              \
+                       base);
+
+#define LAUNCH_BSRIC_33_inf(T, block_size, wf_size, sleep)                       \
+    hipLaunchKernelGGL((bsric0_binsearch_kernel<T, block_size, wf_size, sleep>), \
+                       dim3(mb),                                                 \
+                       dim3(block_size),                                         \
                        0,                                                        \
-                       stream,                                                   \
+                       handle->stream,                                           \
                        dir,                                                      \
                        mb,                                                       \
                        block_dim,                                                \
@@ -52,95 +118,10 @@
                        bsr_col_ind,                                              \
                        bsr_val,                                                  \
                        info->bsric0_info->trm_diag_ind,                          \
-                       d_done_array,                                             \
+                       done_array,                                               \
                        info->bsric0_info->row_map,                               \
                        info->zero_pivot,                                         \
-                       descr->base);
-
-#define launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(                        \
-    T, block_size, wf_size, maz_nnzb, bsr_block_dim, blk_size_y)                       \
-    hipLaunchKernelGGL((bsric0_hash_small_maxnnzb_small_blockdim_kernel<T,             \
-                                                                        block_size,    \
-                                                                        wf_size,       \
-                                                                        maz_nnzb,      \
-                                                                        bsr_block_dim, \
-                                                                        blk_size_y>),  \
-                       bsric0_blocks,                                                  \
-                       bsric0_threads,                                                 \
-                       0,                                                              \
-                       stream,                                                         \
-                       dir,                                                            \
-                       mb,                                                             \
-                       block_dim,                                                      \
-                       bsr_row_ptr,                                                    \
-                       bsr_col_ind,                                                    \
-                       bsr_val,                                                        \
-                       info->bsric0_info->trm_diag_ind,                                \
-                       d_done_array,                                                   \
-                       info->bsric0_info->row_map,                                     \
-                       info->zero_pivot,                                               \
-                       descr->base);
-
-#define launch_bsric0_hash_large_maxnnzb_small_blockdim_kernel(                        \
-    T, block_size, wf_size, maz_nnzb, bsr_block_dim, blk_size_y)                       \
-    hipLaunchKernelGGL((bsric0_hash_large_maxnnzb_small_blockdim_kernel<T,             \
-                                                                        block_size,    \
-                                                                        wf_size,       \
-                                                                        maz_nnzb,      \
-                                                                        bsr_block_dim, \
-                                                                        blk_size_y>),  \
-                       bsric0_blocks,                                                  \
-                       bsric0_threads,                                                 \
-                       0,                                                              \
-                       stream,                                                         \
-                       dir,                                                            \
-                       mb,                                                             \
-                       block_dim,                                                      \
-                       bsr_row_ptr,                                                    \
-                       bsr_col_ind,                                                    \
-                       bsr_val,                                                        \
-                       info->bsric0_info->trm_diag_ind,                                \
-                       d_done_array,                                                   \
-                       info->bsric0_info->row_map,                                     \
-                       info->zero_pivot,                                               \
-                       descr->base);
-
-#define launch_bsric0_hash_large_blockdim_kernel(T, block_size, wf_size, maz_nnzb, bsr_block_dim) \
-    hipLaunchKernelGGL(                                                                           \
-        (bsric0_hash_large_blockdim_kernel<T, block_size, wf_size, maz_nnzb, bsr_block_dim>),     \
-        bsric0_blocks,                                                                            \
-        bsric0_threads,                                                                           \
-        0,                                                                                        \
-        stream,                                                                                   \
-        dir,                                                                                      \
-        mb,                                                                                       \
-        block_dim,                                                                                \
-        bsr_row_ptr,                                                                              \
-        bsr_col_ind,                                                                              \
-        bsr_val,                                                                                  \
-        info->bsric0_info->trm_diag_ind,                                                          \
-        d_done_array,                                                                             \
-        info->bsric0_info->row_map,                                                               \
-        info->zero_pivot,                                                                         \
-        descr->base);
-
-#define launch_bsric0_binsearch_kernel(T, block_size, wf_size, threads_per_row, sleep)            \
-    hipLaunchKernelGGL((bsric0_binsearch_kernel<T, block_size, wf_size, threads_per_row, sleep>), \
-                       bsric0_blocks,                                                             \
-                       bsric0_threads,                                                            \
-                       0,                                                                         \
-                       stream,                                                                    \
-                       dir,                                                                       \
-                       mb,                                                                        \
-                       block_dim,                                                                 \
-                       bsr_row_ptr,                                                               \
-                       bsr_col_ind,                                                               \
-                       bsr_val,                                                                   \
-                       info->bsric0_info->trm_diag_ind,                                           \
-                       d_done_array,                                                              \
-                       info->bsric0_info->row_map,                                                \
-                       info->zero_pivot,                                                          \
-                       descr->base);
+                       base);
 
 template <typename T>
 rocsparse_status rocsparse_bsric0_analysis_template(rocsparse_handle          handle,
@@ -261,13 +242,12 @@ rocsparse_status rocsparse_bsric0_analysis_template(rocsparse_handle          ha
         }
 
         // Check for other lower analysis meta data
-        // Note: Uncomment when bsrilu0 is complete
-        // if(info->bsrilu0_info != nullptr)
-        // {
-        //     // bsrilu0 meta data
-        //     info->bsric0_info = info->bsrilu0_info;
-        //     return rocsparse_status_success;
-        // }
+        if(info->bsrilu0_info != nullptr)
+        {
+            // bsrilu0 meta data
+            info->bsric0_info = info->bsrilu0_info;
+            return rocsparse_status_success;
+        }
 
         if(info->bsrsv_lower_info != nullptr)
         {
@@ -299,6 +279,126 @@ rocsparse_status rocsparse_bsric0_analysis_template(rocsparse_handle          ha
                                                      temp_buffer));
 
     return rocsparse_status_success;
+}
+
+template <typename T>
+inline void bsric0_launcher(rocsparse_handle     handle,
+                            rocsparse_direction  dir,
+                            rocsparse_int        mb,
+                            rocsparse_int        max_nnzb,
+                            rocsparse_index_base base,
+                            T*                   bsr_val,
+                            const rocsparse_int* bsr_row_ptr,
+                            const rocsparse_int* bsr_col_ind,
+                            rocsparse_int        block_dim,
+                            rocsparse_mat_info   info,
+                            int*                 done_array)
+{
+    dim3 bsric0_blocks(mb);
+
+    if(handle->wavefront_size == 32)
+    {
+        LAUNCH_BSRIC_33_inf(T, 32, 32, false);
+    }
+    else
+    {
+        if(handle->properties.gcnArch == 908 && handle->asic_rev < 2)
+        {
+            LAUNCH_BSRIC_33_inf(T, 64, 64, true);
+        }
+        else
+        {
+            if(max_nnzb <= 32)
+            {
+                if(block_dim == 1)
+                {
+                    LAUNCH_BSRIC_2_8_UNROLLED(T, 1, 32, 1);
+                }
+                else if(block_dim == 2)
+                {
+                    LAUNCH_BSRIC_2_8_UNROLLED(T, 4, 32, 2);
+                }
+                else if(block_dim == 3)
+                {
+                    LAUNCH_BSRIC_2_8_UNROLLED(T, 9, 32, 3);
+                }
+                else if(block_dim == 4)
+                {
+                    LAUNCH_BSRIC_2_8_UNROLLED(T, 16, 32, 4);
+                }
+                else if(block_dim == 5)
+                {
+                    LAUNCH_BSRIC_2_8_UNROLLED(T, 25, 32, 5);
+                }
+                else if(block_dim == 6)
+                {
+                    LAUNCH_BSRIC_2_8_UNROLLED(T, 36, 32, 6);
+                }
+                else if(block_dim == 7)
+                {
+                    LAUNCH_BSRIC_2_8_UNROLLED(T, 49, 32, 7);
+                }
+                else if(block_dim == 8)
+                {
+                    LAUNCH_BSRIC_2_8_UNROLLED(T, 64, 32, 8);
+                }
+                else if(block_dim <= 16)
+                {
+                    LAUNCH_BSRIC_9_16(T, 64, 32, 16);
+                }
+                else if(block_dim <= 32)
+                {
+                    LAUNCH_BSRIC_17_32(T, 64, 32, 32);
+                }
+                else
+                {
+                    LAUNCH_BSRIC_33_inf(T, 64, 64, false);
+                }
+            }
+            else if(max_nnzb <= 64)
+            {
+                if(block_dim <= 8)
+                {
+                    LAUNCH_BSRIC_2_8(T, 64, 64, 8);
+                }
+                else if(block_dim <= 16)
+                {
+                    LAUNCH_BSRIC_9_16(T, 64, 64, 16);
+                }
+                else if(block_dim <= 32)
+                {
+                    LAUNCH_BSRIC_17_32(T, 64, 64, 32);
+                }
+                else
+                {
+                    LAUNCH_BSRIC_33_inf(T, 64, 64, false);
+                }
+            }
+            else if(max_nnzb <= 128)
+            {
+                if(block_dim <= 8)
+                {
+                    LAUNCH_BSRIC_2_8(T, 64, 128, 8);
+                }
+                else if(block_dim <= 16)
+                {
+                    LAUNCH_BSRIC_9_16(T, 64, 128, 16);
+                }
+                else if(block_dim <= 32)
+                {
+                    LAUNCH_BSRIC_17_32(T, 64, 128, 32);
+                }
+                else
+                {
+                    LAUNCH_BSRIC_33_inf(T, 64, 64, false);
+                }
+            }
+            else
+            {
+                LAUNCH_BSRIC_33_inf(T, 64, 64, false);
+            }
+        }
+    }
 }
 
 template <typename T>
@@ -408,546 +508,19 @@ rocsparse_status rocsparse_bsric0_template(rocsparse_handle          handle,
     // Max nnz blocks per row
     rocsparse_int max_nnzb = info->bsric0_info->max_nnz;
 
-    // Max nnz per row
-    rocsparse_int max_nnz = max_nnzb * block_dim;
+    bsric0_launcher<T>(handle,
+                       dir,
+                       mb,
+                       max_nnzb,
+                       descr->base,
+                       bsr_val,
+                       bsr_row_ptr,
+                       bsr_col_ind,
+                       block_dim,
+                       info,
+                       d_done_array);
 
-    // Determine gcnArch
-    int gcnArch = handle->properties.gcnArch;
-    int asicRev = handle->asic_rev;
-
-    rocsparse_int m = mb * block_dim;
-
-    if(gcnArch == 908 && asicRev < 2)
-    {
-#define BSRIC0_DIM 64
-        if(block_dim <= 2)
-        {
-            dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-            dim3 bsric0_threads(64);
-            launch_bsric0_binsearch_kernel(T, 64, 64, 32, true);
-        }
-        else if(block_dim <= 4)
-        {
-            dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-            dim3 bsric0_threads(64);
-            launch_bsric0_binsearch_kernel(T, 64, 64, 16, true);
-        }
-        else if(block_dim <= 8)
-        {
-            dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-            dim3 bsric0_threads(64);
-            launch_bsric0_binsearch_kernel(T, 64, 64, 8, true);
-        }
-        else if(block_dim <= 16)
-        {
-            dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-            dim3 bsric0_threads(64);
-            launch_bsric0_binsearch_kernel(T, 64, 64, 4, true);
-        }
-        else if(block_dim <= 32)
-        {
-            dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-            dim3 bsric0_threads(64);
-            launch_bsric0_binsearch_kernel(T, 64, 64, 2, true);
-        }
-        else
-        {
-            dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-            dim3 bsric0_threads(64);
-            launch_bsric0_binsearch_kernel(T, 64, 64, 1, true);
-        }
-#undef BSRIC0_DIM
-
-        return rocsparse_status_success;
-    }
-
-    if(handle->wavefront_size == 32)
-    {
-#define BSRIC0_DIM 32
-        dim3 bsric0_blocks((mb * 32 - 1) / 32 + 1);
-        dim3 bsric0_threads(32);
-        launch_bsric0_binsearch_kernel(T, 32, 32, 1, false);
-#undef BSRIC0_DIM
-
-        return rocsparse_status_success;
-    }
-
-    if(handle->wavefront_size == 64)
-    {
-#define BSRIC0_DIM 64
-        if(max_nnzb <= 8)
-        {
-            if(block_dim <= 2)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(2, 16, 2);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(T, BSRIC0_DIM, 64, 8, 2, 16);
-            }
-            else if(block_dim <= 4)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(4, 4, 4);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(T, BSRIC0_DIM, 64, 8, 4, 4);
-            }
-            else if(block_dim == 5)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(5, 1, 5);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 8, 5);
-            }
-            else if(block_dim == 6)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(6, 1, 6);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 8, 6);
-            }
-            else if(block_dim == 7)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(7, 1, 7);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 8, 7);
-            }
-            else if(block_dim == 8)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(8, 1, 8);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 8, 8);
-            }
-            else if(block_dim <= 16)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 8, 16);
-            }
-            else if(block_dim <= 32)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 8, 32);
-            }
-            else
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 1, false);
-            }
-        }
-        else if(max_nnzb <= 12)
-        {
-            if(block_dim <= 2)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(2, 16, 2);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(
-                    T, BSRIC0_DIM, 64, 12, 2, 16);
-            }
-            else if(block_dim <= 4)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(4, 4, 4);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(T, BSRIC0_DIM, 64, 12, 4, 4);
-            }
-            else if(block_dim == 5)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(5, 1, 5);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 12, 5);
-            }
-            else if(block_dim == 6)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(6, 1, 6);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 12, 6);
-            }
-            else if(block_dim == 7)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(7, 1, 7);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 12, 7);
-            }
-            else if(block_dim == 8)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(8, 1, 8);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 12, 8);
-            }
-            else if(block_dim <= 16)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 12, 16);
-            }
-            else if(block_dim <= 32)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 12, 32);
-            }
-            else
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 1, false);
-            }
-        }
-        else if(max_nnzb <= 16)
-        {
-            if(block_dim <= 2)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(2, 16, 2);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(
-                    T, BSRIC0_DIM, 64, 16, 2, 16);
-            }
-            else if(block_dim <= 4)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(4, 4, 4);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(T, BSRIC0_DIM, 64, 16, 4, 4);
-            }
-            else if(block_dim == 5)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(5, 1, 5);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 16, 5);
-            }
-            else if(block_dim == 6)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(6, 1, 6);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 16, 6);
-            }
-            else if(block_dim == 7)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(7, 1, 7);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 16, 7);
-            }
-            else if(block_dim == 8)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(8, 1, 8);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 16, 8);
-            }
-            else if(block_dim <= 16)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 16, 16);
-            }
-            else if(block_dim <= 32)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 16, 32);
-            }
-            else
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 1, false);
-            }
-        }
-        else if(max_nnzb <= 20)
-        {
-            if(block_dim <= 2)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(2, 16, 2);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(
-                    T, BSRIC0_DIM, 64, 20, 2, 16);
-            }
-            else if(block_dim <= 4)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(4, 4, 4);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(T, BSRIC0_DIM, 64, 20, 4, 4);
-            }
-            else if(block_dim == 5)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(5, 1, 5);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 20, 5);
-            }
-            else if(block_dim == 6)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(6, 1, 6);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 20, 6);
-            }
-            else if(block_dim == 7)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(7, 1, 7);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 20, 7);
-            }
-            else if(block_dim == 8)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(8, 1, 8);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 20, 8);
-            }
-            else if(block_dim <= 16)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 20, 16);
-            }
-            else if(block_dim <= 32)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 20, 32);
-            }
-            else
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 1, false);
-            }
-        }
-        else if(max_nnzb <= 24)
-        {
-            if(block_dim <= 2)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(2, 16, 2);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(
-                    T, BSRIC0_DIM, 64, 24, 2, 16);
-            }
-            else if(block_dim <= 4)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(4, 4, 4);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(T, BSRIC0_DIM, 64, 24, 4, 4);
-            }
-            else if(block_dim == 5)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(5, 1, 5);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 24, 5);
-            }
-            else if(block_dim == 6)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(6, 1, 6);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 24, 6);
-            }
-            else if(block_dim == 7)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(7, 1, 7);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 24, 7);
-            }
-            else if(block_dim == 8)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(8, 1, 8);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 24, 8);
-            }
-            else if(block_dim <= 16)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 24, 16);
-            }
-            else if(block_dim <= 32)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 24, 32);
-            }
-            else
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 1, false);
-            }
-        }
-        else if(max_nnzb <= 28)
-        {
-            if(block_dim <= 2)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(2, 16, 2);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(
-                    T, BSRIC0_DIM, 64, 28, 2, 16);
-            }
-            else if(block_dim <= 4)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(4, 4, 4);
-                launch_bsric0_hash_small_maxnnzb_small_blockdim_kernel(T, BSRIC0_DIM, 64, 28, 4, 4);
-            }
-            else if(block_dim == 5)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(5, 1, 5);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 28, 5);
-            }
-            else if(block_dim == 6)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(6, 1, 6);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 28, 6);
-            }
-            else if(block_dim == 7)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(7, 1, 7);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 28, 7);
-            }
-            else if(block_dim == 8)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(8, 1, 8);
-                launch_bsric0_small_maxnnzb_unrolled8x8_kernel(T, BSRIC0_DIM, 64, 28, 8);
-            }
-            else if(block_dim <= 16)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 28, 16);
-            }
-            else if(block_dim <= 32)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 28, 32);
-            }
-            else
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 1, false);
-            }
-        }
-        else if(max_nnzb <= 64)
-        {
-            if(block_dim <= 2)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(2, 16, 2);
-                launch_bsric0_hash_large_maxnnzb_small_blockdim_kernel(
-                    T, BSRIC0_DIM, 64, 64, 2, 16);
-            }
-            else if(block_dim <= 4)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(4, 4, 4);
-                launch_bsric0_hash_large_maxnnzb_small_blockdim_kernel(T, BSRIC0_DIM, 64, 64, 4, 4);
-            }
-            else if(block_dim <= 8)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 128, 8);
-            }
-            else if(block_dim <= 16)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 64, 16);
-            }
-            else if(block_dim <= 32)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 64, 32);
-            }
-            else
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 1, false);
-            }
-        }
-        else if(max_nnzb <= 128)
-        {
-            if(block_dim <= 2)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(2, 16, 2);
-                launch_bsric0_hash_large_maxnnzb_small_blockdim_kernel(
-                    T, BSRIC0_DIM, 64, 128, 2, 16);
-            }
-            else if(block_dim <= 4)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(4, 4, 4);
-                launch_bsric0_hash_large_maxnnzb_small_blockdim_kernel(
-                    T, BSRIC0_DIM, 64, 128, 4, 4);
-            }
-            else if(block_dim <= 8)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 128, 8);
-            }
-            else if(block_dim <= 16)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 128, 16);
-            }
-            else if(block_dim <= 32)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / BSRIC0_DIM + 1);
-                dim3 bsric0_threads(BSRIC0_DIM);
-                launch_bsric0_hash_large_blockdim_kernel(T, BSRIC0_DIM, 64, 128, 32);
-            }
-            else
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 1, false);
-            }
-        }
-        else
-        {
-            if(block_dim <= 2)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 32, false);
-            }
-            else if(block_dim <= 4)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 16, false);
-            }
-            else if(block_dim <= 8)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 8, false);
-            }
-            else if(block_dim <= 16)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 4, false);
-            }
-            else if(block_dim <= 32)
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 2, false);
-            }
-            else
-            {
-                dim3 bsric0_blocks((mb * 64 - 1) / 64 + 1);
-                dim3 bsric0_threads(64);
-                launch_bsric0_binsearch_kernel(T, 64, 64, 1, false);
-            }
-        }
-#undef BSRIC0_DIM
-
-        return rocsparse_status_success;
-    }
-
-    return rocsparse_status_arch_mismatch;
+    return rocsparse_status_success;
 }
 
 #endif // ROCSPARSE_BSRIC0_HPP

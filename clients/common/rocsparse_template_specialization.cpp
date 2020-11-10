@@ -5064,6 +5064,240 @@ rocsparse_status rocsparse_csr2csc(rocsparse_handle                handle,
                               temp_buffer);
 }
 
+// gebsr2gebsc
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsc_buffer_size(rocsparse_handle     handle,
+                                                   rocsparse_int        mb,
+                                                   rocsparse_int        nb,
+                                                   rocsparse_int        nnzb,
+                                                   const float*         bsr_val,
+                                                   const rocsparse_int* bsr_row_ptr,
+                                                   const rocsparse_int* bsr_col_ind,
+                                                   rocsparse_int        row_block_dim,
+                                                   rocsparse_int        col_block_dim,
+                                                   size_t*              p_buffer_size)
+{
+    return rocsparse_sgebsr2gebsc_buffer_size(handle,
+                                              mb,
+                                              nb,
+                                              nnzb,
+                                              bsr_val,
+                                              bsr_row_ptr,
+                                              bsr_col_ind,
+                                              row_block_dim,
+                                              col_block_dim,
+                                              p_buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsc_buffer_size(rocsparse_handle     handle,
+                                                   rocsparse_int        mb,
+                                                   rocsparse_int        nb,
+                                                   rocsparse_int        nnzb,
+                                                   const double*        bsr_val,
+                                                   const rocsparse_int* bsr_row_ptr,
+                                                   const rocsparse_int* bsr_col_ind,
+                                                   rocsparse_int        row_block_dim,
+                                                   rocsparse_int        col_block_dim,
+                                                   size_t*              p_buffer_size)
+{
+    return rocsparse_dgebsr2gebsc_buffer_size(handle,
+                                              mb,
+                                              nb,
+                                              nnzb,
+                                              bsr_val,
+                                              bsr_row_ptr,
+                                              bsr_col_ind,
+                                              row_block_dim,
+                                              col_block_dim,
+                                              p_buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsc_buffer_size(rocsparse_handle               handle,
+                                                   rocsparse_int                  mb,
+                                                   rocsparse_int                  nb,
+                                                   rocsparse_int                  nnzb,
+                                                   const rocsparse_float_complex* bsr_val,
+                                                   const rocsparse_int*           bsr_row_ptr,
+                                                   const rocsparse_int*           bsr_col_ind,
+                                                   rocsparse_int                  row_block_dim,
+                                                   rocsparse_int                  col_block_dim,
+                                                   size_t*                        p_buffer_size)
+{
+    return rocsparse_cgebsr2gebsc_buffer_size(handle,
+                                              mb,
+                                              nb,
+                                              nnzb,
+                                              bsr_val,
+                                              bsr_row_ptr,
+                                              bsr_col_ind,
+                                              row_block_dim,
+                                              col_block_dim,
+                                              p_buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsc_buffer_size(rocsparse_handle                handle,
+                                                   rocsparse_int                   mb,
+                                                   rocsparse_int                   nb,
+                                                   rocsparse_int                   nnzb,
+                                                   const rocsparse_double_complex* bsr_val,
+                                                   const rocsparse_int*            bsr_row_ptr,
+                                                   const rocsparse_int*            bsr_col_ind,
+                                                   rocsparse_int                   row_block_dim,
+                                                   rocsparse_int                   col_block_dim,
+                                                   size_t*                         p_buffer_size)
+{
+    return rocsparse_zgebsr2gebsc_buffer_size(handle,
+                                              mb,
+                                              nb,
+                                              nnzb,
+                                              bsr_val,
+                                              bsr_row_ptr,
+                                              bsr_col_ind,
+                                              row_block_dim,
+                                              col_block_dim,
+                                              p_buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsc(rocsparse_handle     handle,
+                                       rocsparse_int        mb,
+                                       rocsparse_int        nb,
+                                       rocsparse_int        nnzb,
+                                       const float*         bsr_val,
+                                       const rocsparse_int* bsr_row_ptr,
+                                       const rocsparse_int* bsr_col_ind,
+                                       rocsparse_int        row_block_dim,
+                                       rocsparse_int        col_block_dim,
+                                       float*               bsc_val,
+                                       rocsparse_int*       bsc_row_ind,
+                                       rocsparse_int*       bsc_col_ptr,
+                                       rocsparse_action     copy_values,
+                                       rocsparse_index_base idx_base,
+                                       void*                temp_buffer)
+{
+    return rocsparse_sgebsr2gebsc(handle,
+                                  mb,
+                                  nb,
+                                  nnzb,
+                                  bsr_val,
+                                  bsr_row_ptr,
+                                  bsr_col_ind,
+                                  row_block_dim,
+                                  col_block_dim,
+                                  bsc_val,
+                                  bsc_row_ind,
+                                  bsc_col_ptr,
+                                  copy_values,
+                                  idx_base,
+                                  temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsc(rocsparse_handle     handle,
+                                       rocsparse_int        mb,
+                                       rocsparse_int        nb,
+                                       rocsparse_int        nnzb,
+                                       const double*        bsr_val,
+                                       const rocsparse_int* bsr_row_ptr,
+                                       const rocsparse_int* bsr_col_ind,
+                                       rocsparse_int        row_block_dim,
+                                       rocsparse_int        col_block_dim,
+                                       double*              bsc_val,
+                                       rocsparse_int*       bsc_row_ind,
+                                       rocsparse_int*       bsc_col_ptr,
+                                       rocsparse_action     copy_values,
+                                       rocsparse_index_base idx_base,
+                                       void*                temp_buffer)
+{
+    return rocsparse_dgebsr2gebsc(handle,
+                                  mb,
+                                  nb,
+                                  nnzb,
+                                  bsr_val,
+                                  bsr_row_ptr,
+                                  bsr_col_ind,
+                                  row_block_dim,
+                                  col_block_dim,
+                                  bsc_val,
+                                  bsc_row_ind,
+                                  bsc_col_ptr,
+                                  copy_values,
+                                  idx_base,
+                                  temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsc(rocsparse_handle               handle,
+                                       rocsparse_int                  mb,
+                                       rocsparse_int                  nb,
+                                       rocsparse_int                  nnzb,
+                                       const rocsparse_float_complex* bsr_val,
+                                       const rocsparse_int*           bsr_row_ptr,
+                                       const rocsparse_int*           bsr_col_ind,
+                                       rocsparse_int                  row_block_dim,
+                                       rocsparse_int                  col_block_dim,
+                                       rocsparse_float_complex*       bsc_val,
+                                       rocsparse_int*                 bsc_row_ind,
+                                       rocsparse_int*                 bsc_col_ptr,
+                                       rocsparse_action               copy_values,
+                                       rocsparse_index_base           idx_base,
+                                       void*                          temp_buffer)
+{
+    return rocsparse_cgebsr2gebsc(handle,
+                                  mb,
+                                  nb,
+                                  nnzb,
+                                  bsr_val,
+                                  bsr_row_ptr,
+                                  bsr_col_ind,
+                                  row_block_dim,
+                                  col_block_dim,
+                                  bsc_val,
+                                  bsc_row_ind,
+                                  bsc_col_ptr,
+                                  copy_values,
+                                  idx_base,
+                                  temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsc(rocsparse_handle                handle,
+                                       rocsparse_int                   mb,
+                                       rocsparse_int                   nb,
+                                       rocsparse_int                   nnzb,
+                                       const rocsparse_double_complex* bsr_val,
+                                       const rocsparse_int*            bsr_row_ptr,
+                                       const rocsparse_int*            bsr_col_ind,
+                                       rocsparse_int                   row_block_dim,
+                                       rocsparse_int                   col_block_dim,
+                                       rocsparse_double_complex*       bsc_val,
+                                       rocsparse_int*                  bsc_row_ind,
+                                       rocsparse_int*                  bsc_col_ptr,
+                                       rocsparse_action                copy_values,
+                                       rocsparse_index_base            idx_base,
+                                       void*                           temp_buffer)
+{
+    return rocsparse_zgebsr2gebsc(handle,
+                                  mb,
+                                  nb,
+                                  nnzb,
+                                  bsr_val,
+                                  bsr_row_ptr,
+                                  bsr_col_ind,
+                                  row_block_dim,
+                                  col_block_dim,
+                                  bsc_val,
+                                  bsc_row_ind,
+                                  bsc_col_ptr,
+                                  copy_values,
+                                  idx_base,
+                                  temp_buffer);
+}
+
 // csr2ell
 template <>
 rocsparse_status rocsparse_csr2ell(rocsparse_handle          handle,
@@ -5377,6 +5611,248 @@ rocsparse_status rocsparse_csr2bsr(rocsparse_handle                handle,
                               bsr_val,
                               bsr_row_ptr,
                               bsr_col_ind);
+}
+
+// csr2gebsr_buffer_size
+template <>
+rocsparse_status rocsparse_csr2gebsr_buffer_size(rocsparse_handle          handle,
+                                                 rocsparse_direction       direction,
+                                                 rocsparse_int             m,
+                                                 rocsparse_int             n,
+                                                 const rocsparse_mat_descr csr_descr,
+                                                 const float*              csr_val,
+                                                 const rocsparse_int*      csr_row_ptr,
+                                                 const rocsparse_int*      csr_col_ind,
+                                                 rocsparse_int             row_block_dim,
+                                                 rocsparse_int             col_block_dim,
+                                                 size_t*                   p_buffer_size)
+{
+    return rocsparse_scsr2gebsr_buffer_size(handle,
+                                            direction,
+                                            m,
+                                            n,
+                                            csr_descr,
+                                            csr_val,
+                                            csr_row_ptr,
+                                            csr_col_ind,
+                                            row_block_dim,
+                                            col_block_dim,
+                                            p_buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_csr2gebsr_buffer_size(rocsparse_handle          handle,
+                                                 rocsparse_direction       direction,
+                                                 rocsparse_int             m,
+                                                 rocsparse_int             n,
+                                                 const rocsparse_mat_descr csr_descr,
+                                                 const double*             csr_val,
+                                                 const rocsparse_int*      csr_row_ptr,
+                                                 const rocsparse_int*      csr_col_ind,
+                                                 rocsparse_int             row_block_dim,
+                                                 rocsparse_int             col_block_dim,
+                                                 size_t*                   p_buffer_size)
+{
+    return rocsparse_dcsr2gebsr_buffer_size(handle,
+                                            direction,
+                                            m,
+                                            n,
+                                            csr_descr,
+                                            csr_val,
+                                            csr_row_ptr,
+                                            csr_col_ind,
+                                            row_block_dim,
+                                            col_block_dim,
+                                            p_buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_csr2gebsr_buffer_size(rocsparse_handle               handle,
+                                                 rocsparse_direction            direction,
+                                                 rocsparse_int                  m,
+                                                 rocsparse_int                  n,
+                                                 const rocsparse_mat_descr      csr_descr,
+                                                 const rocsparse_float_complex* csr_val,
+                                                 const rocsparse_int*           csr_row_ptr,
+                                                 const rocsparse_int*           csr_col_ind,
+                                                 rocsparse_int                  row_block_dim,
+                                                 rocsparse_int                  col_block_dim,
+                                                 size_t*                        p_buffer_size)
+{
+    return rocsparse_ccsr2gebsr_buffer_size(handle,
+                                            direction,
+                                            m,
+                                            n,
+                                            csr_descr,
+                                            csr_val,
+                                            csr_row_ptr,
+                                            csr_col_ind,
+                                            row_block_dim,
+                                            col_block_dim,
+                                            p_buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_csr2gebsr_buffer_size(rocsparse_handle                handle,
+                                                 rocsparse_direction             direction,
+                                                 rocsparse_int                   m,
+                                                 rocsparse_int                   n,
+                                                 const rocsparse_mat_descr       csr_descr,
+                                                 const rocsparse_double_complex* csr_val,
+                                                 const rocsparse_int*            csr_row_ptr,
+                                                 const rocsparse_int*            csr_col_ind,
+                                                 rocsparse_int                   row_block_dim,
+                                                 rocsparse_int                   col_block_dim,
+                                                 size_t*                         p_buffer_size)
+{
+    return rocsparse_zcsr2gebsr_buffer_size(handle,
+                                            direction,
+                                            m,
+                                            n,
+                                            csr_descr,
+                                            csr_val,
+                                            csr_row_ptr,
+                                            csr_col_ind,
+                                            row_block_dim,
+                                            col_block_dim,
+                                            p_buffer_size);
+}
+
+// csr2gebsr
+template <>
+rocsparse_status rocsparse_csr2gebsr(rocsparse_handle          handle,
+                                     rocsparse_direction       direction,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr csr_descr,
+                                     const float*              csr_val,
+                                     const rocsparse_int*      csr_row_ptr,
+                                     const rocsparse_int*      csr_col_ind,
+                                     const rocsparse_mat_descr bsr_descr,
+                                     float*                    bsr_val,
+                                     rocsparse_int*            bsr_row_ptr,
+                                     rocsparse_int*            bsr_col_ind,
+                                     rocsparse_int             row_block_dim,
+                                     rocsparse_int             col_block_dim,
+                                     void*                     p_buffer)
+{
+    return rocsparse_scsr2gebsr(handle,
+                                direction,
+                                m,
+                                n,
+                                csr_descr,
+                                csr_val,
+                                csr_row_ptr,
+                                csr_col_ind,
+                                bsr_descr,
+                                bsr_val,
+                                bsr_row_ptr,
+                                bsr_col_ind,
+                                row_block_dim,
+                                col_block_dim,
+                                p_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_csr2gebsr(rocsparse_handle          handle,
+                                     rocsparse_direction       direction,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr csr_descr,
+                                     const double*             csr_val,
+                                     const rocsparse_int*      csr_row_ptr,
+                                     const rocsparse_int*      csr_col_ind,
+                                     const rocsparse_mat_descr bsr_descr,
+                                     double*                   bsr_val,
+                                     rocsparse_int*            bsr_row_ptr,
+                                     rocsparse_int*            bsr_col_ind,
+                                     rocsparse_int             row_block_dim,
+                                     rocsparse_int             col_block_dim,
+                                     void*                     p_buffer)
+{
+    return rocsparse_dcsr2gebsr(handle,
+                                direction,
+                                m,
+                                n,
+                                csr_descr,
+                                csr_val,
+                                csr_row_ptr,
+                                csr_col_ind,
+                                bsr_descr,
+                                bsr_val,
+                                bsr_row_ptr,
+                                bsr_col_ind,
+                                row_block_dim,
+                                col_block_dim,
+                                p_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_csr2gebsr(rocsparse_handle               handle,
+                                     rocsparse_direction            direction,
+                                     rocsparse_int                  m,
+                                     rocsparse_int                  n,
+                                     const rocsparse_mat_descr      csr_descr,
+                                     const rocsparse_float_complex* csr_val,
+                                     const rocsparse_int*           csr_row_ptr,
+                                     const rocsparse_int*           csr_col_ind,
+                                     const rocsparse_mat_descr      bsr_descr,
+                                     rocsparse_float_complex*       bsr_val,
+                                     rocsparse_int*                 bsr_row_ptr,
+                                     rocsparse_int*                 bsr_col_ind,
+                                     rocsparse_int                  row_block_dim,
+                                     rocsparse_int                  col_block_dim,
+                                     void*                          p_buffer)
+{
+    return rocsparse_ccsr2gebsr(handle,
+                                direction,
+                                m,
+                                n,
+                                csr_descr,
+                                csr_val,
+                                csr_row_ptr,
+                                csr_col_ind,
+                                bsr_descr,
+                                bsr_val,
+                                bsr_row_ptr,
+                                bsr_col_ind,
+                                row_block_dim,
+                                col_block_dim,
+                                p_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_csr2gebsr(rocsparse_handle                handle,
+                                     rocsparse_direction             direction,
+                                     rocsparse_int                   m,
+                                     rocsparse_int                   n,
+                                     const rocsparse_mat_descr       csr_descr,
+                                     const rocsparse_double_complex* csr_val,
+                                     const rocsparse_int*            csr_row_ptr,
+                                     const rocsparse_int*            csr_col_ind,
+                                     const rocsparse_mat_descr       bsr_descr,
+                                     rocsparse_double_complex*       bsr_val,
+                                     rocsparse_int*                  bsr_row_ptr,
+                                     rocsparse_int*                  bsr_col_ind,
+                                     rocsparse_int                   row_block_dim,
+                                     rocsparse_int                   col_block_dim,
+                                     void*                           p_buffer)
+{
+    return rocsparse_zcsr2gebsr(handle,
+                                direction,
+                                m,
+                                n,
+                                csr_descr,
+                                csr_val,
+                                csr_row_ptr,
+                                csr_col_ind,
+                                bsr_descr,
+                                bsr_val,
+                                bsr_row_ptr,
+                                bsr_col_ind,
+                                row_block_dim,
+                                col_block_dim,
+                                p_buffer);
 }
 
 // ell2csr
@@ -5781,6 +6257,296 @@ rocsparse_status rocsparse_gebsr2csr(rocsparse_handle                handle,
                                 csr_val,
                                 csr_row_ptr,
                                 csr_col_ind);
+}
+
+// gebsr2gebsr_buffer_size
+template <>
+rocsparse_status rocsparse_gebsr2gebsr_buffer_size(rocsparse_handle          handle,
+                                                   rocsparse_direction       dir,
+                                                   rocsparse_int             mb,
+                                                   rocsparse_int             nb,
+                                                   rocsparse_int             nnzb,
+                                                   const rocsparse_mat_descr descr_A,
+                                                   const float*              bsr_val_A,
+                                                   const rocsparse_int*      bsr_row_ptr_A,
+                                                   const rocsparse_int*      bsr_col_ind_A,
+                                                   rocsparse_int             row_block_dim_A,
+                                                   rocsparse_int             col_block_dim_A,
+                                                   rocsparse_int             row_block_dim_C,
+                                                   rocsparse_int             col_block_dim_C,
+                                                   size_t*                   buffer_size)
+{
+    return rocsparse_sgebsr2gebsr_buffer_size(handle,
+                                              dir,
+                                              mb,
+                                              nb,
+                                              nnzb,
+                                              descr_A,
+                                              bsr_val_A,
+                                              bsr_row_ptr_A,
+                                              bsr_col_ind_A,
+                                              row_block_dim_A,
+                                              col_block_dim_A,
+                                              row_block_dim_C,
+                                              col_block_dim_C,
+                                              buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsr_buffer_size(rocsparse_handle          handle,
+                                                   rocsparse_direction       dir,
+                                                   rocsparse_int             mb,
+                                                   rocsparse_int             nb,
+                                                   rocsparse_int             nnzb,
+                                                   const rocsparse_mat_descr descr_A,
+                                                   const double*             bsr_val_A,
+                                                   const rocsparse_int*      bsr_row_ptr_A,
+                                                   const rocsparse_int*      bsr_col_ind_A,
+                                                   rocsparse_int             row_block_dim_A,
+                                                   rocsparse_int             col_block_dim_A,
+                                                   rocsparse_int             row_block_dim_C,
+                                                   rocsparse_int             col_block_dim_C,
+                                                   size_t*                   buffer_size)
+{
+    return rocsparse_dgebsr2gebsr_buffer_size(handle,
+                                              dir,
+                                              mb,
+                                              nb,
+                                              nnzb,
+                                              descr_A,
+                                              bsr_val_A,
+                                              bsr_row_ptr_A,
+                                              bsr_col_ind_A,
+                                              row_block_dim_A,
+                                              col_block_dim_A,
+                                              row_block_dim_C,
+                                              col_block_dim_C,
+                                              buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsr_buffer_size(rocsparse_handle               handle,
+                                                   rocsparse_direction            dir,
+                                                   rocsparse_int                  mb,
+                                                   rocsparse_int                  nb,
+                                                   rocsparse_int                  nnzb,
+                                                   const rocsparse_mat_descr      descr_A,
+                                                   const rocsparse_float_complex* bsr_val_A,
+                                                   const rocsparse_int*           bsr_row_ptr_A,
+                                                   const rocsparse_int*           bsr_col_ind_A,
+                                                   rocsparse_int                  row_block_dim_A,
+                                                   rocsparse_int                  col_block_dim_A,
+                                                   rocsparse_int                  row_block_dim_C,
+                                                   rocsparse_int                  col_block_dim_C,
+                                                   size_t*                        buffer_size)
+{
+    return rocsparse_cgebsr2gebsr_buffer_size(handle,
+                                              dir,
+                                              mb,
+                                              nb,
+                                              nnzb,
+                                              descr_A,
+                                              bsr_val_A,
+                                              bsr_row_ptr_A,
+                                              bsr_col_ind_A,
+                                              row_block_dim_A,
+                                              col_block_dim_A,
+                                              row_block_dim_C,
+                                              col_block_dim_C,
+                                              buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsr_buffer_size(rocsparse_handle                handle,
+                                                   rocsparse_direction             dir,
+                                                   rocsparse_int                   mb,
+                                                   rocsparse_int                   nb,
+                                                   rocsparse_int                   nnzb,
+                                                   const rocsparse_mat_descr       descr_A,
+                                                   const rocsparse_double_complex* bsr_val_A,
+                                                   const rocsparse_int*            bsr_row_ptr_A,
+                                                   const rocsparse_int*            bsr_col_ind_A,
+                                                   rocsparse_int                   row_block_dim_A,
+                                                   rocsparse_int                   col_block_dim_A,
+                                                   rocsparse_int                   row_block_dim_C,
+                                                   rocsparse_int                   col_block_dim_C,
+                                                   size_t*                         buffer_size)
+{
+    return rocsparse_zgebsr2gebsr_buffer_size(handle,
+                                              dir,
+                                              mb,
+                                              nb,
+                                              nnzb,
+                                              descr_A,
+                                              bsr_val_A,
+                                              bsr_row_ptr_A,
+                                              bsr_col_ind_A,
+                                              row_block_dim_A,
+                                              col_block_dim_A,
+                                              row_block_dim_C,
+                                              col_block_dim_C,
+                                              buffer_size);
+}
+
+// gebsr2gebsr
+template <>
+rocsparse_status rocsparse_gebsr2gebsr(rocsparse_handle          handle,
+                                       rocsparse_direction       dir,
+                                       rocsparse_int             mb,
+                                       rocsparse_int             nb,
+                                       rocsparse_int             nnzb,
+                                       const rocsparse_mat_descr descr_A,
+                                       const float*              bsr_val_A,
+                                       const rocsparse_int*      bsr_row_ptr_A,
+                                       const rocsparse_int*      bsr_col_ind_A,
+                                       rocsparse_int             row_block_dim_A,
+                                       rocsparse_int             col_block_dim_A,
+                                       const rocsparse_mat_descr descr_C,
+                                       float*                    bsr_val_C,
+                                       rocsparse_int*            bsr_row_ptr_C,
+                                       rocsparse_int*            bsr_col_ind_C,
+                                       rocsparse_int             row_block_dim_C,
+                                       rocsparse_int             col_block_dim_C,
+                                       void*                     temp_buffer)
+{
+    return rocsparse_sgebsr2gebsr(handle,
+                                  dir,
+                                  mb,
+                                  nb,
+                                  nnzb,
+                                  descr_A,
+                                  bsr_val_A,
+                                  bsr_row_ptr_A,
+                                  bsr_col_ind_A,
+                                  row_block_dim_A,
+                                  col_block_dim_A,
+                                  descr_C,
+                                  bsr_val_C,
+                                  bsr_row_ptr_C,
+                                  bsr_col_ind_C,
+                                  row_block_dim_C,
+                                  col_block_dim_C,
+                                  temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsr(rocsparse_handle          handle,
+                                       rocsparse_direction       dir,
+                                       rocsparse_int             mb,
+                                       rocsparse_int             nb,
+                                       rocsparse_int             nnzb,
+                                       const rocsparse_mat_descr descr_A,
+                                       const double*             bsr_val_A,
+                                       const rocsparse_int*      bsr_row_ptr_A,
+                                       const rocsparse_int*      bsr_col_ind_A,
+                                       rocsparse_int             row_block_dim_A,
+                                       rocsparse_int             col_block_dim_A,
+                                       const rocsparse_mat_descr descr_C,
+                                       double*                   bsr_val_C,
+                                       rocsparse_int*            bsr_row_ptr_C,
+                                       rocsparse_int*            bsr_col_ind_C,
+                                       rocsparse_int             row_block_dim_C,
+                                       rocsparse_int             col_block_dim_C,
+                                       void*                     temp_buffer)
+{
+    return rocsparse_dgebsr2gebsr(handle,
+                                  dir,
+                                  mb,
+                                  nb,
+                                  nnzb,
+                                  descr_A,
+                                  bsr_val_A,
+                                  bsr_row_ptr_A,
+                                  bsr_col_ind_A,
+                                  row_block_dim_A,
+                                  col_block_dim_A,
+                                  descr_C,
+                                  bsr_val_C,
+                                  bsr_row_ptr_C,
+                                  bsr_col_ind_C,
+                                  row_block_dim_C,
+                                  col_block_dim_C,
+                                  temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsr(rocsparse_handle               handle,
+                                       rocsparse_direction            dir,
+                                       rocsparse_int                  mb,
+                                       rocsparse_int                  nb,
+                                       rocsparse_int                  nnzb,
+                                       const rocsparse_mat_descr      descr_A,
+                                       const rocsparse_float_complex* bsr_val_A,
+                                       const rocsparse_int*           bsr_row_ptr_A,
+                                       const rocsparse_int*           bsr_col_ind_A,
+                                       rocsparse_int                  row_block_dim_A,
+                                       rocsparse_int                  col_block_dim_A,
+                                       const rocsparse_mat_descr      descr_C,
+                                       rocsparse_float_complex*       bsr_val_C,
+                                       rocsparse_int*                 bsr_row_ptr_C,
+                                       rocsparse_int*                 bsr_col_ind_C,
+                                       rocsparse_int                  row_block_dim_C,
+                                       rocsparse_int                  col_block_dim_C,
+                                       void*                          temp_buffer)
+{
+    return rocsparse_cgebsr2gebsr(handle,
+                                  dir,
+                                  mb,
+                                  nb,
+                                  nnzb,
+                                  descr_A,
+                                  bsr_val_A,
+                                  bsr_row_ptr_A,
+                                  bsr_col_ind_A,
+                                  row_block_dim_A,
+                                  col_block_dim_A,
+                                  descr_C,
+                                  bsr_val_C,
+                                  bsr_row_ptr_C,
+                                  bsr_col_ind_C,
+                                  row_block_dim_C,
+                                  col_block_dim_C,
+                                  temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gebsr2gebsr(rocsparse_handle                handle,
+                                       rocsparse_direction             dir,
+                                       rocsparse_int                   mb,
+                                       rocsparse_int                   nb,
+                                       rocsparse_int                   nnzb,
+                                       const rocsparse_mat_descr       descr_A,
+                                       const rocsparse_double_complex* bsr_val_A,
+                                       const rocsparse_int*            bsr_row_ptr_A,
+                                       const rocsparse_int*            bsr_col_ind_A,
+                                       rocsparse_int                   row_block_dim_A,
+                                       rocsparse_int                   col_block_dim_A,
+                                       const rocsparse_mat_descr       descr_C,
+                                       rocsparse_double_complex*       bsr_val_C,
+                                       rocsparse_int*                  bsr_row_ptr_C,
+                                       rocsparse_int*                  bsr_col_ind_C,
+                                       rocsparse_int                   row_block_dim_C,
+                                       rocsparse_int                   col_block_dim_C,
+                                       void*                           temp_buffer)
+{
+    return rocsparse_zgebsr2gebsr(handle,
+                                  dir,
+                                  mb,
+                                  nb,
+                                  nnzb,
+                                  descr_A,
+                                  bsr_val_A,
+                                  bsr_row_ptr_A,
+                                  bsr_col_ind_A,
+                                  row_block_dim_A,
+                                  col_block_dim_A,
+                                  descr_C,
+                                  bsr_val_C,
+                                  bsr_row_ptr_C,
+                                  bsr_col_ind_C,
+                                  row_block_dim_C,
+                                  col_block_dim_C,
+                                  temp_buffer);
 }
 
 // csr2csr_compress

@@ -93,7 +93,8 @@ namespace
                        << rocsparse_analysis2string(arg.apol) << '_'
                        << rocsparse_solve2string(arg.spol) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
+                       << rocsparse_matrix2string(arg.matrix) << '_'
+                       << rocsparse_filename2string(arg.filename);
             }
             else
             {

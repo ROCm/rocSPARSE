@@ -82,16 +82,16 @@ option(BUILD_CLIENTS_BENCHMARKS "Build benchmarks (requires boost)" OFF)
 option(BUILD_CLIENTS_SAMPLES "Build examples" ON)
 option(BUILD_VERBOSE "Output additional build information" OFF)
 
+# AMD targets
+set(AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target")
+
 # Dependencies
 include(cmake/Dependencies.cmake)
 
 # Setup version
-set(VERSION_STRING "1.18.0")
+set(VERSION_STRING "1.18.4")
 rocm_setup_version(VERSION ${VERSION_STRING})
 set(rocsparse_SOVERSION 0.1)
-
-# AMD targets
-set(AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific machine types for library to target")
 
 # rocSPARSE library
 add_subdirectory(library)

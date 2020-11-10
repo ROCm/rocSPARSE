@@ -199,4 +199,13 @@ constexpr auto rocsparse_direction2string(rocsparse_direction direction)
     }
 }
 
+// Return a string without '/' or '\\'
+inline std::string rocsparse_filename2string(const std::string& filename)
+{
+    std::string result(filename);
+    std::replace(result.begin(), result.end(), '/', '_');
+    std::replace(result.begin(), result.end(), '\\', '_');
+    return result;
+}
+
 #endif // ROCSPARSE_DATATYPE2STRING_HPP
