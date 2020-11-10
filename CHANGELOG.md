@@ -18,7 +18,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 ### Documentation
 - gebsr2csr
 
-## [(Unreleased) rocSPARSE 1.17.6 for ROCm 3.9]
+## [rocSPARSE 1.17.6 for ROCm 3.9]
 ### Added
 - prune_csr2csr, prune_dense2csr_percentage and prune_csr2csr_percentage added
 - bsrilu0 added
@@ -26,13 +26,13 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 ### Known Issues
 - none
 
-## [(Unreleased) rocSPARSE 1.16.1 for ROCm 3.8]
+## [rocSPARSE 1.16.1 for ROCm 3.8]
 ### Added
 - bsric0 added.
 ### Known Issues
 - none
 
-## [(Unreleased) rocSPARSE 1.14.3 for ROCm 3.7]
+## [rocSPARSE 1.14.3 for ROCm 3.7]
 ### Added
 - Fortran bindings
 - CentOS 6 support.
@@ -43,7 +43,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 ### Known Issues
 - none
 
-## [(Unreleased) rocSPARSE 1.14.3 for ROCm 3.6]
+## [rocSPARSE 1.14.3 for ROCm 3.6]
 ### Added
 - Fortran bindings
 - CentOS 6 support.
@@ -54,7 +54,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 ### Known Issues
 - none
 
-## [(Unreleased) rocSPARSE 1.12.10 for ROCm 3.5]
+## [rocSPARSE 1.12.10 for ROCm 3.5]
 ### Added
 - Switched to hipclang as default compiler
 - csr2dense, csc2dense, csr2csr_compress, nnz_compress, bsr2csr, csr2bsr, bsrmv, csrgeam
