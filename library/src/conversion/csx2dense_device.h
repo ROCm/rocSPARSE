@@ -40,7 +40,6 @@ __launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) __global__
 {
     const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE,
                         lane_index      = hipThreadIdx_x % WF_SIZE;
-    static constexpr T  s_zero          = {};
     const rocsparse_int row_index       = NUMROWS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
 
     if(row_index < m)
@@ -74,7 +73,6 @@ __launch_bounds__(WF_SIZE* NUMCOLUMNS_PER_BLOCK) __global__
     const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE,
                         lane_index      = hipThreadIdx_x % WF_SIZE;
     const rocsparse_int column_index    = NUMCOLUMNS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
-    static constexpr T  s_zero          = {};
 
     if(column_index < n)
     {

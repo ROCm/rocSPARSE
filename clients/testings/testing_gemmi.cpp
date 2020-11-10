@@ -425,7 +425,6 @@ void testing_gemmi(const Arguments& arg)
                               full_rank);
 
     rocsparse_int nrow_B = (transB == rocsparse_operation_none) ? K : N;
-    rocsparse_int ncol_B = (transB == rocsparse_operation_none) ? N : K;
 
     rocsparse_int lda = std::max(1, M);
     rocsparse_int ldc = std::max(1, M);

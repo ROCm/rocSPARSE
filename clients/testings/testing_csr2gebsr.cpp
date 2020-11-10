@@ -37,9 +37,7 @@ template <typename T>
 void testing_csr2gebsr_bad_arg(const Arguments& arg)
 {
 
-    static const size_t        safe_size     = 100;
-    static const rocsparse_int row_block_dim = safe_size;
-    static const rocsparse_int col_block_dim = safe_size;
+    static const size_t safe_size = 100;
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -409,7 +407,6 @@ void testing_csr2gebsr(const Arguments& arg)
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0 || row_block_dim <= 0 || col_block_dim <= 0)
     {
-        static const size_t safe_size = 100;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_nnz(handle,
                                                         rocsparse_direction_row,

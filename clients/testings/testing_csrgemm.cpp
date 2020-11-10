@@ -2286,6 +2286,10 @@ void testing_csrgemm(const Arguments& arg)
         halpha_ptr = &h_alpha;
         hbeta_ptr  = &h_beta;
     }
+    else
+    {
+        return;
+    }
 
     // Create rocsparse handle
     rocsparse_local_handle handle;

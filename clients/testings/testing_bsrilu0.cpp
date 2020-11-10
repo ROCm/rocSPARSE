@@ -643,11 +643,6 @@ void testing_bsrilu0(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(d_boost_tol, &h_boost_tol, sizeof(T), hipMemcpyHostToDevice));
         CHECK_HIP_ERROR(hipMemcpy(d_boost_val, &h_boost_val, sizeof(T), hipMemcpyHostToDevice));
 
-        rocsparse_status status_analysis_1;
-        rocsparse_status status_analysis_2;
-        rocsparse_status status_solve_1;
-        rocsparse_status status_solve_2;
-
         // Perform analysis step
 
         // Pointer mode host
@@ -893,8 +888,7 @@ void testing_bsrilu0(const Arguments& arg)
                                 (hsolve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                           : rocsparse_status_success);
 
-        gpu_analysis_time_used = gpu_analysis_time_used;
-        gpu_solve_time_used    = gpu_solve_time_used / number_hot_calls;
+        gpu_solve_time_used = gpu_solve_time_used / number_hot_calls;
 
         double gpu_gbyte = bsrilu0_gbyte_count<T>(Mb, block_dim, nnzb) / gpu_solve_time_used * 1e6;
 

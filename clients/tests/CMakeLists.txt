@@ -294,7 +294,7 @@ add_executable(rocsparse-test rocsparse_test_main.cpp ${ROCSPARSE_TEST_SOURCES} 
 target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
 
 # Target compile options
-target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma)
+target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-unused-command-line-argument -Wall)
 
 # Internal common header
 target_include_directories(rocsparse-test PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)

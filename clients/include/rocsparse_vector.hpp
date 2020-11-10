@@ -67,7 +67,6 @@ protected:
         T* d;
         if((hipMalloc)(&d, bytes) != hipSuccess)
         {
-            static char* lc = setlocale(LC_NUMERIC, "");
             fprintf(stderr, "Error allocating %'zu bytes (%zu GB)\n", bytes, bytes >> 30);
             d = nullptr;
         }
