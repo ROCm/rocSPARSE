@@ -24,7 +24,7 @@
 #include "rocsparse_data.hpp"
 #include "rocsparse_datatype2string.hpp"
 #include "rocsparse_test.hpp"
-#include "testing_csr2gebsr.hpp"
+#include "testing_gebsr2gebsr.hpp"
 #include "type_dispatch.hpp"
 
 #include <cctype>
@@ -36,14 +36,14 @@ namespace
     // By default, this test does not apply to any types.
     // The unnamed second parameter is used for enable_if below.
     template <typename, typename = void>
-    struct csr2gebsr_testing : rocsparse_test_invalid
+    struct gebsr2gebsr_testing : rocsparse_test_invalid
     {
     };
 
     // When the condition in the second argument is satisfied, the type combination
     // is valid. When the condition is false, this specialization does not apply.
     template <typename T>
-    struct csr2gebsr_testing<
+    struct gebsr2gebsr_testing<
         T,
         typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
                                 || std::is_same<T, rocsparse_float_complex>{}
@@ -55,16 +55,16 @@ namespace
         }
         void operator()(const Arguments& arg)
         {
-            if(!strcmp(arg.function, "csr2gebsr"))
-                testing_csr2gebsr<T>(arg);
-            else if(!strcmp(arg.function, "csr2gebsr_bad_arg"))
-                testing_csr2gebsr_bad_arg<T>(arg);
+            if(!strcmp(arg.function, "gebsr2gebsr"))
+                testing_gebsr2gebsr<T>(arg);
+            else if(!strcmp(arg.function, "gebsr2gebsr_bad_arg"))
+                testing_gebsr2gebsr_bad_arg<T>(arg);
             else
                 FAIL() << "Internal error: Test called with unknown function: " << arg.function;
         }
     };
 
-    struct csr2gebsr : RocSPARSE_Test<csr2gebsr, csr2gebsr_testing>
+    struct gebsr2gebsr : RocSPARSE_Test<gebsr2gebsr, gebsr2gebsr_testing>
     {
         // Filter for which types apply to this suite
         static bool type_filter(const Arguments& arg)
@@ -75,7 +75,8 @@ namespace
         // Filter for which functions apply to this suite
         static bool function_filter(const Arguments& arg)
         {
-            return !strcmp(arg.function, "csr2gebsr") || !strcmp(arg.function, "csr2gebsr_bad_arg");
+            return !strcmp(arg.function, "gebsr2gebsr")
+                   || !strcmp(arg.function, "gebsr2gebsr_bad_arg");
         }
 
         // Google Test name suffix based on parameters
@@ -84,27 +85,32 @@ namespace
             if(arg.matrix == rocsparse_matrix_file_rocalution
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
-                return RocSPARSE_TestName<csr2gebsr>{}
+                return RocSPARSE_TestName<gebsr2gebsr>{}
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.row_block_dimA
-                       << '_' << arg.col_block_dimA << '_' << rocsparse_indexbase2string(arg.baseA)
-                       << '_' << rocsparse_matrix2string(arg.matrix) << '_'
-                       << rocsparse_filename2string(arg.filename);
+                       << '_' << arg.col_block_dimA << '_' << arg.row_block_dimB << '_'
+                       << arg.col_block_dimB << '_' << rocsparse_direction2string(arg.direction)
+                       << '_' << rocsparse_indexbase2string(arg.baseA) << '_'
+                       << rocsparse_indexbase2string(arg.baseB) << '_'
+                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
             }
             else
             {
-                return RocSPARSE_TestName<csr2gebsr>{}
+                return RocSPARSE_TestName<gebsr2gebsr>{}
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
-                       << arg.N << '_' << arg.row_block_dimA << '_' << arg.col_block_dimA
+                       << arg.N << '_' << arg.row_block_dimA << '_' << arg.col_block_dimA << '_'
+                       << arg.row_block_dimB << '_' << arg.col_block_dimB << '_'
+                       << rocsparse_direction2string(arg.direction) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
+                       << rocsparse_indexbase2string(arg.baseB) << '_'
                        << rocsparse_matrix2string(arg.matrix);
             }
         }
     };
 
-    TEST_P(csr2gebsr, conversion)
+    TEST_P(gebsr2gebsr, conversion)
     {
-        rocsparse_simple_dispatch<csr2gebsr_testing>(GetParam());
+        rocsparse_simple_dispatch<gebsr2gebsr_testing>(GetParam());
     }
-    INSTANTIATE_TEST_CATEGORIES(csr2gebsr);
+    INSTANTIATE_TEST_CATEGORIES(gebsr2gebsr);
 
 } // namespace

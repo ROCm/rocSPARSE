@@ -445,8 +445,8 @@ public:
         : arg_dir(arg.direction)
         , arg_m(arg.M)
         , arg_n(arg.N)
-        , arg_col_block_dim(arg.row_block_dim)
-        , arg_row_block_dim(arg.col_block_dim)
+        , arg_col_block_dim(arg.row_block_dimA)
+        , arg_row_block_dim(arg.col_block_dimA)
         , arg_block_dim(arg.block_dim)
         , arg_base(arg.baseA)
     {

@@ -92,7 +92,7 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
     }
 
     // Check pointer arguments
-    if(csr_val == nullptr && rocsparse_action_numeric)
+    if(csr_val == nullptr && copy_values == rocsparse_action_numeric)
     {
         return rocsparse_status_invalid_pointer;
     }
