@@ -1235,7 +1235,6 @@ void host_bsrmm(rocsparse_int                     Mb,
     }
 
     rocsparse_int M = Mb * block_dim;
-    rocsparse_int K = Kb * block_dim;
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
@@ -3027,7 +3026,6 @@ rocsparse_status host_csx2dense(rocsparse_int        m,
                                 T*                   A,
                                 rocsparse_int        ld)
 {
-    static constexpr T s_zero = {};
     switch(DIRA)
     {
     case rocsparse_direction_column:
@@ -3144,7 +3142,6 @@ void host_csr_to_gebsr(rocsparse_direction               direction,
                        rocsparse_index_base              bsr_base)
 {
     rocsparse_int mb = (m + row_block_dim - 1) / row_block_dim;
-    rocsparse_int nb = (n + col_block_dim - 1) / col_block_dim;
 
     bsr_row_ptr.resize(mb + 1, 0);
 
@@ -3421,9 +3418,6 @@ void host_gebsr_to_gebsr(rocsparse_direction               direction,
 {
     rocsparse_int m = mb * row_block_dim_A;
     rocsparse_int n = nb * col_block_dim_A;
-
-    rocsparse_int mb_C = (m + row_block_dim_C - 1) / row_block_dim_C;
-    rocsparse_int nb_C = (n + col_block_dim_C - 1) / col_block_dim_C;
 
     // convert GEBSR to CSR format
     std::vector<rocsparse_int> csr_row_ptr;

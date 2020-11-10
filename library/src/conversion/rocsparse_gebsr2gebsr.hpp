@@ -139,9 +139,6 @@ rocsparse_status rocsparse_gebsr2gebsr_buffer_size_template(rocsparse_handle    
         return rocsparse_status_not_implemented;
     }
 
-    // Stream
-    hipStream_t stream = handle->stream;
-
     if(row_block_dim_C <= 32)
     {
         *buffer_size = 4;

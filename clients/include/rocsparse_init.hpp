@@ -138,22 +138,6 @@ void rocsparse_init_coo_laplace3d(std::vector<rocsparse_int>& row_ind,
 
 /* ============================================================================================ */
 /*! \brief  Read matrix from mtx file in COO format */
-static void
-    read_mtx_value(std::istringstream& is, rocsparse_int& row, rocsparse_int& col, float& val);
-
-static void
-    read_mtx_value(std::istringstream& is, rocsparse_int& row, rocsparse_int& col, double& val);
-
-static void read_mtx_value(std::istringstream&      is,
-                           rocsparse_int&           row,
-                           rocsparse_int&           col,
-                           rocsparse_float_complex& val);
-
-static void read_mtx_value(std::istringstream&       is,
-                           rocsparse_int&            row,
-                           rocsparse_int&            col,
-                           rocsparse_double_complex& val);
-
 template <typename T>
 void rocsparse_init_coo_mtx(const char*                 filename,
                             std::vector<rocsparse_int>& coo_row_ind,
@@ -188,20 +172,6 @@ void rocsparse_init_bsr_mtx(const char*                 filename,
 
 /* ==================================================================================== */
 /*! \brief  Read matrix from binary file in rocALUTION format */
-static void read_csr_values(std::ifstream& in, rocsparse_int nnz, float* csr_val, bool mod);
-
-static void read_csr_values(std::ifstream& in, rocsparse_int nnz, double* csr_val, bool mod);
-
-static void read_csr_values(std::ifstream&           in,
-                            rocsparse_int            nnz,
-                            rocsparse_float_complex* csr_val,
-                            bool                     mod);
-
-static void read_csr_values(std::ifstream&            in,
-                            rocsparse_int             nnz,
-                            rocsparse_double_complex* csr_val,
-                            bool                      mod);
-
 template <typename T>
 void rocsparse_init_csr_rocalution(const char*                 filename,
                                    std::vector<rocsparse_int>& row_ptr,
@@ -668,7 +638,6 @@ inline void rocsparse_init_gebsr_matrix_from_csr(std::vector<rocsparse_int>& bsr
                 for(rocsparse_int k = bsr_row_ptr[i] - bsr_base; k < bsr_row_ptr[i + 1] - bsr_base;
                     ++k)
                 {
-                    rocsparse_int j = bsr_col_ind[k] - bsr_base;
                     for(rocsparse_int c = 0; c < col_block_dim; ++c)
                     {
                         bsr_val[k * row_block_dim * col_block_dim + c * row_block_dim + r]
@@ -689,7 +658,6 @@ inline void rocsparse_init_gebsr_matrix_from_csr(std::vector<rocsparse_int>& bsr
                 for(rocsparse_int k = bsr_row_ptr[i] - bsr_base; k < bsr_row_ptr[i + 1] - bsr_base;
                     ++k)
                 {
-                    rocsparse_int j = bsr_col_ind[k] - bsr_base;
                     for(rocsparse_int c = 0; c < col_block_dim; ++c)
                     {
                         bsr_val[k * row_block_dim * col_block_dim + r * col_block_dim + c]

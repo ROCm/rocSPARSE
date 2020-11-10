@@ -568,7 +568,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
     rocsparse_int thread_id = hipThreadIdx_x + hipBlockDim_x * hipBlockIdx_x;
     if(thread_id < m)
     {
-        rocsparse_int count = 0, pbj = -1;
+        rocsparse_int pbj             = -1;
         rocsparse_int bsr_col_ind_off = bsr_row_ptr[thread_id] - bsr_base - 1;
         rocsparse_int bsr_val_off     = bsr_col_ind_off;
         for(rocsparse_int k = csr_row_ptr[thread_id] - csr_base;

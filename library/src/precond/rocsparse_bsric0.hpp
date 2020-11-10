@@ -508,10 +508,6 @@ rocsparse_status rocsparse_bsric0_template(rocsparse_handle          handle,
     // Max nnz blocks per row
     rocsparse_int max_nnzb = info->bsric0_info->max_nnz;
 
-    // Determine gcnArch
-    int gcnArch = handle->properties.gcnArch;
-    int asicRev = handle->asic_rev;
-
     bsric0_launcher<T>(handle,
                        dir,
                        mb,

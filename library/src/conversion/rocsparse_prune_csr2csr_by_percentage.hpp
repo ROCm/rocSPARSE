@@ -739,8 +739,6 @@ rocsparse_status
         return rocsparse_status_invalid_pointer;
     }
 
-    hipStream_t stream = handle->stream;
-
     // Determine threshold on host or device
     T  h_threshold;
     T* threshold = nullptr;

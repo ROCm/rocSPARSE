@@ -600,11 +600,6 @@ void testing_csrsv(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        rocsparse_status status_analysis_1;
-        rocsparse_status status_analysis_2;
-        rocsparse_status status_solve_1;
-        rocsparse_status status_solve_2;
-
         // Copy data from CPU to device
         CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
 

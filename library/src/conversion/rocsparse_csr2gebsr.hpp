@@ -159,10 +159,6 @@ rocsparse_status rocsparse_csr2gebsr_buffer_size_template(rocsparse_handle      
         return rocsparse_status_invalid_pointer;
     }
 
-    hipStream_t   stream = handle->stream;
-    rocsparse_int mb     = (m + row_block_dim - 1) / row_block_dim;
-    rocsparse_int nb     = (n + col_block_dim - 1) / col_block_dim;
-
     {
         size_t host_buffer_size = 512 * sizeof(rocsparse_int);
         if(mode == rocsparse_pointer_mode_host)

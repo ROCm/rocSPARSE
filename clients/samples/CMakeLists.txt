@@ -25,6 +25,7 @@ set(ROCSPARSE_CLIENTS_COMMON ../common/rocsparse_init.cpp ../common/utility.cpp)
 
 add_library(rocsparsecommon ${ROCSPARSE_CLIENTS_COMMON})
 # Include common client headers
+target_compile_options(rocsparsecommon PRIVATE -Wno-unused-command-line-argument -Wall)
 target_include_directories(rocsparsecommon PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 target_link_libraries(rocsparsecommon PRIVATE roc::rocsparse hip::host)
 set_target_properties(rocsparsecommon PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
@@ -36,6 +37,9 @@ set_target_properties(rocsparsecommon PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PRO
 function(add_rocsparse_example EXAMPLE_SOURCE)
   get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SOURCE} NAME_WE)
   add_executable(${EXAMPLE_TARGET} ${EXAMPLE_SOURCE}) #  ${ROCSPARSE_CLIENTS_COMMON}
+
+  # Target compile options
+  target_compile_options(${EXAMPLE_TARGET} PRIVATE -Wno-unused-command-line-argument)
 
   # Include common client headers
   target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)

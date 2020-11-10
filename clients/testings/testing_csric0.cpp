@@ -470,11 +470,6 @@ void testing_csric0(const Arguments& arg)
         // Copy data from CPU to device
         CHECK_HIP_ERROR(hipMemcpy(dcsr_val_2, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
 
-        rocsparse_status status_analysis_1;
-        rocsparse_status status_analysis_2;
-        rocsparse_status status_solve_1;
-        rocsparse_status status_solve_2;
-
         // Perform analysis step
 
         // Pointer mode host
@@ -656,8 +651,7 @@ void testing_csric0(const Arguments& arg)
                                 (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
                                                            : rocsparse_status_success);
 
-        gpu_analysis_time_used = gpu_analysis_time_used;
-        gpu_solve_time_used    = gpu_solve_time_used / number_hot_calls;
+        gpu_solve_time_used = gpu_solve_time_used / number_hot_calls;
 
         double gpu_gbyte = csric0_gbyte_count<T>(M, nnz) / gpu_solve_time_used * 1e6;
 

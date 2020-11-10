@@ -104,6 +104,9 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 
 add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})
 
+# Target compile options
+target_compile_options(rocsparse-bench PRIVATE -Wno-unused-command-line-argument -Wall)
+
 # Internal common header
 target_include_directories(rocsparse-bench PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 

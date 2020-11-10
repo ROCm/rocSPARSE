@@ -500,11 +500,6 @@ void testing_csrilu0(const Arguments& arg)
         CHECK_HIP_ERROR(
             hipMemcpy(dcsr_val_2, hcsr_val_gold, sizeof(T) * nnz, hipMemcpyHostToDevice));
 
-        rocsparse_status status_analysis_1;
-        rocsparse_status status_analysis_2;
-        rocsparse_status status_solve_1;
-        rocsparse_status status_solve_2;
-
         // Perform analysis step
 
         // Pointer mode host
