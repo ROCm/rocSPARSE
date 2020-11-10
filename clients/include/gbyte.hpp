@@ -317,6 +317,21 @@ constexpr double csr2csc_gbyte_count(rocsparse_int    M,
 }
 
 template <typename T>
+constexpr double gebsr2gebsc_gbyte_count(rocsparse_int    Mb,
+                                         rocsparse_int    Nb,
+                                         rocsparse_int    nnzb,
+                                         rocsparse_int    row_block_dim,
+                                         rocsparse_int    col_block_dim,
+                                         rocsparse_action action)
+{
+    return ((Mb + Nb + 2 + 2.0 * nnzb) * sizeof(rocsparse_int)
+            + (action == rocsparse_action_numeric
+                   ? (2.0 * nnzb * row_block_dim * col_block_dim) * sizeof(T)
+                   : 0.0))
+           / 1e9;
+}
+
+template <typename T>
 constexpr double csr2ell_gbyte_count(rocsparse_int M, rocsparse_int nnz, rocsparse_int ell_nnz)
 {
     return ((M + 1.0 + ell_nnz) * sizeof(rocsparse_int) + (nnz + ell_nnz) * sizeof(T)) / 1e9;
@@ -383,6 +398,27 @@ constexpr double gebsr2csr_gbyte_count(rocsparse_int Mb,
 }
 
 template <typename T>
+constexpr double gebsr2gebsr_gbyte_count(rocsparse_int Mb_A,
+                                         rocsparse_int Mb_C,
+                                         rocsparse_int row_block_dim_A,
+                                         rocsparse_int col_block_dim_A,
+                                         rocsparse_int row_block_dim_C,
+                                         rocsparse_int col_block_dim_C,
+                                         rocsparse_int nnzb_A,
+                                         rocsparse_int nnzb_C)
+{
+    // reads
+    size_t reads = nnzb_A * row_block_dim_A * col_block_dim_A * sizeof(T)
+                   + (Mb_A + 1 + nnzb_A) * sizeof(rocsparse_int);
+
+    // writes
+    size_t writes = nnzb_C * row_block_dim_C * col_block_dim_C * sizeof(T)
+                    + (Mb_C + 1 + nnzb_C) * sizeof(rocsparse_int);
+
+    return (reads + writes) / 1e9;
+}
+
+template <typename T>
 constexpr double csr2bsr_gbyte_count(rocsparse_int M,
                                      rocsparse_int Mb,
                                      rocsparse_int nnz,
@@ -395,6 +431,24 @@ constexpr double csr2bsr_gbyte_count(rocsparse_int M,
     // writes
     size_t writes = (Mb + 1 + nnzb * block_dim * block_dim) * sizeof(rocsparse_int)
                     + (nnzb * block_dim * block_dim) * sizeof(T);
+
+    return (reads + writes) / 1e9;
+}
+
+template <typename T>
+constexpr double csr2gebsr_gbyte_count(rocsparse_int M,
+                                       rocsparse_int Mb,
+                                       rocsparse_int nnz,
+                                       rocsparse_int nnzb,
+                                       rocsparse_int row_block_dim,
+                                       rocsparse_int col_block_dim)
+{
+    // reads
+    size_t reads = (M + 1 + nnz) * sizeof(rocsparse_int) + nnz * sizeof(T);
+
+    // writes
+    size_t writes = (Mb + 1 + nnzb * row_block_dim * col_block_dim) * sizeof(rocsparse_int)
+                    + (nnzb * row_block_dim * col_block_dim) * sizeof(T);
 
     return (reads + writes) / 1e9;
 }

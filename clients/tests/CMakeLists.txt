@@ -90,6 +90,7 @@ set(TEST_MD5HASH
   01e49e63fa0ac2204baef0f5f33974ad
 )
 
+
 if(NOT TARGET rocsparse)
   set(CONVERT ${CMAKE_SOURCE_DIR}/../deps/convert)
 else()
@@ -152,8 +153,8 @@ foreach(i RANGE 0 ${len1})
   endif()
 endforeach()
 
+
 set(ROCSPARSE_TEST_SOURCES
-  rocsparse_test_main.cpp
   test_axpyi.cpp
   test_doti.cpp
   test_dotci.cpp
@@ -180,14 +181,17 @@ set(ROCSPARSE_TEST_SOURCES
   test_csrilu0.cpp
   test_csr2coo.cpp
   test_csr2csc.cpp
+  test_gebsr2gebsc.cpp
   test_csr2ell.cpp
   test_csr2hyb.cpp
   test_csr2bsr.cpp
+  test_csr2gebsr.cpp
   test_coo2csr.cpp
   test_ell2csr.cpp
   test_hyb2csr.cpp
   test_bsr2csr.cpp
   test_gebsr2csr.cpp
+  test_gebsr2gebsr.cpp
   test_csr2csr_compress.cpp
   test_prune_csr2csr.cpp
   test_prune_csr2csr_by_percentage.cpp
@@ -206,19 +210,91 @@ set(ROCSPARSE_TEST_SOURCES
   test_csc2dense.cpp
 )
 
+set(ROCSPARSE_TEST_SOURCES_TEMPLATE_INSTANCES
+  testing_axpyi.instances.cpp
+)
+
+set(ROCSPARSE_CLIENTS_TESTINGS
+../testings/testing_axpyi.cpp
+../testings/testing_doti.cpp
+../testings/testing_dotci.cpp
+../testings/testing_gthr.cpp
+../testings/testing_gthrz.cpp
+../testings/testing_roti.cpp
+../testings/testing_sctr.cpp
+../testings/testing_bsrmv.cpp
+../testings/testing_bsrsv.cpp
+../testings/testing_coomv.cpp
+../testings/testing_csrmv.cpp
+../testings/testing_csrsv.cpp
+../testings/testing_ellmv.cpp
+../testings/testing_hybmv.cpp
+../testings/testing_bsrmm.cpp
+../testings/testing_csrmm.cpp
+../testings/testing_csrsm.cpp
+../testings/testing_gemmi.cpp
+../testings/testing_csrgeam.cpp
+../testings/testing_csrgemm.cpp
+../testings/testing_bsric0.cpp
+../testings/testing_bsrilu0.cpp
+../testings/testing_csric0.cpp
+../testings/testing_csrilu0.cpp
+../testings/testing_csr2coo.cpp
+../testings/testing_csr2csc.cpp
+../testings/testing_gebsr2gebsc.cpp
+../testings/testing_gebsr2gebsr.cpp
+../testings/testing_csr2ell.cpp
+../testings/testing_csr2hyb.cpp
+../testings/testing_csr2bsr.cpp
+../testings/testing_csr2gebsr.cpp
+../testings/testing_coo2csr.cpp
+../testings/testing_ell2csr.cpp
+../testings/testing_hyb2csr.cpp
+../testings/testing_bsr2csr.cpp
+../testings/testing_gebsr2csr.cpp
+../testings/testing_csr2csr_compress.cpp
+../testings/testing_prune_csr2csr.cpp
+../testings/testing_prune_csr2csr_by_percentage.cpp
+../testings/testing_identity.cpp
+../testings/testing_csrsort.cpp
+../testings/testing_cscsort.cpp
+../testings/testing_coosort.cpp
+../testings/testing_csricsv.cpp
+../testings/testing_csrilusv.cpp
+../testings/testing_nnz.cpp
+../testings/testing_dense2csr.cpp
+../testings/testing_prune_dense2csr.cpp
+../testings/testing_prune_dense2csr_by_percentage.cpp
+../testings/testing_dense2csc.cpp
+../testings/testing_csr2dense.cpp
+../testings/testing_csc2dense.cpp
+  )
+
+
+#
+# remove pragma once
+# remove ifndef
+# remove define
+# remove last line
+# add specialization
+#
+
+
 set(ROCSPARSE_CLIENTS_COMMON
   ../common/utility.cpp
   ../common/rocsparse_parse_data.cpp
   ../common/rocsparse_template_specialization.cpp
+  ../common/rocsparse_init.cpp
+  ../common/rocsparse_host.cpp
 )
 
-add_executable(rocsparse-test ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON})
+add_executable(rocsparse-test rocsparse_test_main.cpp ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})
 
 # Set GOOGLE_TEST definition
 target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
 
 # Target compile options
-target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma)
+target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-unused-command-line-argument -Wall)
 
 # Internal common header
 target_include_directories(rocsparse-test PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
@@ -238,7 +314,7 @@ set_target_properties(rocsparse-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJ
 set(ROCSPARSE_TEST_DATA "${PROJECT_BINARY_DIR}/staging/rocsparse_test.data")
 add_custom_command(OUTPUT "${ROCSPARSE_TEST_DATA}"
                    COMMAND ../common/rocsparse_gentest.py -I ../include rocsparse_test.yaml -o "${ROCSPARSE_TEST_DATA}"
-                   DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml test_axpyi.yaml test_doti.yaml test_dotci.yaml test_gthr.yaml test_gthrz.yaml test_roti.yaml test_sctr.yaml test_bsrmv.yaml test_bsrsv.yaml test_coomv.yaml test_csrmv.yaml test_csrsv.yaml test_ellmv.yaml test_hybmv.yaml test_bsrmm.yaml test_csrmm.yaml test_csrsm.yaml test_gemmi.yaml test_csrgeam.yaml test_csrgemm.yaml test_bsric0.yaml test_bsrilu0.yaml test_csric0.yaml test_csrilu0.yaml test_csr2coo.yaml test_csr2csc.yaml test_csr2ell.yaml test_csr2hyb.yaml test_bsr2csr.yaml test_csr2bsr.yaml test_coo2csr.yaml test_ell2csr.yaml test_hyb2csr.yaml test_identity.yaml test_csrsort.yaml test_cscsort.yaml test_coosort.yaml test_csricsv.yaml test_csrilusv.yaml test_nnz.yaml test_dense2csr.yaml test_prune_dense2csr.yaml test_prune_dense2csr_by_percentage.yaml test_dense2csc.yaml test_csr2dense.yaml test_csc2dense.yaml test_csr2csr_compress.yaml test_prune_csr2csr.yaml test_prune_csr2csr_by_percentage.yaml
+                   DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml test_axpyi.yaml test_doti.yaml test_dotci.yaml test_gthr.yaml test_gthrz.yaml test_roti.yaml test_sctr.yaml test_bsrmv.yaml test_bsrsv.yaml test_coomv.yaml test_csrmv.yaml test_csrsv.yaml test_ellmv.yaml test_hybmv.yaml test_bsrmm.yaml test_csrmm.yaml test_csrsm.yaml test_gemmi.yaml test_csrgeam.yaml test_csrgemm.yaml test_bsric0.yaml test_bsrilu0.yaml test_csric0.yaml test_csrilu0.yaml test_csr2coo.yaml test_csr2csc.yaml test_gebsr2gebsc.yaml test_csr2ell.yaml test_csr2hyb.yaml test_bsr2csr.yaml test_csr2bsr.yaml test_csr2gebsr.yaml test_coo2csr.yaml test_ell2csr.yaml test_hyb2csr.yaml test_identity.yaml test_csrsort.yaml test_cscsort.yaml test_coosort.yaml test_csricsv.yaml test_csrilusv.yaml test_nnz.yaml test_dense2csr.yaml test_prune_dense2csr.yaml test_prune_dense2csr_by_percentage.yaml test_dense2csc.yaml test_csr2dense.yaml test_csc2dense.yaml test_csr2csr_compress.yaml test_prune_csr2csr.yaml test_prune_csr2csr_by_percentage.yaml test_gebsr2gebsr.yaml
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 add_custom_target(rocsparse-test-data
                   DEPENDS "${ROCSPARSE_TEST_DATA}" )

@@ -129,7 +129,7 @@ include(../cmake/Packaging.cmake)
 if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   rocm_create_package_clients(LIB_NAME rocsparse
                               DESCRIPTION "Radeon Open Compute SPARSE library"
-                              MAINTAINER "Nico Trost"
+                              MAINTAINER "rocSPARSE Maintainer <rocsparse-maintainer@amd.com>"
                               SECTION "dev"
                               VERSION ${rocsparse_VERSION})
 endif()

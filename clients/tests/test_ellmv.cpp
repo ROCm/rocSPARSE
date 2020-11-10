@@ -84,12 +84,13 @@ namespace
             if(arg.matrix == rocsparse_matrix_file_rocalution
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
-                return RocSPARSE_TestName<ellmv>{}
-                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.alpha << '_'
-                       << arg.alphai << '_' << arg.beta << '_' << arg.betai << '_'
-                       << rocsparse_operation2string(arg.transA) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
+                return RocSPARSE_TestName<ellmv>{} << rocsparse_datatype2string(arg.compute_type)
+                                                   << '_' << arg.alpha << '_' << arg.alphai << '_'
+                                                   << arg.beta << '_' << arg.betai << '_'
+                                                   << rocsparse_operation2string(arg.transA) << '_'
+                                                   << rocsparse_indexbase2string(arg.baseA) << '_'
+                                                   << rocsparse_matrix2string(arg.matrix) << '_'
+                                                   << rocsparse_filename2string(arg.filename);
             }
             else
             {

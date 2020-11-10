@@ -136,9 +136,6 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                    T*                        C,
                                                    rocsparse_int             ldc)
 {
-
-    // Stream
-    hipStream_t stream = handle->stream;
     if(block_dim == 2)
     {
         return rocsparse_bsrmm_template_small(handle,

@@ -84,7 +84,7 @@ namespace
             {
                 return RocSPARSE_TestName<csr2coo>{} << rocsparse_indexbase2string(arg.baseA) << '_'
                                                      << rocsparse_matrix2string(arg.matrix) << '_'
-                                                     << arg.filename;
+                                                     << rocsparse_filename2string(arg.filename);
             }
             else
             {

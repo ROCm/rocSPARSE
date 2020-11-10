@@ -70,9 +70,9 @@ add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
 add_library(roc::rocsparse ALIAS rocsparse)
 
 # Target compile options
-target_compile_options(rocsparse PRIVATE -mno-xnack -Xarch_gfx906 -mno-sram-ecc -Xarch_gfx908 -msram-ecc)
+target_compile_options(rocsparse PRIVATE -Wno-unused-command-line-argument -Wall)
 foreach(target ${AMDGPU_TARGETS})
-  target_compile_options(rocsparse PRIVATE --amdgpu-target=${target})
+  target_compile_options(rocsparse PRIVATE --amdgpu-target=${target}:xnack-)
 endforeach()
 
 # Target include directories
@@ -139,7 +139,7 @@ set(ROCSPARSE_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIB
 rocm_create_package(
   NAME ${package_name}
   DESCRIPTION "Radeon Open Compute SPARSE library"
-  MAINTAINER "Nico Trost"
+  MAINTAINER "rocSPARSE Maintainer <rocsparse-maintainer@amd.com>"
   LDCONFIG
   LDCONFIG_DIR ${ROCSPARSE_CONFIG_DIR}
 )

@@ -88,7 +88,8 @@ namespace
                                                      << '_' << rocsparse_action2string(arg.action)
                                                      << '_' << rocsparse_indexbase2string(arg.baseA)
                                                      << '_' << rocsparse_matrix2string(arg.matrix)
-                                                     << '_' << arg.filename;
+                                                     << '_'
+                                                     << rocsparse_filename2string(arg.filename);
             }
             else
             {

@@ -704,17 +704,26 @@ Function name                                                                   
 :cpp:func:`rocsparse_csr2coo`
 :cpp:func:`rocsparse_csr2csc_buffer_size`
 :cpp:func:`rocsparse_Xcsr2csc() <rocsparse_scsr2csc>`                                                                     x      x      x              x
+:cpp:func:`rocsparse_Xgebsr2gebsc_buffer_size`                                                                            x      x      x              x
+:cpp:func:`rocsparse_Xgebsr2gebsc() <rocsparse_sgebsr2gebsc>`                                                             x      x      x              x
 :cpp:func:`rocsparse_csr2ell_width`
 :cpp:func:`rocsparse_Xcsr2ell() <rocsparse_scsr2ell>`                                                                     x      x      x              x
 :cpp:func:`rocsparse_Xcsr2hyb() <rocsparse_scsr2hyb>`                                                                     x      x      x              x
 :cpp:func:`rocsparse_csr2bsr_nnz`
 :cpp:func:`rocsparse_Xcsr2bsr() <rocsparse_scsr2bsr>`                                                                     x      x      x              x
+:cpp:func:`rocsparse_csr2gebsr_nnz`
+:cpp:func:`rocsparse_Xcsr2gebsr_buffer_size() <rocsparse_scsr2gebsr_buffer_size>`                                         x      x      x              x
+:cpp:func:`rocsparse_Xcsr2gebsr() <rocsparse_scsr2gebsr>`                                                                 x      x      x              x
 :cpp:func:`rocsparse_coo2csr`
 :cpp:func:`rocsparse_ell2csr_nnz`
 :cpp:func:`rocsparse_Xell2csr() <rocsparse_sell2csr>`                                                                     x      x      x              x
 :cpp:func:`rocsparse_hyb2csr_buffer_size`
 :cpp:func:`rocsparse_Xhyb2csr() <rocsparse_shyb2csr>`                                                                     x      x      x              x
 :cpp:func:`rocsparse_Xbsr2csr() <rocsparse_sbsr2csr>`                                                                     x      x      x              x
+:cpp:func:`rocsparse_Xgebsr2csr() <rocsparse_sgebsr2csr>`                                                                 x      x      x              x
+:cpp:func:`rocsparse_Xgebsr2gebsr_buffer_size() <rocsparse_sgebsr2gebsr_buffer_size>`                                     x      x      x              x
+:cpp:func:`rocsparse_gebsr2gebsr_nnz()`
+:cpp:func:`rocsparse_Xgebsr2gebsr() <rocsparse_sgebsr2gebsr>`                                                             x      x      x              x
 :cpp:func:`rocsparse_Xcsr2csr_compress() <rocsparse_scsr2csr_compress>`                                                   x      x      x              x
 :cpp:func:`rocsparse_create_identity_permutation`
 :cpp:func:`rocsparse_cscsort_buffer_size`
@@ -1536,6 +1545,28 @@ rocsparse_csr2csc()
   :outline:
 .. doxygenfunction:: rocsparse_zcsr2csc
 
+rocsparse_gebsr2gebsc_buffer_size()
+-----------------------------------
+
+.. doxygenfunction:: rocsparse_sgebsr2gebsc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsr2gebsc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsr2gebsc_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsr2gebsc_buffer_size
+
+rocsparse_gebsr2gebsc()
+-----------------------
+
+.. doxygenfunction:: rocsparse_sgebsr2gebsc
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsr2gebsc
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsr2gebsc
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsr2gebsc
+
 rocsparse_csr2ell_width()
 -------------------------
 
@@ -1606,6 +1637,45 @@ rocsparse_bsr2csr()
   :outline:
 .. doxygenfunction:: rocsparse_zbsr2csr
 
+rocsparse_gebsr2csr()
+---------------------
+
+.. doxygenfunction:: rocsparse_sgebsr2csr
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsr2csr
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsr2csr
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsr2csr
+
+rocsparse_gebsr2gebsr_buffer_size()
+-----------------------------------
+
+.. doxygenfunction:: rocsparse_sgebsr2gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsr2gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsr2gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsr2gebsr_buffer_size
+
+rocsparse_gebsr2gebsr_nnz()
+---------------------------
+
+.. doxygenfunction:: rocsparse_gebsr2gebsr_nnz
+
+rocsparse_gebsr2gebsr()
+-----------------------
+
+.. doxygenfunction:: rocsparse_sgebsr2gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsr2gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsr2gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsr2gebsr
+
+
 rocsparse_csr2bsr_nnz()
 -----------------------
 
@@ -1621,6 +1691,33 @@ rocsparse_csr2bsr()
 .. doxygenfunction:: rocsparse_ccsr2bsr
   :outline:
 .. doxygenfunction:: rocsparse_zcsr2bsr
+
+rocsparse_csr2gebsr_nnz()
+-----------------------
+
+.. doxygenfunction:: rocsparse_csr2gebsr_nnz
+
+rocsparse_csr2gebsr_buffer_size()
+-------------------
+
+.. doxygenfunction:: rocsparse_scsr2gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dcsr2gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_ccsr2gebsr_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zcsr2gebsr_buffer_size
+
+rocsparse_csr2gebsr()
+-------------------
+
+.. doxygenfunction:: rocsparse_scsr2gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_dcsr2gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_ccsr2gebsr
+  :outline:
+.. doxygenfunction:: rocsparse_zcsr2gebsr
 
 rocsparse_csr2csr_compress()
 ----------------------------
@@ -1749,7 +1846,6 @@ rocsparse_prune_dense2csr_buffer_size()
 .. doxygenfunction:: rocsparse_sprune_dense2csr_buffer_size
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr_buffer_size
-  :outline:
 
 rocsparse_prune_dense2csr_nnz()
 -------------------------------
@@ -1757,7 +1853,6 @@ rocsparse_prune_dense2csr_nnz()
 .. doxygenfunction:: rocsparse_sprune_dense2csr_nnz
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr_nnz
-  :outline:
 
 rocsparse_prune_dense2csr()
 ---------------------------
@@ -1765,7 +1860,6 @@ rocsparse_prune_dense2csr()
 .. doxygenfunction:: rocsparse_sprune_dense2csr
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr
-  :outline:
 
 rocsparse_prune_csr2csr_buffer_size()
 -------------------------------------
@@ -1773,7 +1867,6 @@ rocsparse_prune_csr2csr_buffer_size()
 .. doxygenfunction:: rocsparse_sprune_csr2csr_buffer_size
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_buffer_size
-  :outline:
 
 rocsparse_prune_csr2csr_nnz()
 -----------------------------
@@ -1781,7 +1874,6 @@ rocsparse_prune_csr2csr_nnz()
 .. doxygenfunction:: rocsparse_sprune_csr2csr_nnz
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_nnz
-  :outline:
 
 rocsparse_prune_csr2csr()
 -------------------------
@@ -1789,14 +1881,13 @@ rocsparse_prune_csr2csr()
 .. doxygenfunction:: rocsparse_sprune_csr2csr
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr
-  :outline:
+
 rocsparse_prune_dense2csr_by_percentage_buffer_size()
 -----------------------------------------------------
 
 .. doxygenfunction:: rocsparse_sprune_dense2csr_by_percentage_buffer_size
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr_by_percentage_buffer_size
-  :outline:
 
 rocsparse_prune_dense2csr_nnz_by_percentage()
 ---------------------------------------------
@@ -1804,7 +1895,6 @@ rocsparse_prune_dense2csr_nnz_by_percentage()
 .. doxygenfunction:: rocsparse_sprune_dense2csr_nnz_by_percentage
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr_nnz_by_percentage
-  :outline:
 
 rocsparse_prune_dense2csr_by_percentage()
 -----------------------------------------
@@ -1812,7 +1902,6 @@ rocsparse_prune_dense2csr_by_percentage()
 .. doxygenfunction:: rocsparse_sprune_dense2csr_by_percentage
   :outline:
 .. doxygenfunction:: rocsparse_dprune_dense2csr_by_percentage
-  :outline:
 
 rocsparse_prune_csr2csr_by_percentage_buffer_size()
 ---------------------------------------------------
@@ -1820,7 +1909,6 @@ rocsparse_prune_csr2csr_by_percentage_buffer_size()
 .. doxygenfunction:: rocsparse_sprune_csr2csr_by_percentage_buffer_size
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_by_percentage_buffer_size
-  :outline:
 
 rocsparse_prune_csr2csr_nnz_by_percentage()
 -------------------------------------------
@@ -1828,7 +1916,6 @@ rocsparse_prune_csr2csr_nnz_by_percentage()
 .. doxygenfunction:: rocsparse_sprune_csr2csr_nnz_by_percentage
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_nnz_by_percentage
-  :outline:
 
 rocsparse_prune_csr2csr_by_percentage()
 ---------------------------------------
@@ -1836,4 +1923,3 @@ rocsparse_prune_csr2csr_by_percentage()
 .. doxygenfunction:: rocsparse_sprune_csr2csr_by_percentage
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_by_percentage
-  :outline:

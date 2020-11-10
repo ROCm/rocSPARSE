@@ -249,6 +249,10 @@ Functions:
   rocsparse_dcsr2csc: { function: csr2csc, <<: *double_precision }
   rocsparse_ccsr2csc: { function: csr2csc, <<: *single_precision_complex }
   rocsparse_zcsr2csc: { function: csr2csc, <<: *double_precision_complex }
+  rocsparse_sgebsr2gebsc: { function: gebsr2gebsc, <<: *single_precision }
+  rocsparse_dgebsr2gebsc: { function: gebsr2gebsc, <<: *double_precision }
+  rocsparse_cgebsr2gebsc: { function: gebsr2gebsc, <<: *single_precision_complex }
+  rocsparse_zgebsr2gebsc: { function: gebsr2gebsc, <<: *double_precision_complex }
   rocsparse_scsr2ell: { function: csr2ell, <<: *single_precision }
   rocsparse_dcsr2ell: { function: csr2ell, <<: *double_precision }
   rocsparse_ccsr2ell: { function: csr2ell, <<: *single_precision_complex }
@@ -278,6 +282,10 @@ Functions:
   rocsparse_dgebsr2csr: { function: gebsr2csr, <<: *double_precision }
   rocsparse_cgebsr2csr: { function: gebsr2csr, <<: *single_precision_complex }
   rocsparse_zgebsr2csr: { function: gebsr2csr, <<: *double_precision_complex }
+  rocsparse_sgebsr2gebsr: { function: gebsr2gebsr, <<: *single_precision }
+  rocsparse_dgebsr2gebsr: { function: gebsr2gebsr, <<: *double_precision }
+  rocsparse_cgebsr2gebsr: { function: gebsr2gebsr, <<: *single_precision_complex }
+  rocsparse_zgebsr2gebsr: { function: gebsr2gebsr, <<: *double_precision_complex }
   rocsparse_scsr2csr_compress: { function: csr2csr_compress, <<: *single_precision }
   rocsparse_dcsr2csr_compress: { function: csr2csr_compress, <<: *double_precision }
   rocsparse_ccsr2csr_compress: { function: csr2csr_compress, <<: *single_precision_complex }

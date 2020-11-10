@@ -43,12 +43,11 @@ template <rocsparse_direction DIRA, typename T, typename FUNC>
 void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
 {
 
-    static constexpr size_t              safe_size = 100;
-    static constexpr rocsparse_int       M         = 10;
-    static constexpr rocsparse_int       N         = 10;
-    static constexpr rocsparse_int       LD        = M;
-    static constexpr rocsparse_direction direction = DIRA;
-    rocsparse_local_handle               handle;
+    static constexpr size_t        safe_size = 100;
+    static constexpr rocsparse_int M         = 10;
+    static constexpr rocsparse_int N         = 10;
+    static constexpr rocsparse_int LD        = M;
+    rocsparse_local_handle         handle;
 
     device_vector<T>             d_dense_val(safe_size);
     device_vector<rocsparse_int> d_nnz_per_row_columns(2);

@@ -30,6 +30,7 @@ import sys
 import os
 import argparse
 import ctypes
+import glob
 from fnmatch import fnmatchcase
 try:  # Import either the C or pure-Python YAML parser
     from yaml import CLoader as Loader
@@ -385,9 +386,63 @@ def generate(test, function):
         # For sequence arguments, they are expanded into scalars
         elif (type(test[key]) in (tuple, list) and
               key not in param['lists_to_not_expand']):
-            for test[key] in test[key]:
-                generate(test, function)
-            return
+            if key == "filename" and test[key] != "*":
+                for test[key] in test[key]:
+
+                    #
+                    # Get the root path.
+                    #
+                    out_path = os.path.dirname(args['outfile'].name) +  "/../matrices/"
+                    
+                    #
+                    # Get argument.
+                    #
+                    filename_arg = out_path + str(test[key])
+                    
+                    #
+                    # It is a directory.
+                    #
+                    if os.path.isdir(filename_arg):
+                        #
+                        # List the files.
+                        #
+                        names = glob.glob(filename_arg + "/*")
+                        for name in names:
+                            subpath=os.path.splitext(name.replace(out_path,""))[0]
+                            test[key]=[subpath]
+                            generate(test,function)
+                        return
+                    else:                            
+                        #
+                        # Might be a regular expression
+                        #
+                        names = glob.glob(filename_arg)
+                        if not names:
+                            names = glob.glob(filename_arg + ".csr")
+                            if not names:
+                                names = glob.glob(filename_arg + ".bsr")
+                                if not names:
+                                    names = glob.glob(filename_arg + ".bsr")
+                                    if not names:
+                                        print("skip unrecognized filename expression: '" + test[key] + "'")
+                                    else:
+                                        generate(test,function)                                        
+                                else:
+                                    generate(test,function)                                    
+                            else:
+                                generate(test,function)
+                            
+                        else:
+                            for name in names:
+                                subpath=os.path.splitext(name.replace(out_path,""))[0]
+                                test[key]=[subpath]
+                                generate(test,function)
+                            return
+            else:
+                for test[key] in test[key]:
+                    generate(test,function)
+                return
+            
 
     # Replace typed function names with generic functions and types
     if 'rocsparse_function' in test:
