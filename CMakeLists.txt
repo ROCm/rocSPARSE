@@ -89,7 +89,7 @@ set(AMDGPU_TARGETS gfx803;gfx900;gfx906;gfx908 CACHE STRING "List of specific ma
 include(cmake/Dependencies.cmake)
 
 # Setup version
-set(VERSION_STRING "1.18.5  ")
+set(VERSION_STRING "1.18.5")
 rocm_setup_version(VERSION ${VERSION_STRING})
 set(rocsparse_SOVERSION 0.1)
 
