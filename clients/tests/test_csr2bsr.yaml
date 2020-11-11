@@ -78,7 +78,7 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [20245, 50677, 82859]
   N: [12909, 40232, 88180]
-  block_dim: [1, 5, 16, 32]
+  block_dim: [1, 5, 16, 32, 47]
   baseA: [rocsparse_index_base_one]
   baseB: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row, rocsparse_direction_column]
