@@ -393,12 +393,12 @@ def generate(test, function):
                     # Get the root path.
                     #
                     out_path = os.path.dirname(args['outfile'].name) +  "/../matrices/"
-                    
+
                     #
                     # Get argument.
                     #
                     filename_arg = out_path + str(test[key])
-                    
+
                     #
                     # It is a directory.
                     #
@@ -412,7 +412,7 @@ def generate(test, function):
                             test[key]=[subpath]
                             generate(test,function)
                         return
-                    else:                            
+                    else:
                         #
                         # Might be a regular expression
                         #
@@ -426,12 +426,12 @@ def generate(test, function):
                                     if not names:
                                         print("skip unrecognized filename expression: '" + test[key] + "'")
                                     else:
-                                        generate(test,function)                                        
+                                        generate(test,function)
                                 else:
-                                    generate(test,function)                                    
+                                    generate(test,function)
                             else:
                                 generate(test,function)
-                            
+
                         else:
                             for name in names:
                                 subpath=os.path.splitext(name.replace(out_path,""))[0]
@@ -442,7 +442,7 @@ def generate(test, function):
                 for test[key] in test[key]:
                     generate(test,function)
                 return
-            
+
 
     # Replace typed function names with generic functions and types
     if 'rocsparse_function' in test:
