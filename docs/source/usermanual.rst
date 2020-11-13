@@ -359,6 +359,75 @@ with arrays representation
     \text{bsr_col_ind}[4] & = \{0, 1, 0, 1\}
   \end{array}
 
+GEBSR storage format
+--------------------
+The General Block Compressed Sparse Row (GEBSR) storage format represents a :math:`(mb \cdot \text{bsr_row_dim}) \times (nb \cdot \text{bsr_col_dim})` matrix by
+
+=========== ====================================================================================================================================
+mb          number of block rows (integer)
+nb          number of block columns (integer)
+nnzb        number of non-zero blocks (integer)
+bsr_val     array of ``nnzb * bsr_row_dim * bsr_col_dim`` elements containing the data (floating point). Blocks can be stored column-major or row-major.
+bsr_row_ptr array of ``mb+1`` elements that point to the start of every block row (integer).
+bsr_col_ind array of ``nnzb`` elements containing the block column indices (integer).
+bsr_row_dim row dimension of each block (integer).
+bsr_col_dim column dimension of each block (integer).
+=========== ====================================================================================================================================
+
+The GEBSR matrix is expected to be sorted by column indices within each row. If :math:`m` is not evenly divisible by the row block dimension or :math:`n` is not evenly
+divisible by the column block dimension, then zeros are padded to the matrix, such that :math:`mb = (m + \text{bsr_row_dim} - 1) / \text{bsr_row_dim}` and
+:math:`nb = (n + \text{bsr_col_dim} - 1) / \text{bsr_col_dim}`. Consider the following :math:`4 \times 5` matrix and the corresponding GEBSR structures,
+with :math:`\text{bsr_row_dim} = 2`, :math:`\text{bsr_col_dim} = 3`, mb = 2, nb = 2` and :math:`\text{nnzb} = 4` using zero based indexing and column-major storage:
+
+.. math::
+
+  A = \begin{pmatrix}
+        1.0 & 0.0 & 0.0 & 2.0 & 0.0 \\
+        3.0 & 0.0 & 4.0 & 0.0 & 0.0 \\
+        5.0 & 6.0 & 0.0 & 7.0 & 0.0 \\
+        0.0 & 0.0 & 8.0 & 0.0 & 9.0 \\
+      \end{pmatrix}
+
+with the blocks :math:`A_{ij}`
+
+.. math::
+
+  A_{00} = \begin{pmatrix}
+             1.0 & 0.0 & 0.0 \\
+             3.0 & 0.0 & 4.0 \\
+           \end{pmatrix},
+  A_{01} = \begin{pmatrix}
+             2.0 & 0.0 & 0.0 \\
+             0.0 & 0.0 & 0.0 \\
+           \end{pmatrix},
+  A_{10} = \begin{pmatrix}
+             5.0 & 6.0 & 0.0 \\
+             0.0 & 0.0 & 8.0 \\
+           \end{pmatrix},
+  A_{11} = \begin{pmatrix}
+             7.0 & 0.0 & 0.0 \\
+             0.0 & 9.0 & 0.0 \\
+           \end{pmatrix}
+
+such that
+
+.. math::
+
+  A = \begin{pmatrix}
+        A_{00} & A_{01} \\
+        A_{10} & A_{11} \\
+      \end{pmatrix}
+
+with arrays representation
+
+.. math::
+
+  \begin{array}{ll}
+    \text{bsr_val}[24] & = \{1.0, 3.0, 0.0, 0.0, 0.0, 4.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 5.0, 0.0, 6.0, 0.0, 0.0, 8.0, 7.0, 0.0, 0.0, 9.0, 0.0, 0.0\} \\
+    \text{bsr_row_ptr}[3] & = \{0, 2, 4\} \\
+    \text{bsr_col_ind}[4] & = \{0, 1, 0, 1\}
+  \end{array}
+
 ELL storage format
 ------------------
 The Ellpack-Itpack (ELL) storage format represents a :math:`m \times n` matrix by
@@ -1693,12 +1762,12 @@ rocsparse_csr2bsr()
 .. doxygenfunction:: rocsparse_zcsr2bsr
 
 rocsparse_csr2gebsr_nnz()
------------------------
+-------------------------
 
 .. doxygenfunction:: rocsparse_csr2gebsr_nnz
 
 rocsparse_csr2gebsr_buffer_size()
--------------------
+---------------------------------
 
 .. doxygenfunction:: rocsparse_scsr2gebsr_buffer_size
   :outline:
@@ -1709,7 +1778,7 @@ rocsparse_csr2gebsr_buffer_size()
 .. doxygenfunction:: rocsparse_zcsr2gebsr_buffer_size
 
 rocsparse_csr2gebsr()
--------------------
+---------------------
 
 .. doxygenfunction:: rocsparse_scsr2gebsr
   :outline:
