@@ -12215,9 +12215,6 @@ rocsparse_status rocsparse_zgebsr2gebsr_buffer_size(rocsparse_handle            
 *  descr_A      the descriptor of the general BSR sparse matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
 *
 *  @param[in]
-*  bsr_val_A    array of \p nnzb*row_block_dim_A*col_block_dim_A containing the values of the sparse general BSR matrix \p A.
-*
-*  @param[in]
 *  bsr_row_ptr_A array of \p mb+1 elements that point to the start of every block row of the
 *              sparse general BSR matrix \p A.
 *  @param[in]
