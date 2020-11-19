@@ -21,17 +21,7 @@
  *
  * ************************************************************************ */
 
-#include "utility.hpp"
-#include <rocsparse.hpp>
-
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
+#include "testing.hpp"
 
 template <typename T>
 void testing_gebsr2csr_bad_arg(const Arguments& arg)
@@ -292,21 +282,14 @@ void testing_gebsr2csr_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_gebsr2csr(const Arguments& arg)
 {
-    rocsparse_int         M             = arg.M;
-    rocsparse_int         N             = arg.N;
-    rocsparse_int         K             = arg.K;
-    rocsparse_int         dim_x         = arg.dimx;
-    rocsparse_int         dim_y         = arg.dimy;
-    rocsparse_int         dim_z         = arg.dimz;
-    rocsparse_index_base  bsr_base      = arg.baseA;
-    rocsparse_index_base  csr_base      = arg.baseB;
-    rocsparse_matrix_init mat           = arg.matrix;
-    rocsparse_direction   direction     = arg.direction;
-    rocsparse_int         row_block_dim = arg.row_block_dimA;
-    rocsparse_int         col_block_dim = arg.col_block_dimA;
-    bool                  full_rank     = false;
-    std::string           filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+    rocsparse_matrix_factory<T> matrix_factory(arg);
+    rocsparse_int               M             = arg.M;
+    rocsparse_int               N             = arg.N;
+    rocsparse_direction         direction     = arg.direction;
+    rocsparse_index_base        bsr_base      = arg.baseA;
+    rocsparse_index_base        csr_base      = arg.baseB;
+    rocsparse_int               row_block_dim = arg.row_block_dimA;
+    rocsparse_int               col_block_dim = arg.col_block_dimA;
 
     rocsparse_int Mb = M;
     rocsparse_int Nb = N;
@@ -371,9 +354,9 @@ void testing_gebsr2csr(const Arguments& arg)
     host_vector<rocsparse_int> hbsr_col_ind;
     host_vector<T>             hbsr_val;
 
-    rocsparse_seedrand();
     rocsparse_int nnzb = 0;
-    rocsparse_init_gebsr_matrix_from_csr(hbsr_row_ptr,
+    rocsparse_init_gebsr_matrix_from_csr(matrix_factory,
+                                         hbsr_row_ptr,
                                          hbsr_col_ind,
                                          hbsr_val,
                                          direction,
@@ -381,16 +364,8 @@ void testing_gebsr2csr(const Arguments& arg)
                                          Nb,
                                          row_block_dim,
                                          col_block_dim,
-                                         K,
-                                         dim_x,
-                                         dim_y,
-                                         dim_z,
                                          nnzb,
-                                         bsr_base,
-                                         mat,
-                                         filename.c_str(),
-                                         false,
-                                         full_rank);
+                                         bsr_base);
 
     M                 = Mb * row_block_dim;
     N                 = Nb * col_block_dim;

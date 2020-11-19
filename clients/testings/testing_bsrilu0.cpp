@@ -20,32 +20,8 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "utility.hpp"
-#include <rocsparse.hpp>
 
-#include "rocsparse_data.hpp"
-#include "rocsparse_datatype2string.hpp"
-#include "rocsparse_test.hpp"
-#include "testing_bsrilu0.hpp"
-#include "type_dispatch.hpp"
-
-#include <cctype>
-#include <complex>
-#include <cstring>
-#include <type_traits>
-
-#include <iomanip>
-
-#include "flops.hpp"
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
-
+#include "testing.hpp"
 #include "testing_csrilu0.hpp"
 
 template <typename T>
@@ -385,22 +361,19 @@ void testing_bsrilu0_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_bsrilu0(const Arguments& arg)
 {
-    rocsparse_int             M           = arg.M;
-    rocsparse_int             N           = arg.N;
-    rocsparse_int             K           = arg.K;
-    rocsparse_int             block_dim   = arg.block_dim;
-    rocsparse_int             dim_x       = arg.dimx;
-    rocsparse_int             dim_y       = arg.dimy;
-    rocsparse_int             dim_z       = arg.dimz;
-    rocsparse_analysis_policy apol        = arg.apol;
-    rocsparse_solve_policy    spol        = arg.spol;
-    int                       boost       = arg.numericboost;
-    T                         h_boost_tol = static_cast<T>(arg.boosttol);
-    rocsparse_index_base      base        = arg.baseA;
-    rocsparse_direction       direction   = arg.direction;
-    rocsparse_matrix_init     mat         = arg.matrix;
-    bool                      full_rank   = true;
-    std::string               filename
+    static constexpr bool       to_int    = false;
+    static constexpr bool       full_rank = true;
+    rocsparse_matrix_factory<T> matrix_factory(arg, to_int, full_rank);
+    rocsparse_int               M           = arg.M;
+    rocsparse_int               N           = arg.N;
+    rocsparse_int               block_dim   = arg.block_dim;
+    rocsparse_analysis_policy   apol        = arg.apol;
+    rocsparse_solve_policy      spol        = arg.spol;
+    int                         boost       = arg.numericboost;
+    T                           h_boost_tol = static_cast<T>(arg.boosttol);
+    rocsparse_index_base        base        = arg.baseA;
+    rocsparse_direction         direction   = arg.direction;
+    std::string                 filename
         = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
     T h_boost_val = arg.get_boostval<T>();
@@ -486,25 +459,9 @@ void testing_bsrilu0(const Arguments& arg)
     host_vector<rocsparse_int> hcsr_col_ind_orig;
     host_vector<T>             hcsr_val_orig;
 
-    rocsparse_seedrand();
-
     // Generate CSR matrix on host (or read from file)
     rocsparse_int nnz;
-    rocsparse_init_csr_matrix(hcsr_row_ptr_orig,
-                              hcsr_col_ind_orig,
-                              hcsr_val_orig,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz,
-                              base,
-                              mat,
-                              filename.c_str(),
-                              false,
-                              full_rank);
+    matrix_factory.init_csr(hcsr_row_ptr_orig, hcsr_col_ind_orig, hcsr_val_orig, M, N, nnz, base);
 
     // M and N can be modified by rocsparse_init_csr_matrix if reading from a file
     Mb = (M + block_dim - 1) / block_dim;

@@ -20,23 +20,13 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
+#include "testing.hpp"
 #include "utility.hpp"
 #include <rocsparse.hpp>
 
-#include "flops.hpp"
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
-#include "utility.hpp"
-
 template <typename T>
-inline void rocsparse_init_csr_and_bsr_matrix(std::vector<rocsparse_int>& csr_row_ptr,
+inline void rocsparse_init_csr_and_bsr_matrix(const Arguments&            arg,
+                                              std::vector<rocsparse_int>& csr_row_ptr,
                                               std::vector<rocsparse_int>& csr_col_ind,
                                               std::vector<T>&             csr_val,
                                               rocsparse_int&              M,
@@ -49,16 +39,8 @@ inline void rocsparse_init_csr_and_bsr_matrix(std::vector<rocsparse_int>& csr_ro
                                               rocsparse_int&              Mb,
                                               rocsparse_int&              Nb,
                                               rocsparse_int               block_dim,
-                                              rocsparse_int&              K,
-                                              rocsparse_int               dim_x,
-                                              rocsparse_int               dim_y,
-                                              rocsparse_int               dim_z,
                                               rocsparse_int&              nnzb,
-                                              rocsparse_index_base        bsr_base,
-                                              rocsparse_matrix_init       matrix,
-                                              const char*                 filename,
-                                              bool                        toint     = false,
-                                              bool                        full_rank = false)
+                                              rocsparse_index_base        bsr_base)
 {
 
     // Matrix handle and descriptors used for conversion
@@ -80,21 +62,9 @@ inline void rocsparse_init_csr_and_bsr_matrix(std::vector<rocsparse_int>& csr_ro
     // Generate uncompressed CSR matrix on host (or read from file)
     rocsparse_int nnz = 0;
 
-    rocsparse_init_csr_matrix(hcsr_row_ptr_A,
-                              hcsr_col_ind_A,
-                              hcsr_val_A,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz,
-                              csr_base,
-                              matrix,
-                              filename,
-                              false,
-                              full_rank);
+    rocsparse_matrix_factory<T> matrix_factory(arg);
+
+    matrix_factory.init_csr(hcsr_row_ptr_A, hcsr_col_ind_A, hcsr_val_A, M, N, nnz, csr_base);
 
     // Uncompressed CSR matrix on device
     device_vector<rocsparse_int> dcsr_row_ptr_A(M + 1);
@@ -202,9 +172,6 @@ inline void rocsparse_init_csr_and_bsr_matrix(std::vector<rocsparse_int>& csr_ro
         bsr_val.data(), dbsr_val, sizeof(T) * nnzb * block_dim * block_dim, hipMemcpyDeviceToHost));
 }
 
-#if 0
-#include "testing_bsr2csr.hpp"
-#endif
 template <typename T>
 void testing_bsrmm_bad_arg(const Arguments& arg)
 {
@@ -590,21 +557,14 @@ void testing_bsrmm_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_bsrmm(const Arguments& arg)
 {
-    rocsparse_int         M         = arg.M;
-    rocsparse_int         N         = arg.N;
-    rocsparse_int         K         = arg.K;
-    rocsparse_int         block_dim = arg.block_dim;
-    rocsparse_int         dim_x     = arg.dimx;
-    rocsparse_int         dim_y     = arg.dimy;
-    rocsparse_int         dim_z     = arg.dimz;
-    rocsparse_operation   transA    = arg.transA;
-    rocsparse_operation   transB    = arg.transB;
-    rocsparse_direction   direction = arg.direction;
-    rocsparse_index_base  base      = arg.baseA;
-    rocsparse_matrix_init mat       = arg.matrix;
-    bool                  full_rank = false;
-    std::string           filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+    rocsparse_int        M         = arg.M;
+    rocsparse_int        N         = arg.N;
+    rocsparse_int        K         = arg.K;
+    rocsparse_int        block_dim = arg.block_dim;
+    rocsparse_operation  transA    = arg.transA;
+    rocsparse_operation  transB    = arg.transB;
+    rocsparse_direction  direction = arg.direction;
+    rocsparse_index_base base      = arg.baseA;
 
     rocsparse_int Mb = -1;
     rocsparse_int Kb = -1;
@@ -685,9 +645,9 @@ void testing_bsrmm(const Arguments& arg)
     rocsparse_seedrand();
 
     // Generate original host CSR matrix and then use it to fill in the host BSR matrix
-    rocsparse_int nnzb  = 0;
-    rocsparse_int dummy = 0;
-    rocsparse_init_csr_and_bsr_matrix(hcsr_row_ptr_orig,
+    rocsparse_int nnzb = 0;
+    rocsparse_init_csr_and_bsr_matrix(arg,
+                                      hcsr_row_ptr_orig,
                                       hcsr_col_ind_orig,
                                       hcsr_val_orig,
                                       M,
@@ -700,16 +660,8 @@ void testing_bsrmm(const Arguments& arg)
                                       Mb,
                                       Kb,
                                       block_dim,
-                                      dummy,
-                                      dim_x,
-                                      dim_y,
-                                      dim_z,
                                       nnzb,
-                                      base,
-                                      mat,
-                                      filename.c_str(),
-                                      false,
-                                      full_rank);
+                                      base);
 
     // M and K and Mb and Kb can be modified by rocsparse_init_csr_and_bsr_matrix
     M = Mb * block_dim;

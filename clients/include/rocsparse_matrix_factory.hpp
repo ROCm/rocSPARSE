@@ -28,9 +28,14 @@
 #include "rocsparse_init.hpp"
 #include "rocsparse_matrix.hpp"
 
+std::string rocsparse_exepath();
+
 template <typename T>
 struct rocsparse_matrix_factory_base
 {
+protected:
+    rocsparse_matrix_factory_base(){};
+
 public:
     virtual ~rocsparse_matrix_factory_base(){};
     virtual void init_csr(std::vector<rocsparse_int>& csr_row_ptr,
@@ -125,7 +130,6 @@ public:
                           rocsparse_int&              nnz,
                           rocsparse_index_base        base)
     {
-        rocsparse_seedrand();
         // Compute non-zero entries of the matrix
         nnz = M * ((M > 1000 || N > 1000) ? 2.0 / std::max(M, N) : 0.02) * N;
 
@@ -415,8 +419,6 @@ public:
     }
 };
 
-std::string rocsparse_exepath();
-
 template <typename T>
 struct rocsparse_matrix_factory : public rocsparse_matrix_factory_base<T>
 {
@@ -450,6 +452,11 @@ public:
         , arg_block_dim(arg.block_dim)
         , arg_base(arg.baseA)
     {
+        //
+        // FORCE REINIT.
+        //
+        rocsparse_seedrand();
+
         switch(arg.matrix)
         {
         case rocsparse_matrix_random:
@@ -570,5 +577,75 @@ public:
             that.row_ind, that.col_ind, that.val, that.m, that.n, that.nnz, that.base);
     }
 };
+
+//
+// Transform a csr matrix in a general bsr matrix.
+// It fills the values such as the conversion to the csr matrix
+// will give to 1,2,3,4,5,6,7,8,9, etc...
+//
+template <typename T>
+inline void rocsparse_init_gebsr_matrix_from_csr(rocsparse_matrix_factory<T>& matrix_factory,
+                                                 std::vector<rocsparse_int>&  bsr_row_ptr,
+                                                 std::vector<rocsparse_int>&  bsr_col_ind,
+                                                 std::vector<T>&              bsr_val,
+                                                 rocsparse_direction          direction,
+                                                 rocsparse_int&               Mb,
+                                                 rocsparse_int&               Nb,
+                                                 rocsparse_int                row_block_dim,
+                                                 rocsparse_int                col_block_dim,
+                                                 rocsparse_int&               nnzb,
+                                                 rocsparse_index_base         bsr_base)
+{
+    // Uncompressed CSR matrix on host
+    std::vector<T> hcsr_val_A;
+
+    // Generate uncompressed CSR matrix on host (or read from file)
+    matrix_factory.init_csr(bsr_row_ptr, bsr_col_ind, hcsr_val_A, Mb, Nb, nnzb, bsr_base);
+
+    bsr_val.resize(row_block_dim * col_block_dim * nnzb);
+    rocsparse_int idx = 0;
+    switch(direction)
+    {
+    case rocsparse_direction_column:
+    {
+        for(rocsparse_int i = 0; i < Mb; ++i)
+        {
+            for(rocsparse_int r = 0; r < row_block_dim; ++r)
+            {
+                for(rocsparse_int k = bsr_row_ptr[i] - bsr_base; k < bsr_row_ptr[i + 1] - bsr_base;
+                    ++k)
+                {
+                    for(rocsparse_int c = 0; c < col_block_dim; ++c)
+                    {
+                        bsr_val[k * row_block_dim * col_block_dim + c * row_block_dim + r]
+                            = static_cast<T>(++idx);
+                    }
+                }
+            }
+        }
+        break;
+    }
+
+    case rocsparse_direction_row:
+    {
+        for(rocsparse_int i = 0; i < Mb; ++i)
+        {
+            for(rocsparse_int r = 0; r < row_block_dim; ++r)
+            {
+                for(rocsparse_int k = bsr_row_ptr[i] - bsr_base; k < bsr_row_ptr[i + 1] - bsr_base;
+                    ++k)
+                {
+                    for(rocsparse_int c = 0; c < col_block_dim; ++c)
+                    {
+                        bsr_val[k * row_block_dim * col_block_dim + r * col_block_dim + c]
+                            = static_cast<T>(++idx);
+                    }
+                }
+            }
+        }
+        break;
+    }
+    }
+}
 
 #endif // ROCSPARSE_MATRIX_FACTORY_HPP

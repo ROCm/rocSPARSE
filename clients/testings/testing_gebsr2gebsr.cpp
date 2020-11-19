@@ -1,15 +1,26 @@
-#include <rocsparse.hpp>
-
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_matrix_factory.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
-#include "utility.hpp"
+/* ************************************************************************
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * ************************************************************************ */
+#include "testing.hpp"
 
 template <typename T>
 void testing_gebsr2gebsr_bad_arg(const Arguments& arg)
@@ -616,23 +627,16 @@ void testing_gebsr2gebsr_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_gebsr2gebsr(const Arguments& arg)
 {
-    rocsparse_int         M               = arg.M;
-    rocsparse_int         N               = arg.N;
-    rocsparse_int         K               = arg.K;
-    rocsparse_int         dim_x           = arg.dimx;
-    rocsparse_int         dim_y           = arg.dimy;
-    rocsparse_int         dim_z           = arg.dimz;
-    rocsparse_index_base  base_A          = arg.baseA;
-    rocsparse_index_base  base_C          = arg.baseB;
-    rocsparse_matrix_init mat             = arg.matrix;
-    rocsparse_direction   direction       = arg.direction;
-    rocsparse_int         row_block_dim_A = arg.row_block_dimA;
-    rocsparse_int         col_block_dim_A = arg.col_block_dimA;
-    rocsparse_int         row_block_dim_C = arg.row_block_dimB;
-    rocsparse_int         col_block_dim_C = arg.col_block_dimB;
-    bool                  full_rank       = false;
-    std::string           filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+    rocsparse_matrix_factory<T> matrix_factory(arg);
+    rocsparse_int               M               = arg.M;
+    rocsparse_int               N               = arg.N;
+    rocsparse_index_base        base_A          = arg.baseA;
+    rocsparse_index_base        base_C          = arg.baseB;
+    rocsparse_direction         direction       = arg.direction;
+    rocsparse_int               row_block_dim_A = arg.row_block_dimA;
+    rocsparse_int               col_block_dim_A = arg.col_block_dimA;
+    rocsparse_int               row_block_dim_C = arg.row_block_dimB;
+    rocsparse_int               col_block_dim_C = arg.col_block_dimB;
 
     rocsparse_int Mb = -1;
     rocsparse_int Nb = -1;
@@ -709,9 +713,9 @@ void testing_gebsr2gebsr(const Arguments& arg)
     host_vector<rocsparse_int> hbsr_col_ind_A;
     host_vector<T>             hbsr_val_A;
 
-    rocsparse_seedrand();
     rocsparse_int hnnzb_A = 0;
-    rocsparse_init_gebsr_matrix_from_csr(hbsr_row_ptr_A,
+    rocsparse_init_gebsr_matrix_from_csr(matrix_factory,
+                                         hbsr_row_ptr_A,
                                          hbsr_col_ind_A,
                                          hbsr_val_A,
                                          direction,
@@ -719,16 +723,8 @@ void testing_gebsr2gebsr(const Arguments& arg)
                                          Nb,
                                          row_block_dim_A,
                                          col_block_dim_A,
-                                         K,
-                                         dim_x,
-                                         dim_y,
-                                         dim_z,
                                          hnnzb_A,
-                                         base_A,
-                                         mat,
-                                         filename.c_str(),
-                                         false,
-                                         full_rank);
+                                         base_A);
 
     // Mb and Nb can be modified by rocsparse_init_csr_matrix if reading from a file
     M    = Mb * row_block_dim_A;

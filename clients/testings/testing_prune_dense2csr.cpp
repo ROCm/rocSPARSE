@@ -21,19 +21,7 @@
 *
 * ************************************************************************ */
 
-#include "rocsparse.hpp"
-#include "utility.hpp"
-
-#include <rocsparse.hpp>
-
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
+#include "testing.hpp"
 
 template <typename T>
 void testing_prune_dense2csr_bad_arg(const Arguments& arg)
