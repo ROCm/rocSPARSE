@@ -21,11 +21,9 @@
  *
  * ************************************************************************ */
 
-
 #include "testing.hpp"
 
 #include "testing_csrilu0.hpp"
-
 
 template <typename T>
 void testing_csrilu0_bad_arg(const Arguments& arg)
