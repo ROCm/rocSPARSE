@@ -21,33 +21,20 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse.hpp"
-#include "utility.hpp"
-
-#include <rocsparse.hpp>
-
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
-#include "utility.hpp"
+#include "testing.hpp"
 
 template <typename T>
 void testing_csricsv(const Arguments& arg)
 {
     rocsparse_int             M         = arg.M;
     rocsparse_int             N         = arg.N;
-    rocsparse_int             K         = arg.K;
-    rocsparse_int             dim_x     = arg.dimx;
-    rocsparse_int             dim_y     = arg.dimy;
-    rocsparse_int             dim_z     = arg.dimz;
     rocsparse_analysis_policy apol      = arg.apol;
     rocsparse_solve_policy    spol      = arg.spol;
     rocsparse_index_base      base      = arg.baseA;
-    rocsparse_matrix_init     mat       = arg.matrix;
-    bool                      full_rank = true;
-    std::string filename = rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+    static constexpr bool     full_rank = true;
+    static constexpr bool     to_int    = true;
+
+    rocsparse_matrix_factory<T> matrix_factory(arg, to_int, full_rank);
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -78,25 +65,9 @@ void testing_csricsv(const Arguments& arg)
     host_vector<rocsparse_int> h_numeric_pivot_LT_1(1);
     host_vector<rocsparse_int> h_numeric_pivot_LT_2(1);
 
-    rocsparse_seedrand();
-
     // Sample matrix
     rocsparse_int nnz;
-    rocsparse_init_csr_matrix(hcsr_row_ptr,
-                              hcsr_col_ind,
-                              hcsr_val_gold,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz,
-                              base,
-                              mat,
-                              filename.c_str(),
-                              true,
-                              full_rank);
+    matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val_gold, M, N, nnz, base);
 
     // Allocate device memory
     device_vector<rocsparse_int> dcsr_row_ptr(M + 1);

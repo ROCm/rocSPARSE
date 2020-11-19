@@ -21,20 +21,8 @@
 *
 * ************************************************************************ */
 
+#include "testing.hpp"
 #include <iomanip>
-
-#include "utility.hpp"
-#include <rocsparse.hpp>
-
-#include "flops.hpp"
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
 
 template <typename T>
 void testing_bsric0_bad_arg(const Arguments& arg)
@@ -356,20 +344,19 @@ void testing_bsric0_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_bsric0(const Arguments& arg)
 {
+    static constexpr bool       toint     = false;
+    static constexpr bool       full_rank = true;
+    rocsparse_matrix_factory<T> matrix_factory(arg, toint, full_rank);
+
     rocsparse_int             M         = arg.M;
     rocsparse_int             N         = arg.N;
-    rocsparse_int             K         = arg.K;
     rocsparse_int             block_dim = arg.block_dim;
-    rocsparse_int             dim_x     = arg.dimx;
-    rocsparse_int             dim_y     = arg.dimy;
-    rocsparse_int             dim_z     = arg.dimz;
     rocsparse_analysis_policy apol      = arg.apol;
     rocsparse_solve_policy    spol      = arg.spol;
     rocsparse_index_base      base      = arg.baseA;
     rocsparse_direction       direction = arg.direction;
-    rocsparse_matrix_init     mat       = arg.matrix;
-    bool                      full_rank = true;
-    std::string               filename
+
+    std::string filename
         = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
     rocsparse_int Mb = -1;
@@ -465,25 +452,9 @@ void testing_bsric0(const Arguments& arg)
     host_vector<rocsparse_int> hcsr_col_ind_orig;
     host_vector<T>             hcsr_val_orig;
 
-    rocsparse_seedrand();
-
     // Generate CSR matrix on host (or read from file)
     rocsparse_int nnz;
-    rocsparse_init_csr_matrix(hcsr_row_ptr_orig,
-                              hcsr_col_ind_orig,
-                              hcsr_val_orig,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz,
-                              base,
-                              mat,
-                              filename.c_str(),
-                              false,
-                              full_rank);
+    matrix_factory.init_csr(hcsr_row_ptr_orig, hcsr_col_ind_orig, hcsr_val_orig, M, N, nnz, base);
 
     // M and N can be modified by rocsparse_init_csr_matrix if reading from a file
     Mb = (M + block_dim - 1) / block_dim;

@@ -21,34 +21,7 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse.hpp"
-#include "utility.hpp"
-
-#include "rocsparse_data.hpp"
-#include "rocsparse_datatype2string.hpp"
-#include "rocsparse_test.hpp"
-#include "testing_prune_csr2csr.hpp"
-#include "type_dispatch.hpp"
-
-#include <cctype>
-#include <cstring>
-#include <type_traits>
-
-#include <rocsparse.hpp>
-
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
-#include "utility.hpp"
-
-#include <boost/program_options.hpp>
-#include <iostream>
-#include <rocsparse.h>
+#include "testing.hpp"
 
 template <typename T>
 void testing_prune_csr2csr_bad_arg(const Arguments& arg)
@@ -541,19 +514,12 @@ void testing_prune_csr2csr_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_prune_csr2csr(const Arguments& arg)
 {
-    rocsparse_int         M          = arg.M;
-    rocsparse_int         N          = arg.N;
-    rocsparse_int         K          = arg.K;
-    T                     threshold  = static_cast<T>(arg.threshold);
-    rocsparse_int         dim_x      = arg.dimx;
-    rocsparse_int         dim_y      = arg.dimy;
-    rocsparse_int         dim_z      = arg.dimz;
-    rocsparse_index_base  csr_base_A = arg.baseA;
-    rocsparse_index_base  csr_base_C = arg.baseB;
-    rocsparse_matrix_init mat        = arg.matrix;
-    bool                  full_rank  = false;
-    std::string           filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+    rocsparse_matrix_factory<T> matrix_factory(arg);
+    rocsparse_int               M          = arg.M;
+    rocsparse_int               N          = arg.N;
+    T                           threshold  = static_cast<T>(arg.threshold);
+    rocsparse_index_base        csr_base_A = arg.baseA;
+    rocsparse_index_base        csr_base_C = arg.baseB;
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -596,25 +562,9 @@ void testing_prune_csr2csr(const Arguments& arg)
 
     host_vector<rocsparse_int> h_nnz_total_dev_host_ptr(1);
 
-    rocsparse_seedrand();
-
     // Generate uncompressed CSR matrix on host (or read from file)
     rocsparse_int nnz_A = 0;
-    rocsparse_init_csr_matrix(h_csr_row_ptr_A,
-                              h_csr_col_ind_A,
-                              h_csr_val_A,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz_A,
-                              csr_base_A,
-                              mat,
-                              filename.c_str(),
-                              false,
-                              full_rank);
+    matrix_factory.init_csr(h_csr_row_ptr_A, h_csr_col_ind_A, h_csr_val_A, M, N, nnz_A, csr_base_A);
 
     // Allocate device memory for input CSR matrix
     device_vector<rocsparse_int> d_nnz_total_dev_host_ptr(1);

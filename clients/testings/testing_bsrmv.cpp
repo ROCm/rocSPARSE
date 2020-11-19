@@ -20,19 +20,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
-#include "utility.hpp"
-#include <rocsparse.hpp>
-
-#include "flops.hpp"
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
+#include "testing.hpp"
 
 template <typename T>
 void testing_bsrmv_bad_arg(const Arguments& arg)
@@ -246,23 +234,15 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_bsrmv(const Arguments& arg)
 {
-    rocsparse_int         M         = arg.M;
-    rocsparse_int         N         = arg.N;
-    rocsparse_int         K         = arg.K;
-    rocsparse_int         dim_x     = arg.dimx;
-    rocsparse_int         dim_y     = arg.dimy;
-    rocsparse_int         dim_z     = arg.dimz;
-    rocsparse_direction   dir       = arg.direction;
-    rocsparse_operation   trans     = arg.transA;
-    rocsparse_index_base  base      = arg.baseA;
-    rocsparse_int         bsr_dim   = arg.block_dim;
-    rocsparse_matrix_init mat       = arg.matrix;
-    bool                  full_rank = false;
-    std::string           filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
-    T h_alpha = arg.get_alpha<T>();
-    T h_beta  = arg.get_beta<T>();
+    rocsparse_int        M       = arg.M;
+    rocsparse_int        N       = arg.N;
+    rocsparse_direction  dir     = arg.direction;
+    rocsparse_operation  trans   = arg.transA;
+    rocsparse_index_base base    = arg.baseA;
+    rocsparse_int        bsr_dim = arg.block_dim;
+    T                    h_alpha = arg.get_alpha<T>();
+    T                    h_beta  = arg.get_beta<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -274,9 +254,9 @@ void testing_bsrmv(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
     // BSR dimensions
-    rocsparse_int mb = (M + bsr_dim - 1) / bsr_dim;
-    rocsparse_int nb = (N + bsr_dim - 1) / bsr_dim;
 
+    rocsparse_int mb = (bsr_dim > 0) ? (M + bsr_dim - 1) / bsr_dim : 0;
+    rocsparse_int nb = (bsr_dim > 0) ? (N + bsr_dim - 1) / bsr_dim : 0;
     // Argument sanity check before allocating invalid memory
     if(mb <= 0 || nb <= 0 || M <= 0 || N <= 0 || bsr_dim <= 0)
     {
@@ -322,8 +302,6 @@ void testing_bsrmv(const Arguments& arg)
     host_vector<rocsparse_int> hcsr_col_ind;
     host_vector<T>             hcsr_val;
 
-    rocsparse_seedrand();
-
     // Wavefront size
     int dev;
     hipGetDevice(&dev);
@@ -331,25 +309,13 @@ void testing_bsrmv(const Arguments& arg)
     hipDeviceProp_t prop;
     hipGetDeviceProperties(&prop, dev);
 
-    bool type = (prop.warpSize == 32) ? (arg.timing ? false : true) : false;
+    bool                        type = (prop.warpSize == 32) ? (arg.timing ? false : true) : false;
+    static constexpr bool       full_rank = false;
+    rocsparse_matrix_factory<T> matrix_factory(arg, type, full_rank);
 
     // Sample matrix
     rocsparse_int nnz;
-    rocsparse_init_csr_matrix(hcsr_row_ptr,
-                              hcsr_col_ind,
-                              hcsr_val,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz,
-                              base,
-                              mat,
-                              filename.c_str(),
-                              type,
-                              full_rank);
+    matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val, M, N, nnz, base);
 
     // Update BSR block dimensions from generated matrix
     mb = (M + bsr_dim - 1) / bsr_dim;

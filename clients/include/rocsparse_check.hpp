@@ -142,18 +142,19 @@ inline void unit_check_general(
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_EQ);
 }
 
-template <typename T>
-void near_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, T* hCPU, T* hGPU);
+template <typename U, typename V>
+void near_check_general_template(
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, U* hCPU, U* hGPU, V tol);
 
 template <>
-inline void near_check_general(
-    rocsparse_int M, rocsparse_int N, rocsparse_int lda, float* hCPU, float* hGPU)
+inline void near_check_general_template(
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, float* hCPU, float* hGPU, float tol)
 {
     for(rocsparse_int j = 0; j < N; ++j)
     {
         for(rocsparse_int i = 0; i < M; ++i)
         {
-            float compare_val = std::max(std::abs(hCPU[i + j * lda] * 1e-3f),
+            float compare_val = std::max(std::abs(hCPU[i + j * lda] * tol),
                                          10 * std::numeric_limits<float>::epsilon());
 #ifdef GOOGLE_TEST
             if(rocsparse_isnan(hCPU[i + j * lda]))
@@ -183,14 +184,14 @@ inline void near_check_general(
 }
 
 template <>
-inline void near_check_general(
-    rocsparse_int M, rocsparse_int N, rocsparse_int lda, double* hCPU, double* hGPU)
+inline void near_check_general_template(
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, double* hCPU, double* hGPU, double tol)
 {
     for(rocsparse_int j = 0; j < N; ++j)
     {
         for(rocsparse_int i = 0; i < M; ++i)
         {
-            double compare_val = std::max(std::abs(hCPU[i + j * lda] * 1e-10),
+            double compare_val = std::max(std::abs(hCPU[i + j * lda] * tol),
                                           10 * std::numeric_limits<double>::epsilon());
 #ifdef GOOGLE_TEST
             if(rocsparse_isnan(hCPU[i + j * lda]))
@@ -220,20 +221,21 @@ inline void near_check_general(
 }
 
 template <>
-inline void near_check_general(rocsparse_int            M,
-                               rocsparse_int            N,
-                               rocsparse_int            lda,
-                               rocsparse_float_complex* hCPU,
-                               rocsparse_float_complex* hGPU)
+inline void near_check_general_template(rocsparse_int            M,
+                                        rocsparse_int            N,
+                                        rocsparse_int            lda,
+                                        rocsparse_float_complex* hCPU,
+                                        rocsparse_float_complex* hGPU,
+                                        float                    tol)
 {
     for(rocsparse_int j = 0; j < N; ++j)
     {
         for(rocsparse_int i = 0; i < M; ++i)
         {
             rocsparse_float_complex compare_val
-                = rocsparse_float_complex(std::max(std::abs(std::real(hCPU[i + j * lda]) * 1e-3f),
+                = rocsparse_float_complex(std::max(std::abs(std::real(hCPU[i + j * lda]) * tol),
                                                    10 * std::numeric_limits<float>::epsilon()),
-                                          std::max(std::abs(std::imag(hCPU[i + j * lda]) * 1e-3f),
+                                          std::max(std::abs(std::imag(hCPU[i + j * lda]) * tol),
                                                    10 * std::numeric_limits<float>::epsilon()));
 #ifdef GOOGLE_TEST
             if(rocsparse_isnan(hCPU[i + j * lda]))
@@ -271,20 +273,21 @@ inline void near_check_general(rocsparse_int            M,
 }
 
 template <>
-inline void near_check_general(rocsparse_int             M,
-                               rocsparse_int             N,
-                               rocsparse_int             lda,
-                               rocsparse_double_complex* hCPU,
-                               rocsparse_double_complex* hGPU)
+inline void near_check_general_template(rocsparse_int             M,
+                                        rocsparse_int             N,
+                                        rocsparse_int             lda,
+                                        rocsparse_double_complex* hCPU,
+                                        rocsparse_double_complex* hGPU,
+                                        double                    tol)
 {
     for(rocsparse_int j = 0; j < N; ++j)
     {
         for(rocsparse_int i = 0; i < M; ++i)
         {
             rocsparse_double_complex compare_val
-                = rocsparse_double_complex(std::max(std::abs(std::real(hCPU[i + j * lda]) * 1e-10),
+                = rocsparse_double_complex(std::max(std::abs(std::real(hCPU[i + j * lda]) * tol),
                                                     10 * std::numeric_limits<double>::epsilon()),
-                                           std::max(std::abs(std::imag(hCPU[i + j * lda]) * 1e-10),
+                                           std::max(std::abs(std::imag(hCPU[i + j * lda]) * tol),
                                                     10 * std::numeric_limits<double>::epsilon()));
 #ifdef GOOGLE_TEST
             if(rocsparse_isnan(hCPU[i + j * lda]))
@@ -319,6 +322,47 @@ inline void near_check_general(rocsparse_int             M,
 #endif
         }
     }
+}
+
+template <typename T>
+struct default_tolerance;
+
+template <>
+struct default_tolerance<float>
+{
+    static constexpr float value = 1.0e-3f;
+};
+
+template <>
+struct default_tolerance<double>
+{
+    static constexpr double value = 1.0e-10;
+};
+
+template <>
+struct default_tolerance<rocsparse_float_complex>
+{
+    static constexpr float value = default_tolerance<float>::value;
+};
+
+template <>
+struct default_tolerance<rocsparse_double_complex>
+{
+    static constexpr double value = default_tolerance<double>::value;
+};
+
+template <typename T>
+inline void
+    near_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, T* hCPU, T* hGPU)
+{
+    near_check_general_template<T>(M, N, lda, hCPU, hGPU, default_tolerance<T>::value);
+}
+
+template <typename U, typename V>
+inline void
+    near_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, U* hCPU, U* hGPU, V tol)
+{
+    near_check_general_template<U>(M, N, lda, hCPU, hGPU, tol);
 }
 
 #endif // ROCSPARSE_CHECK_HPP

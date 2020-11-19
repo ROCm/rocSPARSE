@@ -21,20 +21,11 @@
  *
  * ************************************************************************ */
 
-#include "utility.hpp"
-#include <rocsparse.hpp>
 
-#include "flops.hpp"
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
+#include "testing.hpp"
 
 #include "testing_csrilu0.hpp"
+
 
 template <typename T>
 void testing_csrilu0_bad_arg(const Arguments& arg)
@@ -335,21 +326,18 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_csrilu0(const Arguments& arg)
 {
-    rocsparse_int             M           = arg.M;
-    rocsparse_int             N           = arg.N;
-    rocsparse_int             K           = arg.K;
-    rocsparse_int             dim_x       = arg.dimx;
-    rocsparse_int             dim_y       = arg.dimy;
-    rocsparse_int             dim_z       = arg.dimz;
+    rocsparse_int M = arg.M;
+    rocsparse_int N = arg.N;
+
     rocsparse_analysis_policy apol        = arg.apol;
     rocsparse_solve_policy    spol        = arg.spol;
     int                       boost       = arg.numericboost;
     T                         h_boost_tol = static_cast<T>(arg.boosttol);
     rocsparse_index_base      base        = arg.baseA;
-    rocsparse_matrix_init     mat         = arg.matrix;
-    bool                      full_rank   = true;
-    std::string               filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+
+    const bool                  to_int    = arg.timing ? false : true;
+    static constexpr bool       full_rank = true;
+    rocsparse_matrix_factory<T> matrix_factory(arg, to_int, full_rank);
 
     T h_boost_val = arg.get_boostval<T>();
 
@@ -429,25 +417,9 @@ void testing_csrilu0(const Arguments& arg)
     host_vector<rocsparse_int> hcsr_col_ind;
     host_vector<T>             hcsr_val_gold;
 
-    rocsparse_seedrand();
-
     // Sample matrix
     rocsparse_int nnz;
-    rocsparse_init_csr_matrix(hcsr_row_ptr,
-                              hcsr_col_ind,
-                              hcsr_val_gold,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz,
-                              base,
-                              mat,
-                              filename.c_str(),
-                              arg.timing ? false : true,
-                              full_rank);
+    matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val_gold, M, N, nnz, base);
 
     // Allocate host memory for vectors
     host_vector<T>             hcsr_val_1(nnz);

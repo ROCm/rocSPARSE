@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,7 @@
  *
  * ************************************************************************ */
 
-#include "utility.hpp"
-#include <rocsparse.hpp>
-
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_matrix_factory.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
+#include "testing.hpp"
 
 template <typename T>
 void testing_gebsr2gebsc_bad_arg(const Arguments& arg)

@@ -20,20 +20,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
-#include "utility.hpp"
-#include <rocsparse.hpp>
-
-#include "flops.hpp"
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
-#include "utility.hpp"
+#include "testing.hpp"
 
 template <typename T>
 void testing_bsrsv_bad_arg(const Arguments& arg)
@@ -457,24 +444,20 @@ void testing_bsrsv_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_bsrsv(const Arguments& arg)
 {
-    rocsparse_int             M         = arg.M;
-    rocsparse_int             N         = arg.N;
-    rocsparse_int             K         = arg.K;
-    rocsparse_int             dim_x     = arg.dimx;
-    rocsparse_int             dim_y     = arg.dimy;
-    rocsparse_int             dim_z     = arg.dimz;
-    rocsparse_direction       dir       = arg.direction;
-    rocsparse_operation       trans     = arg.transA;
-    rocsparse_diag_type       diag      = arg.diag;
-    rocsparse_fill_mode       uplo      = arg.uplo;
-    rocsparse_analysis_policy apol      = arg.apol;
-    rocsparse_solve_policy    spol      = arg.spol;
-    rocsparse_index_base      base      = arg.baseA;
-    rocsparse_int             bsr_dim   = arg.block_dim;
-    rocsparse_matrix_init     mat       = arg.matrix;
-    bool                      full_rank = true;
-    std::string               filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+    static constexpr bool       to_int    = false;
+    static constexpr bool       full_rank = true;
+    rocsparse_matrix_factory<T> matrix_factory(arg, to_int, full_rank);
+
+    rocsparse_int             M       = arg.M;
+    rocsparse_int             N       = arg.N;
+    rocsparse_direction       dir     = arg.direction;
+    rocsparse_operation       trans   = arg.transA;
+    rocsparse_diag_type       diag    = arg.diag;
+    rocsparse_fill_mode       uplo    = arg.uplo;
+    rocsparse_analysis_policy apol    = arg.apol;
+    rocsparse_solve_policy    spol    = arg.spol;
+    rocsparse_index_base      base    = arg.baseA;
+    rocsparse_int             bsr_dim = arg.block_dim;
 
     T h_alpha = arg.get_alpha<T>();
 
@@ -582,26 +565,8 @@ void testing_bsrsv(const Arguments& arg)
     host_vector<rocsparse_int> hcsr_row_ptr;
     host_vector<rocsparse_int> hcsr_col_ind;
     host_vector<T>             hcsr_val;
-
-    rocsparse_seedrand();
-
-    // Sample matrix
-    rocsparse_int nnz;
-    rocsparse_init_csr_matrix(hcsr_row_ptr,
-                              hcsr_col_ind,
-                              hcsr_val,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz,
-                              base,
-                              mat,
-                              filename.c_str(),
-                              false,
-                              full_rank);
+    rocsparse_int              nnz;
+    matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val, M, N, nnz, base);
 
     // Non-squared matrices are not supported
     if(M != N)

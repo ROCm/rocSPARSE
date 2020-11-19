@@ -21,18 +21,7 @@
  *
  * ************************************************************************ */
 
-#include "utility.hpp"
-#include <rocsparse.hpp>
-
-#include "flops.hpp"
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
+#include "testing.hpp"
 
 template <typename T>
 void testing_csrgeam_bad_arg(const Arguments& arg)
@@ -671,22 +660,16 @@ void testing_csrgeam_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_csrgeam(const Arguments& arg)
 {
-    rocsparse_int         M         = arg.M;
-    rocsparse_int         N         = arg.N;
-    rocsparse_int         K         = arg.K;
-    rocsparse_int         dim_x     = arg.dimx;
-    rocsparse_int         dim_y     = arg.dimy;
-    rocsparse_int         dim_z     = arg.dimz;
-    rocsparse_index_base  baseA     = arg.baseA;
-    rocsparse_index_base  baseB     = arg.baseB;
-    rocsparse_index_base  baseC     = arg.baseC;
-    rocsparse_matrix_init mat       = arg.matrix;
-    bool                  full_rank = false;
-    std::string           filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
-
-    T h_alpha = arg.get_alpha<T>();
-    T h_beta  = arg.get_beta<T>();
+    rocsparse_int                      M         = arg.M;
+    rocsparse_int                      N         = arg.N;
+    rocsparse_index_base               baseA     = arg.baseA;
+    rocsparse_index_base               baseB     = arg.baseB;
+    rocsparse_index_base               baseC     = arg.baseC;
+    static constexpr bool              full_rank = false;
+    rocsparse_matrix_factory<T>        matrix_factory(arg, arg.timing ? false : true, full_rank);
+    rocsparse_matrix_factory_random<T> matrix_factory_random(full_rank);
+    T                                  h_alpha = arg.get_alpha<T>();
+    T                                  h_beta  = arg.get_beta<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -779,8 +762,6 @@ void testing_csrgeam(const Arguments& arg)
     host_vector<rocsparse_int> hcsr_col_ind_B;
     host_vector<T>             hcsr_val_B;
 
-    rocsparse_seedrand();
-
     // Sample matrix
     rocsparse_int nnz_A = 4;
     rocsparse_int nnz_B = 4;
@@ -789,38 +770,10 @@ void testing_csrgeam(const Arguments& arg)
     rocsparse_int hnnz_C_2;
 
     // Sample A
-    rocsparse_init_csr_matrix(hcsr_row_ptr_A,
-                              hcsr_col_ind_A,
-                              hcsr_val_A,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz_A,
-                              baseA,
-                              mat,
-                              filename.c_str(),
-                              arg.timing ? false : true,
-                              full_rank);
+    matrix_factory.init_csr(hcsr_row_ptr_A, hcsr_col_ind_A, hcsr_val_A, M, N, nnz_A, baseA);
 
     // Sample B
-    rocsparse_init_csr_matrix(hcsr_row_ptr_B,
-                              hcsr_col_ind_B,
-                              hcsr_val_B,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz_B,
-                              baseB,
-                              rocsparse_matrix_random,
-                              filename.c_str(),
-                              arg.timing ? false : true,
-                              full_rank);
+    matrix_factory_random.init_csr(hcsr_row_ptr_B, hcsr_col_ind_B, hcsr_val_B, M, N, nnz_B, baseB);
 
     // Allocate device memory
     device_vector<rocsparse_int> dcsr_row_ptr_A(M + 1);

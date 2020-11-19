@@ -21,17 +21,7 @@
  *
  * ************************************************************************ */
 
-#include "utility.hpp"
-#include <rocsparse.hpp>
-
-#include "gbyte.hpp"
-#include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_init.hpp"
-#include "rocsparse_math.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
+#include "testing.hpp"
 
 template <typename T>
 void testing_csr2csc_bad_arg(const Arguments& arg)
@@ -214,18 +204,11 @@ void testing_csr2csc_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_csr2csc(const Arguments& arg)
 {
-    rocsparse_int         M         = arg.M;
-    rocsparse_int         N         = arg.N;
-    rocsparse_int         K         = arg.K;
-    rocsparse_int         dim_x     = arg.dimx;
-    rocsparse_int         dim_y     = arg.dimy;
-    rocsparse_int         dim_z     = arg.dimz;
-    rocsparse_index_base  base      = arg.baseA;
-    rocsparse_matrix_init mat       = arg.matrix;
-    rocsparse_action      action    = arg.action;
-    bool                  full_rank = false;
-    std::string           filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+    rocsparse_matrix_factory<T> matrix_factory(arg);
+    rocsparse_int               M      = arg.M;
+    rocsparse_int               N      = arg.N;
+    rocsparse_index_base        base   = arg.baseA;
+    rocsparse_action            action = arg.action;
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -281,25 +264,9 @@ void testing_csr2csc(const Arguments& arg)
     host_vector<rocsparse_int> hcsr_col_ind;
     host_vector<T>             hcsr_val;
 
-    rocsparse_seedrand();
-
     // Sample matrix
     rocsparse_int nnz;
-    rocsparse_init_csr_matrix(hcsr_row_ptr,
-                              hcsr_col_ind,
-                              hcsr_val,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz,
-                              base,
-                              mat,
-                              filename.c_str(),
-                              false,
-                              full_rank);
+    matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val, M, N, nnz, base);
 
     // Allocate host memory for CSC matrix
     host_vector<rocsparse_int> hcsc_row_ind(nnz);
