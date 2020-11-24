@@ -72,7 +72,7 @@ add_library(roc::rocsparse ALIAS rocsparse)
 # Target compile options
 target_compile_options(rocsparse PRIVATE -Wno-unused-command-line-argument -Wall)
 foreach(target ${AMDGPU_TARGETS})
-  target_compile_options(rocsparse PRIVATE --amdgpu-target=${target}:xnack-)
+  target_compile_options(rocsparse PRIVATE --amdgpu-target=${target})
 endforeach()
 
 # Target include directories
