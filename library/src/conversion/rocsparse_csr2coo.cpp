@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -20,13 +21,9 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "rocsparse.h"
-
-#include "csr2coo_device.h"
-#include "handle.h"
 #include "utility.h"
 
-#include <hip/hip_runtime.h>
+#include "csr2coo_device.h"
 
 extern "C" rocsparse_status rocsparse_csr2coo(rocsparse_handle     handle,
                                               const rocsparse_int* csr_row_ptr,

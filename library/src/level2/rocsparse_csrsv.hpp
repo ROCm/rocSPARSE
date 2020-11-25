@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -25,18 +26,13 @@
 #ifndef ROCSPARSE_CSRSV_HPP
 #define ROCSPARSE_CSRSV_HPP
 
-#include "rocsparse.h"
-
 #include "definitions.h"
-#include "handle.h"
-#include "utility.h"
 
 #include "../level1/rocsparse_gthr.hpp"
 #include "csrsv_device.h"
 
 #include <limits>
 
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 
 template <typename T>

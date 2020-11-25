@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -27,8 +28,6 @@
 
 #include "common.h"
 #include "handle.h"
-
-#include <hip/hip_runtime.h>
 
 // ELL SpMV for general, non-transposed matrices
 template <typename T, unsigned int BLOCKSIZE>

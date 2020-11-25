@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -24,14 +25,10 @@
 #pragma once
 #ifndef ROCSPARSE_CSR2BSR_HPP
 #define ROCSPARSE_CSR2BSR_HPP
+#include "utility.h"
 
 #include "csr2bsr_device.h"
 #include "definitions.h"
-#include "handle.h"
-#include "rocsparse.h"
-#include "utility.h"
-
-#include <hip/hip_runtime.h>
 
 #define launch_csr2bsr_2_32_kernel(T, direction, block_size, segment_size)            \
     hipLaunchKernelGGL((csr2bsr_2_32_kernel<T, direction, block_size, segment_size>), \

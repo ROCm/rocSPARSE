@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -27,13 +28,6 @@
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "csrsm_device.h"
-#include "definitions.h"
-#include "rocsparse.h"
-#include "utility.h"
-
-#include <hip/hip_runtime.h>
-#include <limits>
-#include <rocprim/rocprim.hpp>
 
 template <typename T>
 rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          handle,

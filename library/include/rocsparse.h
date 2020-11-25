@@ -30,9 +30,7 @@
 #define _ROCSPARSE_H_
 
 #include "rocsparse-auxiliary.h"
-#include "rocsparse-export.h"
 #include "rocsparse-functions.h"
-#include "rocsparse-types.h"
 #include "rocsparse-version.h"
 
 #endif /* _ROCSPARSE_H_ */

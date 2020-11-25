@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -20,8 +21,6 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
-#include "rocsparse.h"
 
 #include "rocsparse_gemmi.hpp"
 

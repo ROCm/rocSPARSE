@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
 * Copyright (c) 2020 Advanced Micro Devices, Inc.
 *
@@ -26,9 +27,6 @@
 #define BSRMV_DEVICE_H
 
 #include "common.h"
-#include "rocsparse.h"
-
-#include <hip/hip_runtime.h>
 
 // General BSRMV that works for any BSR block dimensions
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE>

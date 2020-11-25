@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define CSRMV_DEVICE_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
 static __device__ void csrmvn_general_device(rocsparse_int        m,

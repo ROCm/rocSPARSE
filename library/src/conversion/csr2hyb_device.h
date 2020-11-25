@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define CSR2HYB_DEVICE_H
 
 #include "handle.h"
-
-#include <hip/hip_runtime.h>
 
 // Compute non-zero entries per CSR row to obtain the COO nnz per row.
 template <unsigned int BLOCKSIZE>

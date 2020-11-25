@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -20,15 +21,9 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "rocsparse.h"
 
 #include "rocsparse_ell2csr.hpp"
 
-#include "definitions.h"
-#include "ell2csr_device.h"
-#include "utility.h"
-
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 
 /*

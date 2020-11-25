@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -20,12 +21,8 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "rocsparse.h"
 
 #include "rocsparse_gebsr2gebsc.hpp"
-
-#include <hip/hip_runtime_api.h>
-#include <rocprim/rocprim.hpp>
 
 template <typename T>
 rocsparse_status rocsparse_gebsr2gebsc_buffer_size_template(rocsparse_handle     handle,

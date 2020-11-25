@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -22,13 +23,6 @@
  * ************************************************************************ */
 
 #include "rocsparse_csrgemm.hpp"
-#include "definitions.h"
-#include "handle.h"
-#include "rocsparse.h"
-#include "utility.h"
-
-#include <hip/hip_runtime.h>
-#include <rocprim/rocprim.hpp>
 
 template <unsigned int BLOCKSIZE>
 __launch_bounds__(BLOCKSIZE) __global__ void csrgemm_index_base(rocsparse_int* nnz)

@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -27,11 +28,7 @@
 
 #include "definitions.h"
 #include "gemmi_device.h"
-#include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T, unsigned int BLOCKSIZE>
 __launch_bounds__(BLOCKSIZE) __global__

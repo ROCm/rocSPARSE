@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -27,12 +28,8 @@
 
 #include "handle.h"
 #include "logging.h"
-#include "rocsparse.h"
-
 #include <algorithm>
 #include <exception>
-#include <fstream>
-#include <string>
 
 // Return the leftmost significant bit position
 #if defined(rocsparse_ILP64)

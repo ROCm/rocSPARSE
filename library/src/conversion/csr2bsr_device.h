@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define CSR2BSR_DEVICE_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 template <rocsparse_int BLOCK_SIZE, rocsparse_int WF_SEGMENT_SIZE>
 __launch_bounds__(BLOCK_SIZE) __global__

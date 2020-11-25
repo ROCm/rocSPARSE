@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -27,13 +28,6 @@
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "bsrsv_device.h"
-#include "definitions.h"
-#include "handle.h"
-#include "rocsparse.h"
-#include "utility.h"
-
-#include <hip/hip_runtime.h>
-#include <limits>
 
 #define LAUNCH_BSRSV_GTHR_DIM(bsize, wfsize, dim)                      \
     hipLaunchKernelGGL((bsrsv_gather<T, wfsize, bsize / wfsize, dim>), \

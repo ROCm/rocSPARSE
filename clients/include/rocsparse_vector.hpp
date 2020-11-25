@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -26,13 +27,9 @@
 #define ROCSPARSE_VECTOR_HPP
 
 #include "rocsparse_init.hpp"
-#include "rocsparse_test.hpp"
 
 #include <cinttypes>
-#include <cstdio>
 #include <locale.h>
-#include <rocsparse.h>
-#include <vector>
 
 /* ============================================================================================ */
 /*! \brief  base-class to allocate/deallocate device memory */

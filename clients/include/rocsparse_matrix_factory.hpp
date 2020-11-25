@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -25,7 +26,6 @@
 #ifndef ROCSPARSE_MATRIX_FACTORY_HPP
 #define ROCSPARSE_MATRIX_FACTORY_HPP
 
-#include "rocsparse_init.hpp"
 #include "rocsparse_matrix.hpp"
 
 std::string rocsparse_exepath();

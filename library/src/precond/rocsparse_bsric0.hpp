@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -28,10 +29,6 @@
 #include "../level2/rocsparse_csrsv.hpp"
 #include "bsric0_device.h"
 #include "definitions.h"
-#include "rocsparse.h"
-#include "utility.h"
-
-#include <hip/hip_runtime.h>
 
 #define LAUNCH_BSRIC_2_8_UNROLLED(T, block_size, maz_nnzb, bsr_block_dim)                    \
     hipLaunchKernelGGL((bsric0_2_8_unrolled_kernel<T, block_size, maz_nnzb, bsr_block_dim>), \

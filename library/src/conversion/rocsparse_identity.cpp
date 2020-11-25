@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -20,13 +21,9 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "rocsparse.h"
-
-#include "handle.h"
-#include "identity_device.h"
 #include "utility.h"
 
-#include <hip/hip_runtime.h>
+#include "identity_device.h"
 
 extern "C" rocsparse_status rocsparse_create_identity_permutation(rocsparse_handle handle,
                                                                   rocsparse_int    n,

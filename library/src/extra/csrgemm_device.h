@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -26,9 +27,6 @@
 #define CSRGEMM_DEVICE_H
 
 #include "common.h"
-#include "rocsparse.h"
-
-#include <hip/hip_runtime.h>
 
 // Copy an array
 template <unsigned int BLOCKSIZE>

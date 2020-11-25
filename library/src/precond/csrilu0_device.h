@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define CSRILU0_DEVICE_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH>
 __device__ void csrilu0_hash_kernel(rocsparse_int m,

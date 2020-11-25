@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -24,13 +25,9 @@
 #pragma once
 #ifndef ROCSPARSE_SCTR_HPP
 #define ROCSPARSE_SCTR_HPP
-
-#include "handle.h"
-#include "rocsparse.h"
-#include "sctr_device.h"
 #include "utility.h"
 
-#include <hip/hip_runtime.h>
+#include "sctr_device.h"
 
 template <typename T>
 rocsparse_status rocsparse_sctr_template(rocsparse_handle     handle,

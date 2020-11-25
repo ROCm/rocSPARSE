@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -24,14 +25,10 @@
 #pragma once
 #ifndef ROCSPARSE_GEBSR2GEBSC_HPP
 #define ROCSPARSE_GEBSR2GEBSC_HPP
+#include "utility.h"
 
 #include "definitions.h"
 #include "gebsr2gebsc_device.h"
-#include "handle.h"
-#include "rocsparse.h"
-#include "utility.h"
-
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 
 template <typename T>

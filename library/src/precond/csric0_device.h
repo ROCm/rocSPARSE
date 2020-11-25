@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
 * Copyright (c) 2020 Advanced Micro Devices, Inc.
 *
@@ -26,8 +27,6 @@
 #define CSRIC0_DEVICE_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH>
 __launch_bounds__(BLOCKSIZE) __global__

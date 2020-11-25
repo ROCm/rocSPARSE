@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -22,11 +23,7 @@
  * ************************************************************************ */
 
 #include "bsrmm_device_large.h"
-#include "handle.h"
-#include "rocsparse.h"
 #include "rocsparse_csrmm.hpp"
-#include "utility.h"
-#include <hip/hip_runtime.h>
 
 template <rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y, typename T, typename U>
 __launch_bounds__(BSR_BLOCK_DIM* BLK_SIZE_Y) __global__

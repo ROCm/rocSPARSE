@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -25,13 +26,10 @@
 #ifndef ROCSPARSE_DOTCI_HPP
 #define ROCSPARSE_DOTCI_HPP
 
-#include "definitions.h"
-#include "dotci_device.h"
-#include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
 
-#include <hip/hip_runtime.h>
+#include "definitions.h"
+#include "dotci_device.h"
 
 template <typename T>
 rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,

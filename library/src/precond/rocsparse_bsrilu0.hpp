@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -29,9 +30,6 @@
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "bsrilu0_device.h"
-#include "definitions.h"
-#include "rocsparse.h"
-#include "utility.h"
 
 #define LAUNCH_BSRILU28()                                                            \
     if(handle->pointer_mode == rocsparse_pointer_mode_device)                        \

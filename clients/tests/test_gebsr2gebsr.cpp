@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -22,14 +23,11 @@
  * ************************************************************************ */
 
 #include "rocsparse_data.hpp"
-#include "rocsparse_datatype2string.hpp"
 #include "rocsparse_test.hpp"
 #include "testing_gebsr2gebsr.hpp"
 #include "type_dispatch.hpp"
 
 #include <cctype>
-#include <cstring>
-#include <type_traits>
 
 namespace
 {

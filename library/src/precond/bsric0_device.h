@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
 * Copyright (c) 2020 Advanced Micro Devices, Inc.
 *
@@ -26,8 +27,6 @@
 #define BSRIC0_DEVICE_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM>
 __launch_bounds__(BLOCKSIZE) __global__

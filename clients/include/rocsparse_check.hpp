@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -26,12 +27,12 @@
 #define ROCSPARSE_CHECK_HPP
 
 #include <cassert>
-#include <rocsparse.h>
+
+#include "rocsparse_math.hpp"
+
 #ifdef GOOGLE_TEST
 #include <gtest/gtest.h>
 #endif
-
-#include "rocsparse_math.hpp"
 
 #ifndef GOOGLE_TEST
 

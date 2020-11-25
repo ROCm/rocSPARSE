@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -24,13 +25,9 @@
 #pragma once
 #ifndef ROCSPARSE_ROTI_HPP
 #define ROCSPARSE_ROTI_HPP
-
-#include "handle.h"
-#include "rocsparse.h"
-#include "roti_device.h"
 #include "utility.h"
 
-#include <hip/hip_runtime.h>
+#include "roti_device.h"
 
 template <typename T, unsigned int BLOCKSIZE>
 __launch_bounds__(BLOCKSIZE) __global__ void roti_kernel_host_scalar(rocsparse_int        nnz,

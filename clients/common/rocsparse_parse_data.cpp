@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -25,12 +26,7 @@
 #include "rocsparse_data.hpp"
 #include "utility.hpp"
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <fcntl.h>
-#include <iostream>
-#include <string>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>

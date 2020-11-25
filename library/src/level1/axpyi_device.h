@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define AXPYI_DEVICE_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 // y = a * x + y kernel for sparse x and dense y
 template <typename T, unsigned int BLOCKSIZE>

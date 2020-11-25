@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -34,11 +35,9 @@
 #include "rocsparse_datatype2string.hpp"
 #include "rocsparse_math.hpp"
 
-#include <cmath>
 #include <cstring>
 #include <iomanip>
 #include <iostream>
-#include <rocsparse.h>
 
 struct Arguments
 {

@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -29,11 +30,6 @@
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "csrilu0_device.h"
-#include "definitions.h"
-#include "rocsparse.h"
-#include "utility.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T, typename U>
 rocsparse_status rocsparse_csrilu0_numeric_boost_template(rocsparse_handle   handle,

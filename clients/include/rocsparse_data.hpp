@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -33,8 +34,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <fstream>
-#include <functional>
-#include <iostream>
 #include <iterator>
 #include <string>
 

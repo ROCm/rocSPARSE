@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -22,12 +23,7 @@
  * ************************************************************************ */
 
 #include "bsrmm_device_small.h"
-
-#include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
-
-#include <hip/hip_runtime.h>
 
 template <rocsparse_int BLOCKSIZE,
           rocsparse_int WF_SIZE,

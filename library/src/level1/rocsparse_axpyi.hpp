@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -26,11 +27,7 @@
 #define ROCSPARSE_AXPYI_HPP
 
 #include "axpyi_device.h"
-#include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T, unsigned int BLOCKSIZE>
 __launch_bounds__(BLOCKSIZE) __global__ void axpyi_kernel_host_scalar(rocsparse_int        nnz,

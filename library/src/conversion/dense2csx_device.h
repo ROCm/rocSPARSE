@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -26,7 +27,6 @@
 
 #include "handle.h"
 #include <hip/hip_runtime.h>
-#include <iostream>
 
 template <rocsparse_int NUMROWS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
 __launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) static __global__

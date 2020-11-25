@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -24,11 +25,6 @@
 #include "flops.hpp"
 #include "gbyte.hpp"
 #include "rocsparse_check.hpp"
-#include "rocsparse_host.hpp"
-#include "rocsparse_math.hpp"
 #include "rocsparse_matrix_factory.hpp"
-#include "rocsparse_random.hpp"
-#include "rocsparse_test.hpp"
-#include "rocsparse_vector.hpp"
 #include "utility.hpp"
 #include <rocsparse.hpp>

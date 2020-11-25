@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -21,13 +22,11 @@
  *
  * ************************************************************************ */
 #include "rocsparse_nnz.hpp"
-#include "rocsparse.h"
 
 #include "definitions.h"
 
 #include "utility.h"
 
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 
 template <typename T>

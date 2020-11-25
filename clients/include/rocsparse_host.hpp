@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -27,11 +28,8 @@
 
 #include "rocsparse_test.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <hip/hip_runtime_api.h>
 #include <limits>
-#include <rocsparse.h>
 #include <vector>
 
 #ifdef _OPENMP

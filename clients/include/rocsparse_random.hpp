@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -28,7 +29,6 @@
 #include "rocsparse_math.hpp"
 
 #include <random>
-#include <rocsparse.h>
 #include <type_traits>
 
 /* ==================================================================================== */
