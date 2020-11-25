@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define BSRILU0_DEVICE_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM>
 __device__ void bsrilu0_2_8_device(rocsparse_direction  dir,

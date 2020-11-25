@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -25,12 +26,9 @@
 #ifndef ROCSPARSE_GTHRZ_HPP
 #define ROCSPARSE_GTHRZ_HPP
 
-#include "gthrz_device.h"
-#include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
 
-#include <hip/hip_runtime.h>
+#include "gthrz_device.h"
 
 template <typename T>
 rocsparse_status rocsparse_gthrz_template(rocsparse_handle     handle,

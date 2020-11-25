@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -27,11 +28,8 @@
 
 #include "csrgemm_device.h"
 #include "definitions.h"
-#include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
 
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 #include <type_traits>
 

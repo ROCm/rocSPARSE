@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -27,10 +28,8 @@
 
 #include "definitions.h"
 #include "hyb2csr_device.h"
-#include "rocsparse.h"
 #include "utility.h"
 
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 
 template <typename T>

@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -21,7 +22,6 @@
  *
  * ************************************************************************ */
 #include "definitions.h"
-#include "rocsparse.h"
 
 #include "rocsparse_csrmv.hpp"
 

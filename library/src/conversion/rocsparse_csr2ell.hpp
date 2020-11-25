@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -24,14 +25,10 @@
 #pragma once
 #ifndef ROCSPARSE_CSR2ELL_HPP
 #define ROCSPARSE_CSR2ELL_HPP
+#include "utility.h"
 
 #include "csr2ell_device.h"
 #include "definitions.h"
-#include "handle.h"
-#include "rocsparse.h"
-#include "utility.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T>
 rocsparse_status rocsparse_csr2ell_template(rocsparse_handle          handle,

@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -27,11 +28,7 @@
 
 #include "definitions.h"
 #include "gebsr2csr_device.h"
-#include "handle.h"
-#include "rocsparse.h"
 #include "utility.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T>
 rocsparse_status rocsparse_gebsr2csr_template(rocsparse_handle          handle,

@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -27,10 +28,7 @@
 
 #include "csrgeam_device.h"
 #include "definitions.h"
-#include "rocsparse.h"
 #include "utility.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE>
 __launch_bounds__(BLOCKSIZE) __global__

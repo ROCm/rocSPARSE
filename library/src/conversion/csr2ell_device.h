@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -27,8 +28,6 @@
 
 #include "common.h"
 #include "handle.h"
-
-#include <hip/hip_runtime.h>
 
 // Compute non-zero entries per CSR row and do a block reduction over the maximum
 // Store result in a workspace for final reduction on part2

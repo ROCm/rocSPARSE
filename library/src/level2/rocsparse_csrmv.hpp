@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -25,13 +26,8 @@
 #ifndef ROCSPARSE_CSRMV_HPP
 #define ROCSPARSE_CSRMV_HPP
 
-#include "rocsparse.h"
-
 #include "csrmv_device.h"
-#include "handle.h"
 #include "utility.h"
-
-#include <hip/hip_runtime.h>
 
 #define BLOCK_SIZE 1024
 #define BLOCK_MULTIPLIER 3

@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
 * Copyright (c) 2020 Advanced Micro Devices, Inc.
 *
@@ -26,7 +27,6 @@
 
 #include "common.h"
 #include "handle.h"
-#include <hip/hip_runtime.h>
 
 static __global__ void nnz_total_device_kernel(rocsparse_int m,
                                                const rocsparse_int* __restrict__ csr_row_ptr,

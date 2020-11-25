@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -22,7 +23,6 @@
  * ************************************************************************ */
 
 #include "testing_dense2csx.hpp"
-#include "utility.hpp"
 
 template <typename T>
 void testing_dense2csr_bad_arg(const Arguments& arg)

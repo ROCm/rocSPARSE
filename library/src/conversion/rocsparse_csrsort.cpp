@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -20,14 +21,11 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "rocsparse.h"
+#include "utility.h"
 
 #include "csrsort_device.h"
 #include "definitions.h"
-#include "handle.h"
-#include "utility.h"
 
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 
 extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle     handle,

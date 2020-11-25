@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define COOMV_DEVICE_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 // Scale kernel for beta != 1.0
 template <typename T>

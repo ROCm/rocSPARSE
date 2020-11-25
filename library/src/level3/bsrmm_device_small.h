@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define BSRMM_DEVICE_SMALL_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int WF_SIZE, rocsparse_int BSR_BLOCK_DIM, typename T>
 static __device__ void bsrmmnn_small_blockdim_device(rocsparse_direction direction,

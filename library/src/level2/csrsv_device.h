@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define CSRSV_DEVICE_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 extern "C" void __builtin_amdgcn_s_sleep(int);
 

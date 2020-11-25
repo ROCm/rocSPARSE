@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -30,8 +31,6 @@
 
 #include <algorithm>
 #include <cstdio>
-#include <iostream>
-#include <rocsparse.h>
 #include <sstream>
 #include <string>
 #include <type_traits>

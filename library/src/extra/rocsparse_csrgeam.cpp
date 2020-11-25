@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -22,11 +23,6 @@
  * ************************************************************************ */
 
 #include "rocsparse_csrgeam.hpp"
-#include "csrgeam_device.h"
-#include "definitions.h"
-#include "rocsparse.h"
-
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 
 /*

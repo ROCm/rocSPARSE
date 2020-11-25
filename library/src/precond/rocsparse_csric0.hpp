@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -27,11 +28,6 @@
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "csric0_device.h"
-#include "definitions.h"
-#include "rocsparse.h"
-#include "utility.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T>
 rocsparse_status rocsparse_csric0_analysis_template(rocsparse_handle          handle,

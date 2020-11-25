@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -20,11 +21,10 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "definitions.h"
-#include "rocsparse.h"
-#include "rocsparse_dense2csx.hpp"
 #include "utility.h"
-#include <hip/hip_runtime.h>
+
+#include "definitions.h"
+#include "rocsparse_dense2csx.hpp"
 #include <rocprim/rocprim.hpp>
 
 template <rocsparse_direction DIRA, typename T>

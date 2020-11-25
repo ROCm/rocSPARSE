@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define CSR2CSR_COMPRESS_DEVICE_H
 
 #include <limits>
-
-#include <hip/hip_runtime.h>
 
 #include "common.h"
 

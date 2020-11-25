@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define BSRMM_DEVICE_LARGE_EXT_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 template <rocsparse_int BSR_BLOCK_DIM,
           rocsparse_int BLK_SIZE_Y,

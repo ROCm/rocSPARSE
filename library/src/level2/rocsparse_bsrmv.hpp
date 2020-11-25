@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -25,14 +26,11 @@
 #ifndef ROCSPARSE_BSRMV_HPP
 #define ROCSPARSE_BSRMV_HPP
 
-#include "bsrmv_device.h"
 #include "definitions.h"
-#include "handle.h"
-#include "rocsparse.h"
-#include "rocsparse_csrmv.hpp"
-#include "utility.h"
 
-#include <hip/hip_runtime.h>
+#include "rocsparse_csrmv.hpp"
+
+#include "bsrmv_device.h"
 
 template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE>
 __launch_bounds__(BLOCKSIZE) __global__

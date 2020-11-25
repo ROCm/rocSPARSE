@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -25,16 +26,10 @@
 #ifndef ROCSPARSE_GEBSR2GEBSR_HPP
 #define ROCSPARSE_GEBSR2GEBSR_HPP
 
-#include "definitions.h"
-#include "gebsr2gebsr_device.h"
-#include "handle.h"
-#include "rocsparse.h"
-#include "utility.h"
-
 #include "rocsparse_csr2gebsr.hpp"
 #include "rocsparse_gebsr2csr.hpp"
 
-#include <hip/hip_runtime.h>
+#include "gebsr2gebsr_device.h"
 
 #define launch_gebsr2gebsr_fast_kernel(T, direction, block_size, segment_size)            \
     hipLaunchKernelGGL((gebsr2gebsr_fast_kernel<T, direction, block_size, segment_size>), \

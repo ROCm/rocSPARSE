@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
  *
@@ -25,14 +26,11 @@
 #ifndef ROCSPARSE_CSR2HYB_HPP
 #define ROCSPARSE_CSR2HYB_HPP
 
+#include "utility.h"
+
 #include "csr2ell_device.h"
 #include "csr2hyb_device.h"
 #include "definitions.h"
-#include "handle.h"
-#include "rocsparse.h"
-#include "utility.h"
-
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 
 template <typename T>

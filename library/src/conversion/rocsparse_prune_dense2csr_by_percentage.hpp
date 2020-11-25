@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
 * Copyright (c) 2020 Advanced Micro Devices, Inc.
 *
@@ -27,13 +28,10 @@
 
 #include "csr2csr_compress_device.h"
 #include "definitions.h"
-#include "handle.h"
 #include "prune_dense2csr_by_percentage_device.h"
 #include "prune_dense2csr_device.h"
-#include "rocsparse.h"
 #include "utility.h"
 
-#include <hip/hip_runtime.h>
 #include <rocprim/rocprim.hpp>
 
 template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename T>

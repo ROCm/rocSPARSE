@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define CSRSM_DEVICE_H
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 template <typename T, unsigned int DIM_X, unsigned int DIM_Y>
 __launch_bounds__(DIM_X* DIM_Y) __global__ void csrsm_transpose(rocsparse_int m,

@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -28,8 +29,6 @@
 #include <limits>
 
 #include "common.h"
-
-#include <hip/hip_runtime.h>
 
 template <rocsparse_int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE) __global__

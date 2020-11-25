@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -25,8 +26,6 @@
 #ifndef ROCSPARSE_BSRMM_HPP
 #define ROCSPARSE_BSRMM_HPP
 
-#include "handle.h"
-#include "rocsparse.h"
 #include "templates.h"
 #include "utility.h"
 #include <hip/hip_runtime.h>

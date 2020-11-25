@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -32,8 +33,6 @@
 #include "rocsparse_test.hpp"
 
 #include <hip/hip_runtime_api.h>
-#include <rocsparse.h>
-#include <string>
 #include <vector>
 
 /* ==================================================================================== */

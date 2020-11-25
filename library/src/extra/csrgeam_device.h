@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -26,9 +27,6 @@
 #define CSRGEAM_DEVICE_H
 
 #include "common.h"
-#include "rocsparse.h"
-
-#include <hip/hip_runtime.h>
 
 template <unsigned int BLOCKSIZE>
 __launch_bounds__(BLOCKSIZE) __global__ void csrgeam_index_base(rocsparse_int* nnz)

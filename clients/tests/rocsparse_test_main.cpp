@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -22,12 +23,9 @@
  * ************************************************************************ */
 
 #include "rocsparse_parse_data.hpp"
-#include "test_cleanup.hpp"
 #include "utility.hpp"
 
 #include <gtest/gtest.h>
-#include <hip/hip_runtime_api.h>
-#include <rocsparse.h>
 
 using namespace testing;
 

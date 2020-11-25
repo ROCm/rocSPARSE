@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -25,8 +26,6 @@
 #include "rocsparse_random.hpp"
 
 #include <cstdlib>
-#include <cstring>
-#include <hip/hip_runtime_api.h>
 #include <sys/time.h>
 
 // Random number generator

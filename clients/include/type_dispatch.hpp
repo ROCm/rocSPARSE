@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
  *
@@ -26,8 +27,6 @@
 #define TYPE_DISPATCH_HPP
 
 #include "rocsparse_arguments.hpp"
-
-#include <rocsparse.h>
 
 // ----------------------------------------------------------------------------
 // Calls TEST template based on the argument types. TEST<> is expected to
