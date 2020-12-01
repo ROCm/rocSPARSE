@@ -44,6 +44,14 @@ set(rocsparse_source
 
 # Level2
   src/level2/rocsparse_bsrmv.cpp
+  src/level2/rocsparse_bsrmv_spzl_2x2.cpp
+  src/level2/rocsparse_bsrmv_spzl_3x3.cpp
+  src/level2/rocsparse_bsrmv_spzl_4x4.cpp
+  src/level2/rocsparse_bsrmv_spzl_5x5.cpp
+  src/level2/rocsparse_bsrmv_spzl_8x8.cpp
+  src/level2/rocsparse_bsrmv_spzl_16x16.cpp
+  src/level2/rocsparse_bsrmv_spzl_17_32.cpp
+  src/level2/rocsparse_bsrmv_spzl_general.cpp
   src/level2/rocsparse_bsrsv.cpp
   src/level2/rocsparse_coomv.cpp
   src/level2/rocsparse_csrmv.cpp
