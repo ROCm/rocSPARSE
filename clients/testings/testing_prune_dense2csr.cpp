@@ -461,6 +461,12 @@ void testing_prune_dense2csr(const Arguments& arg)
     device_vector<rocsparse_int> d_csr_col_ind(h_nnz_total_dev_host_ptr[0]);
     device_vector<T>             d_csr_val(h_nnz_total_dev_host_ptr[0]);
 
+    if(!d_csr_col_ind || !d_csr_val)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
     if(arg.unit_check)
     {
         host_vector<rocsparse_int> h_nnz_total_copied_from_device(1);

@@ -794,6 +794,12 @@ void testing_prune_csr2csr_by_percentage(const Arguments& arg)
     device_vector<rocsparse_int> d_csr_col_ind_C(h_nnz_total_dev_host_ptr[0]);
     device_vector<T>             d_csr_val_C(h_nnz_total_dev_host_ptr[0]);
 
+    if(!d_csr_col_ind_C || !d_csr_val_C)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
     if(arg.unit_check)
     {
         host_vector<rocsparse_int> h_nnz_total_copied_from_device(1);

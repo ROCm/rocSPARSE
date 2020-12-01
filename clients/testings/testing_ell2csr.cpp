@@ -320,7 +320,7 @@ void testing_ell2csr(const Arguments& arg)
     device_vector<rocsparse_int> dell_col_ind(ell_nnz);
     device_vector<T>             dell_val(ell_nnz);
 
-    if(!dell_col_ind || !dell_val)
+    if(!dcsr_row_ptr || !dell_col_ind || !dell_val)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -341,6 +341,12 @@ void testing_ell2csr(const Arguments& arg)
         // Allocate device memory
         device_vector<rocsparse_int> dcsr_col_ind(csr_nnz);
         device_vector<T>             dcsr_val(csr_nnz);
+
+        if(!dcsr_col_ind || !dcsr_val)
+        {
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
+        }
 
         // Perform CSR conversion
         CHECK_ROCSPARSE_ERROR(rocsparse_ell2csr<T>(handle,
@@ -402,6 +408,12 @@ void testing_ell2csr(const Arguments& arg)
             device_vector<rocsparse_int> dcsr_col_ind(csr_nnz);
             device_vector<T>             dcsr_val(csr_nnz);
 
+            if(!dcsr_col_ind || !dcsr_val)
+            {
+                CHECK_HIP_ERROR(hipErrorOutOfMemory);
+                return;
+            }
+
             CHECK_ROCSPARSE_ERROR(rocsparse_ell2csr<T>(handle,
                                                        M,
                                                        N,
@@ -425,6 +437,12 @@ void testing_ell2csr(const Arguments& arg)
 
             device_vector<rocsparse_int> dcsr_col_ind(csr_nnz);
             device_vector<T>             dcsr_val(csr_nnz);
+
+            if(!dcsr_col_ind || !dcsr_val)
+            {
+                CHECK_HIP_ERROR(hipErrorOutOfMemory);
+                return;
+            }
 
             CHECK_ROCSPARSE_ERROR(rocsparse_ell2csr<T>(handle,
                                                        M,

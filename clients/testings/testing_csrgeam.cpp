@@ -790,7 +790,7 @@ void testing_csrgeam(const Arguments& arg)
     device_vector<rocsparse_int> dnnz_C_2(1);
 
     if(!dcsr_row_ptr_A || !dcsr_col_ind_A || !dcsr_val_A || !dcsr_row_ptr_B || !dcsr_col_ind_B
-       || !dcsr_val_B || !d_alpha || !d_beta)
+       || !dcsr_val_B || !d_alpha || !d_beta || !dcsr_row_ptr_C_1 || !dcsr_row_ptr_C_2 || !dnnz_C_2)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -891,6 +891,12 @@ void testing_csrgeam(const Arguments& arg)
         device_vector<rocsparse_int> dcsr_col_ind_C_2(hnnz_C_2);
         device_vector<T>             dcsr_val_C_1(hnnz_C_1);
         device_vector<T>             dcsr_val_C_2(hnnz_C_2);
+
+        if(!dcsr_col_ind_C_1 || !dcsr_col_ind_C_2 || !dcsr_val_C_1 || !dcsr_val_C_2)
+        {
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
+        }
 
         // Perform matrix matrix multiplication
 
@@ -1014,6 +1020,12 @@ void testing_csrgeam(const Arguments& arg)
             device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
             device_vector<T>             dcsr_val_C(nnz_C);
 
+            if(!dcsr_col_ind_C || !dcsr_val_C)
+            {
+                CHECK_HIP_ERROR(hipErrorOutOfMemory);
+                return;
+            }
+
             CHECK_ROCSPARSE_ERROR(rocsparse_csrgeam<T>(handle,
                                                        M,
                                                        N,
@@ -1056,6 +1068,12 @@ void testing_csrgeam(const Arguments& arg)
 
         device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
         device_vector<T>             dcsr_val_C(nnz_C);
+
+        if(!dcsr_col_ind_C || !dcsr_val_C)
+        {
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
+        }
 
         double gpu_solve_time_used = get_time_us();
 

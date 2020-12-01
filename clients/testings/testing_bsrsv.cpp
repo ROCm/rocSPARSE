@@ -621,11 +621,23 @@ void testing_bsrsv(const Arguments& arg)
     rocsparse_int                nnzb;
     device_vector<rocsparse_int> dbsr_row_ptr(mb + 1);
 
+    if(!dbsr_row_ptr)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
     CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr_nnz(
         handle, dir, M, N, descr, dcsr_row_ptr, dcsr_col_ind, bsr_dim, descr, dbsr_row_ptr, &nnzb));
 
     device_vector<rocsparse_int> dbsr_col_ind(nnzb);
     device_vector<T>             dbsr_val(nnzb * bsr_dim * bsr_dim);
+
+    if(!dbsr_col_ind || !dbsr_val)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
 
     CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr<T>(handle,
                                                dir,
@@ -658,6 +670,12 @@ void testing_bsrsv(const Arguments& arg)
 
     void* dbuffer;
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+
+    if(!dbuffer)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
 
     if(arg.unit_check)
     {

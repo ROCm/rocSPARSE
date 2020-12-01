@@ -222,6 +222,12 @@ void testing_csrsort(const Arguments& arg)
     void* dbuffer;
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
 
+    if(!dbuffer)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
     if(arg.unit_check)
     {
         // Create permutation vector
@@ -248,6 +254,12 @@ void testing_csrsort(const Arguments& arg)
         if(permute)
         {
             device_vector<T> dcsr_val_sorted(nnz);
+
+            if(!dcsr_val_sorted)
+            {
+                CHECK_HIP_ERROR(hipErrorOutOfMemory);
+                return;
+            }
 
             CHECK_ROCSPARSE_ERROR(rocsparse_gthr<T>(
                 handle, nnz, dcsr_val, dcsr_val_sorted, dperm, rocsparse_index_base_zero));

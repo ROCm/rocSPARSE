@@ -827,6 +827,12 @@ void testing_gebsr2gebsr(const Arguments& arg)
     device_vector<rocsparse_int> dbsr_col_ind_C(hnnzb_C[0]);
     device_vector<T>             dbsr_val_C(hnnzb_C[0] * row_block_dim_C * col_block_dim_C);
 
+    if(!dbsr_col_ind_C || !dbsr_val_C)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
     if(arg.unit_check)
     {
         host_vector<rocsparse_int> hnnzb_C_copied_from_device(1);
@@ -985,6 +991,9 @@ void testing_gebsr2gebsr(const Arguments& arg)
                   << col_block_dim_C << std::setw(12) << hnnzb_C[0] << std::setw(12) << gpu_gbyte
                   << std::setw(12) << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls
                   << std::setw(12) << (arg.unit_check ? "yes" : "no") << std::endl;
+
+        // Free buffer
+        CHECK_HIP_ERROR(hipFree(dtemp_buffer));
     }
 }
 

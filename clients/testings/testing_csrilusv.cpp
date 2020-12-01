@@ -79,7 +79,8 @@ void testing_csrilusv(const Arguments& arg)
     device_vector<rocsparse_int> d_numeric_pivot_L_2(1);
     device_vector<rocsparse_int> d_numeric_pivot_U_2(1);
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
+    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !d_struct_pivot_2 || !d_numeric_pivot_2
+       || !d_numeric_pivot_L_2 || !d_numeric_pivot_U_2)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -112,6 +113,12 @@ void testing_csrilusv(const Arguments& arg)
     // Allocate buffer
     void* dbuffer;
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+
+    if(!dbuffer)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
 
     // csrilu0 analysis
     CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis<T>(
