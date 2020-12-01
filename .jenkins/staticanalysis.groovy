@@ -32,7 +32,7 @@ def runCompileCommand(platform, project, jobName, boolean debug=false)
     publishHTML([allowMissing: false,
                 alwaysLinkToLastBuild: false,
                 keepAll: false,
-                reportDir: "${project.paths.project_build_prefix}/docs/docBin/html",
+                reportDir: "${project.paths.project_build_prefix}/docs/source/_build/html",
                 reportFiles: "index.html",
                 reportName: "Documentation",
                 reportTitles: "Documentation"])
