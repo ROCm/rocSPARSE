@@ -72,6 +72,12 @@ inline void rocsparse_init_csr_and_bsr_matrix(const Arguments&            arg,
     device_vector<rocsparse_int> dcsr_col_ind_A(nnz);
     device_vector<T>             dcsr_val_A(nnz);
 
+    if(!dcsr_row_ptr_A || !dcsr_col_ind_A || !dcsr_val_A)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
     // Copy uncompressed host data to device
     CHECK_HIP_ERROR(hipMemcpy(
         dcsr_row_ptr_A, hcsr_row_ptr_A, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
@@ -83,6 +89,13 @@ inline void rocsparse_init_csr_and_bsr_matrix(const Arguments&            arg,
     T                            tol = static_cast<T>(0);
     rocsparse_int                nnz_C;
     device_vector<rocsparse_int> dnnz_per_row(M);
+
+    if(!dnnz_per_row)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
     CHECK_ROCSPARSE_ERROR(rocsparse_nnz_compress<T>(
         handle, M, csr_descr, dcsr_val_A, dcsr_row_ptr_A, dnnz_per_row, &nnz_C, tol));
 
@@ -90,6 +103,12 @@ inline void rocsparse_init_csr_and_bsr_matrix(const Arguments&            arg,
     device_vector<rocsparse_int> dcsr_row_ptr_C(M + 1);
     device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
     device_vector<T>             dcsr_val_C(nnz_C);
+
+    if(!dcsr_row_ptr_C || !dcsr_col_ind_C || !dcsr_val_C)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
 
     // Finish compression
     CHECK_ROCSPARSE_ERROR(rocsparse_csr2csr_compress<T>(handle,
@@ -128,6 +147,12 @@ inline void rocsparse_init_csr_and_bsr_matrix(const Arguments&            arg,
     // Allocate device memory for BSR row pointer array
     device_vector<rocsparse_int> dbsr_row_ptr(Mb + 1);
 
+    if(!dbsr_row_ptr)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
     // Convert sample CSR matrix to bsr
     CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr_nnz(handle,
                                                 direction,
@@ -144,6 +169,12 @@ inline void rocsparse_init_csr_and_bsr_matrix(const Arguments&            arg,
     // Allocate device memory for BSR col indices and values array
     device_vector<rocsparse_int> dbsr_col_ind(nnzb);
     device_vector<T>             dbsr_val(nnzb * block_dim * block_dim);
+
+    if(!dbsr_col_ind || !dbsr_val)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
 
     CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr<T>(handle,
                                                direction,

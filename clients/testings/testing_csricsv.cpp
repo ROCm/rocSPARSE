@@ -79,7 +79,8 @@ void testing_csricsv(const Arguments& arg)
     device_vector<rocsparse_int> d_numeric_pivot_L_2(1);
     device_vector<rocsparse_int> d_numeric_pivot_LT_2(1);
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
+    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !d_struct_pivot_2 || !d_numeric_pivot_2
+       || !d_numeric_pivot_L_2 || !d_numeric_pivot_LT_2)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -109,6 +110,12 @@ void testing_csricsv(const Arguments& arg)
     // Allocate buffer
     void* dbuffer;
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+
+    if(!dbuffer)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
 
     // csric0 analysis
     CHECK_ROCSPARSE_ERROR(rocsparse_csric0_analysis<T>(
@@ -273,6 +280,12 @@ void testing_csricsv(const Arguments& arg)
     buffer_size = std::max(buffer_size_l, buffer_size_lt);
 
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+
+    if(!dbuffer)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
 
     // csrsv analysis
     CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(handle,

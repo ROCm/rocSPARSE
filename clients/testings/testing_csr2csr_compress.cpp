@@ -310,6 +310,12 @@ void testing_csr2csr_compress(const Arguments& arg)
         device_vector<rocsparse_int> dcsr_col_ind_C(hnnz_C);
         device_vector<T>             dcsr_val_C(hnnz_C);
 
+        if(!dcsr_col_ind_C || !dcsr_val_C)
+        {
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
+        }
+
         CHECK_ROCSPARSE_ERROR(rocsparse_csr2csr_compress<T>(handle,
                                                             M,
                                                             N,
@@ -375,6 +381,12 @@ void testing_csr2csr_compress(const Arguments& arg)
             device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
             device_vector<T>             dcsr_val_C(nnz_C);
 
+            if(!dcsr_col_ind_C || !dcsr_val_C)
+            {
+                CHECK_HIP_ERROR(hipErrorOutOfMemory);
+                return;
+            }
+
             CHECK_ROCSPARSE_ERROR(rocsparse_csr2csr_compress<T>(handle,
                                                                 M,
                                                                 N,
@@ -396,6 +408,12 @@ void testing_csr2csr_compress(const Arguments& arg)
         // Allocate device memory for compressed CSR col indices and values array
         device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
         device_vector<T>             dcsr_val_C(nnz_C);
+
+        if(!dcsr_col_ind_C || !dcsr_val_C)
+        {
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
+        }
 
         double gpu_time_used = get_time_us();
 

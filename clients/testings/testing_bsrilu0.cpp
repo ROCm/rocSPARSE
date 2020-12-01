@@ -473,6 +473,12 @@ void testing_bsrilu0(const Arguments& arg)
     device_vector<rocsparse_int> dcsr_col_ind_orig(nnz);
     device_vector<T>             dcsr_val_orig(nnz);
 
+    if(!dcsr_row_ptr_orig || !dcsr_col_ind_orig || !dcsr_val_orig)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
     // Copy CSR matrix to device
     CHECK_HIP_ERROR(hipMemcpy(dcsr_row_ptr_orig,
                               hcsr_row_ptr_orig.data(),
@@ -487,6 +493,12 @@ void testing_bsrilu0(const Arguments& arg)
 
     // Allocate device memory for BSR row pointer array
     device_vector<rocsparse_int> dbsr_row_ptr(Mb + 1);
+
+    if(!dbsr_row_ptr)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
@@ -508,6 +520,12 @@ void testing_bsrilu0(const Arguments& arg)
     device_vector<rocsparse_int> dbsr_col_ind(nnzb);
     device_vector<T>             dbsr_val_1(nnzb * block_dim * block_dim);
     device_vector<T>             dbsr_val_2(nnzb * block_dim * block_dim);
+
+    if(!dbsr_col_ind || !dbsr_val_1 || !dbsr_val_2)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
 
     CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr<T>(handle,
                                                direction,
@@ -572,8 +590,7 @@ void testing_bsrilu0(const Arguments& arg)
     device_vector<T>             d_boost_tol(1);
     device_vector<T>             d_boost_val(1);
 
-    if(!dbsr_row_ptr || !dbsr_col_ind || !dbsr_val_1 || !dbsr_val_2 || !danalysis_pivot_2
-       || !dsolve_pivot_2 || !d_boost_tol || !d_boost_val)
+    if(!danalysis_pivot_2 || !dsolve_pivot_2 || !d_boost_tol || !d_boost_val)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -595,6 +612,12 @@ void testing_bsrilu0(const Arguments& arg)
 
     void* dbuffer;
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+
+    if(!dbuffer)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
 
     if(arg.unit_check)
     {
