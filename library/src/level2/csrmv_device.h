@@ -28,7 +28,7 @@
 
 #include "common.h"
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename T>
 static __device__ void csrmvn_general_device(rocsparse_int        m,
                                              T                    alpha,
                                              const rocsparse_int* row_offset,
@@ -91,13 +91,13 @@ static inline __device__ T sum2_reduce(
     return cur_sum;
 }
 
-template <typename T,
-          rocsparse_int BLOCKSIZE,
+template <rocsparse_int BLOCKSIZE,
           rocsparse_int BLOCK_MULTIPLIER,
           rocsparse_int ROWS_FOR_VECTOR,
           rocsparse_int WG_BITS,
           rocsparse_int ROW_BITS,
-          rocsparse_int WG_SIZE>
+          rocsparse_int WG_SIZE,
+          typename T>
 __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
                                        T                    alpha,
                                        const rocsparse_int* csr_row_ptr,
