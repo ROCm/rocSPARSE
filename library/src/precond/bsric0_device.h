@@ -28,7 +28,7 @@
 
 #include "common.h"
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM>
+template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
     void bsric0_2_8_unrolled_kernel(rocsparse_direction direction,
                                     rocsparse_int       mb,
@@ -419,7 +419,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM>
+template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
     void bsric0_2_8_kernel(rocsparse_direction direction,
                            rocsparse_int       mb,
@@ -750,7 +750,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM>
+template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
     void bsric0_9_16_kernel(rocsparse_direction direction,
                             rocsparse_int       mb,
@@ -1111,7 +1111,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <typename T, rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM>
+template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
     void bsric0_17_32_kernel(rocsparse_direction direction,
                              rocsparse_int       mb,
@@ -1462,7 +1462,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
     void bsric0_binsearch_kernel(rocsparse_direction direction,
                                  rocsparse_int       mb,

@@ -338,7 +338,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP, typename T>
 __device__ void csrsv_device(rocsparse_int m,
                              T             alpha,
                              const rocsparse_int* __restrict__ csr_row_ptr,

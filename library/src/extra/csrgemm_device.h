@@ -296,7 +296,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     __syncthreads();
 
     // Reduce block
-    rocsparse_blockreduce_max<rocsparse_int, BLOCKSIZE>(hipThreadIdx_x, sdata);
+    rocsparse_blockreduce_max<BLOCKSIZE>(hipThreadIdx_x, sdata);
 
     // Write result
     if(hipThreadIdx_x == 0)
@@ -319,7 +319,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     __syncthreads();
 
     // Reduce block
-    rocsparse_blockreduce_max<rocsparse_int, BLOCKSIZE>(hipThreadIdx_x, sdata);
+    rocsparse_blockreduce_max<BLOCKSIZE>(hipThreadIdx_x, sdata);
 
     // Write result
     if(hipThreadIdx_x == 0)

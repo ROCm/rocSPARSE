@@ -93,7 +93,7 @@ rocsparse_status rocsparse_sctr_template(rocsparse_handle     handle,
     dim3 sctr_blocks((nnz - 1) / SCTR_DIM + 1);
     dim3 sctr_threads(SCTR_DIM);
 
-    hipLaunchKernelGGL((sctr_kernel<T, SCTR_DIM>),
+    hipLaunchKernelGGL((sctr_kernel<SCTR_DIM>),
                        sctr_blocks,
                        sctr_threads,
                        0,

@@ -28,7 +28,7 @@
 
 #include "common.h"
 
-template <typename T, unsigned int DIM_X, unsigned int DIM_Y>
+template <unsigned int DIM_X, unsigned int DIM_Y, typename T>
 __launch_bounds__(DIM_X* DIM_Y) __global__ void csrsm_transpose(rocsparse_int m,
                                                                 rocsparse_int n,
                                                                 const T* __restrict__ A,
@@ -72,7 +72,7 @@ __launch_bounds__(DIM_X* DIM_Y) __global__ void csrsm_transpose(rocsparse_int m,
     }
 }
 
-template <typename T, unsigned int DIM_X, unsigned int DIM_Y>
+template <unsigned int DIM_X, unsigned int DIM_Y, typename T>
 __launch_bounds__(DIM_X* DIM_Y) __global__ void csrsm_transpose_back(rocsparse_int m,
                                                                      rocsparse_int n,
                                                                      const T* __restrict__ A,
@@ -116,7 +116,7 @@ __launch_bounds__(DIM_X* DIM_Y) __global__ void csrsm_transpose_back(rocsparse_i
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP, typename T>
 __device__ void csrsm_device(rocsparse_int m,
                              rocsparse_int nrhs,
                              T             alpha,

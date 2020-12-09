@@ -29,83 +29,30 @@
 #include "../level2/rocsparse_csrsv.hpp"
 #include "bsric0_device.h"
 #include "definitions.h"
+#include "utility.h"
 
-#define LAUNCH_BSRIC_2_8_UNROLLED(T, block_size, maz_nnzb, bsr_block_dim)                    \
-    hipLaunchKernelGGL((bsric0_2_8_unrolled_kernel<T, block_size, maz_nnzb, bsr_block_dim>), \
-                       dim3(mb),                                                             \
-                       dim3(bsr_block_dim, bsr_block_dim),                                   \
-                       0,                                                                    \
-                       handle->stream,                                                       \
-                       dir,                                                                  \
-                       mb,                                                                   \
-                       block_dim,                                                            \
-                       bsr_row_ptr,                                                          \
-                       bsr_col_ind,                                                          \
-                       bsr_val,                                                              \
-                       info->bsric0_info->trm_diag_ind,                                      \
-                       done_array,                                                           \
-                       info->bsric0_info->row_map,                                           \
-                       info->zero_pivot,                                                     \
+#define LAUNCH_BSRIC_2_8_UNROLLED(T, block_size, maz_nnzb, bsr_block_dim)                 \
+    hipLaunchKernelGGL((bsric0_2_8_unrolled_kernel<block_size, maz_nnzb, bsr_block_dim>), \
+                       dim3(mb),                                                          \
+                       dim3(bsr_block_dim, bsr_block_dim),                                \
+                       0,                                                                 \
+                       handle->stream,                                                    \
+                       dir,                                                               \
+                       mb,                                                                \
+                       block_dim,                                                         \
+                       bsr_row_ptr,                                                       \
+                       bsr_col_ind,                                                       \
+                       bsr_val,                                                           \
+                       info->bsric0_info->trm_diag_ind,                                   \
+                       done_array,                                                        \
+                       info->bsric0_info->row_map,                                        \
+                       info->zero_pivot,                                                  \
                        base);
 
-#define LAUNCH_BSRIC_2_8(T, block_size, maz_nnzb, bsr_block_dim)                    \
-    hipLaunchKernelGGL((bsric0_2_8_kernel<T, block_size, maz_nnzb, bsr_block_dim>), \
-                       dim3(mb),                                                    \
-                       dim3(8, 8),                                                  \
-                       0,                                                           \
-                       handle->stream,                                              \
-                       dir,                                                         \
-                       mb,                                                          \
-                       block_dim,                                                   \
-                       bsr_row_ptr,                                                 \
-                       bsr_col_ind,                                                 \
-                       bsr_val,                                                     \
-                       info->bsric0_info->trm_diag_ind,                             \
-                       done_array,                                                  \
-                       info->bsric0_info->row_map,                                  \
-                       info->zero_pivot,                                            \
-                       base);
-
-#define LAUNCH_BSRIC_9_16(T, block_size, maz_nnzb, bsr_block_dim)                    \
-    hipLaunchKernelGGL((bsric0_9_16_kernel<T, block_size, maz_nnzb, bsr_block_dim>), \
-                       dim3(mb),                                                     \
-                       dim3(4, 16),                                                  \
-                       0,                                                            \
-                       handle->stream,                                               \
-                       dir,                                                          \
-                       mb,                                                           \
-                       block_dim,                                                    \
-                       bsr_row_ptr,                                                  \
-                       bsr_col_ind,                                                  \
-                       bsr_val,                                                      \
-                       info->bsric0_info->trm_diag_ind,                              \
-                       done_array,                                                   \
-                       info->bsric0_info->row_map,                                   \
-                       info->zero_pivot,                                             \
-                       base);
-
-#define LAUNCH_BSRIC_17_32(T, block_size, maz_nnzb, bsr_block_dim)                    \
-    hipLaunchKernelGGL((bsric0_17_32_kernel<T, block_size, maz_nnzb, bsr_block_dim>), \
-                       dim3(mb),                                                      \
-                       dim3(2, 32),                                                   \
-                       0,                                                             \
-                       handle->stream,                                                \
-                       dir,                                                           \
-                       mb,                                                            \
-                       block_dim,                                                     \
-                       bsr_row_ptr,                                                   \
-                       bsr_col_ind,                                                   \
-                       bsr_val,                                                       \
-                       info->bsric0_info->trm_diag_ind,                               \
-                       done_array,                                                    \
-                       info->bsric0_info->row_map,                                    \
-                       info->zero_pivot,                                              \
-                       base);
-
-#define LAUNCH_BSRIC_33_inf(T, block_size, wf_size, sleep)                       \
-    hipLaunchKernelGGL((bsric0_binsearch_kernel<T, block_size, wf_size, sleep>), \
+#define LAUNCH_BSRIC_2_8(T, block_size, maz_nnzb, bsr_block_dim)                 \
+    hipLaunchKernelGGL((bsric0_2_8_kernel<block_size, maz_nnzb, bsr_block_dim>), \
                        dim3(mb),                                                 \
-                       dim3(block_size),                                         \
+                       dim3(8, 8),                                               \
                        0,                                                        \
                        handle->stream,                                           \
                        dir,                                                      \
@@ -118,6 +65,60 @@
                        done_array,                                               \
                        info->bsric0_info->row_map,                               \
                        info->zero_pivot,                                         \
+                       base);
+
+#define LAUNCH_BSRIC_9_16(T, block_size, maz_nnzb, bsr_block_dim)                 \
+    hipLaunchKernelGGL((bsric0_9_16_kernel<block_size, maz_nnzb, bsr_block_dim>), \
+                       dim3(mb),                                                  \
+                       dim3(4, 16),                                               \
+                       0,                                                         \
+                       handle->stream,                                            \
+                       dir,                                                       \
+                       mb,                                                        \
+                       block_dim,                                                 \
+                       bsr_row_ptr,                                               \
+                       bsr_col_ind,                                               \
+                       bsr_val,                                                   \
+                       info->bsric0_info->trm_diag_ind,                           \
+                       done_array,                                                \
+                       info->bsric0_info->row_map,                                \
+                       info->zero_pivot,                                          \
+                       base);
+
+#define LAUNCH_BSRIC_17_32(T, block_size, maz_nnzb, bsr_block_dim)                 \
+    hipLaunchKernelGGL((bsric0_17_32_kernel<block_size, maz_nnzb, bsr_block_dim>), \
+                       dim3(mb),                                                   \
+                       dim3(2, 32),                                                \
+                       0,                                                          \
+                       handle->stream,                                             \
+                       dir,                                                        \
+                       mb,                                                         \
+                       block_dim,                                                  \
+                       bsr_row_ptr,                                                \
+                       bsr_col_ind,                                                \
+                       bsr_val,                                                    \
+                       info->bsric0_info->trm_diag_ind,                            \
+                       done_array,                                                 \
+                       info->bsric0_info->row_map,                                 \
+                       info->zero_pivot,                                           \
+                       base);
+
+#define LAUNCH_BSRIC_33_inf(T, block_size, wf_size, sleep)                    \
+    hipLaunchKernelGGL((bsric0_binsearch_kernel<block_size, wf_size, sleep>), \
+                       dim3(mb),                                              \
+                       dim3(block_size),                                      \
+                       0,                                                     \
+                       handle->stream,                                        \
+                       dir,                                                   \
+                       mb,                                                    \
+                       block_dim,                                             \
+                       bsr_row_ptr,                                           \
+                       bsr_col_ind,                                           \
+                       bsr_val,                                               \
+                       info->bsric0_info->trm_diag_ind,                       \
+                       done_array,                                            \
+                       info->bsric0_info->row_map,                            \
+                       info->zero_pivot,                                      \
                        base);
 
 template <typename T>

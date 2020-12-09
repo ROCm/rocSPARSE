@@ -33,6 +33,44 @@
 // e.g. call rocsparse_bsrmv rather than rocsparse_bsrmv_template.
 //
 
+//
+// csrsv_buffer_size.
+//
+template <typename T>
+inline rocsparse_status rocsparse_csrsv_buffer_size(rocsparse_handle          handle,
+                                                    rocsparse_operation       trans,
+                                                    rocsparse_int             m,
+                                                    rocsparse_int             nnz,
+                                                    const rocsparse_mat_descr descr,
+                                                    const T*                  csr_val,
+                                                    const rocsparse_int*      csr_row_ptr,
+                                                    const rocsparse_int*      csr_col_ind,
+                                                    rocsparse_mat_info        info,
+                                                    size_t*                   buffer_size);
+
+#define SPZL(NAME, TYPE)                                                                         \
+    template <>                                                                                  \
+    inline rocsparse_status rocsparse_csrsv_buffer_size(rocsparse_handle          handle,        \
+                                                        rocsparse_operation       trans,         \
+                                                        rocsparse_int             m,             \
+                                                        rocsparse_int             nnz,           \
+                                                        const rocsparse_mat_descr descr,         \
+                                                        const TYPE*               csr_val,       \
+                                                        const rocsparse_int*      csr_row_ptr,   \
+                                                        const rocsparse_int*      csr_col_ind,   \
+                                                        rocsparse_mat_info        info,          \
+                                                        size_t*                   buffer_size)   \
+    {                                                                                            \
+        return NAME(                                                                             \
+            handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, buffer_size); \
+    }
+
+SPZL(rocsparse_scsrsv_buffer_size, float);
+SPZL(rocsparse_dcsrsv_buffer_size, double);
+SPZL(rocsparse_ccsrsv_buffer_size, rocsparse_float_complex);
+SPZL(rocsparse_zcsrsv_buffer_size, rocsparse_double_complex);
+#undef SPZL
+
 // bsrmv
 template <typename T>
 inline rocsparse_status rocsparse_bsrmv(rocsparse_handle          handle,

@@ -28,7 +28,7 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) __global__ void gthr_kernel(rocsparse_int        nnz,
                                                          const T*             y,
                                                          T*                   x_val,

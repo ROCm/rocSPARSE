@@ -21,9 +21,10 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "definitions.h"
 
 #include "rocsparse_csrmv.hpp"
+#include "definitions.h"
+#include "utility.h"
 
 #include "csrmv_device.h"
 

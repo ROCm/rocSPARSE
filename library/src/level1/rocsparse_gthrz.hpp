@@ -94,7 +94,7 @@ rocsparse_status rocsparse_gthrz_template(rocsparse_handle     handle,
     dim3 gthrz_blocks((nnz - 1) / GTHRZ_DIM + 1);
     dim3 gthrz_threads(GTHRZ_DIM);
 
-    hipLaunchKernelGGL((gthrz_kernel<T, GTHRZ_DIM>),
+    hipLaunchKernelGGL((gthrz_kernel<GTHRZ_DIM>),
                        gthrz_blocks,
                        gthrz_threads,
                        0,

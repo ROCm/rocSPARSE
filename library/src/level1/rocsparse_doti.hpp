@@ -114,7 +114,7 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle     handle,
     // Get workspace from handle device buffer
     T* workspace = reinterpret_cast<T*>(handle->buffer);
 
-    hipLaunchKernelGGL((doti_kernel_part1<T, DOTI_DIM>),
+    hipLaunchKernelGGL((doti_kernel_part1<DOTI_DIM>),
                        dim3(DOTI_DIM),
                        dim3(DOTI_DIM),
                        0,
@@ -128,7 +128,7 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle     handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((doti_kernel_part2<T, DOTI_DIM>),
+        hipLaunchKernelGGL((doti_kernel_part2<DOTI_DIM>),
                            dim3(1),
                            dim3(DOTI_DIM),
                            0,
@@ -139,14 +139,14 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle     handle,
     }
     else
     {
-        hipLaunchKernelGGL((doti_kernel_part2<T, DOTI_DIM>),
+        hipLaunchKernelGGL((doti_kernel_part2<DOTI_DIM>),
                            dim3(1),
                            dim3(DOTI_DIM),
                            0,
                            stream,
                            DOTI_DIM,
                            workspace,
-                           nullptr);
+                           (T*)nullptr);
 
         RETURN_IF_HIP_ERROR(hipMemcpy(result, workspace, sizeof(T), hipMemcpyDeviceToHost));
     }

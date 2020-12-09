@@ -30,61 +30,32 @@
 #include "gemmi_device.h"
 #include "utility.h"
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T, typename U>
 __launch_bounds__(BLOCKSIZE) __global__
-    void gemmi_scale_kernel_host_pointer(rocsparse_int size, T alpha, T* __restrict__ data)
+    void gemmi_scale_kernel(rocsparse_int size, U alpha_device_host, T* __restrict__ data)
 {
-    gemmi_scale_kernel<T, BLOCKSIZE>(size, alpha, data);
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    gemmi_scale_kernel<BLOCKSIZE>(size, alpha, data);
 }
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T, typename U>
 __launch_bounds__(BLOCKSIZE) __global__
-    void gemmi_scale_kernel_device_pointer(rocsparse_int size,
-                                           const T* __restrict__ alpha,
-                                           T* __restrict__ data)
+    void gemmit_kernel(rocsparse_int m,
+                       U             alpha_device_host,
+                       const T* __restrict__ A,
+                       rocsparse_int lda,
+                       const rocsparse_int* __restrict__ csr_row_ptr,
+                       const rocsparse_int* __restrict__ csr_col_ind,
+                       const T* __restrict__ csr_val,
+                       U beta_device_host,
+                       T* __restrict__ C,
+                       rocsparse_int        ldc,
+                       rocsparse_index_base base)
 {
-    gemmi_scale_kernel<T, BLOCKSIZE>(size, *alpha, data);
-}
-
-template <typename T, unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__
-    void gemmit_kernel_host_pointer(rocsparse_int m,
-                                    T             alpha,
-                                    const T* __restrict__ A,
-                                    rocsparse_int lda,
-                                    const rocsparse_int* __restrict__ csr_row_ptr,
-                                    const rocsparse_int* __restrict__ csr_col_ind,
-                                    const T* __restrict__ csr_val,
-                                    T beta,
-                                    T* __restrict__ C,
-                                    rocsparse_int        ldc,
-                                    rocsparse_index_base base)
-{
-    gemmit_kernel<T, BLOCKSIZE>(
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    auto beta  = load_scalar_device_host(beta_device_host);
+    gemmit_kernel<BLOCKSIZE>(
         m, alpha, A, lda, csr_row_ptr, csr_col_ind, csr_val, beta, C, ldc, base);
-}
-
-template <typename T, unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__
-    void gemmit_kernel_device_pointer(rocsparse_int m,
-                                      const T*      alpha,
-                                      const T* __restrict__ A,
-                                      rocsparse_int lda,
-                                      const rocsparse_int* __restrict__ csr_row_ptr,
-                                      const rocsparse_int* __restrict__ csr_col_ind,
-                                      const T* __restrict__ csr_val,
-                                      const T* beta,
-                                      T* __restrict__ C,
-                                      rocsparse_int        ldc,
-                                      rocsparse_index_base base)
-{
-    if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
-    {
-        return;
-    }
-
-    gemmit_kernel<T, BLOCKSIZE>(
-        m, *alpha, A, lda, csr_row_ptr, csr_col_ind, csr_val, *beta, C, ldc, base);
 }
 
 template <typename T>
@@ -229,7 +200,7 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
 
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-            hipLaunchKernelGGL((gemmi_scale_kernel_device_pointer<T, SCALE_DIM>),
+            hipLaunchKernelGGL((gemmi_scale_kernel<SCALE_DIM>),
                                scale_blocks,
                                scale_threads,
                                0,
@@ -246,7 +217,7 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
             }
             else if(*beta != static_cast<T>(1))
             {
-                hipLaunchKernelGGL((gemmi_scale_kernel_host_pointer<T, SCALE_DIM>),
+                hipLaunchKernelGGL((gemmi_scale_kernel<SCALE_DIM>),
                                    scale_blocks,
                                    scale_threads,
                                    0,
@@ -267,7 +238,7 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((gemmit_kernel_device_pointer<T, GEMMIT_DIM>),
+        hipLaunchKernelGGL((gemmit_kernel<GEMMIT_DIM>),
                            gemmit_blocks,
                            gemmit_threads,
                            0,
@@ -303,7 +274,7 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
                 dim3 scale_blocks((m * n - 1) / SCALE_DIM + 1);
                 dim3 scale_threads(SCALE_DIM);
 
-                hipLaunchKernelGGL((gemmi_scale_kernel_host_pointer<T, SCALE_DIM>),
+                hipLaunchKernelGGL((gemmi_scale_kernel<SCALE_DIM>),
                                    scale_blocks,
                                    scale_threads,
                                    0,
@@ -317,7 +288,7 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
             return rocsparse_status_success;
         }
 
-        hipLaunchKernelGGL((gemmit_kernel_host_pointer<T, GEMMIT_DIM>),
+        hipLaunchKernelGGL((gemmit_kernel<GEMMIT_DIM>),
                            gemmit_blocks,
                            gemmit_threads,
                            0,

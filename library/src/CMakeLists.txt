@@ -53,9 +53,15 @@ set(rocsparse_source
   src/level2/rocsparse_bsrmv_spzl_17_32.cpp
   src/level2/rocsparse_bsrmv_spzl_general.cpp
   src/level2/rocsparse_bsrsv.cpp
+  src/level2/rocsparse_bsrsv_analysis.cpp
+  src/level2/rocsparse_bsrsv_buffer_size.cpp
+  src/level2/rocsparse_bsrsv_solve.cpp
   src/level2/rocsparse_coomv.cpp
   src/level2/rocsparse_csrmv.cpp
   src/level2/rocsparse_csrsv.cpp
+  src/level2/rocsparse_csrsv_analysis.cpp
+  src/level2/rocsparse_csrsv_buffer_size.cpp
+  src/level2/rocsparse_csrsv_solve.cpp
   src/level2/rocsparse_ellmv.cpp
   src/level2/rocsparse_hybmv.cpp
 

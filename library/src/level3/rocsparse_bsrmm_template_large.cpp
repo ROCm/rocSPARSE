@@ -22,6 +22,8 @@
  *
  * ************************************************************************ */
 
+#include "utility.h"
+
 #include "bsrmm_device_large.h"
 #include "rocsparse_csrmm.hpp"
 

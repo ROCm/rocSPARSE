@@ -28,7 +28,7 @@
 
 #include "common.h"
 
-template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM, typename T, typename U>
 __device__ void bsrilu0_2_8_device(rocsparse_direction  dir,
                                    rocsparse_int        mb,
                                    const rocsparse_int* bsr_row_ptr,
@@ -323,7 +323,7 @@ __device__ void bsrilu0_2_8_device(rocsparse_direction  dir,
     }
 }
 
-template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM, typename T, typename U>
 __device__ void bsrilu0_9_32_device(rocsparse_direction  dir,
                                     rocsparse_int        mb,
                                     const rocsparse_int* bsr_row_ptr,
@@ -650,7 +650,7 @@ __device__ void bsrilu0_9_32_device(rocsparse_direction  dir,
     }
 }
 
-template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int BSRDIM, typename T, typename U>
 __device__ void bsrilu0_33_64_device(rocsparse_direction  dir,
                                      rocsparse_int        mb,
                                      const rocsparse_int* bsr_row_ptr,
@@ -957,7 +957,7 @@ __device__ void bsrilu0_33_64_device(rocsparse_direction  dir,
     }
 }
 
-template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
 __device__ void bsrilu0_general_device(rocsparse_direction  dir,
                                        rocsparse_int        mb,
                                        const rocsparse_int* bsr_row_ptr,

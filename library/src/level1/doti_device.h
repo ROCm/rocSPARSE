@@ -28,7 +28,7 @@
 
 #include "common.h"
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) __global__ void doti_kernel_part1(rocsparse_int        nnz,
                                                                const T*             x_val,
                                                                const rocsparse_int* x_ind,
@@ -51,7 +51,7 @@ __launch_bounds__(BLOCKSIZE) __global__ void doti_kernel_part1(rocsparse_int    
 
     __syncthreads();
 
-    rocsparse_blockreduce_sum<T, BLOCKSIZE>(tid, sdata);
+    rocsparse_blockreduce_sum<BLOCKSIZE>(tid, sdata);
 
     if(tid == 0)
     {
@@ -59,7 +59,7 @@ __launch_bounds__(BLOCKSIZE) __global__ void doti_kernel_part1(rocsparse_int    
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
     void doti_kernel_part2(rocsparse_int n, T* workspace, T* result)
 {
@@ -70,7 +70,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     sdata[tid] = workspace[tid];
     __syncthreads();
 
-    rocsparse_blockreduce_sum<T, BLOCKSIZE>(tid, sdata);
+    rocsparse_blockreduce_sum<BLOCKSIZE>(tid, sdata);
 
     if(tid == 0)
     {

@@ -336,7 +336,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
             __syncthreads();
 
             // Reduce partial sums
-            rocsparse_blockreduce_sum<T, WG_SIZE>(lid, partialSums);
+            rocsparse_blockreduce_sum<WG_SIZE>(lid, partialSums);
 
             if(lid == 0)
             {
@@ -408,7 +408,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
         __syncthreads();
 
         // Reduce partial sums
-        rocsparse_blockreduce_sum<T, WG_SIZE>(lid, partialSums);
+        rocsparse_blockreduce_sum<WG_SIZE>(lid, partialSums);
 
         if(lid == 0)
         {

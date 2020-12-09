@@ -28,6 +28,8 @@
 
 #include "../level2/rocsparse_csrsv.hpp"
 #include "csric0_device.h"
+#include "definitions.h"
+#include "utility.h"
 
 template <typename T>
 rocsparse_status rocsparse_csric0_analysis_template(rocsparse_handle          handle,
@@ -316,7 +318,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
 
     if(gcnArch == 908 && asicRev < 2)
     {
-        hipLaunchKernelGGL((csric0_binsearch_kernel<T, CSRIC0_DIM, 64, true>),
+        hipLaunchKernelGGL((csric0_binsearch_kernel<CSRIC0_DIM, 64, true>),
                            csric0_blocks,
                            csric0_threads,
                            0,
@@ -337,7 +339,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
         {
             if(max_nnz <= 32)
             {
-                hipLaunchKernelGGL((csric0_hash_kernel<T, CSRIC0_DIM, 32, 1>),
+                hipLaunchKernelGGL((csric0_hash_kernel<CSRIC0_DIM, 32, 1>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
@@ -354,7 +356,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
             }
             else if(max_nnz <= 64)
             {
-                hipLaunchKernelGGL((csric0_hash_kernel<T, CSRIC0_DIM, 32, 2>),
+                hipLaunchKernelGGL((csric0_hash_kernel<CSRIC0_DIM, 32, 2>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
@@ -371,7 +373,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
             }
             else if(max_nnz <= 128)
             {
-                hipLaunchKernelGGL((csric0_hash_kernel<T, CSRIC0_DIM, 32, 4>),
+                hipLaunchKernelGGL((csric0_hash_kernel<CSRIC0_DIM, 32, 4>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
@@ -388,7 +390,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
             }
             else if(max_nnz <= 256)
             {
-                hipLaunchKernelGGL((csric0_hash_kernel<T, CSRIC0_DIM, 32, 8>),
+                hipLaunchKernelGGL((csric0_hash_kernel<CSRIC0_DIM, 32, 8>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
@@ -405,7 +407,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
             }
             else if(max_nnz <= 512)
             {
-                hipLaunchKernelGGL((csric0_hash_kernel<T, CSRIC0_DIM, 32, 16>),
+                hipLaunchKernelGGL((csric0_hash_kernel<CSRIC0_DIM, 32, 16>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
@@ -422,7 +424,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
             }
             else
             {
-                hipLaunchKernelGGL((csric0_binsearch_kernel<T, CSRIC0_DIM, 32, false>),
+                hipLaunchKernelGGL((csric0_binsearch_kernel<CSRIC0_DIM, 32, false>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
@@ -442,7 +444,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
         {
             if(max_nnz <= 64)
             {
-                hipLaunchKernelGGL((csric0_hash_kernel<T, CSRIC0_DIM, 64, 1>),
+                hipLaunchKernelGGL((csric0_hash_kernel<CSRIC0_DIM, 64, 1>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
@@ -459,7 +461,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
             }
             else if(max_nnz <= 128)
             {
-                hipLaunchKernelGGL((csric0_hash_kernel<T, CSRIC0_DIM, 64, 2>),
+                hipLaunchKernelGGL((csric0_hash_kernel<CSRIC0_DIM, 64, 2>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
@@ -476,7 +478,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
             }
             else if(max_nnz <= 256)
             {
-                hipLaunchKernelGGL((csric0_hash_kernel<T, CSRIC0_DIM, 64, 4>),
+                hipLaunchKernelGGL((csric0_hash_kernel<CSRIC0_DIM, 64, 4>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
@@ -493,7 +495,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
             }
             else if(max_nnz <= 512)
             {
-                hipLaunchKernelGGL((csric0_hash_kernel<T, CSRIC0_DIM, 64, 8>),
+                hipLaunchKernelGGL((csric0_hash_kernel<CSRIC0_DIM, 64, 8>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
@@ -510,7 +512,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
             }
             else if(max_nnz <= 1024)
             {
-                hipLaunchKernelGGL((csric0_hash_kernel<T, CSRIC0_DIM, 64, 16>),
+                hipLaunchKernelGGL((csric0_hash_kernel<CSRIC0_DIM, 64, 16>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
@@ -527,7 +529,7 @@ rocsparse_status rocsparse_csric0_template(rocsparse_handle          handle,
             }
             else
             {
-                hipLaunchKernelGGL((csric0_binsearch_kernel<T, CSRIC0_DIM, 64, false>),
+                hipLaunchKernelGGL((csric0_binsearch_kernel<CSRIC0_DIM, 64, false>),
                                    csric0_blocks,
                                    csric0_threads,
                                    0,
