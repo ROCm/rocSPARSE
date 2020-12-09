@@ -28,7 +28,7 @@
 
 #include "common.h"
 
-template <typename T, unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM>
+template <unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM, typename T>
 __launch_bounds__(WFSIZE* DIMY) __global__ void bsrsv_gather(rocsparse_int nnzb,
                                                              const rocsparse_int* __restrict__ perm,
                                                              const T* __restrict__ bsr_val_A,
@@ -62,7 +62,7 @@ __launch_bounds__(WFSIZE* DIMY) __global__ void bsrsv_gather(rocsparse_int nnzb,
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
 __device__ void bsrsv_lower_general_device(rocsparse_int mb,
                                            T             alpha,
                                            const rocsparse_int* __restrict__ bsr_row_ptr,
@@ -211,7 +211,7 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
 __device__ void bsrsv_upper_general_device(rocsparse_int mb,
                                            T             alpha,
                                            const rocsparse_int* __restrict__ bsr_row_ptr,
@@ -360,7 +360,7 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, rocsparse_int BSRDIM, bool SLEEP>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, rocsparse_int BSRDIM, bool SLEEP, typename T>
 __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
                                           T             alpha,
                                           const rocsparse_int* __restrict__ bsr_row_ptr,
@@ -541,7 +541,7 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, rocsparse_int BSRDIM, bool SLEEP>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, rocsparse_int BSRDIM, bool SLEEP, typename T>
 __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
                                           T             alpha,
                                           const rocsparse_int* __restrict__ bsr_row_ptr,

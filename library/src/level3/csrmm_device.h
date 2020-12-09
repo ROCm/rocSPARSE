@@ -28,7 +28,7 @@
 
 #include "common.h"
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename T>
 static __device__ void csrmmnn_general_device(rocsparse_int M,
                                               rocsparse_int N,
                                               rocsparse_int K,
@@ -95,7 +95,7 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WF_SIZE>
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename T>
 static __device__ void csrmmnt_general_device(rocsparse_int offset,
                                               rocsparse_int ncol,
                                               rocsparse_int M,

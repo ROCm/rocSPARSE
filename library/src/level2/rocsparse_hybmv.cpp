@@ -23,57 +23,254 @@
  * ************************************************************************ */
 
 #include "rocsparse_hybmv.hpp"
+#include "definitions.h"
+#include "rocsparse_coomv.hpp"
+#include "rocsparse_ellmv.hpp"
+#include "utility.h"
+
+template <typename T>
+rocsparse_status rocsparse_hybmv_template(rocsparse_handle          handle,
+                                          rocsparse_operation       trans,
+                                          const T*                  alpha_device_host,
+                                          const rocsparse_mat_descr descr,
+                                          const rocsparse_hyb_mat   hyb,
+                                          const T*                  x,
+                                          const T*                  beta_device_host,
+                                          T*                        y)
+{
+    // Check for valid handle and matrix descriptor
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+
+    if(descr == nullptr || hyb == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Logging
+    if(handle->pointer_mode == rocsparse_pointer_mode_host)
+    {
+        log_trace(handle,
+                  replaceX<T>("rocsparse_Xhybmv"),
+                  trans,
+                  *alpha_device_host,
+                  (const void*&)descr,
+                  (const void*&)hyb,
+                  (const void*&)x,
+                  *beta_device_host,
+                  (const void*&)y);
+
+        log_bench(handle,
+                  "./rocsparse-bench -f hybmv -r",
+                  replaceX<T>("X"),
+                  "--mtx <matrix.mtx> "
+                  "--alpha",
+                  *alpha_device_host,
+                  "--beta",
+                  *beta_device_host);
+    }
+    else
+    {
+        log_trace(handle,
+                  replaceX<T>("rocsparse_Xhybmv"),
+                  trans,
+                  (const void*&)alpha_device_host,
+                  (const void*&)descr,
+                  (const void*&)hyb,
+                  (const void*&)x,
+                  (const void*&)beta_device_host,
+                  (const void*&)y);
+    }
+
+    // Check index base
+    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
+    {
+        return rocsparse_status_invalid_value;
+    }
+    // Check matrix type
+    if(descr->type != rocsparse_matrix_type_general)
+    {
+        // TODO
+        return rocsparse_status_not_implemented;
+    }
+    // Check partition type
+    if(hyb->partition != rocsparse_hyb_partition_max
+       && hyb->partition != rocsparse_hyb_partition_auto
+       && hyb->partition != rocsparse_hyb_partition_user)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check sizes
+    if(hyb->m < 0 || hyb->n < 0 || hyb->ell_nnz + hyb->coo_nnz < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check ELL-HYB structure
+    if(hyb->ell_nnz > 0)
+    {
+        if(hyb->ell_width < 0)
+        {
+            return rocsparse_status_invalid_size;
+        }
+        else if(hyb->ell_col_ind == nullptr || hyb->ell_val == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+    }
+
+    // Check COO-HYB structure
+    if(hyb->coo_nnz > 0)
+    {
+        if(hyb->coo_row_ind == nullptr || hyb->coo_col_ind == nullptr || hyb->coo_val == nullptr)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+    }
+
+    if(x == nullptr || y == nullptr || alpha_device_host == nullptr || beta_device_host == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check pointer arguments
+    if(alpha_device_host == nullptr || beta_device_host == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(handle->pointer_mode == rocsparse_pointer_mode_host
+       && *alpha_device_host == static_cast<T>(0) && *beta_device_host == static_cast<T>(1))
+    {
+        return rocsparse_status_success;
+    }
+
+    // Check the rest of pointer arguments
+    if(x == nullptr || y == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Quick return if possible
+    if(hyb->m == 0 || hyb->n == 0 || hyb->ell_nnz + hyb->coo_nnz == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    // Run different hybmv kernels
+    if(trans == rocsparse_operation_none)
+    {
+        // ELL part
+        if(hyb->ell_nnz > 0)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_ellmv_template(handle,
+                                                               trans,
+                                                               hyb->m,
+                                                               hyb->n,
+                                                               alpha_device_host,
+                                                               descr,
+                                                               (T*)hyb->ell_val,
+                                                               hyb->ell_col_ind,
+                                                               hyb->ell_width,
+                                                               x,
+                                                               beta_device_host,
+                                                               y));
+        }
+
+        // COO part
+        if(hyb->coo_nnz > 0)
+        {
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
+            {
+                // Beta is applied by ELL part, IF ell_nnz > 0
+                if(hyb->ell_nnz > 0)
+                {
+                    T* coo_beta = nullptr;
+                    rocsparse_one(handle, &coo_beta);
+
+                    RETURN_IF_ROCSPARSE_ERROR(rocsparse_coomv_template(handle,
+                                                                       trans,
+                                                                       hyb->m,
+                                                                       hyb->n,
+                                                                       hyb->coo_nnz,
+                                                                       alpha_device_host,
+                                                                       descr,
+                                                                       (T*)hyb->coo_val,
+                                                                       hyb->coo_row_ind,
+                                                                       hyb->coo_col_ind,
+                                                                       x,
+                                                                       coo_beta,
+                                                                       y));
+                }
+                else
+                {
+                    RETURN_IF_ROCSPARSE_ERROR(rocsparse_coomv_template(handle,
+                                                                       trans,
+                                                                       hyb->m,
+                                                                       hyb->n,
+                                                                       hyb->coo_nnz,
+                                                                       alpha_device_host,
+                                                                       descr,
+                                                                       (T*)hyb->coo_val,
+                                                                       hyb->coo_row_ind,
+                                                                       hyb->coo_col_ind,
+                                                                       x,
+                                                                       beta_device_host,
+                                                                       y));
+                }
+            }
+            else
+            {
+                // Beta is applied by ELL part, IF ell_nnz > 0
+                T coo_beta = (hyb->ell_nnz > 0) ? static_cast<T>(1) : *beta_device_host;
+
+                RETURN_IF_ROCSPARSE_ERROR(rocsparse_coomv_template(handle,
+                                                                   trans,
+                                                                   hyb->m,
+                                                                   hyb->n,
+                                                                   hyb->coo_nnz,
+                                                                   alpha_device_host,
+                                                                   descr,
+                                                                   (T*)hyb->coo_val,
+                                                                   hyb->coo_row_ind,
+                                                                   hyb->coo_col_ind,
+                                                                   x,
+                                                                   &coo_beta,
+                                                                   y));
+            }
+        }
+    }
+    else
+    {
+        // TODO
+        return rocsparse_status_not_implemented;
+    }
+    return rocsparse_status_success;
+}
 
 /*
  * ===========================================================================
  *    C wrapper
  * ===========================================================================
  */
+#define C_IMPL(NAME, TYPE)                                                             \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,                 \
+                                     rocsparse_operation       trans,                  \
+                                     const TYPE*               alpha,                  \
+                                     const rocsparse_mat_descr descr,                  \
+                                     const rocsparse_hyb_mat   hyb,                    \
+                                     const TYPE*               x,                      \
+                                     const TYPE*               beta,                   \
+                                     TYPE*                     y)                      \
+    {                                                                                  \
+        return rocsparse_hybmv_template(handle, trans, alpha, descr, hyb, x, beta, y); \
+    }
 
-extern "C" rocsparse_status rocsparse_shybmv(rocsparse_handle          handle,
-                                             rocsparse_operation       trans,
-                                             const float*              alpha,
-                                             const rocsparse_mat_descr descr,
-                                             const rocsparse_hyb_mat   hyb,
-                                             const float*              x,
-                                             const float*              beta,
-                                             float*                    y)
-{
-    return rocsparse_hybmv_template(handle, trans, alpha, descr, hyb, x, beta, y);
-}
-
-extern "C" rocsparse_status rocsparse_dhybmv(rocsparse_handle          handle,
-                                             rocsparse_operation       trans,
-                                             const double*             alpha,
-                                             const rocsparse_mat_descr descr,
-                                             const rocsparse_hyb_mat   hyb,
-                                             const double*             x,
-                                             const double*             beta,
-                                             double*                   y)
-{
-    return rocsparse_hybmv_template(handle, trans, alpha, descr, hyb, x, beta, y);
-}
-
-extern "C" rocsparse_status rocsparse_chybmv(rocsparse_handle               handle,
-                                             rocsparse_operation            trans,
-                                             const rocsparse_float_complex* alpha,
-                                             const rocsparse_mat_descr      descr,
-                                             const rocsparse_hyb_mat        hyb,
-                                             const rocsparse_float_complex* x,
-                                             const rocsparse_float_complex* beta,
-                                             rocsparse_float_complex*       y)
-{
-    return rocsparse_hybmv_template(handle, trans, alpha, descr, hyb, x, beta, y);
-}
-
-extern "C" rocsparse_status rocsparse_zhybmv(rocsparse_handle                handle,
-                                             rocsparse_operation             trans,
-                                             const rocsparse_double_complex* alpha,
-                                             const rocsparse_mat_descr       descr,
-                                             const rocsparse_hyb_mat         hyb,
-                                             const rocsparse_double_complex* x,
-                                             const rocsparse_double_complex* beta,
-                                             rocsparse_double_complex*       y)
-{
-    return rocsparse_hybmv_template(handle, trans, alpha, descr, hyb, x, beta, y);
-}
+C_IMPL(rocsparse_shybmv, float);
+C_IMPL(rocsparse_dhybmv, double);
+C_IMPL(rocsparse_chybmv, rocsparse_float_complex);
+C_IMPL(rocsparse_zhybmv, rocsparse_double_complex);
+#undef C_IMPL

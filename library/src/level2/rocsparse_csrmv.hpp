@@ -26,7 +26,7 @@
 #ifndef ROCSPARSE_CSRMV_HPP
 #define ROCSPARSE_CSRMV_HPP
 
-#include "utility.h"
+#include "handle.h"
 
 template <typename T>
 rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          handle,

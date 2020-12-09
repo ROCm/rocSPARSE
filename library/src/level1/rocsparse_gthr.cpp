@@ -24,48 +24,113 @@
 
 #include "rocsparse_gthr.hpp"
 
+#include "utility.h"
+
+#include "gthr_device.h"
+template <typename T>
+rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
+                                         rocsparse_int        nnz,
+                                         const T*             y,
+                                         T*                   x_val,
+                                         const rocsparse_int* x_ind,
+                                         rocsparse_index_base idx_base)
+{
+    // Check for valid handle
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+
+    // Logging
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xgthr"),
+              nnz,
+              (const void*&)y,
+              (const void*&)x_val,
+              (const void*&)x_ind,
+              idx_base);
+
+    log_bench(handle, "./rocsparse-bench -f gthr -r", replaceX<T>("X"), "--mtx <vector.mtx> ");
+
+    // Check index base
+    if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check size
+    if(nnz < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Quick return if possible
+    if(nnz == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    // Check pointer arguments
+    if(y == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(x_val == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else if(x_ind == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Stream
+    hipStream_t stream = handle->stream;
+
+#define GTHR_DIM 512
+    dim3 gthr_blocks((nnz - 1) / GTHR_DIM + 1);
+    dim3 gthr_threads(GTHR_DIM);
+
+    hipLaunchKernelGGL((gthr_kernel<GTHR_DIM>),
+                       gthr_blocks,
+                       gthr_threads,
+                       0,
+                       stream,
+                       nnz,
+                       y,
+                       x_val,
+                       x_ind,
+                       idx_base);
+#undef GTHR_DIM
+    return rocsparse_status_success;
+}
+
+template rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
+                                                  rocsparse_int        nnz,
+                                                  const rocsparse_int* y,
+                                                  rocsparse_int*       x_val,
+                                                  const rocsparse_int* x_ind,
+                                                  rocsparse_index_base idx_base);
+
 /*
  * ===========================================================================
  *    C wrapper
  * ===========================================================================
  */
 
-extern "C" rocsparse_status rocsparse_sgthr(rocsparse_handle     handle,
-                                            rocsparse_int        nnz,
-                                            const float*         y,
-                                            float*               x_val,
-                                            const rocsparse_int* x_ind,
-                                            rocsparse_index_base idx_base)
-{
-    return rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base);
-}
+#define C_IMPL(NAME, TYPE)                                                      \
+    extern "C" rocsparse_status NAME(rocsparse_handle     handle,               \
+                                     rocsparse_int        nnz,                  \
+                                     const TYPE*          y,                    \
+                                     TYPE*                x_val,                \
+                                     const rocsparse_int* x_ind,                \
+                                     rocsparse_index_base idx_base)             \
+    {                                                                           \
+        return rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base); \
+    }
 
-extern "C" rocsparse_status rocsparse_dgthr(rocsparse_handle     handle,
-                                            rocsparse_int        nnz,
-                                            const double*        y,
-                                            double*              x_val,
-                                            const rocsparse_int* x_ind,
-                                            rocsparse_index_base idx_base)
-{
-    return rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base);
-}
-
-extern "C" rocsparse_status rocsparse_cgthr(rocsparse_handle               handle,
-                                            rocsparse_int                  nnz,
-                                            const rocsparse_float_complex* y,
-                                            rocsparse_float_complex*       x_val,
-                                            const rocsparse_int*           x_ind,
-                                            rocsparse_index_base           idx_base)
-{
-    return rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base);
-}
-
-extern "C" rocsparse_status rocsparse_zgthr(rocsparse_handle                handle,
-                                            rocsparse_int                   nnz,
-                                            const rocsparse_double_complex* y,
-                                            rocsparse_double_complex*       x_val,
-                                            const rocsparse_int*            x_ind,
-                                            rocsparse_index_base            idx_base)
-{
-    return rocsparse_gthr_template(handle, nnz, y, x_val, x_ind, idx_base);
-}
+C_IMPL(rocsparse_sgthr, float);
+C_IMPL(rocsparse_dgthr, double);
+C_IMPL(rocsparse_cgthr, rocsparse_float_complex);
+C_IMPL(rocsparse_zgthr, rocsparse_double_complex);
+#undef C_IMPL

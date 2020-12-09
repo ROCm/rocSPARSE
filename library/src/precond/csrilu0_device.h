@@ -28,7 +28,7 @@
 
 #include "common.h"
 
-template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH, typename T, typename U>
 __device__ void csrilu0_hash_kernel(rocsparse_int m,
                                     const rocsparse_int* __restrict__ csr_row_ptr,
                                     const rocsparse_int* __restrict__ csr_col_ind,
@@ -217,7 +217,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
     }
 }
 
-template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
 __device__ void csrilu0_binsearch_kernel(rocsparse_int m,
                                          const rocsparse_int* __restrict__ csr_row_ptr,
                                          const rocsparse_int* __restrict__ csr_col_ind,

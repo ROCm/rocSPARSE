@@ -28,7 +28,7 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __device__ void roti_device(rocsparse_int        nnz,
                             T*                   x_val,
                             const rocsparse_int* x_ind,

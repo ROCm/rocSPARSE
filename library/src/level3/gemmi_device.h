@@ -28,7 +28,7 @@
 
 #include "common.h"
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __device__ void gemmi_scale_kernel(rocsparse_int size, T alpha, T* __restrict__ data)
 {
     rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
@@ -41,7 +41,7 @@ __device__ void gemmi_scale_kernel(rocsparse_int size, T alpha, T* __restrict__ 
     data[idx] *= alpha;
 }
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __device__ void gemmit_kernel(rocsparse_int m,
                               T             alpha,
                               const T* __restrict__ A,

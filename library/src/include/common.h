@@ -102,7 +102,7 @@ __device__ __forceinline__ rocsparse_double_complex atomicAdd(rocsparse_double_c
 }
 
 // Block reduce kernel computing block sum
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __device__ __forceinline__ void rocsparse_blockreduce_sum(int i, T* data)
 {
     if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = data[i] + data[i + 512]; } __syncthreads(); }
@@ -118,7 +118,7 @@ __device__ __forceinline__ void rocsparse_blockreduce_sum(int i, T* data)
 }
 
 // Block reduce kernel computing blockwide maximum entry
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __device__ __forceinline__ void rocsparse_blockreduce_max(int i, T* data)
 {
     if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = max(data[i], data[i + 512]); } __syncthreads(); }
@@ -134,7 +134,7 @@ __device__ __forceinline__ void rocsparse_blockreduce_max(int i, T* data)
 }
 
 // Block reduce kernel computing blockwide minimum entry
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __device__ __forceinline__ void rocsparse_blockreduce_min(int i, T* data)
 {
     if(BLOCKSIZE > 512) { if(i < 512 && i + 512 < BLOCKSIZE) { data[i] = min(data[i], data[i + 512]); } __syncthreads(); }

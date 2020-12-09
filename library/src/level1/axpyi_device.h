@@ -29,7 +29,7 @@
 #include "common.h"
 
 // y = a * x + y kernel for sparse x and dense y
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __device__ void axpyi_device(rocsparse_int        nnz,
                              T                    alpha,
                              const T*             x_val,

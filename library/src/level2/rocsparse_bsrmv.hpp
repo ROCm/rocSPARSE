@@ -26,7 +26,7 @@
 #ifndef ROCSPARSE_BSRMV_HPP
 #define ROCSPARSE_BSRMV_HPP
 
-#include "utility.h"
+#include "handle.h"
 
 template <typename T>
 rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,

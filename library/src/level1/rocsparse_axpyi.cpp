@@ -23,6 +23,145 @@
  * ************************************************************************ */
 
 #include "rocsparse_axpyi.hpp"
+#include "axpyi_device.h"
+#include "utility.h"
+
+template <unsigned int BLOCKSIZE, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) __global__ void axpyi_kernel(rocsparse_int        nnz,
+                                                          U                    alpha_device_host,
+                                                          const T*             x_val,
+                                                          const rocsparse_int* x_ind,
+                                                          T*                   y,
+                                                          rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    if(alpha != static_cast<T>(0))
+    {
+        axpyi_device<BLOCKSIZE>(nnz, alpha, x_val, x_ind, y, idx_base);
+    }
+}
+
+template <typename T>
+rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
+                                          rocsparse_int        nnz,
+                                          const T*             alpha,
+                                          const T*             x_val,
+                                          const rocsparse_int* x_ind,
+                                          T*                   y,
+                                          rocsparse_index_base idx_base)
+{
+    // Check for valid handle
+    if(handle == nullptr)
+    {
+        return rocsparse_status_invalid_handle;
+    }
+
+    // Logging
+    if(handle->pointer_mode == rocsparse_pointer_mode_host)
+    {
+        log_trace(handle,
+                  replaceX<T>("rocsparse_Xaxpyi"),
+                  nnz,
+                  *alpha,
+                  (const void*&)x_val,
+                  (const void*&)x_ind,
+                  (const void*&)y);
+
+        log_bench(handle,
+                  "./rocsparse-bench -f axpyi -r",
+                  replaceX<T>("X"),
+                  "--mtx <vector.mtx> ",
+                  "--alpha",
+                  *alpha);
+    }
+    else
+    {
+        log_trace(handle,
+                  replaceX<T>("rocsparse_Xaxpyi"),
+                  nnz,
+                  (const void*&)alpha,
+                  (const void*&)x_val,
+                  (const void*&)x_ind,
+                  (const void*&)y);
+    }
+
+    // Check index base
+    if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check size
+    if(nnz < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Quick return if possible
+    if(nnz == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    // Check pointer arguments
+    if(alpha == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(handle->pointer_mode == rocsparse_pointer_mode_host && *alpha == static_cast<T>(0))
+    {
+        return rocsparse_status_success;
+    }
+
+    if(x_val == nullptr || x_ind == nullptr || y == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Stream
+    hipStream_t stream = handle->stream;
+
+#define AXPYI_DIM 256
+    dim3 axpyi_blocks((nnz - 1) / AXPYI_DIM + 1);
+    dim3 axpyi_threads(AXPYI_DIM);
+
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        hipLaunchKernelGGL((axpyi_kernel<AXPYI_DIM>),
+                           axpyi_blocks,
+                           axpyi_threads,
+                           0,
+                           stream,
+                           nnz,
+                           alpha,
+                           x_val,
+                           x_ind,
+                           y,
+                           idx_base);
+    }
+    else
+    {
+        if(*alpha == static_cast<T>(0))
+        {
+            return rocsparse_status_success;
+        }
+
+        hipLaunchKernelGGL((axpyi_kernel<AXPYI_DIM>),
+                           axpyi_blocks,
+                           axpyi_threads,
+                           0,
+                           stream,
+                           nnz,
+                           *alpha,
+                           x_val,
+                           x_ind,
+                           y,
+                           idx_base);
+    }
+#undef AXPYI_DIM
+    return rocsparse_status_success;
+}
 
 /*
  * ===========================================================================

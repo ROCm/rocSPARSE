@@ -172,4 +172,18 @@ __forceinline__ __device__ __host__ T load_scalar_device_host(const T* xp)
     return *xp;
 }
 
+// For host scalars
+template <typename T>
+__forceinline__ __device__ __host__ T zero_scalar_device_host(T x)
+{
+    return static_cast<T>(0);
+}
+
+// For device scalars
+template <typename T>
+__forceinline__ __device__ __host__ T zero_scalar_device_host(const T* xp)
+{
+    return static_cast<T>(0);
+}
+
 #endif // UTILITY_H

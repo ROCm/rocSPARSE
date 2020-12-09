@@ -27,10 +27,9 @@
 #define ELLMV_DEVICE_H
 
 #include "common.h"
-#include "handle.h"
 
 // ELL SpMV for general, non-transposed matrices
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 static __device__ void ellmvn_device(rocsparse_int        m,
                                      rocsparse_int        n,
                                      rocsparse_int        ell_width,

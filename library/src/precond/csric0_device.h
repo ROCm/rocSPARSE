@@ -28,7 +28,7 @@
 
 #include "common.h"
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
     void csric0_hash_kernel(rocsparse_int m,
                             const rocsparse_int* __restrict__ csr_row_ptr,
@@ -228,7 +228,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
     void csric0_binsearch_kernel(rocsparse_int m,
                                  const rocsparse_int* __restrict__ csr_row_ptr,
