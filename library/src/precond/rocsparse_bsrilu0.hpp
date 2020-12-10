@@ -521,6 +521,10 @@ inline void bsrilu0_launcher(rocsparse_handle     handle,
     {
         LAUNCH_BSRILU65inf(true, 64);
     }
+    else if(handle->wavefront_size == 32)
+    {
+        LAUNCH_BSRILU65inf(false, 32);
+    }
     else
     {
         if(block_dim <= 8)
@@ -566,6 +570,10 @@ inline void bsrilu0_launcher(rocsparse_handle     handle,
     if(handle->properties.gcnArch == 908 && handle->asic_rev < 2)
     {
         LAUNCH_BSRILU65inf(true, 64);
+    }
+    else if(handle->wavefront_size == 32)
+    {
+        LAUNCH_BSRILU65inf(false, 32);
     }
     else
     {
@@ -678,47 +686,37 @@ rocsparse_status rocsparse_bsrilu0_template(rocsparse_handle          handle,
     // Initialize buffers
     RETURN_IF_HIP_ERROR(hipMemsetAsync(done_array, 0, sizeof(int) * mb, stream));
 
-    if(handle->wavefront_size == 32)
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        rocsparse_index_base base                  = descr->base;
-        auto                 boost_tol_device_host = reinterpret_cast<const U*>(info->boost_tol);
-        auto                 boost_val_device_host = reinterpret_cast<const T*>(info->boost_val);
-        LAUNCH_BSRILU65inf(false, 32);
+        bsrilu0_launcher(handle,
+                         dir,
+                         mb,
+                         descr->base,
+                         bsr_val,
+                         bsr_row_ptr,
+                         bsr_col_ind,
+                         block_dim,
+                         info,
+                         done_array,
+                         reinterpret_cast<const U*>(info->boost_tol),
+                         reinterpret_cast<const T*>(info->boost_val));
     }
     else
     {
-        if(handle->pointer_mode == rocsparse_pointer_mode_device)
-        {
-            bsrilu0_launcher(handle,
-                             dir,
-                             mb,
-                             descr->base,
-                             bsr_val,
-                             bsr_row_ptr,
-                             bsr_col_ind,
-                             block_dim,
-                             info,
-                             done_array,
-                             reinterpret_cast<const U*>(info->boost_tol),
-                             reinterpret_cast<const T*>(info->boost_val));
-        }
-        else
-        {
-            bsrilu0_launcher(handle,
-                             dir,
-                             mb,
-                             descr->base,
-                             bsr_val,
-                             bsr_row_ptr,
-                             bsr_col_ind,
-                             block_dim,
-                             info,
-                             done_array,
-                             (info->boost_enable) ? *reinterpret_cast<const U*>(info->boost_tol)
-                                                  : static_cast<U>(0),
-                             (info->boost_enable) ? *reinterpret_cast<const T*>(info->boost_val)
-                                                  : static_cast<T>(0));
-        }
+        bsrilu0_launcher(handle,
+                         dir,
+                         mb,
+                         descr->base,
+                         bsr_val,
+                         bsr_row_ptr,
+                         bsr_col_ind,
+                         block_dim,
+                         info,
+                         done_array,
+                         (info->boost_enable) ? *reinterpret_cast<const U*>(info->boost_tol)
+                                              : static_cast<U>(0),
+                         (info->boost_enable) ? *reinterpret_cast<const T*>(info->boost_val)
+                                              : static_cast<T>(0));
     }
 
     return rocsparse_status_success;
