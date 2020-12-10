@@ -28,33 +28,33 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename T>
-static __device__ void csrmvn_general_device(rocsparse_int        m,
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
+static __device__ void csrmvn_general_device(J                    m,
                                              T                    alpha,
-                                             const rocsparse_int* row_offset,
-                                             const rocsparse_int* csr_col_ind,
+                                             const I*             row_offset,
+                                             const J*             csr_col_ind,
                                              const T*             csr_val,
                                              const T*             x,
                                              T                    beta,
                                              T*                   y,
                                              rocsparse_index_base idx_base)
 {
-    rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + tid;
-    rocsparse_int lid = tid & (WF_SIZE - 1);
-    rocsparse_int nwf = hipGridDim_x * BLOCKSIZE / WF_SIZE;
+    int lid = hipThreadIdx_x & (WF_SIZE - 1);
+
+    J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    J nwf = hipGridDim_x * BLOCKSIZE / WF_SIZE;
 
     // Loop over rows
-    for(rocsparse_int row = gid / WF_SIZE; row < m; row += nwf)
+    for(J row = gid / WF_SIZE; row < m; row += nwf)
     {
         // Each wavefront processes one row
-        rocsparse_int row_start = row_offset[row] - idx_base;
-        rocsparse_int row_end   = row_offset[row + 1] - idx_base;
+        I row_start = row_offset[row] - idx_base;
+        I row_end   = row_offset[row + 1] - idx_base;
 
         T sum = static_cast<T>(0);
 
         // Loop over non-zero elements
-        for(rocsparse_int j = row_start + lid; j < row_end; j += WF_SIZE)
+        for(I j = row_start + lid; j < row_end; j += WF_SIZE)
         {
             sum = rocsparse_fma(
                 alpha * csr_val[j], rocsparse_ldg(x + csr_col_ind[j] - idx_base), sum);
@@ -78,9 +78,8 @@ static __device__ void csrmvn_general_device(rocsparse_int        m,
     }
 }
 
-template <typename T>
-static inline __device__ T sum2_reduce(
-    T cur_sum, T* partial, rocsparse_int lid, rocsparse_int max_size, rocsparse_int reduc_size)
+template <typename I, typename T>
+static inline __device__ T sum2_reduce(T cur_sum, T* partial, int lid, I max_size, int reduc_size)
 {
     if(max_size > reduc_size)
     {
@@ -97,20 +96,23 @@ template <rocsparse_int BLOCKSIZE,
           rocsparse_int WG_BITS,
           rocsparse_int ROW_BITS,
           rocsparse_int WG_SIZE,
+          typename I,
+          typename J,
           typename T>
 __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
                                        T                    alpha,
-                                       const rocsparse_int* csr_row_ptr,
-                                       const rocsparse_int* csr_col_ind,
+                                       const I*             csr_row_ptr,
+                                       const J*             csr_col_ind,
                                        const T*             csr_val,
                                        const T*             x,
                                        T                    beta,
                                        T*                   y,
                                        rocsparse_index_base idx_base)
 {
-    __shared__ T  partialSums[BLOCKSIZE];
-    rocsparse_int gid = hipBlockIdx_x;
-    rocsparse_int lid = hipThreadIdx_x;
+    __shared__ T partialSums[BLOCKSIZE];
+
+    int lid = hipThreadIdx_x;
+    J   gid = hipBlockIdx_x;
 
     // The row blocks buffer holds a packed set of information used to inform each
     // workgroup about how to do its work:
@@ -133,20 +135,18 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
     // know when the first workgroup for that row has finished initializing the output
     // value. While this bit is the same as the first workgroup's flag bit, this
     // workgroup will spin-loop.
-    rocsparse_int row = ((row_blocks[gid] >> (64 - ROW_BITS)) & ((1ULL << ROW_BITS) - 1ULL));
-    rocsparse_int stop_row
-        = ((row_blocks[gid + 1] >> (64 - ROW_BITS)) & ((1ULL << ROW_BITS) - 1ULL));
-    rocsparse_int num_rows = stop_row - row;
+    J row      = ((row_blocks[gid] >> (64 - ROW_BITS)) & ((1ULL << ROW_BITS) - 1ULL));
+    J stop_row = ((row_blocks[gid + 1] >> (64 - ROW_BITS)) & ((1ULL << ROW_BITS) - 1ULL));
+    J num_rows = stop_row - row;
 
     // Get the workgroup within this long row ID out of the bottom bits of the row block.
-    rocsparse_int wg = row_blocks[gid] & ((1 << WG_BITS) - 1);
+    J wg = row_blocks[gid] & ((1 << WG_BITS) - 1);
 
     // Any workgroup only calculates, at most, BLOCK_MULTIPLIER*BLOCKSIZE items in a row.
     // If there are more items in this row, we assign more workgroups.
-    rocsparse_int vecStart
-        = rocsparse_mad24(wg, BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
-    rocsparse_int vecEnd
-        = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
+    I vecStart
+        = rocsparse_mad24((I)wg, (I)BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
+    I vecEnd = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
 
     T temp_sum = static_cast<T>(0);
 
@@ -180,14 +180,14 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
         // threads, 4 rows = 64 threads, 5 rows = 32 threads, etc.
         // int numThreadsForRed = get_local_size(0) >> ((CHAR_BIT*sizeof(unsigned
         // int))-clz(num_rows-1));
-        rocsparse_int numThreadsForRed = wg; // Same calculation as above, done on host.
+        J numThreadsForRed = wg; // Same calculation as above, done on host.
 
         // Stream all of this row block's matrix values into local memory.
         // Perform the matvec in parallel with this work.
-        rocsparse_int col = csr_row_ptr[row] + lid - idx_base;
+        I col = csr_row_ptr[row] + lid - idx_base;
         if(gid != (gridDim.x - 1))
         {
-            for(rocsparse_int i = 0; i < BLOCKSIZE; i += WG_SIZE)
+            for(J i = 0; i < BLOCKSIZE; i += WG_SIZE)
             {
                 partialSums[lid + i]
                     = alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
@@ -202,7 +202,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
             // However, this may change in the future (e.g. with shared virtual memory.)
             // This causes a minor performance loss because this is the last workgroup
             // to be launched, and this loop can't be unrolled.
-            for(rocsparse_int i = 0; col + i < csr_row_ptr[stop_row] - idx_base; i += WG_SIZE)
+            for(I i = 0; col + i < csr_row_ptr[stop_row] - idx_base; i += WG_SIZE)
             {
                 partialSums[lid + i]
                     = alpha * csr_val[col + i] * x[csr_col_ind[col + i] - idx_base];
@@ -223,10 +223,10 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
             // numThreadsForRed guaranteed to be a power of two, so the clz code below
             // avoids an integer divide. ~2% perf gain in EXTRA_PRECISION.
             // size_t st = lid/numThreadsForRed;
-            rocsparse_int local_row       = row + (lid >> (31 - __clz(numThreadsForRed)));
-            rocsparse_int local_first_val = csr_row_ptr[local_row] - csr_row_ptr[row];
-            rocsparse_int local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
-            rocsparse_int threadInBlock   = lid & (numThreadsForRed - 1);
+            J local_row       = row + (lid >> (31 - __clz(numThreadsForRed)));
+            J local_first_val = csr_row_ptr[local_row] - csr_row_ptr[row];
+            J local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
+            J threadInBlock   = lid & (numThreadsForRed - 1);
 
             // Not all row blocks are full -- they may have an odd number of rows. As such,
             // we need to ensure that adjacent-groups only work on real data for this rowBlock.
@@ -235,7 +235,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
                 // This is dangerous -- will infinite loop if your last value is within
                 // numThreadsForRed of MAX_UINT. Noticable performance gain to avoid a
                 // long induction variable here, though.
-                for(rocsparse_int local_cur_val = local_first_val + threadInBlock;
+                for(J local_cur_val = local_first_val + threadInBlock;
                     local_cur_val < local_last_val;
                     local_cur_val += numThreadsForRed)
                 {
@@ -251,7 +251,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
             // LDS is full up to {workgroup size} entries.
             // Now we perform a parallel reduction that sums together the answers for each
             // row in parallel, leaving us an answer in 'temp_sum' for each row.
-            for(rocsparse_int i = (WG_SIZE >> 1); i > 0; i >>= 1)
+            for(int i = (WG_SIZE >> 1); i > 0; i >>= 1)
             {
                 __syncthreads();
                 temp_sum = sum2_reduce(temp_sum, partialSums, lid, numThreadsForRed, i);
@@ -277,13 +277,13 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
             // However, this reduction is also much faster than CSR-Scalar, because local memory
             // is designed for scatter-gather operations.
             // We need a while loop because there may be more rows than threads in the WG.
-            rocsparse_int local_row = row + lid;
+            J local_row = row + lid;
             while(local_row < stop_row)
             {
-                rocsparse_int local_first_val = (csr_row_ptr[local_row] - csr_row_ptr[row]);
-                rocsparse_int local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
-                temp_sum                      = static_cast<T>(0);
-                for(rocsparse_int local_cur_val = local_first_val; local_cur_val < local_last_val;
+                J local_first_val = (csr_row_ptr[local_row] - csr_row_ptr[row]);
+                J local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
+                temp_sum          = static_cast<T>(0);
+                for(J local_cur_val = local_first_val; local_cur_val < local_last_val;
                     ++local_cur_val)
                 {
                     temp_sum = temp_sum + partialSums[local_cur_val];
@@ -325,7 +325,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
             // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
             // Using a long induction variable to make sure unsigned int overflow doesn't break
             // things.
-            for(rocsparse_int j = vecStart + lid; j < vecEnd; j += WG_SIZE)
+            for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
             {
                 temp_sum
                     = rocsparse_fma(alpha * csr_val[j], x[csr_col_ind[j] - idx_base], temp_sum);
@@ -367,8 +367,8 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
         // First, figure out which workgroup you are in the row. Bottom 24 bits.
         // You can use that to find the global ID for the first workgroup calculating
         // this long row.
-        rocsparse_int first_wg_in_row = gid - (row_blocks[gid] & ((1ULL << WG_BITS) - 1ULL));
-        rocsparse_int compare_value   = row_blocks[gid] & (1ULL << WG_BITS);
+        J first_wg_in_row = gid - (row_blocks[gid] & ((1ULL << WG_BITS) - 1ULL));
+        J compare_value   = row_blocks[gid] & (1ULL << WG_BITS);
 
         // Bit 24 in the first workgroup is the flag that everyone waits on.
         if(gid == first_wg_in_row && lid == 0)
@@ -398,7 +398,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
         // Load in a bunch of partial results into your register space, rather than LDS (no
         // contention)
         // Then dump the partially reduced answers into the LDS for inter-work-item reduction.
-        for(rocsparse_int j = vecStart + lid; j < vecEnd; j += WG_SIZE)
+        for(I j = vecStart + lid; j < vecEnd; j += WG_SIZE)
         {
             temp_sum = rocsparse_fma(alpha * csr_val[j], x[csr_col_ind[j] - idx_base], temp_sum);
         }

@@ -39,10 +39,15 @@
  *    level 1 SPARSE
  * ===========================================================================
  */
-template <typename T>
 constexpr double axpyi_gflop_count(rocsparse_int nnz)
 {
     return (2.0 * nnz) / 1e9;
+}
+
+template <typename I>
+constexpr double axpby_gflop_count(I nnz)
+{
+    return (3.0 * nnz) / 1e9;
 }
 
 template <typename T>
@@ -51,8 +56,8 @@ constexpr double doti_gflop_count(rocsparse_int nnz)
     return (2.0 * nnz) / 1e9;
 }
 
-template <typename T>
-constexpr double roti_gflop_count(rocsparse_int nnz)
+template <typename I>
+constexpr double roti_gflop_count(I nnz)
 {
     return (6.0 * nnz) / 1e9;
 }
@@ -62,8 +67,8 @@ constexpr double roti_gflop_count(rocsparse_int nnz)
  *    level 2 SPARSE
  * ===========================================================================
  */
-template <typename T>
-constexpr double spmv_gflop_count(rocsparse_int M, rocsparse_int nnz, bool beta = false)
+template <typename I, typename T>
+constexpr double spmv_gflop_count(I M, I nnz, bool beta = false)
 {
     return (2.0 * nnz + (beta ? M : 0)) / 1e9;
 }

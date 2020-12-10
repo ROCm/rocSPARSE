@@ -333,7 +333,7 @@ void testing_coomv(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
 
         // CPU coomv
-        host_coomv<T>(
+        host_coomv<rocsparse_int, T>(
             M, nnz, h_alpha, hcoo_row_ind, hcoo_col_ind, hcoo_val, hx, h_beta, hy_gold, base);
 
         near_check_general<T>(1, M, 1, hy_gold, hy_1);
@@ -387,10 +387,11 @@ void testing_coomv(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gflops
-            = spmv_gflop_count<T>(M, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
+        double gpu_gflops = spmv_gflop_count<rocsparse_int, T>(M, nnz, h_beta != static_cast<T>(0))
+                            / gpu_time_used * 1e6;
         double gpu_gbyte
-            = coomv_gbyte_count<T>(M, N, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
+            = coomv_gbyte_count<rocsparse_int, T>(M, N, nnz, h_beta != static_cast<T>(0))
+              / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

@@ -28,29 +28,29 @@
 
 #include "handle.h"
 
-template <typename T>
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans,
-                                                   rocsparse_int             m,
-                                                   rocsparse_int             n,
-                                                   rocsparse_int             nnz,
+                                                   J                         m,
+                                                   J                         n,
+                                                   I                         nnz,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  csr_val,
-                                                   const rocsparse_int*      csr_row_ptr,
-                                                   const rocsparse_int*      csr_col_ind,
+                                                   const I*                  csr_row_ptr,
+                                                   const J*                  csr_col_ind,
                                                    rocsparse_mat_info        info);
 
-template <typename T>
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
-                                          rocsparse_int             m,
-                                          rocsparse_int             n,
-                                          rocsparse_int             nnz,
+                                          J                         m,
+                                          J                         n,
+                                          I                         nnz,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
                                           const T*                  csr_val,
-                                          const rocsparse_int*      csr_row_ptr,
-                                          const rocsparse_int*      csr_col_ind,
+                                          const I*                  csr_row_ptr,
+                                          const J*                  csr_col_ind,
                                           rocsparse_mat_info        info,
                                           const T*                  x,
                                           const T*                  beta,

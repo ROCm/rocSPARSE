@@ -74,3 +74,47 @@ double get_time_us_sync(hipStream_t stream)
     gettimeofday(&tv, NULL);
     return (tv.tv_sec * 1000 * 1000) + tv.tv_usec;
 };
+
+/*! \brief  Return \ref rocsparse_indextype */
+template <>
+rocsparse_indextype get_indextype<uint16_t>(void)
+{
+    return rocsparse_indextype_u16;
+}
+
+template <>
+rocsparse_indextype get_indextype<int32_t>(void)
+{
+    return rocsparse_indextype_i32;
+}
+
+template <>
+rocsparse_indextype get_indextype<int64_t>(void)
+{
+    return rocsparse_indextype_i64;
+}
+
+/*! \brief  Return \ref rocsparse_datatype */
+template <>
+rocsparse_datatype get_datatype<float>(void)
+{
+    return rocsparse_datatype_f32_r;
+}
+
+template <>
+rocsparse_datatype get_datatype<double>(void)
+{
+    return rocsparse_datatype_f64_r;
+}
+
+template <>
+rocsparse_datatype get_datatype<rocsparse_float_complex>(void)
+{
+    return rocsparse_datatype_f32_c;
+}
+
+template <>
+rocsparse_datatype get_datatype<rocsparse_double_complex>(void)
+{
+    return rocsparse_datatype_f64_c;
+}

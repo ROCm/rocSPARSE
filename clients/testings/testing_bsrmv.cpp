@@ -526,8 +526,8 @@ void testing_bsrmv(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gflops
-            = spmv_gflop_count<T>(M, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
+        double gpu_gflops = spmv_gflop_count<rocsparse_int, T>(M, nnz, h_beta != static_cast<T>(0))
+                            / gpu_time_used * 1e6;
         double gpu_gbyte = bsrmv_gbyte_count<T>(mb, nb, nnzb, bsr_dim, h_beta != static_cast<T>(0))
                            / gpu_time_used * 1e6;
 

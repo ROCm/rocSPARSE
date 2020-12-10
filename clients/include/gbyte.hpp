@@ -38,22 +38,22 @@
  *    level 1 SPARSE
  * ===========================================================================
  */
-template <typename T>
-constexpr double axpyi_gbyte_count(rocsparse_int nnz)
+template <typename I, typename T>
+constexpr double axpby_gbyte_count(I nnz)
 {
-    return (nnz * sizeof(rocsparse_int) + (3.0 * nnz) * sizeof(T)) / 1e9;
+    return (nnz * sizeof(I) + (3.0 * nnz) * sizeof(T)) / 1e9;
 }
 
-template <typename T>
-constexpr double doti_gbyte_count(rocsparse_int nnz)
+template <typename I, typename T>
+constexpr double doti_gbyte_count(I nnz)
 {
-    return (nnz * sizeof(rocsparse_int) + (2.0 * nnz) * sizeof(T)) / 1e9;
+    return (nnz * sizeof(I) + (2.0 * nnz) * sizeof(T)) / 1e9;
 }
 
-template <typename T>
-constexpr double gthr_gbyte_count(rocsparse_int nnz)
+template <typename I, typename T>
+constexpr double gthr_gbyte_count(I nnz)
 {
-    return (nnz * sizeof(rocsparse_int) + (2.0 * nnz) * sizeof(T)) / 1e9;
+    return (nnz * sizeof(I) + (2.0 * nnz) * sizeof(T)) / 1e9;
 }
 
 template <typename T>
@@ -62,16 +62,16 @@ constexpr double gthrz_gbyte_count(rocsparse_int nnz)
     return (nnz * sizeof(rocsparse_int) + (2.0 * nnz) * sizeof(T)) / 1e9;
 }
 
-template <typename T>
-constexpr double roti_gbyte_count(rocsparse_int nnz)
+template <typename I, typename T>
+constexpr double roti_gbyte_count(I nnz)
 {
-    return (nnz * sizeof(rocsparse_int) + (3.0 * nnz) * sizeof(T)) / 1e9;
+    return (nnz * sizeof(I) + (3.0 * nnz) * sizeof(T)) / 1e9;
 }
 
-template <typename T>
-constexpr double sctr_gbyte_count(rocsparse_int nnz)
+template <typename I, typename T>
+constexpr double sctr_gbyte_count(I nnz)
 {
-    return (nnz * sizeof(rocsparse_int) + (2.0 * nnz) * sizeof(T)) / 1e9;
+    return (nnz * sizeof(I) + (2.0 * nnz) * sizeof(T)) / 1e9;
 }
 
 /*
@@ -92,18 +92,16 @@ constexpr double bsrmv_gbyte_count(rocsparse_int mb,
            / 1e9;
 }
 
-template <typename T>
-constexpr double
-    coomv_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz, bool beta = false)
+template <typename I, typename T>
+constexpr double coomv_gbyte_count(I M, I N, I nnz, bool beta = false)
 {
-    return (2.0 * nnz * sizeof(rocsparse_int) + (M + N + nnz + (beta ? M : 0)) * sizeof(T)) / 1e9;
+    return (2.0 * nnz * sizeof(I) + (M + N + nnz + (beta ? M : 0)) * sizeof(T)) / 1e9;
 }
 
-template <typename T>
-constexpr double
-    csrmv_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz, bool beta = false)
+template <typename I, typename J, typename T>
+constexpr double csrmv_gbyte_count(J M, J N, I nnz, bool beta = false)
 {
-    return ((M + 1 + nnz) * sizeof(rocsparse_int) + (M + N + nnz + (beta ? M : 0)) * sizeof(T))
+    return ((M + 1) * sizeof(I) + nnz * sizeof(J) + (M + N + nnz + (beta ? M : 0)) * sizeof(T))
            / 1e9;
 }
 
@@ -121,11 +119,25 @@ constexpr double csrsv_gbyte_count(rocsparse_int M, rocsparse_int nnz)
     return ((M + 1 + nnz) * sizeof(rocsparse_int) + (M + M + nnz) * sizeof(T)) / 1e9;
 }
 
-template <typename T>
-constexpr double
-    ellmv_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz, bool beta = false)
+template <typename I, typename T>
+constexpr double ellmv_gbyte_count(I M, I N, I nnz, bool beta = false)
 {
-    return (nnz * sizeof(rocsparse_int) + (M + N + nnz + (beta ? M : 0)) * sizeof(T)) / 1e9;
+    return (nnz * sizeof(I) + (M + N + nnz + (beta ? M : 0)) * sizeof(T)) / 1e9;
+}
+
+template <typename T>
+constexpr double gebsrmv_gbyte_count(rocsparse_int mb,
+                                     rocsparse_int nb,
+                                     rocsparse_int nnzb,
+                                     rocsparse_int row_block_dim,
+                                     rocsparse_int col_block_dim,
+                                     bool          beta = false)
+{
+    return ((mb + 1 + nnzb) * sizeof(rocsparse_int)
+            + ((mb + nb) * row_block_dim + nnzb * row_block_dim * col_block_dim
+               + (beta ? mb * row_block_dim : 0))
+                  * sizeof(T))
+           / 1e9;
 }
 
 /*

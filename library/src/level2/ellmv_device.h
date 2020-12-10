@@ -29,19 +29,19 @@
 #include "common.h"
 
 // ELL SpMV for general, non-transposed matrices
-template <unsigned int BLOCKSIZE, typename T>
-static __device__ void ellmvn_device(rocsparse_int        m,
-                                     rocsparse_int        n,
-                                     rocsparse_int        ell_width,
+template <unsigned int BLOCKSIZE, typename I, typename T>
+static __device__ void ellmvn_device(I                    m,
+                                     I                    n,
+                                     I                    ell_width,
                                      T                    alpha,
-                                     const rocsparse_int* ell_col_ind,
+                                     const I*             ell_col_ind,
                                      const T*             ell_val,
                                      const T*             x,
                                      T                    beta,
                                      T*                   y,
                                      rocsparse_index_base idx_base)
 {
-    rocsparse_int ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
+    I ai = BLOCKSIZE * hipBlockIdx_x + hipThreadIdx_x;
 
     if(ai >= m)
     {
@@ -49,10 +49,10 @@ static __device__ void ellmvn_device(rocsparse_int        m,
     }
 
     T sum = static_cast<T>(0);
-    for(rocsparse_int p = 0; p < ell_width; ++p)
+    for(I p = 0; p < ell_width; ++p)
     {
-        rocsparse_int idx = ELL_IND(ai, p, m, ell_width);
-        rocsparse_int col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
+        I idx = ELL_IND(ai, p, m, ell_width);
+        I col = rocsparse_nontemporal_load(ell_col_ind + idx) - idx_base;
 
         if(col >= 0 && col < n)
         {

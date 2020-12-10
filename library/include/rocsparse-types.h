@@ -91,6 +91,12 @@ typedef struct _rocsparse_hyb_mat* rocsparse_hyb_mat;
  */
 typedef struct _rocsparse_mat_info* rocsparse_mat_info;
 
+// Generic API
+typedef struct _rocsparse_spvec_descr* rocsparse_spvec_descr;
+typedef struct _rocsparse_spmat_descr* rocsparse_spmat_descr;
+typedef struct _rocsparse_dnvec_descr* rocsparse_dnvec_descr;
+typedef struct _rocsparse_dnmat_descr* rocsparse_dnmat_descr;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -285,8 +291,80 @@ typedef enum rocsparse_status_
     rocsparse_status_internal_error  = 6, /**< other internal library failure. */
     rocsparse_status_invalid_value   = 7, /**< invalid value parameter. */
     rocsparse_status_arch_mismatch   = 8, /**< device arch is not supported. */
-    rocsparse_status_zero_pivot      = 9 /**< encountered zero pivot. */
+    rocsparse_status_zero_pivot      = 9, /**< encountered zero pivot. */
+    rocsparse_status_not_initialized = 10 /**< descriptor has not been initialized. */
 } rocsparse_status;
+
+/*! \ingroup types_module
+ *  \brief List of rocsparse index types.
+ *
+ *  \details
+ *  Indicates the index width of a rocsparse index type.
+ */
+typedef enum rocsparse_indextype_
+{
+    rocsparse_indextype_u16 = 1, /**< 16 bit unsigned integer. */
+    rocsparse_indextype_i32 = 2, /**< 32 bit signed integer. */
+    rocsparse_indextype_i64 = 3 /**< 64 bit signed integer. */
+} rocsparse_indextype;
+
+/*! \ingroup types_module
+ *  \brief List of rocsparse data types.
+ *
+ *  \details
+ *  Indicates the precision width of data stored in a rocsparse type.
+ */
+typedef enum rocsparse_datatype_
+{
+    rocsparse_datatype_f32_r = 151, /**< 32 bit floating point, real. */
+    rocsparse_datatype_f64_r = 152, /**< 64 bit floating point, real. */
+    rocsparse_datatype_f32_c = 154, /**< 32 bit floating point, complex. */
+    rocsparse_datatype_f64_c = 155 /**< 64 bit floating point, complex. */
+} rocsparse_datatype;
+
+/*! \ingroup types_module
+ *  \brief List of sparse matrix formats.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_format types that are used to describe a
+ *  sparse matrix.
+ */
+typedef enum rocsparse_format_
+{
+    rocsparse_format_coo = 0, /**< COO sparse matrix format. */
+    rocsparse_format_csr = 2, /**< CSR sparse matrix format. */
+    rocsparse_format_csc = 3, /**< CSC sparse matrix format. */
+    rocsparse_format_ell = 4 /**< ELL sparse matrix format. */
+} rocsparse_format;
+
+/*! \ingroup types_module
+ *  \brief List of dense matrix ordering.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_order types that are used to describe the
+ *  memory layout of a dense matrix
+ */
+typedef enum rocsparse_order_
+{
+    rocsparse_order_row    = 0, /**< Row major. */
+    rocsparse_order_column = 1 /**< Column major. */
+} rocsparse_order;
+
+/*! \ingroup types_module
+ *  \brief List of SpMV algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_spmv_alg types that are used to perform
+ *  matrix vector product.
+ */
+typedef enum rocsparse_spmv_alg_
+{
+    rocsparse_spmv_default  = 0, /**< Default SpMV algorithm for the given format. */
+    rocsparse_spmv_coo_alg  = 1, /**< COO SpMV algorithm for COO matrices. */
+    rocsparse_spmv_csr_alg1 = 2, /**< CSR SpMV algorithm 1 (adaptive) for CSR matrices. */
+    rocsparse_spmv_csr_alg2 = 3, /**< CSR SpMV algorithm 2 (stream) for CSR matrices. */
+    rocsparse_spmv_ell_alg  = 4 /**< ELL SpMV algorithm for ELL matrices. */
+} rocsparse_spmv_alg;
 
 #ifdef __cplusplus
 }

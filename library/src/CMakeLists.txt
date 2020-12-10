@@ -41,6 +41,11 @@ set(rocsparse_source
   src/level1/rocsparse_gthrz.cpp
   src/level1/rocsparse_roti.cpp
   src/level1/rocsparse_sctr.cpp
+  src/level1/rocsparse_axpby.cpp
+  src/level1/rocsparse_gather.cpp
+  src/level1/rocsparse_scatter.cpp
+  src/level1/rocsparse_rot.cpp
+  src/level1/rocsparse_spvv.cpp
 
 # Level2
   src/level2/rocsparse_bsrmv.cpp
@@ -64,6 +69,16 @@ set(rocsparse_source
   src/level2/rocsparse_csrsv_solve.cpp
   src/level2/rocsparse_ellmv.cpp
   src/level2/rocsparse_hybmv.cpp
+  src/level2/rocsparse_spmv.cpp
+  src/level2/rocsparse_gebsrmv.cpp
+  src/level2/rocsparse_gebsrmv_template_row_block_dim_1.cpp
+  src/level2/rocsparse_gebsrmv_template_row_block_dim_2.cpp
+  src/level2/rocsparse_gebsrmv_template_row_block_dim_3.cpp
+  src/level2/rocsparse_gebsrmv_template_row_block_dim_4.cpp
+  src/level2/rocsparse_gebsrmv_template_row_block_dim_5_8.cpp
+  src/level2/rocsparse_gebsrmv_template_row_block_dim_9_12.cpp
+  src/level2/rocsparse_gebsrmv_template_row_block_dim_13_16.cpp
+  src/level2/rocsparse_gebsrmv_template_row_block_dim_17_inf.cpp
 
 # Level3
   src/level3/rocsparse_bsrmm_template_small.cpp

@@ -28,12 +28,12 @@
 
 #include "handle.h"
 
-template <typename T>
+template <typename I, typename T>
 rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
-                                         rocsparse_int        nnz,
+                                         I                    nnz,
                                          const T*             y,
                                          T*                   x_val,
-                                         const rocsparse_int* x_ind,
+                                         const I*             x_ind,
                                          rocsparse_index_base idx_base);
 
 #endif // ROCSPARSE_GTHR_HPP

@@ -30,11 +30,11 @@
 #include "definitions.h"
 #include "doti_device.h"
 
-template <typename T>
+template <typename I, typename T>
 rocsparse_status rocsparse_doti_template(rocsparse_handle     handle,
-                                         rocsparse_int        nnz,
+                                         I                    nnz,
                                          const T*             x_val,
-                                         const rocsparse_int* x_ind,
+                                         const I*             x_ind,
                                          const T*             y,
                                          T*                   result,
                                          rocsparse_index_base idx_base)
@@ -128,14 +128,8 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle     handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((doti_kernel_part2<DOTI_DIM>),
-                           dim3(1),
-                           dim3(DOTI_DIM),
-                           0,
-                           stream,
-                           DOTI_DIM,
-                           workspace,
-                           result);
+        hipLaunchKernelGGL(
+            (doti_kernel_part2<DOTI_DIM>), dim3(1), dim3(DOTI_DIM), 0, stream, workspace, result);
     }
     else
     {
@@ -144,7 +138,6 @@ rocsparse_status rocsparse_doti_template(rocsparse_handle     handle,
                            dim3(DOTI_DIM),
                            0,
                            stream,
-                           DOTI_DIM,
                            workspace,
                            (T*)nullptr);
 

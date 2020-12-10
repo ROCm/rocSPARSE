@@ -83,3 +83,11 @@
  *  The sparse conversion routines describe operations on a matrix in sparse format to
  *  obtain a matrix in a different sparse format.
  */
+
+/*! \defgroup generic_module SPARSE Generic routines
+ *  \brief This module holds all sparse generic routines.
+ *
+ *  \details
+ *  The sparse generic routines are a set of functions that can be used if index and
+ *  data types need to be mixed.
+ */

@@ -176,7 +176,7 @@ void testing_roti(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
 
         // CPU roti
-        host_roti<T>(nnz, hx_val_gold, hx_ind, hy_gold, hc, hs, base);
+        host_roti<rocsparse_int, T>(nnz, hx_val_gold, hx_ind, hy_gold, hc, hs, base);
 
         unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_1);
         unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_2);
@@ -209,8 +209,8 @@ void testing_roti(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gflops = roti_gflop_count<T>(nnz) / gpu_time_used * 1e6;
-        double gpu_gbyte  = roti_gbyte_count<T>(nnz) / gpu_time_used * 1e6;
+        double gpu_gflops = roti_gflop_count<rocsparse_int>(nnz) / gpu_time_used * 1e6;
+        double gpu_gbyte  = roti_gbyte_count<rocsparse_int, T>(nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

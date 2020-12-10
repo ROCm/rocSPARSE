@@ -28,20 +28,16 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void doti_kernel_part1(rocsparse_int        nnz,
-                                                               const T*             x_val,
-                                                               const rocsparse_int* x_ind,
-                                                               const T*             y,
-                                                               T*                   workspace,
-                                                               rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__launch_bounds__(BLOCKSIZE) __global__ void doti_kernel_part1(
+    I nnz, const T* x_val, const I* x_ind, const T* y, T* workspace, rocsparse_index_base idx_base)
 {
-    rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = BLOCKSIZE * hipBlockIdx_x + tid;
+    int tid = hipThreadIdx_x;
+    I   gid = BLOCKSIZE * hipBlockIdx_x + tid;
 
     T dot = static_cast<T>(0);
 
-    for(rocsparse_int idx = gid; idx < nnz; idx += hipGridDim_x * BLOCKSIZE)
+    for(I idx = gid; idx < nnz; idx += hipGridDim_x * BLOCKSIZE)
     {
         dot = rocsparse_fma(y[x_ind[idx] - idx_base], x_val[idx], dot);
     }
@@ -60,10 +56,9 @@ __launch_bounds__(BLOCKSIZE) __global__ void doti_kernel_part1(rocsparse_int    
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
-    void doti_kernel_part2(rocsparse_int n, T* workspace, T* result)
+__launch_bounds__(BLOCKSIZE) __global__ void doti_kernel_part2(T* workspace, T* result)
 {
-    rocsparse_int tid = hipThreadIdx_x;
+    int tid = hipThreadIdx_x;
 
     __shared__ T sdata[BLOCKSIZE];
 

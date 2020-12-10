@@ -299,8 +299,8 @@ void testing_ellmv(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
 
         // CPU ellmv
-        host_ellmv<T>(
-            M, N, nnz, h_alpha, hell_col_ind, hell_val, ell_width, hx, h_beta, hy_gold, base);
+        host_ellmv<rocsparse_int, T>(
+            M, N, h_alpha, hell_col_ind, hell_val, ell_width, hx, h_beta, hy_gold, base);
 
         near_check_general<T>(1, M, 1, hy_gold, hy_1);
         near_check_general<T>(1, M, 1, hy_gold, hy_2);
@@ -351,10 +351,11 @@ void testing_ellmv(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gflops
-            = spmv_gflop_count<T>(M, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
+        double gpu_gflops = spmv_gflop_count<rocsparse_int, T>(M, nnz, h_beta != static_cast<T>(0))
+                            / gpu_time_used * 1e6;
         double gpu_gbyte
-            = ellmv_gbyte_count<T>(M, N, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
+            = ellmv_gbyte_count<rocsparse_int, T>(M, N, nnz, h_beta != static_cast<T>(0))
+              / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

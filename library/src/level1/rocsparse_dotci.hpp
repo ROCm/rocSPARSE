@@ -31,11 +31,11 @@
 #include "definitions.h"
 #include "dotci_device.h"
 
-template <typename T>
+template <typename I, typename T>
 rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
-                                          rocsparse_int        nnz,
+                                          I                    nnz,
                                           const T*             x_val,
-                                          const rocsparse_int* x_ind,
+                                          const I*             x_ind,
                                           const T*             y,
                                           T*                   result,
                                           rocsparse_index_base idx_base)
@@ -134,7 +134,6 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
                            dim3(DOTCI_DIM),
                            0,
                            stream,
-                           DOTCI_DIM,
                            workspace,
                            result);
     }
@@ -145,7 +144,6 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
                            dim3(DOTCI_DIM),
                            0,
                            stream,
-                           DOTCI_DIM,
                            workspace,
                            (T*)nullptr);
 

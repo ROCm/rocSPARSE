@@ -25,6 +25,12 @@
 # or enums defined with c_int base clases and attributes.
 Datatypes:
   - rocsparse_int: c_int
+  - rocsparse_indextype:
+      bases: [ c_int ]
+      attr:
+        u16: 1
+        i32: 2
+        i64: 3
   - rocsparse_datatype:
       bases: [ c_int ]
       attr:
@@ -88,6 +94,44 @@ Datatypes:
       attr:
         rocsparse_direction_row: 0
         rocsparse_direction_column: 1
+  - rocsparse_order:
+      bases: [c_int ]
+      attr:
+        rocsparse_order_row: 0
+        rocsparse_order_column: 1
+  - rocsparse_spmv_alg:
+      bases: [c_int ]
+      attr:
+        rocsparse_spmv_default: 0
+        rocsparse_spmv_coo_alg: 1
+        rocsparse_spmv_csr_alg1: 2
+        rocsparse_spmv_csr_alg2: 3
+
+indextype i64: &i32
+  - index_type_I: i32
+    index_type_J: i32
+
+indextype i64: &i64i32
+  - index_type_I: i64
+    index_type_J: i32
+
+indextype i64: &i64
+  - index_type_I: i64
+    index_type_J: i64
+
+indextype i32 and i64: &i32_i64
+  - index_type_I: i32
+    index_type_J: i32
+  - index_type_I: i64
+    index_type_J: i64
+
+indextype i32 i64i32 mixture and i64: &i32i32_i64i32_i64i64
+  - index_type_I: i32
+    index_type_J: i32
+  - index_type_I: i64
+    index_type_J: i32
+  - index_type_I: i64
+    index_type_J: i64
 
 Real precisions: &real_precisions
   - &single_precision
@@ -132,6 +176,8 @@ Arguments:
   - dimx: rocsparse_int
   - dimy: rocsparse_int
   - dimz: rocsparse_int
+  - index_type_I: rocsparse_indextype
+  - index_type_J: rocsparse_indextype
   - compute_type: rocsparse_datatype
   - alpha: c_double
   - alphai: c_double
@@ -152,6 +198,8 @@ Arguments:
   - apol: rocsparse_analysis_policy
   - spol: rocsparse_solve_policy
   - direction: rocsparse_direction
+  - spmv_alg: rocsparse_spmv_alg
+  - order: rocsparse_order
   - matrix: rocsparse_matrix_init
   - unit_check: rocsparse_int
   - timing: rocsparse_int
@@ -197,6 +245,7 @@ Dictionary lists to expand:
   - alphai_betai
   - boostval_boostvali
   - matrix_size
+  - indextype
   - precision
   - function: precision
 
@@ -239,6 +288,8 @@ Defaults:
   apol: rocsparse_analysis_policy_reuse
   spol: rocsparse_solve_policy_auto
   direction: rocsparse_direction_row
+  spmv_alg: rocsparse_spmv_default
+  order: rocsparse_order_row
   matrix: rocsparse_matrix_random
   unit_check: 1
   timing: 0
@@ -253,3 +304,6 @@ Defaults:
   category: nightly
   filename: '*'
   name: '*'
+  index_type_I: i32
+  index_type_J: i32
+  compute_type: f32_r

@@ -296,15 +296,15 @@ void testing_csr2ell(const Arguments& arg)
 
         // CPU csr2ell
         rocsparse_int ell_width_gold;
-        host_csr_to_ell<T>(M,
-                           hcsr_row_ptr,
-                           hcsr_col_ind,
-                           hcsr_val,
-                           hell_col_ind_gold,
-                           hell_val_gold,
-                           ell_width_gold,
-                           baseA,
-                           baseB);
+        host_csr_to_ell<rocsparse_int, rocsparse_int, T>(M,
+                                                         hcsr_row_ptr,
+                                                         hcsr_col_ind,
+                                                         hcsr_val,
+                                                         hell_col_ind_gold,
+                                                         hell_val_gold,
+                                                         ell_width_gold,
+                                                         baseA,
+                                                         baseB);
 
         unit_check_general<rocsparse_int>(1, 1, 1, &ell_width_gold, &ell_width);
         unit_check_general<rocsparse_int>(1, ell_nnz, 1, hell_col_ind_gold, hell_col_ind);

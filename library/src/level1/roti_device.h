@@ -28,23 +28,18 @@
 
 #include <hip/hip_runtime.h>
 
-template <unsigned int BLOCKSIZE, typename T>
-__device__ void roti_device(rocsparse_int        nnz,
-                            T*                   x_val,
-                            const rocsparse_int* x_ind,
-                            T*                   y,
-                            T                    c,
-                            T                    s,
-                            rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__device__ void
+    roti_device(I nnz, T* x_val, const I* x_ind, T* y, T c, T s, rocsparse_index_base idx_base)
 {
-    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(idx >= nnz)
     {
         return;
     }
 
-    rocsparse_int i = x_ind[idx] - idx_base;
+    I i = x_ind[idx] - idx_base;
 
     T xr = x_val[idx];
     T yr = y[i];

@@ -37,11 +37,12 @@
 // Level2
 #include "testing_bsrmv.hpp"
 #include "testing_bsrsv.hpp"
-#include "testing_coomv.hpp"
-#include "testing_csrmv.hpp"
 #include "testing_csrsv.hpp"
-#include "testing_ellmv.hpp"
+#include "testing_gebsrmv.hpp"
 #include "testing_hybmv.hpp"
+#include "testing_spmv_coo.hpp"
+#include "testing_spmv_csr.hpp"
+#include "testing_spmv_ell.hpp"
 
 // Level3
 #include "testing_bsrmm.hpp"
@@ -103,10 +104,12 @@ int main(int argc, char* argv[])
     arg.betai      = 0.0;
     arg.threshold  = 0.0;
     arg.percentage = 0.0;
+    arg.spmv_alg   = rocsparse_spmv_default;
 
     std::string   function;
     std::string   filename;
     std::string   rocalution;
+    char          indextype = 's';
     char          precision = 's';
     char          transA;
     char          transB;
@@ -245,7 +248,7 @@ int main(int argc, char* argv[])
         po::value<std::string>(&function)->default_value("axpyi"),
         "SPARSE function to test. Options:\n"
         "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
-        "  Level2: bsrmv, bsrsv, coomv, csrmv, csrsv, ellmv, hybmv\n"
+        "  Level2: bsrmv, bsrsv, coomv, csrmv, csrsv, ellmv, hybmv, gebsrmv\n"
         "  Level3: bsrmm, csrmm, csrsm, gemmi\n"
         "  Extra: csrgeam, csrgemm\n"
         "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0\n"
@@ -254,6 +257,10 @@ int main(int argc, char* argv[])
         "              csr2dense, csc2dense, bsr2csr, gebsr2csr, gebsr2gebsr, csr2csr_compress, prune_csr2csr, prune_csr2csr_by_percentage\n"
         "  Sorting: cscsort, csrsort, coosort\n"
         "  Misc: identity, nnz")
+
+        ("indextype",
+        po::value<char>(&indextype)->default_value('s'),
+        "Specify index types to be int32_t (s), int64_t (d) or mixed (m). Options: s,d,m")
 
         ("precision,r",
         po::value<char>(&precision)->default_value('s'), "Options: s,d,c,z")
@@ -293,6 +300,18 @@ int main(int argc, char* argv[])
     if(dir != rocsparse_direction_row && dir != rocsparse_direction_column)
     {
         std::cerr << "Invalid value for --direction" << std::endl;
+        return -1;
+    }
+
+    if(function == "csrmv" && indextype != 's' && indextype != 'd' && indextype != 'm')
+    {
+        std::cerr << "Invalid value for --indextype" << std::endl;
+        return -1;
+    }
+
+    if(function != "csrmv" && indextype != 's' && indextype != 'd')
+    {
+        std::cerr << "Invalid value for --indextype" << std::endl;
         return -1;
     }
 
@@ -575,25 +594,72 @@ int main(int argc, char* argv[])
     else if(function == "coomv")
     {
         if(precision == 's')
-            testing_coomv<float>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_coo<int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_spmv_coo<int64_t, float>(arg);
+        }
         else if(precision == 'd')
-            testing_coomv<double>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_coo<int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_spmv_coo<int64_t, double>(arg);
+        }
         else if(precision == 'c')
-            testing_coomv<rocsparse_float_complex>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_coo<int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmv_coo<int64_t, rocsparse_float_complex>(arg);
+        }
         else if(precision == 'z')
-            testing_coomv<rocsparse_double_complex>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_coo<int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmv_coo<int64_t, rocsparse_double_complex>(arg);
+        }
     }
     else if(function == "csrmv")
     {
-        arg.algo = 1;
         if(precision == 's')
-            testing_csrmv<float>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_csr<int32_t, int32_t, float>(arg);
+            else if(indextype == 'm')
+                testing_spmv_csr<int64_t, int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_spmv_csr<int64_t, int64_t, float>(arg);
+        }
         else if(precision == 'd')
-            testing_csrmv<double>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_csr<int32_t, int32_t, double>(arg);
+            else if(indextype == 'm')
+                testing_spmv_csr<int64_t, int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_spmv_csr<int64_t, int64_t, double>(arg);
+        }
         else if(precision == 'c')
-            testing_csrmv<rocsparse_float_complex>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_csr<int32_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'm')
+                testing_spmv_csr<int64_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmv_csr<int64_t, int64_t, rocsparse_float_complex>(arg);
+        }
         else if(precision == 'z')
-            testing_csrmv<rocsparse_double_complex>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_csr<int32_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'm')
+                testing_spmv_csr<int64_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmv_csr<int64_t, int64_t, rocsparse_double_complex>(arg);
+        }
     }
     else if(function == "csrsv")
     {
@@ -609,13 +675,33 @@ int main(int argc, char* argv[])
     else if(function == "ellmv")
     {
         if(precision == 's')
-            testing_ellmv<float>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_ell<int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_spmv_ell<int64_t, float>(arg);
+        }
         else if(precision == 'd')
-            testing_ellmv<double>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_ell<int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_spmv_ell<int64_t, double>(arg);
+        }
         else if(precision == 'c')
-            testing_ellmv<rocsparse_float_complex>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_ell<int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmv_ell<int64_t, rocsparse_float_complex>(arg);
+        }
         else if(precision == 'z')
-            testing_ellmv<rocsparse_double_complex>(arg);
+        {
+            if(indextype == 's')
+                testing_spmv_ell<int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmv_ell<int64_t, rocsparse_double_complex>(arg);
+        }
     }
     else if(function == "hybmv")
     {
@@ -627,6 +713,17 @@ int main(int argc, char* argv[])
             testing_hybmv<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_hybmv<rocsparse_double_complex>(arg);
+    }
+    else if(function == "gebsrmv")
+    {
+        if(precision == 's')
+            testing_gebsrmv<float>(arg);
+        else if(precision == 'd')
+            testing_gebsrmv<double>(arg);
+        else if(precision == 'c')
+            testing_gebsrmv<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_gebsrmv<rocsparse_double_complex>(arg);
     }
     else if(function == "bsrmm")
     {

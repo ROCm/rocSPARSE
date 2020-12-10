@@ -27,12 +27,12 @@
 #include "utility.h"
 
 #include "gthr_device.h"
-template <typename T>
+template <typename I, typename T>
 rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
-                                         rocsparse_int        nnz,
+                                         I                    nnz,
                                          const T*             y,
                                          T*                   x_val,
-                                         const rocsparse_int* x_ind,
+                                         const I*             x_ind,
                                          rocsparse_index_base idx_base)
 {
     // Check for valid handle
@@ -105,12 +105,24 @@ rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
     return rocsparse_status_success;
 }
 
-template rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
-                                                  rocsparse_int        nnz,
-                                                  const rocsparse_int* y,
-                                                  rocsparse_int*       x_val,
-                                                  const rocsparse_int* x_ind,
-                                                  rocsparse_index_base idx_base);
+#define INSTANTIATE(ITYPE, TTYPE)                                    \
+    template rocsparse_status rocsparse_gthr_template<ITYPE, TTYPE>( \
+        rocsparse_handle     handle,                                 \
+        ITYPE                nnz,                                    \
+        const TTYPE*         y,                                      \
+        TTYPE*               x_val,                                  \
+        const ITYPE*         x_ind,                                  \
+        rocsparse_index_base idx_base);
+
+INSTANTIATE(rocsparse_int, rocsparse_int)
+INSTANTIATE(int32_t, float)
+INSTANTIATE(int32_t, double)
+INSTANTIATE(int32_t, rocsparse_float_complex)
+INSTANTIATE(int32_t, rocsparse_double_complex)
+INSTANTIATE(int64_t, float)
+INSTANTIATE(int64_t, double)
+INSTANTIATE(int64_t, rocsparse_float_complex)
+INSTANTIATE(int64_t, rocsparse_double_complex)
 
 /*
  * ===========================================================================
