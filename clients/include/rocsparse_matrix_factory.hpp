@@ -99,7 +99,7 @@ public:
         rocsparse_init_coo_matrix(row_ind, csr_col_ind, csr_val, M, N, nnz, base, this->m_fullrank);
 
         // Convert to CSR
-        host_coo_to_csr(M, nnz, row_ind, csr_row_ptr, base);
+        host_coo_to_csr(M, row_ind, csr_row_ptr, base);
     }
 
     virtual void init_gebsr(std::vector<rocsparse_int>& bsr_row_ptr,

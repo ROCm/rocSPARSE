@@ -55,7 +55,9 @@ struct Arguments
     rocsparse_int dimy;
     rocsparse_int dimz;
 
-    rocsparse_datatype compute_type;
+    rocsparse_indextype index_type_I;
+    rocsparse_indextype index_type_J;
+    rocsparse_datatype  compute_type;
 
     double alpha;
     double alphai;
@@ -77,6 +79,8 @@ struct Arguments
     rocsparse_analysis_policy apol;
     rocsparse_solve_policy    spol;
     rocsparse_direction       direction;
+    rocsparse_spmv_alg        spmv_alg;
+    rocsparse_order           order;
 
     rocsparse_matrix_init matrix;
 
@@ -147,6 +151,8 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(dimx);
         ROCSPARSE_FORMAT_CHECK(dimy);
         ROCSPARSE_FORMAT_CHECK(dimz);
+        ROCSPARSE_FORMAT_CHECK(index_type_I);
+        ROCSPARSE_FORMAT_CHECK(index_type_J);
         ROCSPARSE_FORMAT_CHECK(compute_type);
         ROCSPARSE_FORMAT_CHECK(alpha);
         ROCSPARSE_FORMAT_CHECK(alphai);
@@ -167,6 +173,8 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(apol);
         ROCSPARSE_FORMAT_CHECK(spol);
         ROCSPARSE_FORMAT_CHECK(direction);
+        ROCSPARSE_FORMAT_CHECK(spmv_alg);
+        ROCSPARSE_FORMAT_CHECK(order);
         ROCSPARSE_FORMAT_CHECK(matrix);
         ROCSPARSE_FORMAT_CHECK(unit_check);
         ROCSPARSE_FORMAT_CHECK(timing);
@@ -305,6 +313,8 @@ private:
         };
 
         print("function", arg.function);
+        print("index_type_I", rocsparse_indextype2string(arg.index_type_I));
+        print("index_type_J", rocsparse_indextype2string(arg.index_type_J));
         print("compute_type", rocsparse_datatype2string(arg.compute_type));
         print("transA", rocsparse_operation2string(arg.transA));
         print("transB", rocsparse_operation2string(arg.transB));
@@ -337,6 +347,8 @@ private:
         print("analysis_policy", rocsparse_analysis2string(arg.apol));
         print("solve_policy", rocsparse_solve2string(arg.spol));
         print("direction", rocsparse_direction2string(arg.direction));
+        print("spmv_alg", rocsparse_spmvalg2string(arg.spmv_alg));
+        print("order", rocsparse_order2string(arg.order));
         print("matrix", rocsparse_matrix2string(arg.matrix));
         print("file", arg.filename);
         print("algo", arg.algo);

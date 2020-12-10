@@ -146,7 +146,7 @@ void testing_doti(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hdot_2, ddot_2, sizeof(T), hipMemcpyDeviceToHost));
 
         // CPU doti
-        host_doti<T>(nnz, hx_val, hx_ind, hy, hdot_gold, base);
+        host_doti<rocsparse_int, T>(nnz, hx_val, hx_ind, hy, hdot_gold, base);
 
         unit_check_general<T>(1, 1, 1, hdot_gold, hdot_1);
         unit_check_general<T>(1, 1, 1, hdot_gold, hdot_2);
@@ -178,7 +178,7 @@ void testing_doti(const Arguments& arg)
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
         double gpu_gflops = doti_gflop_count<T>(nnz) / gpu_time_used * 1e6;
-        double gpu_gbyte  = doti_gbyte_count<T>(nnz) / gpu_time_used * 1e6;
+        double gpu_gbyte  = doti_gbyte_count<rocsparse_int, T>(nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

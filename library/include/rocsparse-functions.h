@@ -2533,6 +2533,159 @@ rocsparse_status rocsparse_zhybmv(rocsparse_handle                handle,
                                   rocsparse_double_complex*       y);
 /**@}*/
 
+/*! \ingroup level2_module
+*  \brief Sparse matrix vector multiplication using GEBSR storage format
+*
+*  \details
+*  \p rocsparse_gebsrmv multiplies the scalar \f$\alpha\f$ with a sparse
+*  \f$(mb \cdot \text{row_block_dim}) \times (nb \cdot \text{col_block_dim})\f$
+*  matrix, defined in GEBSR storage format, and the dense vector \f$x\f$ and adds the
+*  result to the dense vector \f$y\f$ that is multiplied by the scalar \f$\beta\f$,
+*  such that
+*  \f[
+*    y := \alpha \cdot op(A) \cdot x + \beta \cdot y,
+*  \f]
+*  with
+*  \f[
+*    op(A) = \left\{
+*    \begin{array}{ll}
+*        A,   & \text{if trans == rocsparse_operation_none} \\
+*        A^T, & \text{if trans == rocsparse_operation_transpose} \\
+*        A^H, & \text{if trans == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  \note
+*  Currently, only \p trans == \ref rocsparse_operation_none is supported.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  dir         matrix storage of GEBSR blocks.
+*  @param[in]
+*  trans       matrix operation type.
+*  @param[in]
+*  mb          number of block rows of the sparse GEBSR matrix.
+*  @param[in]
+*  nb          number of block columns of the sparse GEBSR matrix.
+*  @param[in]
+*  nnzb        number of non-zero blocks of the sparse GEBSR matrix.
+*  @param[in]
+*  alpha       scalar \f$\alpha\f$.
+*  @param[in]
+*  descr       descriptor of the sparse GEBSR matrix. Currently, only
+*              \ref rocsparse_matrix_type_general is supported.
+*  @param[in]
+*  bsr_val     array of \p nnzb blocks of the sparse GEBSR matrix.
+*  @param[in]
+*  bsr_row_ptr array of \p mb+1 elements that point to the start of every block row of
+*              the sparse GEBSR matrix.
+*  @param[in]
+*  bsr_col_ind array of \p nnz containing the block column indices of the sparse
+*              GEBSR matrix.
+*  @param[in]
+*  row_block_dim row block dimension of the sparse GEBSR matrix.
+*  @param[in]
+*  col_block_dim column block dimension of the sparse GEBSR matrix.
+*  @param[in]
+*  x           array of \p nb*col_block_dim elements (\f$op(A) = A\f$) or \p mb*row_block_dim
+*              elements (\f$op(A) = A^T\f$ or \f$op(A) = A^H\f$).
+*  @param[in]
+*  beta        scalar \f$\beta\f$.
+*  @param[inout]
+*  y           array of \p mb*row_block_dim elements (\f$op(A) = A\f$) or \p nb*col_block_dim
+*              elements (\f$op(A) = A^T\f$ or \f$op(A) = A^H\f$).
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_size \p mb, \p nb, \p nnzb, \p row_block_dim
+*              or \p col_block_dim is invalid.
+*  \retval     rocsparse_status_invalid_pointer \p descr, \p alpha, \p bsr_val,
+*              \p bsr_row_ind, \p bsr_col_ind, \p x, \p beta or \p y pointer is invalid.
+*  \retval     rocsparse_status_arch_mismatch the device is not supported.
+*  \retval     rocsparse_status_not_implemented
+*              \p trans != \ref rocsparse_operation_none or
+*              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
+*/
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sgebsrmv(rocsparse_handle          handle,
+                                    rocsparse_direction       dir,
+                                    rocsparse_operation       trans,
+                                    rocsparse_int             mb,
+                                    rocsparse_int             nb,
+                                    rocsparse_int             nnzb,
+                                    const float*              alpha,
+                                    const rocsparse_mat_descr descr,
+                                    const float*              bsr_val,
+                                    const rocsparse_int*      bsr_row_ptr,
+                                    const rocsparse_int*      bsr_col_ind,
+                                    rocsparse_int             row_block_dim,
+                                    rocsparse_int             col_block_dim,
+                                    const float*              x,
+                                    const float*              beta,
+                                    float*                    y);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dgebsrmv(rocsparse_handle          handle,
+                                    rocsparse_direction       dir,
+                                    rocsparse_operation       trans,
+                                    rocsparse_int             mb,
+                                    rocsparse_int             nb,
+                                    rocsparse_int             nnzb,
+                                    const double*             alpha,
+                                    const rocsparse_mat_descr descr,
+                                    const double*             bsr_val,
+                                    const rocsparse_int*      bsr_row_ptr,
+                                    const rocsparse_int*      bsr_col_ind,
+                                    rocsparse_int             row_block_dim,
+                                    rocsparse_int             col_block_dim,
+                                    const double*             x,
+                                    const double*             beta,
+                                    double*                   y);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cgebsrmv(rocsparse_handle               handle,
+                                    rocsparse_direction            dir,
+                                    rocsparse_operation            trans,
+                                    rocsparse_int                  mb,
+                                    rocsparse_int                  nb,
+                                    rocsparse_int                  nnzb,
+                                    const rocsparse_float_complex* alpha,
+                                    const rocsparse_mat_descr      descr,
+                                    const rocsparse_float_complex* bsr_val,
+                                    const rocsparse_int*           bsr_row_ptr,
+                                    const rocsparse_int*           bsr_col_ind,
+                                    rocsparse_int                  row_block_dim,
+                                    rocsparse_int                  col_block_dim,
+                                    const rocsparse_float_complex* x,
+                                    const rocsparse_float_complex* beta,
+                                    rocsparse_float_complex*       y);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zgebsrmv(rocsparse_handle                handle,
+                                    rocsparse_direction             dir,
+                                    rocsparse_operation             trans,
+                                    rocsparse_int                   mb,
+                                    rocsparse_int                   nb,
+                                    rocsparse_int                   nnzb,
+                                    const rocsparse_double_complex* alpha,
+                                    const rocsparse_mat_descr       descr,
+                                    const rocsparse_double_complex* bsr_val,
+                                    const rocsparse_int*            bsr_row_ptr,
+                                    const rocsparse_int*            bsr_col_ind,
+                                    rocsparse_int                   row_block_dim,
+                                    rocsparse_int                   col_block_dim,
+                                    const rocsparse_double_complex* x,
+                                    const rocsparse_double_complex* beta,
+                                    rocsparse_double_complex*       y);
+/**@}*/
+
 /*
 * ===========================================================================
 *    level 3 SPARSE
@@ -12428,6 +12581,328 @@ rocsparse_status rocsparse_zgebsr2gebsr(rocsparse_handle                handle,
                                         rocsparse_int                   col_block_dim_C,
                                         void*                           temp_buffer);
 /**@}*/
+
+/*
+* ===========================================================================
+*    generic SPARSE
+* ===========================================================================
+*/
+
+/*! \ingroup generic_module
+*  \brief Scale a sparse vector and add it to a scaled dense vector.
+*
+*  \details
+*  \p rocsparse_axpby multiplies the sparse vector \f$x\f$ with scalar \f$\alpha\f$ and
+*  adds the result to the dense vector \f$y\f$ that is multiplied with scalar
+*  \f$\beta\f$, such that
+*
+*  \f[
+*      y := \alpha \cdot x + \beta \cdot y
+*  \f]
+*
+*  \code{.c}
+*      for(i = 0; i < nnz; ++i)
+*      {
+*          y[x_ind[i]] = alpha * x_val[i] + beta * y[x_ind[i]]
+*      }
+*  \endcode
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  alpha       scalar \f$\alpha\f$.
+*  @param[in]
+*  x           sparse matrix descriptor.
+*  @param[in]
+*  beta        scalar \f$\beta\f$.
+*  @param[inout]
+*  y           dense matrix descriptor.
+*
+*  \retval rocsparse_status_success the operation completed successfully.
+*  \retval rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval rocsparse_status_invalid_pointer \p alpha, \p x, \p beta or \p y pointer is
+*          invalid.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_axpby(rocsparse_handle            handle,
+                                 const void*                 alpha,
+                                 const rocsparse_spvec_descr x,
+                                 const void*                 beta,
+                                 rocsparse_dnvec_descr       y);
+
+/*! \ingroup generic_module
+*  \brief Gather elements from a dense vector and store them into a sparse vector.
+*
+*  \details
+*  \p rocsparse_gather gathers the elements from the dense vector \f$y\f$ and stores
+*  them in the sparse vector \f$x\f$.
+*
+*  \code{.c}
+*      for(i = 0; i < nnz; ++i)
+*      {
+*          x_val[i] = y[x_ind[i]];
+*      }
+*  \endcode
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  y            dense vector \f$y\f$.
+*  @param[out]
+*  x            sparse vector \f$x\f$.
+*
+*  \retval      rocsparse_status_success the operation completed successfully.
+*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_pointer \p x or \p y pointer is invalid.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_gather(rocsparse_handle            handle,
+                                  const rocsparse_dnvec_descr y,
+                                  rocsparse_spvec_descr       x);
+
+/*! \ingroup generic_module
+*  \brief Scatter elements from a sparse vector into a dense vector.
+*
+*  \details
+*  \p rocsparse_scatter scatters the elements from the sparse vector \f$x\f$ in the dense
+*  vector \f$y\f$.
+*
+*  \code{.c}
+*      for(i = 0; i < nnz; ++i)
+*      {
+*          y[x_ind[i]] = x_val[i];
+*      }
+*  \endcode
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  x            sparse vector \f$x\f$.
+*  @param[out]
+*  y            dense vector \f$y\f$.
+*
+*  \retval      rocsparse_status_success the operation completed successfully.
+*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_pointer \p x or \p y pointer is invalid.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scatter(rocsparse_handle            handle,
+                                   const rocsparse_spvec_descr x,
+                                   rocsparse_dnvec_descr       y);
+
+/*! \ingroup generic_module
+*  \brief Apply Givens rotation to a dense and a sparse vector.
+*
+*  \details
+*  \p rocsparse_rot applies the Givens rotation matrix \f$G\f$ to the sparse vector
+*  \f$x\f$ and the dense vector \f$y\f$, where
+*  \f[
+*    G = \begin{pmatrix} c & s \\ -s & c \end{pmatrix}
+*  \f]
+*
+*  \code{.c}
+*      for(i = 0; i < nnz; ++i)
+*      {
+*          x_tmp = x_val[i];
+*          y_tmp = y[x_ind[i]];
+*
+*          x_val[i]    = c * x_tmp + s * y_tmp;
+*          y[x_ind[i]] = c * y_tmp - s * x_tmp;
+*      }
+*  \endcode
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  c           pointer to the cosine element of \f$G\f$, can be on host or device.
+*  @param[in]
+*  s           pointer to the sine element of \f$G\f$, can be on host or device.
+*  @param[inout]
+*  x           sparse vector \f$x\f$.
+*  @param[inout]
+*  y           dense vector \f$y\f$.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_pointer \p c, \p s, \p x or \p y pointer is
+*              invalid.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_rot(rocsparse_handle      handle,
+                               const void*           c,
+                               const void*           s,
+                               rocsparse_spvec_descr x,
+                               rocsparse_dnvec_descr y);
+
+/*! \ingroup generic_module
+*  \brief Sparse vector inner dot product
+*
+*  \details
+*  \p rocsparse_spvv
+*  \p rocsparse_spvv computes the inner dot product of the sparse vecotr \f$x\f$ with the
+*  dense vector \f$y\f$, such that
+*  \f[
+*    \text{result} := x^{'} \cdot y,
+*  \f]
+*  with
+*  \f[
+*    op(x) = \left\{
+*    \begin{array}{ll}
+*        x,   & \text{if trans == rocsparse_operation_none} \\
+*        \bar{x}, & \text{if trans == rocsparse_operation_conjugate_transpose} \\
+*    \end{array}
+*    \right.
+*  \f]
+*
+*  \code{.c}
+*      result = 0;
+*      for(i = 0; i < nnz; ++i)
+*      {
+*          result += x_val[i] * y[x_ind[i]];
+*      }
+*  \endcode
+*
+*  \note
+*  This function writes the required allocation size (in bytes) to \p buffer_size and
+*  returns without performing the SpVV operation, when a nullptr is passed for
+*  \p temp_buffer.
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  trans        sparse vector operation type.
+*  @param[in]
+*  x            sparse vector descriptor.
+*  @param[in]
+*  y            dense vector descriptor.
+*  @param[out]
+*  result       pointer to the result, can be host or device memory
+*  @param[in]
+*  compute_type floating point precision for the SpVV computation.
+*  @param[out]
+*  buffer_size  number of bytes of the temporary storage buffer. buffer_size is set when
+*               \p temp_buffer is nullptr.
+*  @param[in]
+*  temp_buffer  temporary storage buffer allocated by the user. When a nullptr is passed,
+*               the required allocation size (in bytes) is written to \p buffer_size and
+*               function returns without performing the SpVV operation.
+*
+*  \retval      rocsparse_status_success the operation completed successfully.
+*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_pointer \p x, \p y, \p result or \p buffer_size
+*               pointer is invalid.
+*  \retval      rocsparse_status_not_implemented \p compute_type is currently not
+*               supported.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
+                                rocsparse_operation         trans,
+                                const rocsparse_spvec_descr x,
+                                const rocsparse_dnvec_descr y,
+                                void*                       result,
+                                rocsparse_datatype          compute_type,
+                                size_t*                     buffer_size,
+                                void*                       temp_buffer);
+
+/*! \ingroup generic_module
+*  \brief Sparse matrix vector multiplication
+*
+*  \details
+*  \p rocsparse_spmv
+*  \p rocsparse_spmv multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times n\f$
+*  matrix and the dense vector \f$x\f$ and adds the result to the dense vector \f$y\f$
+*  that is multiplied by the scalar \f$\beta\f$, such that
+*  \f[
+*    y := \alpha \cdot op(A) \cdot x + \beta \cdot y,
+*  \f]
+*  with
+*  \f[
+*    op(A) = \left\{
+*    \begin{array}{ll}
+*        A,   & \text{if trans == rocsparse_operation_none} \\
+*        A^T, & \text{if trans == rocsparse_operation_transpose} \\
+*        A^H, & \text{if trans == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*
+*  \note
+*  This function writes the required allocation size (in bytes) to \p buffer_size and
+*  returns without performing the SpMV operation, when a nullptr is passed for
+*  \p temp_buffer.
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  \note
+*  Currently, only \p trans == \ref rocsparse_operation_none is supported.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  trans        matrix operation type.
+*  @paran[in]
+*  alpha        scalar \f$\alpha\f$.
+*  @param[in]
+*  mat          matrix descriptor.
+*  @param[in]
+*  x            vector descriptor.
+*  @param[in]
+*  beta         scalar \f$\beta\f$.
+*  @param[inout]
+*  y            vector descriptor.
+*  @param[in]
+*  compute_type floating point precision for the SpMV computation.
+*  @param[in]
+*  alg          SpMV algorithm for the SpMV computation.
+*  @param[out]
+*  buffer_size  number of bytes of the temporary storage buffer. buffer_size is set when
+*               \p temp_buffer is nullptr.
+*  @param[in]
+*  temp_buffer  temporary storage buffer allocated by the user. When a nullptr is passed,
+*               the required allocation size (in bytes) is written to \p buffer_size and
+*               function returns without performing the SpMV operation.
+*
+*  \retval      rocsparse_status_success the operation completed successfully.
+*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_pointer \p alpha, \p mat, \p x, \p beta, \p y or
+*               \p buffer_size pointer is invalid.
+*  \retval      rocsparse_status_not_implemented \p trans, \p compute_type or \p alg is
+*               currently not supported.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
+                                rocsparse_operation         trans,
+                                const void*                 alpha,
+                                const rocsparse_spmat_descr mat,
+                                const rocsparse_dnvec_descr x,
+                                const void*                 beta,
+                                const rocsparse_dnvec_descr y,
+                                rocsparse_datatype          compute_type,
+                                rocsparse_spmv_alg          alg,
+                                size_t*                     buffer_size,
+                                void*                       temp_buffer);
 
 #ifdef __cplusplus
 }

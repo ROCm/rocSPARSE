@@ -39,7 +39,7 @@ extern "C" rocsparse_status rocsparse_sroti(rocsparse_handle     handle,
                                             const float*         s,
                                             rocsparse_index_base idx_base)
 {
-    return rocsparse_roti_template<float>(handle, nnz, x_val, x_ind, y, c, s, idx_base);
+    return rocsparse_roti_template(handle, nnz, x_val, x_ind, y, c, s, idx_base);
 }
 
 extern "C" rocsparse_status rocsparse_droti(rocsparse_handle     handle,
@@ -51,5 +51,5 @@ extern "C" rocsparse_status rocsparse_droti(rocsparse_handle     handle,
                                             const double*        s,
                                             rocsparse_index_base idx_base)
 {
-    return rocsparse_roti_template<double>(handle, nnz, x_val, x_ind, y, c, s, idx_base);
+    return rocsparse_roti_template(handle, nnz, x_val, x_ind, y, c, s, idx_base);
 }

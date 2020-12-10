@@ -37,11 +37,16 @@
 #define BSR_IND_R(j, bi, bj) (bsr_dim * bsr_dim * (j) + (bi) * bsr_dim + (bj))
 #define BSR_IND_C(j, bi, bj) (bsr_dim * bsr_dim * (j) + (bi) + (bj) * bsr_dim)
 
+#define GEBSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? GEBSR_IND_R(j, bi, bj) : GEBSR_IND_C(j, bi, bj))
+#define GEBSR_IND_R(j, bi, bj) (row_bsr_dim * col_bsr_dim * (j) + (bi) * col_bsr_dim + (bj))
+#define GEBSR_IND_C(j, bi, bj) (row_bsr_dim * col_bsr_dim * (j) + (bi) + (bj) * row_bsr_dim)
+
 __device__ __forceinline__ float rocsparse_ldg(const float* ptr) { return __ldg(ptr); }
 __device__ __forceinline__ double rocsparse_ldg(const double* ptr) { return __ldg(ptr); }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_ldg(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__ldg((const float*)ptr), __ldg((const float*)ptr + 1)); }
 __device__ __forceinline__ rocsparse_double_complex rocsparse_ldg(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__ldg((const double*)ptr), __ldg((const double*)ptr + 1)); }
-__device__ __forceinline__ rocsparse_int rocsparse_ldg(const rocsparse_int* ptr) { return __ldg(ptr); }
+__device__ __forceinline__ int32_t rocsparse_ldg(const int32_t* ptr) { return __ldg(ptr); }
+__device__ __forceinline__ int64_t rocsparse_ldg(const int64_t* ptr) { return __ldg(ptr); }
 
 __device__ __forceinline__ float rocsparse_fma(float p, float q, float r) { return fma(p, q, r); }
 __device__ __forceinline__ double rocsparse_fma(double p, double q, double r) { return fma(p, q, r); }
@@ -67,13 +72,15 @@ __device__ __forceinline__ float rocsparse_nontemporal_load(const float* ptr) { 
 __device__ __forceinline__ double rocsparse_nontemporal_load(const double* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_nontemporal_load(const rocsparse_float_complex* ptr) { return rocsparse_float_complex(__builtin_nontemporal_load((const float*)ptr), __builtin_nontemporal_load((const float*)ptr + 1)); }
 __device__ __forceinline__ rocsparse_double_complex rocsparse_nontemporal_load(const rocsparse_double_complex* ptr) { return rocsparse_double_complex(__builtin_nontemporal_load((const double*)ptr), __builtin_nontemporal_load((const double*)ptr + 1)); }
-__device__ __forceinline__ rocsparse_int rocsparse_nontemporal_load(const rocsparse_int* ptr) { return __builtin_nontemporal_load(ptr); }
+__device__ __forceinline__ int32_t rocsparse_nontemporal_load(const int32_t* ptr) { return __builtin_nontemporal_load(ptr); }
+__device__ __forceinline__ int64_t rocsparse_nontemporal_load(const int64_t* ptr) { return __builtin_nontemporal_load(ptr); }
 
 __device__ __forceinline__ void rocsparse_nontemporal_store(float val, float* ptr) { __builtin_nontemporal_store(val, ptr); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(double val, double* ptr) { __builtin_nontemporal_store(val, ptr); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_float_complex val, rocsparse_float_complex* ptr) { __builtin_nontemporal_store(std::real(val), (float*)ptr); __builtin_nontemporal_store(std::imag(val), (float*)ptr + 1); }
 __device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_double_complex val, rocsparse_double_complex* ptr) { __builtin_nontemporal_store(std::real(val), (double*)ptr); __builtin_nontemporal_store(std::imag(val), (double*)ptr + 1); }
-__device__ __forceinline__ void rocsparse_nontemporal_store(rocsparse_int val, rocsparse_int* ptr) { __builtin_nontemporal_store(val, ptr); }
+__device__ __forceinline__ void rocsparse_nontemporal_store(int32_t val, int32_t* ptr) { __builtin_nontemporal_store(val, ptr); }
+__device__ __forceinline__ void rocsparse_nontemporal_store(int64_t val, int64_t* ptr) { __builtin_nontemporal_store(val, ptr); }
 
 __device__ __forceinline__ float rocsparse_shfl(float var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
 __device__ __forceinline__ double rocsparse_shfl(double var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
@@ -83,7 +90,8 @@ __device__ __forceinline__ rocsparse_double_complex rocsparse_shfl(rocsparse_dou
 __device__ __forceinline__ int32_t rocsparse_mul24(int32_t x, int32_t y) { return ((x << 8) >> 8) * ((y << 8) >> 8); }
 __device__ __forceinline__ int64_t rocsparse_mul24(int64_t x, int64_t y) { return ((x << 40) >> 40) * ((y << 40) >> 40); }
 
-__device__ __forceinline__ rocsparse_int rocsparse_mad24(rocsparse_int x, rocsparse_int y, rocsparse_int z) { return rocsparse_mul24(x, y) + z; }
+__device__ __forceinline__ int32_t rocsparse_mad24(int32_t x, int32_t y, int32_t z) { return rocsparse_mul24(x, y) + z; }
+__device__ __forceinline__ int64_t rocsparse_mad24(int64_t x, int64_t y, int64_t z) { return rocsparse_mul24(x, y) + z; }
 
 __device__ __forceinline__ int64_t atomicMin(int64_t* ptr, int64_t val) { return atomicMin((unsigned long long*)ptr, val); }
 __device__ __forceinline__ int64_t atomicMax(int64_t* ptr, int64_t val) { return atomicMax((unsigned long long*)ptr, val); }

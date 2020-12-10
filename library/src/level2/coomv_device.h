@@ -29,10 +29,10 @@
 #include "common.h"
 
 // Scale kernel for beta != 1.0
-template <typename T>
-__device__ void coomv_scale_device(rocsparse_int size, T beta, T* __restrict__ data)
+template <typename I, typename T>
+__device__ void coomv_scale_device(I size, T beta, T* __restrict__ data)
 {
-    rocsparse_int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+    I gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
 
     if(gid >= size)
     {
@@ -45,26 +45,26 @@ __device__ void coomv_scale_device(rocsparse_int size, T beta, T* __restrict__ d
 // Implementation motivated by papers 'Efficient Sparse Matrix-Vector Multiplication on CUDA',
 // 'Implementing Sparse Matrix-Vector Multiplication on Throughput-Oriented Processors' and
 // 'Segmented operations for sparse matrix computation on vector multiprocessors'
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename T>
-static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
-                                                rocsparse_int        loops,
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename T>
+static __device__ void coomvn_general_wf_reduce(I                    nnz,
+                                                I                    loops,
                                                 T                    alpha,
-                                                const rocsparse_int* coo_row_ind,
-                                                const rocsparse_int* coo_col_ind,
+                                                const I*             coo_row_ind,
+                                                const I*             coo_col_ind,
                                                 const T*             coo_val,
                                                 const T*             x,
                                                 T*                   y,
-                                                rocsparse_int*       row_block_red,
+                                                I*                   row_block_red,
                                                 T*                   val_block_red,
                                                 rocsparse_index_base idx_base)
 {
-    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
-    rocsparse_int tid = hipThreadIdx_x;
+    int tid = hipThreadIdx_x;
+    I   gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     // Lane index (0,...,WF_SIZE)
-    rocsparse_int lid = tid & (WF_SIZE - 1);
+    int lid = tid & (WF_SIZE - 1);
     // Wavefront index
-    rocsparse_int wid = gid / WF_SIZE;
+    I wid = gid / WF_SIZE;
 
     // Initialize block buffers
     if(lid == 0)
@@ -74,11 +74,11 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
     }
 
     // Global COO array index start for current wavefront
-    rocsparse_int offset = wid * loops * WF_SIZE;
+    I offset = wid * loops * WF_SIZE;
 
     // Shared memory to hold row indices and values for segmented reduction
-    __shared__ rocsparse_int shared_row[BLOCKSIZE];
-    __shared__ T             shared_val[BLOCKSIZE];
+    __shared__ I shared_row[BLOCKSIZE];
+    __shared__ T shared_val[BLOCKSIZE];
 
     // Initialize shared memory
     shared_row[tid] = -1;
@@ -92,11 +92,11 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
         return;
     }
 
-    rocsparse_int row;
-    T             val;
+    I row;
+    T val;
 
     // Current threads index into COO structure
-    rocsparse_int idx = offset + lid;
+    I idx = offset + lid;
 
     // Each thread processes 'loop' COO entries
     while(idx < offset + loops * WF_SIZE)
@@ -121,7 +121,7 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
         // appended.
         if(idx > offset && lid == 0)
         {
-            rocsparse_int prevrow = shared_row[tid + WF_SIZE - 1];
+            I prevrow = shared_row[tid + WF_SIZE - 1];
             if(row == prevrow)
             {
                 val = val + shared_val[tid + WF_SIZE - 1];
@@ -142,7 +142,7 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
 
 #pragma unroll
         // Segmented wavefront reduction
-        for(rocsparse_int j = 1; j < WF_SIZE; j <<= 1)
+        for(int j = 1; j < WF_SIZE; j <<= 1)
         {
             if(lid >= j)
             {
@@ -181,13 +181,13 @@ static __device__ void coomvn_general_wf_reduce(rocsparse_int        nnz,
 }
 
 // Segmented block reduction kernel
-template <unsigned int BLOCKSIZE, typename T>
-static __device__ void segmented_blockreduce(const rocsparse_int* rows, T* vals)
+template <unsigned int BLOCKSIZE, typename I, typename T>
+static __device__ void segmented_blockreduce(const I* rows, T* vals)
 {
-    rocsparse_int tid = hipThreadIdx_x;
+    int tid = hipThreadIdx_x;
 
 #pragma unroll
-    for(rocsparse_int j = 1; j < BLOCKSIZE; j <<= 1)
+    for(int j = 1; j < BLOCKSIZE; j <<= 1)
     {
         T val = static_cast<T>(0);
         if(tid >= j)
@@ -205,14 +205,11 @@ static __device__ void segmented_blockreduce(const rocsparse_int* rows, T* vals)
 }
 
 // Do the final block reduction of the block reduction buffers back into global memory
-template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
-    void coomvn_general_block_reduce(rocsparse_int nnz,
-                                     const rocsparse_int* __restrict__ row_block_red,
-                                     const T* __restrict__ val_block_red,
-                                     T* y)
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__launch_bounds__(BLOCKSIZE) __global__ void coomvn_general_block_reduce(
+    I nnz, const I* __restrict__ row_block_red, const T* __restrict__ val_block_red, T* y)
 {
-    rocsparse_int tid = hipThreadIdx_x;
+    int tid = hipThreadIdx_x;
 
     // Quick return when thread is out of bounds
     if(tid >= nnz)
@@ -221,11 +218,11 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 
     // Shared memory to hold row indices and values for segmented reduction
-    __shared__ rocsparse_int shared_row[BLOCKSIZE];
-    __shared__ T             shared_val[BLOCKSIZE];
+    __shared__ I shared_row[BLOCKSIZE];
+    __shared__ T shared_val[BLOCKSIZE];
 
     // Loop over blocks that are subject for segmented reduction
-    for(rocsparse_int i = tid; i < nnz; i += BLOCKSIZE)
+    for(I i = tid; i < nnz; i += BLOCKSIZE)
     {
         // Copy data to reduction buffers
         shared_row[tid] = row_block_red[i];
@@ -237,8 +234,8 @@ __launch_bounds__(BLOCKSIZE) __global__
         segmented_blockreduce<BLOCKSIZE>(shared_row, shared_val);
 
         // Add reduced sum to y if valid
-        rocsparse_int row   = shared_row[tid];
-        rocsparse_int rowp1 = (tid < BLOCKSIZE - 1) ? shared_row[tid + 1] : -1;
+        I row   = shared_row[tid];
+        I rowp1 = (tid < BLOCKSIZE - 1) ? shared_row[tid + 1] : -1;
 
         if(row != rowp1 && row >= 0)
         {

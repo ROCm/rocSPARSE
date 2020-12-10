@@ -28,18 +28,19 @@
 
 #include "handle.h"
 
-template <typename T>
+template <typename I, typename T>
 rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
-                                          rocsparse_int             m,
-                                          rocsparse_int             n,
-                                          rocsparse_int             nnz,
+                                          I                         m,
+                                          I                         n,
+                                          I                         nnz,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
                                           const T*                  coo_val,
-                                          const rocsparse_int*      coo_row_ind,
-                                          const rocsparse_int*      coo_col_ind,
+                                          const I*                  coo_row_ind,
+                                          const I*                  coo_col_ind,
                                           const T*                  x,
                                           const T*                  beta,
                                           T*                        y);
+
 #endif // ROCSPARSE_COOMV_HPP

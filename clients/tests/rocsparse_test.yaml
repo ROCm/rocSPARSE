@@ -21,11 +21,15 @@
 #
 # ########################################################################
 
+include: test_axpby.yaml
 include: test_axpyi.yaml
 include: test_doti.yaml
 include: test_dotci.yaml
+include: test_gather.yaml
+include: test_scatter.yaml
 include: test_gthr.yaml
 include: test_gthrz.yaml
+include: test_rot.yaml
 include: test_roti.yaml
 include: test_sctr.yaml
 include: test_bsrmv.yaml
@@ -35,6 +39,7 @@ include: test_csrmv.yaml
 include: test_csrsv.yaml
 include: test_ellmv.yaml
 include: test_hybmv.yaml
+include: test_gebsrmv.yaml
 include: test_bsrmm.yaml
 include: test_csrmm.yaml
 include: test_csrsm.yaml
@@ -74,4 +79,11 @@ include: test_cscsort.yaml
 include: test_coosort.yaml
 include: test_csricsv.yaml
 include: test_csrilusv.yaml
-
+include: test_spvec_descr.yaml
+include: test_spmat_descr.yaml
+include: test_dnvec_descr.yaml
+include: test_dnmat_descr.yaml
+include: test_spmv_coo.yaml
+include: test_spmv_csr.yaml
+include: test_spmv_ell.yaml
+include: test_spvv.yaml

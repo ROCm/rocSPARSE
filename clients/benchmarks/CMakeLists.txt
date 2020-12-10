@@ -61,6 +61,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_csrsv.cpp
 ../testings/testing_ellmv.cpp
 ../testings/testing_hybmv.cpp
+../testings/testing_gebsrmv.cpp
 ../testings/testing_bsrmm.cpp
 ../testings/testing_csrmm.cpp
 ../testings/testing_csrsm.cpp
@@ -100,6 +101,9 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_dense2csc.cpp
 ../testings/testing_csr2dense.cpp
 ../testings/testing_csc2dense.cpp
+../testings/testing_spmv_coo.cpp
+../testings/testing_spmv_csr.cpp
+../testings/testing_spmv_ell.cpp
 )
 
 add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})

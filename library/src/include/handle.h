@@ -196,8 +196,8 @@ struct _rocsparse_csrmv_info
     rocsparse_int               n;
     rocsparse_int               nnz;
     const _rocsparse_mat_descr* descr;
-    const rocsparse_int*        csr_row_ptr;
-    const rocsparse_int*        csr_col_ind;
+    const void*                 csr_row_ptr;
+    const void*                 csr_col_ind;
 };
 
 /********************************************************************************
@@ -288,5 +288,68 @@ rocsparse_status rocsparse_destroy_csrgemm_info(rocsparse_csrgemm_info info);
 #define ELL_IND_ROW(i, el, m, width) (el) * (m) + (i)
 #define ELL_IND_EL(i, el, m, width) (el) + (width) * (i)
 #define ELL_IND(i, el, m, width) ELL_IND_ROW(i, el, m, width)
+
+struct _rocsparse_spvec_descr
+{
+    bool init = false;
+
+    int64_t size;
+    int64_t nnz;
+
+    void* idx_data;
+    void* val_data;
+
+    rocsparse_indextype idx_type;
+    rocsparse_datatype  data_type;
+
+    rocsparse_index_base idx_base;
+};
+
+struct _rocsparse_spmat_descr
+{
+    bool init     = false;
+    bool analysed = false;
+
+    int64_t rows;
+    int64_t cols;
+    int64_t nnz;
+
+    void* row_data;
+    void* col_data;
+    void* val_data;
+
+    rocsparse_indextype row_type;
+    rocsparse_indextype col_type;
+    rocsparse_datatype  data_type;
+
+    rocsparse_index_base idx_base;
+    rocsparse_format     format;
+
+    rocsparse_mat_descr descr;
+    rocsparse_mat_info  info;
+};
+
+struct _rocsparse_dnvec_descr
+{
+    bool init = false;
+
+    int64_t            size;
+    void*              values;
+    rocsparse_datatype data_type;
+};
+
+struct _rocsparse_dnmat_descr
+{
+    bool init = false;
+
+    int64_t rows;
+    int64_t cols;
+    int64_t ld;
+
+    void* values;
+
+    rocsparse_datatype data_type;
+    rocsparse_order    order;
+};
 
 #endif // HANDLE_H

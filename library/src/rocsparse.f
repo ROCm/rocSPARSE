@@ -1733,6 +1733,107 @@ module rocsparse
             type(c_ptr), value :: y
         end function rocsparse_zhybmv
 
+!       rocsparse_gebsrmv
+        function rocsparse_sgebsrmv(handle, dir, trans, mb, nb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, row_block_dim, col_block_dim, x, beta, y) &
+                bind(c, name = 'rocsparse_sgebsrmv')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgebsrmv
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), intent(in), value :: x
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: y
+        end function rocsparse_sgebsrmv
+
+        function rocsparse_dgebsrmv(handle, dir, trans, mb, nb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, row_block_dim, col_block_dim, x, beta, y) &
+                bind(c, name = 'rocsparse_dgebsrmv')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgebsrmv
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), intent(in), value :: x
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: y
+        end function rocsparse_dgebsrmv
+
+        function rocsparse_cgebsrmv(handle, dir, trans, mb, nb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, row_block_dim, col_block_dim, x, beta, y) &
+                bind(c, name = 'rocsparse_cgebsrmv')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgebsrmv
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), intent(in), value :: x
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: y
+        end function rocsparse_cgebsrmv
+
+        function rocsparse_zgebsrmv(handle, dir, trans, mb, nb, nnzb, alpha, descr, &
+                bsr_val, bsr_row_ptr, bsr_col_ind, row_block_dim, col_block_dim, x, beta, y) &
+                bind(c, name = 'rocsparse_zgebsrmv')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgebsrmv
+            type(c_ptr), value :: handle
+            integer(c_int), value :: dir
+            integer(c_int), value :: trans
+            integer(c_int), value :: mb
+            integer(c_int), value :: nb
+            integer(c_int), value :: nnzb
+            type(c_ptr), intent(in), value :: alpha
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: bsr_val
+            type(c_ptr), intent(in), value :: bsr_row_ptr
+            type(c_ptr), intent(in), value :: bsr_col_ind
+            integer(c_int), value :: row_block_dim
+            integer(c_int), value :: col_block_dim
+            type(c_ptr), intent(in), value :: x
+            type(c_ptr), intent(in), value :: beta
+            type(c_ptr), value :: y
+        end function rocsparse_zgebsrmv
+
 ! ===========================================================================
 !   level 3 SPARSE
 ! ===========================================================================

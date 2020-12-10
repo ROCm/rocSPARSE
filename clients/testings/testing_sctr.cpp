@@ -140,7 +140,7 @@ void testing_sctr(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
 
         // CPU sctr
-        host_sctr<T>(nnz, hx_val, hx_ind, hy_gold, base);
+        host_sctr<rocsparse_int, T>(nnz, hx_val, hx_ind, hy_gold, base);
 
         unit_check_general<T>(1, M, 1, hy_gold, hy_1);
         unit_check_general<T>(1, M, 1, hy_gold, hy_2);
@@ -169,7 +169,7 @@ void testing_sctr(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = sctr_gbyte_count<T>(nnz) / gpu_time_used * 1e6;
+        double gpu_gbyte = sctr_gbyte_count<rocsparse_int, T>(nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

@@ -28,14 +28,6 @@
 
 #include <rocsparse.h>
 
-typedef enum rocsparse_datatype_
-{
-    rocsparse_datatype_f32_r = 151, /**< 32 bit floating point, real */
-    rocsparse_datatype_f64_r = 152, /**< 64 bit floating point, real */
-    rocsparse_datatype_f32_c = 154, /**< 32 bit floating point, complex real */
-    rocsparse_datatype_f64_c = 155 /**< 64 bit floating point, complex real */
-} rocsparse_datatype;
-
 typedef enum rocsparse_matrix_init_
 {
     rocsparse_matrix_random          = 0, /**< Random initialization */
@@ -59,6 +51,21 @@ constexpr auto rocsparse_matrix2string(rocsparse_matrix_init matrix)
         return "mtx";
     case rocsparse_matrix_file_rocalution:
         return "csr";
+    default:
+        return "invalid";
+    }
+}
+
+constexpr auto rocsparse_indextype2string(rocsparse_indextype type)
+{
+    switch(type)
+    {
+    case rocsparse_indextype_u16:
+        return "u16";
+    case rocsparse_indextype_i32:
+        return "i32";
+    case rocsparse_indextype_i64:
+        return "i64";
     default:
         return "invalid";
     }
@@ -195,6 +202,35 @@ constexpr auto rocsparse_direction2string(rocsparse_direction direction)
         return "row";
     case rocsparse_direction_column:
         return "column";
+    default:
+        return "invalid";
+    }
+}
+
+constexpr auto rocsparse_order2string(rocsparse_order order)
+{
+    switch(order)
+    {
+    case rocsparse_order_row:
+        return "row";
+    case rocsparse_order_column:
+        return "col";
+    default:
+        return "invalid";
+    }
+}
+
+constexpr auto rocsparse_spmvalg2string(rocsparse_spmv_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_spmv_default:
+        return "default";
+    case rocsparse_spmv_coo_alg:
+    case rocsparse_spmv_csr_alg1:
+        return "alg1";
+    case rocsparse_spmv_csr_alg2:
+        return "alg2";
     default:
         return "invalid";
     }

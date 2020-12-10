@@ -134,7 +134,7 @@ void testing_gthr(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hx_val_2, dx_val_2, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
         // CPU gthr
-        host_gthr<T>(nnz, hy, hx_val_gold, hx_ind, base);
+        host_gthr<rocsparse_int, T>(nnz, hy, hx_val_gold, hx_ind, base);
 
         unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_1);
         unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_2);
@@ -163,7 +163,7 @@ void testing_gthr(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = gthr_gbyte_count<T>(nnz) / gpu_time_used * 1e6;
+        double gpu_gbyte = gthr_gbyte_count<rocsparse_int, T>(nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

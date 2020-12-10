@@ -586,6 +586,26 @@ rocsparse_status
 
 .. doxygenenum:: rocsparse_status
 
+rocsparse_indextype
+-------------------
+
+.. doxygenenum:: rocsparse_indextype
+
+rocsparse_datatype
+-------------------
+
+.. doxygenenum:: rocsparse_datatype
+
+rocsparse_format
+----------------
+
+.. doxygenenum:: rocsparse_format
+
+rocsparse_spmv_alg
+------------------
+
+.. doxygenenum:: rocsparse_spmv_alg
+
 .. _rocsparse_logging:
 
 Logging
@@ -615,55 +635,109 @@ Exported Sparse Functions
 Auxiliary Functions
 -------------------
 
-+----------------------------------------+
-|Function name                           |
-+----------------------------------------+
-|:cpp:func:`rocsparse_create_handle`     |
-+----------------------------------------+
-|:cpp:func:`rocsparse_destroy_handle`    |
-+----------------------------------------+
-|:cpp:func:`rocsparse_set_stream`        |
-+----------------------------------------+
-|:cpp:func:`rocsparse_get_stream`        |
-+----------------------------------------+
-|:cpp:func:`rocsparse_set_pointer_mode`  |
-+----------------------------------------+
-|:cpp:func:`rocsparse_get_pointer_mode`  |
-+----------------------------------------+
-|:cpp:func:`rocsparse_get_version`       |
-+----------------------------------------+
-|:cpp:func:`rocsparse_get_git_rev`       |
-+----------------------------------------+
-|:cpp:func:`rocsparse_create_mat_descr`  |
-+----------------------------------------+
-|:cpp:func:`rocsparse_destroy_mat_descr` |
-+----------------------------------------+
-|:cpp:func:`rocsparse_copy_mat_descr`    |
-+----------------------------------------+
-|:cpp:func:`rocsparse_set_mat_index_base`|
-+----------------------------------------+
-|:cpp:func:`rocsparse_get_mat_index_base`|
-+----------------------------------------+
-|:cpp:func:`rocsparse_set_mat_type`      |
-+----------------------------------------+
-|:cpp:func:`rocsparse_get_mat_type`      |
-+----------------------------------------+
-|:cpp:func:`rocsparse_set_mat_fill_mode` |
-+----------------------------------------+
-|:cpp:func:`rocsparse_get_mat_fill_mode` |
-+----------------------------------------+
-|:cpp:func:`rocsparse_set_mat_diag_type` |
-+----------------------------------------+
-|:cpp:func:`rocsparse_get_mat_diag_type` |
-+----------------------------------------+
-|:cpp:func:`rocsparse_create_hyb_mat`    |
-+----------------------------------------+
-|:cpp:func:`rocsparse_destroy_hyb_mat`   |
-+----------------------------------------+
-|:cpp:func:`rocsparse_create_mat_info`   |
-+----------------------------------------+
-|:cpp:func:`rocsparse_destroy_mat_info`  |
-+----------------------------------------+
++------------------------------------------+
+|Function name                             |
++------------------------------------------+
+|:cpp:func:`rocsparse_create_handle`       |
++------------------------------------------+
+|:cpp:func:`rocsparse_destroy_handle`      |
++------------------------------------------+
+|:cpp:func:`rocsparse_set_stream`          |
++------------------------------------------+
+|:cpp:func:`rocsparse_get_stream`          |
++------------------------------------------+
+|:cpp:func:`rocsparse_set_pointer_mode`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_get_pointer_mode`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_get_version`         |
++------------------------------------------+
+|:cpp:func:`rocsparse_get_git_rev`         |
++------------------------------------------+
+|:cpp:func:`rocsparse_create_mat_descr`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_destroy_mat_descr`   |
++------------------------------------------+
+|:cpp:func:`rocsparse_copy_mat_descr`      |
++------------------------------------------+
+|:cpp:func:`rocsparse_set_mat_index_base`  |
++------------------------------------------+
+|:cpp:func:`rocsparse_get_mat_index_base`  |
++------------------------------------------+
+|:cpp:func:`rocsparse_set_mat_type`        |
++------------------------------------------+
+|:cpp:func:`rocsparse_get_mat_type`        |
++------------------------------------------+
+|:cpp:func:`rocsparse_set_mat_fill_mode`   |
++------------------------------------------+
+|:cpp:func:`rocsparse_get_mat_fill_mode`   |
++------------------------------------------+
+|:cpp:func:`rocsparse_set_mat_diag_type`   |
++------------------------------------------+
+|:cpp:func:`rocsparse_get_mat_diag_type`   |
++------------------------------------------+
+|:cpp:func:`rocsparse_create_hyb_mat`      |
++------------------------------------------+
+|:cpp:func:`rocsparse_destroy_hyb_mat`     |
++------------------------------------------+
+|:cpp:func:`rocsparse_create_mat_info`     |
++------------------------------------------+
+|:cpp:func:`rocsparse_destroy_mat_info`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_create_spvec_descr`  |
++------------------------------------------+
+|:cpp:func:`rocsparse_destroy_spvec_descr` |
++------------------------------------------+
+|:cpp:func:`rocsparse_spvec_get`           |
++------------------------------------------+
+|:cpp:func:`rocsparse_spvec_get_index_base`|
++------------------------------------------+
+|:cpp:func:`rocsparse_spvec_get_values`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_spvec_set_values`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_create_coo_descr`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_create_csr_descr`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_create_csc_descr`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_create_ell_descr`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_destroy_spmat_descr` |
++------------------------------------------+
+|:cpp:func:`rocsparse_coo_get`             |
++------------------------------------------+
+|:cpp:func:`rocsparse_csr_get`             |
++------------------------------------------+
+|:cpp:func:`rocsparse_ell_get`             |
++------------------------------------------+
+|:cpp:func:`rocsparse_coo_set_pointers`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_csr_set_pointers`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_csc_set_pointers`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_ell_set_pointers`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_spmat_get_size`      |
++------------------------------------------+
+|:cpp:func:`rocsparse_spmat_get_index_base`|
++------------------------------------------+
+|:cpp:func:`rocsparse_spmat_get_values`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_spmat_set_values`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_create_dnvec_descr`  |
++------------------------------------------+
+|:cpp:func:`rocsparse_destroy_dnvec_descr` |
++------------------------------------------+
+|:cpp:func:`rocsparse_dnvec_get`           |
++------------------------------------------+
+|:cpp:func:`rocsparse_dnvec_get_values`    |
++------------------------------------------+
+|:cpp:func:`rocsparse_dnvec_set_values`    |
++------------------------------------------+
 
 Sparse Level 1 Functions
 ------------------------
@@ -703,6 +777,7 @@ Function name                                                             single
 :cpp:func:`rocsparse_Xcsrsv_solve() <rocsparse_scsrsv_solve>`             x      x      x              x
 :cpp:func:`rocsparse_Xellmv() <rocsparse_sellmv>`                         x      x      x              x
 :cpp:func:`rocsparse_Xhybmv() <rocsparse_shybmv>`                         x      x      x              x
+:cpp:func:`rocsparse_Xgebsrmv() <rocsparse_sgebsrmv>`                     x      x      x              x
 ========================================================================= ====== ====== ============== ==============
 
 Sparse Level 3 Functions
@@ -821,6 +896,20 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xprune_csr2csr_nnz_by_percentage() <rocsparse_sprune_csr2csr_nnz_by_percentage>`                     x      x
 :cpp:func:`rocsparse_Xprune_csr2csr_by_percentage() <rocsparse_sprune_csr2csr_by_percentage>`                             x      x
 ========================================================================================================================= ====== ====== ============== ==============
+
+Sparse Generic Functions
+------------------------
+
+=============================== ====== ====== ============== ==============
+Function name                   single double single complex double complex
+=============================== ====== ====== ============== ==============
+:cpp:func:`rocsparse_axpby()`   x      x      x              x
+:cpp:func:`rocsparse_gather()`  x      x      x              x
+:cpp:func:`rocsparse_scatter()` x      x      x              x
+:cpp:func:`rocsparse_rot()`     x      x      x              x
+:cpp:func:`rocsparse_spvv()`    x      x      x              x
+:cpp:func:`rocsparse_spmv()`    x      x      x              x
+=============================== ====== ====== ============== ==============
 
 Storage schemes and indexing base
 ---------------------------------
@@ -996,6 +1085,141 @@ rocsparse_destroy_mat_info()
 ----------------------------
 
 .. doxygenfunction:: rocsparse_destroy_mat_info
+
+rocsparse_create_spvec_descr()
+------------------------------
+
+.. doxygenfunction:: rocsparse_create_spvec_descr
+
+rocsparse_destroy_spvec_descr()
+-------------------------------
+
+.. doxygenfunction:: rocsparse_destroy_spvec_descr
+
+rocsparse_spvec_get()
+---------------------
+
+.. doxygenfunction:: rocsparse_spvec_get
+
+rocsparse_spvec_get_index_base()
+--------------------------------
+
+.. doxygenfunction:: rocsparse_spvec_get_index_base
+
+rocsparse_spvec_get_values()
+----------------------------
+
+.. doxygenfunction:: rocsparse_spvec_get_values
+
+rocsparse_spvec_set_values()
+----------------------------
+
+.. doxygenfunction:: rocsparse_spvec_set_values
+
+rocsparse_create_coo_descr
+--------------------------
+
+.. doxygenfunction:: rocsparse_create_coo_descr
+
+rocsparse_create_csr_descr
+--------------------------
+
+.. doxygenfunction:: rocsparse_create_csr_descr
+
+rocsparse_create_csc_descr
+--------------------------
+
+.. doxygenfunction:: rocsparse_create_csc_descr
+
+rocsparse_create_ell_descr
+--------------------------
+
+.. doxygenfunction:: rocsparse_create_ell_descr
+
+rocsparse_destroy_spmat_descr
+-----------------------------
+
+.. doxygenfunction:: rocsparse_destroy_spmat_descr
+
+rocsparse_coo_get
+-----------------
+
+.. doxygenfunction:: rocsparse_coo_get
+
+rocsparse_csr_get
+-----------------
+
+.. doxygenfunction:: rocsparse_csr_get
+
+rocsparse_ell_get
+-----------------
+
+.. doxygenfunction:: rocsparse_ell_get
+
+rocsparse_coo_set_pointers
+--------------------------
+
+.. doxygenfunction:: rocsparse_coo_set_pointers
+
+rocsparse_csr_set_pointers
+--------------------------
+
+.. doxygenfunction:: rocsparse_csr_set_pointers
+
+rocsparse_csc_set_pointers
+--------------------------
+
+.. doxygenfunction:: rocsparse_csc_set_pointers
+
+rocsparse_ell_set_pointers
+--------------------------
+
+.. doxygenfunction:: rocsparse_ell_set_pointers
+
+rocsparse_spmat_get_size
+------------------------
+
+.. doxygenfunction:: rocsparse_spmat_get_size
+
+rocsparse_spmat_get_index_base
+------------------------------
+
+.. doxygenfunction:: rocsparse_spmat_get_index_base
+
+rocsparse_spmat_get_values
+--------------------------
+
+.. doxygenfunction:: rocsparse_spmat_get_values
+
+rocsparse_spmat_set_values
+--------------------------
+
+.. doxygenfunction:: rocsparse_spmat_set_values
+
+rocsparse_create_dnvec_descr
+----------------------------
+
+.. doxygenfunction:: rocsparse_create_dnvec_descr
+
+rocsparse_destroy_dnvec_descr
+-----------------------------
+
+.. doxygenfunction:: rocsparse_destroy_dnvec_descr
+
+rocsparse_dnvec_get
+-------------------
+
+.. doxygenfunction:: rocsparse_dnvec_get
+
+rocsparse_dnvec_get_values
+--------------------------
+
+.. doxygenfunction:: rocsparse_dnvec_get_values
+
+rocsparse_dnvec_set_values
+--------------------------
+
+.. doxygenfunction:: rocsparse_dnvec_set_values
 
 .. _rocsparse_level1_functions_:
 
@@ -1238,6 +1462,17 @@ rocsparse_hybmv()
 .. doxygenfunction:: rocsparse_chybmv
   :outline:
 .. doxygenfunction:: rocsparse_zhybmv
+
+rocsparse_gebsrmv()
+-------------------
+
+.. doxygenfunction:: rocsparse_sgebsrmv
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsrmv
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsrmv
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsrmv
 
 .. _rocsparse_level3_functions_:
 
@@ -1992,3 +2227,40 @@ rocsparse_prune_csr2csr_by_percentage()
 .. doxygenfunction:: rocsparse_sprune_csr2csr_by_percentage
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_by_percentage
+
+Sparse Generic Functions
+========================
+
+This module holds all sparse generic routines.
+
+The sparse generic routines describe operations that manipulate sparse matrices.
+
+rocsparse_axpby()
+-----------------
+
+.. doxygenfunction:: rocsparse_axpby
+
+rocsparse_gather()
+------------------
+
+.. doxygenfunction:: rocsparse_gather
+
+rocsparse_scatter()
+-------------------
+
+.. doxygenfunction:: rocsparse_scatter
+
+rocsparse_rot()
+---------------
+
+.. doxygenfunction:: rocsparse_rot
+
+rocsparse_spvv()
+----------------
+
+.. doxygenfunction:: rocsparse_spvv
+
+rocsparse_spmv()
+----------------
+
+.. doxygenfunction:: rocsparse_spmv

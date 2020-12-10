@@ -44,21 +44,21 @@ class rocsparse_local_handle
 public:
     rocsparse_local_handle()
     {
-        rocsparse_create_handle(&handle);
+        rocsparse_create_handle(&this->handle);
     }
     ~rocsparse_local_handle()
     {
-        rocsparse_destroy_handle(handle);
+        rocsparse_destroy_handle(this->handle);
     }
 
     // Allow rocsparse_local_handle to be used anywhere rocsparse_handle is expected
     operator rocsparse_handle&()
     {
-        return handle;
+        return this->handle;
     }
     operator const rocsparse_handle&() const
     {
-        return handle;
+        return this->handle;
     }
 };
 
@@ -71,21 +71,21 @@ class rocsparse_local_mat_descr
 public:
     rocsparse_local_mat_descr()
     {
-        rocsparse_create_mat_descr(&descr);
+        rocsparse_create_mat_descr(&this->descr);
     }
     ~rocsparse_local_mat_descr()
     {
-        rocsparse_destroy_mat_descr(descr);
+        rocsparse_destroy_mat_descr(this->descr);
     }
 
     // Allow rocsparse_local_mat_descr to be used anywhere rocsparse_mat_descr is expected
     operator rocsparse_mat_descr&()
     {
-        return descr;
+        return this->descr;
     }
     operator const rocsparse_mat_descr&() const
     {
-        return descr;
+        return this->descr;
     }
 };
 
@@ -98,21 +98,21 @@ class rocsparse_local_mat_info
 public:
     rocsparse_local_mat_info()
     {
-        rocsparse_create_mat_info(&info);
+        rocsparse_create_mat_info(&this->info);
     }
     ~rocsparse_local_mat_info()
     {
-        rocsparse_destroy_mat_info(info);
+        rocsparse_destroy_mat_info(this->info);
     }
 
     // Allow rocsparse_local_mat_info to be used anywhere rocsparse_mat_info is expected
     operator rocsparse_mat_info&()
     {
-        return info;
+        return this->info;
     }
     operator const rocsparse_mat_info&() const
     {
-        return info;
+        return this->info;
     }
 };
 
@@ -142,21 +142,193 @@ class rocsparse_local_hyb_mat
 public:
     rocsparse_local_hyb_mat()
     {
-        rocsparse_create_hyb_mat(&hyb);
+        rocsparse_create_hyb_mat(&this->hyb);
     }
     ~rocsparse_local_hyb_mat()
     {
-        rocsparse_destroy_hyb_mat(hyb);
+        rocsparse_destroy_hyb_mat(this->hyb);
     }
 
     // Allow rocsparse_local_hyb_mat to be used anywhere rocsparse_hyb_mat is expected
     operator rocsparse_hyb_mat&()
     {
-        return hyb;
+        return this->hyb;
     }
     operator const rocsparse_hyb_mat&() const
     {
-        return hyb;
+        return this->hyb;
+    }
+};
+
+/* ==================================================================================== */
+/*! \brief  local dense vector structure which is automatically created and destroyed  */
+class rocsparse_local_spvec
+{
+    rocsparse_spvec_descr descr;
+
+public:
+    rocsparse_local_spvec(int64_t              size,
+                          int64_t              nnz,
+                          void*                indices,
+                          void*                values,
+                          rocsparse_indextype  idx_type,
+                          rocsparse_index_base idx_base,
+                          rocsparse_datatype   compute_type)
+    {
+        rocsparse_create_spvec_descr(
+            &this->descr, size, nnz, indices, values, idx_type, idx_base, compute_type);
+    }
+    ~rocsparse_local_spvec()
+    {
+        rocsparse_destroy_spvec_descr(this->descr);
+    }
+
+    // Allow rocsparse_local_spvec to be used anywhere rocsparse_spvec_descr is expected
+    operator rocsparse_spvec_descr&()
+    {
+        return this->descr;
+    }
+    operator const rocsparse_spvec_descr&() const
+    {
+        return this->descr;
+    }
+};
+
+/* ==================================================================================== */
+/*! \brief  local sparse matrix structure which is automatically created and destroyed  */
+class rocsparse_local_spmat
+{
+    rocsparse_spmat_descr descr;
+
+public:
+    rocsparse_local_spmat(int64_t              m,
+                          int64_t              n,
+                          int64_t              nnz,
+                          void*                coo_row_ind,
+                          void*                coo_col_ind,
+                          void*                coo_val,
+                          rocsparse_indextype  idx_type,
+                          rocsparse_index_base idx_base,
+                          rocsparse_datatype   compute_type)
+    {
+        rocsparse_create_coo_descr(&this->descr,
+                                   m,
+                                   n,
+                                   nnz,
+                                   coo_row_ind,
+                                   coo_col_ind,
+                                   coo_val,
+                                   idx_type,
+                                   idx_base,
+                                   compute_type);
+    }
+    rocsparse_local_spmat(int64_t              m,
+                          int64_t              n,
+                          int64_t              nnz,
+                          void*                csr_row_ptr,
+                          void*                csr_col_ind,
+                          void*                csr_val,
+                          rocsparse_indextype  row_ptr_type,
+                          rocsparse_indextype  col_ind_type,
+                          rocsparse_index_base idx_base,
+                          rocsparse_datatype   compute_type)
+    {
+        rocsparse_create_csr_descr(&this->descr,
+                                   m,
+                                   n,
+                                   nnz,
+                                   csr_row_ptr,
+                                   csr_col_ind,
+                                   csr_val,
+                                   row_ptr_type,
+                                   col_ind_type,
+                                   idx_base,
+                                   compute_type);
+    }
+    rocsparse_local_spmat(int64_t              m,
+                          int64_t              n,
+                          void*                ell_col_ind,
+                          void*                ell_val,
+                          int64_t              ell_width,
+                          rocsparse_indextype  idx_type,
+                          rocsparse_index_base idx_base,
+                          rocsparse_datatype   compute_type)
+    {
+        rocsparse_create_ell_descr(
+            &this->descr, m, n, ell_col_ind, ell_val, ell_width, idx_type, idx_base, compute_type);
+    }
+    ~rocsparse_local_spmat()
+    {
+        rocsparse_destroy_spmat_descr(this->descr);
+    }
+
+    // Allow rocsparse_local_spmat to be used anywhere rocsparse_spmat_descr is expected
+    operator rocsparse_spmat_descr&()
+    {
+        return this->descr;
+    }
+    operator const rocsparse_spmat_descr&() const
+    {
+        return this->descr;
+    }
+};
+
+/* ==================================================================================== */
+/*! \brief  local dense vector structure which is automatically created and destroyed  */
+class rocsparse_local_dnvec
+{
+    rocsparse_dnvec_descr descr;
+
+public:
+    rocsparse_local_dnvec(int64_t size, void* values, rocsparse_datatype compute_type)
+    {
+        rocsparse_create_dnvec_descr(&this->descr, size, values, compute_type);
+    }
+    ~rocsparse_local_dnvec()
+    {
+        rocsparse_destroy_dnvec_descr(this->descr);
+    }
+
+    // Allow rocsparse_local_dnvec to be used anywhere rocsparse_dnvec_descr is expected
+    operator rocsparse_dnvec_descr&()
+    {
+        return this->descr;
+    }
+    operator const rocsparse_dnvec_descr&() const
+    {
+        return this->descr;
+    }
+};
+
+/* ==================================================================================== */
+/*! \brief  local dense matrix structure which is automatically created and destroyed  */
+class rocsparse_local_dnmat
+{
+    rocsparse_dnmat_descr descr;
+
+public:
+    rocsparse_local_dnmat(int64_t            rows,
+                          int64_t            cols,
+                          int64_t            ld,
+                          void*              values,
+                          rocsparse_datatype compute_type,
+                          rocsparse_order    order)
+    {
+        rocsparse_create_dnmat_descr(&this->descr, rows, cols, ld, values, compute_type, order);
+    }
+    ~rocsparse_local_dnmat()
+    {
+        rocsparse_destroy_dnmat_descr(this->descr);
+    }
+
+    // Allow rocsparse_local_dnmat to be used anywhere rocsparse_dnmat_descr is expected
+    operator rocsparse_dnmat_descr&()
+    {
+        return this->descr;
+    }
+    operator const rocsparse_dnmat_descr&() const
+    {
+        return this->descr;
     }
 };
 
@@ -177,5 +349,15 @@ double get_time_us_sync(hipStream_t stream);
 /* ==================================================================================== */
 // Return path of this executable
 std::string rocsparse_exepath();
+
+/* ==================================================================================== */
+// Return index type
+template <typename I>
+rocsparse_indextype get_indextype(void);
+
+/* ==================================================================================== */
+// Return data type
+template <typename T>
+rocsparse_datatype get_datatype(void);
 
 #endif // UTILITY_HPP

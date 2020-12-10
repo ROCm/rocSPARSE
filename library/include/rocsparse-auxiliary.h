@@ -29,6 +29,8 @@
 #ifndef _ROCSPARSE_AUXILIARY_H_
 #define _ROCSPARSE_AUXILIARY_H_
 
+#include <stdint.h>
+
 #include "rocsparse-export.h"
 #include "rocsparse-types.h"
 
@@ -465,6 +467,223 @@ rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info);
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info);
+
+// Generic API
+
+// SpVec
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_spvec_descr(rocsparse_spvec_descr* descr,
+                                              int64_t                size,
+                                              int64_t                nnz,
+                                              void*                  indices,
+                                              void*                  values,
+                                              rocsparse_indextype    idx_type,
+                                              rocsparse_index_base   idx_base,
+                                              rocsparse_datatype     data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_destroy_spvec_descr(rocsparse_spvec_descr descr);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spvec_get(const rocsparse_spvec_descr descr,
+                                     int64_t*                    size,
+                                     int64_t*                    nnz,
+                                     void**                      indices,
+                                     void**                      values,
+                                     rocsparse_indextype*        idx_type,
+                                     rocsparse_index_base*       idx_base,
+                                     rocsparse_datatype*         data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spvec_get_index_base(const rocsparse_spvec_descr descr,
+                                                rocsparse_index_base*       idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spvec_get_values(const rocsparse_spvec_descr descr, void** values);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spvec_set_values(rocsparse_spvec_descr descr, void* values);
+
+// SpMat
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_coo_descr(rocsparse_spmat_descr* descr,
+                                            int64_t                rows,
+                                            int64_t                cols,
+                                            int64_t                nnz,
+                                            void*                  coo_row_ind,
+                                            void*                  coo_col_ind,
+                                            void*                  coo_val,
+                                            rocsparse_indextype    idx_type,
+                                            rocsparse_index_base   idx_base,
+                                            rocsparse_datatype     data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_csr_descr(rocsparse_spmat_descr* descr,
+                                            int64_t                rows,
+                                            int64_t                cols,
+                                            int64_t                nnz,
+                                            void*                  csr_row_ptr,
+                                            void*                  csr_col_ind,
+                                            void*                  csr_val,
+                                            rocsparse_indextype    row_ptr_type,
+                                            rocsparse_indextype    col_ind_type,
+                                            rocsparse_index_base   idx_base,
+                                            rocsparse_datatype     data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_csc_descr(rocsparse_spmat_descr* descr,
+                                            int64_t                rows,
+                                            int64_t                cols,
+                                            int64_t                nnz,
+                                            void*                  csc_col_ptr,
+                                            void*                  csc_row_ind,
+                                            void*                  csc_val,
+                                            rocsparse_indextype    col_ptr_type,
+                                            rocsparse_indextype    row_ind_type,
+                                            rocsparse_index_base   idx_base,
+                                            rocsparse_datatype     data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
+                                            int64_t                rows,
+                                            int64_t                cols,
+                                            void*                  ell_col_ind,
+                                            void*                  ell_val,
+                                            int64_t                ell_width,
+                                            rocsparse_indextype    idx_type,
+                                            rocsparse_index_base   idx_base,
+                                            rocsparse_datatype     data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_destroy_spmat_descr(rocsparse_spmat_descr descr);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_coo_get(const rocsparse_spmat_descr descr,
+                                   int64_t*                    rows,
+                                   int64_t*                    cols,
+                                   int64_t*                    nnz,
+                                   void**                      coo_row_ind,
+                                   void**                      coo_col_ind,
+                                   void**                      coo_val,
+                                   rocsparse_indextype*        idx_type,
+                                   rocsparse_index_base*       idx_base,
+                                   rocsparse_datatype*         data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csr_get(const rocsparse_spmat_descr descr,
+                                   int64_t*                    rows,
+                                   int64_t*                    cols,
+                                   int64_t*                    nnz,
+                                   void**                      csr_row_ptr,
+                                   void**                      csr_col_ind,
+                                   void**                      csr_val,
+                                   rocsparse_indextype*        row_ptr_type,
+                                   rocsparse_indextype*        col_ind_type,
+                                   rocsparse_index_base*       idx_base,
+                                   rocsparse_datatype*         data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ell_get(const rocsparse_spmat_descr descr,
+                                   int64_t*                    rows,
+                                   int64_t*                    cols,
+                                   void**                      ell_col_ind,
+                                   void**                      ell_val,
+                                   int64_t*                    ell_width,
+                                   rocsparse_indextype*        idx_type,
+                                   rocsparse_index_base*       idx_base,
+                                   rocsparse_datatype*         data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_coo_set_pointers(rocsparse_spmat_descr descr,
+                                            void*                 coo_row_ind,
+                                            void*                 coo_col_ind,
+                                            void*                 coo_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csr_set_pointers(rocsparse_spmat_descr descr,
+                                            void*                 csr_row_ptr,
+                                            void*                 csr_col_ind,
+                                            void*                 csr_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csc_set_pointers(rocsparse_spmat_descr descr,
+                                            void*                 csc_col_ptr,
+                                            void*                 csc_row_ind,
+                                            void*                 csc_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status
+    rocsparse_ell_set_pointers(rocsparse_spmat_descr descr, void* ell_col_ind, void* ell_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmat_get_size(rocsparse_spmat_descr descr,
+                                          int64_t*              rows,
+                                          int64_t*              cols,
+                                          int64_t*              nnz);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmat_get_format(const rocsparse_spmat_descr descr,
+                                            rocsparse_format*           format);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmat_get_index_base(const rocsparse_spmat_descr descr,
+                                                rocsparse_index_base*       idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmat_get_values(rocsparse_spmat_descr descr, void** values);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* values);
+
+// Dense vector
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_dnvec_descr(rocsparse_dnvec_descr* descr,
+                                              int64_t                size,
+                                              void*                  values,
+                                              rocsparse_datatype     data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_destroy_dnvec_descr(rocsparse_dnvec_descr descr);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dnvec_get(const rocsparse_dnvec_descr descr,
+                                     int64_t*                    size,
+                                     void**                      values,
+                                     rocsparse_datatype*         data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dnvec_get_values(const rocsparse_dnvec_descr descr, void** values);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dnvec_set_values(rocsparse_dnvec_descr descr, void* values);
+
+// Dense matrix
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_dnmat_descr(rocsparse_dnmat_descr* descr,
+                                              int64_t                rows,
+                                              int64_t                cols,
+                                              int64_t                ld,
+                                              void*                  values,
+                                              rocsparse_datatype     data_type,
+                                              rocsparse_order        order);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_destroy_dnmat_descr(rocsparse_dnmat_descr descr);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dnmat_get(const rocsparse_dnmat_descr descr,
+                                     int64_t*                    rows,
+                                     int64_t*                    cols,
+                                     int64_t*                    ld,
+                                     void**                      values,
+                                     rocsparse_datatype*         data_type,
+                                     rocsparse_order*            order);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dnmat_get_values(const rocsparse_dnmat_descr descr, void** values);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dnmat_set_values(rocsparse_dnmat_descr descr, void* values);
 
 #ifdef __cplusplus
 }

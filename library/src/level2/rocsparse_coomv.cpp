@@ -28,9 +28,9 @@
 
 #include "coomv_device.h"
 
-template <unsigned int BLOCKSIZE, typename T, typename U>
+template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
 __launch_bounds__(BLOCKSIZE) __global__
-    void coomv_scale(rocsparse_int size, U beta_device_host, T* __restrict__ data)
+    void coomv_scale(I size, U beta_device_host, T* __restrict__ data)
 {
     auto beta = load_scalar_device_host(beta_device_host);
     if(beta != static_cast<T>(1))
@@ -39,19 +39,18 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
-    void coomvn_wf(rocsparse_int nnz,
-                   rocsparse_int loops,
-                   U             alpha_device_host,
-                   const rocsparse_int* __restrict__ coo_row_ind,
-                   const rocsparse_int* __restrict__ coo_col_ind,
-                   const T* __restrict__ coo_val,
-                   const T* __restrict__ x,
-                   T* __restrict__ y,
-                   rocsparse_int* __restrict__ row_block_red,
-                   T* __restrict__ val_block_red,
-                   rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) __global__ void coomvn_wf(I nnz,
+                                                       I loops,
+                                                       U alpha_device_host,
+                                                       const I* __restrict__ coo_row_ind,
+                                                       const I* __restrict__ coo_col_ind,
+                                                       const T* __restrict__ coo_val,
+                                                       const T* __restrict__ x,
+                                                       T* __restrict__ y,
+                                                       I* __restrict__ row_block_red,
+                                                       T* __restrict__ val_block_red,
+                                                       rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     coomvn_general_wf_reduce<BLOCKSIZE, WF_SIZE>(nnz,
@@ -67,22 +66,21 @@ __launch_bounds__(BLOCKSIZE) __global__
                                                  idx_base);
 }
 
-template <typename T, typename U>
+template <typename I, typename T, typename U>
 rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
-                                          rocsparse_int             m,
-                                          rocsparse_int             n,
-                                          rocsparse_int             nnz,
+                                          I                         m,
+                                          I                         n,
+                                          I                         nnz,
                                           U                         alpha_device_host,
                                           const rocsparse_mat_descr descr,
                                           const T*                  coo_val,
-                                          const rocsparse_int*      coo_row_ind,
-                                          const rocsparse_int*      coo_col_ind,
+                                          const I*                  coo_row_ind,
+                                          const I*                  coo_col_ind,
                                           const T*                  x,
                                           U                         beta_device_host,
                                           T*                        y)
 {
-
     // Stream
     hipStream_t stream = handle->stream;
 
@@ -90,14 +88,14 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
     if(trans == rocsparse_operation_none)
     {
 #define COOMVN_DIM 128
-        rocsparse_int maxthreads = handle->properties.maxThreadsPerBlock;
-        rocsparse_int nprocs     = handle->properties.multiProcessorCount;
-        rocsparse_int maxblocks  = (nprocs * maxthreads - 1) / COOMVN_DIM + 1;
-        rocsparse_int minblocks  = (nnz - 1) / COOMVN_DIM + 1;
+        int maxthreads = handle->properties.maxThreadsPerBlock;
+        int nprocs     = handle->properties.multiProcessorCount;
+        int maxblocks  = (nprocs * maxthreads - 1) / COOMVN_DIM + 1;
 
-        rocsparse_int nblocks = maxblocks < minblocks ? maxblocks : minblocks;
-        rocsparse_int nwfs    = nblocks * (COOMVN_DIM / handle->wavefront_size);
-        rocsparse_int nloops  = (nnz / handle->wavefront_size + 1) / nwfs + 1;
+        I minblocks = (nnz - 1) / COOMVN_DIM + 1;
+        I nblocks   = maxblocks < minblocks ? maxblocks : minblocks;
+        I nwfs      = nblocks * (COOMVN_DIM / handle->wavefront_size);
+        I nloops    = (nnz / handle->wavefront_size + 1) / nwfs + 1;
 
         dim3 coomvn_blocks(nblocks);
         dim3 coomvn_threads(COOMVN_DIM);
@@ -107,8 +105,8 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
         ptr += 256;
 
         // row block reduction buffer
-        rocsparse_int* row_block_red = reinterpret_cast<rocsparse_int*>(ptr);
-        ptr += ((sizeof(rocsparse_int) * nwfs - 1) / 256 + 1) * 256;
+        I* row_block_red = reinterpret_cast<I*>(ptr);
+        ptr += ((sizeof(I) * nwfs - 1) / 256 + 1) * 256;
 
         // val block reduction buffer
         T* val_block_red = reinterpret_cast<T*>(ptr);
@@ -175,17 +173,17 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
     return rocsparse_status_success;
 }
 
-template <typename T>
+template <typename I, typename T>
 rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
-                                          rocsparse_int             m,
-                                          rocsparse_int             n,
-                                          rocsparse_int             nnz,
+                                          I                         m,
+                                          I                         n,
+                                          I                         nnz,
                                           const T*                  alpha_device_host,
                                           const rocsparse_mat_descr descr,
                                           const T*                  coo_val,
-                                          const rocsparse_int*      coo_row_ind,
-                                          const rocsparse_int*      coo_col_ind,
+                                          const I*                  coo_row_ind,
+                                          const I*                  coo_col_ind,
                                           const T*                  x,
                                           const T*                  beta_device_host,
                                           T*                        y)
@@ -351,6 +349,31 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
 
     return rocsparse_status_success;
 }
+
+#define INSTANTIATE(ITYPE, TTYPE)                                     \
+    template rocsparse_status rocsparse_coomv_template<ITYPE, TTYPE>( \
+        rocsparse_handle          handle,                             \
+        rocsparse_operation       trans,                              \
+        ITYPE                     m,                                  \
+        ITYPE                     n,                                  \
+        ITYPE                     nnz,                                \
+        const TTYPE*              alpha,                              \
+        const rocsparse_mat_descr descr,                              \
+        const TTYPE*              coo_val,                            \
+        const ITYPE*              coo_row_ind,                        \
+        const ITYPE*              coo_col_ind,                        \
+        const TTYPE*              x,                                  \
+        const TTYPE*              beta,                               \
+        TTYPE*                    y);
+
+INSTANTIATE(int32_t, float)
+INSTANTIATE(int32_t, double)
+INSTANTIATE(int32_t, rocsparse_float_complex)
+INSTANTIATE(int32_t, rocsparse_double_complex)
+INSTANTIATE(int64_t, float)
+INSTANTIATE(int64_t, double)
+INSTANTIATE(int64_t, rocsparse_float_complex)
+INSTANTIATE(int64_t, rocsparse_double_complex)
 
 /*
  * ===========================================================================

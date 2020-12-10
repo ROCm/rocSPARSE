@@ -29,10 +29,10 @@
 
 #include "roti_device.h"
 
-template <unsigned int BLOCKSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void roti_kernel(rocsparse_int        nnz,
+template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) __global__ void roti_kernel(I                    nnz,
                                                          T*                   x_val,
-                                                         const rocsparse_int* x_ind,
+                                                         const I*             x_ind,
                                                          T*                   y,
                                                          U                    c_device_host,
                                                          U                    s_device_host,
@@ -47,11 +47,11 @@ __launch_bounds__(BLOCKSIZE) __global__ void roti_kernel(rocsparse_int        nn
     roti_device<BLOCKSIZE>(nnz, x_val, x_ind, y, c, s, idx_base);
 }
 
-template <typename T>
+template <typename I, typename T>
 rocsparse_status rocsparse_roti_template(rocsparse_handle     handle,
-                                         rocsparse_int        nnz,
+                                         I                    nnz,
                                          T*                   x_val,
-                                         const rocsparse_int* x_ind,
+                                         const I*             x_ind,
                                          T*                   y,
                                          const T*             c,
                                          const T*             s,

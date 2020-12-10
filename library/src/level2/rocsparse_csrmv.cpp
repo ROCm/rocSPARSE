@@ -73,16 +73,17 @@ static unsigned long long numThreadsForReduction(unsigned long long num_rows)
 #endif
 }
 
-static inline void ComputeRowBlocks(unsigned long long*  rowBlocks,
-                                    size_t&              rowBlockSize,
-                                    const rocsparse_int* rowDelimiters,
-                                    rocsparse_int        nRows,
-                                    bool                 allocate_row_blocks = true)
+template <typename I>
+static inline void ComputeRowBlocks(unsigned long long* rowBlocks,
+                                    size_t&             rowBlockSize,
+                                    const I*            rowDelimiters,
+                                    I                   nRows,
+                                    bool                allocate_row_blocks = true)
 {
     unsigned long long* rowBlocksBase;
 
     // Start at one because of rowBlock[0]
-    rocsparse_int total_row_blocks = 1;
+    I total_row_blocks = 1;
 
     if(allocate_row_blocks)
     {
@@ -103,10 +104,10 @@ static inline void ComputeRowBlocks(unsigned long long*  rowBlocks,
         exit(1);
     }
 
-    rocsparse_int consecutive_long_rows = 0;
+    I consecutive_long_rows = 0;
     for(i = 1; i <= static_cast<unsigned long long>(nRows); ++i)
     {
-        rocsparse_int row_length = (rowDelimiters[i] - rowDelimiters[i - 1]);
+        I row_length = (rowDelimiters[i] - rowDelimiters[i - 1]);
         sum += row_length;
 
         // The following section of code calculates whether you're moving between
@@ -186,18 +187,18 @@ static inline void ComputeRowBlocks(unsigned long long*  rowBlocks,
         // This is csr-vector case; bottom WGBITS == workgroup ID
         if((i - last_i == 1) && sum > static_cast<unsigned long long>(BLOCK_SIZE))
         {
-            rocsparse_int numWGReq = static_cast<rocsparse_int>(
+            I numWGReq = static_cast<I>(
                 std::ceil(static_cast<double>(row_length) / (BLOCK_MULTIPLIER * BLOCK_SIZE)));
 
             // Check to ensure #workgroups can fit in WGBITS bits, if not
             // then the last workgroup will do all the remaining work
-            numWGReq = (numWGReq < static_cast<rocsparse_int>(std::pow(2, WG_BITS)))
+            numWGReq = (numWGReq < static_cast<I>(std::pow(2, WG_BITS)))
                            ? numWGReq
-                           : static_cast<rocsparse_int>(std::pow(2, WG_BITS));
+                           : static_cast<I>(std::pow(2, WG_BITS));
 
             if(allocate_row_blocks)
             {
-                for(rocsparse_int w = 1; w < numWGReq; ++w)
+                for(I w = 1; w < numWGReq; ++w)
                 {
                     *rowBlocks = ((i - 1) << (64 - ROW_BITS));
                     *rowBlocks |= static_cast<unsigned long long>(w);
@@ -287,16 +288,16 @@ static inline void ComputeRowBlocks(unsigned long long*  rowBlocks,
     }
 }
 
-template <typename T>
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans,
-                                                   rocsparse_int             m,
-                                                   rocsparse_int             n,
-                                                   rocsparse_int             nnz,
+                                                   J                         m,
+                                                   J                         n,
+                                                   I                         nnz,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  csr_val,
-                                                   const rocsparse_int*      csr_row_ptr,
-                                                   const rocsparse_int*      csr_col_ind,
+                                                   const I*                  csr_row_ptr,
+                                                   const J*                  csr_col_ind,
                                                    rocsparse_mat_info        info)
 {
     // Check for valid handle and matrix descriptor
@@ -368,20 +369,20 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
     info->csrmv_info->size = 0;
 
     // Temporary arrays to hold device data
-    std::vector<rocsparse_int> hptr(m + 1);
+    std::vector<I> hptr(m + 1);
     RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-        hptr.data(), csr_row_ptr, sizeof(rocsparse_int) * (m + 1), hipMemcpyDeviceToHost, stream));
+        hptr.data(), csr_row_ptr, sizeof(I) * (m + 1), hipMemcpyDeviceToHost, stream));
 
     // Wait for host transfer to finish
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
     // Determine row blocks array size
-    ComputeRowBlocks((unsigned long long*)NULL, info->csrmv_info->size, hptr.data(), m, false);
+    ComputeRowBlocks<I>((unsigned long long*)NULL, info->csrmv_info->size, hptr.data(), m, false);
 
     // Create row blocks structure
     std::vector<unsigned long long> row_blocks(info->csrmv_info->size, 0);
 
-    ComputeRowBlocks(row_blocks.data(), info->csrmv_info->size, hptr.data(), m, true);
+    ComputeRowBlocks<I>(row_blocks.data(), info->csrmv_info->size, hptr.data(), m, true);
 
     // Allocate memory on device to hold csrmv info, if required
     if(info->csrmv_info->size > 0)
@@ -412,12 +413,17 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
     return rocsparse_status_success;
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename T, typename U>
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          typename I,
+          typename J,
+          typename T,
+          typename U>
 __launch_bounds__(BLOCKSIZE) __global__
-    void csrmvn_general_kernel(rocsparse_int m,
-                               U             alpha_device_host,
-                               const rocsparse_int* __restrict__ csr_row_ptr,
-                               const rocsparse_int* __restrict__ csr_col_ind,
+    void csrmvn_general_kernel(J m,
+                               U alpha_device_host,
+                               const I* __restrict__ csr_row_ptr,
+                               const J* __restrict__ csr_col_ind,
                                const T* __restrict__ csr_val,
                                const T* __restrict__ x,
                                U beta_device_host,
@@ -433,12 +439,12 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <typename T, typename U>
+template <typename I, typename J, typename T, typename U>
 __launch_bounds__(WG_SIZE) __global__
     void csrmvn_adaptive_kernel(unsigned long long* __restrict__ row_blocks,
                                 U alpha_device_host,
-                                const rocsparse_int* __restrict__ csr_row_ptr,
-                                const rocsparse_int* __restrict__ csr_col_ind,
+                                const I* __restrict__ csr_row_ptr,
+                                const J* __restrict__ csr_col_ind,
                                 const T* __restrict__ csr_val,
                                 const T* __restrict__ x,
                                 U beta_device_host,
@@ -459,17 +465,17 @@ __launch_bounds__(WG_SIZE) __global__
     }
 }
 
-template <typename T, typename U>
+template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle          handle,
                                                   rocsparse_operation       trans,
-                                                  rocsparse_int             m,
-                                                  rocsparse_int             n,
-                                                  rocsparse_int             nnz,
+                                                  J                         m,
+                                                  J                         n,
+                                                  I                         nnz,
                                                   U                         alpha_device_host,
                                                   const rocsparse_mat_descr descr,
                                                   const T*                  csr_val,
-                                                  const rocsparse_int*      csr_row_ptr,
-                                                  const rocsparse_int*      csr_col_ind,
+                                                  const I*                  csr_row_ptr,
+                                                  const J*                  csr_col_ind,
                                                   const T*                  x,
                                                   U                         beta_device_host,
                                                   T*                        y)
@@ -481,7 +487,7 @@ rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle          hand
     if(trans == rocsparse_operation_none)
     {
 #define CSRMVN_DIM 512
-        rocsparse_int nnz_per_row = nnz / m;
+        J nnz_per_row = nnz / m;
 
         dim3 csrmvn_blocks((m - 1) / CSRMVN_DIM + 1);
         dim3 csrmvn_threads(CSRMVN_DIM);
@@ -694,17 +700,17 @@ rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle          hand
     return rocsparse_status_success;
 }
 
-template <typename T, typename U>
+template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrmv_adaptive_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans,
-                                                   rocsparse_int             m,
-                                                   rocsparse_int             n,
-                                                   rocsparse_int             nnz,
+                                                   J                         m,
+                                                   J                         n,
+                                                   I                         nnz,
                                                    U                         alpha_device_host,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  csr_val,
-                                                   const rocsparse_int*      csr_row_ptr,
-                                                   const rocsparse_int*      csr_col_ind,
+                                                   const I*                  csr_row_ptr,
+                                                   const J*                  csr_col_ind,
                                                    rocsparse_csrmv_info      info,
                                                    const T*                  x,
                                                    U                         beta_device_host,
@@ -762,17 +768,17 @@ rocsparse_status rocsparse_csrmv_adaptive_template(rocsparse_handle          han
     return rocsparse_status_success;
 }
 
-template <typename T>
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
-                                          rocsparse_int             m,
-                                          rocsparse_int             n,
-                                          rocsparse_int             nnz,
+                                          J                         m,
+                                          J                         n,
+                                          I                         nnz,
                                           const T*                  alpha_device_host,
                                           const rocsparse_mat_descr descr,
                                           const T*                  csr_val,
-                                          const rocsparse_int*      csr_row_ptr,
-                                          const rocsparse_int*      csr_col_ind,
+                                          const I*                  csr_row_ptr,
+                                          const J*                  csr_col_ind,
                                           rocsparse_mat_info        info,
                                           const T*                  x,
                                           const T*                  beta_device_host,
@@ -960,6 +966,47 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
         }
     }
 }
+
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                              \
+    template rocsparse_status rocsparse_csrmv_analysis_template<ITYPE, JTYPE, TTYPE>( \
+        rocsparse_handle          handle,                                             \
+        rocsparse_operation       trans,                                              \
+        JTYPE                     m,                                                  \
+        JTYPE                     n,                                                  \
+        ITYPE                     nnz,                                                \
+        const rocsparse_mat_descr descr,                                              \
+        const TTYPE*              csr_val,                                            \
+        const ITYPE*              csr_row_ptr,                                        \
+        const JTYPE*              csr_col_ind,                                        \
+        rocsparse_mat_info        info);                                                     \
+    template rocsparse_status rocsparse_csrmv_template<ITYPE, JTYPE, TTYPE>(          \
+        rocsparse_handle          handle,                                             \
+        rocsparse_operation       trans,                                              \
+        JTYPE                     m,                                                  \
+        JTYPE                     n,                                                  \
+        ITYPE                     nnz,                                                \
+        const TTYPE*              alpha_device_host,                                  \
+        const rocsparse_mat_descr descr,                                              \
+        const TTYPE*              csr_val,                                            \
+        const ITYPE*              csr_row_ptr,                                        \
+        const JTYPE*              csr_col_ind,                                        \
+        rocsparse_mat_info        info,                                               \
+        const TTYPE*              x,                                                  \
+        const TTYPE*              beta_device_host,                                   \
+        TTYPE*                    y);
+
+INSTANTIATE(int32_t, int32_t, float);
+INSTANTIATE(int32_t, int32_t, double);
+INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int32_t, float);
+INSTANTIATE(int64_t, int32_t, double);
+INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int64_t, float);
+INSTANTIATE(int64_t, int64_t, double);
+INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
 
 /*
  * ===========================================================================

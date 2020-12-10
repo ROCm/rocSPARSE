@@ -104,6 +104,10 @@ Functions:
   rocsparse_dhybmv: { function: hybmv, <<: *double_precision }
   rocsparse_chybmv: { function: hybmv, <<: *single_precision_complex }
   rocsparse_zhybmv: { function: hybmv, <<: *double_precision_complex }
+  rocsparse_sgebsrmv: { function: gebsrmv, <<: *single_precision }
+  rocsparse_dgebsrmv: { function: gebsrmv, <<: *double_precision }
+  rocsparse_cgebsrmv: { function: gebsrmv, <<: *single_precision_complex }
+  rocsparse_zgebsrmv: { function: gebsrmv, <<: *double_precision_complex }
 
   rocsparse_sbsrmm: { function: bsrmm, <<: *single_precision }
   rocsparse_dbsrmm: { function: bsrmm, <<: *double_precision }
