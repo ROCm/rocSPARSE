@@ -27,6 +27,7 @@
 #include "utility.h"
 
 #include "rocsparse_coomv.hpp"
+#include "rocsparse_coomv_aos.hpp"
 #include "rocsparse_csrmv.hpp"
 #include "rocsparse_ellmv.hpp"
 
@@ -136,6 +137,23 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                               (const T*)x->values,
                                               (const T*)beta,
                                               (T*)y->values);
+    }
+
+    // COO (AoS)
+    if(mat->format == rocsparse_format_coo_aos)
+    {
+        return rocsparse_coomv_aos_template<I, T>(handle,
+                                                  trans,
+                                                  (I)mat->rows,
+                                                  (I)mat->cols,
+                                                  (I)mat->nnz,
+                                                  (const T*)alpha,
+                                                  mat->descr,
+                                                  (const T*)mat->val_data,
+                                                  (const I*)mat->ind_data,
+                                                  (const T*)x->values,
+                                                  (const T*)beta,
+                                                  (T*)y->values);
     }
 
     // CSR

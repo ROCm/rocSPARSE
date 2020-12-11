@@ -69,6 +69,33 @@ void host_csr_to_coo(J                     M,
     }
 }
 
+template <typename I>
+void host_csr_to_coo_aos(I                     M,
+                         I                     nnz,
+                         const std::vector<I>& csr_row_ptr,
+                         const std::vector<I>& csr_col_ind,
+                         std::vector<I>&       coo_ind,
+                         rocsparse_index_base  base)
+{
+    // Resize coo_ind
+    coo_ind.resize(2 * nnz);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(I i = 0; i < M; ++i)
+    {
+        I row_begin = csr_row_ptr[i] - base;
+        I row_end   = csr_row_ptr[i + 1] - base;
+
+        for(I j = row_begin; j < row_end; ++j)
+        {
+            coo_ind[2 * j]     = i + base;
+            coo_ind[2 * j + 1] = csr_col_ind[j];
+        }
+    }
+}
+
 template <typename I, typename J, typename T>
 void host_csr_to_ell(J                     M,
                      const std::vector<I>& csr_row_ptr,
@@ -1481,6 +1508,14 @@ void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
                                                        rocsparse_index_base      csr_base,          \
                                                        rocsparse_index_base      ell_base);
 
+#define INSTANTIATE4(ITYPE)                                                         \
+    template void host_csr_to_coo_aos<ITYPE>(ITYPE                     M,           \
+                                             ITYPE                     nnz,         \
+                                             const std::vector<ITYPE>& csr_row_ptr, \
+                                             const std::vector<ITYPE>& csr_col_ind, \
+                                             std::vector<ITYPE>&       coo_ind,     \
+                                             rocsparse_index_base      base);
+
 INSTANTIATEI(int32_t);
 INSTANTIATEI(int64_t);
 
@@ -1514,3 +1549,6 @@ INSTANTIATE3(int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE3(int32_t, int32_t, rocsparse_double_complex);
 INSTANTIATE3(int64_t, int32_t, rocsparse_double_complex);
 INSTANTIATE3(int64_t, int64_t, rocsparse_double_complex);
+
+INSTANTIATE4(int32_t);
+INSTANTIATE4(int64_t);

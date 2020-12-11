@@ -916,6 +916,76 @@ rocsparse_status rocsparse_create_coo_descr(rocsparse_spmat_descr* descr,
 }
 
 /********************************************************************************
+ * \brief rocsparse_create_coo_aos_descr creates a descriptor holding the COO matrix
+ * data, sizes and properties where the row pointer and column indices are stored
+ * using array of structure (AoS) format. It must be called prior to all subsequent
+ * library function calls that involve sparse matrices. It should be destroyed at
+ * the end using rocsparse_destroy_spmat_descr(). All data pointers remain valid.
+ *******************************************************************************/
+rocsparse_status rocsparse_create_coo_aos_descr(rocsparse_spmat_descr* descr,
+                                                int64_t                rows,
+                                                int64_t                cols,
+                                                int64_t                nnz,
+                                                void*                  coo_ind,
+                                                void*                  coo_val,
+                                                rocsparse_indextype    idx_type,
+                                                rocsparse_index_base   idx_base,
+                                                rocsparse_datatype     data_type)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for valid sizes
+    if(rows < 0 || cols < 0 || nnz < 0 || nnz > rows * cols)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check for valid pointers
+    if(rows > 0 && cols > 0 && nnz > 0 && (coo_ind == nullptr || coo_val == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Allocate
+    try
+    {
+        *descr = new _rocsparse_spmat_descr;
+
+        (*descr)->init = true;
+
+        (*descr)->rows = rows;
+        (*descr)->cols = cols;
+        (*descr)->nnz  = nnz;
+
+        (*descr)->ind_data = coo_ind;
+        (*descr)->val_data = coo_val;
+
+        (*descr)->row_type  = idx_type;
+        (*descr)->col_type  = idx_type;
+        (*descr)->data_type = data_type;
+
+        (*descr)->idx_base = idx_base;
+        (*descr)->format   = rocsparse_format_coo_aos;
+
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(*descr)->descr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&(*descr)->info));
+
+        // Initialize descriptor
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base((*descr)->descr, idx_base));
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
  * \brief rocsparse_create_csr_descr creates a descriptor holding the CSR matrix
  * data, sizes and properties. It must be called prior to all subsequent library
  * function calls that involve sparse matrices. It should be destroyed at the end
@@ -1231,6 +1301,64 @@ rocsparse_status rocsparse_coo_get(const rocsparse_spmat_descr descr,
 }
 
 /********************************************************************************
+ * \brief rocsparse_coo_aos_get returns the sparse COO (AoS) matrix data, sizes and
+ * properties.
+ *******************************************************************************/
+rocsparse_status rocsparse_coo_aos_get(const rocsparse_spmat_descr descr,
+                                       int64_t*                    rows,
+                                       int64_t*                    cols,
+                                       int64_t*                    nnz,
+                                       void**                      coo_ind,
+                                       void**                      coo_val,
+                                       rocsparse_indextype*        idx_type,
+                                       rocsparse_index_base*       idx_base,
+                                       rocsparse_datatype*         data_type)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid size pointers
+    if(rows == nullptr || cols == nullptr || nnz == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid data pointers
+    if(coo_ind == nullptr || coo_val == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid property pointers
+    if(idx_type == nullptr || idx_base == nullptr || data_type == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *rows = descr->rows;
+    *cols = descr->cols;
+    *nnz  = descr->nnz;
+
+    *coo_ind = descr->ind_data;
+    *coo_val = descr->val_data;
+
+    *idx_type  = descr->row_type;
+    *idx_base  = descr->idx_base;
+    *data_type = descr->data_type;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
  * \brief rocsparse_csr_get returns the sparse CSR matrix data, sizes and
  * properties.
  *******************************************************************************/
@@ -1379,6 +1507,36 @@ rocsparse_status rocsparse_coo_set_pointers(rocsparse_spmat_descr descr,
 
     descr->row_data = coo_row_ind;
     descr->col_data = coo_col_ind;
+    descr->val_data = coo_val;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief rocsparse_coo_aos_set_pointers sets the sparse COO (AoS) matrix data pointers.
+ *******************************************************************************/
+rocsparse_status
+    rocsparse_coo_aos_set_pointers(rocsparse_spmat_descr descr, void* coo_ind, void* coo_val)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for valid pointers
+    if(coo_ind == nullptr || coo_val == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    descr->ind_data = coo_ind;
     descr->val_data = coo_val;
 
     return rocsparse_status_success;

@@ -316,6 +316,7 @@ struct _rocsparse_spmat_descr
 
     void* row_data;
     void* col_data;
+    void* ind_data;
     void* val_data;
 
     rocsparse_indextype row_type;

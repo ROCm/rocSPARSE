@@ -23,24 +23,23 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_COOMV_HPP
-#define ROCSPARSE_COOMV_HPP
+#ifndef ROCSPARSE_COOMV_AOS_HPP
+#define ROCSPARSE_COOMV_AOS_HPP
 
-#include "handle.h"
+#include "utility.h"
 
 template <typename I, typename T>
-rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
-                                          rocsparse_operation       trans,
-                                          I                         m,
-                                          I                         n,
-                                          I                         nnz,
-                                          const T*                  alpha_device_host,
-                                          const rocsparse_mat_descr descr,
-                                          const T*                  coo_val,
-                                          const I*                  coo_row_ind,
-                                          const I*                  coo_col_ind,
-                                          const T*                  x,
-                                          const T*                  beta_device_host,
-                                          T*                        y);
+rocsparse_status rocsparse_coomv_aos_template(rocsparse_handle          handle,
+                                              rocsparse_operation       trans,
+                                              I                         m,
+                                              I                         n,
+                                              I                         nnz,
+                                              const T*                  alpha_device_host,
+                                              const rocsparse_mat_descr descr,
+                                              const T*                  coo_val,
+                                              const I*                  coo_ind,
+                                              const T*                  x,
+                                              const T*                  beta_device_host,
+                                              T*                        y);
 
-#endif // ROCSPARSE_COOMV_HPP
+#endif // ROCSPARSE_COOMV_AOS_HPP

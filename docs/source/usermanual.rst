@@ -259,6 +259,38 @@ where
     \text{coo_col_ind}[8] & = \{0, 1, 3, 1, 2, 0, 3, 4\}
   \end{array}
 
+COO (AoS) storage format
+------------------------
+The Coordinate (COO) Array of Structure (AoS) storage format represents a :math:`m \times n` matrix by
+
+======= ==========================================================================================
+m           number of rows (integer).
+n           number of columns (integer).
+nnz         number of non-zero elements (integer).
+coo_val     array of ``nnz`` elements containing the data (floating point).
+coo_ind     array of ``2 * nnz`` elements containing alternating row and column indices (integer).
+======= ==========================================================================================
+
+The COO (AoS) matrix is expected to be sorted by row indices and column indices per row. Furthermore, each pair of indices should appear only once.
+Consider the following :math:`3 \times 5` matrix and the corresponding COO (AoS) structures, with :math:`m = 3, n = 5` and :math:`\text{nnz} = 8` using zero based indexing:
+
+.. math::
+
+  A = \begin{pmatrix}
+        1.0 & 2.0 & 0.0 & 3.0 & 0.0 \\
+        0.0 & 4.0 & 5.0 & 0.0 & 0.0 \\
+        6.0 & 0.0 & 0.0 & 7.0 & 8.0 \\
+      \end{pmatrix}
+
+where
+
+.. math::
+
+  \begin{array}{ll}
+    \text{coo_val}[8] & = \{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0\} \\
+    \text{coo_ind}[16] & = \{0, 0, 0, 1, 0, 3, 1, 1, 1, 2, 2, 0, 2, 3, 2, 4\} \\
+  \end{array}
+
 CSR storage format
 ------------------
 The Compressed Sparse Row (CSR) storage format represents a :math:`m \times n` matrix by

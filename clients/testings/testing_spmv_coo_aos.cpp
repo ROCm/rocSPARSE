@@ -24,7 +24,7 @@
 #include "testing.hpp"
 
 template <typename I, typename T>
-void testing_spmv_coo_bad_arg(const Arguments& arg)
+void testing_spmv_coo_aos_bad_arg(const Arguments& arg)
 {
     I m   = 100;
     I n   = 100;
@@ -45,20 +45,19 @@ void testing_spmv_coo_bad_arg(const Arguments& arg)
     rocsparse_local_handle handle;
 
     // Allocate memory on device
-    device_vector<I> dcoo_row_ind(nnz);
-    device_vector<I> dcoo_col_ind(nnz);
+    device_vector<I> dcoo_ind(2 * nnz);
     device_vector<T> dcoo_val(nnz);
     device_vector<T> dx(n);
     device_vector<T> dy(m);
 
-    if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dx || !dy)
+    if(!dcoo_ind || !dcoo_val || !dx || !dy)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
     // SpMV structures
-    rocsparse_local_spmat A(m, n, nnz, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
+    rocsparse_local_spmat A(m, n, nnz, dcoo_ind, dcoo_val, itype, base, ttype);
     rocsparse_local_dnvec x(n, dx, ttype);
     rocsparse_local_dnvec y(m, dy, ttype);
 
@@ -120,7 +119,7 @@ void testing_spmv_coo_bad_arg(const Arguments& arg)
 }
 
 template <typename I, typename T>
-void testing_spmv_coo(const Arguments& arg)
+void testing_spmv_coo_aos(const Arguments& arg)
 {
     I                     M         = arg.M;
     I                     N         = arg.N;
@@ -155,13 +154,12 @@ void testing_spmv_coo(const Arguments& arg)
         static const I safe_size = 100;
 
         // Allocate memory on device
-        device_vector<I> dcoo_row_ind(safe_size);
-        device_vector<I> dcoo_col_ind(safe_size);
+        device_vector<I> dcoo_ind(safe_size);
         device_vector<T> dcoo_val(safe_size);
         device_vector<T> dx(safe_size);
         device_vector<T> dy(safe_size);
 
-        if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dx || !dy)
+        if(!dcoo_ind || !dcoo_val || !dx || !dy)
         {
             CHECK_HIP_ERROR(hipErrorOutOfMemory);
             return;
@@ -174,8 +172,7 @@ void testing_spmv_coo(const Arguments& arg)
         if(M == 0 && N == 0)
         {
             // Check structures
-            rocsparse_local_spmat A(
-                M, N, nnz, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
+            rocsparse_local_spmat A(M, N, nnz, dcoo_ind, dcoo_val, itype, base, ttype);
             rocsparse_local_dnvec x(N, dx, ttype);
             rocsparse_local_dnvec y(M, dy, ttype);
 
@@ -234,13 +231,12 @@ void testing_spmv_coo(const Arguments& arg)
     hy_2    = hy_1;
     hy_gold = hy_1;
 
-    // Convert CSR matrix to COO
-    host_vector<I> hcoo_row_ind(nnz);
-    host_csr_to_coo(M, nnz, hcsr_row_ptr, hcoo_row_ind, base);
+    // Convert CSR matrix to COO AoS
+    host_vector<I> hcoo_ind(2 * nnz);
+    host_csr_to_coo_aos(M, nnz, hcsr_row_ptr, hcoo_col_ind, hcoo_ind, base);
 
     // Allocate device memory
-    device_vector<I> dcoo_row_ind(nnz);
-    device_vector<I> dcoo_col_ind(nnz);
+    device_vector<I> dcoo_ind(2 * nnz);
     device_vector<T> dcoo_val(nnz);
     device_vector<T> dx(N);
     device_vector<T> dy_1(M);
@@ -248,15 +244,14 @@ void testing_spmv_coo(const Arguments& arg)
     device_vector<T> d_alpha(1);
     device_vector<T> d_beta(1);
 
-    if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dx || !dy_1 || !dy_2 || !d_alpha || !d_beta)
+    if(!dcoo_ind || !dcoo_val || !dx || !dy_1 || !dy_2 || !d_alpha || !d_beta)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
     // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(dcoo_row_ind, hcoo_row_ind, sizeof(I) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcoo_col_ind, hcoo_col_ind, sizeof(I) * nnz, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcoo_ind, hcoo_ind, sizeof(I) * 2 * nnz, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dcoo_val, hcoo_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dx, hx, sizeof(T) * N, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dy_1, hy_1, sizeof(T) * M, hipMemcpyHostToDevice));
@@ -265,7 +260,7 @@ void testing_spmv_coo(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(d_beta, &h_beta, sizeof(T), hipMemcpyHostToDevice));
 
     // Create descriptors
-    rocsparse_local_spmat A(M, N, nnz, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
+    rocsparse_local_spmat A(M, N, nnz, dcoo_ind, dcoo_val, itype, base, ttype);
     rocsparse_local_dnvec x(N, dx, ttype);
     rocsparse_local_dnvec y1(M, dy_1, ttype);
     rocsparse_local_dnvec y2(M, dy_2, ttype);
@@ -297,9 +292,8 @@ void testing_spmv_coo(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hy_1, dy_1, sizeof(T) * M, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
 
-        // CPU coomv
-        host_coomv<I, T>(
-            M, nnz, h_alpha, hcoo_row_ind, hcoo_col_ind, hcoo_val, hx, h_beta, hy_gold, base);
+        // CPU coomv aos
+        host_coomv_aos<I, T>(M, nnz, h_alpha, hcoo_ind, hcoo_val, hx, h_beta, hy_gold, base);
 
         near_check_general<T>(1, M, 1, hy_gold, hy_1);
         near_check_general<T>(1, M, 1, hy_gold, hy_2);
@@ -354,9 +348,9 @@ void testing_spmv_coo(const Arguments& arg)
     CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
-#define INSTANTIATE(ITYPE, TTYPE)                                               \
-    template void testing_spmv_coo_bad_arg<ITYPE, TTYPE>(const Arguments& arg); \
-    template void testing_spmv_coo<ITYPE, TTYPE>(const Arguments& arg)
+#define INSTANTIATE(ITYPE, TTYPE)                                                   \
+    template void testing_spmv_coo_aos_bad_arg<ITYPE, TTYPE>(const Arguments& arg); \
+    template void testing_spmv_coo_aos<ITYPE, TTYPE>(const Arguments& arg)
 
 INSTANTIATE(int32_t, float);
 INSTANTIATE(int32_t, double);

@@ -62,6 +62,7 @@ set(rocsparse_source
   src/level2/rocsparse_bsrsv_buffer_size.cpp
   src/level2/rocsparse_bsrsv_solve.cpp
   src/level2/rocsparse_coomv.cpp
+  src/level2/rocsparse_coomv_aos.cpp
   src/level2/rocsparse_csrmv.cpp
   src/level2/rocsparse_csrsv.cpp
   src/level2/rocsparse_csrsv_analysis.cpp

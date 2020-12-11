@@ -518,6 +518,17 @@ rocsparse_status rocsparse_create_coo_descr(rocsparse_spmat_descr* descr,
                                             rocsparse_datatype     data_type);
 
 ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_coo_aos_descr(rocsparse_spmat_descr* descr,
+                                                int64_t                rows,
+                                                int64_t                cols,
+                                                int64_t                nnz,
+                                                void*                  coo_ind,
+                                                void*                  coo_val,
+                                                rocsparse_indextype    idx_type,
+                                                rocsparse_index_base   idx_base,
+                                                rocsparse_datatype     data_type);
+
+ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_csr_descr(rocsparse_spmat_descr* descr,
                                             int64_t                rows,
                                             int64_t                cols,
@@ -556,6 +567,17 @@ rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_spmat_descr(rocsparse_spmat_descr descr);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_coo_aos_get(const rocsparse_spmat_descr descr,
+                                       int64_t*                    rows,
+                                       int64_t*                    cols,
+                                       int64_t*                    nnz,
+                                       void**                      coo_ind,
+                                       void**                      coo_val,
+                                       rocsparse_indextype*        idx_type,
+                                       rocsparse_index_base*       idx_base,
+                                       rocsparse_datatype*         data_type);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coo_get(const rocsparse_spmat_descr descr,
@@ -598,6 +620,10 @@ rocsparse_status rocsparse_coo_set_pointers(rocsparse_spmat_descr descr,
                                             void*                 coo_row_ind,
                                             void*                 coo_col_ind,
                                             void*                 coo_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status
+    rocsparse_coo_aos_set_pointers(rocsparse_spmat_descr descr, void* coo_ind, void* coo_val);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_csr_set_pointers(rocsparse_spmat_descr descr,

@@ -1038,6 +1038,32 @@ void host_coomv(I                    M,
     }
 }
 
+template <typename I, typename T>
+void host_coomv_aos(I                    M,
+                    I                    nnz,
+                    T                    alpha,
+                    const I*             coo_ind,
+                    const T*             coo_val,
+                    const T*             x,
+                    T                    beta,
+                    T*                   y,
+                    rocsparse_index_base base)
+{
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(I i = 0; i < M; ++i)
+    {
+        y[i] *= beta;
+    }
+
+    for(I i = 0; i < nnz; ++i)
+    {
+        y[coo_ind[2 * i] - base]
+            = std::fma(alpha * coo_val[i], x[coo_ind[2 * i + 1] - base], y[coo_ind[2 * i] - base]);
+    }
+}
+
 template <typename I, typename J, typename T>
 void host_csrmv(J                    M,
                 I                    nnz,
@@ -6312,6 +6338,15 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                            TTYPE                beta,                            \
                                            TTYPE*               y,                               \
                                            rocsparse_index_base base);                           \
+    template void host_coomv_aos<ITYPE, TTYPE>(ITYPE                M,                           \
+                                               ITYPE                nnz,                         \
+                                               TTYPE                alpha,                       \
+                                               const ITYPE*         coo_ind,                     \
+                                               const TTYPE*         coo_val,                     \
+                                               const TTYPE*         x,                           \
+                                               TTYPE                beta,                        \
+                                               TTYPE*               y,                           \
+                                               rocsparse_index_base base);                       \
     template void host_ellmv<ITYPE, TTYPE>(ITYPE                M,                               \
                                            ITYPE                N,                               \
                                            TTYPE                alpha,                           \

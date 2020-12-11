@@ -120,6 +120,17 @@ void host_coomv(I                    M,
                 T*                   y,
                 rocsparse_index_base base);
 
+template <typename I, typename T>
+void host_coomv_aos(I                    M,
+                    I                    nnz,
+                    T                    alpha,
+                    const I*             coo_ind,
+                    const T*             coo_val,
+                    const T*             x,
+                    T                    beta,
+                    T*                   y,
+                    rocsparse_index_base base);
+
 template <typename I, typename J, typename T>
 void host_csrmv(J                    M,
                 I                    nnz,
@@ -464,6 +475,14 @@ void host_csr_to_coo(J                     M,
                      const std::vector<I>& csr_row_ptr,
                      std::vector<J>&       coo_row_ind,
                      rocsparse_index_base  base);
+
+template <typename I>
+void host_csr_to_coo_aos(I                     M,
+                         I                     nnz,
+                         const std::vector<I>& csr_row_ptr,
+                         const std::vector<I>& csr_col_ind,
+                         std::vector<I>&       coo_ind,
+                         rocsparse_index_base  base);
 
 template <typename T>
 void host_csr_to_csc(rocsparse_int                     M,

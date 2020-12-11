@@ -263,7 +263,7 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
     }
 
     // Quick return if possible
-    if(m == 0 || n == 0 || nnz == 0)
+    if(m == 0 || n == 0)
     {
         return rocsparse_status_success;
     }
@@ -357,13 +357,13 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
         ITYPE                     m,                                  \
         ITYPE                     n,                                  \
         ITYPE                     nnz,                                \
-        const TTYPE*              alpha,                              \
+        const TTYPE*              alpha_device_host,                  \
         const rocsparse_mat_descr descr,                              \
         const TTYPE*              coo_val,                            \
         const ITYPE*              coo_row_ind,                        \
         const ITYPE*              coo_col_ind,                        \
         const TTYPE*              x,                                  \
-        const TTYPE*              beta,                               \
+        const TTYPE*              beta_device_host,                   \
         TTYPE*                    y);
 
 INSTANTIATE(int32_t, float)
