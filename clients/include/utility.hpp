@@ -225,6 +225,18 @@ public:
     rocsparse_local_spmat(int64_t              m,
                           int64_t              n,
                           int64_t              nnz,
+                          void*                coo_ind,
+                          void*                coo_val,
+                          rocsparse_indextype  idx_type,
+                          rocsparse_index_base idx_base,
+                          rocsparse_datatype   compute_type)
+    {
+        rocsparse_create_coo_aos_descr(
+            &this->descr, m, n, nnz, coo_ind, coo_val, idx_type, idx_base, compute_type);
+    }
+    rocsparse_local_spmat(int64_t              m,
+                          int64_t              n,
+                          int64_t              nnz,
                           void*                csr_row_ptr,
                           void*                csr_col_ind,
                           void*                csr_val,

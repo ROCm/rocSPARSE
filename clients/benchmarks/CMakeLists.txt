@@ -102,6 +102,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_csr2dense.cpp
 ../testings/testing_csc2dense.cpp
 ../testings/testing_spmv_coo.cpp
+../testings/testing_spmv_coo_aos.cpp
 ../testings/testing_spmv_csr.cpp
 ../testings/testing_spmv_ell.cpp
 )

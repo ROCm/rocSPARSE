@@ -41,6 +41,7 @@
 #include "testing_gebsrmv.hpp"
 #include "testing_hybmv.hpp"
 #include "testing_spmv_coo.hpp"
+#include "testing_spmv_coo_aos.hpp"
 #include "testing_spmv_csr.hpp"
 #include "testing_spmv_ell.hpp"
 
@@ -248,7 +249,7 @@ int main(int argc, char* argv[])
         po::value<std::string>(&function)->default_value("axpyi"),
         "SPARSE function to test. Options:\n"
         "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
-        "  Level2: bsrmv, bsrsv, coomv, csrmv, csrsv, ellmv, hybmv, gebsrmv\n"
+        "  Level2: bsrmv, bsrsv, coomv, coomv_aos, csrmv, csrsv, ellmv, hybmv, gebsrmv\n"
         "  Level3: bsrmm, csrmm, csrsm, gemmi\n"
         "  Extra: csrgeam, csrgemm\n"
         "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0\n"
@@ -620,6 +621,37 @@ int main(int argc, char* argv[])
                 testing_spmv_coo<int32_t, rocsparse_double_complex>(arg);
             else if(indextype == 'd')
                 testing_spmv_coo<int64_t, rocsparse_double_complex>(arg);
+        }
+    }
+    else if(function == "coomv_aos")
+    {
+        if(precision == 's')
+        {
+            if(indextype == 's')
+                testing_spmv_coo_aos<int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_spmv_coo_aos<int64_t, float>(arg);
+        }
+        else if(precision == 'd')
+        {
+            if(indextype == 's')
+                testing_spmv_coo_aos<int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_spmv_coo_aos<int64_t, double>(arg);
+        }
+        else if(precision == 'c')
+        {
+            if(indextype == 's')
+                testing_spmv_coo_aos<int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmv_coo_aos<int64_t, rocsparse_float_complex>(arg);
+        }
+        else if(precision == 'z')
+        {
+            if(indextype == 's')
+                testing_spmv_coo_aos<int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmv_coo_aos<int64_t, rocsparse_double_complex>(arg);
         }
     }
     else if(function == "csrmv")

@@ -43,9 +43,6 @@ typedef int64_t rocsparse_int;
 typedef int32_t rocsparse_int;
 #endif
 
-/* Forward declaration of hipStream_t */
-typedef struct ihipStream_t* hipStream_t;
-
 /*! \ingroup types_module
  *  \brief Handle to the rocSPARSE library context queue.
  *
@@ -331,10 +328,11 @@ typedef enum rocsparse_datatype_
  */
 typedef enum rocsparse_format_
 {
-    rocsparse_format_coo = 0, /**< COO sparse matrix format. */
-    rocsparse_format_csr = 2, /**< CSR sparse matrix format. */
-    rocsparse_format_csc = 3, /**< CSC sparse matrix format. */
-    rocsparse_format_ell = 4 /**< ELL sparse matrix format. */
+    rocsparse_format_coo     = 0, /**< COO sparse matrix format. */
+    rocsparse_format_coo_aos = 1, /**< COO AoS sparse matrix format. */
+    rocsparse_format_csr     = 2, /**< CSR sparse matrix format. */
+    rocsparse_format_csc     = 3, /**< CSC sparse matrix format. */
+    rocsparse_format_ell     = 4 /**< ELL sparse matrix format. */
 } rocsparse_format;
 
 /*! \ingroup types_module

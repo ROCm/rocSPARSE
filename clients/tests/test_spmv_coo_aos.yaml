@@ -39,15 +39,15 @@ Definitions:
     - { alpha:   2.0, beta:  0.67, alphai:  0.0, betai:  1.5 }
 
 Tests:
-- name: spmv_coo_bad_arg
+- name: spmv_coo_aos_bad_arg
   category: pre_checkin
-  function: spmv_coo_bad_arg
+  function: spmv_coo_aos_bad_arg
   indextype: *i32_i64
   precision: *single_double_precisions_complex_real
 
-- name: spmv_coo
+- name: spmv_coo_aos
   category: quick
-  function: spmv_coo
+  function: spmv_coo_aos
   indextype: *i32_i64
   precision: *single_double_precisions_complex_real
   M: [10, 500]
@@ -57,9 +57,9 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
-- name: spmv_coo
+- name: spmv_coo_aos
   category: pre_checkin
-  function: spmv_coo
+  function: spmv_coo_aos
   indextype: *i32_i64
   precision: *single_double_precisions_complex_real
   M: [-1, 0, 1, 2, 7111, 10000]
@@ -69,9 +69,9 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
 
-- name: spmv_coo
+- name: spmv_coo_aos
   category: nightly
-  function: spmv_coo
+  function: spmv_coo_aos
   indextype: *i32_i64
   precision: *single_double_precisions_complex_real
   M: [39385, 639102]
@@ -81,9 +81,9 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
-- name: spmv_coo_file
+- name: spmv_coo_aos_file
   category: quick
-  function: spmv_coo
+  function: spmv_coo_aos
   indextype: *i32_i64
   precision: *single_double_precisions
   M: 1
@@ -98,9 +98,9 @@ Tests:
              nos6,
              scircuit]
 
-- name: spmv_coo_file
+- name: spmv_coo_aos_file
   category: pre_checkin
-  function: spmv_coo
+  function: spmv_coo_aos
   indextype: *i32_i64
   precision: *single_double_precisions
   M: 1
@@ -117,9 +117,9 @@ Tests:
              nos5,
              nos7]
 
-- name: spmv_coo_file
+- name: spmv_coo_aos_file
   category: nightly
-  function: spmv_coo
+  function: spmv_coo_aos
   indextype: *i32_i64
   precision: *single_double_precisions
   M: 1
@@ -136,9 +136,9 @@ Tests:
              webbase-1M,
              shipsec1]
 
-- name: spmv_coo_file
+- name: spmv_coo_aos_file
   category: quick
-  function: spmv_coo
+  function: spmv_coo_aos
   indextype: *i32_i64
   precision: *single_double_precisions_complex
   M: 1
@@ -150,9 +150,9 @@ Tests:
   filename: [Chevron2,
              qc2534]
 
-- name: spmv_coo_file
+- name: spmv_coo_aos_file
   category: pre_checkin
-  function: spmv_coo
+  function: spmv_coo_aos
   indextype: *i32_i64
   precision: *single_double_precisions_complex
   M: 1
@@ -164,9 +164,9 @@ Tests:
   filename: [mplate,
              Chevron3]
 
-- name: spmv_coo_file
+- name: spmv_coo_aos_file
   category: nightly
-  function: spmv_coo
+  function: spmv_coo_aos
   indextype: *i32_i64
   precision: *single_double_precisions_complex
   M: 1
