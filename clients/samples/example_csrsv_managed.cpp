@@ -95,41 +95,55 @@ int main(int argc, char* argv[])
     std::cout << "Device: " << devProp.name << std::endl;
 
     // Generate problem
-    std::vector<rocsparse_int> hcsr_row_ptr;
-    std::vector<rocsparse_int> hcsr_col_ind;
-    std::vector<double>        hcsr_val;
+    std::vector<rocsparse_int> csr_row_ptr_temp;
+    std::vector<rocsparse_int> csr_col_ind_temp;
+    std::vector<double>        csr_val_temp;
 
     rocsparse_int m;
     rocsparse_int nnz;
     double        alpha = 1.0f;
 
-    rocsparse_init_csr_laplace2d(
-        hcsr_row_ptr, hcsr_col_ind, hcsr_val, ndim, ndim, m, m, nnz, rocsparse_index_base_zero);
+    rocsparse_init_csr_laplace2d(csr_row_ptr_temp,
+                                 csr_col_ind_temp,
+                                 csr_val_temp,
+                                 ndim,
+                                 ndim,
+                                 m,
+                                 m,
+                                 nnz,
+                                 rocsparse_index_base_zero);
 
-    std::vector<double> hx(m);
-    std::vector<double> hy(m);
-    rocsparse_init<double>(hx, 1, m, 1);
+    std::vector<double> x_temp(m);
+    rocsparse_init<double>(x_temp, 1, m, 1);
 
-    rocsparse_int* dcsr_row_ptr = NULL;
-    rocsparse_int* dcsr_col_ind = NULL;
-    double*        dcsr_val     = NULL;
-    double*        dx           = NULL;
-    double*        dy           = NULL;
+    rocsparse_int* csr_row_ptr = NULL;
+    rocsparse_int* csr_col_ind = NULL;
+    double*        csr_val     = NULL;
+    double*        x           = NULL;
+    double*        y           = NULL;
 
-    hipMalloc((void**)&dcsr_row_ptr, sizeof(rocsparse_int) * (m + 1));
-    hipMalloc((void**)&dcsr_col_ind, sizeof(rocsparse_int) * nnz);
-    hipMalloc((void**)&dcsr_val, sizeof(double) * nnz);
-    hipMalloc((void**)&dx, sizeof(double) * m);
-    hipMalloc((void**)&dy, sizeof(double) * m);
+    hipMallocManaged((void**)&csr_row_ptr, sizeof(rocsparse_int) * (m + 1));
+    hipMallocManaged((void**)&csr_col_ind, sizeof(rocsparse_int) * nnz);
+    hipMallocManaged((void**)&csr_val, sizeof(double) * nnz);
+    hipMallocManaged((void**)&x, sizeof(double) * m);
+    hipMallocManaged((void**)&y, sizeof(double) * m);
 
-    // Copy data to device
-    HIP_CHECK(hipMemcpy(
-        dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
-    HIP_CHECK(hipMemcpy(
-        dcsr_col_ind, hcsr_col_ind.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
-    HIP_CHECK(hipMemcpy(dcsr_val, hcsr_val.data(), sizeof(double) * nnz, hipMemcpyHostToDevice));
-    HIP_CHECK(hipMemcpy(dx, hx.data(), sizeof(double) * m, hipMemcpyHostToDevice));
-    HIP_CHECK(hipMemcpy(dy, hy.data(), sizeof(double) * m, hipMemcpyHostToDevice));
+    // Copy data
+    for(int i = 0; i < m + 1; i++)
+    {
+        csr_row_ptr[i] = csr_row_ptr_temp[i];
+    }
+
+    for(int i = 0; i < nnz; i++)
+    {
+        csr_col_ind[i] = csr_col_ind_temp[i];
+        csr_val[i]     = csr_val_temp[i];
+    }
+
+    for(int i = 0; i < m; i++)
+    {
+        x[i] = x_temp[i];
+    }
 
     // Matrix descriptor
     rocsparse_mat_descr descr;
@@ -148,7 +162,7 @@ int main(int argc, char* argv[])
     // Obtain required buffer size
     size_t buffer_size;
     ROCSPARSE_CHECK(rocsparse_dcsrsv_buffer_size(
-        handle, trans, m, nnz, descr, dcsr_val, dcsr_row_ptr, dcsr_col_ind, info, &buffer_size));
+        handle, trans, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, &buffer_size));
 
     // Allocate temporary buffer
     std::cout << "Allocating " << (buffer_size >> 10) << "kB temporary storage buffer" << std::endl;
@@ -162,9 +176,9 @@ int main(int argc, char* argv[])
                                               m,
                                               nnz,
                                               descr,
-                                              dcsr_val,
-                                              dcsr_row_ptr,
-                                              dcsr_col_ind,
+                                              csr_val,
+                                              csr_row_ptr,
+                                              csr_col_ind,
                                               info,
                                               analysis_policy,
                                               solve_policy,
@@ -179,12 +193,12 @@ int main(int argc, char* argv[])
                                                nnz,
                                                &alpha,
                                                descr,
-                                               dcsr_val,
-                                               dcsr_row_ptr,
-                                               dcsr_col_ind,
+                                               csr_val,
+                                               csr_row_ptr,
+                                               csr_col_ind,
                                                info,
-                                               dx,
-                                               dy,
+                                               x,
+                                               y,
                                                solve_policy,
                                                temp_buffer));
     }
@@ -206,12 +220,12 @@ int main(int argc, char* argv[])
                                                    nnz,
                                                    &alpha,
                                                    descr,
-                                                   dcsr_val,
-                                                   dcsr_row_ptr,
-                                                   dcsr_col_ind,
+                                                   csr_val,
+                                                   csr_row_ptr,
+                                                   csr_col_ind,
                                                    info,
-                                                   dx,
-                                                   dy,
+                                                   x,
+                                                   y,
                                                    solve_policy,
                                                    temp_buffer));
 
@@ -233,15 +247,16 @@ int main(int argc, char* argv[])
         std::cout << "WARNING: Found zero pivot in matrix row " << pivot << std::endl;
     }
 
-    // Print result
-    HIP_CHECK(hipMemcpy(hy.data(), dy, sizeof(double) * m, hipMemcpyDeviceToHost));
+    // Device synchronization
+    hipDeviceSynchronize();
 
     std::cout.precision(2);
     std::cout.setf(std::ios::fixed);
     std::cout.setf(std::ios::left);
     std::cout << std::endl << "### rocsparse_dcsrsv ###" << std::endl;
     std::cout << std::setw(12) << "m" << std::setw(12) << "nnz" << std::setw(12) << "alpha"
-              << std::setw(12) << "GB/s" << std::setw(12) << "solve msec" << std::endl;
+              << std::setw(12) << "GB/s" << std::setw(12) << "solve msec" << std::setw(12)
+              << std::endl;
     std::cout << std::setw(12) << m << std::setw(12) << nnz << std::setw(12) << alpha
               << std::setw(12) << bandwidth << std::setw(12) << solve_time << std::endl;
 
@@ -251,11 +266,11 @@ int main(int argc, char* argv[])
     ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 
     // Clear device memory
-    HIP_CHECK(hipFree(dcsr_row_ptr));
-    HIP_CHECK(hipFree(dcsr_col_ind));
-    HIP_CHECK(hipFree(dcsr_val));
-    HIP_CHECK(hipFree(dx));
-    HIP_CHECK(hipFree(dy));
+    HIP_CHECK(hipFree(csr_row_ptr));
+    HIP_CHECK(hipFree(csr_col_ind));
+    HIP_CHECK(hipFree(csr_val));
+    HIP_CHECK(hipFree(x));
+    HIP_CHECK(hipFree(y));
     HIP_CHECK(hipFree(temp_buffer));
 
     return 0;

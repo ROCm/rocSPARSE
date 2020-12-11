@@ -68,40 +68,51 @@ int main(int argc, char* argv[])
     std::cout << "Device: " << devProp.name << std::endl;
 
     // Generate problem
-    std::vector<rocsparse_int> hAptr;
-    std::vector<rocsparse_int> hAcol;
-    std::vector<double>        hAval;
+    std::vector<rocsparse_int> Aptr_temp;
+    std::vector<rocsparse_int> Acol_temp;
+    std::vector<double>        Aval_temp;
 
     rocsparse_int m;
     rocsparse_int n;
     rocsparse_int nnz;
 
     rocsparse_init_csr_laplace2d(
-        hAptr, hAcol, hAval, ndim, ndim, m, n, nnz, rocsparse_index_base_zero);
+        Aptr_temp, Acol_temp, Aval_temp, ndim, ndim, m, n, nnz, rocsparse_index_base_zero);
 
-    std::vector<double> hx(n);
-    rocsparse_init<double>(hx, 1, n, 1);
+    std::vector<double> x_temp(n);
+    rocsparse_init<double>(x_temp, 1, n, 1);
 
-    // Offload data to device
-    rocsparse_int* dAptr = NULL;
-    rocsparse_int* dAcol = NULL;
-    double*        dAval = NULL;
-    double*        dx    = NULL;
-    double*        dy    = NULL;
+    rocsparse_int* Aptr = NULL;
+    rocsparse_int* Acol = NULL;
+    double*        Aval = NULL;
+    double*        x    = NULL;
+    double*        y    = NULL;
 
-    hipMalloc((void**)&dAptr, sizeof(rocsparse_int) * (m + 1));
-    hipMalloc((void**)&dAcol, sizeof(rocsparse_int) * nnz);
-    hipMalloc((void**)&dAval, sizeof(double) * nnz);
-    hipMalloc((void**)&dx, sizeof(double) * n);
-    hipMalloc((void**)&dy, sizeof(double) * m);
+    hipMallocManaged((void**)&Aptr, sizeof(rocsparse_int) * (m + 1));
+    hipMallocManaged((void**)&Acol, sizeof(rocsparse_int) * nnz);
+    hipMallocManaged((void**)&Aval, sizeof(double) * nnz);
+    hipMallocManaged((void**)&x, sizeof(double) * n);
+    hipMallocManaged((void**)&y, sizeof(double) * m);
 
-    hipMemcpy(dAptr, hAptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice);
-    hipMemcpy(dAcol, hAcol.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice);
-    hipMemcpy(dAval, hAval.data(), sizeof(double) * nnz, hipMemcpyHostToDevice);
-    hipMemcpy(dx, hx.data(), sizeof(double) * n, hipMemcpyHostToDevice);
+    // Copy data
+    for(int i = 0; i < m + 1; i++)
+    {
+        Aptr[i] = Aptr_temp[i];
+    }
 
-    double halpha = 1.0f;
-    double hbeta  = 0.0;
+    for(int i = 0; i < nnz; i++)
+    {
+        Acol[i] = Acol_temp[i];
+        Aval[i] = Aval_temp[i];
+    }
+
+    for(int i = 0; i < n; i++)
+    {
+        x[i] = x_temp[i];
+    }
+
+    double alpha = 1.0f;
+    double beta  = 0.0;
 
     // Matrix descriptor
     rocsparse_mat_descr descrA;
@@ -116,15 +127,15 @@ int main(int argc, char* argv[])
                          m,
                          n,
                          nnz,
-                         &halpha,
+                         &alpha,
                          descrA,
-                         dAval,
-                         dAptr,
-                         dAcol,
+                         Aval,
+                         Aptr,
+                         Acol,
                          nullptr,
-                         dx,
-                         &hbeta,
-                         dy);
+                         x,
+                         &beta,
+                         y);
     }
 
     // Device synchronization
@@ -144,15 +155,15 @@ int main(int argc, char* argv[])
                              m,
                              n,
                              nnz,
-                             &halpha,
+                             &alpha,
                              descrA,
-                             dAval,
-                             dAptr,
-                             dAcol,
+                             Aval,
+                             Aptr,
+                             Acol,
                              nullptr,
-                             dx,
-                             &hbeta,
-                             dy);
+                             x,
+                             &beta,
+                             y);
         }
 
         // Device synchronization
@@ -173,7 +184,7 @@ int main(int argc, char* argv[])
               << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12) << "GFlop/s"
               << std::setw(12) << "GB/s" << std::setw(12) << "msec" << std::endl;
     std::cout << std::setw(12) << m << std::setw(12) << n << std::setw(12) << nnz << std::setw(12)
-              << halpha << std::setw(12) << hbeta << std::setw(12) << gflops << std::setw(12)
+              << alpha << std::setw(12) << beta << std::setw(12) << gflops << std::setw(12)
               << bandwidth << std::setw(12) << time << std::endl;
 
     // Create meta data
@@ -182,7 +193,7 @@ int main(int argc, char* argv[])
 
     // Analyse CSR matrix
     rocsparse_dcsrmv_analysis(
-        handle, rocsparse_operation_none, m, n, nnz, descrA, dAval, dAptr, dAcol, info);
+        handle, rocsparse_operation_none, m, n, nnz, descrA, Aval, Aptr, Acol, info);
 
     // Warm up
     for(int i = 0; i < 10; ++i)
@@ -193,15 +204,15 @@ int main(int argc, char* argv[])
                          m,
                          n,
                          nnz,
-                         &halpha,
+                         &alpha,
                          descrA,
-                         dAval,
-                         dAptr,
-                         dAcol,
+                         Aval,
+                         Aptr,
+                         Acol,
                          info,
-                         dx,
-                         &hbeta,
-                         dy);
+                         x,
+                         &beta,
+                         y);
     }
 
     // Device synchronization
@@ -221,15 +232,15 @@ int main(int argc, char* argv[])
                              m,
                              n,
                              nnz,
-                             &halpha,
+                             &alpha,
                              descrA,
-                             dAval,
-                             dAptr,
-                             dAcol,
+                             Aval,
+                             Aptr,
+                             Acol,
                              info,
-                             dx,
-                             &hbeta,
-                             dy);
+                             x,
+                             &beta,
+                             y);
         }
 
         // Device synchronization
@@ -242,13 +253,10 @@ int main(int argc, char* argv[])
                 / time / 1e6;
     gflops = static_cast<double>(2 * nnz) / time / 1e6;
 
-    std::vector<double> hy(m);
-    hipMemcpy(hy.data(), dy, sizeof(double) * m, hipMemcpyDeviceToHost);
-
-    std::cout << "hy" << std::endl;
+    std::cout << "y" << std::endl;
     for(int i = 0; i < std::min(20, m); i++)
     {
-        std::cout << hy[i] << " ";
+        std::cout << y[i] << " ";
     }
     std::cout << "" << std::endl;
 
@@ -260,15 +268,15 @@ int main(int argc, char* argv[])
               << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12) << "GFlop/s"
               << std::setw(12) << "GB/s" << std::setw(12) << "msec" << std::endl;
     std::cout << std::setw(12) << m << std::setw(12) << n << std::setw(12) << nnz << std::setw(12)
-              << halpha << std::setw(12) << hbeta << std::setw(12) << gflops << std::setw(12)
+              << alpha << std::setw(12) << beta << std::setw(12) << gflops << std::setw(12)
               << bandwidth << std::setw(12) << time << std::endl;
 
     // Clear up on device
-    hipFree(dAptr);
-    hipFree(dAcol);
-    hipFree(dAval);
-    hipFree(dx);
-    hipFree(dy);
+    hipFree(Aptr);
+    hipFree(Acol);
+    hipFree(Aval);
+    hipFree(x);
+    hipFree(y);
 
     rocsparse_destroy_mat_info(info);
     rocsparse_destroy_mat_descr(descrA);

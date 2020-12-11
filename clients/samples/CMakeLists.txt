@@ -88,6 +88,10 @@ add_rocsparse_example(example_gemmi.cpp)
 add_rocsparse_example(example_csrgeam.cpp)
 add_rocsparse_example(example_csrgemm.cpp)
 
+# Managed
+add_rocsparse_example(example_csrmv_managed.cpp)
+add_rocsparse_example(example_csrsv_managed.cpp)
+
 # Fortran examples
 if(TARGET rocsparse)
   # Compile Fortran examples only if built directly with package
