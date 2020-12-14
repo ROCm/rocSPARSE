@@ -76,7 +76,7 @@ __launch_bounds__(BLOCKSIZE) __global__ void hyb2csr_nnz_kernel(rocsparse_int   
     row_nnz[row] = nnz;
 }
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) __global__ void hyb2csr_fill_kernel(rocsparse_int        m,
                                                                  rocsparse_int        n,
                                                                  rocsparse_int        ell_nnz,

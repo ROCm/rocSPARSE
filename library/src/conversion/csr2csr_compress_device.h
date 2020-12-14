@@ -32,7 +32,7 @@
 
 template <rocsparse_int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE) __global__
-    void fill_row_ptr_kernel(rocsparse_int        m,
+    void fill_row_ptr_device(rocsparse_int        m,
                              rocsparse_index_base idx_base_C,
                              rocsparse_int* __restrict__ csr_row_ptr_C)
 {
@@ -53,7 +53,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
 
 template <rocsparse_int BLOCK_SIZE>
 __launch_bounds__(BLOCK_SIZE) __global__
-    void fill_row_ptr_kernel(rocsparse_int        m,
+    void fill_row_ptr_device(rocsparse_int        m,
                              rocsparse_index_base idx_base_C,
                              const rocsparse_int* __restrict__ nnz_per_row,
                              rocsparse_int* __restrict__ csr_row_ptr_C)
@@ -73,12 +73,12 @@ __launch_bounds__(BLOCK_SIZE) __global__
     }
 }
 
-template <typename T,
-          rocsparse_int BLOCK_SIZE,
+template <rocsparse_int BLOCK_SIZE,
           rocsparse_int SEGMENTS_PER_BLOCK,
           rocsparse_int SEGMENT_SIZE,
-          rocsparse_int WF_SIZE>
-__device__ void csr2csr_compress_kernel(rocsparse_int        m,
+          rocsparse_int WF_SIZE,
+          typename T>
+__device__ void csr2csr_compress_device(rocsparse_int        m,
                                         rocsparse_int        n,
                                         rocsparse_index_base idx_base_A,
                                         const T* __restrict__ csr_val_A,

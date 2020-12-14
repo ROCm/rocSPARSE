@@ -21,68 +21,12 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-#include "nnz_device.h"
 
-template <typename T>
-rocsparse_status rocsparse_nnz_kernel_row(rocsparse_handle handle,
-                                          rocsparse_int    m,
-                                          rocsparse_int    n,
-                                          const T*         A,
-                                          rocsparse_int    ld,
-                                          rocsparse_int*   nnz_per_rows)
-{
+#pragma once
+#ifndef ROCSPARSE_NNZ_HPP
+#define ROCSPARSE_NNZ_HPP
 
-    hipStream_t stream = handle->stream;
-    {
-        static constexpr int NNZ_DIM_X = 64;
-        static constexpr int NNZ_DIM_Y = 16;
-        rocsparse_int        blocks    = (m - 1) / (NNZ_DIM_X * 4) + 1;
-        if(std::is_same<T, rocsparse_double_complex>{})
-            blocks = (m - 1) / (NNZ_DIM_X) + 1;
-        dim3 k_grid(blocks);
-        dim3 k_threads(NNZ_DIM_X, NNZ_DIM_Y);
-        hipLaunchKernelGGL((nnz_kernel_row<NNZ_DIM_X, NNZ_DIM_Y, T>),
-                           k_grid,
-                           k_threads,
-                           0,
-                           stream,
-                           m,
-                           n,
-                           A,
-                           ld,
-                           nnz_per_rows);
-        return rocsparse_status_success;
-    }
-}
-
-template <typename T>
-rocsparse_status rocsparse_nnz_kernel_col(rocsparse_handle handle,
-                                          rocsparse_int    m,
-                                          rocsparse_int    n,
-                                          const T*         A,
-                                          rocsparse_int    ld,
-                                          rocsparse_int*   nnz_per_columns)
-{
-
-    hipStream_t stream = handle->stream;
-
-    {
-        static constexpr rocsparse_int NB = 256;
-        dim3                           kernel_blocks(n);
-        dim3                           kernel_threads(NB);
-        hipLaunchKernelGGL((nnz_kernel_col<NB, T>),
-                           kernel_blocks,
-                           kernel_threads,
-                           0,
-                           stream,
-                           m,
-                           n,
-                           A,
-                           ld,
-                           nnz_per_columns);
-    }
-    return rocsparse_status_success;
-}
+#include "handle.h"
 
 template <typename T>
 rocsparse_status rocsparse_nnz_template(rocsparse_handle    handle,
@@ -91,31 +35,6 @@ rocsparse_status rocsparse_nnz_template(rocsparse_handle    handle,
                                         rocsparse_int       n,
                                         const T*            A,
                                         rocsparse_int       ld,
-                                        rocsparse_int*      nnz_per_row_columns)
-{
+                                        rocsparse_int*      nnz_per_row_columns);
 
-    if(0 == m || 0 == n)
-    {
-        return rocsparse_status_success;
-    }
-
-    rocsparse_status status = rocsparse_status_invalid_value;
-
-    switch(dir)
-    {
-
-    case rocsparse_direction_row:
-    {
-        status = rocsparse_nnz_kernel_row(handle, m, n, A, ld, nnz_per_row_columns);
-        break;
-    }
-
-    case rocsparse_direction_column:
-    {
-        status = rocsparse_nnz_kernel_col(handle, m, n, A, ld, nnz_per_row_columns);
-        break;
-    }
-    }
-
-    return status;
-}
+#endif // ROCSPARSE_NNZ_HPP

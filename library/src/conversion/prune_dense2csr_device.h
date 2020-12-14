@@ -39,7 +39,7 @@ static __global__ void nnz_total_device_kernel(rocsparse_int m,
 }
 
 template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename T>
-static __device__ void prune_dense2csr_nnz_kernel(rocsparse_int m,
+static __device__ void prune_dense2csr_nnz_device(rocsparse_int m,
                                                   rocsparse_int n,
                                                   const T* __restrict__ A,
                                                   rocsparse_int lda,
@@ -119,7 +119,7 @@ static __device__ void prune_dense2csr_nnz_kernel(rocsparse_int m,
 }
 
 template <rocsparse_int NUMROWS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
-static __device__ void prune_dense2csr_kernel(rocsparse_index_base base,
+static __device__ void prune_dense2csr_device(rocsparse_index_base base,
                                               rocsparse_int        m,
                                               rocsparse_int        n,
                                               const T* __restrict__ dense_val,

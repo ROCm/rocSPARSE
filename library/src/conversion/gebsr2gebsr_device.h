@@ -119,10 +119,10 @@ __launch_bounds__(BLOCK_SIZE) __global__
     }
 }
 
-template <typename T,
-          rocsparse_direction DIRECTION,
+template <rocsparse_direction DIRECTION,
           rocsparse_int       BLOCK_SIZE,
-          rocsparse_int       WF_SEGMENT_SIZE>
+          rocsparse_int       WF_SEGMENT_SIZE,
+          typename T>
 __launch_bounds__(BLOCK_SIZE) __global__
     void gebsr2gebsr_fast_kernel(rocsparse_int        mb_A,
                                  rocsparse_int        nb_A,

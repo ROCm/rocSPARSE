@@ -31,7 +31,7 @@
 #include <hip/hip_runtime.h>
 
 // General GEBSRMV that works for any GEBSR block dimensions
-template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T>
 __device__ void gebsrmvn_general_device(rocsparse_direction dir,
                                         T                   alpha,
                                         const rocsparse_int* __restrict__ bsr_row_ptr,
@@ -107,7 +107,7 @@ __device__ void gebsrmvn_general_device(rocsparse_direction dir,
 }
 
 // GEBSRMV kernel for GEBSR block dimension of 1 x n
-template <typename T, unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE>
+template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
 __device__ void gebsrmvn_1xn_device(rocsparse_int       mb,
                                     rocsparse_direction dir,
                                     T                   alpha,
@@ -178,7 +178,7 @@ __device__ void gebsrmvn_1xn_device(rocsparse_int       mb,
 }
 
 // GEBSRMV kernel for GEBSR block dimension of 2 x n
-template <typename T, unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE>
+template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
 __device__ void gebsrmvn_2xn_device(rocsparse_int       mb,
                                     rocsparse_direction dir,
                                     T                   alpha,
@@ -274,7 +274,7 @@ __device__ void gebsrmvn_2xn_device(rocsparse_int       mb,
 }
 
 // GEBSRMV kernel for GEBSR block dimension of 3 x n
-template <typename T, unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE>
+template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
 __device__ void gebsrmvn_3xn_device(rocsparse_int       mb,
                                     rocsparse_direction dir,
                                     T                   alpha,
@@ -382,7 +382,7 @@ __device__ void gebsrmvn_3xn_device(rocsparse_int       mb,
 }
 
 // GEBSRMV kernel for GEBSR block dimension of 4 x n
-template <typename T, unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE>
+template <unsigned int BLOCKSIZE, unsigned int COLBSRDIM, unsigned int WFSIZE, typename T>
 __device__ void gebsrmvn_4xn_device(rocsparse_int       mb,
                                     rocsparse_direction dir,
                                     T                   alpha,
@@ -502,7 +502,7 @@ __device__ void gebsrmvn_4xn_device(rocsparse_int       mb,
 }
 
 // GEBSRMV kernel for GEBSR block dimension of m x n where m and n <= 8
-template <typename T, unsigned int BLOCKSIZE, unsigned int ROWBSRDIM, unsigned int COLBSRDIM>
+template <unsigned int BLOCKSIZE, unsigned int ROWBSRDIM, unsigned int COLBSRDIM, typename T>
 __device__ void gebsrmvn_mxn_device(rocsparse_int       mb,
                                     rocsparse_direction dir,
                                     T                   alpha,
@@ -705,7 +705,7 @@ __device__ void gebsrmvn_mxn_device(rocsparse_int       mb,
 }
 
 // GEBSRMV kernel for GEBSR block dimension of m x n where m and n <= 16
-template <typename T, unsigned int BLOCKSIZE, unsigned int ROWBSRDIM, unsigned int COLBSRDIM>
+template <unsigned int BLOCKSIZE, unsigned int ROWBSRDIM, unsigned int COLBSRDIM, typename T>
 __device__ void gebsrmvn_mxn_16_device(rocsparse_int       mb,
                                        rocsparse_direction dir,
                                        T                   alpha,

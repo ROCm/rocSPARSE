@@ -29,47 +29,47 @@
 
 #include <hip/hip_runtime.h>
 
-#define LAUNCH_GEBSRMV_GENERAL_KERNEL(BLOCKSIZE, WFSIZE)                   \
-    hipLaunchKernelGGL((gebsrmvn_general_kernel<T, U, BLOCKSIZE, WFSIZE>), \
-                       dim3(mb),                                           \
-                       dim3(BLOCKSIZE),                                    \
-                       0,                                                  \
-                       handle->stream,                                     \
-                       mb,                                                 \
-                       dir,                                                \
-                       alpha,                                              \
-                       bsr_row_ptr,                                        \
-                       bsr_col_ind,                                        \
-                       bsr_val,                                            \
-                       row_block_dim,                                      \
-                       col_block_dim,                                      \
-                       x,                                                  \
-                       beta,                                               \
-                       y,                                                  \
+#define LAUNCH_GEBSRMV_GENERAL_KERNEL(BLOCKSIZE, WFSIZE)             \
+    hipLaunchKernelGGL((gebsrmvn_general_kernel<BLOCKSIZE, WFSIZE>), \
+                       dim3(mb),                                     \
+                       dim3(BLOCKSIZE),                              \
+                       0,                                            \
+                       handle->stream,                               \
+                       mb,                                           \
+                       dir,                                          \
+                       alpha,                                        \
+                       bsr_row_ptr,                                  \
+                       bsr_col_ind,                                  \
+                       bsr_val,                                      \
+                       row_block_dim,                                \
+                       col_block_dim,                                \
+                       x,                                            \
+                       beta,                                         \
+                       y,                                            \
                        base);
 
-#define LAUNCH_GEBSRMV_4XN_KERNEL(BLOCKSIZE, COLBSRDIM, WFSIZE)                   \
-    hipLaunchKernelGGL((gebsrmvn_4xn_kernel<T, U, BLOCKSIZE, COLBSRDIM, WFSIZE>), \
-                       dim3((mb - 1) / (BLOCKSIZE / WFSIZE) + 1),                 \
-                       dim3(BLOCKSIZE),                                           \
-                       0,                                                         \
-                       handle->stream,                                            \
-                       mb,                                                        \
-                       dir,                                                       \
-                       alpha,                                                     \
-                       bsr_row_ptr,                                               \
-                       bsr_col_ind,                                               \
-                       bsr_val,                                                   \
-                       x,                                                         \
-                       beta,                                                      \
-                       y,                                                         \
+#define LAUNCH_GEBSRMV_4XN_KERNEL(BLOCKSIZE, COLBSRDIM, WFSIZE)             \
+    hipLaunchKernelGGL((gebsrmvn_4xn_kernel<BLOCKSIZE, COLBSRDIM, WFSIZE>), \
+                       dim3((mb - 1) / (BLOCKSIZE / WFSIZE) + 1),           \
+                       dim3(BLOCKSIZE),                                     \
+                       0,                                                   \
+                       handle->stream,                                      \
+                       mb,                                                  \
+                       dir,                                                 \
+                       alpha,                                               \
+                       bsr_row_ptr,                                         \
+                       bsr_col_ind,                                         \
+                       bsr_val,                                             \
+                       x,                                                   \
+                       beta,                                                \
+                       y,                                                   \
                        base);
 
-template <typename T,
-          typename U,
-          unsigned int BLOCKSIZE,
+template <unsigned int BLOCKSIZE,
           unsigned int COLBSRDIM,
-          unsigned int WFSIZE>
+          unsigned int WFSIZE,
+          typename T,
+          typename U>
 __launch_bounds__(BLOCKSIZE) __global__
     void gebsrmvn_4xn_kernel(rocsparse_int       mb,
                              rocsparse_direction dir,
@@ -90,11 +90,11 @@ __launch_bounds__(BLOCKSIZE) __global__
         return;
     }
 
-    gebsrmvn_4xn_device<T, BLOCKSIZE, COLBSRDIM, WFSIZE>(
+    gebsrmvn_4xn_device<BLOCKSIZE, COLBSRDIM, WFSIZE>(
         mb, dir, alpha, bsr_row_ptr, bsr_col_ind, bsr_val, x, beta, y, idx_base);
 }
 
-template <typename T, typename U, unsigned int BLOCKSIZE, unsigned int WFSIZE>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T, typename U>
 __launch_bounds__(BLOCKSIZE) __global__
     void gebsrmvn_general_kernel(rocsparse_int       mb,
                                  rocsparse_direction dir,
@@ -117,17 +117,17 @@ __launch_bounds__(BLOCKSIZE) __global__
         return;
     }
 
-    gebsrmvn_general_device<T, BLOCKSIZE, WFSIZE>(dir,
-                                                  alpha,
-                                                  bsr_row_ptr,
-                                                  bsr_col_ind,
-                                                  bsr_val,
-                                                  row_bsr_dim,
-                                                  col_bsr_dim,
-                                                  x,
-                                                  beta,
-                                                  y,
-                                                  idx_base);
+    gebsrmvn_general_device<BLOCKSIZE, WFSIZE>(dir,
+                                               alpha,
+                                               bsr_row_ptr,
+                                               bsr_col_ind,
+                                               bsr_val,
+                                               row_bsr_dim,
+                                               col_bsr_dim,
+                                               x,
+                                               beta,
+                                               y,
+                                               idx_base);
 }
 
 template <typename T, typename U>

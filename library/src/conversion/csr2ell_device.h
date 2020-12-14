@@ -84,7 +84,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 // CSR to ELL format conversion kernel
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) __global__ void csr2ell_kernel(rocsparse_int        m,
                                                             const T*             csr_val,
                                                             const rocsparse_int* csr_row_ptr,

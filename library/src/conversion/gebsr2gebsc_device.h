@@ -28,7 +28,7 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) __global__ void gebsr2gebsc_permute_kernel(rocsparse_int nnzb,
                                                                         rocsparse_int linsize_block,
                                                                         const rocsparse_int* in1,

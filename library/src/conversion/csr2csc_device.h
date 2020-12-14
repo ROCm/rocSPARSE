@@ -28,7 +28,7 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) __global__ void csr2csc_permute_kernel(rocsparse_int        nnz,
                                                                     const rocsparse_int* in1,
                                                                     const T*             in2,

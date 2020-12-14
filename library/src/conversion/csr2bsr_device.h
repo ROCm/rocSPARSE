@@ -104,10 +104,10 @@ __launch_bounds__(BLOCK_SIZE) __global__
     }
 }
 
-template <typename T,
-          rocsparse_direction DIRECTION,
+template <rocsparse_direction DIRECTION,
           rocsparse_int       BLOCK_SIZE,
-          rocsparse_int       WF_SEGMENT_SIZE>
+          rocsparse_int       WF_SEGMENT_SIZE,
+          typename T>
 __launch_bounds__(BLOCK_SIZE) __global__
     void csr2bsr_2_32_kernel(rocsparse_int              m,
                              rocsparse_int              n,
@@ -311,10 +311,10 @@ __launch_bounds__(BLOCK_SIZE) __global__
     }
 }
 
-template <typename T,
-          rocsparse_direction DIRECTION,
+template <rocsparse_direction DIRECTION,
           rocsparse_int       BLOCK_SIZE,
-          rocsparse_int       ROWS_PER_SEGMENT>
+          rocsparse_int       ROWS_PER_SEGMENT,
+          typename T>
 __launch_bounds__(BLOCK_SIZE) __global__
     void csr2bsr_33_64_kernel(rocsparse_int              m,
                               rocsparse_int              n,
@@ -542,7 +542,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
     }
 }
 
-template <typename T, rocsparse_int BLOCK_SIZE>
+template <rocsparse_int BLOCK_SIZE, typename T>
 __launch_bounds__(BLOCK_SIZE) __global__
     void csr2bsr_65_inf_kernel(rocsparse_direction        direction,
                                rocsparse_int              m,
@@ -732,7 +732,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <typename T, rocsparse_int BLOCK_SIZE>
+template <rocsparse_int BLOCK_SIZE, typename T>
 __launch_bounds__(BLOCK_SIZE) __global__
     void csr2bsr_block_dim_equals_one_kernel(rocsparse_int              m,
                                              rocsparse_int              n,
