@@ -469,6 +469,28 @@ rocsparse_status host_csx2dense(rocsparse_int        m,
                                 T*                   A,
                                 rocsparse_int        ld);
 
+template <typename T>
+void host_dense_to_coo(rocsparse_int                     m,
+                       rocsparse_int                     n,
+                       rocsparse_index_base              base,
+                       const std::vector<T>&             A,
+                       rocsparse_int                     ld,
+                       const std::vector<rocsparse_int>& nnz_per_row,
+                       std::vector<T>&                   coo_val,
+                       std::vector<rocsparse_int>&       coo_row_ind,
+                       std::vector<rocsparse_int>&       coo_col_ind);
+
+template <typename T>
+void host_coo_to_dense(rocsparse_int                     m,
+                       rocsparse_int                     n,
+                       rocsparse_int                     nnz,
+                       rocsparse_index_base              base,
+                       const std::vector<T>&             coo_val,
+                       const std::vector<rocsparse_int>& coo_row_ind,
+                       const std::vector<rocsparse_int>& coo_col_ind,
+                       std::vector<T>&                   A,
+                       rocsparse_int                     ld);
+
 template <typename I, typename J>
 void host_csr_to_coo(J                     M,
                      I                     nnz,

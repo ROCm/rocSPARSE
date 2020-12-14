@@ -96,11 +96,13 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_csrilusv.cpp
 ../testings/testing_nnz.cpp
 ../testings/testing_dense2csr.cpp
+../testings/testing_dense2coo.cpp
 ../testings/testing_prune_dense2csr.cpp
 ../testings/testing_prune_dense2csr_by_percentage.cpp
 ../testings/testing_dense2csc.cpp
 ../testings/testing_csr2dense.cpp
 ../testings/testing_csc2dense.cpp
+../testings/testing_coo2dense.cpp
 ../testings/testing_spmv_coo.cpp
 ../testings/testing_spmv_coo_aos.cpp
 ../testings/testing_spmv_csr.cpp

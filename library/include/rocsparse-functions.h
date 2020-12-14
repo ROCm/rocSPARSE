@@ -8319,7 +8319,7 @@ rocsparse_status rocsparse_dprune_dense2csr_by_percentage(rocsparse_handle      
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
 *  \retval     rocsparse_status_invalid_size \p m or \p n or \p ld is invalid.
-*  \retval     rocsparse_status_invalid_pointer \p A or \p nnz_per_columns or \p csc_val \p csc_col_ptr or \p cscColIndA
+*  \retval     rocsparse_status_invalid_pointer \p A or \p nnz_per_columns or \p csc_val \p csc_col_ptr or \p csc_row_ind
 *              pointer is invalid.
 */
 /**@{*/
@@ -8369,6 +8369,99 @@ rocsparse_status rocsparse_zdense2csc(rocsparse_handle                handle,
                                       rocsparse_double_complex*       csc_val,
                                       rocsparse_int*                  csc_col_ptr,
                                       rocsparse_int*                  csc_row_ind);
+/**@}*/
+
+/*! \ingroup conv_module
+*  \brief
+*
+*  This function converts the matrix A in dense format into a sparse matrix in COO format.
+*  All the parameters are assumed to have been pre-allocated by the user and the arrays are filled in based on nnz_per_rows, which can be pre-computed with rocsparse_xnnz().
+*
+*  \details
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*
+*  @param[in]
+*  m           number of rows of the dense matrix \p A.
+*
+*  @param[in]
+*  n           number of columns of the dense matrix \p A.
+*
+*  @param[in]
+*  descr      the descriptor of the dense matrix \p A, the supported matrix type is rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
+*
+*  @param[in]
+*  A           array of dimensions (\p ld, \p n)
+*
+*  @param[in]
+*  ld         leading dimension of dense array \p A.
+*
+*  @param[in]
+*  nnz_per_rows   array of size \p n containing the number of non-zero elements per row.
+*
+*  @param[out]
+*  coo_val
+*              array of nnz nonzero elements of matrix \p A.
+*  @param[out]
+*  coo_row_ind
+*              integer array of nnz row indices of the non-zero elements of matrix \p A.
+*  @param[out]
+*  coo_col_ind integer array of nnz column indices of the non-zero elements of matrix \p A.
+*
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_size \p m or \p n or \p ld is invalid.
+*  \retval     rocsparse_status_invalid_pointer \p A or \p nnz_per_rows or \p coo_val \p coo_col_ind or \p coo_row_ind
+*              pointer is invalid.
+*/
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sdense2coo(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      const rocsparse_mat_descr descr,
+                                      const float*              A,
+                                      rocsparse_int             ld,
+                                      const rocsparse_int*      nnz_per_rows,
+                                      float*                    coo_val,
+                                      rocsparse_int*            coo_row_ind,
+                                      rocsparse_int*            coo_col_ind);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ddense2coo(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      const rocsparse_mat_descr descr,
+                                      const double*             A,
+                                      rocsparse_int             ld,
+                                      const rocsparse_int*      nnz_per_rows,
+                                      double*                   coo_val,
+                                      rocsparse_int*            coo_row_ind,
+                                      rocsparse_int*            coo_col_ind);
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cdense2coo(rocsparse_handle               handle,
+                                      rocsparse_int                  m,
+                                      rocsparse_int                  n,
+                                      const rocsparse_mat_descr      descr,
+                                      const rocsparse_float_complex* A,
+                                      rocsparse_int                  ld,
+                                      const rocsparse_int*           nnz_per_rows,
+                                      rocsparse_float_complex*       coo_val,
+                                      rocsparse_int*                 coo_row_ind,
+                                      rocsparse_int*                 coo_col_ind);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zdense2coo(rocsparse_handle                handle,
+                                      rocsparse_int                   m,
+                                      rocsparse_int                   n,
+                                      const rocsparse_mat_descr       descr,
+                                      const rocsparse_double_complex* A,
+                                      rocsparse_int                   ld,
+                                      const rocsparse_int*            nnz_per_rows,
+                                      rocsparse_double_complex*       coo_val,
+                                      rocsparse_int*                  coo_row_ind,
+                                      rocsparse_int*                  coo_col_ind);
 /**@}*/
 
 /*! \ingroup conv_module
@@ -8531,6 +8624,94 @@ rocsparse_status rocsparse_zcsc2dense(rocsparse_handle                handle,
                                       const rocsparse_double_complex* csc_val,
                                       const rocsparse_int*            csc_col_ptr,
                                       const rocsparse_int*            csc_row_ind,
+                                      rocsparse_double_complex*       A,
+                                      rocsparse_int                   ld);
+/**@}*/
+
+/*! \ingroup conv_module
+*  \brief
+*  This function converts the sparse matrix in COO format into a dense matrix.
+*  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
+*  \details
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*
+*  @param[in]
+*  m           number of rows of the dense matrix \p A.
+*
+*  @param[in]
+*  n           number of columns of the dense matrix \p A.
+*
+*  @param[in]
+*  nnz         number of non-zero entries of the sparse COO matrix.
+*  @param[in]
+*  descr       the descriptor of the dense matrix \p A, the supported matrix type is \ref rocsparse_matrix_type_general and also any valid value of the \ref rocsparse_index_base.
+*
+*  @param[in]
+*  coo_val     array of nnz nonzero elements of matrix \p A.
+*  @param[in]
+*  coo_row_ind integer array of nnz row indices of the non-zero elements of matrix \p A.
+*
+*  @param[in]
+*  coo_col_ind integer array of nnz column indices of the non-zero elements of matrix \p A.
+*  @param[out]
+*  A           array of dimensions (\p ld, \p n)
+*
+*  @param[out]
+*  ld          leading dimension of dense array \p A.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_size \p m or \p n or \p nnz or \p ld is invalid.
+*  \retval     rocsparse_status_invalid_pointer \p A or \p coo_val \p coo_col_ind or \p coo_row_ind
+*              pointer is invalid.
+*/
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_scoo2dense(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      rocsparse_int             nnz,
+                                      const rocsparse_mat_descr descr,
+                                      const float*              coo_val,
+                                      const rocsparse_int*      coo_row_ind,
+                                      const rocsparse_int*      coo_col_ind,
+                                      float*                    A,
+                                      rocsparse_int             ld);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcoo2dense(rocsparse_handle          handle,
+                                      rocsparse_int             m,
+                                      rocsparse_int             n,
+                                      rocsparse_int             nnz,
+                                      const rocsparse_mat_descr descr,
+                                      const double*             coo_val,
+                                      const rocsparse_int*      coo_row_ind,
+                                      const rocsparse_int*      coo_col_ind,
+                                      double*                   A,
+                                      rocsparse_int             ld);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_ccoo2dense(rocsparse_handle               handle,
+                                      rocsparse_int                  m,
+                                      rocsparse_int                  n,
+                                      rocsparse_int                  nnz,
+                                      const rocsparse_mat_descr      descr,
+                                      const rocsparse_float_complex* coo_val,
+                                      const rocsparse_int*           coo_row_ind,
+                                      const rocsparse_int*           coo_col_ind,
+                                      rocsparse_float_complex*       A,
+                                      rocsparse_int                  ld);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zcoo2dense(rocsparse_handle                handle,
+                                      rocsparse_int                   m,
+                                      rocsparse_int                   n,
+                                      rocsparse_int                   nnz,
+                                      const rocsparse_mat_descr       descr,
+                                      const rocsparse_double_complex* coo_val,
+                                      const rocsparse_int*            coo_row_ind,
+                                      const rocsparse_int*            coo_col_ind,
                                       rocsparse_double_complex*       A,
                                       rocsparse_int                   ld);
 /**@}*/

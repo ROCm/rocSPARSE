@@ -911,8 +911,10 @@ Function name                                                                   
 :cpp:func:`rocsparse_coosort_by_column`
 :cpp:func:`rocsparse_Xdense2csr() <rocsparse_sdense2csr>`                                                                 x      x      x              x
 :cpp:func:`rocsparse_Xdense2csc() <rocsparse_sdense2csc>`                                                                 x      x      x              x
+:cpp:func:`rocsparse_Xdense2coo() <rocsparse_sdense2coo>`                                                                 x      x      x              x
 :cpp:func:`rocsparse_Xcsr2dense() <rocsparse_scsr2dense>`                                                                 x      x      x              x
 :cpp:func:`rocsparse_Xcsc2dense() <rocsparse_scsc2dense>`                                                                 x      x      x              x
+:cpp:func:`rocsparse_Xcoo2dense() <rocsparse_scoo2dense>`                                                                 x      x      x              x
 :cpp:func:`rocsparse_Xnnz_compress() <rocsparse_snnz_compress>`                                                           x      x      x              x
 :cpp:func:`rocsparse_Xnnz() <rocsparse_snnz>`                                                                             x      x      x              x
 :cpp:func:`rocsparse_Xprune_dense2csr_buffer_size() <rocsparse_sprune_dense2csr_buffer_size>`                             x      x
@@ -2153,6 +2155,18 @@ rocsparse_dense2csc()
 .. doxygenfunction:: rocsparse_zdense2csc
 
 
+rocsparse_dense2coo()
+---------------------
+
+.. doxygenfunction:: rocsparse_sdense2coo
+  :outline:
+.. doxygenfunction:: rocsparse_ddense2coo
+  :outline:
+.. doxygenfunction:: rocsparse_cdense2coo
+  :outline:
+.. doxygenfunction:: rocsparse_zdense2coo
+
+
 rocsparse_csr2dense()
 ---------------------
 
@@ -2175,6 +2189,17 @@ rocsparse_csc2dense()
 .. doxygenfunction:: rocsparse_ccsc2dense
   :outline:
 .. doxygenfunction:: rocsparse_zcsc2dense
+
+rocsparse_coo2dense()
+---------------------
+
+.. doxygenfunction:: rocsparse_scoo2dense
+  :outline:
+.. doxygenfunction:: rocsparse_dcoo2dense
+  :outline:
+.. doxygenfunction:: rocsparse_ccoo2dense
+  :outline:
+.. doxygenfunction:: rocsparse_zcoo2dense
 
 rocsparse_prune_dense2csr_buffer_size()
 ---------------------------------------
