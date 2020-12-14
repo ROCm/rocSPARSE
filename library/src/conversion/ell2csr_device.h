@@ -78,7 +78,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     csr_row_ptr[ai + 1] = nnz;
 }
 
-template <typename T, unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
     void ell2csr_fill(rocsparse_int m,
                       rocsparse_int n,

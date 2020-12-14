@@ -28,7 +28,7 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T, rocsparse_direction DIRECTION, rocsparse_int BLOCK_SIZE>
+template <rocsparse_direction DIRECTION, rocsparse_int BLOCK_SIZE, typename T>
 __launch_bounds__(BLOCK_SIZE) __global__
     void bsr2csr_kernel(rocsparse_int        mb,
                         rocsparse_int        nb,
@@ -92,10 +92,10 @@ __launch_bounds__(BLOCK_SIZE) __global__
     }
 }
 
-template <typename T,
-          rocsparse_direction DIRECTION,
+template <rocsparse_direction DIRECTION,
           rocsparse_int       BLOCK_SIZE,
-          rocsparse_int       BSR_BLOCK_DIM>
+          rocsparse_int       BSR_BLOCK_DIM,
+          typename T>
 __launch_bounds__(BLOCK_SIZE) __global__
     void bsr2csr_unroll_kernel(rocsparse_int        mb,
                                rocsparse_int        nb,
@@ -373,7 +373,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
     }
 }
 
-template <typename T, rocsparse_int BLOCK_SIZE>
+template <rocsparse_int BLOCK_SIZE, typename T>
 __launch_bounds__(BLOCK_SIZE) __global__
     void bsr2csr_block_dim_equals_one_kernel(rocsparse_int        mb,
                                              rocsparse_int        nb,

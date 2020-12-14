@@ -28,10 +28,10 @@
 
 #include <hip/hip_runtime.h>
 
-template <typename T,
-          rocsparse_direction DIRECTION,
+template <rocsparse_direction DIRECTION,
           rocsparse_int       BLOCK_SIZE,
-          rocsparse_int       WF_SIZE>
+          rocsparse_int       WF_SIZE,
+          typename T>
 __launch_bounds__(BLOCK_SIZE) __global__
     void gebsr2csr_kernel(rocsparse_int        mb,
                           rocsparse_int        nb,

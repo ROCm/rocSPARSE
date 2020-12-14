@@ -44,12 +44,12 @@ __launch_bounds__(BLOCK_SIZE) __global__
     }
 }
 
-template <typename T,
-          rocsparse_int BLOCK_SIZE,
+template <rocsparse_int BLOCK_SIZE,
           rocsparse_int SEGMENTS_PER_BLOCK,
           rocsparse_int SEGMENT_SIZE,
-          rocsparse_int WF_SIZE>
-__device__ void nnz_compress_kernel(rocsparse_int        m,
+          rocsparse_int WF_SIZE,
+          typename T>
+__device__ void nnz_compress_device(rocsparse_int        m,
                                     rocsparse_index_base idx_base_A,
                                     const T* __restrict__ csr_val_A,
                                     const rocsparse_int* __restrict__ csr_row_ptr_A,
