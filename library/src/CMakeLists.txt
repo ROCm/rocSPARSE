@@ -104,11 +104,13 @@ set(rocsparse_source
 # Conversion
   src/conversion/rocsparse_nnz.cpp
   src/conversion/rocsparse_dense2csr.cpp
+  src/conversion/rocsparse_dense2coo.cpp
   src/conversion/rocsparse_prune_dense2csr.cpp
   src/conversion/rocsparse_prune_dense2csr_by_percentage.cpp
   src/conversion/rocsparse_dense2csc.cpp
   src/conversion/rocsparse_csr2dense.cpp
   src/conversion/rocsparse_csc2dense.cpp
+  src/conversion/rocsparse_coo2dense.cpp
   src/conversion/rocsparse_nnz_compress.cpp
   src/conversion/rocsparse_csr2coo.cpp
   src/conversion/rocsparse_csr2csc.cpp

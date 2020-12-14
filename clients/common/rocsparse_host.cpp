@@ -3459,6 +3459,69 @@ rocsparse_status host_csx2dense(rocsparse_int        m,
 }
 
 template <typename T>
+void host_dense_to_coo(rocsparse_int                     m,
+                       rocsparse_int                     n,
+                       rocsparse_index_base              base,
+                       const std::vector<T>&             A,
+                       rocsparse_int                     ld,
+                       const std::vector<rocsparse_int>& nnz_per_row,
+                       std::vector<T>&                   coo_val,
+                       std::vector<rocsparse_int>&       coo_row_ind,
+                       std::vector<rocsparse_int>&       coo_col_ind)
+{
+    // Find number of non-zeros in dense matrix
+    int nnz = 0;
+    for(rocsparse_int i = 0; i < m; ++i)
+    {
+        nnz += nnz_per_row[i];
+    }
+
+    coo_val.resize(nnz, static_cast<T>(0));
+    coo_row_ind.resize(nnz, 0);
+    coo_col_ind.resize(nnz, 0);
+
+    // Fill COO matrix
+    int index = 0;
+    for(rocsparse_int i = 0; i < m; i++)
+    {
+        for(rocsparse_int j = 0; j < n; j++)
+        {
+            if(A[ld * j + i] != static_cast<T>(0))
+            {
+                coo_val[index]     = A[ld * j + i];
+                coo_row_ind[index] = i + base;
+                coo_col_ind[index] = j + base;
+
+                index++;
+            }
+        }
+    }
+}
+
+template <typename T>
+void host_coo_to_dense(rocsparse_int                     m,
+                       rocsparse_int                     n,
+                       rocsparse_int                     nnz,
+                       rocsparse_index_base              base,
+                       const std::vector<T>&             coo_val,
+                       const std::vector<rocsparse_int>& coo_row_ind,
+                       const std::vector<rocsparse_int>& coo_col_ind,
+                       std::vector<T>&                   A,
+                       rocsparse_int                     ld)
+{
+    A.resize(ld * n);
+
+    for(rocsparse_int i = 0; i < nnz; i++)
+    {
+        rocsparse_int row = coo_row_ind[i] - base;
+        rocsparse_int col = coo_col_ind[i] - base;
+        T             val = coo_val[i];
+
+        A[ld * col + row] = val;
+    }
+}
+
+template <typename T>
 void host_csr_to_csc(rocsparse_int                     M,
                      rocsparse_int                     N,
                      rocsparse_int                     nnz,
@@ -4693,6 +4756,26 @@ template rocsparse_status
                                                float*               A,
                                                rocsparse_int        ld);
 
+template void host_dense_to_coo(rocsparse_int                     m,
+                                rocsparse_int                     n,
+                                rocsparse_index_base              base,
+                                const std::vector<float>&         A,
+                                rocsparse_int                     ld,
+                                const std::vector<rocsparse_int>& nnz_per_row,
+                                std::vector<float>&               coo_val,
+                                std::vector<rocsparse_int>&       coo_row_ind,
+                                std::vector<rocsparse_int>&       coo_col_ind);
+
+template void host_coo_to_dense(rocsparse_int                     m,
+                                rocsparse_int                     n,
+                                rocsparse_int                     nnz,
+                                rocsparse_index_base              base,
+                                const std::vector<float>&         coo_val,
+                                const std::vector<rocsparse_int>& coo_row_ind,
+                                const std::vector<rocsparse_int>& coo_col_ind,
+                                std::vector<float>&               A,
+                                rocsparse_int                     ld);
+
 template void host_csr_to_csc(rocsparse_int                     M,
                               rocsparse_int                     N,
                               rocsparse_int                     nnz,
@@ -5217,6 +5300,26 @@ template rocsparse_status
                                             double*              A,
                                             rocsparse_int        ld);
 
+template void host_dense_to_coo(rocsparse_int                     m,
+                                rocsparse_int                     n,
+                                rocsparse_index_base              base,
+                                const std::vector<double>&        A,
+                                rocsparse_int                     ld,
+                                const std::vector<rocsparse_int>& nnz_per_row,
+                                std::vector<double>&              coo_val,
+                                std::vector<rocsparse_int>&       coo_row_ind,
+                                std::vector<rocsparse_int>&       coo_col_ind);
+
+template void host_coo_to_dense(rocsparse_int                     m,
+                                rocsparse_int                     n,
+                                rocsparse_int                     nnz,
+                                rocsparse_index_base              base,
+                                const std::vector<double>&        coo_val,
+                                const std::vector<rocsparse_int>& coo_row_ind,
+                                const std::vector<rocsparse_int>& coo_col_ind,
+                                std::vector<double>&              A,
+                                rocsparse_int                     ld);
+
 template void host_csr_to_csc(rocsparse_int                     M,
                               rocsparse_int                     N,
                               rocsparse_int                     nnz,
@@ -5719,6 +5822,26 @@ template rocsparse_status
                                                rocsparse_double_complex*       A,
                                                rocsparse_int                   ld);
 
+template void host_dense_to_coo(rocsparse_int                                m,
+                                rocsparse_int                                n,
+                                rocsparse_index_base                         base,
+                                const std::vector<rocsparse_double_complex>& A,
+                                rocsparse_int                                ld,
+                                const std::vector<rocsparse_int>&            nnz_per_row,
+                                std::vector<rocsparse_double_complex>&       coo_val,
+                                std::vector<rocsparse_int>&                  coo_row_ind,
+                                std::vector<rocsparse_int>&                  coo_col_ind);
+
+template void host_coo_to_dense(rocsparse_int                                m,
+                                rocsparse_int                                n,
+                                rocsparse_int                                nnz,
+                                rocsparse_index_base                         base,
+                                const std::vector<rocsparse_double_complex>& coo_val,
+                                const std::vector<rocsparse_int>&            coo_row_ind,
+                                const std::vector<rocsparse_int>&            coo_col_ind,
+                                std::vector<rocsparse_double_complex>&       A,
+                                rocsparse_int                                ld);
+
 template void host_csr_to_csc(rocsparse_int                                M,
                               rocsparse_int                                N,
                               rocsparse_int                                nnz,
@@ -6194,6 +6317,26 @@ template rocsparse_status
                                             const rocsparse_int*           csx_col_row_ind,
                                             rocsparse_float_complex*       A,
                                             rocsparse_int                  ld);
+
+template void host_dense_to_coo(rocsparse_int                               m,
+                                rocsparse_int                               n,
+                                rocsparse_index_base                        base,
+                                const std::vector<rocsparse_float_complex>& A,
+                                rocsparse_int                               ld,
+                                const std::vector<rocsparse_int>&           nnz_per_row,
+                                std::vector<rocsparse_float_complex>&       coo_val,
+                                std::vector<rocsparse_int>&                 coo_row_ind,
+                                std::vector<rocsparse_int>&                 coo_col_ind);
+
+template void host_coo_to_dense(rocsparse_int                               m,
+                                rocsparse_int                               n,
+                                rocsparse_int                               nnz,
+                                rocsparse_index_base                        base,
+                                const std::vector<rocsparse_float_complex>& coo_val,
+                                const std::vector<rocsparse_int>&           coo_row_ind,
+                                const std::vector<rocsparse_int>&           coo_col_ind,
+                                std::vector<rocsparse_float_complex>&       A,
+                                rocsparse_int                               ld);
 
 template void host_csr_to_csc(rocsparse_int                               M,
                               rocsparse_int                               N,

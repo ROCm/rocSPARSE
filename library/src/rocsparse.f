@@ -4284,6 +4284,83 @@ module rocsparse
             type(c_ptr), value :: csc_row_ind
         end function rocsparse_zdense2csc
 
+!       rocsparse_dense2coo
+        function rocsparse_sdense2coo(handle, m, n, descr, A, ld, nnz_per_rows, coo_val, &
+                coo_row_ind, coo_col_ind) &
+                bind(c, name = 'rocsparse_sdense2coo')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sdense2coo
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: ld
+            type(c_ptr), intent(in), value :: nnz_per_rows
+            type(c_ptr), value :: coo_val
+            type(c_ptr), value :: coo_row_ind
+            type(c_ptr), value :: coo_col_ind
+        end function rocsparse_sdense2coo
+
+        function rocsparse_ddense2coo(handle, m, n, descr, A, ld, nnz_per_rows, coo_val, &
+                coo_row_ind, coo_col_ind) &
+                bind(c, name = 'rocsparse_ddense2coo')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ddense2coo
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: ld
+            type(c_ptr), intent(in), value :: nnz_per_rows
+            type(c_ptr), value :: coo_val
+            type(c_ptr), value :: coo_row_ind
+            type(c_ptr), value :: coo_col_ind
+        end function rocsparse_ddense2coo
+
+        function rocsparse_cdense2coo(handle, m, n, descr, A, ld, nnz_per_rows, coo_val, &
+                coo_row_ind, coo_col_ind) &
+                bind(c, name = 'rocsparse_cdense2coo')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cdense2coo
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: ld
+            type(c_ptr), intent(in), value :: nnz_per_rows
+            type(c_ptr), value :: coo_val
+            type(c_ptr), value :: coo_row_ind
+            type(c_ptr), value :: coo_col_ind
+        end function rocsparse_cdense2coo
+
+        function rocsparse_zdense2coo(handle, m, n, descr, A, ld, nnz_per_rows, coo_val, &
+                coo_row_ind, coo_col_ind) &
+                bind(c, name = 'rocsparse_zdense2coo')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zdense2coo
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: A
+            integer(c_int), value :: ld
+            type(c_ptr), intent(in), value :: nnz_per_rows
+            type(c_ptr), value :: coo_val
+            type(c_ptr), value :: coo_row_ind
+            type(c_ptr), value :: coo_col_ind
+        end function rocsparse_zdense2coo
+
 !       rocsparse_csr2dense
         function rocsparse_scsr2dense(handle, m, n, descr, csr_val, csr_row_ptr, &
                 csr_col_ind, A, ld) &
@@ -4429,6 +4506,83 @@ module rocsparse
             type(c_ptr), value :: A
             integer(c_int), value :: ld
         end function rocsparse_zcsc2dense
+
+!       rocsparse_coo2dense
+        function rocsparse_scoo2dense(handle, m, n, nnz, descr, coo_val, coo_row_ind, &
+                coo_col_ind, A, ld) &
+                bind(c, name = 'rocsparse_scoo2dense')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_scoo2dense
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: coo_val
+            type(c_ptr), intent(in), value :: coo_row_ind
+            type(c_ptr), intent(in), value :: coo_col_ind
+            type(c_ptr), value :: A
+            integer(c_int), value :: ld
+        end function rocsparse_scoo2dense
+
+        function rocsparse_dcoo2dense(handle, m, n, nnz, descr, coo_val, coo_row_ind, &
+                coo_col_ind, A, ld) &
+                bind(c, name = 'rocsparse_dcoo2dense')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dcoo2dense
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: coo_val
+            type(c_ptr), intent(in), value :: coo_row_ind
+            type(c_ptr), intent(in), value :: coo_col_ind
+            type(c_ptr), value :: A
+            integer(c_int), value :: ld
+        end function rocsparse_dcoo2dense
+
+        function rocsparse_ccoo2dense(handle, m, n, nnz, descr, coo_val, coo_row_ind, &
+                coo_col_ind, A, ld) &
+                bind(c, name = 'rocsparse_ccoo2dense')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_ccoo2dense
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: coo_val
+            type(c_ptr), intent(in), value :: coo_row_ind
+            type(c_ptr), intent(in), value :: coo_col_ind
+            type(c_ptr), value :: A
+            integer(c_int), value :: ld
+        end function rocsparse_ccoo2dense
+
+        function rocsparse_zcoo2dense(handle, m, n, nnz, descr, coo_val, coo_row_ind, &
+                coo_col_ind, A, ld) &
+                bind(c, name = 'rocsparse_zcoo2dense')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zcoo2dense
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            integer(c_int), value :: nnz
+            type(c_ptr), intent(in), value :: descr
+            type(c_ptr), intent(in), value :: coo_val
+            type(c_ptr), intent(in), value :: coo_row_ind
+            type(c_ptr), intent(in), value :: coo_col_ind
+            type(c_ptr), value :: A
+            integer(c_int), value :: ld
+        end function rocsparse_zcoo2dense
 
 !       rocsparse_nnz_compress
         function rocsparse_snnz_compress(handle, m, descr_A, csr_val_A, csr_row_ptr_A, &

@@ -744,6 +744,19 @@ rocsparse_status rocsparse_dense2csr(rocsparse_handle          handle,
                                      rocsparse_int*            csr_row_ptr,
                                      rocsparse_int*            csr_col_ind);
 
+// dense2coo
+template <typename T>
+rocsparse_status rocsparse_dense2coo(rocsparse_handle          handle,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     const rocsparse_mat_descr descr,
+                                     const T*                  A,
+                                     rocsparse_int             lda,
+                                     const rocsparse_int*      nnz_per_rows,
+                                     T*                        coo_val,
+                                     rocsparse_int*            coo_row_ind,
+                                     rocsparse_int*            coo_col_ind);
+
 // prune_dense2csr_buffer_size
 template <typename T>
 rocsparse_status rocsparse_prune_dense2csr_buffer_size(rocsparse_handle          handle,
@@ -864,6 +877,19 @@ rocsparse_status rocsparse_csc2dense(rocsparse_handle          handle,
                                      const T*                  csc_val,
                                      const rocsparse_int*      csc_col_ptr,
                                      const rocsparse_int*      csc_row_ind,
+                                     T*                        A,
+                                     rocsparse_int             lda);
+
+// coo2dense
+template <typename T>
+rocsparse_status rocsparse_coo2dense(rocsparse_handle          handle,
+                                     rocsparse_int             m,
+                                     rocsparse_int             n,
+                                     rocsparse_int             nnz,
+                                     const rocsparse_mat_descr descr,
+                                     const T*                  coo_val,
+                                     const rocsparse_int*      coo_row_ind,
+                                     const rocsparse_int*      coo_col_ind,
                                      T*                        A,
                                      rocsparse_int             lda);
 

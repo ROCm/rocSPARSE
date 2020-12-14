@@ -52,11 +52,13 @@ include: test_csric0.yaml
 include: test_csrilu0.yaml
 include: test_nnz.yaml
 include: test_dense2csr.yaml
+include: test_dense2coo.yaml
 include: test_prune_dense2csr.yaml
 include: test_prune_dense2csr_by_percentage.yaml
 include: test_dense2csc.yaml
 include: test_csr2dense.yaml
 include: test_csc2dense.yaml
+include: test_coo2dense.yaml
 include: test_csr2coo.yaml
 include: test_csr2csc.yaml
 include: test_gebsr2gebsc.yaml
