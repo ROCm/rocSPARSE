@@ -43,6 +43,9 @@ typedef int64_t rocsparse_int;
 typedef int32_t rocsparse_int;
 #endif
 
+/* Forward declaration of hipStream_t */
+typedef struct ihipStream_t* hipStream_t;
+
 /*! \ingroup types_module
  *  \brief Handle to the rocSPARSE library context queue.
  *
