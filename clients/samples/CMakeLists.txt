@@ -87,6 +87,7 @@ add_rocsparse_example(example_gemmi.cpp)
 # Extra
 add_rocsparse_example(example_csrgeam.cpp)
 add_rocsparse_example(example_csrgemm.cpp)
+add_rocsparse_example(example_spgemm.cpp)
 
 # Managed
 add_rocsparse_example(example_csrmv_managed.cpp)

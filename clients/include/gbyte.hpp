@@ -195,21 +195,14 @@ constexpr double csrgeam_gbyte_count(rocsparse_int M,
     return (size_A + size_B + size_C) / 1e9;
 }
 
-template <typename T>
-constexpr double csrgemm_gbyte_count(rocsparse_int M,
-                                     rocsparse_int N,
-                                     rocsparse_int K,
-                                     rocsparse_int nnz_A,
-                                     rocsparse_int nnz_B,
-                                     rocsparse_int nnz_C,
-                                     rocsparse_int nnz_D,
-                                     const T*      alpha,
-                                     const T*      beta)
+template <typename I, typename J, typename T>
+constexpr double csrgemm_gbyte_count(
+    J M, J N, J K, I nnz_A, I nnz_B, I nnz_C, I nnz_D, const T* alpha, const T* beta)
 {
-    double size_A = alpha ? (M + 1.0 + nnz_A) * sizeof(rocsparse_int) + nnz_A * sizeof(T) : 0.0;
-    double size_B = alpha ? (K + 1.0 + nnz_B) * sizeof(rocsparse_int) + nnz_B * sizeof(T) : 0.0;
-    double size_C = (M + 1.0 + nnz_C) * sizeof(rocsparse_int) + nnz_C * sizeof(T);
-    double size_D = beta ? (M + 1.0 + nnz_D) * sizeof(rocsparse_int) + nnz_D * sizeof(T) : 0.0;
+    double size_A = alpha ? (M + 1.0) * sizeof(I) + nnz_A * sizeof(J) + nnz_A * sizeof(T) : 0.0;
+    double size_B = alpha ? (K + 1.0) * sizeof(I) + nnz_B * sizeof(J) + nnz_B * sizeof(T) : 0.0;
+    double size_C = (M + 1.0) * sizeof(I) + nnz_C * sizeof(J) + nnz_C * sizeof(T);
+    double size_D = beta ? (M + 1.0) * sizeof(I) + nnz_D * sizeof(J) + nnz_D * sizeof(T) : 0.0;
 
     return (size_A + size_B + size_C + size_D) / 1e9;
 }

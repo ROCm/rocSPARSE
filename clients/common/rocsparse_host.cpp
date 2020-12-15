@@ -2270,71 +2270,71 @@ void host_csrgeam(rocsparse_int                     M,
     }
 }
 
-template <typename T>
-void host_csrgemm_nnz(rocsparse_int                     M,
-                      rocsparse_int                     N,
-                      rocsparse_int                     K,
-                      const T*                          alpha,
-                      const std::vector<rocsparse_int>& csr_row_ptr_A,
-                      const std::vector<rocsparse_int>& csr_col_ind_A,
-                      const std::vector<rocsparse_int>& csr_row_ptr_B,
-                      const std::vector<rocsparse_int>& csr_col_ind_B,
-                      const T*                          beta,
-                      const std::vector<rocsparse_int>& csr_row_ptr_D,
-                      const std::vector<rocsparse_int>& csr_col_ind_D,
-                      std::vector<rocsparse_int>&       csr_row_ptr_C,
-                      rocsparse_int*                    nnz_C,
-                      rocsparse_index_base              base_A,
-                      rocsparse_index_base              base_B,
-                      rocsparse_index_base              base_C,
-                      rocsparse_index_base              base_D)
+template <typename I, typename J, typename T>
+void host_csrgemm_nnz(J                     M,
+                      J                     N,
+                      J                     K,
+                      const T*              alpha,
+                      const std::vector<I>& csr_row_ptr_A,
+                      const std::vector<J>& csr_col_ind_A,
+                      const std::vector<I>& csr_row_ptr_B,
+                      const std::vector<J>& csr_col_ind_B,
+                      const T*              beta,
+                      const std::vector<I>& csr_row_ptr_D,
+                      const std::vector<J>& csr_col_ind_D,
+                      std::vector<I>&       csr_row_ptr_C,
+                      I*                    nnz_C,
+                      rocsparse_index_base  base_A,
+                      rocsparse_index_base  base_B,
+                      rocsparse_index_base  base_C,
+                      rocsparse_index_base  base_D)
 {
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
     {
-        std::vector<rocsparse_int> nnz(N, -1);
+        std::vector<J> nnz(N, -1);
 
 #ifdef _OPENMP
-        rocsparse_int nthreads = omp_get_num_threads();
-        rocsparse_int tid      = omp_get_thread_num();
+        int nthreads = omp_get_num_threads();
+        int tid      = omp_get_thread_num();
 #else
-        rocsparse_int nthreads = 1;
-        rocsparse_int tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
-        rocsparse_int rows_per_thread = (M + nthreads - 1) / nthreads;
-        rocsparse_int chunk_begin     = rows_per_thread * tid;
-        rocsparse_int chunk_end       = std::min(chunk_begin + rows_per_thread, M);
+        J rows_per_thread = (M + nthreads - 1) / nthreads;
+        J chunk_begin     = rows_per_thread * tid;
+        J chunk_end       = std::min(chunk_begin + rows_per_thread, M);
 
         // Index base
         csr_row_ptr_C[0] = base_C;
 
         // Loop over rows of A
-        for(rocsparse_int i = chunk_begin; i < chunk_end; ++i)
+        for(J i = chunk_begin; i < chunk_end; ++i)
         {
             // Initialize csr row pointer with previous row offset
             csr_row_ptr_C[i + 1] = 0;
 
             if(alpha)
             {
-                rocsparse_int row_begin_A = csr_row_ptr_A[i] - base_A;
-                rocsparse_int row_end_A   = csr_row_ptr_A[i + 1] - base_A;
+                I row_begin_A = csr_row_ptr_A[i] - base_A;
+                I row_end_A   = csr_row_ptr_A[i + 1] - base_A;
 
                 // Loop over columns of A
-                for(rocsparse_int j = row_begin_A; j < row_end_A; ++j)
+                for(I j = row_begin_A; j < row_end_A; ++j)
                 {
                     // Current column of A
-                    rocsparse_int col_A = csr_col_ind_A[j] - base_A;
+                    J col_A = csr_col_ind_A[j] - base_A;
 
-                    rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - base_B;
-                    rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - base_B;
+                    I row_begin_B = csr_row_ptr_B[col_A] - base_B;
+                    I row_end_B   = csr_row_ptr_B[col_A + 1] - base_B;
 
                     // Loop over columns of B in row col_A
-                    for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
+                    for(I k = row_begin_B; k < row_end_B; ++k)
                     {
                         // Current column of B
-                        rocsparse_int col_B = csr_col_ind_B[k] - base_B;
+                        J col_B = csr_col_ind_B[k] - base_B;
 
                         // Check if a new nnz is generated
                         if(nnz[col_B] != i)
@@ -2349,13 +2349,13 @@ void host_csrgemm_nnz(rocsparse_int                     M,
             // Add nnz of D if beta != 0
             if(beta)
             {
-                rocsparse_int row_begin_D = csr_row_ptr_D[i] - base_D;
-                rocsparse_int row_end_D   = csr_row_ptr_D[i + 1] - base_D;
+                I row_begin_D = csr_row_ptr_D[i] - base_D;
+                I row_end_D   = csr_row_ptr_D[i + 1] - base_D;
 
                 // Loop over columns of D
-                for(rocsparse_int j = row_begin_D; j < row_end_D; ++j)
+                for(I j = row_begin_D; j < row_end_D; ++j)
                 {
-                    rocsparse_int col_D = csr_col_ind_D[j] - base_D;
+                    J col_D = csr_col_ind_D[j] - base_D;
 
                     // Check if a new nnz is generated
                     if(nnz[col_D] != i)
@@ -2369,7 +2369,7 @@ void host_csrgemm_nnz(rocsparse_int                     M,
     }
 
     // Scan to obtain row offsets
-    for(rocsparse_int i = 0; i < M; ++i)
+    for(J i = 0; i < M; ++i)
     {
         csr_row_ptr_C[i + 1] += csr_row_ptr_C[i];
     }
@@ -2377,74 +2377,74 @@ void host_csrgemm_nnz(rocsparse_int                     M,
     *nnz_C = csr_row_ptr_C[M] - base_C;
 }
 
-template <typename T>
-void host_csrgemm(rocsparse_int                     M,
-                  rocsparse_int                     N,
-                  rocsparse_int                     L,
-                  const T*                          alpha,
-                  const std::vector<rocsparse_int>& csr_row_ptr_A,
-                  const std::vector<rocsparse_int>& csr_col_ind_A,
-                  const std::vector<T>&             csr_val_A,
-                  const std::vector<rocsparse_int>& csr_row_ptr_B,
-                  const std::vector<rocsparse_int>& csr_col_ind_B,
-                  const std::vector<T>&             csr_val_B,
-                  const T*                          beta,
-                  const std::vector<rocsparse_int>& csr_row_ptr_D,
-                  const std::vector<rocsparse_int>& csr_col_ind_D,
-                  const std::vector<T>&             csr_val_D,
-                  const std::vector<rocsparse_int>& csr_row_ptr_C,
-                  std::vector<rocsparse_int>&       csr_col_ind_C,
-                  std::vector<T>&                   csr_val_C,
-                  rocsparse_index_base              base_A,
-                  rocsparse_index_base              base_B,
-                  rocsparse_index_base              base_C,
-                  rocsparse_index_base              base_D)
+template <typename I, typename J, typename T>
+void host_csrgemm(J                     M,
+                  J                     N,
+                  J                     L,
+                  const T*              alpha,
+                  const std::vector<I>& csr_row_ptr_A,
+                  const std::vector<J>& csr_col_ind_A,
+                  const std::vector<T>& csr_val_A,
+                  const std::vector<I>& csr_row_ptr_B,
+                  const std::vector<J>& csr_col_ind_B,
+                  const std::vector<T>& csr_val_B,
+                  const T*              beta,
+                  const std::vector<I>& csr_row_ptr_D,
+                  const std::vector<J>& csr_col_ind_D,
+                  const std::vector<T>& csr_val_D,
+                  const std::vector<I>& csr_row_ptr_C,
+                  std::vector<J>&       csr_col_ind_C,
+                  std::vector<T>&       csr_val_C,
+                  rocsparse_index_base  base_A,
+                  rocsparse_index_base  base_B,
+                  rocsparse_index_base  base_C,
+                  rocsparse_index_base  base_D)
 {
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
     {
-        std::vector<rocsparse_int> nnz(N, -1);
+        std::vector<I> nnz(N, -1);
 
 #ifdef _OPENMP
-        rocsparse_int nthreads = omp_get_num_threads();
-        rocsparse_int tid      = omp_get_thread_num();
+        int nthreads = omp_get_num_threads();
+        int tid      = omp_get_thread_num();
 #else
-        rocsparse_int nthreads = 1;
-        rocsparse_int tid      = 0;
+        int nthreads = 1;
+        int tid      = 0;
 #endif
 
-        rocsparse_int rows_per_thread = (M + nthreads - 1) / nthreads;
-        rocsparse_int chunk_begin     = rows_per_thread * tid;
-        rocsparse_int chunk_end       = std::min(chunk_begin + rows_per_thread, M);
+        J rows_per_thread = (M + nthreads - 1) / nthreads;
+        J chunk_begin     = rows_per_thread * tid;
+        J chunk_end       = std::min(chunk_begin + rows_per_thread, M);
 
         // Loop over rows of A
-        for(rocsparse_int i = chunk_begin; i < chunk_end; ++i)
+        for(J i = chunk_begin; i < chunk_end; ++i)
         {
-            rocsparse_int row_begin_C = csr_row_ptr_C[i] - base_C;
-            rocsparse_int row_end_C   = row_begin_C;
+            I row_begin_C = csr_row_ptr_C[i] - base_C;
+            I row_end_C   = row_begin_C;
 
             if(alpha)
             {
-                rocsparse_int row_begin_A = csr_row_ptr_A[i] - base_A;
-                rocsparse_int row_end_A   = csr_row_ptr_A[i + 1] - base_A;
+                I row_begin_A = csr_row_ptr_A[i] - base_A;
+                I row_end_A   = csr_row_ptr_A[i + 1] - base_A;
 
                 // Loop over columns of A
-                for(rocsparse_int j = row_begin_A; j < row_end_A; ++j)
+                for(I j = row_begin_A; j < row_end_A; ++j)
                 {
                     // Current column of A
-                    rocsparse_int col_A = csr_col_ind_A[j] - base_A;
+                    J col_A = csr_col_ind_A[j] - base_A;
                     // Current value of A
                     T val_A = *alpha * csr_val_A[j];
 
-                    rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - base_B;
-                    rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - base_B;
+                    I row_begin_B = csr_row_ptr_B[col_A] - base_B;
+                    I row_end_B   = csr_row_ptr_B[col_A + 1] - base_B;
 
                     // Loop over columns of B in row col_A
-                    for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
+                    for(I k = row_begin_B; k < row_end_B; ++k)
                     {
                         // Current column of B
-                        rocsparse_int col_B = csr_col_ind_B[k] - base_B;
+                        J col_B = csr_col_ind_B[k] - base_B;
                         // Current value of B
                         T val_B = csr_val_B[k];
 
@@ -2467,14 +2467,14 @@ void host_csrgemm(rocsparse_int                     M,
             // Add nnz of D if beta != 0
             if(beta)
             {
-                rocsparse_int row_begin_D = csr_row_ptr_D[i] - base_D;
-                rocsparse_int row_end_D   = csr_row_ptr_D[i + 1] - base_D;
+                I row_begin_D = csr_row_ptr_D[i] - base_D;
+                I row_end_D   = csr_row_ptr_D[i + 1] - base_D;
 
                 // Loop over columns of D
-                for(rocsparse_int j = row_begin_D; j < row_end_D; ++j)
+                for(I j = row_begin_D; j < row_end_D; ++j)
                 {
                     // Current column of D
-                    rocsparse_int col_D = csr_col_ind_D[j] - base_D;
+                    J col_D = csr_col_ind_D[j] - base_D;
                     // Current value of D
                     T val_D = *beta * csr_val_D[j];
 
@@ -2496,10 +2496,10 @@ void host_csrgemm(rocsparse_int                     M,
         }
     }
 
-    rocsparse_int nnz = csr_row_ptr_C[M] - base_C;
+    I nnz = csr_row_ptr_C[M] - base_C;
 
-    std::vector<rocsparse_int> col(nnz);
-    std::vector<T>             val(nnz);
+    std::vector<J> col(nnz);
+    std::vector<T> val(nnz);
 
     col = csr_col_ind_C;
     val = csr_val_C;
@@ -2507,26 +2507,26 @@ void host_csrgemm(rocsparse_int                     M,
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
 #endif
-    for(rocsparse_int i = 0; i < M; ++i)
+    for(J i = 0; i < M; ++i)
     {
-        rocsparse_int row_begin = csr_row_ptr_C[i] - base_C;
-        rocsparse_int row_end   = csr_row_ptr_C[i + 1] - base_C;
-        rocsparse_int row_nnz   = row_end - row_begin;
+        I row_begin = csr_row_ptr_C[i] - base_C;
+        I row_end   = csr_row_ptr_C[i + 1] - base_C;
+        J row_nnz   = row_end - row_begin;
 
-        std::vector<rocsparse_int> perm(row_nnz);
-        for(rocsparse_int j = 0; j < row_nnz; ++j)
+        std::vector<J> perm(row_nnz);
+        for(J j = 0; j < row_nnz; ++j)
         {
             perm[j] = j;
         }
 
-        rocsparse_int* col_entry = &col[row_begin];
-        T*             val_entry = &val[row_begin];
+        J* col_entry = &col[row_begin];
+        T* val_entry = &val[row_begin];
 
-        std::sort(perm.begin(), perm.end(), [&](const rocsparse_int& a, const rocsparse_int& b) {
+        std::sort(perm.begin(), perm.end(), [&](const J& a, const J& b) {
             return col_entry[a] <= col_entry[b];
         });
 
-        for(rocsparse_int j = 0; j < row_nnz; ++j)
+        for(J j = 0; j < row_nnz; ++j)
         {
             csr_col_ind_C[row_begin + j] = col_entry[perm[j]];
             csr_val_C[row_begin + j]     = val_entry[perm[j]];
@@ -4592,46 +4592,6 @@ template void host_csrgeam(rocsparse_int                     M,
                            rocsparse_index_base              base_B,
                            rocsparse_index_base              base_C);
 
-template void host_csrgemm_nnz(rocsparse_int                     M,
-                               rocsparse_int                     N,
-                               rocsparse_int                     K,
-                               const float*                      alpha,
-                               const std::vector<rocsparse_int>& csr_row_ptr_A,
-                               const std::vector<rocsparse_int>& csr_col_ind_A,
-                               const std::vector<rocsparse_int>& csr_row_ptr_B,
-                               const std::vector<rocsparse_int>& csr_col_ind_B,
-                               const float*                      beta,
-                               const std::vector<rocsparse_int>& csr_row_ptr_D,
-                               const std::vector<rocsparse_int>& csr_col_ind_D,
-                               std::vector<rocsparse_int>&       csr_row_ptr_C,
-                               rocsparse_int*                    nnz_C,
-                               rocsparse_index_base              base_A,
-                               rocsparse_index_base              base_B,
-                               rocsparse_index_base              base_C,
-                               rocsparse_index_base              base_D);
-
-template void host_csrgemm(rocsparse_int                     M,
-                           rocsparse_int                     N,
-                           rocsparse_int                     L,
-                           const float*                      alpha,
-                           const std::vector<rocsparse_int>& csr_row_ptr_A,
-                           const std::vector<rocsparse_int>& csr_col_ind_A,
-                           const std::vector<float>&         csr_val_A,
-                           const std::vector<rocsparse_int>& csr_row_ptr_B,
-                           const std::vector<rocsparse_int>& csr_col_ind_B,
-                           const std::vector<float>&         csr_val_B,
-                           const float*                      beta,
-                           const std::vector<rocsparse_int>& csr_row_ptr_D,
-                           const std::vector<rocsparse_int>& csr_col_ind_D,
-                           const std::vector<float>&         csr_val_D,
-                           const std::vector<rocsparse_int>& csr_row_ptr_C,
-                           std::vector<rocsparse_int>&       csr_col_ind_C,
-                           std::vector<float>&               csr_val_C,
-                           rocsparse_index_base              base_A,
-                           rocsparse_index_base              base_B,
-                           rocsparse_index_base              base_C,
-                           rocsparse_index_base              base_D);
-
 /*
  * ===========================================================================
  *    precond SPARSE
@@ -5135,46 +5095,6 @@ template void host_csrgeam(rocsparse_int                     M,
                            rocsparse_index_base              base_A,
                            rocsparse_index_base              base_B,
                            rocsparse_index_base              base_C);
-
-template void host_csrgemm_nnz(rocsparse_int                     M,
-                               rocsparse_int                     N,
-                               rocsparse_int                     K,
-                               const double*                     alpha,
-                               const std::vector<rocsparse_int>& csr_row_ptr_A,
-                               const std::vector<rocsparse_int>& csr_col_ind_A,
-                               const std::vector<rocsparse_int>& csr_row_ptr_B,
-                               const std::vector<rocsparse_int>& csr_col_ind_B,
-                               const double*                     beta,
-                               const std::vector<rocsparse_int>& csr_row_ptr_D,
-                               const std::vector<rocsparse_int>& csr_col_ind_D,
-                               std::vector<rocsparse_int>&       csr_row_ptr_C,
-                               rocsparse_int*                    nnz_C,
-                               rocsparse_index_base              base_A,
-                               rocsparse_index_base              base_B,
-                               rocsparse_index_base              base_C,
-                               rocsparse_index_base              base_D);
-
-template void host_csrgemm(rocsparse_int                     M,
-                           rocsparse_int                     N,
-                           rocsparse_int                     L,
-                           const double*                     alpha,
-                           const std::vector<rocsparse_int>& csr_row_ptr_A,
-                           const std::vector<rocsparse_int>& csr_col_ind_A,
-                           const std::vector<double>&        csr_val_A,
-                           const std::vector<rocsparse_int>& csr_row_ptr_B,
-                           const std::vector<rocsparse_int>& csr_col_ind_B,
-                           const std::vector<double>&        csr_val_B,
-                           const double*                     beta,
-                           const std::vector<rocsparse_int>& csr_row_ptr_D,
-                           const std::vector<rocsparse_int>& csr_col_ind_D,
-                           const std::vector<double>&        csr_val_D,
-                           const std::vector<rocsparse_int>& csr_row_ptr_C,
-                           std::vector<rocsparse_int>&       csr_col_ind_C,
-                           std::vector<double>&              csr_val_C,
-                           rocsparse_index_base              base_A,
-                           rocsparse_index_base              base_B,
-                           rocsparse_index_base              base_C,
-                           rocsparse_index_base              base_D);
 
 /*
  * ===========================================================================
@@ -5680,46 +5600,6 @@ template void host_csrgeam(rocsparse_int                                M,
                            rocsparse_index_base                         base_B,
                            rocsparse_index_base                         base_C);
 
-template void host_csrgemm_nnz(rocsparse_int                     M,
-                               rocsparse_int                     N,
-                               rocsparse_int                     K,
-                               const rocsparse_double_complex*   alpha,
-                               const std::vector<rocsparse_int>& csr_row_ptr_A,
-                               const std::vector<rocsparse_int>& csr_col_ind_A,
-                               const std::vector<rocsparse_int>& csr_row_ptr_B,
-                               const std::vector<rocsparse_int>& csr_col_ind_B,
-                               const rocsparse_double_complex*   beta,
-                               const std::vector<rocsparse_int>& csr_row_ptr_D,
-                               const std::vector<rocsparse_int>& csr_col_ind_D,
-                               std::vector<rocsparse_int>&       csr_row_ptr_C,
-                               rocsparse_int*                    nnz_C,
-                               rocsparse_index_base              base_A,
-                               rocsparse_index_base              base_B,
-                               rocsparse_index_base              base_C,
-                               rocsparse_index_base              base_D);
-
-template void host_csrgemm(rocsparse_int                                M,
-                           rocsparse_int                                N,
-                           rocsparse_int                                L,
-                           const rocsparse_double_complex*              alpha,
-                           const std::vector<rocsparse_int>&            csr_row_ptr_A,
-                           const std::vector<rocsparse_int>&            csr_col_ind_A,
-                           const std::vector<rocsparse_double_complex>& csr_val_A,
-                           const std::vector<rocsparse_int>&            csr_row_ptr_B,
-                           const std::vector<rocsparse_int>&            csr_col_ind_B,
-                           const std::vector<rocsparse_double_complex>& csr_val_B,
-                           const rocsparse_double_complex*              beta,
-                           const std::vector<rocsparse_int>&            csr_row_ptr_D,
-                           const std::vector<rocsparse_int>&            csr_col_ind_D,
-                           const std::vector<rocsparse_double_complex>& csr_val_D,
-                           const std::vector<rocsparse_int>&            csr_row_ptr_C,
-                           std::vector<rocsparse_int>&                  csr_col_ind_C,
-                           std::vector<rocsparse_double_complex>&       csr_val_C,
-                           rocsparse_index_base                         base_A,
-                           rocsparse_index_base                         base_B,
-                           rocsparse_index_base                         base_C,
-                           rocsparse_index_base                         base_D);
-
 /*
  * ===========================================================================
  *    precond SPARSE
@@ -6175,46 +6055,6 @@ template void host_csrgeam(rocsparse_int                               M,
                            rocsparse_index_base                        base_B,
                            rocsparse_index_base                        base_C);
 
-template void host_csrgemm_nnz(rocsparse_int                     M,
-                               rocsparse_int                     N,
-                               rocsparse_int                     K,
-                               const rocsparse_float_complex*    alpha,
-                               const std::vector<rocsparse_int>& csr_row_ptr_A,
-                               const std::vector<rocsparse_int>& csr_col_ind_A,
-                               const std::vector<rocsparse_int>& csr_row_ptr_B,
-                               const std::vector<rocsparse_int>& csr_col_ind_B,
-                               const rocsparse_float_complex*    beta,
-                               const std::vector<rocsparse_int>& csr_row_ptr_D,
-                               const std::vector<rocsparse_int>& csr_col_ind_D,
-                               std::vector<rocsparse_int>&       csr_row_ptr_C,
-                               rocsparse_int*                    nnz_C,
-                               rocsparse_index_base              base_A,
-                               rocsparse_index_base              base_B,
-                               rocsparse_index_base              base_C,
-                               rocsparse_index_base              base_D);
-
-template void host_csrgemm(rocsparse_int                               M,
-                           rocsparse_int                               N,
-                           rocsparse_int                               L,
-                           const rocsparse_float_complex*              alpha,
-                           const std::vector<rocsparse_int>&           csr_row_ptr_A,
-                           const std::vector<rocsparse_int>&           csr_col_ind_A,
-                           const std::vector<rocsparse_float_complex>& csr_val_A,
-                           const std::vector<rocsparse_int>&           csr_row_ptr_B,
-                           const std::vector<rocsparse_int>&           csr_col_ind_B,
-                           const std::vector<rocsparse_float_complex>& csr_val_B,
-                           const rocsparse_float_complex*              beta,
-                           const std::vector<rocsparse_int>&           csr_row_ptr_D,
-                           const std::vector<rocsparse_int>&           csr_col_ind_D,
-                           const std::vector<rocsparse_float_complex>& csr_val_D,
-                           const std::vector<rocsparse_int>&           csr_row_ptr_C,
-                           std::vector<rocsparse_int>&                 csr_col_ind_C,
-                           std::vector<rocsparse_float_complex>&       csr_val_C,
-                           rocsparse_index_base                        base_A,
-                           rocsparse_index_base                        base_B,
-                           rocsparse_index_base                        base_C,
-                           rocsparse_index_base                        base_D);
-
 /*
  * ===========================================================================
  *    precond SPARSE
@@ -6531,18 +6371,56 @@ template void host_coosort_by_column(rocsparse_int                         M,
     template void host_sctr<ITYPE, TTYPE>(                                                       \
         ITYPE nnz, const TTYPE* x_val, const ITYPE* x_ind, TTYPE* y, rocsparse_index_base base);
 
-#define INSTANTIATE3(ITYPE, JTYPE, TTYPE)                                           \
-    template void host_csrmv<ITYPE, JTYPE, TTYPE>(JTYPE                M,           \
-                                                  ITYPE                nnz,         \
-                                                  TTYPE                alpha,       \
-                                                  const ITYPE*         csr_row_ptr, \
-                                                  const JTYPE*         csr_col_ind, \
-                                                  const TTYPE*         csr_val,     \
-                                                  const TTYPE*         x,           \
-                                                  TTYPE                beta,        \
-                                                  TTYPE*               y,           \
-                                                  rocsparse_index_base base,        \
-                                                  int                  algo);
+#define INSTANTIATE3(ITYPE, JTYPE, TTYPE)                                                        \
+    template void host_csrmv<ITYPE, JTYPE, TTYPE>(JTYPE                M,                        \
+                                                  ITYPE                nnz,                      \
+                                                  TTYPE                alpha,                    \
+                                                  const ITYPE*         csr_row_ptr,              \
+                                                  const JTYPE*         csr_col_ind,              \
+                                                  const TTYPE*         csr_val,                  \
+                                                  const TTYPE*         x,                        \
+                                                  TTYPE                beta,                     \
+                                                  TTYPE*               y,                        \
+                                                  rocsparse_index_base base,                     \
+                                                  int                  algo);                                     \
+    template void host_csrgemm_nnz<ITYPE, JTYPE, TTYPE>(JTYPE                     M,             \
+                                                        JTYPE                     N,             \
+                                                        JTYPE                     K,             \
+                                                        const TTYPE*              alpha,         \
+                                                        const std::vector<ITYPE>& csr_row_ptr_A, \
+                                                        const std::vector<JTYPE>& csr_col_ind_A, \
+                                                        const std::vector<ITYPE>& csr_row_ptr_B, \
+                                                        const std::vector<JTYPE>& csr_col_ind_B, \
+                                                        const TTYPE*              beta,          \
+                                                        const std::vector<ITYPE>& csr_row_ptr_D, \
+                                                        const std::vector<JTYPE>& csr_col_ind_D, \
+                                                        std::vector<ITYPE>&       csr_row_ptr_C, \
+                                                        ITYPE*                    nnz_C,         \
+                                                        rocsparse_index_base      base_A,        \
+                                                        rocsparse_index_base      base_B,        \
+                                                        rocsparse_index_base      base_C,        \
+                                                        rocsparse_index_base      base_D);            \
+    template void host_csrgemm<ITYPE, JTYPE, TTYPE>(JTYPE                     M,                 \
+                                                    JTYPE                     N,                 \
+                                                    JTYPE                     L,                 \
+                                                    const TTYPE*              alpha,             \
+                                                    const std::vector<ITYPE>& csr_row_ptr_A,     \
+                                                    const std::vector<JTYPE>& csr_col_ind_A,     \
+                                                    const std::vector<TTYPE>& csr_val_A,         \
+                                                    const std::vector<ITYPE>& csr_row_ptr_B,     \
+                                                    const std::vector<JTYPE>& csr_col_ind_B,     \
+                                                    const std::vector<TTYPE>& csr_val_B,         \
+                                                    const TTYPE*              beta,              \
+                                                    const std::vector<ITYPE>& csr_row_ptr_D,     \
+                                                    const std::vector<JTYPE>& csr_col_ind_D,     \
+                                                    const std::vector<TTYPE>& csr_val_D,         \
+                                                    const std::vector<ITYPE>& csr_row_ptr_C,     \
+                                                    std::vector<JTYPE>&       csr_col_ind_C,     \
+                                                    std::vector<TTYPE>&       csr_val_C,         \
+                                                    rocsparse_index_base      base_A,            \
+                                                    rocsparse_index_base      base_B,            \
+                                                    rocsparse_index_base      base_C,            \
+                                                    rocsparse_index_base      base_D);
 
 INSTANTIATE2(int32_t, float);
 INSTANTIATE2(int32_t, double);

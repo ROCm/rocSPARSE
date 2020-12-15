@@ -107,6 +107,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spmv_coo_aos.cpp
 ../testings/testing_spmv_csr.cpp
 ../testings/testing_spmv_ell.cpp
+../testings/testing_spgemm_csr.cpp
 )
 
 add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})

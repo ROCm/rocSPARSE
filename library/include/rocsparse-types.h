@@ -292,7 +292,8 @@ typedef enum rocsparse_status_
     rocsparse_status_invalid_value   = 7, /**< invalid value parameter. */
     rocsparse_status_arch_mismatch   = 8, /**< device arch is not supported. */
     rocsparse_status_zero_pivot      = 9, /**< encountered zero pivot. */
-    rocsparse_status_not_initialized = 10 /**< descriptor has not been initialized. */
+    rocsparse_status_not_initialized = 10, /**< descriptor has not been initialized. */
+    rocsparse_status_type_mismatch   = 11 /**< index types do not match. */
 } rocsparse_status;
 
 /*! \ingroup types_module
@@ -366,6 +367,33 @@ typedef enum rocsparse_spmv_alg_
     rocsparse_spmv_csr_alg2 = 3, /**< CSR SpMV algorithm 2 (stream) for CSR matrices. */
     rocsparse_spmv_ell_alg  = 4 /**< ELL SpMV algorithm for ELL matrices. */
 } rocsparse_spmv_alg;
+
+/*! \ingroup types_module
+ *  \brief List of SpGEMM stages.
+ *
+ *  \details
+ *  This is a list of possible stages during SpGEMM computation. Typical order is 
+ *  rocsparse_spgemm_buffer_size, rocsparse_spgemm_nnz, rocsparse_spgemm_compute.
+ */
+typedef enum rocsparse_spgemm_stage_
+{
+    rocsparse_spgemm_stage_auto        = 0, /**< Automatic stage detection. */
+    rocsparse_spgemm_stage_buffer_size = 1, /**< Returns the required buffer size. */
+    rocsparse_spgemm_stage_nnz         = 2, /**< Computes number of non-zero entries. */
+    rocsparse_spgemm_stage_compute     = 3 /**< Performs the actual SpGEMM computation. */
+} rocsparse_spgemm_stage;
+
+/*! \ingroup types_module
+ *  \brief List of SpGEMM algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_spgemm_alg types that are used to perform
+ *  sparse matrix sparse matrix product.
+ */
+typedef enum rocsparse_spgemm_alg_
+{
+    rocsparse_spgemm_alg_default = 0 /**< Default SpGEMM algorithm for the given format. */
+} rocsparse_spgemm_alg;
 
 #ifdef __cplusplus
 }

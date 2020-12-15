@@ -106,6 +106,10 @@ Datatypes:
         rocsparse_spmv_coo_alg: 1
         rocsparse_spmv_csr_alg1: 2
         rocsparse_spmv_csr_alg2: 3
+  - rocsparse_spgemm_alg:
+      bases: [c_int ]
+      attr:
+        rocsparse_spgemm_alg_default: 0
 
 indextype i64: &i32
   - index_type_I: i32
@@ -199,6 +203,7 @@ Arguments:
   - spol: rocsparse_solve_policy
   - direction: rocsparse_direction
   - spmv_alg: rocsparse_spmv_alg
+  - spgemm_alg: rocsparse_spgemm_alg
   - order: rocsparse_order
   - matrix: rocsparse_matrix_init
   - unit_check: rocsparse_int
@@ -289,6 +294,7 @@ Defaults:
   spol: rocsparse_solve_policy_auto
   direction: rocsparse_direction_row
   spmv_alg: rocsparse_spmv_default
+  spgemm_alg: rocsparse_spgemm_alg_default
   order: rocsparse_order_row
   matrix: rocsparse_matrix_random
   unit_check: 1

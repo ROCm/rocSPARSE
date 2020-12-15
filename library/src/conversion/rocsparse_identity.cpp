@@ -25,9 +25,8 @@
 
 #include "identity_device.h"
 
-extern "C" rocsparse_status rocsparse_create_identity_permutation(rocsparse_handle handle,
-                                                                  rocsparse_int    n,
-                                                                  rocsparse_int*   p)
+template <typename I>
+rocsparse_status rocsparse_create_identity_permutation_template(rocsparse_handle handle, I n, I* p)
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -68,5 +67,26 @@ extern "C" rocsparse_status rocsparse_create_identity_permutation(rocsparse_hand
     hipLaunchKernelGGL(
         (identity_kernel<IDENTITY_DIM>), identity_blocks, identity_threads, 0, stream, n, p);
 #undef IDENTITY_DIM
+
     return rocsparse_status_success;
+}
+
+#define INSTANTIATE(ITYPE)                                                           \
+    template rocsparse_status rocsparse_create_identity_permutation_template<ITYPE>( \
+        rocsparse_handle handle, ITYPE n, ITYPE * p);
+
+INSTANTIATE(int32_t);
+INSTANTIATE(int64_t);
+
+/*
+ * ===========================================================================
+ *    C wrapper
+ * ===========================================================================
+ */
+
+extern "C" rocsparse_status rocsparse_create_identity_permutation(rocsparse_handle handle,
+                                                                  rocsparse_int    n,
+                                                                  rocsparse_int*   p)
+{
+    return rocsparse_create_identity_permutation_template(handle, n, p);
 }
