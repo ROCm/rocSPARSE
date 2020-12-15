@@ -35,7 +35,7 @@ void testing_spmv_coo_aos_bad_arg(const Arguments& arg)
 
     rocsparse_operation  trans = rocsparse_operation_none;
     rocsparse_index_base base  = rocsparse_index_base_zero;
-    rocsparse_spmv_alg   alg   = rocsparse_spmv_default;
+    rocsparse_spmv_alg   alg   = rocsparse_spmv_alg_default;
 
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();

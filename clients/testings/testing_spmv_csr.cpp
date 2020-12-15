@@ -35,7 +35,7 @@ void testing_spmv_csr_bad_arg(const Arguments& arg)
 
     rocsparse_operation  trans = rocsparse_operation_none;
     rocsparse_index_base base  = rocsparse_index_base_zero;
-    rocsparse_spmv_alg   alg   = rocsparse_spmv_default;
+    rocsparse_spmv_alg   alg   = rocsparse_spmv_alg_default;
 
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
@@ -139,7 +139,7 @@ void testing_spmv_csr(const Arguments& arg)
     std::string           filename
         = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
-    bool adaptive = (alg == rocsparse_spmv_csr_alg2) ? false : true;
+    bool adaptive = (alg == rocsparse_spmv_alg_csr_stream) ? false : true;
 
     T h_alpha = arg.get_alpha<T>();
     T h_beta  = arg.get_beta<T>();

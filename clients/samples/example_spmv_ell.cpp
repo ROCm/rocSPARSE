@@ -115,7 +115,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                    &hbeta,
                                    y,
                                    ttype,
-                                   rocsparse_spmv_default,
+                                   rocsparse_spmv_alg_default,
                                    &buffer_size,
                                    nullptr));
 
@@ -134,7 +134,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                        &hbeta,
                                        y,
                                        ttype,
-                                       rocsparse_spmv_default,
+                                       rocsparse_spmv_alg_default,
                                        &buffer_size,
                                        temp_buffer));
     }
@@ -159,7 +159,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                            &hbeta,
                                            y,
                                            ttype,
-                                           rocsparse_spmv_default,
+                                           rocsparse_spmv_alg_default,
                                            &buffer_size,
                                            temp_buffer));
         }

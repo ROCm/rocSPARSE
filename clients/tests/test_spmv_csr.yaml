@@ -56,7 +56,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
-  spmv_alg: [rocsparse_spmv_csr_alg1, rocsparse_spmv_csr_alg2]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
 
 - name: spmv_csr
   category: pre_checkin
@@ -69,7 +69,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
-  spmv_alg: [rocsparse_spmv_csr_alg1, rocsparse_spmv_csr_alg2]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
 
 - name: spmv_csr
   category: nightly
@@ -82,7 +82,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
-  spmv_alg: [rocsparse_spmv_csr_alg1, rocsparse_spmv_csr_alg2]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
 
 - name: spmv_csr_file
   category: quick
@@ -95,7 +95,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmv_alg: [rocsparse_spmv_csr_alg1, rocsparse_spmv_csr_alg2]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [mac_econ_fwd500,
              nos2,
              nos4,
@@ -113,7 +113,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmv_alg: [rocsparse_spmv_csr_alg1]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive]
   filename: [rma10,
              mc2depi,
              ASIC_320k,
@@ -133,7 +133,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmv_alg: [rocsparse_spmv_csr_alg2]
+  spmv_alg: [rocsparse_spmv_alg_csr_stream]
   filename: [bibd_22_8,
              bmwcra_1,
              amazon0312,
@@ -152,7 +152,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmv_alg: [rocsparse_spmv_csr_alg1, rocsparse_spmv_csr_alg2]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [Chevron2,
              qc2534]
 
@@ -167,7 +167,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmv_alg: [rocsparse_spmv_csr_alg2]
+  spmv_alg: [rocsparse_spmv_alg_csr_stream]
   filename: [mplate,
              Chevron3]
 
@@ -182,5 +182,5 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmv_alg: [rocsparse_spmv_csr_alg1]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive]
   filename: [Chevron4]

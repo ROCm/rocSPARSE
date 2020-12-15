@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
     arg.betai      = 0.0;
     arg.threshold  = 0.0;
     arg.percentage = 0.0;
-    arg.spmv_alg   = rocsparse_spmv_default;
+    arg.spmv_alg   = rocsparse_spmv_alg_default;
 
     std::string   function;
     std::string   filename;

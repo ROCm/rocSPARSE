@@ -102,10 +102,11 @@ Datatypes:
   - rocsparse_spmv_alg:
       bases: [c_int ]
       attr:
-        rocsparse_spmv_default: 0
-        rocsparse_spmv_coo_alg: 1
-        rocsparse_spmv_csr_alg1: 2
-        rocsparse_spmv_csr_alg2: 3
+        rocsparse_spmv_alg_default: 0
+        rocsparse_spmv_alg_coo: 1
+        rocsparse_spmv_alg_csr_adaptive: 2
+        rocsparse_spmv_alg_csr_stream: 3
+        rocsparse_spmv_alg_ell: 4
   - rocsparse_spgemm_alg:
       bases: [c_int ]
       attr:
@@ -293,7 +294,7 @@ Defaults:
   apol: rocsparse_analysis_policy_reuse
   spol: rocsparse_solve_policy_auto
   direction: rocsparse_direction_row
-  spmv_alg: rocsparse_spmv_default
+  spmv_alg: rocsparse_spmv_alg_default
   spgemm_alg: rocsparse_spgemm_alg_default
   order: rocsparse_order_row
   matrix: rocsparse_matrix_random
