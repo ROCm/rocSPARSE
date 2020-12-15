@@ -26,13 +26,9 @@
 #include "axpyi_device.h"
 #include "utility.h"
 
-template <unsigned int BLOCKSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void axpyi_kernel(rocsparse_int        nnz,
-                                                          U                    alpha_device_host,
-                                                          const T*             x_val,
-                                                          const rocsparse_int* x_ind,
-                                                          T*                   y,
-                                                          rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) __global__ void axpyi_kernel(
+    I nnz, U alpha_device_host, const T* x_val, const I* x_ind, T* y, rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     if(alpha != static_cast<T>(0))
@@ -41,12 +37,12 @@ __launch_bounds__(BLOCKSIZE) __global__ void axpyi_kernel(rocsparse_int        n
     }
 }
 
-template <typename T>
+template <typename I, typename T>
 rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
-                                          rocsparse_int        nnz,
+                                          I                    nnz,
                                           const T*             alpha,
                                           const T*             x_val,
-                                          const rocsparse_int* x_ind,
+                                          const I*             x_ind,
                                           T*                   y,
                                           rocsparse_index_base idx_base)
 {
@@ -162,6 +158,25 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
 #undef AXPYI_DIM
     return rocsparse_status_success;
 }
+
+#define INSTANTIATE(ITYPE, TTYPE)                                     \
+    template rocsparse_status rocsparse_axpyi_template<ITYPE, TTYPE>( \
+        rocsparse_handle     handle,                                  \
+        ITYPE                nnz,                                     \
+        const TTYPE*         alpha,                                   \
+        const TTYPE*         x_val,                                   \
+        const ITYPE*         x_ind,                                   \
+        TTYPE*               y,                                       \
+        rocsparse_index_base idx_base);
+
+INSTANTIATE(int32_t, float);
+INSTANTIATE(int32_t, double);
+INSTANTIATE(int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, float);
+INSTANTIATE(int64_t, double);
+INSTANTIATE(int64_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, rocsparse_double_complex);
 
 /*
  * ===========================================================================

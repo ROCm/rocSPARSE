@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020 Advanced Micro Devices, Inc.
  *
@@ -21,8 +22,21 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_axpby.hpp"
+#include "axpby_device.h"
 #include "definitions.h"
+#include "rocsparse_axpyi.hpp"
+#include "utility.h"
+
+template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) __global__
+    void axpby_scale_kernel(I size, U alpha_device_host, T* __restrict__ x)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    if(alpha != static_cast<T>(1))
+    {
+        axpby_scale_device<BLOCKSIZE>(size, alpha, x);
+    }
+}
 
 template <typename I, typename T>
 rocsparse_status rocsparse_axpby_template(rocsparse_handle            handle,
@@ -31,12 +45,56 @@ rocsparse_status rocsparse_axpby_template(rocsparse_handle            handle,
                                           const void*                 beta,
                                           rocsparse_dnvec_descr       y)
 {
-    return rocsparse_axpby_template<I, T>(handle,
+    // Check for valid sizes
+    if(y->size < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Quick return
+    if(y->size == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+#define SCALE_DIM 256
+    dim3 scale_blocks((y->size - 1) / SCALE_DIM + 1);
+    dim3 scale_threads(SCALE_DIM);
+
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        hipLaunchKernelGGL((axpby_scale_kernel<SCALE_DIM>),
+                           scale_blocks,
+                           scale_threads,
+                           0,
+                           handle->stream,
+                           (I)y->size,
+                           (const T*)beta,
+                           (T*)y->values);
+    }
+    else
+    {
+        const T* beta_ptr = (const T*)beta;
+
+        if(*beta_ptr != static_cast<T>(1))
+        {
+            hipLaunchKernelGGL((axpby_scale_kernel<SCALE_DIM>),
+                               scale_blocks,
+                               scale_threads,
+                               0,
+                               handle->stream,
+                               (I)y->size,
+                               *beta_ptr,
+                               (T*)y->values);
+        }
+    }
+#undef SCALE_DIM
+
+    return rocsparse_axpyi_template<I, T>(handle,
                                           (I)x->nnz,
                                           (const T*)alpha,
                                           (const T*)x->val_data,
                                           (const I*)x->idx_data,
-                                          (const T*)beta,
                                           (T*)y->values,
                                           x->idx_base);
 }

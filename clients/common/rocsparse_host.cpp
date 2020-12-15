@@ -42,11 +42,16 @@
  */
 template <typename I, typename T>
 void host_axpby(
-    I nnz, T alpha, const T* x_val, const I* x_ind, T beta, T* y, rocsparse_index_base base)
+    I size, I nnz, T alpha, const T* x_val, const I* x_ind, T beta, T* y, rocsparse_index_base base)
 {
+    for(I i = 0; i < size; ++i)
+    {
+        y[i] = beta * y[i];
+    }
+
     for(I i = 0; i < nnz; ++i)
     {
-        y[x_ind[i] - base] = std::fma(alpha, x_val[i], beta * y[x_ind[i] - base]);
+        y[x_ind[i] - base] = std::fma(alpha, x_val[i], y[x_ind[i] - base]);
     }
 }
 
@@ -6340,7 +6345,8 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                            TTYPE                beta,                            \
                                            TTYPE*               y,                               \
                                            rocsparse_index_base base);                           \
-    template void host_axpby<ITYPE, TTYPE>(ITYPE                nnz,                             \
+    template void host_axpby<ITYPE, TTYPE>(ITYPE                size,                            \
+                                           ITYPE                nnz,                             \
                                            TTYPE                alpha,                           \
                                            const TTYPE*         x_val,                           \
                                            const ITYPE*         x_ind,                           \
