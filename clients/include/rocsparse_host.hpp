@@ -48,8 +48,14 @@
  * ===========================================================================
  */
 template <typename I, typename T>
-void host_axpby(
-    I nnz, T alpha, const T* x_val, const I* x_ind, T beta, T* y, rocsparse_index_base base);
+void host_axpby(I                    size,
+                I                    nnz,
+                T                    alpha,
+                const T*             x_val,
+                const I*             x_ind,
+                T                    beta,
+                T*                   y,
+                rocsparse_index_base base);
 
 template <typename I, typename T>
 void host_doti(

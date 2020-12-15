@@ -28,12 +28,12 @@
 
 #include "handle.h"
 
-template <typename T>
+template <typename I, typename T>
 rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
-                                          rocsparse_int        nnz,
+                                          I                    nnz,
                                           const T*             alpha,
                                           const T*             x_val,
-                                          const rocsparse_int* x_ind,
+                                          const I*             x_ind,
                                           T*                   y,
                                           rocsparse_index_base idx_base);
 

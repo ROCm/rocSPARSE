@@ -156,7 +156,7 @@ void testing_axpyi(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
 
         // CPU axpyi
-        host_axpby<rocsparse_int, T>(nnz, h_alpha, hx_val, hx_ind, 1.0, hy_gold, base);
+        host_axpby<rocsparse_int, T>(M, nnz, h_alpha, hx_val, hx_ind, 1.0, hy_gold, base);
 
         unit_check_general<T>(1, M, 1, hy_gold, hy_1);
         unit_check_general<T>(1, M, 1, hy_gold, hy_2);

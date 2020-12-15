@@ -90,7 +90,7 @@ void testing_axpby(const Arguments& arg)
     if(size <= 0 || nnz <= 0)
     {
         // Allocate memory on device
-        device_vector<T> dy(100);
+        device_vector<T> dy(size > 0 ? size : 100);
 
         if(!dy)
         {
@@ -169,7 +169,7 @@ void testing_axpby(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * size, hipMemcpyDeviceToHost));
 
         // CPU axpby
-        host_axpby<I, T>(nnz, h_alpha, hx_val, hx_ind, h_beta, hy_gold, base);
+        host_axpby<I, T>(size, nnz, h_alpha, hx_val, hx_ind, h_beta, hy_gold, base);
 
         unit_check_general<T>(1, size, 1, hy_gold, hy_1);
         unit_check_general<T>(1, size, 1, hy_gold, hy_2);

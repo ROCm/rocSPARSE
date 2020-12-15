@@ -29,23 +29,19 @@
 #include "common.h"
 
 // y = a * x + y kernel for sparse x and dense y
-template <unsigned int BLOCKSIZE, typename T>
-__device__ void axpyi_device(rocsparse_int        nnz,
-                             T                    alpha,
-                             const T*             x_val,
-                             const rocsparse_int* x_ind,
-                             T*                   y,
-                             rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__device__ void axpyi_device(
+    I nnz, T alpha, const T* x_val, const I* x_ind, T* y, rocsparse_index_base idx_base)
 {
-    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(idx >= nnz)
     {
         return;
     }
 
-    rocsparse_int i = x_ind[idx] - idx_base;
-    y[i]            = rocsparse_fma(alpha, x_val[idx], y[i]);
+    I i  = x_ind[idx] - idx_base;
+    y[i] = rocsparse_fma(alpha, x_val[idx], y[i]);
 }
 
 #endif // AXPYI_DEVICE_H

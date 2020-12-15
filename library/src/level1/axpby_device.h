@@ -28,20 +28,18 @@
 
 #include "common.h"
 
-// y = alpha * x + beta * y kernel for sparse x and dense y
+// x = alpha * x
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__device__ void axpby_device(
-    I nnz, T alpha, const T* x_val, const I* x_ind, T beta, T* y, rocsparse_index_base idx_base)
+__device__ void axpby_scale_device(I size, T alpha, T* __restrict__ x)
 {
-    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    I i = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
-    if(idx >= nnz)
+    if(i >= size)
     {
         return;
     }
 
-    I i  = x_ind[idx] - idx_base;
-    y[i] = rocsparse_fma(alpha, x_val[idx], beta * y[i]);
+    x[i] *= alpha;
 }
 
 #endif // AXPBY_DEVICE_H
