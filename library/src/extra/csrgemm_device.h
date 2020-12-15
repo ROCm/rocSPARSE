@@ -28,15 +28,22 @@
 
 #include "common.h"
 
+// Decrement
+template <unsigned int BLOCKSIZE, typename I>
+__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_index_base(I* nnz)
+{
+    --(*nnz);
+}
+
 // Copy an array
-template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_copy(rocsparse_int size,
-                                                          const rocsparse_int* __restrict__ in,
-                                                          rocsparse_int* __restrict__ out,
+template <unsigned int BLOCKSIZE, typename I, typename J>
+__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_copy(I size,
+                                                          const J* __restrict__ in,
+                                                          J* __restrict__ out,
                                                           rocsparse_index_base idx_base_in,
                                                           rocsparse_index_base idx_base_out)
 {
-    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(idx >= size)
     {
@@ -47,10 +54,10 @@ __launch_bounds__(BLOCKSIZE) __global__ void csrgemm_copy(rocsparse_int size,
 }
 
 // Copy and scale an array
-template <typename T, unsigned int BLOCKSIZE>
-__device__ void csrgemm_copy_scale_device(rocsparse_int size, T alpha, const T* in, T* out)
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__device__ void csrgemm_copy_scale_device(I size, T alpha, const T* in, T* out)
 {
-    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(idx >= size)
     {
@@ -61,23 +68,23 @@ __device__ void csrgemm_copy_scale_device(rocsparse_int size, T alpha, const T* 
 }
 
 // Compute number of intermediate products of each row
-template <unsigned int BLOCKSIZE, unsigned int WFSIZE>
+template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
 __launch_bounds__(BLOCKSIZE) __global__
-    void csrgemm_intermediate_products(rocsparse_int m,
-                                       const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                       const rocsparse_int* __restrict__ csr_col_ind_A,
-                                       const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                       const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                       rocsparse_int* __restrict__ int_prod,
+    void csrgemm_intermediate_products(J m,
+                                       const I* __restrict__ csr_row_ptr_A,
+                                       const J* __restrict__ csr_col_ind_A,
+                                       const I* __restrict__ csr_row_ptr_B,
+                                       const I* __restrict__ csr_row_ptr_D,
+                                       I* __restrict__ int_prod,
                                        rocsparse_index_base idx_base_A,
                                        bool                 mul,
                                        bool                 add)
 {
     // Lane id
-    rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+    int lid = hipThreadIdx_x & (WFSIZE - 1);
 
     // Each (sub)wavefront processes a row
-    rocsparse_int row = (hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x) / WFSIZE;
+    J row = (hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x) / WFSIZE;
 
     // Bounds check
     if(row >= m)
@@ -86,20 +93,20 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 
     // Initialize intermediate product counter of current row
-    rocsparse_int nprod = 0;
+    I nprod = 0;
 
     // alpha * A * B part
     if(mul == true)
     {
         // Row begin and row end of A matrix
-        rocsparse_int row_begin_A = csr_row_ptr_A[row] - idx_base_A;
-        rocsparse_int row_end_A   = csr_row_ptr_A[row + 1] - idx_base_A;
+        I row_begin_A = csr_row_ptr_A[row] - idx_base_A;
+        I row_end_A   = csr_row_ptr_A[row + 1] - idx_base_A;
 
         // Loop over columns of A in current row
-        for(rocsparse_int j = row_begin_A + lid; j < row_end_A; j += WFSIZE)
+        for(I j = row_begin_A + lid; j < row_end_A; j += WFSIZE)
         {
             // Current column of A
-            rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+            J col_A = csr_col_ind_A[j] - idx_base_A;
 
             // Accumulate non zero entries of B in row col_A
             nprod += (csr_row_ptr_B[col_A + 1] - csr_row_ptr_B[col_A]);
@@ -123,9 +130,8 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int GROUPS>
-static __device__ __forceinline__ void csrgemm_group_reduce(rocsparse_int tid,
-                                                            rocsparse_int* __restrict__ data)
+template <unsigned int BLOCKSIZE, unsigned int GROUPS, typename I>
+static __device__ __forceinline__ void csrgemm_group_reduce(int tid, I* __restrict__ data)
 {
     // clang-format off
     if(BLOCKSIZE > 512 && tid < 512) for(unsigned int i = 0; i < GROUPS; ++i) data[tid * GROUPS + i] += data[(tid + 512) * GROUPS + i]; __syncthreads();
@@ -141,16 +147,14 @@ static __device__ __forceinline__ void csrgemm_group_reduce(rocsparse_int tid,
     // clang-format on
 }
 
-template <unsigned int BLOCKSIZE, unsigned int GROUPS>
+template <unsigned int BLOCKSIZE, unsigned int GROUPS, typename I, typename J>
 __launch_bounds__(BLOCKSIZE) __global__
-    void csrgemm_group_reduce_part1(rocsparse_int m,
-                                    rocsparse_int* __restrict__ int_prod,
-                                    rocsparse_int* __restrict__ group_size)
+    void csrgemm_group_reduce_part1(J m, I* __restrict__ int_prod, J* __restrict__ group_size)
 {
-    rocsparse_int row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    J row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     // Shared memory for block reduction
-    __shared__ rocsparse_int sdata[BLOCKSIZE * GROUPS];
+    __shared__ J sdata[BLOCKSIZE * GROUPS];
 
     // Initialize shared memory
     for(unsigned int i = 0; i < GROUPS; ++i)
@@ -163,7 +167,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     // Loop over rows
     for(; row < m; row += hipGridDim_x * BLOCKSIZE)
     {
-        rocsparse_int nprod = int_prod[row];
+        I nprod = int_prod[row];
 
         // clang-format off
              if(nprod <=    32) { ++sdata[hipThreadIdx_x * GROUPS + 0]; int_prod[row] = 0; }
@@ -190,17 +194,14 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int GROUPS, bool CPLX>
-__launch_bounds__(BLOCKSIZE) __global__
-    void csrgemm_group_reduce_part2(rocsparse_int m,
-                                    const rocsparse_int* __restrict__ csr_row_ptr,
-                                    rocsparse_int* __restrict__ group_size,
-                                    rocsparse_int* __restrict__ workspace)
+template <unsigned int BLOCKSIZE, unsigned int GROUPS, bool CPLX, typename I, typename J>
+__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_group_reduce_part2(
+    J m, const I* __restrict__ csr_row_ptr, J* __restrict__ group_size, int* __restrict__ workspace)
 {
-    rocsparse_int row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    J row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     // Shared memory for block reduction
-    __shared__ rocsparse_int sdata[BLOCKSIZE * GROUPS];
+    __shared__ J sdata[BLOCKSIZE * GROUPS];
 
     // Initialize shared memory
     for(unsigned int i = 0; i < GROUPS; ++i)
@@ -213,7 +214,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     // Loop over rows
     for(; row < m; row += hipGridDim_x * BLOCKSIZE)
     {
-        rocsparse_int nnz = csr_row_ptr[row + 1] - csr_row_ptr[row];
+        I nnz = csr_row_ptr[row + 1] - csr_row_ptr[row];
 
         // clang-format off
              if(nnz <=    16) { ++sdata[hipThreadIdx_x * GROUPS + 0]; workspace[row] = 0; }
@@ -242,12 +243,11 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int GROUPS>
-__launch_bounds__(BLOCKSIZE) __global__
-    void csrgemm_group_reduce_part3(rocsparse_int* __restrict__ group_size)
+template <unsigned int BLOCKSIZE, unsigned int GROUPS, typename I>
+__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_group_reduce_part3(I* __restrict__ group_size)
 {
     // Shared memory for block reduction
-    __shared__ rocsparse_int sdata[BLOCKSIZE * GROUPS];
+    __shared__ I sdata[BLOCKSIZE * GROUPS];
 
     // Copy global data to shared memory
     for(unsigned int i = hipThreadIdx_x; i < BLOCKSIZE * GROUPS; i += BLOCKSIZE)
@@ -268,16 +268,16 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <unsigned int BLOCKSIZE>
+template <unsigned int BLOCKSIZE, typename I, typename J>
 __launch_bounds__(BLOCKSIZE) __global__
-    void csrgemm_max_row_nnz_part1(rocsparse_int m,
-                                   const rocsparse_int* __restrict__ csr_row_ptr,
-                                   rocsparse_int* __restrict__ workspace)
+    void csrgemm_max_row_nnz_part1(J m,
+                                   const I* __restrict__ csr_row_ptr,
+                                   J* __restrict__ workspace)
 {
-    rocsparse_int row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    J row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     // Initialize local maximum
-    rocsparse_int local_max = 0;
+    J local_max = 0;
 
     // Loop over rows
     for(; row < m; row += hipGridDim_x * BLOCKSIZE)
@@ -287,7 +287,7 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 
     // Shared memory for block reduction
-    __shared__ rocsparse_int sdata[BLOCKSIZE];
+    __shared__ J sdata[BLOCKSIZE];
 
     // Write local maximum into shared memory
     sdata[hipThreadIdx_x] = local_max;
@@ -305,12 +305,11 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__
-    void csrgemm_max_row_nnz_part2(rocsparse_int* __restrict__ workspace)
+template <unsigned int BLOCKSIZE, typename I>
+__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_max_row_nnz_part2(I* __restrict__ workspace)
 {
     // Shared memory for block reduction
-    __shared__ rocsparse_int sdata[BLOCKSIZE];
+    __shared__ I sdata[BLOCKSIZE];
 
     // Initialize shared memory with workspace entry
     sdata[hipThreadIdx_x] = workspace[hipThreadIdx_x];
@@ -330,12 +329,11 @@ __launch_bounds__(BLOCKSIZE) __global__
 
 // Hash operation to insert key into hash table
 // Returns true if key has been added
-template <unsigned int HASHVAL, unsigned int HASHSIZE>
-static __device__ __forceinline__ bool insert_key(rocsparse_int key,
-                                                  rocsparse_int* __restrict__ table)
+template <unsigned int HASHVAL, unsigned int HASHSIZE, typename I>
+static __device__ __forceinline__ bool insert_key(I key, I* __restrict__ table)
 {
     // Compute hash
-    rocsparse_int hash = (key * HASHVAL) & (HASHSIZE - 1);
+    I hash = (key * HASHVAL) & (HASHSIZE - 1);
 
     // Loop until key has been inserted
     while(true)
@@ -365,15 +363,12 @@ static __device__ __forceinline__ bool insert_key(rocsparse_int key,
 }
 
 // Hash operation to insert pair into hash table
-template <typename T, unsigned int HASHVAL, unsigned int HASHSIZE>
-static __device__ __forceinline__ void insert_pair(rocsparse_int key,
-                                                   T             val,
-                                                   rocsparse_int* __restrict__ table,
-                                                   T* __restrict__ data,
-                                                   rocsparse_int empty)
+template <unsigned int HASHVAL, unsigned int HASHSIZE, typename I, typename T>
+static __device__ __forceinline__ void
+    insert_pair(I key, T val, I* __restrict__ table, T* __restrict__ data, I empty)
 {
     // Compute hash
-    rocsparse_int hash = (key * HASHVAL) & (HASHSIZE - 1);
+    I hash = (key * HASHVAL) & (HASHSIZE - 1);
 
     // Loop until pair has been inserted
     while(true)
@@ -403,18 +398,23 @@ static __device__ __forceinline__ void insert_pair(rocsparse_int key,
 }
 
 // Compute non-zero entries per row, where each row is processed by a single wavefront
-template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASHSIZE, unsigned int HASHVAL>
+template <unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int HASHSIZE,
+          unsigned int HASHVAL,
+          typename I,
+          typename J>
 __launch_bounds__(BLOCKSIZE) __global__
-    void csrgemm_nnz_wf_per_row(rocsparse_int m,
-                                const rocsparse_int* __restrict__ offset,
-                                const rocsparse_int* __restrict__ perm,
-                                const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                const rocsparse_int* __restrict__ csr_col_ind_A,
-                                const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                const rocsparse_int* __restrict__ csr_col_ind_B,
-                                const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                const rocsparse_int* __restrict__ csr_col_ind_D,
-                                rocsparse_int* __restrict__ row_nnz,
+    void csrgemm_nnz_wf_per_row(J m,
+                                const J* __restrict__ offset,
+                                const J* __restrict__ perm,
+                                const I* __restrict__ csr_row_ptr_A,
+                                const J* __restrict__ csr_col_ind_A,
+                                const I* __restrict__ csr_row_ptr_B,
+                                const J* __restrict__ csr_col_ind_B,
+                                const I* __restrict__ csr_row_ptr_D,
+                                const J* __restrict__ csr_col_ind_D,
+                                I* __restrict__ row_nnz,
                                 rocsparse_index_base idx_base_A,
                                 rocsparse_index_base idx_base_B,
                                 rocsparse_index_base idx_base_D,
@@ -422,18 +422,18 @@ __launch_bounds__(BLOCKSIZE) __global__
                                 bool                 add)
 {
     // Lane id
-    rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+    int lid = hipThreadIdx_x & (WFSIZE - 1);
     // Wavefront id
-    rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+    int wid = hipThreadIdx_x / WFSIZE;
 
     // Each (sub)wavefront processes a row
-    rocsparse_int row = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
+    J row = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
 
     // Hash table in shared memory
-    __shared__ rocsparse_int stable[BLOCKSIZE / WFSIZE * HASHSIZE];
+    __shared__ J stable[BLOCKSIZE / WFSIZE * HASHSIZE];
 
     // Local hash table
-    rocsparse_int* table = &stable[wid * HASHSIZE];
+    J* table = &stable[wid * HASHSIZE];
 
     // Initialize hash table
     for(unsigned int i = lid; i < HASHSIZE; i += WFSIZE)
@@ -453,27 +453,27 @@ __launch_bounds__(BLOCKSIZE) __global__
     row = perm ? perm[row + *offset] : row;
 
     // Initialize row nnz
-    rocsparse_int nnz = 0;
+    J nnz = 0;
 
     // alpha * A * B part
     if(mul == true)
     {
         // Get row boundaries of the current row in A
-        rocsparse_int row_begin_A = csr_row_ptr_A[row] - idx_base_A;
-        rocsparse_int row_end_A   = csr_row_ptr_A[row + 1] - idx_base_A;
+        I row_begin_A = csr_row_ptr_A[row] - idx_base_A;
+        I row_end_A   = csr_row_ptr_A[row + 1] - idx_base_A;
 
         // Loop over columns of A in current row
-        for(rocsparse_int j = row_begin_A + lid; j < row_end_A; j += WFSIZE)
+        for(I j = row_begin_A + lid; j < row_end_A; j += WFSIZE)
         {
             // Column of A in current row
-            rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+            J col_A = csr_col_ind_A[j] - idx_base_A;
 
             // Loop over columns of B in row col_A
-            rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
-            rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
+            I row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
+            I row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
 
             // Insert all columns of B into hash table
-            for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
+            for(I k = row_begin_B; k < row_end_B; ++k)
             {
                 // Count the actual insertions to obtain row nnz of C
                 nnz += insert_key<HASHVAL, HASHSIZE>(csr_col_ind_B[k] - idx_base_B, table);
@@ -485,11 +485,11 @@ __launch_bounds__(BLOCKSIZE) __global__
     if(add == true)
     {
         // Get row boundaries of the current row in D
-        rocsparse_int row_begin_D = csr_row_ptr_D[row] - idx_base_D;
-        rocsparse_int row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
+        I row_begin_D = csr_row_ptr_D[row] - idx_base_D;
+        I row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
 
         // Loop over columns of D in current row and insert all columns of D into hash table
-        for(rocsparse_int j = row_begin_D + lid; j < row_end_D; j += WFSIZE)
+        for(I j = row_begin_D + lid; j < row_end_D; j += WFSIZE)
         {
             // Count the actual insertions to obtain row nnz of C
             nnz += insert_key<HASHVAL, HASHSIZE>(csr_col_ind_D[j] - idx_base_D, table);
@@ -508,17 +508,22 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 // Compute non-zero entries per row, where each row is processed by a single block
-template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASHSIZE, unsigned int HASHVAL>
+template <unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int HASHSIZE,
+          unsigned int HASHVAL,
+          typename I,
+          typename J>
 __launch_bounds__(BLOCKSIZE) __global__
-    void csrgemm_nnz_block_per_row(const rocsparse_int* __restrict__ offset,
-                                   const rocsparse_int* __restrict__ perm,
-                                   const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                   const rocsparse_int* __restrict__ csr_col_ind_A,
-                                   const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                   const rocsparse_int* __restrict__ csr_col_ind_B,
-                                   const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                   const rocsparse_int* __restrict__ csr_col_ind_D,
-                                   rocsparse_int* __restrict__ row_nnz,
+    void csrgemm_nnz_block_per_row(const J* __restrict__ offset,
+                                   const J* __restrict__ perm,
+                                   const I* __restrict__ csr_row_ptr_A,
+                                   const J* __restrict__ csr_col_ind_A,
+                                   const I* __restrict__ csr_row_ptr_B,
+                                   const J* __restrict__ csr_col_ind_B,
+                                   const I* __restrict__ csr_row_ptr_D,
+                                   const J* __restrict__ csr_col_ind_D,
+                                   I* __restrict__ row_nnz,
                                    rocsparse_index_base idx_base_A,
                                    rocsparse_index_base idx_base_B,
                                    rocsparse_index_base idx_base_D,
@@ -526,15 +531,15 @@ __launch_bounds__(BLOCKSIZE) __global__
                                    bool                 add)
 {
     // Lane id
-    rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+    int lid = hipThreadIdx_x & (WFSIZE - 1);
     // Wavefront id
-    rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+    int wid = hipThreadIdx_x / WFSIZE;
 
     // Each block processes a row (apply permutation)
-    rocsparse_int row = perm[hipBlockIdx_x + *offset];
+    J row = perm[hipBlockIdx_x + *offset];
 
     // Hash table in shared memory
-    __shared__ rocsparse_int table[HASHSIZE];
+    __shared__ J table[HASHSIZE];
 
     // Initialize hash table
     for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
@@ -546,26 +551,26 @@ __launch_bounds__(BLOCKSIZE) __global__
     __syncthreads();
 
     // Initialize row nnz
-    rocsparse_int nnz = 0;
+    J nnz = 0;
 
     // alpha * A * B part
     if(mul == true)
     {
         // Get row boundaries of the current row in A
-        rocsparse_int row_begin_A = csr_row_ptr_A[row] - idx_base_A;
-        rocsparse_int row_end_A   = csr_row_ptr_A[row + 1] - idx_base_A;
+        I row_begin_A = csr_row_ptr_A[row] - idx_base_A;
+        I row_end_A   = csr_row_ptr_A[row + 1] - idx_base_A;
 
         // Loop over columns of A in current row
-        for(rocsparse_int j = row_begin_A + wid; j < row_end_A; j += BLOCKSIZE / WFSIZE)
+        for(I j = row_begin_A + wid; j < row_end_A; j += BLOCKSIZE / WFSIZE)
         {
             // Column of A in current row
-            rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+            J col_A = csr_col_ind_A[j] - idx_base_A;
 
             // Loop over columns of B in row col_A
-            rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
-            rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
+            I row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
+            I row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
 
-            for(rocsparse_int k = row_begin_B + lid; k < row_end_B; k += WFSIZE)
+            for(I k = row_begin_B + lid; k < row_end_B; k += WFSIZE)
             {
                 // Count the actual insertions to obtain row nnz of C
                 nnz += insert_key<HASHVAL, HASHSIZE>(csr_col_ind_B[k] - idx_base_B, table);
@@ -577,11 +582,11 @@ __launch_bounds__(BLOCKSIZE) __global__
     if(add == true)
     {
         // Get row boundaries of the current row in D
-        rocsparse_int row_begin_D = csr_row_ptr_D[row] - idx_base_D;
-        rocsparse_int row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
+        I row_begin_D = csr_row_ptr_D[row] - idx_base_D;
+        I row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
 
         // Loop over columns of D in current row and insert all columns of D into hash table
-        for(rocsparse_int j = row_begin_D + wid; j < row_end_D; j += BLOCKSIZE / WFSIZE)
+        for(I j = row_begin_D + wid; j < row_end_D; j += BLOCKSIZE / WFSIZE)
         {
             // Count the actual insertions to obtain row nnz of C
             nnz += insert_key<HASHVAL, HASHSIZE>(csr_col_ind_D[j] - idx_base_D, table);
@@ -621,19 +626,23 @@ __launch_bounds__(BLOCKSIZE) __global__
 // Splitting row into several chunks such that we can use shared memory to store whether
 // a column index is populated or not.
 // Each row has at least 8193 intermediate products to compute.
-template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int CHUNKSIZE>
+template <unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int CHUNKSIZE,
+          typename I,
+          typename J>
 __launch_bounds__(BLOCKSIZE) __global__
-    void csrgemm_nnz_block_per_row_multipass(rocsparse_int n,
-                                             const rocsparse_int* __restrict__ offset,
-                                             const rocsparse_int* __restrict__ perm,
-                                             const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                             const rocsparse_int* __restrict__ csr_col_ind_A,
-                                             const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                             const rocsparse_int* __restrict__ csr_col_ind_B,
-                                             const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                             const rocsparse_int* __restrict__ csr_col_ind_D,
-                                             rocsparse_int* __restrict__ row_nnz,
-                                             rocsparse_int* __restrict__ workspace_B,
+    void csrgemm_nnz_block_per_row_multipass(J n,
+                                             const J* __restrict__ offset,
+                                             const J* __restrict__ perm,
+                                             const I* __restrict__ csr_row_ptr_A,
+                                             const J* __restrict__ csr_col_ind_A,
+                                             const I* __restrict__ csr_row_ptr_B,
+                                             const J* __restrict__ csr_col_ind_B,
+                                             const I* __restrict__ csr_row_ptr_D,
+                                             const J* __restrict__ csr_col_ind_D,
+                                             I* __restrict__ row_nnz,
+                                             I* __restrict__ workspace_B,
                                              rocsparse_index_base idx_base_A,
                                              rocsparse_index_base idx_base_B,
                                              rocsparse_index_base idx_base_D,
@@ -641,26 +650,26 @@ __launch_bounds__(BLOCKSIZE) __global__
                                              bool                 add)
 {
     // Lane id
-    rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+    int lid = hipThreadIdx_x & (WFSIZE - 1);
     // Wavefront id
-    rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+    int wid = hipThreadIdx_x / WFSIZE;
 
     // Each block processes a row (apply permutation)
-    rocsparse_int row = perm[hipBlockIdx_x + *offset];
+    J row = perm[hipBlockIdx_x + *offset];
 
     // Row nnz marker
     __shared__ bool table[CHUNKSIZE];
 
     // Shared memory to accumulate the non-zero entries of the row
-    __shared__ rocsparse_int nnz;
+    __shared__ J nnz;
 
     // Shared memory to determine the minimum of all column indices of B that exceed the
     // current chunk
-    __shared__ rocsparse_int next_chunk;
+    __shared__ J next_chunk;
 
     // Begin of the current row chunk (this is the column index of the current row)
-    rocsparse_int chunk_begin = 0;
-    rocsparse_int chunk_end   = CHUNKSIZE;
+    J chunk_begin = 0;
+    J chunk_end   = CHUNKSIZE;
 
     // Initialize row nnz for the full row
     if(hipThreadIdx_x == 0)
@@ -669,8 +678,8 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 
     // Get row boundaries of the current row in A
-    rocsparse_int row_begin_A = (mul == true) ? csr_row_ptr_A[row] - idx_base_A : 0;
-    rocsparse_int row_end_A   = (mul == true) ? csr_row_ptr_A[row + 1] - idx_base_A : 0;
+    I row_begin_A = (mul == true) ? csr_row_ptr_A[row] - idx_base_A : 0;
+    I row_end_A   = (mul == true) ? csr_row_ptr_A[row + 1] - idx_base_A : 0;
 
     // Loop over the row chunks until the end of the row has been reached (which is
     // the number of total columns)
@@ -692,30 +701,30 @@ __launch_bounds__(BLOCKSIZE) __global__
         __syncthreads();
 
         // Initialize the beginning of the next chunk
-        rocsparse_int min_col = n;
+        J min_col = n;
 
         // alpha * A * B part
         if(mul == true)
         {
             // Loop over columns of A in current row
-            for(rocsparse_int j = row_begin_A + wid; j < row_end_A; j += BLOCKSIZE / WFSIZE)
+            for(I j = row_begin_A + wid; j < row_end_A; j += BLOCKSIZE / WFSIZE)
             {
                 // Column of A in current row
-                rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+                J col_A = csr_col_ind_A[j] - idx_base_A;
 
                 // Loop over columns of B in row col_A
-                rocsparse_int row_begin_B
+                I row_begin_B
                     = (chunk_begin == 0) ? csr_row_ptr_B[col_A] - idx_base_B : workspace_B[j];
-                rocsparse_int row_end_B = csr_row_ptr_B[col_A + 1] - idx_base_B;
+                I row_end_B = csr_row_ptr_B[col_A + 1] - idx_base_B;
 
                 // Keep track of the first k where the column index of B is exceeding
                 // the current chunks end point
-                rocsparse_int next_k = row_begin_B + lid;
+                I next_k = row_begin_B + lid;
 
-                for(rocsparse_int k = next_k; k < row_end_B; k += WFSIZE)
+                for(I k = next_k; k < row_end_B; k += WFSIZE)
                 {
                     // Column of B in row col_A
-                    rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
+                    J col_B = csr_col_ind_B[k] - idx_base_B;
 
                     if(col_B >= chunk_begin && col_B < chunk_end)
                     {
@@ -749,14 +758,14 @@ __launch_bounds__(BLOCKSIZE) __global__
         if(add == true)
         {
             // Get row boundaries of the current row in D
-            rocsparse_int row_begin_D = csr_row_ptr_D[row] - idx_base_D;
-            rocsparse_int row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
+            I row_begin_D = csr_row_ptr_D[row] - idx_base_D;
+            I row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
 
             // Loop over columns of D in current row and insert all columns of D into hash table
-            for(rocsparse_int j = row_begin_D + wid; j < row_end_D; j += BLOCKSIZE / WFSIZE)
+            for(I j = row_begin_D + hipThreadIdx_x; j < row_end_D; j += BLOCKSIZE)
             {
                 // Column of D in current row
-                rocsparse_int col_D = csr_col_ind_D[j] - idx_base_D;
+                J col_D = csr_col_ind_D[j] - idx_base_D;
 
                 if(col_D >= chunk_begin && col_D < chunk_end)
                 {
@@ -769,6 +778,9 @@ __launch_bounds__(BLOCKSIZE) __global__
                     min_col = min(min_col, col_D);
                     break;
                 }
+
+                // Performance can potentially improved by adding another temporary
+                // workspace of dimension sizeof(J) * nnz, which is significant!
             }
         }
 
@@ -787,7 +799,7 @@ __launch_bounds__(BLOCKSIZE) __global__
         __syncthreads();
 
         // Each thread loads its entry for the current chunk
-        rocsparse_int chunk_nnz = 0;
+        J chunk_nnz = 0;
         for(int i = hipThreadIdx_x; i < CHUNKSIZE; i += BLOCKSIZE)
         {
             chunk_nnz += (table[i] == true) ? 1 : 0;
@@ -822,28 +834,30 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 // Compute column entries and accumulate values, where each row is processed by a single wavefront
-template <typename T,
-          unsigned int BLOCKSIZE,
+template <unsigned int BLOCKSIZE,
           unsigned int WFSIZE,
           unsigned int HASHSIZE,
-          unsigned int HASHVAL>
-__device__ void csrgemm_fill_wf_per_row_device(rocsparse_int m,
-                                               rocsparse_int nk,
-                                               const rocsparse_int* __restrict__ offset,
-                                               const rocsparse_int* __restrict__ perm,
+          unsigned int HASHVAL,
+          typename I,
+          typename J,
+          typename T>
+__device__ void csrgemm_fill_wf_per_row_device(J m,
+                                               J nk,
+                                               const J* __restrict__ offset,
+                                               const J* __restrict__ perm,
                                                T alpha,
-                                               const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                               const rocsparse_int* __restrict__ csr_col_ind_A,
+                                               const I* __restrict__ csr_row_ptr_A,
+                                               const J* __restrict__ csr_col_ind_A,
                                                const T* __restrict__ csr_val_A,
-                                               const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                               const rocsparse_int* __restrict__ csr_col_ind_B,
+                                               const I* __restrict__ csr_row_ptr_B,
+                                               const J* __restrict__ csr_col_ind_B,
                                                const T* __restrict__ csr_val_B,
                                                T beta,
-                                               const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                               const rocsparse_int* __restrict__ csr_col_ind_D,
+                                               const I* __restrict__ csr_row_ptr_D,
+                                               const J* __restrict__ csr_col_ind_D,
                                                const T* __restrict__ csr_val_D,
-                                               const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                               rocsparse_int* __restrict__ csr_col_ind_C,
+                                               const I* __restrict__ csr_row_ptr_C,
+                                               J* __restrict__ csr_col_ind_C,
                                                T* __restrict__ csr_val_C,
                                                rocsparse_index_base idx_base_A,
                                                rocsparse_index_base idx_base_B,
@@ -853,20 +867,20 @@ __device__ void csrgemm_fill_wf_per_row_device(rocsparse_int m,
                                                bool                 add)
 {
     // Lane id
-    rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+    int lid = hipThreadIdx_x & (WFSIZE - 1);
     // Wavefront id
-    rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+    int wid = hipThreadIdx_x / WFSIZE;
 
     // Each (sub)wavefront processes a row
-    rocsparse_int row = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
+    J row = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
 
     // Hash table in shared memory
-    __shared__ rocsparse_int stable[BLOCKSIZE / WFSIZE * HASHSIZE];
-    __shared__ T             sdata[BLOCKSIZE / WFSIZE * HASHSIZE];
+    __shared__ J stable[BLOCKSIZE / WFSIZE * HASHSIZE];
+    __shared__ T sdata[BLOCKSIZE / WFSIZE * HASHSIZE];
 
     // Local hash table
-    rocsparse_int* table = &stable[wid * HASHSIZE];
-    T*             data  = &sdata[wid * HASHSIZE];
+    J* table = &stable[wid * HASHSIZE];
+    T* data  = &sdata[wid * HASHSIZE];
 
     // Initialize hash table
     for(unsigned int i = lid; i < HASHSIZE; i += WFSIZE)
@@ -890,26 +904,26 @@ __device__ void csrgemm_fill_wf_per_row_device(rocsparse_int m,
     if(mul == true)
     {
         // Get row boundaries of the current row in A
-        rocsparse_int row_begin_A = csr_row_ptr_A[row] - idx_base_A;
-        rocsparse_int row_end_A   = csr_row_ptr_A[row + 1] - idx_base_A;
+        I row_begin_A = csr_row_ptr_A[row] - idx_base_A;
+        I row_end_A   = csr_row_ptr_A[row + 1] - idx_base_A;
 
         // Loop over columns of A in current row
-        for(rocsparse_int j = row_begin_A + lid; j < row_end_A; j += WFSIZE)
+        for(I j = row_begin_A + lid; j < row_end_A; j += WFSIZE)
         {
             // Column of A in current row
-            rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+            J col_A = csr_col_ind_A[j] - idx_base_A;
             // Value of A in current row
             T val_A = alpha * csr_val_A[j];
 
             // Loop over columns of B in row col_A
-            rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
-            rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
+            I row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
+            I row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
 
             // Insert all columns of B into hash table
-            for(rocsparse_int k = row_begin_B; k < row_end_B; ++k)
+            for(I k = row_begin_B; k < row_end_B; ++k)
             {
                 // Insert key value pair into hash table
-                insert_pair<T, HASHVAL, HASHSIZE>(
+                insert_pair<HASHVAL, HASHSIZE>(
                     csr_col_ind_B[k] - idx_base_B, val_A * csr_val_B[k], table, data, nk);
             }
         }
@@ -919,14 +933,14 @@ __device__ void csrgemm_fill_wf_per_row_device(rocsparse_int m,
     if(add == true)
     {
         // Get row boundaries of the current row in D
-        rocsparse_int row_begin_D = csr_row_ptr_D[row] - idx_base_D;
-        rocsparse_int row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
+        I row_begin_D = csr_row_ptr_D[row] - idx_base_D;
+        I row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
 
         // Loop over columns of D in current row and insert all columns of D into hash table
-        for(rocsparse_int j = row_begin_D + lid; j < row_end_D; j += WFSIZE)
+        for(I j = row_begin_D + lid; j < row_end_D; j += WFSIZE)
         {
             // Insert key value pair into hash table
-            insert_pair<T, HASHVAL, HASHSIZE>(
+            insert_pair<HASHVAL, HASHSIZE>(
                 csr_col_ind_D[j] - idx_base_D, beta * csr_val_D[j], table, data, nk);
         }
     }
@@ -934,13 +948,13 @@ __device__ void csrgemm_fill_wf_per_row_device(rocsparse_int m,
     __threadfence_block();
 
     // Entry point of current row into C
-    rocsparse_int row_begin_C = csr_row_ptr_C[row] - idx_base_C;
+    I row_begin_C = csr_row_ptr_C[row] - idx_base_C;
 
     // Loop over hash table
     for(unsigned int i = lid; i < HASHSIZE; i += WFSIZE)
     {
         // Get column from hash table to fill it into C
-        rocsparse_int col_C = table[i];
+        J col_C = table[i];
 
         // Skip hash table entry if not present
         if(col_C >= nk)
@@ -949,7 +963,7 @@ __device__ void csrgemm_fill_wf_per_row_device(rocsparse_int m,
         }
 
         // Initialize index into C
-        rocsparse_int idx_C = row_begin_C;
+        I idx_C = row_begin_C;
 
         // Initialize index into hash table
         unsigned int hash_idx = 0;
@@ -977,27 +991,29 @@ __device__ void csrgemm_fill_wf_per_row_device(rocsparse_int m,
 }
 
 // Compute column entries and accumulate values, where each row is processed by a single block
-template <typename T,
-          unsigned int BLOCKSIZE,
+template <unsigned int BLOCKSIZE,
           unsigned int WFSIZE,
           unsigned int HASHSIZE,
-          unsigned int HASHVAL>
-__device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
-                                                  const rocsparse_int* __restrict__ offset,
-                                                  const rocsparse_int* __restrict__ perm,
+          unsigned int HASHVAL,
+          typename I,
+          typename J,
+          typename T>
+__device__ void csrgemm_fill_block_per_row_device(J nk,
+                                                  const J* __restrict__ offset,
+                                                  const J* __restrict__ perm,
                                                   T alpha,
-                                                  const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                                  const rocsparse_int* __restrict__ csr_col_ind_A,
+                                                  const I* __restrict__ csr_row_ptr_A,
+                                                  const J* __restrict__ csr_col_ind_A,
                                                   const T* __restrict__ csr_val_A,
-                                                  const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                                  const rocsparse_int* __restrict__ csr_col_ind_B,
+                                                  const I* __restrict__ csr_row_ptr_B,
+                                                  const J* __restrict__ csr_col_ind_B,
                                                   const T* __restrict__ csr_val_B,
                                                   T beta,
-                                                  const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                                  const rocsparse_int* __restrict__ csr_col_ind_D,
+                                                  const I* __restrict__ csr_row_ptr_D,
+                                                  const J* __restrict__ csr_col_ind_D,
                                                   const T* __restrict__ csr_val_D,
-                                                  const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                                  rocsparse_int* __restrict__ csr_col_ind_C,
+                                                  const I* __restrict__ csr_row_ptr_C,
+                                                  J* __restrict__ csr_col_ind_C,
                                                   T* __restrict__ csr_val_C,
                                                   rocsparse_index_base idx_base_A,
                                                   rocsparse_index_base idx_base_B,
@@ -1007,13 +1023,13 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
                                                   bool                 add)
 {
     // Lane id
-    rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+    int lid = hipThreadIdx_x & (WFSIZE - 1);
     // Wavefront id
-    rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+    int wid = hipThreadIdx_x / WFSIZE;
 
     // Hash table in shared memory
-    __shared__ rocsparse_int table[HASHSIZE];
-    __shared__ T             data[HASHSIZE];
+    __shared__ J table[HASHSIZE];
+    __shared__ T data[HASHSIZE];
 
     // Initialize hash table
     for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
@@ -1026,31 +1042,31 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
     __syncthreads();
 
     // Each block processes a row (apply permutation)
-    rocsparse_int row = perm[hipBlockIdx_x + *offset];
+    J row = perm[hipBlockIdx_x + *offset];
 
     // alpha * A * B part
     if(mul == true)
     {
         // Get row boundaries of the current row in A
-        rocsparse_int row_begin_A = csr_row_ptr_A[row] - idx_base_A;
-        rocsparse_int row_end_A   = csr_row_ptr_A[row + 1] - idx_base_A;
+        I row_begin_A = csr_row_ptr_A[row] - idx_base_A;
+        I row_end_A   = csr_row_ptr_A[row + 1] - idx_base_A;
 
         // Loop over columns of A in current row
-        for(rocsparse_int j = row_begin_A + wid; j < row_end_A; j += BLOCKSIZE / WFSIZE)
+        for(I j = row_begin_A + wid; j < row_end_A; j += BLOCKSIZE / WFSIZE)
         {
             // Column of A in current row
-            rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+            J col_A = csr_col_ind_A[j] - idx_base_A;
             // Value of A in current row
             T val_A = alpha * csr_val_A[j];
 
             // Loop over columns of B in row col_A
-            rocsparse_int row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
-            rocsparse_int row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
+            I row_begin_B = csr_row_ptr_B[col_A] - idx_base_B;
+            I row_end_B   = csr_row_ptr_B[col_A + 1] - idx_base_B;
 
-            for(rocsparse_int k = row_begin_B + lid; k < row_end_B; k += WFSIZE)
+            for(I k = row_begin_B + lid; k < row_end_B; k += WFSIZE)
             {
                 // Insert key value pair into hash table
-                insert_pair<T, HASHVAL, HASHSIZE>(
+                insert_pair<HASHVAL, HASHSIZE>(
                     csr_col_ind_B[k] - idx_base_B, val_A * csr_val_B[k], table, data, nk);
             }
         }
@@ -1060,14 +1076,14 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
     if(add == true)
     {
         // Get row boundaries of the current row in D
-        rocsparse_int row_begin_D = csr_row_ptr_D[row] - idx_base_D;
-        rocsparse_int row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
+        I row_begin_D = csr_row_ptr_D[row] - idx_base_D;
+        I row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
 
         // Loop over columns of D in current row and insert all columns of D into hash table
-        for(rocsparse_int j = row_begin_D + wid; j < row_end_D; j += BLOCKSIZE / WFSIZE)
+        for(I j = row_begin_D + hipThreadIdx_x; j < row_end_D; j += BLOCKSIZE)
         {
             // Insert key value pair into hash table
-            insert_pair<T, HASHVAL, HASHSIZE>(
+            insert_pair<HASHVAL, HASHSIZE>(
                 csr_col_ind_D[j] - idx_base_D, beta * csr_val_D[j], table, data, nk);
         }
     }
@@ -1076,17 +1092,17 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
     __syncthreads();
 
     // Compress hash table, such that valid entries come first
-    __shared__ rocsparse_int scan_offsets[BLOCKSIZE / warpSize + 1];
+    __shared__ J scan_offsets[BLOCKSIZE / warpSize + 1];
 
     // Offset into hash table
-    rocsparse_int hash_offset = 0;
+    J hash_offset = 0;
 
     // Loop over the hash table and do the compression
     for(unsigned int i = hipThreadIdx_x; i < HASHSIZE; i += BLOCKSIZE)
     {
         // Get column and value from hash table
-        rocsparse_int col_C = table[i];
-        T             val_C = data[i];
+        J col_C = table[i];
+        T val_C = data[i];
 
         // Boolean to store if thread owns a non-zero element
         bool has_nnz = col_C < nk;
@@ -1128,7 +1144,7 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
 
         // Offset depends on all previously added non-zeros and need to be shifted by
         // 1 (zero-based indexing)
-        rocsparse_int idx = hash_offset + offset - 1;
+        J idx = hash_offset + offset - 1;
 
         // Only threads with a non-zero value write their values
         if(has_nnz)
@@ -1152,22 +1168,22 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
     }
 
     // Entry point into row of C
-    rocsparse_int row_begin_C = csr_row_ptr_C[row] - idx_base_C;
-    rocsparse_int row_end_C   = csr_row_ptr_C[row + 1] - idx_base_C;
-    rocsparse_int row_nnz     = row_end_C - row_begin_C;
+    I row_begin_C = csr_row_ptr_C[row] - idx_base_C;
+    I row_end_C   = csr_row_ptr_C[row + 1] - idx_base_C;
+    J row_nnz     = row_end_C - row_begin_C;
 
     // Loop over all valid entries in hash table
-    for(rocsparse_int i = hipThreadIdx_x; i < row_nnz; i += BLOCKSIZE)
+    for(J i = hipThreadIdx_x; i < row_nnz; i += BLOCKSIZE)
     {
-        rocsparse_int col_C = table[i];
-        T             val_C = data[i];
+        J col_C = table[i];
+        T val_C = data[i];
 
         // Index into C
-        rocsparse_int idx_C = row_begin_C;
+        I idx_C = row_begin_C;
 
         // Loop through hash table to find the (sorted) index into C for the
         // current column index
-        for(rocsparse_int j = 0; j < row_nnz; ++j)
+        for(J j = 0; j < row_nnz; ++j)
         {
             // Increment index into C if column entry is greater than table entry
             if(col_C > table[j])
@@ -1186,40 +1202,44 @@ __device__ void csrgemm_fill_block_per_row_device(rocsparse_int nk,
 // block. Splitting row into several chunks such that we can use shared memory to store
 // whether a column index is populated or not. Each row has at least 4097 non-zero
 // entries to compute.
-template <typename T, unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int CHUNKSIZE>
-__device__ void
-    csrgemm_fill_block_per_row_multipass_device(rocsparse_int n,
-                                                const rocsparse_int* __restrict__ offset,
-                                                const rocsparse_int* __restrict__ perm,
-                                                T alpha,
-                                                const rocsparse_int* __restrict__ csr_row_ptr_A,
-                                                const rocsparse_int* __restrict__ csr_col_ind_A,
-                                                const T* __restrict__ csr_val_A,
-                                                const rocsparse_int* __restrict__ csr_row_ptr_B,
-                                                const rocsparse_int* __restrict__ csr_col_ind_B,
-                                                const T* __restrict__ csr_val_B,
-                                                T beta,
-                                                const rocsparse_int* __restrict__ csr_row_ptr_D,
-                                                const rocsparse_int* __restrict__ csr_col_ind_D,
-                                                const T* __restrict__ csr_val_D,
-                                                const rocsparse_int* __restrict__ csr_row_ptr_C,
-                                                rocsparse_int* __restrict__ csr_col_ind_C,
-                                                T* __restrict__ csr_val_C,
-                                                rocsparse_int* __restrict__ workspace_B,
-                                                rocsparse_index_base idx_base_A,
-                                                rocsparse_index_base idx_base_B,
-                                                rocsparse_index_base idx_base_C,
-                                                rocsparse_index_base idx_base_D,
-                                                bool                 mul,
-                                                bool                 add)
+template <unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          unsigned int CHUNKSIZE,
+          typename I,
+          typename J,
+          typename T>
+__device__ void csrgemm_fill_block_per_row_multipass_device(J n,
+                                                            const J* __restrict__ offset,
+                                                            const J* __restrict__ perm,
+                                                            T alpha,
+                                                            const I* __restrict__ csr_row_ptr_A,
+                                                            const J* __restrict__ csr_col_ind_A,
+                                                            const T* __restrict__ csr_val_A,
+                                                            const I* __restrict__ csr_row_ptr_B,
+                                                            const J* __restrict__ csr_col_ind_B,
+                                                            const T* __restrict__ csr_val_B,
+                                                            T beta,
+                                                            const I* __restrict__ csr_row_ptr_D,
+                                                            const J* __restrict__ csr_col_ind_D,
+                                                            const T* __restrict__ csr_val_D,
+                                                            const I* __restrict__ csr_row_ptr_C,
+                                                            J* __restrict__ csr_col_ind_C,
+                                                            T* __restrict__ csr_val_C,
+                                                            I* __restrict__ workspace_B,
+                                                            rocsparse_index_base idx_base_A,
+                                                            rocsparse_index_base idx_base_B,
+                                                            rocsparse_index_base idx_base_C,
+                                                            rocsparse_index_base idx_base_D,
+                                                            bool                 mul,
+                                                            bool                 add)
 {
     // Lane id
-    rocsparse_int lid = hipThreadIdx_x & (WFSIZE - 1);
+    int lid = hipThreadIdx_x & (WFSIZE - 1);
     // Wavefront id
-    rocsparse_int wid = hipThreadIdx_x / WFSIZE;
+    int wid = hipThreadIdx_x / WFSIZE;
 
     // Each block processes a row (apply permutation)
-    rocsparse_int row = perm[hipBlockIdx_x + *offset];
+    J row = perm[hipBlockIdx_x + *offset];
 
     // Row entry marker and value accumulator
     __shared__ bool table[CHUNKSIZE];
@@ -1227,18 +1247,18 @@ __device__ void
 
     // Shared memory to determine the minimum of all column indices of B that exceed the
     // current chunk
-    __shared__ rocsparse_int next_chunk;
+    __shared__ J next_chunk;
 
     // Begin of the current row chunk (this is the column index of the current row)
-    rocsparse_int chunk_begin = 0;
-    rocsparse_int chunk_end   = CHUNKSIZE;
+    J chunk_begin = 0;
+    J chunk_end   = CHUNKSIZE;
 
     // Get row boundaries of the current row in A
-    rocsparse_int row_begin_A = (mul == true) ? csr_row_ptr_A[row] - idx_base_A : 0;
-    rocsparse_int row_end_A   = (mul == true) ? csr_row_ptr_A[row + 1] - idx_base_A : 0;
+    I row_begin_A = (mul == true) ? csr_row_ptr_A[row] - idx_base_A : 0;
+    I row_end_A   = (mul == true) ? csr_row_ptr_A[row + 1] - idx_base_A : 0;
 
     // Entry point into columns of C
-    rocsparse_int row_begin_C = csr_row_ptr_C[row] - idx_base_C;
+    I row_begin_C = csr_row_ptr_C[row] - idx_base_C;
 
     // Loop over the row chunks until the end of the row has been reached (which is
     // the number of total columns)
@@ -1261,34 +1281,34 @@ __device__ void
         __syncthreads();
 
         // Initialize the beginning of the next chunk
-        rocsparse_int min_col = n;
+        J min_col = n;
 
         // alpha * A * B part
         if(mul == true)
         {
             // Loop over columns of A in current row
-            for(rocsparse_int j = row_begin_A + wid; j < row_end_A; j += BLOCKSIZE / WFSIZE)
+            for(I j = row_begin_A + wid; j < row_end_A; j += BLOCKSIZE / WFSIZE)
             {
                 // Column of A in current row
-                rocsparse_int col_A = csr_col_ind_A[j] - idx_base_A;
+                J col_A = csr_col_ind_A[j] - idx_base_A;
 
                 // Value of A in current row
                 T val_A = alpha * csr_val_A[j];
 
                 // Loop over columns of B in row col_A
-                rocsparse_int row_begin_B
+                I row_begin_B
                     = (chunk_begin == 0) ? csr_row_ptr_B[col_A] - idx_base_B : workspace_B[j];
-                rocsparse_int row_end_B = csr_row_ptr_B[col_A + 1] - idx_base_B;
+                I row_end_B = csr_row_ptr_B[col_A + 1] - idx_base_B;
 
                 // Keep track of the first k where the column index of B is exceeding
                 // the current chunks end point
-                rocsparse_int next_k = row_begin_B + lid;
+                I next_k = row_begin_B + lid;
 
                 // Loop over columns of B in row col_A
-                for(rocsparse_int k = next_k; k < row_end_B; k += WFSIZE)
+                for(I k = next_k; k < row_end_B; k += WFSIZE)
                 {
                     // Column of B in row col_A
-                    rocsparse_int col_B = csr_col_ind_B[k] - idx_base_B;
+                    J col_B = csr_col_ind_B[k] - idx_base_B;
 
                     if(col_B >= chunk_begin && col_B < chunk_end)
                     {
@@ -1318,6 +1338,39 @@ __device__ void
                 {
                     workspace_B[j] = next_k;
                 }
+            }
+        }
+
+        // beta * D part
+        if(add == true)
+        {
+            // Get row boundaries of the current row in D
+            I row_begin_D = csr_row_ptr_D[row] - idx_base_D;
+            I row_end_D   = csr_row_ptr_D[row + 1] - idx_base_D;
+
+            // Loop over columns of D in current row
+            for(I j = row_begin_D + hipThreadIdx_x; j < row_end_D; j += BLOCKSIZE)
+            {
+                // Column of D in row col_A
+                J col_D = csr_col_ind_D[j] - idx_base_D;
+
+                if(col_D >= chunk_begin && col_D < chunk_end)
+                {
+                    // Mark nnz table if entry at col_D
+                    table[col_D - chunk_begin] = 1;
+
+                    // Atomically accumulate the entry of D
+                    atomicAdd(&data[col_D - chunk_begin], beta * csr_val_D[j]);
+                }
+                else if(col_D >= chunk_end)
+                {
+                    // Store the first column index of D that exceeds the current chunk
+                    min_col = min(min_col, col_D);
+                    break;
+                }
+
+                // Performance can potentially improved by adding another temporary
+                // workspace of dimension sizeof(J) * nnz, which is significant!
             }
         }
 
@@ -1387,7 +1440,7 @@ __device__ void
 
             // Offset into C depends on all previously added non-zeros and need to be shifted by
             // 1 (zero-based indexing)
-            rocsparse_int idx = row_begin_C + offset - 1;
+            I idx = row_begin_C + offset - 1;
 
             // Only threads with a non-zero value write to C
             if(has_nnz)

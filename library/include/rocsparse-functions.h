@@ -12773,7 +12773,7 @@ rocsparse_status rocsparse_zgebsr2gebsr(rocsparse_handle                handle,
 *  \brief Scale a sparse vector and add it to a scaled dense vector.
 *
 *  \details
-*  \p rocsparse_axpby multiplies the sparse vector \f$x\f$ with scalar \f$\alpha\f$ and
+*  \ref rocsparse_axpby multiplies the sparse vector \f$x\f$ with scalar \f$\alpha\f$ and
 *  adds the result to the dense vector \f$y\f$ that is multiplied with scalar
 *  \f$\beta\f$, such that
 *
@@ -12819,7 +12819,7 @@ rocsparse_status rocsparse_axpby(rocsparse_handle            handle,
 *  \brief Gather elements from a dense vector and store them into a sparse vector.
 *
 *  \details
-*  \p rocsparse_gather gathers the elements from the dense vector \f$y\f$ and stores
+*  \ref rocsparse_gather gathers the elements from the dense vector \f$y\f$ and stores
 *  them in the sparse vector \f$x\f$.
 *
 *  \code{.c}
@@ -12853,7 +12853,7 @@ rocsparse_status rocsparse_gather(rocsparse_handle            handle,
 *  \brief Scatter elements from a sparse vector into a dense vector.
 *
 *  \details
-*  \p rocsparse_scatter scatters the elements from the sparse vector \f$x\f$ in the dense
+*  \ref rocsparse_scatter scatters the elements from the sparse vector \f$x\f$ in the dense
 *  vector \f$y\f$.
 *
 *  \code{.c}
@@ -12887,7 +12887,7 @@ rocsparse_status rocsparse_scatter(rocsparse_handle            handle,
 *  \brief Apply Givens rotation to a dense and a sparse vector.
 *
 *  \details
-*  \p rocsparse_rot applies the Givens rotation matrix \f$G\f$ to the sparse vector
+*  \ref rocsparse_rot applies the Givens rotation matrix \f$G\f$ to the sparse vector
 *  \f$x\f$ and the dense vector \f$y\f$, where
 *  \f[
 *    G = \begin{pmatrix} c & s \\ -s & c \end{pmatrix}
@@ -12935,8 +12935,7 @@ rocsparse_status rocsparse_rot(rocsparse_handle      handle,
 *  \brief Sparse vector inner dot product
 *
 *  \details
-*  \p rocsparse_spvv
-*  \p rocsparse_spvv computes the inner dot product of the sparse vecotr \f$x\f$ with the
+*  \ref rocsparse_spvv computes the inner dot product of the sparse vecotr \f$x\f$ with the
 *  dense vector \f$y\f$, such that
 *  \f[
 *    \text{result} := x^{'} \cdot y,
@@ -13009,8 +13008,7 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *  \brief Sparse matrix vector multiplication
 *
 *  \details
-*  \p rocsparse_spmv
-*  \p rocsparse_spmv multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times n\f$
+*  \ref rocsparse_spmv multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times n\f$
 *  matrix and the dense vector \f$x\f$ and adds the result to the dense vector \f$y\f$
 *  that is multiplied by the scalar \f$\beta\f$, such that
 *  \f[
@@ -13084,6 +13082,123 @@ rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
                                 rocsparse_spmv_alg          alg,
                                 size_t*                     buffer_size,
                                 void*                       temp_buffer);
+
+/*! \ingroup generic_module
+*  \brief Sparse matrix sparse matrix multiplication
+*
+*  \details
+*  \ref rocsparse_spgemm multiplies the scalar \f$\alpha\f$ with the sparse
+*  \f$m \times k\f$ matrix \f$A\f$ and the sparse \f$k \times n\f$ matrix \f$B\f$ and
+*  adds the result to the sparse \f$m \times n\f$ matrix \f$D\f$ that is multiplied by
+*  \f$\beta\f$. The final result is stored in the sparse \f$m \times n\f$ matrix \f$C\f$,
+*  such that
+*  \f[
+*    C := \alpha \cdot op(A) \cdot op(B) + \beta \cdot D,
+*  \f]
+*  with
+*  \f[
+*    op(A) = \left\{
+*    \begin{array}{ll}
+*        A,   & \text{if trans_A == rocsparse_operation_none} \\
+*        A^T, & \text{if trans_A == rocsparse_operation_transpose} \\
+*        A^H, & \text{if trans_A == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*  and
+*  \f[
+*    op(B) = \left\{
+*    \begin{array}{ll}
+*        B,   & \text{if trans_B == rocsparse_operation_none} \\
+*        B^T, & \text{if trans_B == rocsparse_operation_transpose} \\
+*        B^H, & \text{if trans_B == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*
+*  \note SpGEMM requires three stages to complete. The first stage
+*  \ref rocsparse_spgemm_stage_buffer_size will return the size of the temporary storage buffer
+*  that is required for subsequent calls to \ref rocsparse_spgemm. The second stage
+*  \ref rocsparse_spgemm_stage_nnz will determine the number of non-zero elements of the
+*  resulting \f$C\f$ matrix. If the sparsity pattern of \f$C\f$ is already known, this
+*  stage can be skipped. In the final stage \ref rocsparse_spgemm_stage_compute, the actual
+*  computation is performed.
+*  \note If \ref rocsparse_spgemm_stage_auto is selected, rocSPARSE will automatically detect
+*  which stage is required based on the following indicators:
+*  If \p temp_buffer is equal to \p nullptr, the required buffer size will be returned.
+*  Else, if the number of non-zeros of \f$C\f$ is zero, the number of non-zero entries will be
+*  computed.
+*  Else, the SpGEMM algorithm will be executed.
+*  \note If \f$\alpha == 0\f$, then \f$C = \beta \cdot D\f$ will be computed.
+*  \note If \f$\beta == 0\f$, then \f$C = \alpha \cdot op(A) \cdot op(B)\f$ will be
+*  computed.
+*  \note \f$\alpha == beta == 0\f$ is invalid.
+*  \note It is allowed to pass the same sparse matrix for \f$C\f$ and \f$D\f$, if both
+*  matrices have the same sparsity pattern.
+*  \note Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
+*  \note Currently, only \p trans_B == \ref rocsparse_operation_none is supported.
+*  \note This function is non blocking and executed asynchronously with respect to the
+*        host. It may return before the actual computation has finished.
+*  \note Please note, that for rare matrix products with more than 4096 non-zero entries
+*  per row, additional temporary storage buffer is allocated by the algorithm.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  trans_A      sparse matrix \f$A\f$ operation type.
+*  @param[in]
+*  trans_B      sparse matrix \f$B\f$ operation type.
+*  @param[in]
+*  alpha        scalar \f$\alpha\f$.
+*  @param[in]
+*  A            sparse matrix \f$A\f$ descriptor.
+*  @param[in]
+*  B            sparse matrix \f$B\f$ descriptor.
+*  @param[in]
+*  beta         scalar \f$\beta\f$.
+*  @param[in]
+*  D            sparse matrix \f$D\f$ descriptor.
+*  @param[out]
+*  C            sparse matrix \f$C\f$ descriptor.
+*  @param[in]
+*  compute_type floating point precision for the SpGEMM computation.
+*  @param[in]
+*  alg          SpGEMM algorithm for the SpGEMM computation.
+*  @param[in]
+*  stage        SpGEMM stage for the SpGEMM computation.
+*  @param[out]
+*  buffer_size  number of bytes of the temporary storage buffer. buffer_size is set when
+*               \p temp_buffer is nullptr.
+*  @param[in]
+*  temp_buffer  temporary storage buffer allocated by the user. When a nullptr is passed,
+*               the required allocation size (in bytes) is written to \p buffer_size and
+*               function returns without performing the SpGEMM operation.
+*
+*  \retval rocsparse_status_success the operation completed successfully.
+*  \retval rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval rocsparse_status_invalid_pointer \p alpha and \p beta are invalid,
+*          \p A, \p B, \p D, \p C or \p buffer_size pointer is invalid.
+*  \retval rocsparse_status_memory_error additional buffer for long rows could not be
+*          allocated.
+*  \retval rocsparse_status_not_implemented
+*          \p trans_A != \ref rocsparse_operation_none or
+*          \p trans_B != \ref rocsparse_operation_none.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spgemm(rocsparse_handle            handle,
+                                  rocsparse_operation         trans_A,
+                                  rocsparse_operation         trans_B,
+                                  const void*                 alpha,
+                                  const rocsparse_spmat_descr A,
+                                  const rocsparse_spmat_descr B,
+                                  const void*                 beta,
+                                  const rocsparse_spmat_descr D,
+                                  rocsparse_spmat_descr       C,
+                                  rocsparse_datatype          compute_type,
+                                  rocsparse_spgemm_alg        alg,
+                                  rocsparse_spgemm_stage      stage,
+                                  size_t*                     buffer_size,
+                                  void*                       temp_buffer);
 
 #ifdef __cplusplus
 }

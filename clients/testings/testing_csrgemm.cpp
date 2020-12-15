@@ -2627,23 +2627,23 @@ void testing_csrgemm(const Arguments& arg)
 
         // CPU csrgemm_nnz
         host_vector<rocsparse_int> hcsr_row_ptr_C_gold(M + 1);
-        host_csrgemm_nnz<T>(M,
-                            N,
-                            K,
-                            halpha_ptr,
-                            hcsr_row_ptr_A,
-                            hcsr_col_ind_A,
-                            hcsr_row_ptr_B,
-                            hcsr_col_ind_B,
-                            hbeta_ptr,
-                            hcsr_row_ptr_D,
-                            hcsr_col_ind_D,
-                            hcsr_row_ptr_C_gold,
-                            &hnnz_C_gold,
-                            baseA,
-                            baseB,
-                            baseC,
-                            baseD);
+        host_csrgemm_nnz(M,
+                         N,
+                         K,
+                         halpha_ptr,
+                         hcsr_row_ptr_A,
+                         hcsr_col_ind_A,
+                         hcsr_row_ptr_B,
+                         hcsr_col_ind_B,
+                         hbeta_ptr,
+                         hcsr_row_ptr_D,
+                         hcsr_col_ind_D,
+                         hcsr_row_ptr_C_gold,
+                         &hnnz_C_gold,
+                         baseA,
+                         baseB,
+                         baseC,
+                         baseD);
 
         // Check nnz of C
         unit_check_general(1, 1, 1, &hnnz_C_gold, &hnnz_C_1);
@@ -2747,27 +2747,27 @@ void testing_csrgemm(const Arguments& arg)
         // CPU csrgemm
         host_vector<rocsparse_int> hcsr_col_ind_C_gold(hnnz_C_gold);
         host_vector<T>             hcsr_val_C_gold(hnnz_C_gold);
-        host_csrgemm<T>(M,
-                        N,
-                        K,
-                        halpha_ptr,
-                        hcsr_row_ptr_A,
-                        hcsr_col_ind_A,
-                        hcsr_val_A,
-                        hcsr_row_ptr_B,
-                        hcsr_col_ind_B,
-                        hcsr_val_B,
-                        hbeta_ptr,
-                        hcsr_row_ptr_D,
-                        hcsr_col_ind_D,
-                        hcsr_val_D,
-                        hcsr_row_ptr_C_gold,
-                        hcsr_col_ind_C_gold,
-                        hcsr_val_C_gold,
-                        baseA,
-                        baseB,
-                        baseC,
-                        baseD);
+        host_csrgemm(M,
+                     N,
+                     K,
+                     halpha_ptr,
+                     hcsr_row_ptr_A,
+                     hcsr_col_ind_A,
+                     hcsr_val_A,
+                     hcsr_row_ptr_B,
+                     hcsr_col_ind_B,
+                     hcsr_val_B,
+                     hbeta_ptr,
+                     hcsr_row_ptr_D,
+                     hcsr_col_ind_D,
+                     hcsr_val_D,
+                     hcsr_row_ptr_C_gold,
+                     hcsr_col_ind_C_gold,
+                     hcsr_val_C_gold,
+                     baseA,
+                     baseB,
+                     baseC,
+                     baseD);
 
         // Check C
         unit_check_general<rocsparse_int>(1, hnnz_C_gold, 1, hcsr_col_ind_C_gold, hcsr_col_ind_C_1);
@@ -2913,17 +2913,17 @@ void testing_csrgemm(const Arguments& arg)
 
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
 
-        double gpu_gflops = csrgemm_gflop_count<T>(M,
-                                                   halpha_ptr,
-                                                   hcsr_row_ptr_A,
-                                                   hcsr_col_ind_A,
-                                                   hcsr_row_ptr_B,
-                                                   hbeta_ptr,
-                                                   hcsr_row_ptr_D,
-                                                   baseA)
+        double gpu_gflops = csrgemm_gflop_count(M,
+                                                halpha_ptr,
+                                                hcsr_row_ptr_A,
+                                                hcsr_col_ind_A,
+                                                hcsr_row_ptr_B,
+                                                hbeta_ptr,
+                                                hcsr_row_ptr_D,
+                                                baseA)
                             / gpu_solve_time_used * 1e6;
         double gpu_gbyte
-            = csrgemm_gbyte_count<T>(M, N, K, nnz_A, nnz_B, hnnz_C_1, nnz_D, halpha_ptr, hbeta_ptr)
+            = csrgemm_gbyte_count(M, N, K, nnz_A, nnz_B, hnnz_C_1, nnz_D, halpha_ptr, hbeta_ptr)
               / gpu_solve_time_used * 1e6;
 
         std::cout.precision(2);

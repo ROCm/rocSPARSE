@@ -236,6 +236,17 @@ constexpr auto rocsparse_spmvalg2string(rocsparse_spmv_alg alg)
     }
 }
 
+constexpr auto rocsparse_spgemmalg2string(rocsparse_spgemm_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_spgemm_alg_default:
+        return "default";
+    default:
+        return "invalid";
+    }
+}
+
 // Return a string without '/' or '\\'
 inline std::string rocsparse_filename2string(const std::string& filename)
 {

@@ -638,6 +638,16 @@ rocsparse_spmv_alg
 
 .. doxygenenum:: rocsparse_spmv_alg
 
+rocsparse_spmm_stage
+--------------------
+
+.. doxygenenum:: rocsparse_spgemm_stage
+
+rocsparse_spmm_alg
+------------------
+
+.. doxygenenum:: rocsparse_spgemm_alg
+
 .. _rocsparse_logging:
 
 Logging
@@ -943,6 +953,7 @@ Function name                   single double single complex double complex
 :cpp:func:`rocsparse_rot()`     x      x      x              x
 :cpp:func:`rocsparse_spvv()`    x      x      x              x
 :cpp:func:`rocsparse_spmv()`    x      x      x              x
+:cpp:func:`rocsparse_spgemm()`  x      x      x              x
 =============================== ====== ====== ============== ==============
 
 Storage schemes and indexing base
@@ -2321,3 +2332,8 @@ rocsparse_spmv()
 ----------------
 
 .. doxygenfunction:: rocsparse_spmv
+
+rocsparse_spgemm()
+------------------
+
+.. doxygenfunction:: rocsparse_spgemm

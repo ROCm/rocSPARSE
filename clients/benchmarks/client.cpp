@@ -53,7 +53,7 @@
 
 // Extra
 #include "testing_csrgeam.hpp"
-#include "testing_csrgemm.hpp"
+#include "testing_spgemm_csr.hpp"
 
 // Preconditioner
 #include "testing_bsric0.hpp"
@@ -816,19 +816,42 @@ int main(int argc, char* argv[])
     }
     else if(function == "csrgemm")
     {
-        // TODO workaround until fully implemented
-        if(arg.beta == 0.0)
-        {
-            arg.beta = -99;
-        }
         if(precision == 's')
-            testing_csrgemm<float>(arg);
+        {
+            if(indextype == 's')
+                testing_spgemm_csr<int32_t, int32_t, float>(arg);
+            else if(indextype == 'm')
+                testing_spgemm_csr<int64_t, int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_spgemm_csr<int64_t, int64_t, float>(arg);
+        }
         else if(precision == 'd')
-            testing_csrgemm<double>(arg);
+        {
+            if(indextype == 's')
+                testing_spgemm_csr<int32_t, int32_t, double>(arg);
+            else if(indextype == 'm')
+                testing_spgemm_csr<int64_t, int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_spgemm_csr<int64_t, int64_t, double>(arg);
+        }
         else if(precision == 'c')
-            testing_csrgemm<rocsparse_float_complex>(arg);
+        {
+            if(indextype == 's')
+                testing_spgemm_csr<int32_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'm')
+                testing_spgemm_csr<int64_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_spgemm_csr<int64_t, int64_t, rocsparse_float_complex>(arg);
+        }
         else if(precision == 'z')
-            testing_csrgemm<rocsparse_double_complex>(arg);
+        {
+            if(indextype == 's')
+                testing_spgemm_csr<int32_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'm')
+                testing_spgemm_csr<int64_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_spgemm_csr<int64_t, int64_t, rocsparse_double_complex>(arg);
+        }
     }
     else if(function == "bsric0")
     {

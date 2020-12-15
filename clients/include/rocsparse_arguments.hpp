@@ -80,6 +80,7 @@ struct Arguments
     rocsparse_solve_policy    spol;
     rocsparse_direction       direction;
     rocsparse_spmv_alg        spmv_alg;
+    rocsparse_spgemm_alg      spgemm_alg;
     rocsparse_order           order;
 
     rocsparse_matrix_init matrix;
@@ -174,6 +175,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(spol);
         ROCSPARSE_FORMAT_CHECK(direction);
         ROCSPARSE_FORMAT_CHECK(spmv_alg);
+        ROCSPARSE_FORMAT_CHECK(spgemm_alg);
         ROCSPARSE_FORMAT_CHECK(order);
         ROCSPARSE_FORMAT_CHECK(matrix);
         ROCSPARSE_FORMAT_CHECK(unit_check);
@@ -348,6 +350,7 @@ private:
         print("solve_policy", rocsparse_solve2string(arg.spol));
         print("direction", rocsparse_direction2string(arg.direction));
         print("spmv_alg", rocsparse_spmvalg2string(arg.spmv_alg));
+        print("spgemm_alg", rocsparse_spgemmalg2string(arg.spgemm_alg));
         print("order", rocsparse_order2string(arg.order));
         print("matrix", rocsparse_matrix2string(arg.matrix));
         print("file", arg.filename);
