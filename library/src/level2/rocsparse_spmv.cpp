@@ -99,7 +99,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
         if(mat->format == rocsparse_format_csr)
         {
             // If algorithm 1 or default is selected and analysis step is required
-            if((alg == rocsparse_spmv_default || alg == rocsparse_spmv_csr_alg1)
+            if((alg == rocsparse_spmv_alg_default || alg == rocsparse_spmv_alg_csr_adaptive)
                && mat->analysed == false)
             {
                 RETURN_IF_ROCSPARSE_ERROR(
@@ -169,8 +169,8 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                                  (const T*)mat->val_data,
                                                  (const I*)mat->row_data,
                                                  (const J*)mat->col_data,
-                                                 (alg == rocsparse_spmv_csr_alg2) ? nullptr
-                                                                                  : mat->info,
+                                                 (alg == rocsparse_spmv_alg_csr_stream) ? nullptr
+                                                                                        : mat->info,
                                                  (const T*)x->values,
                                                  (const T*)beta,
                                                  (T*)y->values);

@@ -361,11 +361,11 @@ typedef enum rocsparse_order_
  */
 typedef enum rocsparse_spmv_alg_
 {
-    rocsparse_spmv_default  = 0, /**< Default SpMV algorithm for the given format. */
-    rocsparse_spmv_coo_alg  = 1, /**< COO SpMV algorithm for COO matrices. */
-    rocsparse_spmv_csr_alg1 = 2, /**< CSR SpMV algorithm 1 (adaptive) for CSR matrices. */
-    rocsparse_spmv_csr_alg2 = 3, /**< CSR SpMV algorithm 2 (stream) for CSR matrices. */
-    rocsparse_spmv_ell_alg  = 4 /**< ELL SpMV algorithm for ELL matrices. */
+    rocsparse_spmv_alg_default      = 0, /**< Default SpMV algorithm for the given format. */
+    rocsparse_spmv_alg_coo          = 1, /**< COO SpMV algorithm for COO matrices. */
+    rocsparse_spmv_alg_csr_adaptive = 2, /**< CSR SpMV algorithm 1 (adaptive) for CSR matrices. */
+    rocsparse_spmv_alg_csr_stream   = 3, /**< CSR SpMV algorithm 2 (stream) for CSR matrices. */
+    rocsparse_spmv_alg_ell          = 4 /**< ELL SpMV algorithm for ELL matrices. */
 } rocsparse_spmv_alg;
 
 /*! \ingroup types_module

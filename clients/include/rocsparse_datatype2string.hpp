@@ -224,13 +224,16 @@ constexpr auto rocsparse_spmvalg2string(rocsparse_spmv_alg alg)
 {
     switch(alg)
     {
-    case rocsparse_spmv_default:
+    case rocsparse_spmv_alg_default:
         return "default";
-    case rocsparse_spmv_coo_alg:
-    case rocsparse_spmv_csr_alg1:
-        return "alg1";
-    case rocsparse_spmv_csr_alg2:
-        return "alg2";
+    case rocsparse_spmv_alg_coo:
+        return "coo";
+    case rocsparse_spmv_alg_csr_adaptive:
+        return "csradaptive";
+    case rocsparse_spmv_alg_csr_stream:
+        return "csrstream";
+    case rocsparse_spmv_alg_ell:
+        return "ell";
     default:
         return "invalid";
     }
