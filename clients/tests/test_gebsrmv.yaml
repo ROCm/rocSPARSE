@@ -141,8 +141,6 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [bmwcra_1,
              amazon0312,
-             Chebyshev4,
-             sme3Dc,
              shipsec1,
              webbase-1M]
 
@@ -168,7 +166,7 @@ Tests:
   precision: *single_double_precisions_complex
   M: 1
   N: 1
-  row_block_dimA: [-1, 7, 18, 29, 116]
+  row_block_dimA: [-1, 9, 18, 29, 116]
   col_block_dimA: [2, 8]
   alpha_beta: *alpha_beta_range_checkin
   direction: [rocsparse_direction_row]
