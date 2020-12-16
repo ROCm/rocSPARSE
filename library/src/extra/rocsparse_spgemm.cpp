@@ -124,13 +124,6 @@ rocsparse_status rocsparse_spgemm_template(rocsparse_handle            handle,
     // STAGE 2 - compute number of non-zero entries of C
     if(stage == rocsparse_spgemm_stage_nnz || (stage == rocsparse_spgemm_stage_auto && C->nnz == 0))
     {
-        // If D == C, the sparsity pattern is know a prior and thus we do not need to
-        // compute it
-        if(C == D)
-        {
-            return rocsparse_status_success;
-        }
-
         // CSR format
         if(A->format == rocsparse_format_csr)
         {
