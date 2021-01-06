@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_bsrsv.cpp
 ../testings/testing_coomv.cpp
 ../testings/testing_csrmv.cpp
+../testings/testing_csrmv_managed.cpp
 ../testings/testing_csrsv.cpp
 ../testings/testing_ellmv.cpp
 ../testings/testing_hybmv.cpp

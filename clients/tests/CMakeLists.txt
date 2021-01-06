@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -170,6 +170,7 @@ set(ROCSPARSE_TEST_SOURCES
   test_bsrsv.cpp
   test_coomv.cpp
   test_csrmv.cpp
+  test_csrmv_managed.cpp
   test_csrsv.cpp
   test_ellmv.cpp
   test_hybmv.cpp
@@ -247,6 +248,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_bsrsv.cpp
 ../testings/testing_coomv.cpp
 ../testings/testing_csrmv.cpp
+../testings/testing_csrmv_managed.cpp
 ../testings/testing_csrsv.cpp
 ../testings/testing_ellmv.cpp
 ../testings/testing_hybmv.cpp
@@ -348,7 +350,7 @@ set_target_properties(rocsparse-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJ
 set(ROCSPARSE_TEST_DATA "${PROJECT_BINARY_DIR}/staging/rocsparse_test.data")
 add_custom_command(OUTPUT "${ROCSPARSE_TEST_DATA}"
                    COMMAND ../common/rocsparse_gentest.py -I ../include rocsparse_test.yaml -o "${ROCSPARSE_TEST_DATA}"
-                   DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml test_axpby.yaml test_axpyi.yaml test_doti.yaml test_dotci.yaml test_gather.yaml test_scatter.yaml test_gthr.yaml test_gthrz.yaml test_rot.yaml test_roti.yaml test_sctr.yaml test_bsrmv.yaml test_bsrsv.yaml test_coomv.yaml test_csrmv.yaml test_csrsv.yaml test_ellmv.yaml test_hybmv.yaml test_gebsrmv.yaml test_bsrmm.yaml test_csrmm.yaml test_csrsm.yaml test_gemmi.yaml test_csrgeam.yaml test_csrgemm.yaml test_bsric0.yaml test_bsrilu0.yaml test_csric0.yaml test_csrilu0.yaml test_csr2coo.yaml test_csr2csc.yaml test_gebsr2gebsc.yaml test_csr2ell.yaml test_csr2hyb.yaml test_bsr2csr.yaml test_csr2bsr.yaml test_csr2gebsr.yaml test_coo2csr.yaml test_ell2csr.yaml test_hyb2csr.yaml test_identity.yaml test_csrsort.yaml test_cscsort.yaml test_coosort.yaml test_csricsv.yaml test_csrilusv.yaml test_nnz.yaml test_dense2csr.yaml test_dense2coo.yaml test_prune_dense2csr.yaml test_prune_dense2csr_by_percentage.yaml test_dense2csc.yaml test_csr2dense.yaml test_csc2dense.yaml test_coo2dense.yaml test_csr2csr_compress.yaml test_prune_csr2csr.yaml test_prune_csr2csr_by_percentage.yaml test_gebsr2gebsr.yaml test_spvec_descr.yaml test_spmat_descr.yaml test_dnvec_descr.yaml test_dnmat_descr.yaml test_spmv_coo.yaml test_spmv_coo_aos.yaml test_spmv_csr.yaml test_spmv_ell.yaml test_spvv.yaml test_spgemm_csr.yaml
+                   DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml test_axpby.yaml test_axpyi.yaml test_doti.yaml test_dotci.yaml test_gather.yaml test_scatter.yaml test_gthr.yaml test_gthrz.yaml test_rot.yaml test_roti.yaml test_sctr.yaml test_bsrmv.yaml test_bsrsv.yaml test_coomv.yaml test_csrmv.yaml test_csrmv_managed.yaml test_csrsv.yaml test_ellmv.yaml test_hybmv.yaml test_gebsrmv.yaml test_bsrmm.yaml test_csrmm.yaml test_csrsm.yaml test_gemmi.yaml test_csrgeam.yaml test_csrgemm.yaml test_bsric0.yaml test_bsrilu0.yaml test_csric0.yaml test_csrilu0.yaml test_csr2coo.yaml test_csr2csc.yaml test_gebsr2gebsc.yaml test_csr2ell.yaml test_csr2hyb.yaml test_bsr2csr.yaml test_csr2bsr.yaml test_csr2gebsr.yaml test_coo2csr.yaml test_ell2csr.yaml test_hyb2csr.yaml test_identity.yaml test_csrsort.yaml test_cscsort.yaml test_coosort.yaml test_csricsv.yaml test_csrilusv.yaml test_nnz.yaml test_dense2csr.yaml test_dense2coo.yaml test_prune_dense2csr.yaml test_prune_dense2csr_by_percentage.yaml test_dense2csc.yaml test_csr2dense.yaml test_csc2dense.yaml test_coo2dense.yaml test_csr2csr_compress.yaml test_prune_csr2csr.yaml test_prune_csr2csr_by_percentage.yaml test_gebsr2gebsr.yaml test_spvec_descr.yaml test_spmat_descr.yaml test_dnvec_descr.yaml test_dnmat_descr.yaml test_spmv_coo.yaml test_spmv_coo_aos.yaml test_spmv_csr.yaml test_spmv_ell.yaml test_spvv.yaml test_spgemm_csr.yaml
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 add_custom_target(rocsparse-test-data
                   DEPENDS "${ROCSPARSE_TEST_DATA}" )

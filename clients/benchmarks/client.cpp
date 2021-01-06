@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@
 // Level2
 #include "testing_bsrmv.hpp"
 #include "testing_bsrsv.hpp"
+#include "testing_csrmv_managed.hpp"
 #include "testing_csrsv.hpp"
 #include "testing_gebsrmv.hpp"
 #include "testing_hybmv.hpp"
@@ -251,7 +252,7 @@ int main(int argc, char* argv[])
         po::value<std::string>(&function)->default_value("axpyi"),
         "SPARSE function to test. Options:\n"
         "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
-        "  Level2: bsrmv, bsrsv, coomv, coomv_aos, csrmv, csrsv, ellmv, hybmv, gebsrmv\n"
+        "  Level2: bsrmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, ellmv, hybmv, gebsrmv\n"
         "  Level3: bsrmm, csrmm, csrsm, gemmi\n"
         "  Extra: csrgeam, csrgemm\n"
         "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0\n"
@@ -694,6 +695,17 @@ int main(int argc, char* argv[])
             else if(indextype == 'd')
                 testing_spmv_csr<int64_t, int64_t, rocsparse_double_complex>(arg);
         }
+    }
+    else if(function == "csrmv_managed")
+    {
+        if(precision == 's')
+            testing_csrmv_managed<float>(arg);
+        else if(precision == 'd')
+            testing_csrmv_managed<double>(arg);
+        else if(precision == 'c')
+            testing_csrmv_managed<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_csrmv_managed<rocsparse_double_complex>(arg);
     }
     else if(function == "csrsv")
     {
