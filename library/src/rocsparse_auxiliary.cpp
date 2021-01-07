@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,7 @@ rocsparse_status rocsparse_create_handle(rocsparse_handle* handle)
     }
     else
     {
+        *handle = nullptr;
         // Allocate
         try
         {
@@ -204,6 +205,7 @@ rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr* descr)
     }
     else
     {
+        *descr = nullptr;
         // Allocate
         try
         {
@@ -386,6 +388,7 @@ rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb)
     }
     else
     {
+        *hyb = nullptr;
         // Allocate
         try
         {
@@ -455,6 +458,7 @@ rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info)
     }
     else
     {
+        *info = nullptr;
         // Allocate
         try
         {
@@ -663,6 +667,7 @@ rocsparse_status rocsparse_create_spvec_descr(rocsparse_spvec_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    *descr = nullptr;
     // Allocate
     try
     {
@@ -879,6 +884,7 @@ rocsparse_status rocsparse_create_coo_descr(rocsparse_spmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    *descr = nullptr;
     // Allocate
     try
     {
@@ -950,6 +956,7 @@ rocsparse_status rocsparse_create_coo_aos_descr(rocsparse_spmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    *descr = nullptr;
     // Allocate
     try
     {
@@ -1026,6 +1033,7 @@ rocsparse_status rocsparse_create_csr_descr(rocsparse_spmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    *descr = nullptr;
     // Allocate
     try
     {
@@ -1103,6 +1111,7 @@ rocsparse_status rocsparse_create_csc_descr(rocsparse_spmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    *descr = nullptr;
     // Allocate
     try
     {
@@ -1173,6 +1182,7 @@ rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    *descr = nullptr;
     // Allocate
     try
     {
@@ -1797,6 +1807,7 @@ rocsparse_status rocsparse_create_dnvec_descr(rocsparse_dnvec_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    *descr = nullptr;
     // Allocate
     try
     {
@@ -1943,6 +1954,7 @@ rocsparse_status rocsparse_create_dnmat_descr(rocsparse_dnmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    *descr = nullptr;
     // Allocate
     try
     {

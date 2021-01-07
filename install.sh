@@ -19,6 +19,7 @@ function display_help()
   echo "    [-g|--debug] -DCMAKE_BUILD_TYPE=Debug (default is =Release)"
   echo "    [--hip-clang] build library for amdgpu backend using hip-clang"
   echo "    [--static] build static library"
+  echo "    [-p|--profile] apply code coverage profiling"
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
@@ -241,6 +242,7 @@ build_clients=false
 build_release=true
 build_hip_clang=true
 build_static=false
+build_gcov=false
 install_prefix=rocsparse-install
 rocm_path=/opt/rocm
 build_relocatable=false
@@ -252,7 +254,7 @@ build_relocatable=false
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable --options hicdgr -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,profile --options hicdgrp -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -291,6 +293,9 @@ while true; do
         shift ;;
     --static)
         build_static=true
+        shift ;;
+    -p|--profile)
+        build_gcov=true
         shift ;;
     --prefix)
         install_prefix=${2}
@@ -384,6 +389,11 @@ pushd .
   # clients
   if [[ "${build_clients}" == true ]]; then
     cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_SAMPLES=ON -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON"
+  fi
+
+  # code coverage
+  if [[ "${build_gcov}" == true ]]; then
+    cmake_common_options="{cmake_common_options} -DBUILD_CODE_COVERAGE=ON"
   fi
 
   compiler="hcc"
