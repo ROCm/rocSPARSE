@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
 /*! \brief  local handle which is automatically created and destroyed  */
 class rocsparse_local_handle
 {
-    rocsparse_handle handle;
+    rocsparse_handle handle{};
 
 public:
     rocsparse_local_handle()
@@ -66,13 +66,14 @@ public:
 /*! \brief  local matrix descriptor which is automatically created and destroyed  */
 class rocsparse_local_mat_descr
 {
-    rocsparse_mat_descr descr;
+    rocsparse_mat_descr descr{};
 
 public:
     rocsparse_local_mat_descr()
     {
         rocsparse_create_mat_descr(&this->descr);
     }
+
     ~rocsparse_local_mat_descr()
     {
         rocsparse_destroy_mat_descr(this->descr);
@@ -93,7 +94,7 @@ public:
 /*! \brief  local matrix info which is automatically created and destroyed  */
 class rocsparse_local_mat_info
 {
-    rocsparse_mat_info info;
+    rocsparse_mat_info info{};
 
 public:
     rocsparse_local_mat_info()
@@ -137,7 +138,7 @@ struct test_hyb
 /*! \brief  local hyb matrix structure which is automatically created and destroyed  */
 class rocsparse_local_hyb_mat
 {
-    rocsparse_hyb_mat hyb;
+    rocsparse_hyb_mat hyb{};
 
 public:
     rocsparse_local_hyb_mat()
@@ -164,7 +165,7 @@ public:
 /*! \brief  local dense vector structure which is automatically created and destroyed  */
 class rocsparse_local_spvec
 {
-    rocsparse_spvec_descr descr;
+    rocsparse_spvec_descr descr{};
 
 public:
     rocsparse_local_spvec(int64_t              size,
@@ -180,7 +181,10 @@ public:
     }
     ~rocsparse_local_spvec()
     {
-        rocsparse_destroy_spvec_descr(this->descr);
+        if(this->descr != nullptr)
+        {
+            rocsparse_destroy_spvec_descr(this->descr);
+        }
     }
 
     // Allow rocsparse_local_spvec to be used anywhere rocsparse_spvec_descr is expected
@@ -198,7 +202,7 @@ public:
 /*! \brief  local sparse matrix structure which is automatically created and destroyed  */
 class rocsparse_local_spmat
 {
-    rocsparse_spmat_descr descr;
+    rocsparse_spmat_descr descr{};
 
 public:
     rocsparse_local_spmat(int64_t              m,
@@ -234,6 +238,7 @@ public:
         rocsparse_create_coo_aos_descr(
             &this->descr, m, n, nnz, coo_ind, coo_val, idx_type, idx_base, compute_type);
     }
+
     rocsparse_local_spmat(int64_t              m,
                           int64_t              n,
                           int64_t              nnz,
@@ -257,6 +262,7 @@ public:
                                    idx_base,
                                    compute_type);
     }
+
     rocsparse_local_spmat(int64_t              m,
                           int64_t              n,
                           void*                ell_col_ind,
@@ -271,7 +277,8 @@ public:
     }
     ~rocsparse_local_spmat()
     {
-        rocsparse_destroy_spmat_descr(this->descr);
+        if(this->descr != nullptr)
+            rocsparse_destroy_spmat_descr(this->descr);
     }
 
     // Allow rocsparse_local_spmat to be used anywhere rocsparse_spmat_descr is expected
@@ -289,7 +296,7 @@ public:
 /*! \brief  local dense vector structure which is automatically created and destroyed  */
 class rocsparse_local_dnvec
 {
-    rocsparse_dnvec_descr descr;
+    rocsparse_dnvec_descr descr{};
 
 public:
     rocsparse_local_dnvec(int64_t size, void* values, rocsparse_datatype compute_type)
@@ -298,7 +305,8 @@ public:
     }
     ~rocsparse_local_dnvec()
     {
-        rocsparse_destroy_dnvec_descr(this->descr);
+        if(this->descr != nullptr)
+            rocsparse_destroy_dnvec_descr(this->descr);
     }
 
     // Allow rocsparse_local_dnvec to be used anywhere rocsparse_dnvec_descr is expected
@@ -316,7 +324,7 @@ public:
 /*! \brief  local dense matrix structure which is automatically created and destroyed  */
 class rocsparse_local_dnmat
 {
-    rocsparse_dnmat_descr descr;
+    rocsparse_dnmat_descr descr{};
 
 public:
     rocsparse_local_dnmat(int64_t            rows,
@@ -330,7 +338,8 @@ public:
     }
     ~rocsparse_local_dnmat()
     {
-        rocsparse_destroy_dnmat_descr(this->descr);
+        if(this->descr != nullptr)
+            rocsparse_destroy_dnmat_descr(this->descr);
     }
 
     // Allow rocsparse_local_dnmat to be used anywhere rocsparse_dnmat_descr is expected

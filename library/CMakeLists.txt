@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,9 @@ add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
 add_library(roc::rocsparse ALIAS rocsparse)
 
 # Target compile options
-target_compile_options(rocsparse PRIVATE -Wno-unused-command-line-argument -Wall)
+# Note: Added optional code coverage compile options CXXFLAGS_CODE_COVERAGE
+target_compile_options(rocsparse PRIVATE -Wno-unused-command-line-argument -Wall ${CXXFLAGS_CODE_COVERAGE})
+
 foreach(target ${AMDGPU_TARGETS})
   target_compile_options(rocsparse PRIVATE --amdgpu-target=${target})
 endforeach()
@@ -84,7 +86,8 @@ target_include_directories(rocsparse
 )
 
 # Target link libraries
-target_link_libraries(rocsparse PRIVATE roc::rocprim)
+# Note: Added optional code coverage compile options LDFLAGS_CODE_COVERAGE
+target_link_libraries(rocsparse PRIVATE roc::rocprim ${LDFLAGS_CODE_COVERAGE})
 
 # Target properties
 rocm_set_soversion(rocsparse ${rocsparse_SOVERSION})
