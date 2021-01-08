@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -387,8 +387,8 @@ def generate(test, function):
         elif (type(test[key]) in (tuple, list) and
               key not in param['lists_to_not_expand']):
             if key == "filename" and test[key] != "*":
+                cleanlist=[]
                 for test[key] in test[key]:
-
                     #
                     # Get the root path.
                     #
@@ -398,7 +398,32 @@ def generate(test, function):
                     # Get argument.
                     #
                     filename_arg = out_path + str(test[key])
+                        
+                    #
+                    # Check if this is a valid argument
+                    #
+                    if ((not os.path.isdir(filename_arg))
+                        and (not glob.glob(filename_arg))
+                        and (not glob.glob(filename_arg + ".csr"))
+                        and (not glob.glob(filename_arg + ".bsr"))):
+                        print("skip unrecognized filename, directory or filename regular expression: '" + test[key] + "'")
+                    else:
+                        cleanlist.append(test[key])
+                
+                if not cleanlist:
+                    return;
+                test[key] = cleanlist
+                for test[key] in test[key]:
+                    #
+                    # Get the root path.
+                    #
+                    out_path = os.path.dirname(args['outfile'].name) +  "/../matrices/"
 
+                    #
+                    # Get argument.
+                    #
+                    filename_arg = out_path + str(test[key])
+                        
                     #
                     # It is a directory.
                     #
@@ -411,7 +436,7 @@ def generate(test, function):
                             subpath=os.path.splitext(name.replace(out_path,""))[0]
                             test[key]=[subpath]
                             generate(test,function)
-                        return
+
                     else:
                         #
                         # Might be a regular expression
@@ -421,23 +446,15 @@ def generate(test, function):
                             names = glob.glob(filename_arg + ".csr")
                             if not names:
                                 names = glob.glob(filename_arg + ".bsr")
-                                if not names:
-                                    names = glob.glob(filename_arg + ".bsr")
-                                    if not names:
-                                        print("skip unrecognized filename expression: '" + test[key] + "'")
-                                    else:
-                                        generate(test,function)
-                                else:
-                                    generate(test,function)
-                            else:
-                                generate(test,function)
+                            generate(test,function)
 
                         else:
                             for name in names:
                                 subpath=os.path.splitext(name.replace(out_path,""))[0]
                                 test[key]=[subpath]
                                 generate(test,function)
-                            return
+
+                    
             else:
                 for test[key] in test[key]:
                     generate(test,function)
@@ -455,6 +472,7 @@ def generate(test, function):
         return
 
     function(test)
+
 
 
 if __name__ == '__main__':
