@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,23 +21,28 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#pragma once
+#ifndef ROCSPARSE_DENSE2CSX_IMPL_HPP
+#define ROCSPARSE_DENSE2CSX_IMPL_HPP
+
 #include "utility.h"
 
 #include "definitions.h"
 #include "rocsparse_dense2csx.hpp"
 #include <rocprim/rocprim.hpp>
 
-template <rocsparse_direction DIRA, typename T>
+template <rocsparse_direction DIRA, typename I, typename J, typename T>
 rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
-                                          rocsparse_int             m,
-                                          rocsparse_int             n,
+                                          rocsparse_order           order,
+                                          J                         m,
+                                          J                         n,
                                           const rocsparse_mat_descr descrA,
                                           const T*                  A,
-                                          rocsparse_int             lda,
-                                          const rocsparse_int*      nnzPerRowColumn,
+                                          I                         lda,
+                                          const I*                  nnzPerRowColumn,
                                           T*                        csxValA,
-                                          rocsparse_int*            csxRowColPtrA,
-                                          rocsparse_int*            csxColRowIndA)
+                                          I*                        csxRowColPtrA,
+                                          J*                        csxColRowIndA)
 {
     static constexpr bool is_row_oriented = (rocsparse_direction_row == DIRA);
     //
@@ -53,6 +58,7 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
     //
     log_trace(handle,
               is_row_oriented ? "rocsparse_dense2csr" : "rocsparse_dense2csc",
+              order,
               m,
               n,
               descrA,
@@ -79,7 +85,7 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
     //
     // Check sizes
     //
-    if((m < 0) || (n < 0) || (lda < m))
+    if((m < 0) || (n < 0) || (lda < (order == rocsparse_order_column ? m : n)))
     {
         return rocsparse_status_invalid_size;
     }
@@ -113,19 +119,14 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
     // Compute csxRowColPtrA with the right index base.
     //
     {
-        rocsparse_int dimdir = is_row_oriented ? m : n;
+        J dimdir = is_row_oriented ? m : n;
 
-        rocsparse_int first_value = descrA->base;
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(csxRowColPtrA,
-                                           &first_value,
-                                           sizeof(rocsparse_int),
-                                           hipMemcpyHostToDevice,
-                                           handle->stream));
+        I first_value = descrA->base;
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            csxRowColPtrA, &first_value, sizeof(I), hipMemcpyHostToDevice, handle->stream));
 
-        RETURN_IF_HIP_ERROR(hipMemcpy(csxRowColPtrA + 1,
-                                      nnzPerRowColumn,
-                                      sizeof(rocsparse_int) * dimdir,
-                                      hipMemcpyDeviceToDevice));
+        RETURN_IF_HIP_ERROR(hipMemcpy(
+            csxRowColPtrA + 1, nnzPerRowColumn, sizeof(I) * dimdir, hipMemcpyDeviceToDevice));
 
         size_t temp_storage_bytes = 0;
         // Obtain rocprim buffer size
@@ -134,7 +135,7 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
                                                     csxRowColPtrA,
                                                     csxRowColPtrA,
                                                     dimdir + 1,
-                                                    rocprim::plus<rocsparse_int>(),
+                                                    rocprim::plus<I>(),
                                                     handle->stream));
 
         // Get rocprim buffer
@@ -159,7 +160,7 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
                                                     csxRowColPtrA,
                                                     csxRowColPtrA,
                                                     dimdir + 1,
-                                                    rocprim::plus<rocsparse_int>(),
+                                                    rocprim::plus<I>(),
                                                     handle->stream));
         // Free rocprim buffer, if allocated
         if(d_temp_alloc == true)
@@ -172,5 +173,7 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
     // Compute csxValA csxColRowIndA with right index base and update the 0-based csxRowColPtrA if necessary.
     //
     return rocsparse_dense2csx_template<DIRA>(
-        handle, m, n, descrA, A, lda, csxValA, csxRowColPtrA, csxColRowIndA);
+        handle, order, m, n, descrA, A, lda, csxValA, csxRowColPtrA, csxColRowIndA);
 }
+
+#endif // ROCSPARSE_DENSE2CSX_IMPL_HPP

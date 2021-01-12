@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,17 @@
 
 #include <hip/hip_runtime.h>
 
-template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void coo2dense_kernel(rocsparse_int        m,
-                                                              rocsparse_int        n,
-                                                              rocsparse_int        nnz,
-                                                              rocsparse_int        lda,
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__launch_bounds__(BLOCKSIZE) __global__ void coo2dense_kernel(I                    m,
+                                                              I                    n,
+                                                              I                    nnz,
+                                                              I                    lda,
                                                               rocsparse_index_base base,
                                                               const T*             coo_val,
-                                                              const rocsparse_int* coo_row_ind,
-                                                              const rocsparse_int* coo_col_ind,
-                                                              T*                   A)
+                                                              const I*             coo_row_ind,
+                                                              const I*             coo_col_ind,
+                                                              T*                   A,
+                                                              rocsparse_order      order)
 {
     rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -46,11 +47,18 @@ __launch_bounds__(BLOCKSIZE) __global__ void coo2dense_kernel(rocsparse_int     
         return;
     }
 
-    rocsparse_int row = coo_row_ind[gid] - base;
-    rocsparse_int col = coo_col_ind[gid] - base;
-    T             val = coo_val[gid];
+    I row = coo_row_ind[gid] - base;
+    I col = coo_col_ind[gid] - base;
+    T val = coo_val[gid];
 
-    A[lda * col + row] = val;
+    if(order == rocsparse_order_column)
+    {
+        A[lda * col + row] = val;
+    }
+    else
+    {
+        A[lda * row + col] = val;
+    }
 }
 
 #endif // COO2DENSE_DEVICE_H

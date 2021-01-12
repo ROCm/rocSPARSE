@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -134,4 +134,6 @@ set(rocsparse_source
   src/conversion/rocsparse_csrsort.cpp
   src/conversion/rocsparse_cscsort.cpp
   src/conversion/rocsparse_coosort.cpp
+  src/conversion/rocsparse_sparse_to_dense.cpp
+  src/conversion/rocsparse_dense_to_sparse.cpp
 )

@@ -108,6 +108,12 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spmv_coo_aos.cpp
 ../testings/testing_spmv_csr.cpp
 ../testings/testing_spmv_ell.cpp
+../testings/testing_sparse_to_dense_coo.cpp
+../testings/testing_sparse_to_dense_csr.cpp
+../testings/testing_sparse_to_dense_csc.cpp
+../testings/testing_dense_to_sparse_coo.cpp
+../testings/testing_dense_to_sparse_csr.cpp
+../testings/testing_dense_to_sparse_csc.cpp
 ../testings/testing_spgemm_csr.cpp
 )
 

@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -12930,6 +12930,96 @@ rocsparse_status rocsparse_rot(rocsparse_handle      handle,
                                const void*           s,
                                rocsparse_spvec_descr x,
                                rocsparse_dnvec_descr y);
+
+/*! \ingroup generic_module
+*  \brief Sparse matrix to dense matrix conversion
+*
+*  \details
+*  \p rocsparse_sparse_to_dense
+*  \p rocsparse_sparse_to_dense performs the conversion of a sparse matrix in CSR, CSC, or COO format to
+*     a dense matrix
+*  \note
+*  This function writes the required allocation size (in bytes) to \p buffer_size and
+*  returns without performing the sparse to dense operation, when a nullptr is passed for
+*  \p temp_buffer.
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  mat_A        sparse matrix descriptor.
+*  @param[in]
+*  mat_B        dense matrix descriptor.
+*  @param[in]
+*  alg          algorithm for the sparse to dense computation.
+*  @param[out]
+*  buffer_size  number of bytes of the temporary storage buffer. buffer_size is set when
+*               \p temp_buffer is nullptr.
+*  @param[in]
+*  temp_buffer  temporary storage buffer allocated by the user. When a nullptr is passed,
+*               the required allocation size (in bytes) is written to \p buffer_size and
+*               function returns without performing the sparse to dense operation.
+*
+*  \retval      rocsparse_status_success the operation completed successfully.
+*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_pointer \p mat_A, \p mat_B, or \p buffer_size
+*               pointer is invalid.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sparse_to_dense(rocsparse_handle              handle,
+                                           const rocsparse_spmat_descr   mat_A,
+                                           rocsparse_dnmat_descr         mat_B,
+                                           rocsparse_sparse_to_dense_alg alg,
+                                           size_t*                       buffer_size,
+                                           void*                         temp_buffer);
+
+/*! \ingroup generic_module
+*  \brief Dense matrix to sparse matrix conversion
+*
+*  \details
+*  \p rocsparse_dense_to_sparse
+*  \p rocsparse_dense_to_sparse performs the conversion of a dense matrix to a sparse matrix in CSR, CSC, or COO format.
+*
+*  \note
+*  This function writes the required allocation size (in bytes) to \p buffer_size and
+*  returns without performing the dense to sparse operation, when a nullptr is passed for
+*  \p temp_buffer.
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  mat_A        dense matrix descriptor.
+*  @param[in]
+*  mat_B        sparse matrix descriptor.
+*  @param[in]
+*  alg          algorithm for the sparse to dense computation.
+*  @param[out]
+*  buffer_size  number of bytes of the temporary storage buffer. buffer_size is set when
+*               \p temp_buffer is nullptr.
+*  @param[in]
+*  temp_buffer  temporary storage buffer allocated by the user. When a nullptr is passed,
+*               the required allocation size (in bytes) is written to \p buffer_size and
+*               function returns without performing the dense to sparse operation.
+*
+*  \retval      rocsparse_status_success the operation completed successfully.
+*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_pointer \p mat_A, \p mat_B, or \p buffer_size
+*               pointer is invalid.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dense_to_sparse(rocsparse_handle              handle,
+                                           const rocsparse_dnmat_descr   mat_A,
+                                           rocsparse_spmat_descr         mat_B,
+                                           rocsparse_dense_to_sparse_alg alg,
+                                           size_t*                       buffer_size,
+                                           void*                         temp_buffer);
 
 /*! \ingroup generic_module
 *  \brief Sparse vector inner dot product

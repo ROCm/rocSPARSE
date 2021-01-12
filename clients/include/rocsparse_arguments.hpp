@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,22 +66,24 @@ struct Arguments
     double threshold;
     double percentage;
 
-    rocsparse_operation       transA;
-    rocsparse_operation       transB;
-    rocsparse_index_base      baseA;
-    rocsparse_index_base      baseB;
-    rocsparse_index_base      baseC;
-    rocsparse_index_base      baseD;
-    rocsparse_action          action;
-    rocsparse_hyb_partition   part;
-    rocsparse_diag_type       diag;
-    rocsparse_fill_mode       uplo;
-    rocsparse_analysis_policy apol;
-    rocsparse_solve_policy    spol;
-    rocsparse_direction       direction;
-    rocsparse_spmv_alg        spmv_alg;
-    rocsparse_spgemm_alg      spgemm_alg;
-    rocsparse_order           order;
+    rocsparse_operation           transA;
+    rocsparse_operation           transB;
+    rocsparse_index_base          baseA;
+    rocsparse_index_base          baseB;
+    rocsparse_index_base          baseC;
+    rocsparse_index_base          baseD;
+    rocsparse_action              action;
+    rocsparse_hyb_partition       part;
+    rocsparse_diag_type           diag;
+    rocsparse_fill_mode           uplo;
+    rocsparse_analysis_policy     apol;
+    rocsparse_solve_policy        spol;
+    rocsparse_direction           direction;
+    rocsparse_order               order;
+    rocsparse_spmv_alg            spmv_alg;
+    rocsparse_spgemm_alg          spgemm_alg;
+    rocsparse_sparse_to_dense_alg sparse_to_dense_alg;
+    rocsparse_dense_to_sparse_alg dense_to_sparse_alg;
 
     rocsparse_matrix_init matrix;
 
@@ -174,9 +176,11 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(apol);
         ROCSPARSE_FORMAT_CHECK(spol);
         ROCSPARSE_FORMAT_CHECK(direction);
+        ROCSPARSE_FORMAT_CHECK(order);
         ROCSPARSE_FORMAT_CHECK(spmv_alg);
         ROCSPARSE_FORMAT_CHECK(spgemm_alg);
-        ROCSPARSE_FORMAT_CHECK(order);
+        ROCSPARSE_FORMAT_CHECK(sparse_to_dense_alg);
+        ROCSPARSE_FORMAT_CHECK(dense_to_sparse_alg);
         ROCSPARSE_FORMAT_CHECK(matrix);
         ROCSPARSE_FORMAT_CHECK(unit_check);
         ROCSPARSE_FORMAT_CHECK(timing);
@@ -349,9 +353,11 @@ private:
         print("analysis_policy", rocsparse_analysis2string(arg.apol));
         print("solve_policy", rocsparse_solve2string(arg.spol));
         print("direction", rocsparse_direction2string(arg.direction));
+        print("order", rocsparse_order2string(arg.order));
         print("spmv_alg", rocsparse_spmvalg2string(arg.spmv_alg));
         print("spgemm_alg", rocsparse_spgemmalg2string(arg.spgemm_alg));
-        print("order", rocsparse_order2string(arg.order));
+        print("sparse_to_dense_alg", rocsparse_sparsetodensealg2string(arg.sparse_to_dense_alg));
+        print("dense_to_sparse_alg", rocsparse_densetosparsealg2string(arg.dense_to_sparse_alg));
         print("matrix", rocsparse_matrix2string(arg.matrix));
         print("file", arg.filename);
         print("algo", arg.algo);

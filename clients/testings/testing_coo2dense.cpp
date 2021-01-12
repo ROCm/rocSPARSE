@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -299,15 +299,16 @@ void testing_coo2dense(const Arguments& arg)
             hipMemcpy(gpu_dense_val, d_dense_val, sizeof(T) * LD * N, hipMemcpyDeviceToHost));
 
         host_vector<T> cpu_dense_val = h_dense_val;
-        host_coo_to_dense<T>(M,
-                             N,
-                             nnz,
-                             rocsparse_get_mat_index_base(descr),
-                             h_coo_val,
-                             h_coo_row_ind,
-                             h_coo_col_ind,
-                             cpu_dense_val,
-                             LD);
+        host_coo_to_dense(M,
+                          N,
+                          nnz,
+                          rocsparse_get_mat_index_base(descr),
+                          h_coo_val,
+                          h_coo_row_ind,
+                          h_coo_col_ind,
+                          cpu_dense_val,
+                          LD,
+                          rocsparse_order_column);
 
         unit_check_general(M, N, LD, (T*)h_dense_val, (T*)cpu_dense_val);
         unit_check_general(M, N, LD, (T*)h_dense_val, (T*)gpu_dense_val);
@@ -353,7 +354,7 @@ void testing_coo2dense(const Arguments& arg)
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = coo2dense_gbyte_count<T>(M, N, nnz) / gpu_time_used * 1e6;
+        double gpu_gbyte = coo2dense_gbyte_count<rocsparse_int, T>(M, N, nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

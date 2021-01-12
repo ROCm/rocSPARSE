@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -309,16 +309,16 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         //
         // Compute the reference host first.
         //
-
-        host_dense2csx<DIRA, T>(M,
-                                N,
-                                rocsparse_get_mat_index_base(descr),
-                                (const T*)h_dense_val,
-                                LD,
-                                (const rocsparse_int*)h_nnz_per_row_columns,
-                                (T*)cpu_csx_val,
-                                cpu_csx_row_col_ptr,
-                                cpu_csx_col_row_ind);
+        host_dense2csx<DIRA>(M,
+                             N,
+                             rocsparse_get_mat_index_base(descr),
+                             (const T*)h_dense_val,
+                             LD,
+                             rocsparse_order_column,
+                             (const rocsparse_int*)h_nnz_per_row_columns,
+                             (T*)cpu_csx_val,
+                             (rocsparse_int*)cpu_csx_row_col_ptr,
+                             (rocsparse_int*)cpu_csx_col_row_ind);
 
         CHECK_ROCSPARSE_ERROR(dense2csx(handle,
                                         M,
@@ -398,7 +398,8 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = dense2csx_gbyte_count<DIRA, T>(M, N, nnz) / gpu_time_used * 1e6;
+        double gpu_gbyte = dense2csx_gbyte_count<DIRA, rocsparse_int, rocsparse_int, T>(M, N, nnz)
+                           / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

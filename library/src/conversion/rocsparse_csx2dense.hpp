@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,18 +21,23 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#pragma once
+#ifndef ROCSPARSE_CSX2DENSE_HPP
+#define ROCSPARSE_CSX2DENSE_HPP
+
 #include "csx2dense_device.h"
 
-template <rocsparse_direction DIRA, typename T>
+template <rocsparse_direction DIRA, typename I, typename J, typename T>
 rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
-                                              rocsparse_int             m,
-                                              rocsparse_int             n,
+                                              J                         m,
+                                              J                         n,
                                               const rocsparse_mat_descr descr,
                                               const T*                  csx_val,
-                                              const rocsparse_int*      csx_row_col_ptr,
-                                              const rocsparse_int*      csx_col_row_ind,
+                                              const I*                  csx_row_col_ptr,
+                                              const J*                  csx_col_row_ind,
                                               T*                        A,
-                                              rocsparse_int             ld)
+                                              I                         ld,
+                                              rocsparse_order           order)
 {
     if(0 == m || 0 == n)
     {
@@ -53,7 +58,7 @@ rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
             rocsparse_int blocks = (m - 1) / NROWS_PER_BLOCK + 1;
             dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NROWS_PER_BLOCK);
 
-            hipLaunchKernelGGL((csr2dense_kernel<NROWS_PER_BLOCK, WAVEFRONT_SIZE, T>),
+            hipLaunchKernelGGL((csr2dense_kernel<NROWS_PER_BLOCK, WAVEFRONT_SIZE, I, J, T>),
                                k_blocks,
                                k_threads,
                                0,
@@ -65,7 +70,8 @@ rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
                                csx_row_col_ptr,
                                csx_col_row_ind,
                                A,
-                               ld);
+                               ld,
+                               order);
         }
         else
         {
@@ -75,7 +81,7 @@ rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
             rocsparse_int blocks = (m - 1) / NROWS_PER_BLOCK + 1;
             dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NROWS_PER_BLOCK);
 
-            hipLaunchKernelGGL((csr2dense_kernel<NROWS_PER_BLOCK, WAVEFRONT_SIZE, T>),
+            hipLaunchKernelGGL((csr2dense_kernel<NROWS_PER_BLOCK, WAVEFRONT_SIZE, I, J, T>),
                                k_blocks,
                                k_threads,
                                0,
@@ -87,7 +93,8 @@ rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
                                csx_row_col_ptr,
                                csx_col_row_ind,
                                A,
-                               ld);
+                               ld,
+                               order);
         }
 
         return rocsparse_status_success;
@@ -103,7 +110,7 @@ rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
             rocsparse_int blocks = (n - 1) / NCOLUMNS_PER_BLOCK + 1;
             dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NCOLUMNS_PER_BLOCK);
 
-            hipLaunchKernelGGL((csc2dense_kernel<NCOLUMNS_PER_BLOCK, WAVEFRONT_SIZE, T>),
+            hipLaunchKernelGGL((csc2dense_kernel<NCOLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, J, T>),
                                k_blocks,
                                k_threads,
                                0,
@@ -115,7 +122,8 @@ rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
                                csx_row_col_ptr,
                                csx_col_row_ind,
                                A,
-                               ld);
+                               ld,
+                               order);
         }
         else
         {
@@ -125,7 +133,7 @@ rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
             rocsparse_int blocks = (n - 1) / NCOLUMNS_PER_BLOCK + 1;
             dim3          k_blocks(blocks), k_threads(WAVEFRONT_SIZE * NCOLUMNS_PER_BLOCK);
 
-            hipLaunchKernelGGL((csc2dense_kernel<NCOLUMNS_PER_BLOCK, WAVEFRONT_SIZE, T>),
+            hipLaunchKernelGGL((csc2dense_kernel<NCOLUMNS_PER_BLOCK, WAVEFRONT_SIZE, I, J, T>),
                                k_blocks,
                                k_threads,
                                0,
@@ -137,7 +145,8 @@ rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
                                csx_row_col_ptr,
                                csx_col_row_ind,
                                A,
-                               ld);
+                               ld,
+                               order);
         }
 
         return rocsparse_status_success;
@@ -146,3 +155,5 @@ rocsparse_status rocsparse_csx2dense_template(rocsparse_handle          handle,
 
     return rocsparse_status_invalid_value;
 }
+
+#endif // ROCSPARSE_CSX2DENSE_HPP

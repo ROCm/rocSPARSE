@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -26,89 +26,19 @@
 #ifndef ROCSPARSE_DENSE2COO_HPP
 #define ROCSPARSE_DENSE2COO_HPP
 
-#include "definitions.h"
-#include "utility.h"
+#include "handle.h"
 
-#include "rocsparse_dense2csx_impl.hpp"
-
-#include <rocprim/rocprim.hpp>
-
-template <typename T>
+template <typename I, typename T>
 rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle,
-                                              rocsparse_int             m,
-                                              rocsparse_int             n,
+                                              rocsparse_order           order,
+                                              I                         m,
+                                              I                         n,
                                               const rocsparse_mat_descr descr,
                                               const T*                  A,
-                                              rocsparse_int             ld,
-                                              const rocsparse_int*      nnz_per_rows,
+                                              I                         ld,
+                                              const I*                  nnz_per_rows,
                                               T*                        coo_val,
-                                              rocsparse_int*            coo_row_ind,
-                                              rocsparse_int*            coo_col_ind)
-{
-    // Check for valid handle and matrix descriptor
-    if(handle == nullptr)
-    {
-        return rocsparse_status_invalid_handle;
-    }
-
-    // Logging
-    log_trace(handle,
-              replaceX<T>("rocsparse_Xdense2coo"),
-              m,
-              n,
-              descr,
-              (const void*&)A,
-              ld,
-              (const void*&)nnz_per_rows,
-              (void*&)coo_val,
-              (void*&)coo_row_ind,
-              (void*&)coo_col_ind);
-
-    log_bench(handle, "./rocsparse-bench -f dense2coo -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
-
-    // Check matrix descriptor
-    if(descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    // Check sizes
-    if(m < 0 || n < 0 || ld < m)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Quick return if possible
-    if(m == 0 || n == 0)
-    {
-        return rocsparse_status_success;
-    }
-
-    // Check pointer arguments
-    if(A == nullptr || nnz_per_rows == nullptr || coo_val == nullptr || coo_row_ind == nullptr
-       || coo_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
-    rocsparse_int* row_ptr;
-    RETURN_IF_HIP_ERROR(hipMalloc(&row_ptr, (m + 1) * sizeof(rocsparse_int)));
-
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_dense2csx_impl<rocsparse_direction_row>(
-        handle, m, n, descr, A, ld, nnz_per_rows, coo_val, row_ptr, coo_col_ind));
-
-    rocsparse_int start;
-    rocsparse_int end;
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(&start, &row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-    RETURN_IF_HIP_ERROR(hipMemcpy(&end, &row_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-
-    rocsparse_int nnz = end - start;
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_csr2coo(handle, row_ptr, nnz, m, coo_row_ind, descr->base));
-
-    RETURN_IF_HIP_ERROR(hipFree(row_ptr));
-
-    return rocsparse_status_success;
-}
+                                              I*                        coo_row_ind,
+                                              I*                        coo_col_ind);
 
 #endif // ROCSPARSE_DENSE2COO_HPP

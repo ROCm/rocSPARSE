@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -253,25 +253,24 @@ constexpr double nnz_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_dir
            / 1e9;
 }
 
-template <rocsparse_direction DIRA, typename T>
-constexpr double dense2csx_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz)
+template <rocsparse_direction DIRA, typename I, typename J, typename T>
+constexpr double dense2csx_gbyte_count(J M, J N, I nnz)
 {
-    const rocsparse_int L             = (rocsparse_direction_row == DIRA) ? M : N;
-    const rocsparse_int write_csx_ptr = (L + 1) * sizeof(rocsparse_int);
-    const rocsparse_int read_csx_ptr  = (L + 1) * sizeof(rocsparse_int);
-    const rocsparse_int build_csx_ptr = write_csx_ptr + read_csx_ptr;
+    const J      L             = (rocsparse_direction_row == DIRA) ? M : N;
+    const size_t write_csx_ptr = (L + 1) * sizeof(I);
+    const size_t read_csx_ptr  = (L + 1) * sizeof(I);
+    const size_t build_csx_ptr = write_csx_ptr + read_csx_ptr;
 
-    const rocsparse_int write_csx
-        = nnz * sizeof(T) + nnz * sizeof(rocsparse_int) + (L + 1) * sizeof(rocsparse_int);
-    const rocsparse_int read_dense = M * N * sizeof(T);
+    const size_t write_csx  = nnz * sizeof(T) + nnz * sizeof(J) + (L + 1) * sizeof(I);
+    const size_t read_dense = M * N * sizeof(T);
     return (read_dense + build_csx_ptr + write_csx) / 1e9;
 }
 
-template <typename T>
-constexpr double dense2coo_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz)
+template <typename I, typename T>
+constexpr double dense2coo_gbyte_count(I M, I N, I nnz)
 {
     size_t reads  = (M * N) * sizeof(T);
-    size_t writes = 2 * nnz * sizeof(rocsparse_int) + nnz * sizeof(T);
+    size_t writes = 2 * nnz * sizeof(I) + nnz * sizeof(T);
 
     return (reads + writes) / 1e9;
 }
@@ -297,21 +296,20 @@ constexpr double
     return (reads + writes) / 1e9;
 }
 
-template <rocsparse_direction DIRA, typename T>
-constexpr double csx2dense_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz)
+template <rocsparse_direction DIRA, typename I, typename J, typename T>
+constexpr double csx2dense_gbyte_count(J M, J N, I nnz)
 {
-    const rocsparse_int L = (rocsparse_direction_row == DIRA) ? M : N;
-    const rocsparse_int read_csx
-        = nnz * sizeof(T) + nnz * sizeof(rocsparse_int) + (L + 1) * sizeof(rocsparse_int);
-    const rocsparse_int write_dense
+    const J      L        = (rocsparse_direction_row == DIRA) ? M : N;
+    const size_t read_csx = nnz * sizeof(T) + nnz * sizeof(J) + (L + 1) * sizeof(I);
+    const size_t write_dense
         = M * N * sizeof(T) + nnz * sizeof(T); // set to zero + nnz assignments.
     return (read_csx + write_dense) / 1e9;
 }
 
-template <typename T>
-constexpr double coo2dense_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_int nnz)
+template <typename I, typename T>
+constexpr double coo2dense_gbyte_count(I M, I N, I nnz)
 {
-    size_t reads  = 2 * nnz * sizeof(rocsparse_int) + nnz * sizeof(T);
+    size_t reads  = 2 * nnz * sizeof(I) + nnz * sizeof(T);
     size_t writes = (M * N) * sizeof(T);
 
     return (reads + writes) / 1e9;

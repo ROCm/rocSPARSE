@@ -638,6 +638,16 @@ rocsparse_spmv_alg
 
 .. doxygenenum:: rocsparse_spmv_alg
 
+rocsparse_sparse_to_dense_alg
+-----------------------------
+
+.. doxygenenum:: rocsparse_sparse_to_dense_alg
+
+rocsparse_dense_to_sparse_alg
+-----------------------------
+
+.. doxygenenum:: rocsparse_dense_to_sparse_alg
+
 rocsparse_spmm_stage
 --------------------
 

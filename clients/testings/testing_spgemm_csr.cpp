@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,16 +54,16 @@ void testing_spgemm_csr_bad_arg(const Arguments& arg)
 
     // Allocate memory on device
     device_vector<I> dcsr_row_ptr_A(m + 1);
-    device_vector<I> dcsr_col_ind_A(nnz_A);
+    device_vector<J> dcsr_col_ind_A(nnz_A);
     device_vector<T> dcsr_val_A(nnz_A);
     device_vector<I> dcsr_row_ptr_B(k + 1);
-    device_vector<I> dcsr_col_ind_B(nnz_B);
+    device_vector<J> dcsr_col_ind_B(nnz_B);
     device_vector<T> dcsr_val_B(nnz_B);
     device_vector<I> dcsr_row_ptr_D(m + 1);
     device_vector<I> dcsr_row_ptr_C(m + 1);
-    device_vector<I> dcsr_col_ind_C(safe_size);
+    device_vector<J> dcsr_col_ind_C(safe_size);
     device_vector<T> dcsr_val_C(safe_size);
-    device_vector<I> dcsr_col_ind_D(nnz_D);
+    device_vector<J> dcsr_col_ind_D(nnz_D);
     device_vector<T> dcsr_val_D(nnz_D);
 
     if(!dcsr_row_ptr_A || !dcsr_col_ind_A || !dcsr_val_A || !dcsr_row_ptr_B || !dcsr_col_ind_B
@@ -75,14 +75,50 @@ void testing_spgemm_csr_bad_arg(const Arguments& arg)
     }
 
     // SpGEMM structures
-    rocsparse_local_spmat A(
-        m, k, nnz_A, dcsr_row_ptr_A, dcsr_col_ind_A, dcsr_val_A, itype, jtype, base, ttype);
-    rocsparse_local_spmat B(
-        k, n, nnz_B, dcsr_row_ptr_B, dcsr_col_ind_B, dcsr_val_B, itype, jtype, base, ttype);
-    rocsparse_local_spmat C(
-        m, n, nnz_C, dcsr_row_ptr_C, dcsr_col_ind_C, dcsr_val_C, itype, jtype, base, ttype);
-    rocsparse_local_spmat D(
-        m, n, nnz_D, dcsr_row_ptr_D, dcsr_col_ind_D, dcsr_val_D, itype, jtype, base, ttype);
+    rocsparse_local_spmat A(m,
+                            k,
+                            nnz_A,
+                            dcsr_row_ptr_A,
+                            dcsr_col_ind_A,
+                            dcsr_val_A,
+                            itype,
+                            jtype,
+                            base,
+                            ttype,
+                            rocsparse_format_csr);
+    rocsparse_local_spmat B(k,
+                            n,
+                            nnz_B,
+                            dcsr_row_ptr_B,
+                            dcsr_col_ind_B,
+                            dcsr_val_B,
+                            itype,
+                            jtype,
+                            base,
+                            ttype,
+                            rocsparse_format_csr);
+    rocsparse_local_spmat C(m,
+                            n,
+                            nnz_C,
+                            dcsr_row_ptr_C,
+                            dcsr_col_ind_C,
+                            dcsr_val_C,
+                            itype,
+                            jtype,
+                            base,
+                            ttype,
+                            rocsparse_format_csr);
+    rocsparse_local_spmat D(m,
+                            n,
+                            nnz_D,
+                            dcsr_row_ptr_D,
+                            dcsr_col_ind_D,
+                            dcsr_val_D,
+                            itype,
+                            jtype,
+                            base,
+                            ttype,
+                            rocsparse_format_csr);
 
     // Test SpMV with invalid buffer
     size_t buffer_size;
@@ -352,14 +388,50 @@ void testing_spgemm_csr(const Arguments& arg)
         I nnz_D = (M > 0 && N > 0) ? safe_size : 0;
 
         // Check structures
-        rocsparse_local_spmat A(
-            M, K, nnz_A, dcsr_row_ptr_A, dcsr_col_ind_A, dcsr_val_A, itype, jtype, base_A, ttype);
-        rocsparse_local_spmat B(
-            K, N, nnz_B, dcsr_row_ptr_B, dcsr_col_ind_B, dcsr_val_B, itype, jtype, base_B, ttype);
-        rocsparse_local_spmat D(
-            M, N, nnz_D, dcsr_row_ptr_D, dcsr_col_ind_D, dcsr_val_D, itype, jtype, base_D, ttype);
-        rocsparse_local_spmat C(
-            M, N, 0, dcsr_row_ptr_C, dcsr_col_ind_C, dcsr_val_C, itype, jtype, base_C, ttype);
+        rocsparse_local_spmat A(M,
+                                K,
+                                nnz_A,
+                                dcsr_row_ptr_A,
+                                dcsr_col_ind_A,
+                                dcsr_val_A,
+                                itype,
+                                jtype,
+                                base_A,
+                                ttype,
+                                rocsparse_format_csr);
+        rocsparse_local_spmat B(K,
+                                N,
+                                nnz_B,
+                                dcsr_row_ptr_B,
+                                dcsr_col_ind_B,
+                                dcsr_val_B,
+                                itype,
+                                jtype,
+                                base_B,
+                                ttype,
+                                rocsparse_format_csr);
+        rocsparse_local_spmat D(M,
+                                N,
+                                nnz_D,
+                                dcsr_row_ptr_D,
+                                dcsr_col_ind_D,
+                                dcsr_val_D,
+                                itype,
+                                jtype,
+                                base_D,
+                                ttype,
+                                rocsparse_format_csr);
+        rocsparse_local_spmat C(M,
+                                N,
+                                0,
+                                dcsr_row_ptr_C,
+                                dcsr_col_ind_C,
+                                dcsr_val_C,
+                                itype,
+                                jtype,
+                                base_C,
+                                ttype,
+                                rocsparse_format_csr);
 
         // Pointer mode
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
@@ -531,16 +603,61 @@ void testing_spgemm_csr(const Arguments& arg)
     T* d_beta_ptr  = (h_beta == (T)-99) ? nullptr : d_beta;
 
     // Create descriptors
-    rocsparse_local_spmat A(
-        M, K, nnz_A, dcsr_row_ptr_A, dcsr_col_ind_A, dcsr_val_A, itype, jtype, base_A, ttype);
-    rocsparse_local_spmat B(
-        K, N, nnz_B, dcsr_row_ptr_B, dcsr_col_ind_B, dcsr_val_B, itype, jtype, base_B, ttype);
-    rocsparse_local_spmat D(
-        M, N, nnz_D, dcsr_row_ptr_D, dcsr_col_ind_D, dcsr_val_D, itype, jtype, base_D, ttype);
-    rocsparse_local_spmat C1(
-        M, N, 0, dcsr_row_ptr_C_1, nullptr, nullptr, itype, jtype, base_C, ttype);
-    rocsparse_local_spmat C2(
-        M, N, 0, dcsr_row_ptr_C_2, nullptr, nullptr, itype, jtype, base_C, ttype);
+    rocsparse_local_spmat A(M,
+                            K,
+                            nnz_A,
+                            dcsr_row_ptr_A,
+                            dcsr_col_ind_A,
+                            dcsr_val_A,
+                            itype,
+                            jtype,
+                            base_A,
+                            ttype,
+                            rocsparse_format_csr);
+    rocsparse_local_spmat B(K,
+                            N,
+                            nnz_B,
+                            dcsr_row_ptr_B,
+                            dcsr_col_ind_B,
+                            dcsr_val_B,
+                            itype,
+                            jtype,
+                            base_B,
+                            ttype,
+                            rocsparse_format_csr);
+    rocsparse_local_spmat D(M,
+                            N,
+                            nnz_D,
+                            dcsr_row_ptr_D,
+                            dcsr_col_ind_D,
+                            dcsr_val_D,
+                            itype,
+                            jtype,
+                            base_D,
+                            ttype,
+                            rocsparse_format_csr);
+    rocsparse_local_spmat C1(M,
+                             N,
+                             0,
+                             dcsr_row_ptr_C_1,
+                             nullptr,
+                             nullptr,
+                             itype,
+                             jtype,
+                             base_C,
+                             ttype,
+                             rocsparse_format_csr);
+    rocsparse_local_spmat C2(M,
+                             N,
+                             0,
+                             dcsr_row_ptr_C_2,
+                             nullptr,
+                             nullptr,
+                             itype,
+                             jtype,
+                             base_C,
+                             ttype,
+                             rocsparse_format_csr);
 
     // Query SpGEMM buffer
     size_t buffer_size_1;
@@ -773,8 +890,17 @@ void testing_spgemm_csr(const Arguments& arg)
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
             // Sparse matrix descriptor C
-            rocsparse_local_spmat C(
-                M, N, 0, dcsr_row_ptr_C_1, nullptr, nullptr, itype, jtype, base_C, ttype);
+            rocsparse_local_spmat C(M,
+                                    N,
+                                    0,
+                                    dcsr_row_ptr_C_1,
+                                    nullptr,
+                                    nullptr,
+                                    itype,
+                                    jtype,
+                                    base_C,
+                                    ttype,
+                                    rocsparse_format_csr);
 
             // Query for buffer size
             size_t buffer_size;
@@ -834,8 +960,17 @@ void testing_spgemm_csr(const Arguments& arg)
         }
 
         // Sparse matrix descriptor C
-        rocsparse_local_spmat C(
-            M, N, 0, dcsr_row_ptr_C_1, nullptr, nullptr, itype, jtype, base_C, ttype);
+        rocsparse_local_spmat C(M,
+                                N,
+                                0,
+                                dcsr_row_ptr_C_1,
+                                nullptr,
+                                nullptr,
+                                itype,
+                                jtype,
+                                base_C,
+                                ttype,
+                                rocsparse_format_csr);
 
         double gpu_analysis_time_used = get_time_us();
 

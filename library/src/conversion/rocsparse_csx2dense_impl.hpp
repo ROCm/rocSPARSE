@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,22 +21,27 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#pragma once
+#ifndef ROCSPARSE_CSX2DENSE_IMPL_HPP
+#define ROCSPARSE_CSX2DENSE_IMPL_HPP
+
 #include "utility.h"
 
 #include "definitions.h"
 #include "rocsparse_csx2dense.hpp"
 #include <rocprim/rocprim.hpp>
 
-template <rocsparse_direction DIRA, typename T>
+template <rocsparse_direction DIRA, typename I, typename J, typename T>
 rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
-                                          rocsparse_int             m,
-                                          rocsparse_int             n,
+                                          J                         m,
+                                          J                         n,
                                           const rocsparse_mat_descr descr,
                                           const T*                  csx_val,
-                                          const rocsparse_int*      csx_row_col_ptr,
-                                          const rocsparse_int*      csx_col_row_ind,
+                                          const I*                  csx_row_col_ptr,
+                                          const J*                  csx_col_row_ind,
                                           T*                        A,
-                                          rocsparse_int             lda)
+                                          I                         lda,
+                                          rocsparse_order           order)
 {
     static constexpr bool is_row_oriented = (rocsparse_direction_row == DIRA);
     //
@@ -77,7 +82,7 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
     //
     // Check sizes
     //
-    if((m < 0) || (n < 0) || (lda < m))
+    if((m < 0) || (n < 0) || lda < (order == rocsparse_order_column ? m : n))
     {
         return rocsparse_status_invalid_size;
     }
@@ -107,14 +112,19 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
         return rocsparse_status_not_implemented;
     }
 
+    J mn = order == rocsparse_order_column ? m : n;
+    J nm = order == rocsparse_order_column ? n : m;
+
     //
     // Set memory to zero.
     //
-    hipMemset2DAsync(A, lda * sizeof(T), 0, m * sizeof(T), n, handle->stream);
+    hipMemset2DAsync(A, lda * sizeof(T), 0, mn * sizeof(T), nm, handle->stream);
 
     //
     // Compute the conversion.
     //
     return rocsparse_csx2dense_template<DIRA>(
-        handle, m, n, descr, csx_val, csx_row_col_ptr, csx_col_row_ind, A, lda);
+        handle, m, n, descr, csx_val, csx_row_col_ptr, csx_col_row_ind, A, lda, order);
 }
+
+#endif // ROCSPARSE_CSX2DENSE_IMPL_HPP

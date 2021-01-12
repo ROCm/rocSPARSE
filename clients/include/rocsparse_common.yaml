@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -111,6 +111,14 @@ Datatypes:
       bases: [c_int ]
       attr:
         rocsparse_spgemm_alg_default: 0
+  - rocsparse_sparse_to_dense_alg:
+      bases: [c_int ]
+      attr:
+        rocsparse_sparse_to_dense_alg_default: 0
+  - rocsparse_dense_to_sparse_alg:
+      bases: [c_int ]
+      attr:
+        rocsparse_dense_to_sparse_alg_default: 0
 
 indextype i64: &i32
   - index_type_I: i32
@@ -203,9 +211,11 @@ Arguments:
   - apol: rocsparse_analysis_policy
   - spol: rocsparse_solve_policy
   - direction: rocsparse_direction
+  - order: rocsparse_order
   - spmv_alg: rocsparse_spmv_alg
   - spgemm_alg: rocsparse_spgemm_alg
-  - order: rocsparse_order
+  - sparse_to_dense_alg: rocsparse_sparse_to_dense_alg
+  - dense_to_sparse_alg: rocsparse_dense_to_sparse_alg
   - matrix: rocsparse_matrix_init
   - unit_check: rocsparse_int
   - timing: rocsparse_int
@@ -294,9 +304,11 @@ Defaults:
   apol: rocsparse_analysis_policy_reuse
   spol: rocsparse_solve_policy_auto
   direction: rocsparse_direction_row
+  order: rocsparse_order_row
   spmv_alg: rocsparse_spmv_alg_default
   spgemm_alg: rocsparse_spgemm_alg_default
-  order: rocsparse_order_row
+  sparse_to_dense_alg: rocsparse_sparse_to_dense_alg_default
+  dense_to_sparse_alg: rocsparse_dense_to_sparse_alg_default
   matrix: rocsparse_matrix_random
   unit_check: 1
   timing: 0

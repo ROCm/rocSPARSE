@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -244,6 +244,28 @@ constexpr auto rocsparse_spgemmalg2string(rocsparse_spgemm_alg alg)
     switch(alg)
     {
     case rocsparse_spgemm_alg_default:
+        return "default";
+    default:
+        return "invalid";
+    }
+}
+
+constexpr auto rocsparse_sparsetodensealg2string(rocsparse_sparse_to_dense_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_sparse_to_dense_alg_default:
+        return "default";
+    default:
+        return "invalid";
+    }
+}
+
+constexpr auto rocsparse_densetosparsealg2string(rocsparse_dense_to_sparse_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_dense_to_sparse_alg_default:
         return "default";
     default:
         return "invalid";

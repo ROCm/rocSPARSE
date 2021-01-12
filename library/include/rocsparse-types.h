@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -369,10 +369,36 @@ typedef enum rocsparse_spmv_alg_
 } rocsparse_spmv_alg;
 
 /*! \ingroup types_module
+ *  \brief List of sparse to dense algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_sparse_to_dense_alg types that are used to perform
+ *  sparse to dense conversion.
+ */
+typedef enum rocsparse_sparse_to_dense_alg_
+{
+    rocsparse_sparse_to_dense_alg_default
+    = 0, /**< Default sparse to dense algorithm for the given format. */
+} rocsparse_sparse_to_dense_alg;
+
+/*! \ingroup types_module
+ *  \brief List of dense to sparse algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_dense_tosparse_alg types that are used to perform
+ *  dense to sparse conversion.
+ */
+typedef enum rocsparse_dense_to_sparse_alg_
+{
+    rocsparse_dense_to_sparse_alg_default
+    = 0, /**< Default dense to sparse algorithm for the given format. */
+} rocsparse_dense_to_sparse_alg;
+
+/*! \ingroup types_module
  *  \brief List of SpGEMM stages.
  *
  *  \details
- *  This is a list of possible stages during SpGEMM computation. Typical order is 
+ *  This is a list of possible stages during SpGEMM computation. Typical order is
  *  rocsparse_spgemm_buffer_size, rocsparse_spgemm_nnz, rocsparse_spgemm_compute.
  */
 typedef enum rocsparse_spgemm_stage_

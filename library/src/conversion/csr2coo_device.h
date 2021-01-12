@@ -29,20 +29,18 @@
 #include <hip/hip_runtime.h>
 
 // CSR to COO matrix conversion kernel
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE>
-__launch_bounds__(BLOCKSIZE) __global__ void csr2coo_kernel(rocsparse_int        m,
-                                                            const rocsparse_int* csr_row_ptr,
-                                                            rocsparse_int*       coo_row_ind,
-                                                            rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J>
+__launch_bounds__(BLOCKSIZE) __global__
+    void csr2coo_kernel(J m, const I* csr_row_ptr, J* coo_row_ind, rocsparse_index_base idx_base)
 {
-    rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + tid;
-    rocsparse_int lid = tid & (WF_SIZE - 1);
-    rocsparse_int nwf = hipGridDim_x * BLOCKSIZE / WF_SIZE;
+    J tid = hipThreadIdx_x;
+    J gid = hipBlockIdx_x * BLOCKSIZE + tid;
+    J lid = tid & (WF_SIZE - 1);
+    J nwf = hipGridDim_x * BLOCKSIZE / WF_SIZE;
 
-    for(rocsparse_int row = gid / WF_SIZE; row < m; row += nwf)
+    for(J row = gid / WF_SIZE; row < m; row += nwf)
     {
-        for(rocsparse_int aj = csr_row_ptr[row] + lid; aj < csr_row_ptr[row + 1]; aj += WF_SIZE)
+        for(I aj = csr_row_ptr[row] + lid; aj < csr_row_ptr[row + 1]; aj += WF_SIZE)
         {
             coo_row_ind[aj - idx_base] = row + idx_base;
         }
