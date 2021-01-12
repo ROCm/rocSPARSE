@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -287,15 +287,16 @@ void testing_dense2coo(const Arguments& arg)
         }
 
         // Compute the reference host first.
-        host_dense_to_coo<T>(M,
-                             N,
-                             rocsparse_get_mat_index_base(descr),
-                             h_dense_val,
-                             LD,
-                             h_nnz_per_row,
-                             cpu_coo_val,
-                             cpu_coo_row_ind,
-                             cpu_coo_col_ind);
+        host_dense_to_coo(M,
+                          N,
+                          rocsparse_get_mat_index_base(descr),
+                          h_dense_val,
+                          LD,
+                          rocsparse_order_column,
+                          h_nnz_per_row,
+                          cpu_coo_val,
+                          cpu_coo_row_ind,
+                          cpu_coo_col_ind);
 
         unit_check_general(
             1, nnz, 1, (rocsparse_int*)cpu_coo_row_ind, (rocsparse_int*)gpu_coo_row_ind);
@@ -343,7 +344,7 @@ void testing_dense2coo(const Arguments& arg)
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = dense2coo_gbyte_count<T>(M, N, nnz) / gpu_time_used * 1e6;
+        double gpu_gbyte = dense2coo_gbyte_count<rocsparse_int, T>(M, N, nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

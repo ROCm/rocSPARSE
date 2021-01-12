@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -3348,21 +3348,22 @@ void host_prune_dense2csr_by_percentage(rocsparse_int               m,
     host_prune_dense2csr<T>(m, n, A, lda, base, threshold, nnz, csr_val, csr_row_ptr, csr_col_ind);
 }
 
-template <rocsparse_direction DIRA, typename T>
-rocsparse_status host_dense2csx(rocsparse_int        m,
-                                rocsparse_int        n,
-                                rocsparse_index_base base,
-                                const T*             A,
-                                rocsparse_int        ld,
-                                const rocsparse_int* nnz_per_row_columns,
-                                T*                   csx_val,
-                                rocsparse_int*       csx_row_col_ptr,
-                                rocsparse_int*       csx_col_row_ind)
+template <rocsparse_direction DIRA, typename I, typename J, typename T>
+void host_dense2csx(J                    m,
+                    J                    n,
+                    rocsparse_index_base base,
+                    const T*             A,
+                    I                    ld,
+                    rocsparse_order      order,
+                    const I*             nnz_per_row_columns,
+                    T*                   csx_val,
+                    I*                   csx_row_col_ptr,
+                    J*                   csx_col_row_ind)
 {
     static constexpr T s_zero = {};
-    rocsparse_int      len    = (rocsparse_direction_row == DIRA) ? m : n;
+    J                  len    = (rocsparse_direction_row == DIRA) ? m : n;
     *csx_row_col_ptr          = base;
-    for(rocsparse_int i = 0; i < len; ++i)
+    for(J i = 0; i < len; ++i)
     {
         csx_row_col_ptr[i + 1] = nnz_per_row_columns[i] + csx_row_col_ptr[i];
     }
@@ -3371,18 +3372,30 @@ rocsparse_status host_dense2csx(rocsparse_int        m,
     {
     case rocsparse_direction_column:
     {
-        for(rocsparse_int j = 0; j < n; ++j)
+        for(J j = 0; j < n; ++j)
         {
-            for(rocsparse_int i = 0; i < m; ++i)
+            for(J i = 0; i < m; ++i)
             {
-                if(A[j * ld + i] != s_zero)
+                if(order == rocsparse_order_column)
                 {
-                    *csx_val++         = A[j * ld + i];
-                    *csx_col_row_ind++ = i + base;
+                    if(A[j * ld + i] != s_zero)
+                    {
+                        *csx_val++         = A[j * ld + i];
+                        *csx_col_row_ind++ = i + base;
+                    }
+                }
+                else
+                {
+                    if(A[i * ld + j] != s_zero)
+                    {
+                        *csx_val++         = A[i * ld + j];
+                        *csx_col_row_ind++ = i + base;
+                    }
                 }
             }
         }
-        return rocsparse_status_success;
+
+        break;
     }
 
     case rocsparse_direction_row:
@@ -3392,91 +3405,130 @@ rocsparse_status host_dense2csx(rocsparse_int        m,
         // Otherwise, we would use csxRowPtrA to store the shifts.
         // and once the job is done a simple memory move would reinitialize the csxRowPtrA to its initial state)
         //
-        for(rocsparse_int i = 0; i < m; ++i)
+        for(J i = 0; i < m; ++i)
         {
-            for(rocsparse_int j = 0; j < n; ++j)
+            for(J j = 0; j < n; ++j)
             {
-                if(A[j * ld + i] != s_zero)
+                if(order == rocsparse_order_column)
                 {
-                    *csx_val++         = A[j * ld + i];
-                    *csx_col_row_ind++ = j + base;
+                    if(A[j * ld + i] != s_zero)
+                    {
+                        *csx_val++         = A[j * ld + i];
+                        *csx_col_row_ind++ = j + base;
+                    }
+                }
+                else
+                {
+                    if(A[i * ld + j] != s_zero)
+                    {
+                        *csx_val++         = A[i * ld + j];
+                        *csx_col_row_ind++ = j + base;
+                    }
                 }
             }
         }
-        return rocsparse_status_success;
-    }
-    }
 
-    return rocsparse_status_invalid_value;
+        break;
+    }
+    }
 }
 
-template <rocsparse_direction DIRA, typename T>
-rocsparse_status host_csx2dense(rocsparse_int        m,
-                                rocsparse_int        n,
-                                rocsparse_index_base base,
-                                const T*             csx_val,
-                                const rocsparse_int* csx_row_col_ptr,
-                                const rocsparse_int* csx_col_row_ind,
-                                T*                   A,
-                                rocsparse_int        ld)
+template <rocsparse_direction DIRA, typename I, typename J, typename T>
+void host_csx2dense(J                    m,
+                    J                    n,
+                    rocsparse_index_base base,
+                    rocsparse_order      order,
+                    const T*             csx_val,
+                    const I*             csx_row_col_ptr,
+                    const J*             csx_col_row_ind,
+                    T*                   A,
+                    I                    ld)
 {
-    switch(DIRA)
+    if(order == rocsparse_order_column)
     {
-    case rocsparse_direction_column:
-    {
-        static constexpr T s_zero = {};
-        for(rocsparse_int col = 0; col < n; ++col)
+        for(J col = 0; col < n; ++col)
         {
-            for(rocsparse_int row = 0; row < m; ++row)
+            for(J row = 0; row < m; ++row)
             {
-                A[row + ld * col] = s_zero;
-            }
-            const rocsparse_int bound = csx_row_col_ptr[col + 1] - base;
-            for(rocsparse_int at = csx_row_col_ptr[col] - base; at < bound; ++at)
-            {
-                A[(csx_col_row_ind[at] - base) + ld * col] = csx_val[at];
+                A[row + ld * col] = static_cast<T>(0);
             }
         }
-        return rocsparse_status_success;
     }
-
-    case rocsparse_direction_row:
+    else
     {
-        static constexpr T s_zero = {};
-        for(rocsparse_int row = 0; row < m; ++row)
+        for(J row = 0; row < m; ++row)
         {
-            for(rocsparse_int col = 0; col < n; ++col)
+            for(J col = 0; col < n; ++col)
             {
-                A[col * ld + row] = s_zero;
-            }
-
-            const rocsparse_int bound = csx_row_col_ptr[row + 1] - base;
-            for(rocsparse_int at = csx_row_col_ptr[row] - base; at < bound; ++at)
-            {
-                A[(csx_col_row_ind[at] - base) * ld + row] = csx_val[at];
+                A[col + ld * row] = static_cast<T>(0);
             }
         }
-        return rocsparse_status_success;
-    }
     }
 
-    return rocsparse_status_invalid_value;
+    if(DIRA == rocsparse_direction_column)
+    {
+        for(J col = 0; col < n; ++col)
+        {
+            I start = csx_row_col_ptr[col] - base;
+            I end   = csx_row_col_ptr[col + 1] - base;
+
+            if(order == rocsparse_order_column)
+            {
+                for(I at = start; at < end; ++at)
+                {
+                    A[(csx_col_row_ind[at] - base) + ld * col] = csx_val[at];
+                }
+            }
+            else
+            {
+                for(I at = start; at < end; ++at)
+                {
+                    A[col + ld * (csx_col_row_ind[at] - base)] = csx_val[at];
+                }
+            }
+        }
+    }
+    else
+    {
+        for(J row = 0; row < m; ++row)
+        {
+            I start = csx_row_col_ptr[row] - base;
+            I end   = csx_row_col_ptr[row + 1] - base;
+
+            if(order == rocsparse_order_column)
+            {
+                for(I at = start; at < end; ++at)
+                {
+                    A[(csx_col_row_ind[at] - base) * ld + row] = csx_val[at];
+                }
+            }
+            else
+            {
+                for(I at = start; at < end; ++at)
+                {
+
+                    A[row * ld + (csx_col_row_ind[at] - base)] = csx_val[at];
+                }
+            }
+        }
+    }
 }
 
-template <typename T>
-void host_dense_to_coo(rocsparse_int                     m,
-                       rocsparse_int                     n,
-                       rocsparse_index_base              base,
-                       const std::vector<T>&             A,
-                       rocsparse_int                     ld,
-                       const std::vector<rocsparse_int>& nnz_per_row,
-                       std::vector<T>&                   coo_val,
-                       std::vector<rocsparse_int>&       coo_row_ind,
-                       std::vector<rocsparse_int>&       coo_col_ind)
+template <typename I, typename T>
+void host_dense_to_coo(I                     m,
+                       I                     n,
+                       rocsparse_index_base  base,
+                       const std::vector<T>& A,
+                       I                     ld,
+                       rocsparse_order       order,
+                       const std::vector<I>& nnz_per_row,
+                       std::vector<T>&       coo_val,
+                       std::vector<I>&       coo_row_ind,
+                       std::vector<I>&       coo_col_ind)
 {
     // Find number of non-zeros in dense matrix
     int nnz = 0;
-    for(rocsparse_int i = 0; i < m; ++i)
+    for(I i = 0; i < m; ++i)
     {
         nnz += nnz_per_row[i];
     }
@@ -3487,42 +3539,66 @@ void host_dense_to_coo(rocsparse_int                     m,
 
     // Fill COO matrix
     int index = 0;
-    for(rocsparse_int i = 0; i < m; i++)
+    for(I i = 0; i < m; i++)
     {
-        for(rocsparse_int j = 0; j < n; j++)
+        for(I j = 0; j < n; j++)
         {
-            if(A[ld * j + i] != static_cast<T>(0))
+            if(order == rocsparse_order_column)
             {
-                coo_val[index]     = A[ld * j + i];
-                coo_row_ind[index] = i + base;
-                coo_col_ind[index] = j + base;
+                if(A[ld * j + i] != static_cast<T>(0))
+                {
+                    coo_val[index]     = A[ld * j + i];
+                    coo_row_ind[index] = i + base;
+                    coo_col_ind[index] = j + base;
 
-                index++;
+                    index++;
+                }
+            }
+            else
+            {
+                if(A[ld * i + j] != static_cast<T>(0))
+                {
+                    coo_val[index]     = A[ld * i + j];
+                    coo_row_ind[index] = i + base;
+                    coo_col_ind[index] = j + base;
+
+                    index++;
+                }
             }
         }
     }
 }
 
-template <typename T>
-void host_coo_to_dense(rocsparse_int                     m,
-                       rocsparse_int                     n,
-                       rocsparse_int                     nnz,
-                       rocsparse_index_base              base,
-                       const std::vector<T>&             coo_val,
-                       const std::vector<rocsparse_int>& coo_row_ind,
-                       const std::vector<rocsparse_int>& coo_col_ind,
-                       std::vector<T>&                   A,
-                       rocsparse_int                     ld)
+template <typename I, typename T>
+void host_coo_to_dense(I                     m,
+                       I                     n,
+                       I                     nnz,
+                       rocsparse_index_base  base,
+                       const std::vector<T>& coo_val,
+                       const std::vector<I>& coo_row_ind,
+                       const std::vector<I>& coo_col_ind,
+                       std::vector<T>&       A,
+                       I                     ld,
+                       rocsparse_order       order)
 {
-    A.resize(ld * n);
+    I nm = order == rocsparse_order_column ? n : m;
 
-    for(rocsparse_int i = 0; i < nnz; i++)
+    A.resize(ld * nm);
+
+    for(I i = 0; i < nnz; i++)
     {
-        rocsparse_int row = coo_row_ind[i] - base;
-        rocsparse_int col = coo_col_ind[i] - base;
-        T             val = coo_val[i];
+        I row = coo_row_ind[i] - base;
+        I col = coo_col_ind[i] - base;
+        T val = coo_val[i];
 
-        A[ld * col + row] = val;
+        if(order == rocsparse_order_column)
+        {
+            A[ld * col + row] = val;
+        }
+        else
+        {
+            A[ld * row + col] = val;
+        }
     }
 }
 
@@ -4680,67 +4756,6 @@ template void host_prune_dense2csr_by_percentage(rocsparse_int               m,
                                                  std::vector<rocsparse_int>& csr_row_ptr,
                                                  std::vector<rocsparse_int>& csr_col_ind);
 
-template rocsparse_status
-    host_dense2csx<rocsparse_direction_row>(rocsparse_int        m,
-                                            rocsparse_int        n,
-                                            rocsparse_index_base base,
-                                            const float*         A,
-                                            rocsparse_int        ld,
-                                            const rocsparse_int* nnz_per_row_columns,
-                                            float*               csx_val,
-                                            rocsparse_int*       csx_row_col_ptr,
-                                            rocsparse_int*       csx_col_row_ind);
-
-template rocsparse_status
-    host_dense2csx<rocsparse_direction_column>(rocsparse_int        m,
-                                               rocsparse_int        n,
-                                               rocsparse_index_base base,
-                                               const float*         A,
-                                               rocsparse_int        ld,
-                                               const rocsparse_int* nnz_per_row_columns,
-                                               float*               csx_val,
-                                               rocsparse_int*       csx_row_col_ptr,
-                                               rocsparse_int*       csx_col_row_ind);
-
-template rocsparse_status
-    host_csx2dense<rocsparse_direction_row>(rocsparse_int        m,
-                                            rocsparse_int        n,
-                                            rocsparse_index_base base,
-                                            const float*         csx_val,
-                                            const rocsparse_int* csx_row_col_ptr,
-                                            const rocsparse_int* csx_col_row_ind,
-                                            float*               A,
-                                            rocsparse_int        ld);
-template rocsparse_status
-    host_csx2dense<rocsparse_direction_column>(rocsparse_int        m,
-                                               rocsparse_int        n,
-                                               rocsparse_index_base base,
-                                               const float*         csx_val,
-                                               const rocsparse_int* csx_row_col_ptr,
-                                               const rocsparse_int* csx_col_row_ind,
-                                               float*               A,
-                                               rocsparse_int        ld);
-
-template void host_dense_to_coo(rocsparse_int                     m,
-                                rocsparse_int                     n,
-                                rocsparse_index_base              base,
-                                const std::vector<float>&         A,
-                                rocsparse_int                     ld,
-                                const std::vector<rocsparse_int>& nnz_per_row,
-                                std::vector<float>&               coo_val,
-                                std::vector<rocsparse_int>&       coo_row_ind,
-                                std::vector<rocsparse_int>&       coo_col_ind);
-
-template void host_coo_to_dense(rocsparse_int                     m,
-                                rocsparse_int                     n,
-                                rocsparse_int                     nnz,
-                                rocsparse_index_base              base,
-                                const std::vector<float>&         coo_val,
-                                const std::vector<rocsparse_int>& coo_row_ind,
-                                const std::vector<rocsparse_int>& coo_col_ind,
-                                std::vector<float>&               A,
-                                rocsparse_int                     ld);
-
 template void host_csr_to_csc(rocsparse_int                     M,
                               rocsparse_int                     N,
                               rocsparse_int                     nnz,
@@ -5184,67 +5199,6 @@ template void host_prune_dense2csr_by_percentage(rocsparse_int               m,
                                                  std::vector<rocsparse_int>& csr_row_ptr,
                                                  std::vector<rocsparse_int>& csr_col_ind);
 
-template rocsparse_status
-    host_dense2csx<rocsparse_direction_row>(rocsparse_int        m,
-                                            rocsparse_int        n,
-                                            rocsparse_index_base base,
-                                            const double*        A,
-                                            rocsparse_int        ld,
-                                            const rocsparse_int* nnz_per_row_columns,
-                                            double*              csx_val,
-                                            rocsparse_int*       csx_row_col_ptr,
-                                            rocsparse_int*       csx_col_row_ind);
-
-template rocsparse_status
-    host_dense2csx<rocsparse_direction_column>(rocsparse_int        m,
-                                               rocsparse_int        n,
-                                               rocsparse_index_base base,
-                                               const double*        A,
-                                               rocsparse_int        ld,
-                                               const rocsparse_int* nnz_per_row_columns,
-                                               double*              csx_val,
-                                               rocsparse_int*       csx_row_col_ptr,
-                                               rocsparse_int*       csx_col_row_ind);
-
-template rocsparse_status
-    host_csx2dense<rocsparse_direction_column>(rocsparse_int        m,
-                                               rocsparse_int        n,
-                                               rocsparse_index_base base,
-                                               const double*        csx_val,
-                                               const rocsparse_int* csx_row_col_ptr,
-                                               const rocsparse_int* csx_col_row_ind,
-                                               double*              A,
-                                               rocsparse_int        ld);
-template rocsparse_status
-    host_csx2dense<rocsparse_direction_row>(rocsparse_int        m,
-                                            rocsparse_int        n,
-                                            rocsparse_index_base base,
-                                            const double*        csx_val,
-                                            const rocsparse_int* csx_row_col_ptr,
-                                            const rocsparse_int* csx_col_row_ind,
-                                            double*              A,
-                                            rocsparse_int        ld);
-
-template void host_dense_to_coo(rocsparse_int                     m,
-                                rocsparse_int                     n,
-                                rocsparse_index_base              base,
-                                const std::vector<double>&        A,
-                                rocsparse_int                     ld,
-                                const std::vector<rocsparse_int>& nnz_per_row,
-                                std::vector<double>&              coo_val,
-                                std::vector<rocsparse_int>&       coo_row_ind,
-                                std::vector<rocsparse_int>&       coo_col_ind);
-
-template void host_coo_to_dense(rocsparse_int                     m,
-                                rocsparse_int                     n,
-                                rocsparse_int                     nnz,
-                                rocsparse_index_base              base,
-                                const std::vector<double>&        coo_val,
-                                const std::vector<rocsparse_int>& coo_row_ind,
-                                const std::vector<rocsparse_int>& coo_col_ind,
-                                std::vector<double>&              A,
-                                rocsparse_int                     ld);
-
 template void host_csr_to_csc(rocsparse_int                     M,
                               rocsparse_int                     N,
                               rocsparse_int                     nnz,
@@ -5666,67 +5620,6 @@ template rocsparse_status host_nnz(rocsparse_direction             dirA,
                                    rocsparse_int*                  nnz_per_row_columns,
                                    rocsparse_int*                  nnz_total_dev_host_ptr);
 
-template rocsparse_status
-    host_dense2csx<rocsparse_direction_row>(rocsparse_int                   m,
-                                            rocsparse_int                   n,
-                                            rocsparse_index_base            base,
-                                            const rocsparse_double_complex* A,
-                                            rocsparse_int                   ld,
-                                            const rocsparse_int*            nnz_per_row_columns,
-                                            rocsparse_double_complex*       csx_val,
-                                            rocsparse_int*                  csx_row_col_ptr,
-                                            rocsparse_int*                  csx_col_row_ind);
-
-template rocsparse_status
-    host_dense2csx<rocsparse_direction_column>(rocsparse_int                   m,
-                                               rocsparse_int                   n,
-                                               rocsparse_index_base            base,
-                                               const rocsparse_double_complex* A,
-                                               rocsparse_int                   ld,
-                                               const rocsparse_int*            nnz_per_row_columns,
-                                               rocsparse_double_complex*       csx_val,
-                                               rocsparse_int*                  csx_row_col_ptr,
-                                               rocsparse_int*                  csx_col_row_ind);
-
-template rocsparse_status
-    host_csx2dense<rocsparse_direction_row>(rocsparse_int                   m,
-                                            rocsparse_int                   n,
-                                            rocsparse_index_base            base,
-                                            const rocsparse_double_complex* csx_val,
-                                            const rocsparse_int*            csx_row_col_ptr,
-                                            const rocsparse_int*            csx_col_row_ind,
-                                            rocsparse_double_complex*       A,
-                                            rocsparse_int                   ld);
-template rocsparse_status
-    host_csx2dense<rocsparse_direction_column>(rocsparse_int                   m,
-                                               rocsparse_int                   n,
-                                               rocsparse_index_base            base,
-                                               const rocsparse_double_complex* csx_val,
-                                               const rocsparse_int*            csx_row_col_ptr,
-                                               const rocsparse_int*            csx_col_row_ind,
-                                               rocsparse_double_complex*       A,
-                                               rocsparse_int                   ld);
-
-template void host_dense_to_coo(rocsparse_int                                m,
-                                rocsparse_int                                n,
-                                rocsparse_index_base                         base,
-                                const std::vector<rocsparse_double_complex>& A,
-                                rocsparse_int                                ld,
-                                const std::vector<rocsparse_int>&            nnz_per_row,
-                                std::vector<rocsparse_double_complex>&       coo_val,
-                                std::vector<rocsparse_int>&                  coo_row_ind,
-                                std::vector<rocsparse_int>&                  coo_col_ind);
-
-template void host_coo_to_dense(rocsparse_int                                m,
-                                rocsparse_int                                n,
-                                rocsparse_int                                nnz,
-                                rocsparse_index_base                         base,
-                                const std::vector<rocsparse_double_complex>& coo_val,
-                                const std::vector<rocsparse_int>&            coo_row_ind,
-                                const std::vector<rocsparse_int>&            coo_col_ind,
-                                std::vector<rocsparse_double_complex>&       A,
-                                rocsparse_int                                ld);
-
 template void host_csr_to_csc(rocsparse_int                                M,
                               rocsparse_int                                N,
                               rocsparse_int                                nnz,
@@ -6121,68 +6014,6 @@ template rocsparse_status host_nnz(rocsparse_direction            dirA,
                                    rocsparse_int*                 nnz_per_row_columns,
                                    rocsparse_int*                 nnz_total_dev_host_ptr);
 
-template rocsparse_status
-    host_dense2csx<rocsparse_direction_row>(rocsparse_int                  m,
-                                            rocsparse_int                  n,
-                                            rocsparse_index_base           base,
-                                            const rocsparse_float_complex* A,
-                                            rocsparse_int                  ld,
-                                            const rocsparse_int*           nnz_per_row_columns,
-                                            rocsparse_float_complex*       csx_val,
-                                            rocsparse_int*                 csx_row_col_ptr,
-                                            rocsparse_int*                 csx_col_row_ind);
-
-template rocsparse_status
-    host_dense2csx<rocsparse_direction_column>(rocsparse_int                  m,
-                                               rocsparse_int                  n,
-                                               rocsparse_index_base           base,
-                                               const rocsparse_float_complex* A,
-                                               rocsparse_int                  ld,
-                                               const rocsparse_int*           nnz_per_row_columns,
-                                               rocsparse_float_complex*       csx_val,
-                                               rocsparse_int*                 csx_row_col_ptr,
-                                               rocsparse_int*                 csx_col_row_ind);
-
-template rocsparse_status
-    host_csx2dense<rocsparse_direction_column>(rocsparse_int                  m,
-                                               rocsparse_int                  n,
-                                               rocsparse_index_base           base,
-                                               const rocsparse_float_complex* csx_val,
-                                               const rocsparse_int*           csx_row_col_ptr,
-                                               const rocsparse_int*           csx_col_row_ind,
-                                               rocsparse_float_complex*       A,
-                                               rocsparse_int                  ld);
-
-template rocsparse_status
-    host_csx2dense<rocsparse_direction_row>(rocsparse_int                  m,
-                                            rocsparse_int                  n,
-                                            rocsparse_index_base           base,
-                                            const rocsparse_float_complex* csx_val,
-                                            const rocsparse_int*           csx_row_col_ptr,
-                                            const rocsparse_int*           csx_col_row_ind,
-                                            rocsparse_float_complex*       A,
-                                            rocsparse_int                  ld);
-
-template void host_dense_to_coo(rocsparse_int                               m,
-                                rocsparse_int                               n,
-                                rocsparse_index_base                        base,
-                                const std::vector<rocsparse_float_complex>& A,
-                                rocsparse_int                               ld,
-                                const std::vector<rocsparse_int>&           nnz_per_row,
-                                std::vector<rocsparse_float_complex>&       coo_val,
-                                std::vector<rocsparse_int>&                 coo_row_ind,
-                                std::vector<rocsparse_int>&                 coo_col_ind);
-
-template void host_coo_to_dense(rocsparse_int                               m,
-                                rocsparse_int                               n,
-                                rocsparse_int                               nnz,
-                                rocsparse_index_base                        base,
-                                const std::vector<rocsparse_float_complex>& coo_val,
-                                const std::vector<rocsparse_int>&           coo_row_ind,
-                                const std::vector<rocsparse_int>&           coo_col_ind,
-                                std::vector<rocsparse_float_complex>&       A,
-                                rocsparse_int                               ld);
-
 template void host_csr_to_csc(rocsparse_int                               M,
                               rocsparse_int                               N,
                               rocsparse_int                               nnz,
@@ -6316,6 +6147,26 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                      std::vector<rocsparse_float_complex>& coo_val);
 
 #define INSTANTIATE2(ITYPE, TTYPE)                                                               \
+    template void host_coo_to_dense<ITYPE, TTYPE>(ITYPE                     m,                   \
+                                                  ITYPE                     n,                   \
+                                                  ITYPE                     nnz,                 \
+                                                  rocsparse_index_base      base,                \
+                                                  const std::vector<TTYPE>& coo_val,             \
+                                                  const std::vector<ITYPE>& coo_row_ind,         \
+                                                  const std::vector<ITYPE>& coo_col_ind,         \
+                                                  std::vector<TTYPE>&       A,                   \
+                                                  ITYPE                     ld,                  \
+                                                  rocsparse_order           order);                        \
+    template void host_dense_to_coo<ITYPE, TTYPE>(ITYPE                     m,                   \
+                                                  ITYPE                     n,                   \
+                                                  rocsparse_index_base      base,                \
+                                                  const std::vector<TTYPE>& A,                   \
+                                                  ITYPE                     ld,                  \
+                                                  rocsparse_order           order,               \
+                                                  const std::vector<ITYPE>& nnz_per_row,         \
+                                                  std::vector<TTYPE>&       coo_val,             \
+                                                  std::vector<ITYPE>&       coo_row_ind,         \
+                                                  std::vector<ITYPE>&       coo_col_ind);              \
     template void host_coomv<ITYPE, TTYPE>(ITYPE                M,                               \
                                            ITYPE                nnz,                             \
                                            TTYPE                alpha,                           \
@@ -6428,6 +6279,27 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                     rocsparse_index_base      base_C,            \
                                                     rocsparse_index_base      base_D);
 
+#define INSTANTIATE4(DIR, ITYPE, JTYPE, TTYPE)                                                       \
+    template void host_dense2csx<DIR, ITYPE, JTYPE, TTYPE>(JTYPE                m,                   \
+                                                           JTYPE                n,                   \
+                                                           rocsparse_index_base base,                \
+                                                           const TTYPE*         A,                   \
+                                                           ITYPE                ld,                  \
+                                                           rocsparse_order      order,               \
+                                                           const ITYPE*         nnz_per_row_columns, \
+                                                           TTYPE*               csx_val,             \
+                                                           ITYPE*               csx_row_col_ptr,     \
+                                                           JTYPE*               csx_col_row_ind);                  \
+    template void host_csx2dense<DIR, ITYPE, JTYPE, TTYPE>(JTYPE                m,                   \
+                                                           JTYPE                n,                   \
+                                                           rocsparse_index_base base,                \
+                                                           rocsparse_order      order,               \
+                                                           const TTYPE*         csx_val,             \
+                                                           const ITYPE*         csx_row_col_ptr,     \
+                                                           const JTYPE*         csx_col_row_ind,     \
+                                                           TTYPE*               A,                   \
+                                                           ITYPE                ld);
+
 INSTANTIATE2(int32_t, float);
 INSTANTIATE2(int32_t, double);
 INSTANTIATE2(int32_t, rocsparse_float_complex);
@@ -6449,3 +6321,28 @@ INSTANTIATE3(int64_t, int64_t, float);
 INSTANTIATE3(int64_t, int64_t, double);
 INSTANTIATE3(int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE3(int64_t, int64_t, rocsparse_double_complex);
+
+INSTANTIATE4(rocsparse_direction_row, int32_t, int32_t, float);
+INSTANTIATE4(rocsparse_direction_row, int32_t, int32_t, double);
+INSTANTIATE4(rocsparse_direction_row, int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE4(rocsparse_direction_row, int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE4(rocsparse_direction_row, int64_t, int32_t, float);
+INSTANTIATE4(rocsparse_direction_row, int64_t, int32_t, double);
+INSTANTIATE4(rocsparse_direction_row, int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE4(rocsparse_direction_row, int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE4(rocsparse_direction_row, int64_t, int64_t, float);
+INSTANTIATE4(rocsparse_direction_row, int64_t, int64_t, double);
+INSTANTIATE4(rocsparse_direction_row, int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE4(rocsparse_direction_row, int64_t, int64_t, rocsparse_double_complex);
+INSTANTIATE4(rocsparse_direction_column, int32_t, int32_t, float);
+INSTANTIATE4(rocsparse_direction_column, int32_t, int32_t, double);
+INSTANTIATE4(rocsparse_direction_column, int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE4(rocsparse_direction_column, int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE4(rocsparse_direction_column, int64_t, int32_t, float);
+INSTANTIATE4(rocsparse_direction_column, int64_t, int32_t, double);
+INSTANTIATE4(rocsparse_direction_column, int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE4(rocsparse_direction_column, int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, float);
+INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, double);
+INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE4(rocsparse_direction_column, int64_t, int64_t, rocsparse_double_complex);

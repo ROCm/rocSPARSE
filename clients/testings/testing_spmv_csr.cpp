@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,8 +46,8 @@ void testing_spmv_csr_bad_arg(const Arguments& arg)
     rocsparse_local_handle handle;
 
     // Allocate memory on device
-    device_vector<I> dcsr_row_ptr(nnz);
-    device_vector<I> dcsr_col_ind(nnz);
+    device_vector<I> dcsr_row_ptr(m + 1);
+    device_vector<J> dcsr_col_ind(nnz);
     device_vector<T> dcsr_val(nnz);
     device_vector<T> dx(n);
     device_vector<T> dy(m);
@@ -59,8 +59,17 @@ void testing_spmv_csr_bad_arg(const Arguments& arg)
     }
 
     // SpMV structures
-    rocsparse_local_spmat A(
-        m, n, nnz, dcsr_row_ptr, dcsr_col_ind, dcsr_val, itype, jtype, base, ttype);
+    rocsparse_local_spmat A(m,
+                            n,
+                            nnz,
+                            dcsr_row_ptr,
+                            dcsr_col_ind,
+                            dcsr_val,
+                            itype,
+                            jtype,
+                            base,
+                            ttype,
+                            rocsparse_format_csr);
     rocsparse_local_dnvec x(n, dx, ttype);
     rocsparse_local_dnvec y(m, dy, ttype);
 
@@ -177,8 +186,17 @@ void testing_spmv_csr(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
         // Check structures
-        rocsparse_local_spmat A(
-            M, N, nnz, dcsr_row_ptr, dcsr_col_ind, dcsr_val, itype, jtype, base, ttype);
+        rocsparse_local_spmat A(M,
+                                N,
+                                nnz,
+                                dcsr_row_ptr,
+                                dcsr_col_ind,
+                                dcsr_val,
+                                itype,
+                                jtype,
+                                base,
+                                ttype,
+                                rocsparse_format_csr);
         rocsparse_local_dnvec x(N, dx, ttype);
         rocsparse_local_dnvec y(M, dy, ttype);
 
@@ -276,8 +294,17 @@ void testing_spmv_csr(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(d_beta, &h_beta, sizeof(T), hipMemcpyHostToDevice));
 
     // Create descriptors
-    rocsparse_local_spmat A(
-        M, N, nnz, dcsr_row_ptr, dcsr_col_ind, dcsr_val, itype, jtype, base, ttype);
+    rocsparse_local_spmat A(M,
+                            N,
+                            nnz,
+                            dcsr_row_ptr,
+                            dcsr_col_ind,
+                            dcsr_val,
+                            itype,
+                            jtype,
+                            base,
+                            ttype,
+                            rocsparse_format_csr);
     rocsparse_local_dnvec x(N, dx, ttype);
     rocsparse_local_dnvec y1(M, dy_1, ttype);
     rocsparse_local_dnvec y2(M, dy_2, ttype);

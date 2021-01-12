@@ -81,6 +81,9 @@
 #include "testing_dense2coo.hpp"
 #include "testing_dense2csc.hpp"
 #include "testing_dense2csr.hpp"
+#include "testing_dense_to_sparse_coo.hpp"
+#include "testing_dense_to_sparse_csc.hpp"
+#include "testing_dense_to_sparse_csr.hpp"
 #include "testing_ell2csr.hpp"
 #include "testing_gebsr2csr.hpp"
 #include "testing_gebsr2gebsc.hpp"
@@ -92,6 +95,9 @@
 #include "testing_prune_csr2csr_by_percentage.hpp"
 #include "testing_prune_dense2csr.hpp"
 #include "testing_prune_dense2csr_by_percentage.hpp"
+#include "testing_sparse_to_dense_coo.hpp"
+#include "testing_sparse_to_dense_csc.hpp"
+#include "testing_sparse_to_dense_csr.hpp"
 
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -102,13 +108,16 @@ namespace po = boost::program_options;
 int main(int argc, char* argv[])
 {
     Arguments arg;
-    arg.unit_check = 0;
-    arg.timing     = 1;
-    arg.alphai     = 0.0;
-    arg.betai      = 0.0;
-    arg.threshold  = 0.0;
-    arg.percentage = 0.0;
-    arg.spmv_alg   = rocsparse_spmv_alg_default;
+    arg.unit_check          = 0;
+    arg.timing              = 1;
+    arg.alphai              = 0.0;
+    arg.betai               = 0.0;
+    arg.threshold           = 0.0;
+    arg.percentage          = 0.0;
+    arg.spmv_alg            = rocsparse_spmv_alg_default;
+    arg.spgemm_alg          = rocsparse_spgemm_alg_default;
+    arg.sparse_to_dense_alg = rocsparse_sparse_to_dense_alg_default;
+    arg.dense_to_sparse_alg = rocsparse_dense_to_sparse_alg_default;
 
     std::string   function;
     std::string   filename;
@@ -127,6 +136,7 @@ int main(int argc, char* argv[])
     char          uplo;
     char          apol;
     rocsparse_int dir;
+    rocsparse_int order;
 
     std::vector<rocsparse_int> laplace(3, 0);
 
@@ -259,6 +269,7 @@ int main(int argc, char* argv[])
         "  Conversion: csr2coo, csr2csc, gebsr2gebsc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
         "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2coo, prune_dense2csr, prune_dense2csr_by_percentage, dense2csc\n"
         "              csr2dense, csc2dense, coo2dense, bsr2csr, gebsr2csr, gebsr2gebsr, csr2csr_compress, prune_csr2csr, prune_csr2csr_by_percentage\n"
+        "              sparse_to_dense_coo, sparse_to_dense_csr, sparse_to_dense_csc, dense_to_sparse_coo, dense_to_sparse_csr, dense_to_sparse_csc\n"
         "  Sorting: cscsort, csrsort, coosort\n"
         "  Misc: identity, nnz")
 
@@ -285,6 +296,10 @@ int main(int argc, char* argv[])
         po::value<rocsparse_int>(&dir)->default_value(rocsparse_direction_row),
         "Indicates whether a dense matrix should be parsed by rows or by columns, assuming column-major storage: row = 0, column = 1 (default: 0)")
 
+        ("order",
+        po::value<rocsparse_int>(&order)->default_value(rocsparse_order_column),
+        "Indicates whether a dense matrix is laid out in column-major storage: 1, or row-major storage 0 (default: 1)")
+
         ("denseld",
         po::value<rocsparse_int>(&arg.denseld)->default_value(128),
         "Indicates the leading dimension of a dense matrix >= M, assuming a column-oriented storage.");
@@ -307,13 +322,13 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    if(function == "csrmv" && indextype != 's' && indextype != 'd' && indextype != 'm')
+    if(order != rocsparse_order_row && order != rocsparse_order_column)
     {
-        std::cerr << "Invalid value for --indextype" << std::endl;
+        std::cerr << "Invalid value for --order" << std::endl;
         return -1;
     }
 
-    if(function != "csrmv" && indextype != 's' && indextype != 'd')
+    if(indextype != 's' && indextype != 'd' && indextype != 'm')
     {
         std::cerr << "Invalid value for --indextype" << std::endl;
         return -1;
@@ -367,6 +382,7 @@ int main(int argc, char* argv[])
     arg.spol   = rocsparse_solve_policy_auto;
     arg.direction
         = (dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
+    arg.order = (order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
 
     // Set laplace dimensions
     arg.dimx = laplace[0];
@@ -1153,6 +1169,224 @@ int main(int argc, char* argv[])
             testing_prune_csr2csr_by_percentage<float>(arg);
         else if(precision == 'd')
             testing_prune_csr2csr_by_percentage<double>(arg);
+    }
+    else if(function == "dense_to_sparse_coo")
+    {
+        if(precision == 's')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_coo<int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_coo<int64_t, float>(arg);
+        }
+        else if(precision == 'd')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_coo<int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_coo<int64_t, double>(arg);
+        }
+        else if(precision == 'c')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_coo<int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_coo<int64_t, rocsparse_float_complex>(arg);
+        }
+        else if(precision == 'z')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_coo<int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_coo<int64_t, rocsparse_double_complex>(arg);
+        }
+    }
+    else if(function == "dense_to_sparse_csr")
+    {
+        if(precision == 's')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_csr<int32_t, int32_t, float>(arg);
+            else if(indextype == 'm')
+                testing_dense_to_sparse_csr<int64_t, int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_csr<int64_t, int64_t, float>(arg);
+        }
+        else if(precision == 'd')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_csr<int32_t, int32_t, double>(arg);
+            else if(indextype == 'm')
+                testing_dense_to_sparse_csr<int64_t, int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_csr<int64_t, int64_t, double>(arg);
+        }
+        else if(precision == 'c')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_csr<int32_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'm')
+                testing_dense_to_sparse_csr<int64_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_csr<int64_t, int64_t, rocsparse_float_complex>(arg);
+        }
+        else if(precision == 'z')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_csr<int32_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'm')
+                testing_dense_to_sparse_csr<int64_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_csr<int64_t, int64_t, rocsparse_double_complex>(arg);
+        }
+    }
+    else if(function == "dense_to_sparse_csc")
+    {
+        if(precision == 's')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_csc<int32_t, int32_t, float>(arg);
+            else if(indextype == 'm')
+                testing_dense_to_sparse_csc<int64_t, int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_csc<int64_t, int64_t, float>(arg);
+        }
+        else if(precision == 'd')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_csc<int32_t, int32_t, double>(arg);
+            else if(indextype == 'm')
+                testing_dense_to_sparse_csc<int64_t, int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_csc<int64_t, int64_t, double>(arg);
+        }
+        else if(precision == 'c')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_csc<int32_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'm')
+                testing_dense_to_sparse_csc<int64_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_csc<int64_t, int64_t, rocsparse_float_complex>(arg);
+        }
+        else if(precision == 'z')
+        {
+            if(indextype == 's')
+                testing_dense_to_sparse_csc<int32_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'm')
+                testing_dense_to_sparse_csc<int64_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_dense_to_sparse_csc<int64_t, int64_t, rocsparse_double_complex>(arg);
+        }
+    }
+    else if(function == "sparse_to_dense_coo")
+    {
+        if(precision == 's')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_coo<int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_coo<int64_t, float>(arg);
+        }
+        else if(precision == 'd')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_coo<int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_coo<int64_t, double>(arg);
+        }
+        else if(precision == 'c')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_coo<int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_coo<int64_t, rocsparse_float_complex>(arg);
+        }
+        else if(precision == 'z')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_coo<int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_coo<int64_t, rocsparse_double_complex>(arg);
+        }
+    }
+    else if(function == "sparse_to_dense_csr")
+    {
+        if(precision == 's')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_csr<int32_t, int32_t, float>(arg);
+            else if(indextype == 'm')
+                testing_sparse_to_dense_csr<int64_t, int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_csr<int64_t, int64_t, float>(arg);
+        }
+        else if(precision == 'd')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_csr<int32_t, int32_t, double>(arg);
+            else if(indextype == 'm')
+                testing_sparse_to_dense_csr<int64_t, int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_csr<int64_t, int64_t, double>(arg);
+        }
+        else if(precision == 'c')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_csr<int32_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'm')
+                testing_sparse_to_dense_csr<int64_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_csr<int64_t, int64_t, rocsparse_float_complex>(arg);
+        }
+        else if(precision == 'z')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_csr<int32_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'm')
+                testing_sparse_to_dense_csr<int64_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_csr<int64_t, int64_t, rocsparse_double_complex>(arg);
+        }
+    }
+    else if(function == "sparse_to_dense_csc")
+    {
+        if(precision == 's')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_csc<int32_t, int32_t, float>(arg);
+            else if(indextype == 'm')
+                testing_sparse_to_dense_csc<int64_t, int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_csc<int64_t, int64_t, float>(arg);
+        }
+        else if(precision == 'd')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_csc<int32_t, int32_t, double>(arg);
+            else if(indextype == 'm')
+                testing_sparse_to_dense_csc<int64_t, int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_csc<int64_t, int64_t, double>(arg);
+        }
+        else if(precision == 'c')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_csc<int32_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'm')
+                testing_sparse_to_dense_csc<int64_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_csc<int64_t, int64_t, rocsparse_float_complex>(arg);
+        }
+        else if(precision == 'z')
+        {
+            if(indextype == 's')
+                testing_sparse_to_dense_csc<int32_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'm')
+                testing_sparse_to_dense_csc<int64_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_sparse_to_dense_csc<int64_t, int64_t, rocsparse_double_complex>(arg);
+        }
     }
     else if(function == "csrsort")
     {

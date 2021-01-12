@@ -242,25 +242,43 @@ public:
     rocsparse_local_spmat(int64_t              m,
                           int64_t              n,
                           int64_t              nnz,
-                          void*                csr_row_ptr,
-                          void*                csr_col_ind,
-                          void*                csr_val,
-                          rocsparse_indextype  row_ptr_type,
-                          rocsparse_indextype  col_ind_type,
+                          void*                row_col_ptr,
+                          void*                row_col_ind,
+                          void*                val,
+                          rocsparse_indextype  row_col_ptr_type,
+                          rocsparse_indextype  row_col_ind_type,
                           rocsparse_index_base idx_base,
-                          rocsparse_datatype   compute_type)
+                          rocsparse_datatype   compute_type,
+                          rocsparse_format     format)
     {
-        rocsparse_create_csr_descr(&this->descr,
-                                   m,
-                                   n,
-                                   nnz,
-                                   csr_row_ptr,
-                                   csr_col_ind,
-                                   csr_val,
-                                   row_ptr_type,
-                                   col_ind_type,
-                                   idx_base,
-                                   compute_type);
+        if(format == rocsparse_format_csr)
+        {
+            rocsparse_create_csr_descr(&this->descr,
+                                       m,
+                                       n,
+                                       nnz,
+                                       row_col_ptr,
+                                       row_col_ind,
+                                       val,
+                                       row_col_ptr_type,
+                                       row_col_ind_type,
+                                       idx_base,
+                                       compute_type);
+        }
+        else if(format == rocsparse_format_csc)
+        {
+            rocsparse_create_csc_descr(&this->descr,
+                                       m,
+                                       n,
+                                       nnz,
+                                       row_col_ptr,
+                                       row_col_ind,
+                                       val,
+                                       row_col_ptr_type,
+                                       row_col_ind_type,
+                                       idx_base,
+                                       compute_type);
+        }
     }
 
     rocsparse_local_spmat(int64_t              m,

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,8 @@
 //! @param tx        The local thread id.
 //! @param sdata     The array of data.
 //!
-template <rocsparse_int n>
-__forceinline__ __device__ void nnz_device_reduce(rocsparse_int tx, rocsparse_int* sdata)
+template <rocsparse_int n, typename I>
+__forceinline__ __device__ void nnz_device_reduce(rocsparse_int tx, I* sdata)
 {
     __syncthreads();
     if(tx < n / 2)
@@ -45,7 +45,12 @@ __forceinline__ __device__ void nnz_device_reduce(rocsparse_int tx, rocsparse_in
 }
 
 template <>
-__forceinline__ __device__ void nnz_device_reduce<0>(rocsparse_int tx, rocsparse_int* sdata)
+__forceinline__ __device__ void nnz_device_reduce<0, int32_t>(rocsparse_int tx, int32_t* sdata)
+{
+}
+
+template <>
+__forceinline__ __device__ void nnz_device_reduce<0, int64_t>(rocsparse_int tx, int64_t* sdata)
 {
 }
 
@@ -53,29 +58,49 @@ __forceinline__ __device__ void nnz_device_reduce<0>(rocsparse_int tx, rocsparse
 //! @brief Kernel for counting the number of non-zeros per column.
 //! @param m         		The number of rows.
 //! @param n         		The number of columns.
-//! @param A       		The pointer to the values.
+//! @param A       		    The pointer to the values.
 //! @param lda       		The leading dimension.
-//! @param nnzPerColumn         The array storing the results of the nnz per column.
+//! @param nnz_per_column   The array storing the results of the nnz per column.
 //!
-template <rocsparse_int NB_X, typename T>
-__launch_bounds__(NB_X) __global__ void nnz_kernel_col(rocsparse_int m,
-                                                       rocsparse_int n,
-                                                       const T* __restrict__ A,
-                                                       rocsparse_int lda,
-                                                       rocsparse_int* __restrict__ nnzPerColumn)
+template <rocsparse_int NB_X, typename I, typename J, typename T>
+__launch_bounds__(NB_X) __global__ void nnz_kernel_col(
+    rocsparse_order order, J m, J n, const T* __restrict__ A, I lda, I* __restrict__ nnz_per_column)
 {
     static constexpr T s_zero = {};
-    rocsparse_int tx = hipThreadIdx_x, col = hipBlockIdx_x, m_full = (m / NB_X) * NB_X, res = 0;
 
-    __shared__ rocsparse_int sdata[NB_X];
+    J tx  = hipThreadIdx_x;
+    J col = hipBlockIdx_x;
 
-    A += col * lda + ((tx < m) ? tx : 0);
+    J m_full = (m / NB_X) * NB_X;
+    I res    = 0;
 
-    for(rocsparse_int i = 0; i < m_full; i += NB_X)
-        res += (A[i] != s_zero) ? 1 : 0;
+    __shared__ I sdata[NB_X];
 
-    if(tx + m_full < m)
-        res += (A[m_full] != s_zero) ? 1 : 0;
+    if(order == rocsparse_order_column)
+    {
+        A += col * lda + ((tx < m) ? tx : 0);
+
+        for(J i = 0; i < m_full; i += NB_X)
+            res += (A[i] != s_zero) ? 1 : 0;
+
+        if(tx + m_full < m)
+            res += (A[m_full] != s_zero) ? 1 : 0;
+    }
+    else
+    {
+        for(J i = 0; i < m_full; i += NB_X)
+        {
+            if((tx + i) < m)
+            {
+                res += (A[col + (tx + i) * lda] != s_zero) ? 1 : 0;
+            }
+        }
+
+        if(tx + m_full < m)
+        {
+            res += (A[col + (tx + m_full) * lda] != s_zero) ? 1 : 0;
+        }
+    }
 
     sdata[tx] = res;
 
@@ -89,7 +114,7 @@ __launch_bounds__(NB_X) __global__ void nnz_kernel_col(rocsparse_int m,
 
         if(tx == 0)
         {
-            for(rocsparse_int i = 1; i < m && i < NB_X; i++)
+            for(J i = 1; i < m && i < NB_X; i++)
                 sdata[0] += sdata[i];
         }
 
@@ -98,7 +123,7 @@ __launch_bounds__(NB_X) __global__ void nnz_kernel_col(rocsparse_int m,
 
     if(tx == 0)
     {
-        nnzPerColumn[col] = sdata[0];
+        nnz_per_column[col] = sdata[0];
     }
 }
 
@@ -106,45 +131,52 @@ __launch_bounds__(NB_X) __global__ void nnz_kernel_col(rocsparse_int m,
 //! @brief Kernel for counting the number of non-zeros per row.
 //! @param m         		The number of rows.
 //! @param n         		The number of columns.
-//! @param A       		The pointer to the values.
+//! @param A       		    The pointer to the values.
 //! @param lda       		The leading dimension.
-//! @param nnzPerRow            The array storing the results of the nnz per row.
+//! @param nnz_per_row      The array storing the results of the nnz per row.
 //!
-template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename T>
-__launch_bounds__(DIM_X* DIM_Y) __global__
-    void nnz_kernel_row(rocsparse_int m,
-                        rocsparse_int n,
-                        const T* __restrict__ A,
-                        rocsparse_int lda,
-                        rocsparse_int* __restrict__ nnzPerRow)
+template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename I, typename J, typename T>
+__launch_bounds__(DIM_X* DIM_Y) __global__ void nnz_kernel_row(
+    rocsparse_order order, J m, J n, const T* __restrict__ A, I lda, I* __restrict__ nnz_per_row)
 {
     static constexpr T s_zero = {};
 
-    rocsparse_int thread_id = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x;
-    rocsparse_int tx        = thread_id % DIM_X;
-    rocsparse_int ty        = thread_id / DIM_X;
-    rocsparse_int ind       = hipBlockIdx_x * DIM_X * 4 + tx;
-    rocsparse_int n_tail    = n % (4 * DIM_Y);
-    rocsparse_int col       = ty * 4;
-    rocsparse_int res_A[4];
+    J thread_id = hipThreadIdx_x + hipThreadIdx_y * hipBlockDim_x;
+    J tx        = thread_id % DIM_X;
+    J ty        = thread_id / DIM_X;
+    J ind       = hipBlockIdx_x * DIM_X * 4 + tx;
+    J n_tail    = n % (4 * DIM_Y);
+    J col       = ty * 4;
+    I res_A[4];
 
-    __shared__ rocsparse_int sdata[DIM_X * 4 * DIM_Y];
+    __shared__ I sdata[DIM_X * 4 * DIM_Y];
 
-    for(rocsparse_int k = 0; k < 4; ++k)
+    for(int k = 0; k < 4; ++k)
     {
         res_A[k] = 0;
     }
 
     for(col = ty * 4; col < (n - n_tail); col += 4 * DIM_Y)
     {
-        for(rocsparse_int k = 0; k < 4; ++k)
+        for(int k = 0; k < 4; ++k)
         {
             if(ind + k * DIM_X < m)
             {
-                for(rocsparse_int j = 0; j < 4; ++j)
+                if(order == rocsparse_order_column)
                 {
-                    if(A[ind + k * DIM_X + (col + j) * lda] != s_zero)
-                        res_A[k] += 1;
+                    for(int j = 0; j < 4; ++j)
+                    {
+                        if(A[ind + k * DIM_X + (col + j) * lda] != s_zero)
+                            res_A[k] += 1;
+                    }
+                }
+                else
+                {
+                    for(int j = 0; j < 4; ++j)
+                    {
+                        if(A[(ind + k * DIM_X) * lda + col + j] != s_zero)
+                            res_A[k] += 1;
+                    }
                 }
             }
         }
@@ -152,22 +184,29 @@ __launch_bounds__(DIM_X* DIM_Y) __global__
 
     if(n_tail > 0)
     {
-        for(rocsparse_int k = 0; k < 4; ++k)
+        for(int k = 0; k < 4; ++k)
         {
             if(ind + k * DIM_X < m)
             {
-                for(rocsparse_int j = 0; j < 4; ++j)
+                for(int j = 0; j < 4; ++j)
                 {
                     if(col + j < n)
                     {
-                        res_A[k] += (A[ind + k * DIM_X + (col + j) * lda] != s_zero) ? 1 : 0;
+                        if(order == rocsparse_order_column)
+                        {
+                            res_A[k] += (A[ind + k * DIM_X + (col + j) * lda] != s_zero) ? 1 : 0;
+                        }
+                        else
+                        {
+                            res_A[k] += (A[(ind + k * DIM_X) * lda + col + j] != s_zero) ? 1 : 0;
+                        }
                     }
                 }
             }
         }
     }
 
-    for(rocsparse_int k = 0; k < 4; ++k)
+    for(int k = 0; k < 4; ++k)
     {
         sdata[tx + k * DIM_X + ty * DIM_X * 4] = res_A[k];
     }
@@ -177,14 +216,14 @@ __launch_bounds__(DIM_X* DIM_Y) __global__
     ind = hipBlockIdx_x * DIM_X * 4 + thread_id;
     if(thread_id < DIM_X * 4)
     {
-        for(rocsparse_int j = 1; j < DIM_Y; j++)
+        for(int j = 1; j < DIM_Y; j++)
         {
             sdata[thread_id] += sdata[thread_id + DIM_X * 4 * j];
         }
 
         if(ind < m)
         {
-            nnzPerRow[ind] = sdata[thread_id];
+            nnz_per_row[ind] = sdata[thread_id];
         }
     }
 }

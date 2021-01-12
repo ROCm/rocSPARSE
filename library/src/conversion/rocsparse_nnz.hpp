@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,14 @@
 
 #include "handle.h"
 
-template <typename T>
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_nnz_template(rocsparse_handle    handle,
                                         rocsparse_direction dir,
-                                        rocsparse_int       m,
-                                        rocsparse_int       n,
+                                        rocsparse_order     order,
+                                        J                   m,
+                                        J                   n,
                                         const T*            A,
-                                        rocsparse_int       ld,
-                                        rocsparse_int*      nnz_per_row_columns);
+                                        I                   ld,
+                                        I*                  nnz_per_row_columns);
 
 #endif // ROCSPARSE_NNZ_HPP

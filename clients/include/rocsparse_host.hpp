@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -454,48 +454,52 @@ void host_prune_dense2csr_by_percentage(rocsparse_int               m,
                                         std::vector<rocsparse_int>& csr_row_ptr,
                                         std::vector<rocsparse_int>& csr_col_ind);
 
-template <rocsparse_direction DIRA, typename T>
-rocsparse_status host_dense2csx(rocsparse_int        m,
-                                rocsparse_int        n,
-                                rocsparse_index_base base,
-                                const T*             A,
-                                rocsparse_int        ld,
-                                const rocsparse_int* nnz_per_row_columns,
-                                T*                   csx_val,
-                                rocsparse_int*       csx_row_col_ptr,
-                                rocsparse_int*       csx_col_row_ind);
+template <rocsparse_direction DIRA, typename I, typename J, typename T>
+void host_dense2csx(J                    m,
+                    J                    n,
+                    rocsparse_index_base base,
+                    const T*             A,
+                    I                    ld,
+                    rocsparse_order      order,
+                    const I*             nnz_per_row_columns,
+                    T*                   csx_val,
+                    I*                   csx_row_col_ptr,
+                    J*                   csx_col_row_ind);
 
-template <rocsparse_direction DIRA, typename T>
-rocsparse_status host_csx2dense(rocsparse_int        m,
-                                rocsparse_int        n,
-                                rocsparse_index_base base,
-                                const T*             csx_val,
-                                const rocsparse_int* csx_row_col_ptr,
-                                const rocsparse_int* csx_col_row_ind,
-                                T*                   A,
-                                rocsparse_int        ld);
+template <rocsparse_direction DIRA, typename I, typename J, typename T>
+void host_csx2dense(J                    m,
+                    J                    n,
+                    rocsparse_index_base base,
+                    rocsparse_order      order,
+                    const T*             csx_val,
+                    const I*             csx_row_col_ptr,
+                    const J*             csx_col_row_ind,
+                    T*                   A,
+                    I                    ld);
 
-template <typename T>
-void host_dense_to_coo(rocsparse_int                     m,
-                       rocsparse_int                     n,
-                       rocsparse_index_base              base,
-                       const std::vector<T>&             A,
-                       rocsparse_int                     ld,
-                       const std::vector<rocsparse_int>& nnz_per_row,
-                       std::vector<T>&                   coo_val,
-                       std::vector<rocsparse_int>&       coo_row_ind,
-                       std::vector<rocsparse_int>&       coo_col_ind);
+template <typename I, typename T>
+void host_dense_to_coo(I                     m,
+                       I                     n,
+                       rocsparse_index_base  base,
+                       const std::vector<T>& A,
+                       I                     ld,
+                       rocsparse_order       order,
+                       const std::vector<I>& nnz_per_row,
+                       std::vector<T>&       coo_val,
+                       std::vector<I>&       coo_row_ind,
+                       std::vector<I>&       coo_col_ind);
 
-template <typename T>
-void host_coo_to_dense(rocsparse_int                     m,
-                       rocsparse_int                     n,
-                       rocsparse_int                     nnz,
-                       rocsparse_index_base              base,
-                       const std::vector<T>&             coo_val,
-                       const std::vector<rocsparse_int>& coo_row_ind,
-                       const std::vector<rocsparse_int>& coo_col_ind,
-                       std::vector<T>&                   A,
-                       rocsparse_int                     ld);
+template <typename I, typename T>
+void host_coo_to_dense(I                     m,
+                       I                     n,
+                       I                     nnz,
+                       rocsparse_index_base  base,
+                       const std::vector<T>& coo_val,
+                       const std::vector<I>& coo_row_ind,
+                       const std::vector<I>& coo_col_ind,
+                       std::vector<T>&       A,
+                       I                     ld,
+                       rocsparse_order       order);
 
 template <typename I, typename J>
 void host_csr_to_coo(J                     M,

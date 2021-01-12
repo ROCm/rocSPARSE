@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,29 +28,34 @@
 #include "handle.h"
 #include <hip/hip_runtime.h>
 
-template <rocsparse_int NUMROWS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
+template <rocsparse_int NUMROWS_PER_BLOCK,
+          rocsparse_int WF_SIZE,
+          typename I,
+          typename J,
+          typename T>
 __launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) static __global__
-    void dense2csr_kernel(rocsparse_int base,
-                          rocsparse_int m,
-                          rocsparse_int n,
+    void dense2csr_kernel(rocsparse_index_base base,
+                          rocsparse_order      order,
+                          J                    m,
+                          J                    n,
                           const T* __restrict__ dense_val,
-                          rocsparse_int ld,
+                          I ld,
                           T* __restrict__ csr_val,
-                          rocsparse_int* __restrict__ csr_row_ptr,
-                          rocsparse_int* __restrict__ csr_col_ind)
+                          I* __restrict__ csr_row_ptr,
+                          J* __restrict__ csr_col_ind)
 {
-    const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE,
-                        lane_index      = hipThreadIdx_x % WF_SIZE;
+    const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE;
+    const J             lane_index      = hipThreadIdx_x % WF_SIZE;
     const uint64_t      filter          = 0xffffffffffffffff >> (63 - lane_index);
-    const rocsparse_int row_index       = NUMROWS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
+    const J             row_index       = NUMROWS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
 
     if(row_index < m)
     {
-        rocsparse_int shift = csr_row_ptr[row_index] - base;
+        I shift = csr_row_ptr[row_index] - base;
         //
         // The warp handles the entire row.
         //
-        for(rocsparse_int column_index = lane_index; column_index < n; column_index += WF_SIZE)
+        for(J column_index = lane_index; column_index < n; column_index += WF_SIZE)
         {
             //
             // Synchronize for cache considerations.
@@ -60,7 +65,15 @@ __launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) static __global__
             //
             // Get value.
             //
-            const T value = dense_val[row_index + column_index * ld];
+            T value = static_cast<T>(0);
+            if(order == rocsparse_order_column)
+            {
+                value = dense_val[row_index + column_index * ld];
+            }
+            else
+            {
+                value = dense_val[column_index + row_index * ld];
+            }
 
             //
             // Predicate.
@@ -99,37 +112,48 @@ __launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) static __global__
         }
     }
 }
-template <rocsparse_int NUMCOLUMNS_PER_BLOCK, rocsparse_int WF_SIZE, typename T>
+template <rocsparse_int NUMCOLUMNS_PER_BLOCK,
+          rocsparse_int WF_SIZE,
+          typename I,
+          typename J,
+          typename T>
 __launch_bounds__(WF_SIZE* NUMCOLUMNS_PER_BLOCK) static __global__
-    void dense2csc_kernel(rocsparse_int base,
-                          rocsparse_int m,
-                          rocsparse_int n,
+    void dense2csc_kernel(rocsparse_index_base base,
+                          rocsparse_order      order,
+                          J                    m,
+                          J                    n,
                           const T* __restrict__ dense_val,
-                          rocsparse_int ld,
+                          I ld,
                           T* __restrict__ csc_val,
-                          rocsparse_int* __restrict__ csc_col_ptr,
-                          rocsparse_int* __restrict__ csc_row_ind)
+                          I* __restrict__ csc_col_ptr,
+                          J* __restrict__ csc_row_ind)
 {
-    const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE,
-                        lane_index      = hipThreadIdx_x % WF_SIZE;
+    const rocsparse_int wavefront_index = hipThreadIdx_x / WF_SIZE;
+    const J             lane_index      = hipThreadIdx_x % WF_SIZE;
     const uint64_t      filter          = 0xffffffffffffffff >> (63 - lane_index);
-    const rocsparse_int column_index    = NUMCOLUMNS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
+    const J             column_index    = NUMCOLUMNS_PER_BLOCK * hipBlockIdx_x + wavefront_index;
 
     if(column_index < n)
     {
-
-        rocsparse_int shift = csc_col_ptr[column_index] - base;
+        I shift = csc_col_ptr[column_index] - base;
         //
         // The warp handles the entire column.
         //
-        dense_val += column_index * ld;
-        for(rocsparse_int row_index = lane_index; row_index < m; row_index += WF_SIZE)
+        for(J row_index = lane_index; row_index < m; row_index += WF_SIZE)
         {
 
             //
             // Get value.
             //
-            const T value = dense_val[row_index];
+            T value = static_cast<T>(0);
+            if(order == rocsparse_order_column)
+            {
+                value = dense_val[row_index + column_index * ld];
+            }
+            else
+            {
+                value = dense_val[column_index + row_index * ld];
+            }
 
             //
             // Predicate.
