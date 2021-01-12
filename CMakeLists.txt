@@ -166,7 +166,7 @@ add_custom_target(run_lcov
 #
 add_custom_command(TARGET run_lcov
     COMMAND echo "=================== LCOV ===================="
-    COMMAND lcov --directory .  --base-directory . --gcov-tool ./llvm-gcov.sh --capture -o lcoverage/raw_main_coverage.info
+    COMMAND lcov --directory .  --base-directory . --gcov-tool ${CMAKE_BINARY_DIR}/llvm-gcov.sh --capture -o lcoverage/raw_main_coverage.info
     COMMAND lcov --remove lcoverage/raw_main_coverage.info "'/opt/*'" "'/usr/*'" -o lcoverage/main_coverage.info
     COMMAND genhtml lcoverage/main_coverage.info --output-directory lcoverage
     )
