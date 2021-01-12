@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,28 @@ rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          han
                                                    U                         beta_device_host,
                                                    T*                        y)
 {
+
+    //
+    // bsr_dim == 1 is the CSR case
+    //
+    if(bsr_dim == 1)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template_dispatch(handle,
+                                                                    trans,
+                                                                    mb,
+                                                                    nb,
+                                                                    nnzb,
+                                                                    alpha_device_host,
+                                                                    descr,
+                                                                    bsr_val,
+                                                                    bsr_row_ptr,
+                                                                    bsr_col_ind,
+                                                                    x,
+                                                                    beta_device_host,
+                                                                    y));
+
+        return rocsparse_status_success;
+    }
 
     // Run different bsrmv kernels
     if(trans == rocsparse_operation_none)
@@ -337,29 +359,6 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
        || y == nullptr)
     {
         return rocsparse_status_invalid_pointer;
-    }
-
-    //
-    // bsr_dim == 1 is the CSR case
-    //
-    if(bsr_dim == 1)
-    {
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrmv_template(handle,
-                                                           trans,
-                                                           mb,
-                                                           nb,
-                                                           nnzb,
-                                                           alpha_device_host,
-                                                           descr,
-                                                           bsr_val,
-                                                           bsr_row_ptr,
-                                                           bsr_col_ind,
-                                                           nullptr,
-                                                           x,
-                                                           beta_device_host,
-                                                           y));
-
-        return rocsparse_status_success;
     }
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)

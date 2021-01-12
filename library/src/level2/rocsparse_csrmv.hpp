@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,21 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
                                                    const I*                  csr_row_ptr,
                                                    const J*                  csr_col_ind,
                                                    rocsparse_mat_info        info);
+
+template <typename I, typename J, typename T, typename U>
+rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          handle,
+                                                   rocsparse_operation       trans,
+                                                   J                         m,
+                                                   J                         n,
+                                                   I                         nnz,
+                                                   U                         alpha_device_host,
+                                                   const rocsparse_mat_descr descr,
+                                                   const T*                  csr_val,
+                                                   const I*                  csr_row_ptr,
+                                                   const J*                  csr_col_ind,
+                                                   const T*                  x,
+                                                   U                         beta_device_host,
+                                                   T*                        y);
 
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,

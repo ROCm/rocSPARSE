@@ -82,6 +82,11 @@ set(rocsparse_source
   src/level2/rocsparse_gebsrmv_template_row_block_dim_17_inf.cpp
 
 # Level3
+  src/level3/rocsparse_gebsrmm_template_small.cpp
+  src/level3/rocsparse_gebsrmm_template_large.cpp
+  src/level3/rocsparse_gebsrmm_template_large_ext.cpp
+  src/level3/rocsparse_gebsrmm_template_general.cpp
+  src/level3/rocsparse_gebsrmm.cpp
   src/level3/rocsparse_bsrmm_template_small.cpp
   src/level3/rocsparse_bsrmm_template_large.cpp
   src/level3/rocsparse_bsrmm_template_large_ext.cpp

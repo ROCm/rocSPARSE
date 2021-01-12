@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,25 @@
 #define ROCSPARSE_CSRMM_HPP
 
 #include "handle.h"
+
+template <typename T, typename U>
+rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          handle,
+                                                   rocsparse_operation       trans_A,
+                                                   rocsparse_operation       trans_B,
+                                                   rocsparse_int             m,
+                                                   rocsparse_int             n,
+                                                   rocsparse_int             k,
+                                                   rocsparse_int             nnz,
+                                                   U                         alpha_device_host,
+                                                   const rocsparse_mat_descr descr,
+                                                   const T*                  csr_val,
+                                                   const rocsparse_int*      csr_row_ptr,
+                                                   const rocsparse_int*      csr_col_ind,
+                                                   const T*                  B,
+                                                   rocsparse_int             ldb,
+                                                   U                         beta_device_host,
+                                                   T*                        C,
+                                                   rocsparse_int             ldc);
 
 template <typename T>
 rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,

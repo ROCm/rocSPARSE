@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,23 +101,23 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <typename T, typename U>
-rocsparse_status rocsparse_csrmm_dispatch(rocsparse_handle          handle,
-                                          rocsparse_operation       trans_A,
-                                          rocsparse_operation       trans_B,
-                                          rocsparse_int             m,
-                                          rocsparse_int             n,
-                                          rocsparse_int             k,
-                                          rocsparse_int             nnz,
-                                          U                         alpha_device_host,
-                                          const rocsparse_mat_descr descr,
-                                          const T*                  csr_val,
-                                          const rocsparse_int*      csr_row_ptr,
-                                          const rocsparse_int*      csr_col_ind,
-                                          const T*                  B,
-                                          rocsparse_int             ldb,
-                                          U                         beta_device_host,
-                                          T*                        C,
-                                          rocsparse_int             ldc)
+rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          handle,
+                                                   rocsparse_operation       trans_A,
+                                                   rocsparse_operation       trans_B,
+                                                   rocsparse_int             m,
+                                                   rocsparse_int             n,
+                                                   rocsparse_int             k,
+                                                   rocsparse_int             nnz,
+                                                   U                         alpha_device_host,
+                                                   const rocsparse_mat_descr descr,
+                                                   const T*                  csr_val,
+                                                   const rocsparse_int*      csr_row_ptr,
+                                                   const rocsparse_int*      csr_col_ind,
+                                                   const T*                  B,
+                                                   rocsparse_int             ldb,
+                                                   U                         beta_device_host,
+                                                   T*                        C,
+                                                   rocsparse_int             ldc)
 {
 
     // Stream
@@ -582,43 +582,43 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        return rocsparse_csrmm_dispatch(handle,
-                                        trans_A,
-                                        trans_B,
-                                        m,
-                                        n,
-                                        k,
-                                        nnz,
-                                        alpha_device_host,
-                                        descr,
-                                        csr_val,
-                                        csr_row_ptr,
-                                        csr_col_ind,
-                                        B,
-                                        ldb,
-                                        beta_device_host,
-                                        C,
-                                        ldc);
+        return rocsparse_csrmm_template_dispatch(handle,
+                                                 trans_A,
+                                                 trans_B,
+                                                 m,
+                                                 n,
+                                                 k,
+                                                 nnz,
+                                                 alpha_device_host,
+                                                 descr,
+                                                 csr_val,
+                                                 csr_row_ptr,
+                                                 csr_col_ind,
+                                                 B,
+                                                 ldb,
+                                                 beta_device_host,
+                                                 C,
+                                                 ldc);
     }
     else
     {
-        return rocsparse_csrmm_dispatch(handle,
-                                        trans_A,
-                                        trans_B,
-                                        m,
-                                        n,
-                                        k,
-                                        nnz,
-                                        *alpha_device_host,
-                                        descr,
-                                        csr_val,
-                                        csr_row_ptr,
-                                        csr_col_ind,
-                                        B,
-                                        ldb,
-                                        *beta_device_host,
-                                        C,
-                                        ldc);
+        return rocsparse_csrmm_template_dispatch(handle,
+                                                 trans_A,
+                                                 trans_B,
+                                                 m,
+                                                 n,
+                                                 k,
+                                                 nnz,
+                                                 *alpha_device_host,
+                                                 descr,
+                                                 csr_val,
+                                                 csr_row_ptr,
+                                                 csr_col_ind,
+                                                 B,
+                                                 ldb,
+                                                 *beta_device_host,
+                                                 C,
+                                                 ldc);
     }
 
     return rocsparse_status_success;

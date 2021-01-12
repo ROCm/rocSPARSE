@@ -1,3 +1,4 @@
+/*! \file */
 /* ************************************************************************
  * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
@@ -22,17 +23,19 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_GEBSRMV_HPP
-#define ROCSPARSE_GEBSRMV_HPP
+#ifndef ROCSPARSE_GEBSRMM_HPP
+#define ROCSPARSE_GEBSRMM_HPP
 
 #include "handle.h"
 
 template <typename T, typename U>
-rocsparse_status rocsparse_gebsrmv_template_dispatch(rocsparse_handle          handle,
+rocsparse_status rocsparse_gebsrmm_template_dispatch(rocsparse_handle          handle,
                                                      rocsparse_direction       dir,
-                                                     rocsparse_operation       trans,
+                                                     rocsparse_operation       trans_A,
+                                                     rocsparse_operation       trans_B,
                                                      rocsparse_int             mb,
-                                                     rocsparse_int             nb,
+                                                     rocsparse_int             n,
+                                                     rocsparse_int             kb,
                                                      rocsparse_int             nnzb,
                                                      U                         alpha,
                                                      const rocsparse_mat_descr descr,
@@ -41,16 +44,20 @@ rocsparse_status rocsparse_gebsrmv_template_dispatch(rocsparse_handle          h
                                                      const rocsparse_int*      bsr_col_ind,
                                                      rocsparse_int             row_block_dim,
                                                      rocsparse_int             col_block_dim,
-                                                     const T*                  x,
+                                                     const T*                  B,
+                                                     rocsparse_int             ldb,
                                                      U                         beta,
-                                                     T*                        y);
+                                                     T*                        C,
+                                                     rocsparse_int             ldc);
 
 template <typename T>
-rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle,
+rocsparse_status rocsparse_gebsrmm_template(rocsparse_handle          handle,
                                             rocsparse_direction       dir,
-                                            rocsparse_operation       trans,
+                                            rocsparse_operation       trans_A,
+                                            rocsparse_operation       trans_B,
                                             rocsparse_int             mb,
-                                            rocsparse_int             nb,
+                                            rocsparse_int             n,
+                                            rocsparse_int             kb,
                                             rocsparse_int             nnzb,
                                             const T*                  alpha,
                                             const rocsparse_mat_descr descr,
@@ -59,8 +66,10 @@ rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle,
                                             const rocsparse_int*      bsr_col_ind,
                                             rocsparse_int             row_block_dim,
                                             rocsparse_int             col_block_dim,
-                                            const T*                  x,
+                                            const T*                  B,
+                                            rocsparse_int             ldb,
                                             const T*                  beta,
-                                            T*                        y);
+                                            T*                        C,
+                                            rocsparse_int             ldc);
 
-#endif // ROCSPARSE_GEBSRMV_HPP
+#endif // ROCSPARSE_GEBSRMM_HPP
