@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -466,19 +466,19 @@ __launch_bounds__(WG_SIZE) __global__
 }
 
 template <typename I, typename J, typename T, typename U>
-rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle          handle,
-                                                  rocsparse_operation       trans,
-                                                  J                         m,
-                                                  J                         n,
-                                                  I                         nnz,
-                                                  U                         alpha_device_host,
-                                                  const rocsparse_mat_descr descr,
-                                                  const T*                  csr_val,
-                                                  const I*                  csr_row_ptr,
-                                                  const J*                  csr_col_ind,
-                                                  const T*                  x,
-                                                  U                         beta_device_host,
-                                                  T*                        y)
+rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          handle,
+                                                   rocsparse_operation       trans,
+                                                   J                         m,
+                                                   J                         n,
+                                                   I                         nnz,
+                                                   U                         alpha_device_host,
+                                                   const rocsparse_mat_descr descr,
+                                                   const T*                  csr_val,
+                                                   const I*                  csr_row_ptr,
+                                                   const J*                  csr_col_ind,
+                                                   const T*                  x,
+                                                   U                         beta_device_host,
+                                                   T*                        y)
 {
     // Stream
     hipStream_t stream = handle->stream;
@@ -701,20 +701,20 @@ rocsparse_status rocsparse_csrmv_general_template(rocsparse_handle          hand
 }
 
 template <typename I, typename J, typename T, typename U>
-rocsparse_status rocsparse_csrmv_adaptive_template(rocsparse_handle          handle,
-                                                   rocsparse_operation       trans,
-                                                   J                         m,
-                                                   J                         n,
-                                                   I                         nnz,
-                                                   U                         alpha_device_host,
-                                                   const rocsparse_mat_descr descr,
-                                                   const T*                  csr_val,
-                                                   const I*                  csr_row_ptr,
-                                                   const J*                  csr_col_ind,
-                                                   rocsparse_csrmv_info      info,
-                                                   const T*                  x,
-                                                   U                         beta_device_host,
-                                                   T*                        y)
+rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    handle,
+                                                            rocsparse_operation trans,
+                                                            J                   m,
+                                                            J                   n,
+                                                            I                   nnz,
+                                                            U                   alpha_device_host,
+                                                            const rocsparse_mat_descr descr,
+                                                            const T*                  csr_val,
+                                                            const I*                  csr_row_ptr,
+                                                            const J*                  csr_col_ind,
+                                                            rocsparse_csrmv_info      info,
+                                                            const T*                  x,
+                                                            U  beta_device_host,
+                                                            T* y)
 {
     // Check if info matches current matrix and options
     if(info->trans != trans)
@@ -894,44 +894,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
 
-            return rocsparse_csrmv_general_template(handle,
-                                                    trans,
-                                                    m,
-                                                    n,
-                                                    nnz,
-                                                    alpha_device_host,
-                                                    descr,
-                                                    csr_val,
-                                                    csr_row_ptr,
-                                                    csr_col_ind,
-                                                    x,
-                                                    beta_device_host,
-                                                    y);
-        }
-        else
-        {
-            return rocsparse_csrmv_general_template(handle,
-                                                    trans,
-                                                    m,
-                                                    n,
-                                                    nnz,
-                                                    *alpha_device_host,
-                                                    descr,
-                                                    csr_val,
-                                                    csr_row_ptr,
-                                                    csr_col_ind,
-                                                    x,
-                                                    *beta_device_host,
-                                                    y);
-        }
-    }
-    else
-    {
-        // If csrmv info is available, call csrmv adaptive
-        if(handle->pointer_mode == rocsparse_pointer_mode_device)
-        {
-
-            return rocsparse_csrmv_adaptive_template(handle,
+            return rocsparse_csrmv_template_dispatch(handle,
                                                      trans,
                                                      m,
                                                      n,
@@ -941,15 +904,13 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                                      csr_val,
                                                      csr_row_ptr,
                                                      csr_col_ind,
-                                                     info->csrmv_info,
                                                      x,
                                                      beta_device_host,
                                                      y);
         }
         else
         {
-
-            return rocsparse_csrmv_adaptive_template(handle,
+            return rocsparse_csrmv_template_dispatch(handle,
                                                      trans,
                                                      m,
                                                      n,
@@ -959,10 +920,49 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
                                                      csr_val,
                                                      csr_row_ptr,
                                                      csr_col_ind,
-                                                     info->csrmv_info,
                                                      x,
                                                      *beta_device_host,
                                                      y);
+        }
+    }
+    else
+    {
+        // If csrmv info is available, call csrmv adaptive
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+
+            return rocsparse_csrmv_adaptive_template_dispatch(handle,
+                                                              trans,
+                                                              m,
+                                                              n,
+                                                              nnz,
+                                                              alpha_device_host,
+                                                              descr,
+                                                              csr_val,
+                                                              csr_row_ptr,
+                                                              csr_col_ind,
+                                                              info->csrmv_info,
+                                                              x,
+                                                              beta_device_host,
+                                                              y);
+        }
+        else
+        {
+
+            return rocsparse_csrmv_adaptive_template_dispatch(handle,
+                                                              trans,
+                                                              m,
+                                                              n,
+                                                              nnz,
+                                                              *alpha_device_host,
+                                                              descr,
+                                                              csr_val,
+                                                              csr_row_ptr,
+                                                              csr_col_ind,
+                                                              info->csrmv_info,
+                                                              x,
+                                                              *beta_device_host,
+                                                              y);
         }
     }
 }

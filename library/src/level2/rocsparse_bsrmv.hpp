@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,23 @@
 #define ROCSPARSE_BSRMV_HPP
 
 #include "handle.h"
+
+template <typename T, typename U>
+rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          handle,
+                                                   rocsparse_direction       dir,
+                                                   rocsparse_operation       trans,
+                                                   rocsparse_int             mb,
+                                                   rocsparse_int             nb,
+                                                   rocsparse_int             nnzb,
+                                                   U                         alpha_device_host,
+                                                   const rocsparse_mat_descr descr,
+                                                   const T*                  bsr_val,
+                                                   const rocsparse_int*      bsr_row_ptr,
+                                                   const rocsparse_int*      bsr_col_ind,
+                                                   rocsparse_int             bsr_dim,
+                                                   const T*                  x,
+                                                   U                         beta_device_host,
+                                                   T*                        y);
 
 template <typename T>
 rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,

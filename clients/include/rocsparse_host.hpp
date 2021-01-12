@@ -237,6 +237,26 @@ void host_bsrmm(rocsparse_int                     Mb,
                 rocsparse_index_base              base);
 
 template <typename T>
+void host_gebsrmm(rocsparse_int                     Mb,
+                  rocsparse_int                     N,
+                  rocsparse_int                     Kb,
+                  rocsparse_int                     row_block_dim,
+                  rocsparse_int                     col_block_dim,
+                  rocsparse_direction               dir,
+                  rocsparse_operation               transA,
+                  rocsparse_operation               transB,
+                  T                                 alpha,
+                  const std::vector<rocsparse_int>& bsr_row_ptr_A,
+                  const std::vector<rocsparse_int>& bsr_col_ind_A,
+                  const std::vector<T>&             bsr_val_A,
+                  const std::vector<T>&             B,
+                  rocsparse_int                     ldb,
+                  T                                 beta,
+                  std::vector<T>&                   C,
+                  rocsparse_int                     ldc,
+                  rocsparse_index_base              base);
+
+template <typename T>
 void host_csrmm(rocsparse_int                     M,
                 rocsparse_int                     N,
                 rocsparse_operation               transB,

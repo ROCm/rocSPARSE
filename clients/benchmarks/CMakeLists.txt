@@ -64,6 +64,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_hybmv.cpp
 ../testings/testing_gebsrmv.cpp
 ../testings/testing_bsrmm.cpp
+../testings/testing_gebsrmm.cpp
 ../testings/testing_csrmm.cpp
 ../testings/testing_csrsm.cpp
 ../testings/testing_gemmi.cpp

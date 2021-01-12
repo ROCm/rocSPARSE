@@ -839,6 +839,7 @@ Sparse Level 3 Functions
 Function name                                                             single double single complex double complex
 ========================================================================= ====== ====== ============== ==============
 :cpp:func:`rocsparse_Xbsrmm() <rocsparse_sbsrmm>`                         x      x      x              x
+:cpp:func:`rocsparse_Xgebsrmm() <rocsparse_sgebsrmm>`                     x      x      x              x
 :cpp:func:`rocsparse_Xcsrmm() <rocsparse_scsrmm>`                         x      x      x              x
 :cpp:func:`rocsparse_Xcsrsm_buffer_size() <rocsparse_scsrsm_buffer_size>` x      x      x              x
 :cpp:func:`rocsparse_Xcsrsm_analysis() <rocsparse_scsrsm_analysis>`       x      x      x              x
@@ -1548,6 +1549,19 @@ rocsparse_bsrmm()
 .. doxygenfunction:: rocsparse_cbsrmm
   :outline:
 .. doxygenfunction:: rocsparse_zbsrmm
+
+
+rocsparse_gebsrmm()
+-------------------
+
+.. doxygenfunction:: rocsparse_sgebsrmm
+  :outline:
+.. doxygenfunction:: rocsparse_dgebsrmm
+  :outline:
+.. doxygenfunction:: rocsparse_cgebsrmm
+  :outline:
+.. doxygenfunction:: rocsparse_zgebsrmm
+
 
 rocsparse_csrmm()
 -----------------

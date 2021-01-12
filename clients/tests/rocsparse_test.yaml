@@ -42,6 +42,7 @@ include: test_ellmv.yaml
 include: test_hybmv.yaml
 include: test_gebsrmv.yaml
 include: test_bsrmm.yaml
+include: test_gebsrmm.yaml
 include: test_csrmm.yaml
 include: test_csrsm.yaml
 include: test_gemmi.yaml

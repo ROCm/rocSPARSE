@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -343,6 +343,29 @@ rocsparse_status rocsparse_bsrmm(rocsparse_handle          handle,
                                  const T*                  beta,
                                  T*                        C,
                                  rocsparse_int             ldc);
+
+// gebsrmm
+template <typename T>
+rocsparse_status rocsparse_gebsrmm(rocsparse_handle          handle,
+                                   rocsparse_direction       dir,
+                                   rocsparse_operation       trans_A,
+                                   rocsparse_operation       trans_B,
+                                   rocsparse_int             mb,
+                                   rocsparse_int             n,
+                                   rocsparse_int             kb,
+                                   rocsparse_int             nnzb,
+                                   const T*                  alpha,
+                                   const rocsparse_mat_descr descr,
+                                   const T*                  bsr_val,
+                                   const rocsparse_int*      bsr_row_ptr,
+                                   const rocsparse_int*      bsr_col_ind,
+                                   rocsparse_int             row_block_dim,
+                                   rocsparse_int             col_block_dim,
+                                   const T*                  B,
+                                   rocsparse_int             ldb,
+                                   const T*                  beta,
+                                   T*                        C,
+                                   rocsparse_int             ldc);
 
 // csrmm
 template <typename T>
