@@ -2,7 +2,17 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## [(Unreleased) rocSPARSE 1.18.4 for ROCm 4.0.0]
+## [(Unreleased) rocSPARSE 1.19.4 for ROCm 4.1.0]
+### Added
+- gebsrmm
+- gebsrmv
+- gebsrsv
+- coo2dense and dense2coo
+- generic API including axpby, gather, scatter, rot, spvv, spmv, spgemm, sparsetodense, densetosparse
+- support for mixed indexing types in matrix formats
+
+
+## [rocSPARSE 1.18.4 for ROCm 4.0.0]
 ### Added
 - Add changelog
 - csr2gebsr
