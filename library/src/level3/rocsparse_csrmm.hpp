@@ -28,42 +28,45 @@
 
 #include "handle.h"
 
-template <typename T, typename U>
+template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_operation       trans_B,
-                                                   rocsparse_int             m,
-                                                   rocsparse_int             n,
-                                                   rocsparse_int             k,
-                                                   rocsparse_int             nnz,
+                                                   rocsparse_order           order,
+                                                   J                         m,
+                                                   J                         n,
+                                                   J                         k,
+                                                   I                         nnz,
                                                    U                         alpha_device_host,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  csr_val,
-                                                   const rocsparse_int*      csr_row_ptr,
-                                                   const rocsparse_int*      csr_col_ind,
+                                                   const I*                  csr_row_ptr,
+                                                   const J*                  csr_col_ind,
                                                    const T*                  B,
-                                                   rocsparse_int             ldb,
+                                                   J                         ldb,
                                                    U                         beta_device_host,
                                                    T*                        C,
-                                                   rocsparse_int             ldc);
+                                                   J                         ldc);
 
-template <typename T>
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_A,
                                           rocsparse_operation       trans_B,
-                                          rocsparse_int             m,
-                                          rocsparse_int             n,
-                                          rocsparse_int             k,
-                                          rocsparse_int             nnz,
+                                          rocsparse_order           order_B,
+                                          rocsparse_order           order_C,
+                                          J                         m,
+                                          J                         n,
+                                          J                         k,
+                                          I                         nnz,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
                                           const T*                  csr_val,
-                                          const rocsparse_int*      csr_row_ptr,
-                                          const rocsparse_int*      csr_col_ind,
+                                          const I*                  csr_row_ptr,
+                                          const J*                  csr_col_ind,
                                           const T*                  B,
-                                          rocsparse_int             ldb,
+                                          J                         ldb,
                                           const T*                  beta,
                                           T*                        C,
-                                          rocsparse_int             ldc);
+                                          J                         ldc);
 
 #endif // ROCSPARSE_CSRMM_HPP

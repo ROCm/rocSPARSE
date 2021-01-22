@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,45 +28,45 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename T>
-static __device__ void csrmmnn_general_device(rocsparse_int M,
-                                              rocsparse_int N,
-                                              rocsparse_int K,
-                                              rocsparse_int nnz,
-                                              T             alpha,
-                                              const rocsparse_int* __restrict__ csr_row_ptr,
-                                              const rocsparse_int* __restrict__ csr_col_ind,
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
+static __device__ void csrmmnn_general_device(J M,
+                                              J N,
+                                              J K,
+                                              I nnz,
+                                              T alpha,
+                                              const I* __restrict__ csr_row_ptr,
+                                              const J* __restrict__ csr_col_ind,
                                               const T* __restrict__ csr_val,
                                               const T* __restrict__ B,
-                                              rocsparse_int ldb,
-                                              T             beta,
+                                              J ldb,
+                                              T beta,
                                               T* __restrict__ C,
-                                              rocsparse_int        ldc,
+                                              J                    ldc,
+                                              rocsparse_order      order,
                                               rocsparse_index_base idx_base)
 {
-    rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + tid;
-    rocsparse_int lid = gid & (WF_SIZE - 1);
-    rocsparse_int wid = tid / WF_SIZE;
-    rocsparse_int nwf = hipGridDim_x * BLOCKSIZE / WF_SIZE;
-    rocsparse_int col = lid + hipBlockIdx_y * WF_SIZE;
+    int tid = hipThreadIdx_x;
+    J   gid = hipBlockIdx_x * BLOCKSIZE + tid;
+    int lid = gid & (WF_SIZE - 1);
+    int wid = tid / WF_SIZE;
+    J   nwf = hipGridDim_x * BLOCKSIZE / WF_SIZE;
+    J   col = lid + hipBlockIdx_y * WF_SIZE;
 
-    rocsparse_int colB = col * ldb;
-    rocsparse_int colC = col * ldc;
+    J colB = col * ldb;
 
-    __shared__ rocsparse_int shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
-    __shared__ T             shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
+    __shared__ J shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
+    __shared__ T shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
-    for(rocsparse_int row = gid / WF_SIZE; row < M; row += nwf)
+    for(J row = gid / WF_SIZE; row < M; row += nwf)
     {
-        rocsparse_int row_start = csr_row_ptr[row] - idx_base;
-        rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+        I row_start = csr_row_ptr[row] - idx_base;
+        I row_end   = csr_row_ptr[row + 1] - idx_base;
 
         T sum = static_cast<T>(0);
 
-        for(rocsparse_int j = row_start; j < row_end; j += WF_SIZE)
+        for(I j = row_start; j < row_end; j += WF_SIZE)
         {
-            rocsparse_int k = j + lid;
+            I k = j + lid;
 
             __syncthreads();
 
@@ -75,7 +75,7 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
 
             __syncthreads();
 
-            for(rocsparse_int i = 0; i < WF_SIZE && col < N; ++i)
+            for(J i = 0; i < WF_SIZE && col < N; ++i)
             {
                 sum = rocsparse_fma(shared_val[wid][i], B[shared_col[wid][i] + colB], sum);
             }
@@ -85,68 +85,83 @@ static __device__ void csrmmnn_general_device(rocsparse_int M,
         {
             if(beta == static_cast<T>(0))
             {
-                C[row + colC] = alpha * sum;
+                if(order == rocsparse_order_column)
+                {
+                    C[row + col * ldc] = alpha * sum;
+                }
+                else
+                {
+                    C[row * ldc + col] = alpha * sum;
+                }
             }
             else
             {
-                C[row + colC] = rocsparse_fma(beta, C[row + colC], alpha * sum);
+                if(order == rocsparse_order_column)
+                {
+                    C[row + col * ldc] = rocsparse_fma(beta, C[row + col * ldc], alpha * sum);
+                }
+                else
+                {
+                    C[row * ldc + col] = rocsparse_fma(beta, C[row * ldc + col], alpha * sum);
+                }
             }
         }
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename T>
-static __device__ void csrmmnt_general_device(rocsparse_int offset,
-                                              rocsparse_int ncol,
-                                              rocsparse_int M,
-                                              rocsparse_int N,
-                                              rocsparse_int K,
-                                              rocsparse_int nnz,
-                                              T             alpha,
-                                              const rocsparse_int* __restrict__ csr_row_ptr,
-                                              const rocsparse_int* __restrict__ csr_col_ind,
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
+static __device__ void csrmmnt_general_device(J offset,
+                                              J ncol,
+                                              J M,
+                                              J N,
+                                              J K,
+                                              I nnz,
+                                              T alpha,
+                                              const I* __restrict__ csr_row_ptr,
+                                              const J* __restrict__ csr_col_ind,
                                               const T* __restrict__ csr_val,
                                               const T* __restrict__ B,
-                                              rocsparse_int ldb,
-                                              T             beta,
+                                              J ldb,
+                                              T beta,
                                               T* __restrict__ C,
-                                              rocsparse_int        ldc,
+                                              J                    ldc,
+                                              rocsparse_order      order,
                                               rocsparse_index_base idx_base)
 {
-    rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + tid;
-    rocsparse_int row = gid / WF_SIZE;
-    rocsparse_int lid = tid & (WF_SIZE - 1);
-    rocsparse_int wid = tid / WF_SIZE;
+    int tid = hipThreadIdx_x;
+    J   gid = hipBlockIdx_x * BLOCKSIZE + tid;
+    J   row = gid / WF_SIZE;
+    int lid = tid & (WF_SIZE - 1);
+    int wid = tid / WF_SIZE;
 
     if(row >= M)
     {
         return;
     }
 
-    __shared__ rocsparse_int shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
-    __shared__ T             shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
+    __shared__ J shared_col[BLOCKSIZE / WF_SIZE][WF_SIZE];
+    __shared__ T shared_val[BLOCKSIZE / WF_SIZE][WF_SIZE];
 
-    rocsparse_int row_start = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+    I row_start = csr_row_ptr[row] - idx_base;
+    I row_end   = csr_row_ptr[row + 1] - idx_base;
 
-    for(rocsparse_int l = offset; l < ncol; l += WF_SIZE)
+    for(J l = offset; l < ncol; l += WF_SIZE)
     {
-        rocsparse_int col = l + lid;
-        T             sum = static_cast<T>(0);
+        J col = l + lid;
+        T sum = static_cast<T>(0);
 
-        for(rocsparse_int j = row_start; j < row_end; j += WF_SIZE)
+        for(I j = row_start; j < row_end; j += WF_SIZE)
         {
-            rocsparse_int k = j + lid;
+            I k = j + lid;
 
             __syncthreads();
 
-            shared_col[wid][lid] = (k < row_end) ? N * (csr_col_ind[k] - idx_base) : 0;
+            shared_col[wid][lid] = (k < row_end) ? ldb * (csr_col_ind[k] - idx_base) : 0;
             shared_val[wid][lid] = (k < row_end) ? csr_val[k] : static_cast<T>(0);
 
             __syncthreads();
 
-            for(rocsparse_int i = 0; i < WF_SIZE; ++i)
+            for(J i = 0; i < WF_SIZE; ++i)
             {
                 T val_B = (col < ncol) ? rocsparse_ldg(B + col + shared_col[wid][i])
                                        : static_cast<T>(0);
@@ -158,11 +173,25 @@ static __device__ void csrmmnt_general_device(rocsparse_int offset,
         {
             if(beta == static_cast<T>(0))
             {
-                C[row + col * ldc] = alpha * sum;
+                if(order == rocsparse_order_column)
+                {
+                    C[row + col * ldc] = alpha * sum;
+                }
+                else
+                {
+                    C[row * ldc + col] = alpha * sum;
+                }
             }
             else
             {
-                C[row + col * ldc] = rocsparse_fma(beta, C[row + col * ldc], alpha * sum);
+                if(order == rocsparse_order_column)
+                {
+                    C[row + col * ldc] = rocsparse_fma(beta, C[row + col * ldc], alpha * sum);
+                }
+                else
+                {
+                    C[row * ldc + col] = rocsparse_fma(beta, C[row * ldc + col], alpha * sum);
+                }
             }
         }
     }

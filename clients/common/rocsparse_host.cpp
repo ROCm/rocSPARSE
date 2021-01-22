@@ -1760,39 +1760,47 @@ void host_gebsrmm(rocsparse_int                     Mb,
     }
 }
 
-template <typename T>
-void host_csrmm(rocsparse_int                     M,
-                rocsparse_int                     N,
-                rocsparse_operation               transB,
-                T                                 alpha,
-                const std::vector<rocsparse_int>& csr_row_ptr_A,
-                const std::vector<rocsparse_int>& csr_col_ind_A,
-                const std::vector<T>&             csr_val_A,
-                const std::vector<T>&             B,
-                rocsparse_int                     ldb,
-                T                                 beta,
-                std::vector<T>&                   C,
-                rocsparse_int                     ldc,
-                rocsparse_index_base              base)
+template <typename I, typename J, typename T>
+void host_csrmm(J                     M,
+                J                     N,
+                rocsparse_operation   transB,
+                T                     alpha,
+                const std::vector<I>& csr_row_ptr_A,
+                const std::vector<J>& csr_col_ind_A,
+                const std::vector<T>& csr_val_A,
+                const std::vector<T>& B,
+                J                     ldb,
+                T                     beta,
+                std::vector<T>&       C,
+                J                     ldc,
+                rocsparse_order       order,
+                rocsparse_index_base  base)
 {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
 #endif
-    for(rocsparse_int i = 0; i < M; ++i)
+    for(J i = 0; i < M; ++i)
     {
-        for(rocsparse_int j = 0; j < N; ++j)
+        for(J j = 0; j < N; ++j)
         {
-            rocsparse_int row_begin = csr_row_ptr_A[i] - base;
-            rocsparse_int row_end   = csr_row_ptr_A[i + 1] - base;
-            rocsparse_int idx_C     = i + j * ldc;
+            I row_begin = csr_row_ptr_A[i] - base;
+            I row_end   = csr_row_ptr_A[i + 1] - base;
+            J idx_C     = order == rocsparse_order_column ? i + j * ldc : i * ldc + j;
 
             T sum = static_cast<T>(0);
 
-            for(rocsparse_int k = row_begin; k < row_end; ++k)
+            for(I k = row_begin; k < row_end; ++k)
             {
-                rocsparse_int idx_B = (transB == rocsparse_operation_none)
-                                          ? (csr_col_ind_A[k] - base + j * ldb)
-                                          : (j + (csr_col_ind_A[k] - base) * ldb);
+                J idx_B = 0;
+                if((transB == rocsparse_operation_none && order == rocsparse_order_column)
+                   || (transB == rocsparse_operation_transpose && order == rocsparse_order_row))
+                {
+                    idx_B = (csr_col_ind_A[k] - base + j * ldb);
+                }
+                else
+                {
+                    idx_B = (j + (csr_col_ind_A[k] - base) * ldb);
+                }
 
                 sum = std::fma(csr_val_A[k], B[idx_B], sum);
             }
@@ -4696,20 +4704,6 @@ template void host_gebsrmm(rocsparse_int                     Mb,
                            rocsparse_int                     ldc,
                            rocsparse_index_base              base);
 
-template void host_csrmm(rocsparse_int                     M,
-                         rocsparse_int                     N,
-                         rocsparse_operation               transB,
-                         float                             alpha,
-                         const std::vector<rocsparse_int>& csr_row_ptr_A,
-                         const std::vector<rocsparse_int>& csr_col_ind_A,
-                         const std::vector<float>&         csr_val_A,
-                         const std::vector<float>&         B,
-                         rocsparse_int                     ldb,
-                         float                             beta,
-                         std::vector<float>&               C,
-                         rocsparse_int                     ldc,
-                         rocsparse_index_base              base);
-
 template void host_csrsm(rocsparse_int                     M,
                          rocsparse_int                     nrhs,
                          rocsparse_int                     nnz,
@@ -5157,20 +5151,6 @@ template void host_gebsrmm(rocsparse_int                     Mb,
                            std::vector<double>&              C,
                            rocsparse_int                     ldc,
                            rocsparse_index_base              base);
-
-template void host_csrmm(rocsparse_int                     M,
-                         rocsparse_int                     N,
-                         rocsparse_operation               transB,
-                         double                            alpha,
-                         const std::vector<rocsparse_int>& csr_row_ptr_A,
-                         const std::vector<rocsparse_int>& csr_col_ind_A,
-                         const std::vector<double>&        csr_val_A,
-                         const std::vector<double>&        B,
-                         rocsparse_int                     ldb,
-                         double                            beta,
-                         std::vector<double>&              C,
-                         rocsparse_int                     ldc,
-                         rocsparse_index_base              base);
 
 template void host_csrsm(rocsparse_int                     M,
                          rocsparse_int                     nrhs,
@@ -5620,20 +5600,6 @@ template void host_gebsrmm(rocsparse_int                                Mb,
                            rocsparse_int                                ldc,
                            rocsparse_index_base                         base);
 
-template void host_csrmm(rocsparse_int                                M,
-                         rocsparse_int                                N,
-                         rocsparse_operation                          transB,
-                         rocsparse_double_complex                     alpha,
-                         const std::vector<rocsparse_int>&            csr_row_ptr_A,
-                         const std::vector<rocsparse_int>&            csr_col_ind_A,
-                         const std::vector<rocsparse_double_complex>& csr_val_A,
-                         const std::vector<rocsparse_double_complex>& B,
-                         rocsparse_int                                ldb,
-                         rocsparse_double_complex                     beta,
-                         std::vector<rocsparse_double_complex>&       C,
-                         rocsparse_int                                ldc,
-                         rocsparse_index_base                         base);
-
 template void host_csrsm(rocsparse_int                                M,
                          rocsparse_int                                nrhs,
                          rocsparse_int                                nnz,
@@ -6033,20 +5999,6 @@ template void host_gebsrmm(rocsparse_int                               Mb,
                            rocsparse_int                               ldc,
                            rocsparse_index_base                        base);
 
-template void host_csrmm(rocsparse_int                               M,
-                         rocsparse_int                               N,
-                         rocsparse_operation                         transB,
-                         rocsparse_float_complex                     alpha,
-                         const std::vector<rocsparse_int>&           csr_row_ptr_A,
-                         const std::vector<rocsparse_int>&           csr_col_ind_A,
-                         const std::vector<rocsparse_float_complex>& csr_val_A,
-                         const std::vector<rocsparse_float_complex>& B,
-                         rocsparse_int                               ldb,
-                         rocsparse_float_complex                     beta,
-                         std::vector<rocsparse_float_complex>&       C,
-                         rocsparse_int                               ldc,
-                         rocsparse_index_base                        base);
-
 template void host_csrsm(rocsparse_int                               M,
                          rocsparse_int                               nrhs,
                          rocsparse_int                               nnz,
@@ -6401,6 +6353,20 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                   TTYPE*               y,                        \
                                                   rocsparse_index_base base,                     \
                                                   int                  algo);                                     \
+    template void host_csrmm<ITYPE, JTYPE, TTYPE>(JTYPE                     M,                   \
+                                                  JTYPE                     N,                   \
+                                                  rocsparse_operation       transB,              \
+                                                  TTYPE                     alpha,               \
+                                                  const std::vector<ITYPE>& csr_row_ptr_A,       \
+                                                  const std::vector<JTYPE>& csr_col_ind_A,       \
+                                                  const std::vector<TTYPE>& csr_val_A,           \
+                                                  const std::vector<TTYPE>& B,                   \
+                                                  JTYPE                     ldb,                 \
+                                                  TTYPE                     beta,                \
+                                                  std::vector<TTYPE>&       C,                   \
+                                                  JTYPE                     ldc,                 \
+                                                  rocsparse_order           order,               \
+                                                  rocsparse_index_base      base);                    \
     template void host_csrgemm_nnz<ITYPE, JTYPE, TTYPE>(JTYPE                     M,             \
                                                         JTYPE                     N,             \
                                                         JTYPE                     K,             \

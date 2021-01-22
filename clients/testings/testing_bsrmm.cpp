@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -883,7 +883,7 @@ void testing_bsrmm(const Arguments& arg)
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
         double gpu_gflops
-            = bsrmm_gflop_count<T>(N, nnzb, block_dim, nnz_C, h_beta != static_cast<T>(0))
+            = bsrmm_gflop_count(N, nnzb, block_dim, nnz_C, h_beta != static_cast<T>(0))
               / gpu_time_used * 1e6;
         double gpu_gbyte
             = bsrmm_gbyte_count<T>(Mb, nnzb, block_dim, nnz_B, nnz_C, h_beta != static_cast<T>(0))

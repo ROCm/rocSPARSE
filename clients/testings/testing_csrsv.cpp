@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -780,7 +780,7 @@ void testing_csrsv(const Arguments& arg)
 
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
 
-        double gpu_gflops = csrsv_gflop_count<T>(M, nnz, diag) / gpu_solve_time_used * 1e6;
+        double gpu_gflops = csrsv_gflop_count(M, nnz, diag) / gpu_solve_time_used * 1e6;
         double gpu_gbyte  = csrsv_gbyte_count<T>(M, nnz) / gpu_solve_time_used * 1e6;
 
         std::cout.precision(2);

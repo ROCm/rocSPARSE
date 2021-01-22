@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -80,7 +80,7 @@ Tests:
 - name: csrsm
   category: pre_checkin
   function: csrsm
-  precision: *single_double_precisions_complex_real
+  precision: *single_double_precisions
   M_N: *M_N_range_checkin
   K: [-1, 0, 3, 107, 473, 875, 1263]
   alpha_alphai: *alpha_range_checkin
@@ -137,7 +137,7 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  K: [-1, 0, 7, 141]
+  K: [7, 141]
   alpha_alphai: *alpha_range_checkin
   transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]

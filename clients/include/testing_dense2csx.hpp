@@ -398,8 +398,7 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = dense2csx_gbyte_count<DIRA, rocsparse_int, rocsparse_int, T>(M, N, nnz)
-                           / gpu_time_used * 1e6;
+        double gpu_gbyte = dense2csx_gbyte_count<DIRA, T>(M, N, nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

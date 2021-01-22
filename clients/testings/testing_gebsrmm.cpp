@@ -744,7 +744,7 @@ void testing_gebsrmm(const Arguments& arg)
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
         double gpu_gflops
-            = gebsrmm_gflop_count<T>(
+            = gebsrmm_gflop_count(
                   N, nnzb, row_block_dim, col_block_dim, nnz_C, h_beta != static_cast<T>(0))
               / gpu_time_used * 1e6;
         double gpu_gbyte

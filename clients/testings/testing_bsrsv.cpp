@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -926,7 +926,7 @@ void testing_bsrsv(const Arguments& arg)
 
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
 
-        double gpu_gflops = csrsv_gflop_count<T>(mb * bsr_dim, nnzb * bsr_dim * bsr_dim, diag)
+        double gpu_gflops = csrsv_gflop_count(mb * bsr_dim, nnzb * bsr_dim * bsr_dim, diag)
                             / gpu_solve_time_used * 1e6;
         double gpu_gbyte = bsrsv_gbyte_count<T>(mb, nnzb, bsr_dim) / gpu_solve_time_used * 1e6;
 

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [10, 500]
   N: [33, 842]
-  block_dim: [2, 8, 17, 28, 33, 66, 174]
+  block_dim: [2, 8, 17, 28, 66, 174]
   alpha_beta: *alpha_beta_range_quick
   direction: [rocsparse_direction_row]
   transA: [rocsparse_operation_none]
@@ -175,7 +175,7 @@ Tests:
   precision: *single_double_precisions_complex
   M: 1
   N: 1
-  block_dim: [2, 13, 22]
+  block_dim: [2, 13]
   alpha_beta: *alpha_beta_range_nightly
   direction: [rocsparse_direction_column]
   transA: [rocsparse_operation_none]

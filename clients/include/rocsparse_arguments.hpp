@@ -81,6 +81,7 @@ struct Arguments
     rocsparse_direction           direction;
     rocsparse_order               order;
     rocsparse_spmv_alg            spmv_alg;
+    rocsparse_spmm_alg            spmm_alg;
     rocsparse_spgemm_alg          spgemm_alg;
     rocsparse_sparse_to_dense_alg sparse_to_dense_alg;
     rocsparse_dense_to_sparse_alg dense_to_sparse_alg;
@@ -178,6 +179,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(direction);
         ROCSPARSE_FORMAT_CHECK(order);
         ROCSPARSE_FORMAT_CHECK(spmv_alg);
+        ROCSPARSE_FORMAT_CHECK(spmm_alg);
         ROCSPARSE_FORMAT_CHECK(spgemm_alg);
         ROCSPARSE_FORMAT_CHECK(sparse_to_dense_alg);
         ROCSPARSE_FORMAT_CHECK(dense_to_sparse_alg);
@@ -355,6 +357,7 @@ private:
         print("direction", rocsparse_direction2string(arg.direction));
         print("order", rocsparse_order2string(arg.order));
         print("spmv_alg", rocsparse_spmvalg2string(arg.spmv_alg));
+        print("spmm_alg", rocsparse_spmmalg2string(arg.spmm_alg));
         print("spgemm_alg", rocsparse_spgemmalg2string(arg.spgemm_alg));
         print("sparse_to_dense_alg", rocsparse_sparsetodensealg2string(arg.sparse_to_dense_alg));
         print("dense_to_sparse_alg", rocsparse_densetosparsealg2string(arg.dense_to_sparse_alg));

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ Tests:
   N: [33, 842]
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
   algo: [1]
@@ -70,7 +70,7 @@ Tests:
   N: [-3, 0, 4441, 10000]
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
   algo: [0, 1, 2]
@@ -83,7 +83,7 @@ Tests:
   N: [29348, 340123, 710341]
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   part: [rocsparse_hyb_partition_auto]
 
@@ -95,7 +95,7 @@ Tests:
   N: 1
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max]
   filename: [mac_econ_fwd500,
@@ -112,7 +112,7 @@ Tests:
   N: 1
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
   algo: [0, 1, 2]
@@ -132,7 +132,7 @@ Tests:
   N: 1
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto]
   filename: [bibd_22_8,
@@ -151,7 +151,7 @@ Tests:
   N: 1
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max]
   filename: [Chevron2,
@@ -165,7 +165,7 @@ Tests:
   N: 1
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
   algo: [0, 1, 2]
@@ -180,7 +180,7 @@ Tests:
   N: 1
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto]
   filename: [Chevron4]

@@ -317,7 +317,7 @@ void testing_dense_to_sparse_coo(const Arguments& arg)
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = dense2coo_gbyte_count<I, T>(m, n, nnz) / gpu_time_used * 1e6;
+        double gpu_gbyte = dense2coo_gbyte_count<T>(m, n, (I)nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
