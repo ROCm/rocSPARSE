@@ -69,3 +69,14 @@ extern "C" rocsparse_status rocsparse_zsctr(rocsparse_handle                hand
 {
     return rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base);
 }
+
+extern "C" rocsparse_status __attribute__((visibility("default")))
+rocsparse_isctr(rocsparse_handle     handle,
+                rocsparse_int        nnz,
+                const rocsparse_int* x_val,
+                const rocsparse_int* x_ind,
+                rocsparse_int*       y,
+                rocsparse_index_base idx_base)
+{
+    return rocsparse_sctr_template(handle, nnz, x_val, x_ind, y, idx_base);
+}
