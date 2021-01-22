@@ -3311,14 +3311,13 @@ void host_csrilu0(rocsparse_int                     M,
  * ===========================================================================
  */
 template <typename T>
-rocsparse_status host_nnz(rocsparse_direction       dirA,
-                          rocsparse_int             m,
-                          rocsparse_int             n,
-                          const rocsparse_mat_descr descrA,
-                          const T*                  A,
-                          rocsparse_int             lda,
-                          rocsparse_int*            nnz_per_row_columns,
-                          rocsparse_int*            nnz_total_dev_host_ptr)
+rocsparse_status host_nnz(rocsparse_direction dirA,
+                          rocsparse_int       m,
+                          rocsparse_int       n,
+                          const T*            A,
+                          rocsparse_int       lda,
+                          rocsparse_int*      nnz_per_row_columns,
+                          rocsparse_int*      nnz_total_dev_host_ptr)
 {
 
     rocsparse_int mn = (dirA == rocsparse_direction_row) ? m : n;
@@ -3495,8 +3494,8 @@ void host_dense2csx(J                    m,
     {
         //
         // Does not matter having an orthogonal traversal ... testing only.
-        // Otherwise, we would use csxRowPtrA to store the shifts.
-        // and once the job is done a simple memory move would reinitialize the csxRowPtrA to its initial state)
+        // Otherwise, we would use csx_row_ptr_A to store the shifts.
+        // and once the job is done a simple memory move would reinitialize the csx_row_ptr_A to its initial state)
         //
         for(J i = 0; i < m; ++i)
         {
@@ -4823,14 +4822,13 @@ template void host_csrilu0(rocsparse_int                     M,
  *    conversion SPARSE
  * ===========================================================================
  */
-template rocsparse_status host_nnz(rocsparse_direction       dirA,
-                                   rocsparse_int             m,
-                                   rocsparse_int             n,
-                                   const rocsparse_mat_descr descrA,
-                                   const float*              A,
-                                   rocsparse_int             lda,
-                                   rocsparse_int*            nnz_per_row_columns,
-                                   rocsparse_int*            nnz_total_dev_host_ptr);
+template rocsparse_status host_nnz(rocsparse_direction dirA,
+                                   rocsparse_int       m,
+                                   rocsparse_int       n,
+                                   const float*        A,
+                                   rocsparse_int       lda,
+                                   rocsparse_int*      nnz_per_row_columns,
+                                   rocsparse_int*      nnz_total_dev_host_ptr);
 
 template void host_prune_dense2csr(rocsparse_int               m,
                                    rocsparse_int               n,
@@ -5271,14 +5269,13 @@ template void host_csrilu0(rocsparse_int                     M,
  *    conversion SPARSE
  * ===========================================================================
  */
-template rocsparse_status host_nnz(rocsparse_direction       dirA,
-                                   rocsparse_int             m,
-                                   rocsparse_int             n,
-                                   const rocsparse_mat_descr descrA,
-                                   const double*             A,
-                                   rocsparse_int             lda,
-                                   rocsparse_int*            nnz_per_row_columns,
-                                   rocsparse_int*            nnz_total_dev_host_ptr);
+template rocsparse_status host_nnz(rocsparse_direction dirA,
+                                   rocsparse_int       m,
+                                   rocsparse_int       n,
+                                   const double*       A,
+                                   rocsparse_int       lda,
+                                   rocsparse_int*      nnz_per_row_columns,
+                                   rocsparse_int*      nnz_total_dev_host_ptr);
 
 template void host_prune_dense2csr(rocsparse_int               m,
                                    rocsparse_int               n,
@@ -5722,7 +5719,6 @@ template void host_csrilu0(rocsparse_int                          M,
 template rocsparse_status host_nnz(rocsparse_direction             dirA,
                                    rocsparse_int                   m,
                                    rocsparse_int                   n,
-                                   const rocsparse_mat_descr       descrA,
                                    const rocsparse_double_complex* A,
                                    rocsparse_int                   lda,
                                    rocsparse_int*                  nnz_per_row_columns,
@@ -6121,7 +6117,6 @@ template void host_csrilu0(rocsparse_int                         M,
 template rocsparse_status host_nnz(rocsparse_direction            dirA,
                                    rocsparse_int                  m,
                                    rocsparse_int                  n,
-                                   const rocsparse_mat_descr      descrA,
                                    const rocsparse_float_complex* A,
                                    rocsparse_int                  lda,
                                    rocsparse_int*                 nnz_per_row_columns,

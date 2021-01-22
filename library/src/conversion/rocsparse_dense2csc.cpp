@@ -29,13 +29,13 @@
         rocsparse_order           order,                                           \
         JTYPE                     m,                                               \
         JTYPE                     n,                                               \
-        const rocsparse_mat_descr descrA,                                          \
+        const rocsparse_mat_descr descr_A,                                         \
         const TTYPE*              A,                                               \
         ITYPE                     lda,                                             \
-        const ITYPE*              nnzPerRowColumn,                                 \
-        TTYPE*                    csxValA,                                         \
-        ITYPE*                    csxRowColPtrA,                                   \
-        JTYPE*                    csxColRowIndA);
+        const ITYPE*              nnz_per_row_column,                              \
+        TTYPE*                    csx_val_A,                                       \
+        ITYPE*                    csx_row_col_ptr_A,                               \
+        JTYPE*                    csx_col_row_ind_A);
 
 INSTANTIATE(rocsparse_direction_column, int32_t, int32_t, float);
 INSTANTIATE(rocsparse_direction_column, int32_t, int32_t, double);

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -308,7 +308,7 @@ void testing_nnz(const Arguments& arg)
         //
         // Compute the reference host first.
         //
-        host_nnz<T>(dirA, M, N, descrA, (const T*)h_A, LD, h_nnzPerRowColumn, h_nnzTotalDevHostPtr);
+        host_nnz<T>(dirA, M, N, (const T*)h_A, LD, h_nnzPerRowColumn, h_nnzTotalDevHostPtr);
 
         //
         // Pointer mode device for nnz and call.
