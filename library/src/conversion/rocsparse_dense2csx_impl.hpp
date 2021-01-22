@@ -36,13 +36,13 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
                                           rocsparse_order           order,
                                           J                         m,
                                           J                         n,
-                                          const rocsparse_mat_descr descrA,
+                                          const rocsparse_mat_descr descr_A,
                                           const T*                  A,
                                           I                         lda,
-                                          const I*                  nnzPerRowColumn,
-                                          T*                        csxValA,
-                                          I*                        csxRowColPtrA,
-                                          J*                        csxColRowIndA)
+                                          const I*                  nnz_per_row_column,
+                                          T*                        csx_val_A,
+                                          I*                        csx_row_col_ptr_A,
+                                          J*                        csx_col_row_ind_A)
 {
     static constexpr bool is_row_oriented = (rocsparse_direction_row == DIRA);
     //
@@ -61,13 +61,13 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
               order,
               m,
               n,
-              descrA,
+              descr_A,
               (const void*&)A,
               lda,
-              (const void*&)nnzPerRowColumn,
-              (const void*&)csxValA,
-              (const void*&)csxRowColPtrA,
-              (const void*&)csxColRowIndA);
+              (const void*&)nnz_per_row_column,
+              (const void*&)csx_val_A,
+              (const void*&)csx_row_col_ptr_A,
+              (const void*&)csx_col_row_ind_A);
 
     log_bench(handle,
               "./rocsparse-bench",
@@ -80,7 +80,7 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
               "--denseld",
               lda,
               "--indexbaseA",
-              descrA->base);
+              descr_A->base);
 
     //
     // Check sizes
@@ -101,8 +101,8 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
     //
     // Check invalid pointers.
     //
-    if(nullptr == descrA || nullptr == nnzPerRowColumn || nullptr == A || nullptr == csxRowColPtrA
-       || nullptr == csxColRowIndA || nullptr == csxValA)
+    if(nullptr == descr_A || nullptr == nnz_per_row_column || nullptr == A
+       || nullptr == csx_row_col_ptr_A || nullptr == csx_col_row_ind_A || nullptr == csx_val_A)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -110,30 +110,32 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
     //
     // Check the description type of the matrix.
     //
-    if(rocsparse_matrix_type_general != descrA->type)
+    if(rocsparse_matrix_type_general != descr_A->type)
     {
         return rocsparse_status_not_implemented;
     }
 
     //
-    // Compute csxRowColPtrA with the right index base.
+    // Compute csx_row_col_ptr_A with the right index base.
     //
     {
         J dimdir = is_row_oriented ? m : n;
 
-        I first_value = descrA->base;
+        I first_value = descr_A->base;
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            csxRowColPtrA, &first_value, sizeof(I), hipMemcpyHostToDevice, handle->stream));
+            csx_row_col_ptr_A, &first_value, sizeof(I), hipMemcpyHostToDevice, handle->stream));
 
-        RETURN_IF_HIP_ERROR(hipMemcpy(
-            csxRowColPtrA + 1, nnzPerRowColumn, sizeof(I) * dimdir, hipMemcpyDeviceToDevice));
+        RETURN_IF_HIP_ERROR(hipMemcpy(csx_row_col_ptr_A + 1,
+                                      nnz_per_row_column,
+                                      sizeof(I) * dimdir,
+                                      hipMemcpyDeviceToDevice));
 
         size_t temp_storage_bytes = 0;
         // Obtain rocprim buffer size
         RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(nullptr,
                                                     temp_storage_bytes,
-                                                    csxRowColPtrA,
-                                                    csxRowColPtrA,
+                                                    csx_row_col_ptr_A,
+                                                    csx_row_col_ptr_A,
                                                     dimdir + 1,
                                                     rocprim::plus<I>(),
                                                     handle->stream));
@@ -157,8 +159,8 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
         // Perform actual inclusive sum
         RETURN_IF_HIP_ERROR(rocprim::inclusive_scan(d_temp_storage,
                                                     temp_storage_bytes,
-                                                    csxRowColPtrA,
-                                                    csxRowColPtrA,
+                                                    csx_row_col_ptr_A,
+                                                    csx_row_col_ptr_A,
                                                     dimdir + 1,
                                                     rocprim::plus<I>(),
                                                     handle->stream));
@@ -170,10 +172,10 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
     }
 
     //
-    // Compute csxValA csxColRowIndA with right index base and update the 0-based csxRowColPtrA if necessary.
+    // Compute csx_val_A csx_col_row_ind_A with right index base and update the 0-based csx_row_col_ptr_A if necessary.
     //
     return rocsparse_dense2csx_template<DIRA>(
-        handle, order, m, n, descrA, A, lda, csxValA, csxRowColPtrA, csxColRowIndA);
+        handle, order, m, n, descr_A, A, lda, csx_val_A, csx_row_col_ptr_A, csx_col_row_ind_A);
 }
 
 #endif // ROCSPARSE_DENSE2CSX_IMPL_HPP

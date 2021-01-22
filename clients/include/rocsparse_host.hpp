@@ -442,14 +442,13 @@ void host_csrilu0(rocsparse_int                     M,
  * ===========================================================================
  */
 template <typename T>
-rocsparse_status host_nnz(rocsparse_direction       dirA,
-                          rocsparse_int             m,
-                          rocsparse_int             n,
-                          const rocsparse_mat_descr descrA,
-                          const T*                  A,
-                          rocsparse_int             lda,
-                          rocsparse_int*            nnz_per_row_columns,
-                          rocsparse_int*            nnz_total_dev_host_ptr);
+rocsparse_status host_nnz(rocsparse_direction dirA,
+                          rocsparse_int       m,
+                          rocsparse_int       n,
+                          const T*            A,
+                          rocsparse_int       lda,
+                          rocsparse_int*      nnz_per_row_columns,
+                          rocsparse_int*      nnz_total_dev_host_ptr);
 
 template <typename T>
 void host_prune_dense2csr(rocsparse_int               m,

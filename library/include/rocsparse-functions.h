@@ -7922,7 +7922,7 @@ rocsparse_status rocsparse_znnz(rocsparse_handle                handle,
 /*! \ingroup conv_module
 *  \brief
 *  This function converts the matrix A in dense format into a sparse matrix in CSR format.
-*  All the parameters are assumed to have been pre-allocated by the user and the arrays are filled in based on nnzPerRow, which can be pre-computed with rocsparse_xnnz().
+*  All the parameters are assumed to have been pre-allocated by the user and the arrays are filled in based on nnz_per_row, which can be pre-computed with rocsparse_xnnz().
 *  It is executed asynchronously with respect to the host and may return control to the application on the host before the entire result is ready.
 *  \details
 *  @param[in]
