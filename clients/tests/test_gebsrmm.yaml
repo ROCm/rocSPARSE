@@ -59,11 +59,11 @@ Tests:
   M: [275, 708]
   N: [128, 628]
   K: [173, 747]
-  row_block_dimA: [0, 1, 2, 5, 7, 32, 64]
-  col_block_dimA: [0, 1, 2, 5, 7, 32, 64]
+  row_block_dimA: [0, 1, 2, 7, 32, 64]
+  col_block_dimA: [0, 1, 2, 5, 32, 64]
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
   matrix: [rocsparse_matrix_random]
@@ -80,7 +80,7 @@ Tests:
   col_block_dimA: [2,3,5]
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   direction: [rocsparse_direction_column]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -162,7 +162,7 @@ Tests:
   col_block_dimA: [7, 13]
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   direction: [rocsparse_direction_column]
   matrix: [rocsparse_matrix_random]
@@ -174,15 +174,15 @@ Tests:
 - name: gebsrmm
   category: nightly
   function: gebsrmm
-  precision: *single_double_precisions_complex_real
-  M: [3943, 94912]
-  N: [27, 49]
-  K: [4134, 73291]
-  row_block_dimA: [2, 9]
-  col_block_dimA: [4, 7]
+  precision: *single_double_precisions
+  M: [3943, 14912]
+  N: [27]
+  K: [4134, 13291]
+  row_block_dimA: [2]
+  col_block_dimA: [4]
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
   matrix: [rocsparse_matrix_random]
@@ -212,9 +212,9 @@ Tests:
   function: gebsrmm
   precision: *single_double_precisions_complex
   M: 1
-  N: [40]
+  N: [10]
   K: 1
-  row_block_dimA: [7]
+  row_block_dimA: [5]
   col_block_dimA: [4]
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]

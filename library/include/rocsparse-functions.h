@@ -13427,6 +13427,103 @@ rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
                                 void*                       temp_buffer);
 
 /*! \ingroup generic_module
+*  \brief Sparse matrix multiplication
+*
+*  \details
+*  \p rocsparse_spmm multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times k\f$
+*  matrix \f$A\f$, defined in CSR storage format, and the dense \f$k \times n\f$
+*  matrix \f$B\f$ and adds the result to the dense \f$m \times n\f$ matrix \f$C\f$ that
+*  is multiplied by the scalar \f$\beta\f$, such that
+*  \f[
+*    C := \alpha \cdot op(A) \cdot op(B) + \beta \cdot C,
+*  \f]
+*  with
+*  \f[
+*    op(A) = \left\{
+*    \begin{array}{ll}
+*        A,   & \text{if trans_A == rocsparse_operation_none} \\
+*        A^T, & \text{if trans_A == rocsparse_operation_transpose} \\
+*        A^H, & \text{if trans_A == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*  and
+*  \f[
+*    op(B) = \left\{
+*    \begin{array}{ll}
+*        B,   & \text{if trans_B == rocsparse_operation_none} \\
+*        B^T, & \text{if trans_B == rocsparse_operation_transpose} \\
+*        B^H, & \text{if trans_B == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  \note
+*  Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
+*
+*  \note
+*  This function writes the required allocation size (in bytes) to \p buffer_size and
+*  returns without performing the SpMM operation, when a nullptr is passed for
+*  \p temp_buffer.
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  trans_A      matrix operation type.
+*  @param[in]
+*  trans_B      matrix operation type.
+*  @paran[in]
+*  alpha        scalar \f$\alpha\f$.
+*  @param[in]
+*  mat_A        matrix descriptor.
+*  @param[in]
+*  mat_B        matrix descriptor.
+*  @param[in]
+*  beta         scalar \f$\beta\f$.
+*  @param[in]
+*  mat_C        matrix descriptor.
+*  @param[in]
+*  compute_type floating point precision for the SpMM computation.
+*  @param[in]
+*  alg          SpMM algorithm for the SpMM computation.
+*  @param[out]
+*  buffer_size  number of bytes of the temporary storage buffer. buffer_size is set when
+*               \p temp_buffer is nullptr.
+*  @param[in]
+*  temp_buffer  temporary storage buffer allocated by the user. When a nullptr is passed,
+*               the required allocation size (in bytes) is written to \p buffer_size and
+*               function returns without performing the SpMM operation.
+*
+*  \retval      rocsparse_status_success the operation completed successfully.
+*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_pointer \p alpha, \p mat_A, \p mat_B, \p mat_C, \p beta, or
+*               \p buffer_size pointer is invalid.
+*  \retval      rocsparse_status_not_implemented \p trans_A, \p trans_B, \p compute_type or \p alg is
+*               currently not supported.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmm(rocsparse_handle            handle,
+                                rocsparse_operation         trans_A,
+                                rocsparse_operation         trans_B,
+                                const void*                 alpha,
+                                const rocsparse_spmat_descr mat_A,
+                                const rocsparse_dnmat_descr mat_B,
+                                const void*                 beta,
+                                const rocsparse_dnmat_descr mat_C,
+                                rocsparse_datatype          compute_type,
+                                rocsparse_spmm_alg          alg,
+                                size_t*                     buffer_size,
+                                void*                       temp_buffer);
+
+/*! \ingroup generic_module
 *  \brief Sparse matrix sparse matrix multiplication
 *
 *  \details

@@ -638,6 +638,23 @@ rocsparse_spmv_alg
 
 .. doxygenenum:: rocsparse_spmv_alg
 
+
+rocsparse_spmm_alg
+------------------
+
+.. doxygenenum:: rocsparse_spmm_alg
+
+rocsparse_spgemm_stage
+----------------------
+
+.. doxygenenum:: rocsparse_spgemm_stage
+
+rocsparse_spgemm_alg
+--------------------
+
+.. doxygenenum:: rocsparse_spgemm_alg
+
+
 rocsparse_sparse_to_dense_alg
 -----------------------------
 
@@ -647,16 +664,6 @@ rocsparse_dense_to_sparse_alg
 -----------------------------
 
 .. doxygenenum:: rocsparse_dense_to_sparse_alg
-
-rocsparse_spmm_stage
---------------------
-
-.. doxygenenum:: rocsparse_spgemm_stage
-
-rocsparse_spmm_alg
-------------------
-
-.. doxygenenum:: rocsparse_spgemm_alg
 
 .. _rocsparse_logging:
 
@@ -964,6 +971,7 @@ Function name                   single double single complex double complex
 :cpp:func:`rocsparse_rot()`     x      x      x              x
 :cpp:func:`rocsparse_spvv()`    x      x      x              x
 :cpp:func:`rocsparse_spmv()`    x      x      x              x
+:cpp:func:`rocsparse_spmm()`    x      x      x              x
 :cpp:func:`rocsparse_spgemm()`  x      x      x              x
 =============================== ====== ====== ============== ==============
 
@@ -2356,6 +2364,11 @@ rocsparse_spmv()
 ----------------
 
 .. doxygenfunction:: rocsparse_spmv
+
+rocsparse_spmm()
+----------------
+
+.. doxygenfunction:: rocsparse_spmm
 
 rocsparse_spgemm()
 ------------------

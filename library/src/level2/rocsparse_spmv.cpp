@@ -103,16 +103,16 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                && mat->analysed == false)
             {
                 RETURN_IF_ROCSPARSE_ERROR(
-                    (rocsparse_csrmv_analysis_template<I, J, T>(handle,
-                                                                trans,
-                                                                (J)mat->rows,
-                                                                (J)mat->cols,
-                                                                (I)mat->nnz,
-                                                                mat->descr,
-                                                                (const T*)mat->val_data,
-                                                                (const I*)mat->row_data,
-                                                                (const J*)mat->col_data,
-                                                                mat->info)));
+                    (rocsparse_csrmv_analysis_template(handle,
+                                                       trans,
+                                                       (J)mat->rows,
+                                                       (J)mat->cols,
+                                                       (I)mat->nnz,
+                                                       mat->descr,
+                                                       (const T*)mat->val_data,
+                                                       (const I*)mat->row_data,
+                                                       (const J*)mat->col_data,
+                                                       mat->info)));
 
                 mat->analysed = true;
             }
@@ -124,73 +124,73 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
     // COO
     if(mat->format == rocsparse_format_coo)
     {
-        return rocsparse_coomv_template<I, T>(handle,
-                                              trans,
-                                              (I)mat->rows,
-                                              (I)mat->cols,
-                                              (I)mat->nnz,
-                                              (const T*)alpha,
-                                              mat->descr,
-                                              (const T*)mat->val_data,
-                                              (const I*)mat->row_data,
-                                              (const I*)mat->col_data,
-                                              (const T*)x->values,
-                                              (const T*)beta,
-                                              (T*)y->values);
+        return rocsparse_coomv_template(handle,
+                                        trans,
+                                        (I)mat->rows,
+                                        (I)mat->cols,
+                                        (I)mat->nnz,
+                                        (const T*)alpha,
+                                        mat->descr,
+                                        (const T*)mat->val_data,
+                                        (const I*)mat->row_data,
+                                        (const I*)mat->col_data,
+                                        (const T*)x->values,
+                                        (const T*)beta,
+                                        (T*)y->values);
     }
 
     // COO (AoS)
     if(mat->format == rocsparse_format_coo_aos)
     {
-        return rocsparse_coomv_aos_template<I, T>(handle,
-                                                  trans,
-                                                  (I)mat->rows,
-                                                  (I)mat->cols,
-                                                  (I)mat->nnz,
-                                                  (const T*)alpha,
-                                                  mat->descr,
-                                                  (const T*)mat->val_data,
-                                                  (const I*)mat->ind_data,
-                                                  (const T*)x->values,
-                                                  (const T*)beta,
-                                                  (T*)y->values);
+        return rocsparse_coomv_aos_template(handle,
+                                            trans,
+                                            (I)mat->rows,
+                                            (I)mat->cols,
+                                            (I)mat->nnz,
+                                            (const T*)alpha,
+                                            mat->descr,
+                                            (const T*)mat->val_data,
+                                            (const I*)mat->ind_data,
+                                            (const T*)x->values,
+                                            (const T*)beta,
+                                            (T*)y->values);
     }
 
     // CSR
     if(mat->format == rocsparse_format_csr)
     {
-        return rocsparse_csrmv_template<I, J, T>(handle,
-                                                 trans,
-                                                 (J)mat->rows,
-                                                 (J)mat->cols,
-                                                 (I)mat->nnz,
-                                                 (const T*)alpha,
-                                                 mat->descr,
-                                                 (const T*)mat->val_data,
-                                                 (const I*)mat->row_data,
-                                                 (const J*)mat->col_data,
-                                                 (alg == rocsparse_spmv_alg_csr_stream) ? nullptr
-                                                                                        : mat->info,
-                                                 (const T*)x->values,
-                                                 (const T*)beta,
-                                                 (T*)y->values);
+        return rocsparse_csrmv_template(handle,
+                                        trans,
+                                        (J)mat->rows,
+                                        (J)mat->cols,
+                                        (I)mat->nnz,
+                                        (const T*)alpha,
+                                        mat->descr,
+                                        (const T*)mat->val_data,
+                                        (const I*)mat->row_data,
+                                        (const J*)mat->col_data,
+                                        (alg == rocsparse_spmv_alg_csr_stream) ? nullptr
+                                                                               : mat->info,
+                                        (const T*)x->values,
+                                        (const T*)beta,
+                                        (T*)y->values);
     }
 
     // ELL
     if(mat->format == rocsparse_format_ell)
     {
-        return rocsparse_ellmv_template<I, T>(handle,
-                                              trans,
-                                              (I)mat->rows,
-                                              (I)mat->cols,
-                                              (const T*)alpha,
-                                              mat->descr,
-                                              (const T*)mat->val_data,
-                                              (const I*)mat->col_data,
-                                              (I)mat->nnz,
-                                              (const T*)x->values,
-                                              (const T*)beta,
-                                              (T*)y->values);
+        return rocsparse_ellmv_template(handle,
+                                        trans,
+                                        (I)mat->rows,
+                                        (I)mat->cols,
+                                        (const T*)alpha,
+                                        mat->descr,
+                                        (const T*)mat->val_data,
+                                        (const I*)mat->col_data,
+                                        (I)mat->nnz,
+                                        (const T*)x->values,
+                                        (const T*)beta,
+                                        (T*)y->values);
     }
 
     return rocsparse_status_not_implemented;

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -90,9 +90,9 @@ Tests:
   beta: [-99.0]
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  baseB: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
+  baseB: [rocsparse_index_base_zero]
+  baseC: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
 - name: csrgemm_mult
@@ -143,9 +143,9 @@ Tests:
   beta: [-99.0]
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  baseB: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_one]
+  baseB: [rocsparse_index_base_one]
+  baseC: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [rma10,
              mc2depi,
@@ -207,9 +207,9 @@ Tests:
   beta: [-99.0]
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  baseB: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
+  baseB: [rocsparse_index_base_zero]
+  baseC: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mplate,
              Chevron3]
@@ -254,8 +254,8 @@ Tests:
   K: 1
   alpha: [-99.0]
   beta_betai: *beta_range_checkin
-  baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  baseD: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseC: [rocsparse_index_base_zero]
+  baseD: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
 - name: csrgemm_scale
@@ -296,8 +296,8 @@ Tests:
   N: 1
   alpha: [-99.0]
   beta_betai: *beta_range_checkin
-  baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  baseD: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseC: [rocsparse_index_base_one]
+  baseD: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [rma10,
              mc2depi,
@@ -347,8 +347,8 @@ Tests:
   N: 1
   alpha: [-99.0]
   beta_betai: *beta_range_checkin
-  baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  baseD: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseC: [rocsparse_index_base_zero]
+  baseD: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mplate,
              Chevron3]

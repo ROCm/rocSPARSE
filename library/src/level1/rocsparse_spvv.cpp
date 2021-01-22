@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,13 +71,13 @@ rocsparse_status rocsparse_spvv_template(rocsparse_handle            handle,
     // real precision
     if(compute_type == rocsparse_datatype_f32_r || compute_type == rocsparse_datatype_f64_r)
     {
-        return rocsparse_doti_template<I, T>(handle,
-                                             x->nnz,
-                                             (const T*)x->val_data,
-                                             (const I*)x->idx_data,
-                                             (const T*)y->values,
-                                             (T*)result,
-                                             x->idx_base);
+        return rocsparse_doti_template(handle,
+                                       (I)x->nnz,
+                                       (const T*)x->val_data,
+                                       (const I*)x->idx_data,
+                                       (const T*)y->values,
+                                       (T*)result,
+                                       x->idx_base);
     }
 
     // complex precision
@@ -86,25 +86,25 @@ rocsparse_status rocsparse_spvv_template(rocsparse_handle            handle,
         // non transpose
         if(trans == rocsparse_operation_none)
         {
-            return rocsparse_doti_template<I, T>(handle,
-                                                 x->nnz,
-                                                 (const T*)x->val_data,
-                                                 (const I*)x->idx_data,
-                                                 (const T*)y->values,
-                                                 (T*)result,
-                                                 x->idx_base);
+            return rocsparse_doti_template(handle,
+                                           (I)x->nnz,
+                                           (const T*)x->val_data,
+                                           (const I*)x->idx_data,
+                                           (const T*)y->values,
+                                           (T*)result,
+                                           x->idx_base);
         }
 
         // conjugate transpose
         if(trans == rocsparse_operation_conjugate_transpose)
         {
-            return rocsparse_dotci_template<I, T>(handle,
-                                                  x->nnz,
-                                                  (const T*)x->val_data,
-                                                  (const I*)x->idx_data,
-                                                  (const T*)y->values,
-                                                  (T*)result,
-                                                  x->idx_base);
+            return rocsparse_dotci_template(handle,
+                                            (I)x->nnz,
+                                            (const T*)x->val_data,
+                                            (const I*)x->idx_data,
+                                            (const T*)y->values,
+                                            (T*)result,
+                                            x->idx_base);
         }
     }
 

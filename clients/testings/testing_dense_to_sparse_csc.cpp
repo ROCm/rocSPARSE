@@ -336,8 +336,8 @@ void testing_dense_to_sparse_csc(const Arguments& arg)
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = dense2csx_gbyte_count<rocsparse_direction_column, I, J, T>(m, n, nnz)
-                           / gpu_time_used * 1e6;
+        double gpu_gbyte
+            = dense2csx_gbyte_count<rocsparse_direction_column, T>(m, n, nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

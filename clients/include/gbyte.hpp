@@ -38,19 +38,19 @@
  *    level 1 SPARSE
  * ===========================================================================
  */
-template <typename I, typename T>
+template <typename T, typename I>
 constexpr double axpby_gbyte_count(I nnz)
 {
     return (nnz * sizeof(I) + (3.0 * nnz) * sizeof(T)) / 1e9;
 }
 
-template <typename I, typename T>
+template <typename T, typename I>
 constexpr double doti_gbyte_count(I nnz)
 {
     return (nnz * sizeof(I) + (2.0 * nnz) * sizeof(T)) / 1e9;
 }
 
-template <typename I, typename T>
+template <typename T, typename I>
 constexpr double gthr_gbyte_count(I nnz)
 {
     return (nnz * sizeof(I) + (2.0 * nnz) * sizeof(T)) / 1e9;
@@ -62,13 +62,13 @@ constexpr double gthrz_gbyte_count(rocsparse_int nnz)
     return (nnz * sizeof(rocsparse_int) + (2.0 * nnz) * sizeof(T)) / 1e9;
 }
 
-template <typename I, typename T>
+template <typename T, typename I>
 constexpr double roti_gbyte_count(I nnz)
 {
     return (nnz * sizeof(I) + (3.0 * nnz) * sizeof(T)) / 1e9;
 }
 
-template <typename I, typename T>
+template <typename T, typename I>
 constexpr double sctr_gbyte_count(I nnz)
 {
     return (nnz * sizeof(I) + (2.0 * nnz) * sizeof(T)) / 1e9;
@@ -92,13 +92,13 @@ constexpr double bsrmv_gbyte_count(rocsparse_int mb,
            / 1e9;
 }
 
-template <typename I, typename T>
+template <typename T, typename I>
 constexpr double coomv_gbyte_count(I M, I N, I nnz, bool beta = false)
 {
     return (2.0 * nnz * sizeof(I) + (M + N + nnz + (beta ? M : 0)) * sizeof(T)) / 1e9;
 }
 
-template <typename I, typename J, typename T>
+template <typename T, typename I, typename J>
 constexpr double csrmv_gbyte_count(J M, J N, I nnz, bool beta = false)
 {
     return ((M + 1) * sizeof(I) + nnz * sizeof(J) + (M + N + nnz + (beta ? M : 0)) * sizeof(T))
@@ -119,7 +119,7 @@ constexpr double csrsv_gbyte_count(rocsparse_int M, rocsparse_int nnz)
     return ((M + 1 + nnz) * sizeof(rocsparse_int) + (M + M + nnz) * sizeof(T)) / 1e9;
 }
 
-template <typename I, typename T>
+template <typename T, typename I>
 constexpr double ellmv_gbyte_count(I M, I N, I nnz, bool beta = false)
 {
     return (nnz * sizeof(I) + (M + N + nnz + (beta ? M : 0)) * sizeof(T)) / 1e9;
@@ -183,14 +183,10 @@ constexpr double gebsrmm_gbyte_count(rocsparse_int Mb,
     return (reads + writes) / 1e9;
 }
 
-template <typename T>
-constexpr double csrmm_gbyte_count(rocsparse_int M,
-                                   rocsparse_int nnz_A,
-                                   rocsparse_int nnz_B,
-                                   rocsparse_int nnz_C,
-                                   bool          beta = false)
+template <typename T, typename I, typename J>
+constexpr double csrmm_gbyte_count(J M, I nnz_A, I nnz_B, I nnz_C, bool beta = false)
 {
-    return ((M + 1 + nnz_A) * sizeof(rocsparse_int)
+    return ((M + 1) * sizeof(I) + nnz_A * sizeof(J)
             + (nnz_A + nnz_B + nnz_C + (beta ? nnz_C : 0)) * sizeof(T))
            / 1e9;
 }
@@ -273,7 +269,7 @@ constexpr double nnz_gbyte_count(rocsparse_int M, rocsparse_int N, rocsparse_dir
            / 1e9;
 }
 
-template <rocsparse_direction DIRA, typename I, typename J, typename T>
+template <rocsparse_direction DIRA, typename T, typename I, typename J>
 constexpr double dense2csx_gbyte_count(J M, J N, I nnz)
 {
     const J      L             = (rocsparse_direction_row == DIRA) ? M : N;
@@ -286,7 +282,7 @@ constexpr double dense2csx_gbyte_count(J M, J N, I nnz)
     return (read_dense + build_csx_ptr + write_csx) / 1e9;
 }
 
-template <typename I, typename T>
+template <typename T, typename I>
 constexpr double dense2coo_gbyte_count(I M, I N, I nnz)
 {
     size_t reads  = (M * N) * sizeof(T);
@@ -316,7 +312,7 @@ constexpr double
     return (reads + writes) / 1e9;
 }
 
-template <rocsparse_direction DIRA, typename I, typename J, typename T>
+template <rocsparse_direction DIRA, typename T, typename I, typename J>
 constexpr double csx2dense_gbyte_count(J M, J N, I nnz)
 {
     const J      L        = (rocsparse_direction_row == DIRA) ? M : N;
@@ -326,7 +322,7 @@ constexpr double csx2dense_gbyte_count(J M, J N, I nnz)
     return (read_csx + write_dense) / 1e9;
 }
 
-template <typename I, typename T>
+template <typename T, typename I>
 constexpr double coo2dense_gbyte_count(I M, I N, I nnz)
 {
     size_t reads  = 2 * nnz * sizeof(I) + nnz * sizeof(T);

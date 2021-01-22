@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -56,21 +56,21 @@ Tests:
   K: [-1, 0, 50, 173]
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
 
 - name: csrmm
   category: pre_checkin
   function: csrmm
-  precision: *single_double_precisions_complex_real
+  precision: *single_double_precisions
   M: [-1, 0, 511, 2059]
   N: [-1, 0, 7, 33, 64, 78]
   K: [-1, 0, 391, 1375]
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
 - name: csrmm
@@ -82,7 +82,7 @@ Tests:
   K: [4134, 73291]
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
@@ -95,7 +95,7 @@ Tests:
   K: 1
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mac_econ_fwd500,
@@ -113,8 +113,8 @@ Tests:
   K: 1
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [rma10,
              mc2depi,
@@ -133,7 +133,7 @@ Tests:
   K: 1
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [bibd_22_8,
@@ -153,8 +153,8 @@ Tests:
   K: 1
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron2,
              qc2534]
@@ -168,8 +168,8 @@ Tests:
   K: 1
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mplate,
              Chevron3]
@@ -183,7 +183,7 @@ Tests:
   K: 1
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron4]

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -76,8 +76,8 @@ Tests:
   M: [20245, 50677, 82859]
   N: [12909, 40232, 88180]
   threshold: [0.1, 0.2, 0.33, -0.5]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
-  baseB: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_one]
+  baseB: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
 - name: prune_csr2csr_by_percentage_file
@@ -88,7 +88,7 @@ Tests:
   N: 1
   threshold: [0.3, 0.45, 0.77, -0.1]
   baseA: [rocsparse_index_base_one]
-  baseB: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseB: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron2,
              Chevron3,
@@ -100,8 +100,8 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  threshold: [0.7, 0.8, 0.99, 1.0]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  threshold: [0.7, 0.99, 1.0]
+  baseA: [rocsparse_index_base_zero]
   baseB: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [amazon0312,

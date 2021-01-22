@@ -331,9 +331,9 @@ void testing_spmv_coo(const Arguments& arg)
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
         double gpu_gflops
-            = spmv_gflop_count<I, T>(M, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
+            = spmv_gflop_count(M, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
         double gpu_gbyte
-            = coomv_gbyte_count<I, T>(M, N, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
+            = coomv_gbyte_count<T>(M, N, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

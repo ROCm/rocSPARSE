@@ -51,15 +51,15 @@ Tests:
   M: [-1, 0, 531, 1000]
   N: [-3, 0, 241, 1000]
   denseld: [100, 1000, 2000]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
   order: [rocsparse_order_row, rocsparse_order_column]
 
 - name: sparse_to_dense_coo
   category: nightly
   function: sparse_to_dense_coo
   indextype: *i32_i64
-  precision: *single_double_precisions_complex_real
-  M: [2000, 4000, 8000]
+  precision: *single_double_precisions
+  M: [2000, 4000]
   N: [2000, 4000]
   denseld: [ 8000 ]
   baseA: [rocsparse_index_base_one]

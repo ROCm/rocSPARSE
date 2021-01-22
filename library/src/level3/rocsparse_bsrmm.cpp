@@ -168,6 +168,7 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
         return rocsparse_csrmm_template_dispatch(handle,
                                                  trans_A,
                                                  trans_B,
+                                                 rocsparse_order_column,
                                                  m,
                                                  n,
                                                  k,

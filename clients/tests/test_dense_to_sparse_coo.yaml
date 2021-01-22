@@ -59,7 +59,7 @@ Tests:
   function: dense_to_sparse_coo
   indextype: *i32_i64
   precision: *single_double_precisions_complex_real
-  M: [2000, 4000, 8000]
+  M: [2000, 4000]
   N: [2000, 4000]
   denseld: [ 8000 ]
   baseA: [rocsparse_index_base_one]

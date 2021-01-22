@@ -256,20 +256,21 @@ void host_gebsrmm(rocsparse_int                     Mb,
                   rocsparse_int                     ldc,
                   rocsparse_index_base              base);
 
-template <typename T>
-void host_csrmm(rocsparse_int                     M,
-                rocsparse_int                     N,
-                rocsparse_operation               transB,
-                T                                 alpha,
-                const std::vector<rocsparse_int>& csr_row_ptr_A,
-                const std::vector<rocsparse_int>& csr_col_ind_A,
-                const std::vector<T>&             csr_val_A,
-                const std::vector<T>&             B,
-                rocsparse_int                     ldb,
-                T                                 beta,
-                std::vector<T>&                   C,
-                rocsparse_int                     ldc,
-                rocsparse_index_base              base);
+template <typename I, typename J, typename T>
+void host_csrmm(J                     M,
+                J                     N,
+                rocsparse_operation   transB,
+                T                     alpha,
+                const std::vector<I>& csr_row_ptr_A,
+                const std::vector<J>& csr_col_ind_A,
+                const std::vector<T>& csr_val_A,
+                const std::vector<T>& B,
+                J                     ldb,
+                T                     beta,
+                std::vector<T>&       C,
+                J                     ldc,
+                rocsparse_order       order,
+                rocsparse_index_base  base);
 
 template <typename T>
 void host_csrsm(rocsparse_int                     M,

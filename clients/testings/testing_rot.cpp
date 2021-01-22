@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -214,7 +214,7 @@ void testing_rot(const Arguments& arg)
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
         double gpu_gflops = roti_gflop_count<I>(nnz) / gpu_time_used * 1e6;
-        double gpu_gbyte  = roti_gbyte_count<I, T>(nnz) / gpu_time_used * 1e6;
+        double gpu_gbyte  = roti_gbyte_count<T>(nnz) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

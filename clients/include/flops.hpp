@@ -50,7 +50,6 @@ constexpr double axpby_gflop_count(I nnz)
     return (3.0 * nnz) / 1e9;
 }
 
-template <typename T>
 constexpr double doti_gflop_count(rocsparse_int nnz)
 {
     return (2.0 * nnz) / 1e9;
@@ -67,13 +66,12 @@ constexpr double roti_gflop_count(I nnz)
  *    level 2 SPARSE
  * ===========================================================================
  */
-template <typename I, typename T>
-constexpr double spmv_gflop_count(I M, I nnz, bool beta = false)
+template <typename I, typename J>
+constexpr double spmv_gflop_count(J M, I nnz, bool beta = false)
 {
     return (2.0 * nnz + (beta ? M : 0)) / 1e9;
 }
 
-template <typename T>
 constexpr double csrsv_gflop_count(rocsparse_int M, rocsparse_int nnz, rocsparse_diag_type diag)
 {
     return (2.0 * nnz + M + (diag == rocsparse_diag_type_non_unit ? M : 0)) / 1e9;
@@ -84,7 +82,6 @@ constexpr double csrsv_gflop_count(rocsparse_int M, rocsparse_int nnz, rocsparse
  *    level 3 SPARSE
  * ===========================================================================
  */
-template <typename T>
 constexpr double bsrmm_gflop_count(rocsparse_int N,
                                    rocsparse_int nnzb,
                                    rocsparse_int block_dim,
@@ -94,7 +91,6 @@ constexpr double bsrmm_gflop_count(rocsparse_int N,
     return (3.0 * nnzb * block_dim * block_dim * N + (beta ? nnz_C : 0)) / 1e9;
 }
 
-template <typename T>
 constexpr double gebsrmm_gflop_count(rocsparse_int N,
                                      rocsparse_int nnzb,
                                      rocsparse_int row_block_dim,
@@ -105,9 +101,8 @@ constexpr double gebsrmm_gflop_count(rocsparse_int N,
     return (3.0 * nnzb * row_block_dim * col_block_dim * N + (beta ? nnz_C : 0)) / 1e9;
 }
 
-template <typename T>
-constexpr double
-    csrmm_gflop_count(rocsparse_int N, rocsparse_int nnz_A, rocsparse_int nnz_C, bool beta = false)
+template <typename I, typename J>
+constexpr double spmm_gflop_count(J N, I nnz_A, I nnz_C, bool beta = false)
 {
     return (3.0 * nnz_A * N + (beta ? nnz_C : 0)) / 1e9;
 }

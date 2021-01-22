@@ -379,9 +379,9 @@ void testing_spmv_csr(const Arguments& arg)
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
         double gpu_gflops
-            = spmv_gflop_count<I, T>(M, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
-        double gpu_gbyte = csrmv_gbyte_count<I, J, T>(M, N, nnz, h_beta != static_cast<T>(0))
-                           / gpu_time_used * 1e6;
+            = spmv_gflop_count(M, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
+        double gpu_gbyte
+            = csrmv_gbyte_count<T>(M, N, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
