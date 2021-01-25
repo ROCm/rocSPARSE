@@ -329,6 +329,12 @@ case "${ID}" in
   ;;
 esac
 
+# If user provides custom ${rocm_path} path for hcc it has lesser priority,
+# but with hip-clang existing path has lesser priority to avoid use of installed clang++
+if [[ "${build_hip_clang}" == true ]]; then
+  export PATH=${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}
+fi
+
 # #################################################
 # dependencies
 # #################################################
