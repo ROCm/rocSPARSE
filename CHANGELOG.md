@@ -2,7 +2,7 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## [(Unreleased) rocSPARSE 1.19.4 for ROCm 4.1.0]
+## [rocSPARSE 1.19.4 for ROCm 4.1.0]
 ### Added
 - gebsrmm
 - gebsrmv
