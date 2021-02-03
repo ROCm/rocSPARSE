@@ -70,8 +70,7 @@ add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
 add_library(roc::rocsparse ALIAS rocsparse)
 
 # Target compile options
-# Note: Added optional code coverage compile options CXXFLAGS_CODE_COVERAGE
-target_compile_options(rocsparse PRIVATE -Wno-unused-command-line-argument -Wall ${CXXFLAGS_CODE_COVERAGE})
+target_compile_options(rocsparse PRIVATE -Wno-unused-command-line-argument -Wall)
 
 foreach(target ${AMDGPU_TARGETS})
   target_compile_options(rocsparse PRIVATE --amdgpu-target=${target})
@@ -86,8 +85,7 @@ target_include_directories(rocsparse
 )
 
 # Target link libraries
-# Note: Added optional code coverage compile options LDFLAGS_CODE_COVERAGE
-target_link_libraries(rocsparse PRIVATE roc::rocprim ${LDFLAGS_CODE_COVERAGE})
+target_link_libraries(rocsparse PRIVATE roc::rocprim)
 
 # Target properties
 rocm_set_soversion(rocsparse ${rocsparse_SOVERSION})

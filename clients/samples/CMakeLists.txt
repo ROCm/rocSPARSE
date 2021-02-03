@@ -25,12 +25,10 @@ set(ROCSPARSE_CLIENTS_COMMON ../common/rocsparse_init.cpp ../common/utility.cpp)
 
 add_library(rocsparsecommon ${ROCSPARSE_CLIENTS_COMMON})
 # Include common client headers
-# Note: Added optional code coverage compile options CXXFLAGS_CODE_COVERAGE
-target_compile_options(rocsparsecommon PRIVATE -Wno-unused-command-line-argument -Wall ${CXXFLAGS_CODE_COVERAGE})
+target_compile_options(rocsparsecommon PRIVATE -Wno-unused-command-line-argument -Wall)
 target_include_directories(rocsparsecommon PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
-# Note: Added optional code coverage linking options LDFLAGS_CODE_COVERAGE
-target_link_libraries(rocsparsecommon PRIVATE roc::rocsparse hip::host ${LDFLAGS_CODE_COVERAGE})
+target_link_libraries(rocsparsecommon PRIVATE roc::rocsparse hip::host)
 set_target_properties(rocsparsecommon PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 # Linker dependencies
 #target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host rocsparsecommon)

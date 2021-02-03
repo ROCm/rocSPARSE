@@ -81,14 +81,12 @@ option(BUILD_CLIENTS_TESTS "Build tests (requires googletest)" OFF)
 option(BUILD_CLIENTS_BENCHMARKS "Build benchmarks (requires boost)" OFF)
 option(BUILD_CLIENTS_SAMPLES "Build examples" ON)
 option(BUILD_VERBOSE "Output additional build information" OFF)
-option(BUILD_CODE_COVERAGE "Build rocSPARSE with code coverage" OFF)
+option(BUILD_CODE_COVERAGE "Build rocSPARSE with code coverage enabled" OFF)
 
 if(BUILD_CODE_COVERAGE)
-  message("Setting code coverage compile options and linking options, CXXFLAGS_CODE_COVERAGE and LDFLAGS_CODE_COVERAGE")
-  set(CXXFLAGS_CODE_COVERAGE -fprofile-arcs -ftest-coverage -g CACHE INTERNAL "")
-  set(LDFLAGS_CODE_COVERAGE --coverage CACHE INTERNAL "")
+  add_compile_options(-g -fprofile-arcs -ftest-coverage)
+  add_link_options(-g --coverage)
 endif()
-
 
 # Detect compiler support for target ID
 if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")
@@ -124,59 +122,53 @@ if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
 endif()
 
 #
-# CODE COVERAGE, HOW-TO:
+# ADDITIONAL TARGETS FOR CODE COVERAGE
 #
-# make init_cov (remove gcda files)
-# make run_gcov (run test)
-# make run_lcov (analyze and generate html documentation)
+# > make coverage GTEST_FILTER=<>
+# will run:
+#  > make coverage_analysis (analyze tests)
+#  > make coverage_output (generate html documentation)
+#  > make coverage_cleanup (clean coverage related files.)
 #
 
 #
-# What to run when running the code coverage?
+# Run coverage analysis
 #
-add_custom_target(run_gcov
-    COMMAND mkdir -p gcoverage
-    COMMAND ./clients/staging/rocsparse-test --gtest_filter="quick*level1*"
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    )
+add_custom_target(coverage_analysis
+   COMMAND mkdir -p gcoverage
+   COMMAND echo Coverage GTEST_FILTER=\${GTEST_FILTER}
+   COMMAND ./clients/staging/rocsparse-test --gtest_filter=\"\${GTEST_FILTER}\"
+   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+ )
+
+add_dependencies(coverage_analysis rocsparse)
 
 #
-# Run gcov
+# Prepare coverage output
 #
-add_custom_command(TARGET run_gcov
-    COMMAND echo "=================== GCOV ===================="
-    COMMAND /opt/rocm/llvm/bin/llvm-cov gcov -f -b `find ${CMAKE_BINARY_DIR} -name *.gcda`
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/gcoverage
-    )
-
-add_dependencies(run_gcov rocsparse)
-
-#
-# Prepare for lcov
-#
-add_custom_target(run_lcov
+add_custom_target(coverage_output
     COMMAND mkdir -p lcoverage
     COMMAND echo "\\#!/bin/bash" > llvm-gcov.sh
+    COMMAND echo "\\# THIS FILE HAS BEEN GENERATED" >> llvm-gcov.sh
     COMMAND printf "exec /opt/rocm/llvm/bin/llvm-cov gcov $$\\@" >> llvm-gcov.sh
     COMMAND chmod +x llvm-gcov.sh
     )
 
 #
-# Generate html output.
+# Generate coverage output.
 #
-add_custom_command(TARGET run_lcov
-    COMMAND echo "=================== LCOV ===================="
-    COMMAND lcov --directory .  --base-directory . --gcov-tool ${CMAKE_BINARY_DIR}/llvm-gcov.sh --capture -o lcoverage/raw_main_coverage.info
-    COMMAND lcov --remove lcoverage/raw_main_coverage.info "'/opt/*'" "'/usr/*'" -o lcoverage/main_coverage.info
-    COMMAND genhtml lcoverage/main_coverage.info --output-directory lcoverage
+add_custom_command(TARGET coverage_output
+  COMMAND lcov --directory . --base-directory . --gcov-tool ${CMAKE_BINARY_DIR}/llvm-gcov.sh --capture -o lcoverage/raw_main_coverage.info
+  COMMAND lcov --remove lcoverage/raw_main_coverage.info "'/opt/*'" "'/usr/*'" -o lcoverage/main_coverage.info
+  COMMAND genhtml lcoverage/main_coverage.info --output-directory lcoverage
     )
 
-# Make sure to clean up the coverage folder
-set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES gcoverage)
+add_custom_target(coverage DEPENDS coverage_analysis coverage_output)
 
-# Create the gcov-clean target. This cleans the build as well as generated
-# .gcda and .gcno files.
-add_custom_target(init_cov
+#
+# Coverage cleanup
+#
+add_custom_target(coverage_cleanup
     COMMAND rm -f `find ${CMAKE_BINARY_DIR} -name *.gcda`
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
