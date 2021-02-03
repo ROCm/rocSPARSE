@@ -122,15 +122,13 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})
 
 # Target compile options
-# Note: Added optional code coverage compile options CXXFLAGS_CODE_COVERAGE
-target_compile_options(rocsparse-bench PRIVATE -Wno-unused-command-line-argument -Wall ${CXXFLAGS_CODE_COVERAGE})
+target_compile_options(rocsparse-bench PRIVATE -Wno-unused-command-line-argument -Wall)
 
 # Internal common header
 target_include_directories(rocsparse-bench PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
 # Target link libraries
-# Note: Added optional code coverage linking options LDFLAGS_CODE_COVERAGE
-target_link_libraries(rocsparse-bench PRIVATE Boost::program_options roc::rocsparse hip::host ${LDFLAGS_CODE_COVERAGE})
+target_link_libraries(rocsparse-bench PRIVATE Boost::program_options roc::rocsparse hip::host)
 
 # Add OpenMP if available
 if(OPENMP_FOUND)

@@ -323,15 +323,6 @@ set(ROCSPARSE_CLIENTS_TESTINGS
   )
 
 
-#
-# remove pragma once
-# remove ifndef
-# remove define
-# remove last line
-# add specialization
-#
-
-
 set(ROCSPARSE_CLIENTS_COMMON
   ../common/utility.cpp
   ../common/rocsparse_parse_data.cpp
@@ -346,15 +337,13 @@ add_executable(rocsparse-test rocsparse_test_main.cpp ${ROCSPARSE_TEST_SOURCES} 
 target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
 
 # Target compile options
-# Note: Added optional code coverage compile options CXXFLAGS_CODE_COVERAGE
-target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-unused-command-line-argument -Wall ${CXXFLAGS_CODE_COVERAGE})
+target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-unused-command-line-argument -Wall)
 
 # Internal common header
 target_include_directories(rocsparse-test PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
 # Target link libraries
-# Note: Added optional code coverage linking options LDFLAGS_CODE_COVERAGE
-target_link_libraries(rocsparse-test PRIVATE GTest::GTest Boost::program_options roc::rocsparse hip::host ${LDFLAGS_CODE_COVERAGE})
+target_link_libraries(rocsparse-test PRIVATE GTest::GTest Boost::program_options roc::rocsparse hip::host)
 
 # Add OpenMP if available
 if(OPENMP_FOUND)

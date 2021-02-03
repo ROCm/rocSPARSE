@@ -17,9 +17,10 @@ function display_help()
   echo "    [-c|--clients] build library clients too (combines with -i & -d)"
   echo "    [-r]--relocatable] create a package to support relocatable ROCm"
   echo "    [-g|--debug] -DCMAKE_BUILD_TYPE=Debug (default is =Release)"
+  echo "    [-k|--relwithdebinfo] -DCMAKE_BUILD_TYPE=RelWithDebInfo"
   echo "    [--hip-clang] build library for amdgpu backend using hip-clang"
   echo "    [--static] build static library"
-  echo "    [-p|--profile] apply code coverage profiling"
+  echo "    [-p|--profile] build with code coverage profiling enabled"
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
@@ -242,7 +243,8 @@ build_clients=false
 build_release=true
 build_hip_clang=true
 build_static=false
-build_gcov=false
+build_release_debug=false
+build_coverage=false
 install_prefix=rocsparse-install
 rocm_path=/opt/rocm
 build_relocatable=false
@@ -254,7 +256,7 @@ build_relocatable=false
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,profile --options hicdgrp -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,profile --options hicdgrpk -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -294,8 +296,12 @@ while true; do
     --static)
         build_static=true
         shift ;;
+    -k)
+        build_release=false
+        build_release_debug=true
+        shift ;;
     -p|--profile)
-        build_gcov=true
+        build_coverage=true
         shift ;;
     --prefix)
         install_prefix=${2}
@@ -316,6 +322,8 @@ printf "\033[32mCreating project build directory in: \033[33m${build_dir}\033[0m
 # ensure a clean build environment
 if [[ "${build_release}" == true ]]; then
   rm -rf ${build_dir}/release
+elif [[ "${build_release_debug}" == true ]]; then
+  rm -rf ${build_dir}/release-debug
 else
   rm -rf ${build_dir}/debug
 fi
@@ -382,9 +390,17 @@ pushd .
   if [[ "${build_release}" == true ]]; then
     mkdir -p ${build_dir}/release/clients && cd ${build_dir}/release
     cmake_common_options="${cmake_common_options} -DCMAKE_BUILD_TYPE=Release"
+  elif [[ "${build_release_debug}" == true ]]; then
+    mkdir -p ${build_dir}/release-debug/clients && cd ${build_dir}/release-debug
+    cmake_common_options="{cmake_common_options}  -DCMAKE_BUILD_TYPE=RelWithDebInfo"
   else
     mkdir -p ${build_dir}/debug/clients && cd ${build_dir}/debug
     cmake_common_options="${cmake_common_options} -DCMAKE_BUILD_TYPE=Debug"
+  fi
+
+  # code coverage
+  if [[ "${build_coverage}" == true ]]; then
+      cmake_common_options="${cmake_common_options} -DBUILD_CODE_COVERAGE=ON"
   fi
 
   # library type
@@ -397,10 +413,6 @@ pushd .
     cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_SAMPLES=ON -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON"
   fi
 
-  # code coverage
-  if [[ "${build_gcov}" == true ]]; then
-    cmake_common_options="{cmake_common_options} -DBUILD_CODE_COVERAGE=ON"
-  fi
 
   compiler="hcc"
   if [[ "${build_hip_clang}" == true ]]; then
