@@ -76,5 +76,5 @@ truncate -s 0 $logname
 
 # Run csrmm for all matrices available
 for filename in ./matrices/*.csr; do
-    $bench -f csrmm --precision d --device $dev --sizen $sizen --transposeB T --alpha 1 --beta 0 --iters 200 --rocalution $filename 2>&1 | tee -a $logname
+    $bench -f csrmm --precision d --device $dev --sizen $sizen --order 0 --transposeB T --alpha 1 --beta 0 --iters 200 --rocalution $filename 2>&1 | tee -a $logname
 done
