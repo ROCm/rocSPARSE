@@ -29,7 +29,7 @@
 #ifndef _ROCSPARSE_COMPLEX_TYPES_H_
 #define _ROCSPARSE_COMPLEX_TYPES_H_
 
-#if __cplusplus < 201402L || (!defined(__HCC__) && !defined(__HIPCC__))
+#if __cplusplus < 201402L || (!defined(__HIPCC__))
 
 /* If this is a C compiler, C++ compiler below C++14, or a host-only compiler, only
    include minimal definitions of rocsparse_float_complex and rocsparse_double_complex */
@@ -44,7 +44,7 @@ typedef struct
     double x, y;
 } rocsparse_double_complex;
 
-#else /* __cplusplus < 201402L || (!defined(__HCC__) && !defined(__HIPCC__)) */
+#else /* __cplusplus < 201402L || (!defined(__HIPCC__)) */
 
 // If this is a full internal build, add full support of complex arithmetic and classes
 // including __host__ and __device__ and such we need to use <hip/hip_runtime.h>.
@@ -280,6 +280,6 @@ template class rocsparse_complex_num_check<double>;
 using rocsparse_float_complex  = rocsparse_complex_num<float>;
 using rocsparse_double_complex = rocsparse_complex_num<double>;
 
-#endif /* __cplusplus < 201402L || (!defined(__HCC__) && !defined(__HIPCC__)) */
+#endif /* __cplusplus < 201402L || (!defined(__HIPCC__)) */
 
 #endif /* _ROCSPARSE_COMPLEX_TYPES_H_ */
