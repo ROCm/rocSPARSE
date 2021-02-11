@@ -21,212 +21,102 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename I, typename J, typename T>
 void testing_spmv_csr_bad_arg(const Arguments& arg)
 {
-    J m   = 100;
-    J n   = 100;
-    I nnz = 100;
 
     T alpha = 0.6;
     T beta  = 0.1;
 
-    rocsparse_operation  trans = rocsparse_operation_none;
-    rocsparse_index_base base  = rocsparse_index_base_zero;
-    rocsparse_spmv_alg   alg   = rocsparse_spmv_alg_default;
+    rocsparse_local_handle     local_handle;
+    device_csr_matrix<T, I, J> dA;
+    device_dense_matrix<T>     dx, dy;
 
-    // Index and data type
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_indextype jtype = get_indextype<J>();
-    rocsparse_datatype  ttype = get_datatype<T>();
+    rocsparse_handle      handle  = local_handle;
+    rocsparse_operation   trans   = rocsparse_operation_none;
+    const void*           p_alpha = (const void*)&alpha;
+    rocsparse_local_spmat A(dA);
+    rocsparse_local_dnvec x(dx);
+    const void*           p_beta = (const void*)&beta;
+    rocsparse_local_dnvec y(dy);
+    rocsparse_spmv_alg    alg = rocsparse_spmv_alg_default;
+    size_t                buffer_size;
+    size_t*               p_buffer_size = &buffer_size;
+    void*                 temp_buffer   = (void*)0x4;
+    rocsparse_datatype    ttype         = get_datatype<T>();
 
-    // Create rocsparse handle
-    rocsparse_local_handle handle;
+#define PARAMS                                                                                \
+    handle, trans, p_alpha, (const rocsparse_spmat_descr&)A, (const rocsparse_dnvec_descr&)x, \
+        p_beta, (rocsparse_dnvec_descr&)y, ttype, alg, p_buffer_size, temp_buffer
 
-    // Allocate memory on device
-    device_vector<I> dcsr_row_ptr(m + 1);
-    device_vector<J> dcsr_col_ind(nnz);
-    device_vector<T> dcsr_val(nnz);
-    device_vector<T> dx(n);
-    device_vector<T> dy(m);
+    static const int nex   = 2;
+    static const int ex[2] = {9, 10};
+    auto_testing_bad_arg(rocsparse_spmv, nex, ex, PARAMS);
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dx || !dy)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    p_buffer_size = nullptr;
+    temp_buffer   = nullptr;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmv(PARAMS), rocsparse_status_invalid_pointer);
 
-    // SpMV structures
-    rocsparse_local_spmat A(m,
-                            n,
-                            nnz,
-                            dcsr_row_ptr,
-                            dcsr_col_ind,
-                            dcsr_val,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
-    rocsparse_local_dnvec x(n, dx, ttype);
-    rocsparse_local_dnvec y(m, dy, ttype);
-
-    // Test SpMV with invalid buffer
-    size_t buffer_size;
-
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(nullptr, trans, &alpha, A, x, &beta, y, ttype, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(handle, trans, nullptr, A, x, &beta, y, ttype, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(
-            handle, trans, &alpha, nullptr, x, &beta, y, ttype, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(
-            handle, trans, &alpha, A, nullptr, &beta, y, ttype, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(handle, trans, &alpha, A, x, nullptr, y, ttype, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(
-            handle, trans, &alpha, A, x, &beta, nullptr, ttype, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(handle, trans, &alpha, A, x, &beta, y, ttype, alg, nullptr, nullptr),
-        rocsparse_status_invalid_pointer);
-
-    // Test SpMV with valid buffer
-    void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, 100));
-
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(nullptr, trans, &alpha, A, x, &beta, y, ttype, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(handle, trans, nullptr, A, x, &beta, y, ttype, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(
-            handle, trans, &alpha, nullptr, x, &beta, y, ttype, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(
-            handle, trans, &alpha, A, nullptr, &beta, y, ttype, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(handle, trans, &alpha, A, x, nullptr, y, ttype, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmv(
-            handle, trans, &alpha, A, x, &beta, nullptr, ttype, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_pointer);
-
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+#undef PARAMS
 }
 
 template <typename I, typename J, typename T>
 void testing_spmv_csr(const Arguments& arg)
 {
-    J                     M         = arg.M;
-    J                     N         = arg.N;
-    J                     K         = arg.K;
-    I                     nnz       = 100;
-    int32_t               dim_x     = arg.dimx;
-    int32_t               dim_y     = arg.dimy;
-    int32_t               dim_z     = arg.dimz;
-    rocsparse_operation   trans     = arg.transA;
-    rocsparse_index_base  base      = arg.baseA;
-    rocsparse_spmv_alg    alg       = arg.spmv_alg;
-    rocsparse_matrix_init mat       = arg.matrix;
-    bool                  full_rank = false;
-    std::string           filename
+    J                    M     = arg.M;
+    J                    N     = arg.N;
+    rocsparse_operation  trans = arg.transA;
+    rocsparse_index_base base  = arg.baseA;
+    rocsparse_spmv_alg   alg   = arg.spmv_alg;
+
+    std::string filename
         = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
-    bool adaptive = (alg == rocsparse_spmv_alg_csr_stream) ? false : true;
-
-    T h_alpha = arg.get_alpha<T>();
-    T h_beta  = arg.get_beta<T>();
-
-    // Index and data type
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_indextype jtype = get_indextype<J>();
-    rocsparse_datatype  ttype = get_datatype<T>();
+    bool               adaptive = (alg == rocsparse_spmv_alg_csr_stream) ? false : true;
+    rocsparse_datatype ttype    = get_datatype<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
+    using host_csr   = host_csr_matrix<T, I, J>;
+    using device_csr = device_csr_matrix<T, I, J>;
+
+    host_scalar<T> h_alpha(arg.get_alpha<T>());
+    host_scalar<T> h_beta(arg.get_beta<T>());
+
+#define PARAMS(alpha_, A_, x_, beta_, y_) \
+    handle, trans, alpha_, A_, x_, beta_, y_, ttype, alg, &buffer_size, dbuffer
 
     // Argument sanity check before allocating invalid memory
+
+    // Allocate memory on device
+    // Pointer mode
+
+    // Check structures
+    // Check SpMV when structures can be created
+
     if(M == 0 || N == 0)
     {
-        // M == N == 0 means nnz can only be 0, too
-        I nnz = 0;
-
-        static const I safe_size = 100;
-
-        // Allocate memory on device
-        device_vector<I> dcsr_row_ptr(safe_size);
-        device_vector<J> dcsr_col_ind(safe_size);
-        device_vector<T> dcsr_val(safe_size);
-        device_vector<T> dx(safe_size);
-        device_vector<T> dy(safe_size);
-
-        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dx || !dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
-        // Pointer mode
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        device_csr             dA;
+        device_dense_matrix<T> dx, dy;
 
-        // Check structures
-        rocsparse_local_spmat A(M,
-                                N,
-                                nnz,
-                                dcsr_row_ptr,
-                                dcsr_col_ind,
-                                dcsr_val,
-                                itype,
-                                jtype,
-                                base,
-                                ttype,
-                                rocsparse_format_csr);
-        rocsparse_local_dnvec x(N, dx, ttype);
-        rocsparse_local_dnvec y(M, dy, ttype);
+        rocsparse_local_spmat A(dA);
+        rocsparse_local_dnvec x(dx);
+        rocsparse_local_dnvec y(dy);
 
-        // Check SpMV when structures can be created
-        if(M == 0 && N == 0)
-        {
-            size_t buffer_size;
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_spmv(
-                    handle, trans, &h_alpha, A, x, &h_beta, y, ttype, alg, &buffer_size, nullptr),
-                rocsparse_status_success);
-
-            void* dbuffer;
-            CHECK_HIP_ERROR(hipMalloc(&dbuffer, safe_size));
-            EXPECT_ROCSPARSE_STATUS(
-                rocsparse_spmv(
-                    handle, trans, &h_alpha, A, x, &h_beta, y, ttype, alg, &buffer_size, dbuffer),
-                rocsparse_status_success);
-            CHECK_HIP_ERROR(hipFree(dbuffer));
-        }
-
+        size_t buffer_size;
+        void*  dbuffer = nullptr;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)),
+                                rocsparse_status_success);
+        CHECK_HIP_ERROR(hipMalloc(&dbuffer, 10));
+        EXPECT_ROCSPARSE_STATUS(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)),
+                                rocsparse_status_success);
+        CHECK_HIP_ERROR(hipFree(dbuffer));
         return;
     }
-
-    // Allocate host memory for matrix
-    host_vector<I> hcsr_row_ptr;
-    host_vector<J> hcsr_col_ind;
-    host_vector<T> hcsr_val;
-
-    rocsparse_seedrand();
 
     // Wavefront size
     int dev;
@@ -235,122 +125,54 @@ void testing_spmv_csr(const Arguments& arg)
     hipDeviceProp_t prop;
     hipGetDeviceProperties(&prop, dev);
 
-    bool type = (prop.warpSize == 32) ? true : adaptive;
+    bool                              type      = (prop.warpSize == 32) ? true : adaptive;
+    static constexpr bool             full_rank = false;
+    rocsparse_matrix_factory<T, I, J> matrix_factory(arg, arg.timing ? false : type, full_rank);
 
-    // Sample matrix
-    rocsparse_init_csr_matrix(hcsr_row_ptr,
-                              hcsr_col_ind,
-                              hcsr_val,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz,
-                              base,
-                              mat,
-                              filename.c_str(),
-                              arg.timing ? false : type,
-                              full_rank);
+    host_csr hA;
+    matrix_factory.init_csr(hA, M, N);
+    device_csr dA(hA);
 
-    // Allocate host memory for vectors
-    host_vector<T> hx(N);
-    host_vector<T> hy_1(M);
-    host_vector<T> hy_2(M);
-    host_vector<T> hy_gold(M);
+    host_dense_matrix<T> hx(N, 1), hy(M, 1);
 
-    // Initialize data on CPU
-    rocsparse_init(hx, 1, N, 1);
-    rocsparse_init(hy_1, 1, M, 1);
-    hy_2    = hy_1;
-    hy_gold = hy_1;
+    rocsparse_matrix_utils::init(hx);
+    rocsparse_matrix_utils::init(hy);
+    device_dense_matrix<T> dx(hx), dy(hy);
+    // Query SpMV buffer and allocate buffer
 
-    // Allocate device memory
-    device_vector<I> dcsr_row_ptr(M + 1);
-    device_vector<J> dcsr_col_ind(nnz);
-    device_vector<T> dcsr_val(nnz);
-    device_vector<T> dx(N);
-    device_vector<T> dy_1(M);
-    device_vector<T> dy_2(M);
-    device_vector<T> d_alpha(1);
-    device_vector<T> d_beta(1);
+    rocsparse_local_spmat A(dA);
+    rocsparse_local_dnvec x(dx);
+    rocsparse_local_dnvec y(dy);
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dx || !dy_1 || !dy_2 || !d_alpha || !d_beta)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Copy data from CPU to device
-    CHECK_HIP_ERROR(
-        hipMemcpy(dcsr_row_ptr, hcsr_row_ptr, sizeof(I) * (M + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_col_ind, hcsr_col_ind, sizeof(J) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val, sizeof(T) * nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dx, hx, sizeof(T) * N, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dy_1, hy_1, sizeof(T) * M, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dy_2, hy_2, sizeof(T) * M, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(d_beta, &h_beta, sizeof(T), hipMemcpyHostToDevice));
-
-    // Create descriptors
-    rocsparse_local_spmat A(M,
-                            N,
-                            nnz,
-                            dcsr_row_ptr,
-                            dcsr_col_ind,
-                            dcsr_val,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
-    rocsparse_local_dnvec x(N, dx, ttype);
-    rocsparse_local_dnvec y1(M, dy_1, ttype);
-    rocsparse_local_dnvec y2(M, dy_2, ttype);
-
-    // Query SpMV buffer
+    void*  dbuffer = nullptr;
     size_t buffer_size;
-    CHECK_ROCSPARSE_ERROR(rocsparse_spmv(
-        handle, trans, &h_alpha, A, x, &h_beta, y1, ttype, alg, &buffer_size, nullptr));
-
-    // Allocate buffer
-    void* dbuffer;
+    CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)));
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
 
     if(arg.unit_check)
     {
-        // SpMV
-
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_spmv(
-            handle, trans, &h_alpha, A, x, &h_beta, y1, ttype, alg, &buffer_size, dbuffer));
-
-        // Pointer mode device
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_spmv(
-            handle, trans, d_alpha, A, x, d_beta, y2, ttype, alg, &buffer_size, dbuffer));
-
-        // Copy output to host
-        CHECK_HIP_ERROR(hipMemcpy(hy_1, dy_1, sizeof(T) * M, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
+        CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)));
 
         // CPU csrmv
-        host_csrmv<I, J, T>(M,
-                            nnz,
-                            h_alpha,
-                            hcsr_row_ptr,
-                            hcsr_col_ind,
-                            hcsr_val,
-                            hx,
-                            h_beta,
-                            hy_gold,
-                            base,
-                            adaptive);
+        {
+            host_dense_matrix<T> hy_copy(hy);
+            host_csrmv<I, J, T>(
+                M, hA.nnz, *h_alpha, hA.ptr, hA.ind, hA.val, hx, *h_beta, hy, base, adaptive);
+            hy.near_check(dy);
+            dy.transfer_from(hy_copy);
+        }
 
-        near_check_general<T>(1, M, 1, hy_gold, hy_1);
-        near_check_general<T>(1, M, 1, hy_gold, hy_2);
+        // Pointer mode device
+        {
+            device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
+            CHECK_ROCSPARSE_ERROR(
+                rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
+            CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(d_alpha, A, x, d_beta, y)));
+        }
+
+        hy.near_check(dy);
     }
 
     if(arg.timing)
@@ -363,8 +185,7 @@ void testing_spmv_csr(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_spmv(
-                handle, trans, &h_alpha, A, x, &h_beta, y1, ttype, alg, &buffer_size, dbuffer));
+            CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)));
         }
 
         double gpu_time_used = get_time_us();
@@ -372,36 +193,43 @@ void testing_spmv_csr(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_spmv(
-                handle, trans, &h_alpha, A, x, &h_beta, y1, ttype, alg, &buffer_size, dbuffer));
+            CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gflops
-            = spmv_gflop_count(M, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
-        double gpu_gbyte
-            = csrmv_gbyte_count<T>(M, N, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
+        double gflop_count = spmv_gflop_count(dA.m, dA.nnz, *h_beta != static_cast<T>(0));
+        double gbyte_count = csrmv_gbyte_count<T>(dA.m, dA.n, dA.nnz, *h_beta != static_cast<T>(0));
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
+        double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
+        double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "nnz"
-                  << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12)
-                  << "Algorithm" << std::setw(12) << "GFlop/s" << std::setw(12) << "GB/s"
-                  << std::setw(12) << "msec" << std::setw(12) << "iter" << std::setw(12)
-                  << "verified" << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << nnz
-                  << std::setw(12) << h_alpha << std::setw(12) << h_beta << std::setw(12)
-                  << (adaptive ? "adaptive" : "stream") << std::setw(12) << gpu_gflops
-                  << std::setw(12) << gpu_gbyte << std::setw(12) << gpu_time_used / 1e3
-                  << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "nnz",
+                            dA.nnz,
+                            "alpha",
+                            *h_alpha,
+                            "beta",
+                            *h_beta,
+                            "Algorithm",
+                            (adaptive ? "adaptive" : "stream"),
+                            "GFlop/s",
+                            gpu_gflops,
+                            "GB/s",
+                            gpu_gbyte,
+                            "msec",
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
 
     CHECK_HIP_ERROR(hipFree(dbuffer));
+    return;
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                               \

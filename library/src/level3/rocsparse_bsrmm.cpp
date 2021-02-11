@@ -53,27 +53,6 @@ rocsparse_status rocsparse_bsrmm_template_small(rocsparse_handle          handle
                                                 rocsparse_int             ldc);
 
 template <typename T, typename U>
-rocsparse_status rocsparse_bsrmm_template_large(rocsparse_handle          handle,
-                                                rocsparse_direction       dir,
-                                                rocsparse_operation       trans_A,
-                                                rocsparse_operation       trans_B,
-                                                rocsparse_int             mb,
-                                                rocsparse_int             n,
-                                                rocsparse_int             kb,
-                                                rocsparse_int             nnzb,
-                                                U                         alpha,
-                                                const rocsparse_mat_descr descr,
-                                                const T*                  bsr_val,
-                                                const rocsparse_int*      bsr_row_ptr,
-                                                const rocsparse_int*      bsr_col_ind,
-                                                rocsparse_int             block_dim,
-                                                const T*                  B,
-                                                rocsparse_int             ldb,
-                                                U                         beta,
-                                                T*                        C,
-                                                rocsparse_int             ldc);
-
-template <typename T, typename U>
 rocsparse_status rocsparse_bsrmm_template_large_ext(rocsparse_handle          handle,
                                                     rocsparse_direction       dir,
                                                     rocsparse_operation       trans_A,
@@ -136,6 +115,7 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                    T*                        C,
                                                    rocsparse_int             ldc)
 {
+
     // If n is only 1 and B are non-transposed, then call bsrmv
     if(n == 1)
     {
@@ -332,8 +312,17 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
                   ldc);
     }
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
+    if(rocsparse_enum_utils::is_invalid(dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(trans_A))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(trans_B))
     {
         return rocsparse_status_invalid_value;
     }
@@ -345,12 +334,12 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
         return rocsparse_status_not_implemented;
     }
 
-    // Check operation
     if(trans_A != rocsparse_operation_none)
     {
         return rocsparse_status_not_implemented;
     }
-    else if(trans_B != rocsparse_operation_none && trans_B != rocsparse_operation_transpose)
+
+    if(trans_B != rocsparse_operation_none && trans_B != rocsparse_operation_transpose)
     {
         return rocsparse_status_not_implemented;
     }
@@ -377,7 +366,7 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
     // Check leading dimension of B
     if(trans_B == rocsparse_operation_none)
     {
-        if(ldb < kb)
+        if(ldb < kb * block_dim)
         {
             return rocsparse_status_invalid_size;
         }
@@ -391,12 +380,10 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
     }
 
     // Check leading dimension of C
-    if(ldc < mb)
+    if(ldc < mb * block_dim)
     {
         return rocsparse_status_invalid_size;
     }
-
-    // Stream
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {

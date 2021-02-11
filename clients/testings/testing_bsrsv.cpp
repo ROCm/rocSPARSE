@@ -589,7 +589,7 @@ void testing_bsrsv(const Arguments& arg)
     host_vector<rocsparse_int> h_solve_pivot_gold(1);
 
     // Initialize data on CPU
-    //    rocsparse_init<T>(hx, 1, nb * bsr_dim, 1);
+    // rocsparse_init<T>(hx, 1, nb * bsr_dim, 1);
 
     // Allocate device memory
     device_vector<rocsparse_int> dcsr_row_ptr(M + 1);

@@ -327,11 +327,12 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
               (const void*&)csr_col_ind,
               (const void*&)info);
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
+    if(rocsparse_enum_utils::is_invalid(trans))
     {
         return rocsparse_status_invalid_value;
     }
+
+    // Check index base
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO
@@ -842,7 +843,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
     }
 
     // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
+    if(rocsparse_enum_utils::is_invalid(trans))
     {
         return rocsparse_status_invalid_value;
     }

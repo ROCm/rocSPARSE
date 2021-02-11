@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,151 +29,46 @@
  *    C wrapper
  * ===========================================================================
  */
+#define C_IMPL(NAME, TYPE)                                                  \
+    extern "C" rocsparse_status NAME(rocsparse_handle          handle,      \
+                                     rocsparse_operation       trans_A,     \
+                                     rocsparse_operation       trans_B,     \
+                                     rocsparse_int             m,           \
+                                     rocsparse_int             n,           \
+                                     rocsparse_int             k,           \
+                                     rocsparse_int             nnz,         \
+                                     const TYPE*               alpha,       \
+                                     const TYPE*               A,           \
+                                     rocsparse_int             lda,         \
+                                     const rocsparse_mat_descr descr,       \
+                                     const TYPE*               csr_val,     \
+                                     const rocsparse_int*      csr_row_ptr, \
+                                     const rocsparse_int*      csr_col_ind, \
+                                     const TYPE*               beta,        \
+                                     TYPE*                     C,           \
+                                     rocsparse_int             ldc)         \
+    {                                                                       \
+        return rocsparse_gemmi_template(handle,                             \
+                                        trans_A,                            \
+                                        trans_B,                            \
+                                        m,                                  \
+                                        n,                                  \
+                                        k,                                  \
+                                        nnz,                                \
+                                        alpha,                              \
+                                        A,                                  \
+                                        lda,                                \
+                                        descr,                              \
+                                        csr_val,                            \
+                                        csr_row_ptr,                        \
+                                        csr_col_ind,                        \
+                                        beta,                               \
+                                        C,                                  \
+                                        ldc);                               \
+    }
 
-extern "C" rocsparse_status rocsparse_sgemmi(rocsparse_handle          handle,
-                                             rocsparse_operation       trans_A,
-                                             rocsparse_operation       trans_B,
-                                             rocsparse_int             m,
-                                             rocsparse_int             n,
-                                             rocsparse_int             k,
-                                             rocsparse_int             nnz,
-                                             const float*              alpha,
-                                             const float*              A,
-                                             rocsparse_int             lda,
-                                             const rocsparse_mat_descr descr,
-                                             const float*              csr_val,
-                                             const rocsparse_int*      csr_row_ptr,
-                                             const rocsparse_int*      csr_col_ind,
-                                             const float*              beta,
-                                             float*                    C,
-                                             rocsparse_int             ldc)
-{
-    return rocsparse_gemmi_template(handle,
-                                    trans_A,
-                                    trans_B,
-                                    m,
-                                    n,
-                                    k,
-                                    nnz,
-                                    alpha,
-                                    A,
-                                    lda,
-                                    descr,
-                                    csr_val,
-                                    csr_row_ptr,
-                                    csr_col_ind,
-                                    beta,
-                                    C,
-                                    ldc);
-}
-
-extern "C" rocsparse_status rocsparse_dgemmi(rocsparse_handle          handle,
-                                             rocsparse_operation       trans_A,
-                                             rocsparse_operation       trans_B,
-                                             rocsparse_int             m,
-                                             rocsparse_int             n,
-                                             rocsparse_int             k,
-                                             rocsparse_int             nnz,
-                                             const double*             alpha,
-                                             const double*             A,
-                                             rocsparse_int             lda,
-                                             const rocsparse_mat_descr descr,
-                                             const double*             csr_val,
-                                             const rocsparse_int*      csr_row_ptr,
-                                             const rocsparse_int*      csr_col_ind,
-                                             const double*             beta,
-                                             double*                   C,
-                                             rocsparse_int             ldc)
-{
-    return rocsparse_gemmi_template(handle,
-                                    trans_A,
-                                    trans_B,
-                                    m,
-                                    n,
-                                    k,
-                                    nnz,
-                                    alpha,
-                                    A,
-                                    lda,
-                                    descr,
-                                    csr_val,
-                                    csr_row_ptr,
-                                    csr_col_ind,
-                                    beta,
-                                    C,
-                                    ldc);
-}
-
-extern "C" rocsparse_status rocsparse_cgemmi(rocsparse_handle               handle,
-                                             rocsparse_operation            trans_A,
-                                             rocsparse_operation            trans_B,
-                                             rocsparse_int                  m,
-                                             rocsparse_int                  n,
-                                             rocsparse_int                  k,
-                                             rocsparse_int                  nnz,
-                                             const rocsparse_float_complex* alpha,
-                                             const rocsparse_float_complex* A,
-                                             rocsparse_int                  lda,
-                                             const rocsparse_mat_descr      descr,
-                                             const rocsparse_float_complex* csr_val,
-                                             const rocsparse_int*           csr_row_ptr,
-                                             const rocsparse_int*           csr_col_ind,
-                                             const rocsparse_float_complex* beta,
-                                             rocsparse_float_complex*       C,
-                                             rocsparse_int                  ldc)
-{
-    return rocsparse_gemmi_template(handle,
-                                    trans_A,
-                                    trans_B,
-                                    m,
-                                    n,
-                                    k,
-                                    nnz,
-                                    alpha,
-                                    A,
-                                    lda,
-                                    descr,
-                                    csr_val,
-                                    csr_row_ptr,
-                                    csr_col_ind,
-                                    beta,
-                                    C,
-                                    ldc);
-}
-
-extern "C" rocsparse_status rocsparse_zgemmi(rocsparse_handle                handle,
-                                             rocsparse_operation             trans_A,
-                                             rocsparse_operation             trans_B,
-                                             rocsparse_int                   m,
-                                             rocsparse_int                   n,
-                                             rocsparse_int                   k,
-                                             rocsparse_int                   nnz,
-                                             const rocsparse_double_complex* alpha,
-                                             const rocsparse_double_complex* A,
-                                             rocsparse_int                   lda,
-                                             const rocsparse_mat_descr       descr,
-                                             const rocsparse_double_complex* csr_val,
-                                             const rocsparse_int*            csr_row_ptr,
-                                             const rocsparse_int*            csr_col_ind,
-                                             const rocsparse_double_complex* beta,
-                                             rocsparse_double_complex*       C,
-                                             rocsparse_int                   ldc)
-{
-    return rocsparse_gemmi_template(handle,
-                                    trans_A,
-                                    trans_B,
-                                    m,
-                                    n,
-                                    k,
-                                    nnz,
-                                    alpha,
-                                    A,
-                                    lda,
-                                    descr,
-                                    csr_val,
-                                    csr_row_ptr,
-                                    csr_col_ind,
-                                    beta,
-                                    C,
-                                    ldc);
-}
+C_IMPL(rocsparse_sgemmi, float);
+C_IMPL(rocsparse_dgemmi, double);
+C_IMPL(rocsparse_cgemmi, rocsparse_float_complex);
+C_IMPL(rocsparse_zgemmi, rocsparse_double_complex);
+#undef C_IMPL

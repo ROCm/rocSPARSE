@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@ Definitions:
     - { alpha:  -0.5, alphai: -0.5 }
 
   - &alpha_range_checkin
-    - { alpha:   2.0, alphai:  1.5 }
     - { alpha:   0.0, alphai:  1.5 }
     - { alpha:   3.0, alphai:  1.0 }
 
@@ -47,7 +46,7 @@ Definitions:
   - &beta_range_checkin
     - { beta:   2.0, betai:  1.5 }
     - { beta:   0.0, betai:  1.5 }
-    - { beta:   3.0, betai:  1.0 }
+
 
   - &beta_range_nightly
     - { beta:   0.0, betai:  1.5 }
@@ -114,8 +113,7 @@ Tests:
   filename: [mac_econ_fwd500,
              nos2,
              nos4,
-             nos6,
-             scircuit]
+             nos6]
 
 - name: csrgeam_file
   category: pre_checkin
@@ -129,9 +127,7 @@ Tests:
   baseB: [rocsparse_index_base_one]
   baseC: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [rma10,
-             mc2depi,
-             ASIC_320k,
+  filename: [ASIC_320k,
              nos1,
              nos3,
              nos5,
@@ -184,7 +180,7 @@ Tests:
   baseC: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mplate,
-             Chevron3]
+             scircuit]
 
 - name: csrgeam_file
   category: nightly

@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@ Definitions:
   - &alpha_beta_range_checkin
     - { alpha:   2.0, beta:  0.0,  alphai:  0.5, betai:  0.5 }
     - { alpha:   0.0, beta:  1.0,  alphai:  1.5, betai:  0.5 }
+    - { alpha:   0.0, beta:  0.0,  alphai:  0.0, betai:  0.0 }
+    - { alpha:   0.0, beta:  2.0,  alphai:  0.0, betai:  1.0 }
     - { alpha:   3.0, beta:  1.0,  alphai:  0.0, betai: -0.5 }
 
   - &alpha_beta_range_nightly
@@ -47,6 +49,37 @@ Tests:
   function: gemmi_bad_arg
   precision: *single_double_precisions_complex_real
 
+
+- name: gemmi
+  category: pre_checkin
+  function: gemmi
+  precision: *single_double_precisions_complex_real
+  M: [0, 1, 2, 511]
+  N: [0, 1, 2, 7, 33, 64, 78]
+  K: [0, 1, 2, 391]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+
+- name: gemmi_file
+  category: pre_checkin
+  function: gemmi
+  precision: *single_double_precisions_complex_real
+  M: 1
+  N: [35, 73]
+  K: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [nos1,
+             nos5,
+             nos7]
+
+
 - name: gemmi
   category: quick
   function: gemmi
@@ -55,32 +88,6 @@ Tests:
   N: [-1, 0, 7, 19, 143]
   K: [-1, 0, 50, 173]
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_random]
-
-- name: gemmi
-  category: pre_checkin
-  function: gemmi
-  precision: *single_double_precisions_complex_real
-  M: [-1, 0, 511, 2059]
-  N: [-1, 0, 7, 33, 64, 78]
-  K: [-1, 0, 391, 1375]
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_random]
-
-- name: gemmi
-  category: nightly
-  function: gemmi
-  precision: *single_double_precisions_complex_real
-  M: [1943, 4912]
-  N: [2, 27, 49]
-  K: [1134, 3291]
-  alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
@@ -105,24 +112,34 @@ Tests:
              nos6,
              scircuit]
 
+
 - name: gemmi_file
-  category: pre_checkin
+  category: quick
   function: gemmi
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex
   M: 1
-  N: [-1, 0, 35, 73]
+  N: [3, 21]
   K: 1
-  alpha_beta: *alpha_beta_range_checkin
+  alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [rma10,
-             mc2depi,
-             nos1,
-             nos3,
-             nos5,
-             nos7]
+  filename: [Chevron2,
+             qc2534]
+
+- name: gemmi
+  category: nightly
+  function: gemmi
+  precision: *single_double_precisions_complex_real
+  M: [1943, 4912]
+  N: [2, 27, 49]
+  K: [1134, 3291]
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
 
 - name: gemmi_file
   category: nightly
@@ -143,36 +160,6 @@ Tests:
              sme3Dc,
              webbase-1M,
              shipsec1]
-
-- name: gemmi_file
-  category: quick
-  function: gemmi
-  precision: *single_double_precisions_complex
-  M: 1
-  N: [3, 21]
-  K: 1
-  alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron2,
-             qc2534]
-
-- name: gemmi_file
-  category: pre_checkin
-  function: gemmi
-  precision: *single_double_precisions_complex
-  M: 1
-  N: [-1, 0, 32, 68]
-  K: 1
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mplate,
-             Chevron3]
 
 - name: gemmi_file
   category: nightly

@@ -29,10 +29,11 @@
 
 template <rocsparse_int ROW_BLOCK_DIM,
           rocsparse_int COL_BLOCK_DIM,
+          rocsparse_int BLOCK_DIM,
           rocsparse_int BLK_SIZE_Y,
           typename T,
           typename U>
-__launch_bounds__(ROW_BLOCK_DIM* BLK_SIZE_Y) __global__
+__launch_bounds__(BLOCK_DIM* BLK_SIZE_Y) __global__
     void gebsrmm_small_blockdim_kernel(rocsparse_direction direction,
                                        rocsparse_operation trans_B,
                                        rocsparse_int       mb,
@@ -58,20 +59,20 @@ __launch_bounds__(ROW_BLOCK_DIM* BLK_SIZE_Y) __global__
         return;
     }
 
-    gebsrmm_small_blockdim_device<ROW_BLOCK_DIM, COL_BLOCK_DIM, BLK_SIZE_Y>(direction,
-                                                                            trans_B,
-                                                                            mb,
-                                                                            n,
-                                                                            alpha,
-                                                                            bsr_row_ptr,
-                                                                            bsr_col_ind,
-                                                                            bsr_val,
-                                                                            B,
-                                                                            ldb,
-                                                                            beta,
-                                                                            C,
-                                                                            ldc,
-                                                                            idx_base);
+    gebsrmm_small_blockdim_device<ROW_BLOCK_DIM, COL_BLOCK_DIM, BLOCK_DIM, BLK_SIZE_Y>(direction,
+                                                                                       trans_B,
+                                                                                       mb,
+                                                                                       n,
+                                                                                       alpha,
+                                                                                       bsr_row_ptr,
+                                                                                       bsr_col_ind,
+                                                                                       bsr_val,
+                                                                                       B,
+                                                                                       ldb,
+                                                                                       beta,
+                                                                                       C,
+                                                                                       ldc,
+                                                                                       idx_base);
 }
 
 typedef enum
@@ -157,29 +158,29 @@ rocsparse_status rocsparse_gebsrmm_template_small(rocsparse_handle          hand
     assert(row_block_dim <= 4);
     assert(col_block_dim <= 4);
 
-#define LAUNCH_SMALL_KERNEL(M_, K_, N_)                             \
-    dim3 gebsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / N_ + 1);        \
-    dim3 gebsrmm_threads(M_, N_);                                   \
-    hipLaunchKernelGGL((gebsrmm_small_blockdim_kernel<M_, K_, N_>), \
-                       gebsrmm_blocks,                              \
-                       gebsrmm_threads,                             \
-                       0,                                           \
-                       stream,                                      \
-                       dir,                                         \
-                       trans_B,                                     \
-                       mb,                                          \
-                       n,                                           \
-                       alpha,                                       \
-                       bsr_row_ptr,                                 \
-                       bsr_col_ind,                                 \
-                       bsr_val,                                     \
-                       row_block_dim,                               \
-                       col_block_dim,                               \
-                       B,                                           \
-                       ldb,                                         \
-                       beta,                                        \
-                       C,                                           \
-                       ldc,                                         \
+#define LAUNCH_SMALL_KERNEL(M_, K_, BLOCK_DIM_, N_)                             \
+    dim3 gebsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / N_ + 1);                    \
+    dim3 gebsrmm_threads(BLOCK_DIM_, N_);                                       \
+    hipLaunchKernelGGL((gebsrmm_small_blockdim_kernel<M_, K_, BLOCK_DIM_, N_>), \
+                       gebsrmm_blocks,                                          \
+                       gebsrmm_threads,                                         \
+                       0,                                                       \
+                       stream,                                                  \
+                       dir,                                                     \
+                       trans_B,                                                 \
+                       mb,                                                      \
+                       n,                                                       \
+                       alpha,                                                   \
+                       bsr_row_ptr,                                             \
+                       bsr_col_ind,                                             \
+                       bsr_val,                                                 \
+                       row_block_dim,                                           \
+                       col_block_dim,                                           \
+                       B,                                                       \
+                       ldb,                                                     \
+                       beta,                                                    \
+                       C,                                                       \
+                       ldc,                                                     \
                        descr->base)
 
     //
@@ -189,25 +190,25 @@ rocsparse_status rocsparse_gebsrmm_template_small(rocsparse_handle          hand
     const enum_small_config config = get_small_config(row_block_dim, col_block_dim, n);
     switch(config)
     {
-#define DEFINE_CASE(i, j, k, l)       \
-    case i:                           \
-    {                                 \
-        LAUNCH_SMALL_KERNEL(j, k, l); \
-        break;                        \
+#define DEFINE_CASE(i, j, k, block_dim, l)       \
+    case i:                                      \
+    {                                            \
+        LAUNCH_SMALL_KERNEL(j, k, block_dim, l); \
+        break;                                   \
     }
 
-        DEFINE_CASE(small_config_1_2_16, 1, 2, 16);
-        DEFINE_CASE(small_config_1_3_16, 1, 3, 16);
-        DEFINE_CASE(small_config_1_4_16, 1, 4, 16);
-        DEFINE_CASE(small_config_2_1_16, 2, 1, 16);
-        DEFINE_CASE(small_config_2_3_16, 2, 3, 16);
-        DEFINE_CASE(small_config_2_4_16, 2, 4, 16);
-        DEFINE_CASE(small_config_3_1_16, 3, 1, 16);
-        DEFINE_CASE(small_config_3_2_16, 3, 2, 16);
-        DEFINE_CASE(small_config_3_4_16, 3, 4, 16);
-        DEFINE_CASE(small_config_4_1_16, 4, 1, 16);
-        DEFINE_CASE(small_config_4_2_16, 4, 2, 16);
-        DEFINE_CASE(small_config_4_3_16, 4, 3, 16);
+        DEFINE_CASE(small_config_1_2_16, 1, 2, 2, 16);
+        DEFINE_CASE(small_config_1_3_16, 1, 3, 3, 16);
+        DEFINE_CASE(small_config_1_4_16, 1, 4, 4, 16);
+        DEFINE_CASE(small_config_2_1_16, 2, 1, 2, 16);
+        DEFINE_CASE(small_config_2_3_16, 2, 3, 3, 16);
+        DEFINE_CASE(small_config_2_4_16, 2, 4, 4, 16);
+        DEFINE_CASE(small_config_3_1_16, 3, 1, 3, 16);
+        DEFINE_CASE(small_config_3_2_16, 3, 2, 3, 16);
+        DEFINE_CASE(small_config_3_4_16, 3, 4, 4, 16);
+        DEFINE_CASE(small_config_4_1_16, 4, 1, 4, 16);
+        DEFINE_CASE(small_config_4_2_16, 4, 2, 4, 16);
+        DEFINE_CASE(small_config_4_3_16, 4, 3, 4, 16);
 #undef DEFINE_CASE
     }
 

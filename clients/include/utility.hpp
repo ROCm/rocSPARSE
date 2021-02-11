@@ -30,10 +30,20 @@
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
 
+#include "rocsparse_matrix.hpp"
 #include "rocsparse_test.hpp"
 
 #include <hip/hip_runtime_api.h>
 #include <vector>
+/* ==================================================================================== */
+// Return index type
+template <typename I>
+rocsparse_indextype get_indextype(void);
+
+/* ==================================================================================== */
+// Return data type
+template <typename T>
+rocsparse_datatype get_datatype(void);
 
 /* ==================================================================================== */
 /*! \brief  local handle which is automatically created and destroyed  */
@@ -251,6 +261,7 @@ public:
                           rocsparse_datatype   compute_type,
                           rocsparse_format     format)
     {
+
         if(format == rocsparse_format_csr)
         {
             rocsparse_create_csr_descr(&this->descr,
@@ -279,6 +290,26 @@ public:
                                        idx_base,
                                        compute_type);
         }
+    }
+
+    template <memory_mode::value_t MODE,
+              rocsparse_direction  direction_,
+              typename T,
+              typename I = rocsparse_int,
+              typename J = rocsparse_int>
+    rocsparse_local_spmat(csx_matrix<MODE, direction_, T, I, J>& h)
+        : rocsparse_local_spmat(h.m,
+                                h.n,
+                                h.nnz,
+                                h.ptr,
+                                h.ind,
+                                h.val,
+                                get_indextype<I>(),
+                                get_indextype<J>(),
+                                h.base,
+                                get_datatype<T>(),
+                                rocsparse_format_csr)
+    {
     }
 
     rocsparse_local_spmat(int64_t              m,
@@ -321,6 +352,13 @@ public:
     {
         rocsparse_create_dnvec_descr(&this->descr, size, values, compute_type);
     }
+
+    template <memory_mode::value_t MODE, typename T>
+    rocsparse_local_dnvec(dense_matrix<MODE, T>& h)
+        : rocsparse_local_dnvec(h.m, h.val, get_datatype<T>())
+    {
+    }
+
     ~rocsparse_local_dnvec()
     {
         if(this->descr != nullptr)
@@ -354,6 +392,13 @@ public:
     {
         rocsparse_create_dnmat_descr(&this->descr, rows, cols, ld, values, compute_type, order);
     }
+
+    template <memory_mode::value_t MODE, typename T>
+    rocsparse_local_dnmat(dense_matrix<MODE, T>& h, rocsparse_order order)
+        : rocsparse_local_dnmat(h.m, h.n, h.ld, h.val, get_datatype<T>(), order)
+    {
+    }
+
     ~rocsparse_local_dnmat()
     {
         if(this->descr != nullptr)
@@ -388,15 +433,5 @@ double get_time_us_sync(hipStream_t stream);
 /* ==================================================================================== */
 // Return path of this executable
 std::string rocsparse_exepath();
-
-/* ==================================================================================== */
-// Return index type
-template <typename I>
-rocsparse_indextype get_indextype(void);
-
-/* ==================================================================================== */
-// Return data type
-template <typename T>
-rocsparse_datatype get_datatype(void);
 
 #endif // UTILITY_HPP

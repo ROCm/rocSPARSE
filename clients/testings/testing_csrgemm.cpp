@@ -2913,14 +2913,14 @@ void testing_csrgemm(const Arguments& arg)
 
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
 
-        double gpu_gflops = csrgemm_gflop_count(M,
-                                                halpha_ptr,
-                                                hcsr_row_ptr_A,
-                                                hcsr_col_ind_A,
-                                                hcsr_row_ptr_B,
-                                                hbeta_ptr,
-                                                hcsr_row_ptr_D,
-                                                baseA)
+        double gpu_gflops = csrgemm_gflop_count<T, rocsparse_int, rocsparse_int>(M,
+                                                                                 halpha_ptr,
+                                                                                 hcsr_row_ptr_A,
+                                                                                 hcsr_col_ind_A,
+                                                                                 hcsr_row_ptr_B,
+                                                                                 hbeta_ptr,
+                                                                                 hcsr_row_ptr_D,
+                                                                                 baseA)
                             / gpu_solve_time_used * 1e6;
         double gpu_gbyte
             = csrgemm_gbyte_count(M, N, K, nnz_A, nnz_B, hnnz_C_1, nnz_D, halpha_ptr, hbeta_ptr)

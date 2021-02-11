@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,25 @@
 
 // Initialize vector with random values
 template <typename T>
-void rocsparse_init(
-    std::vector<T>& A, size_t M, size_t N, size_t lda, size_t stride = 0, size_t batch_count = 1);
+void rocsparse_init(std::vector<T>& A,
+                    size_t          M,
+                    size_t          N,
+                    size_t          lda,
+                    size_t          stride      = 0,
+                    size_t          batch_count = 1,
+                    T               a           = static_cast<T>(0),
+                    T               b           = static_cast<T>(1));
+
+// Initialize vector with random integer values
+template <typename T>
+void rocsparse_init_exact(std::vector<T>& A,
+                          size_t          M,
+                          size_t          N,
+                          size_t          lda,
+                          size_t          stride      = 0,
+                          size_t          batch_count = 1,
+                          int             a           = 1,
+                          int             b           = 10);
 
 // Initializes sparse index vector with nnz entries ranging from start to end
 template <typename I>
@@ -76,7 +93,8 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
                                I                    N,
                                I                    nnz,
                                rocsparse_index_base base,
-                               bool                 full_rank = false);
+                               bool                 full_rank = false,
+                               bool                 to_int    = false);
 
 /* ==================================================================================== */
 /*! \brief  Generate 2D 9pt laplacian on unit square in CSR format */
@@ -214,7 +232,8 @@ void rocsparse_init_csr_random(std::vector<I>&      row_ptr,
                                J                    N,
                                I&                   nnz,
                                rocsparse_index_base base,
-                               bool                 full_rank = false);
+                               bool                 full_rank = false,
+                               bool                 to_int    = false);
 
 /* ==================================================================================== */
 /*! \brief  Generate a random sparse matrix in COO format */
@@ -226,7 +245,8 @@ void rocsparse_init_coo_random(std::vector<I>&      row_ind,
                                I                    N,
                                I&                   nnz,
                                rocsparse_index_base base,
-                               bool                 full_rank = false);
+                               bool                 full_rank = false,
+                               bool                 to_int    = false);
 
 /* ==================================================================================== */
 /*! \brief  Initialize a sparse matrix in CSR format */

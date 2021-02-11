@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -45,35 +45,21 @@ Definitions:
     - { alpha:  -0.5, alphai:  0.1 }
 
   - &alpha_range_checkin
-    - { alpha:   2.0, alphai:  0.0 }
+    - { alpha:   2.0, alphai:  1.0 }
     - { alpha:   0.0, alphai:  0.5 }
-    - { alpha:   3.0, alphai: -1.0 }
 
   - &alpha_range_nightly
     - { alpha:   0.0,  alphai: -0.75 }
     - { alpha:  -0.75, alphai:  0.25 }
+
+  - &alpha_range
+    - { alpha:   2.0, alphai:  1.0 }
 
 Tests:
 - name: bsrsv_bad_arg
   category: pre_checkin
   function: bsrsv_bad_arg
   precision: *single_double_precisions_complex_real
-
-- name: bsrsv
-  category: quick
-  function: bsrsv
-  precision: *single_double_precisions_complex_real
-  M_N: *M_N_range_quick
-  block_dim: [2, 9, 16, 28, 33, 66, 174]
-  alpha_alphai: *alpha_range_quick
-  direction: [rocsparse_direction_row]
-  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
-  diag: [rocsparse_diag_type_non_unit, rocsparse_diag_type_unit]
-  uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
-  apol: [rocsparse_analysis_policy_reuse]
-  spol: [rocsparse_solve_policy_auto]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_random]
 
 - name: bsrsv
   category: pre_checkin
@@ -91,20 +77,58 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
+- name: bsrsv_file
+  category: pre_checkin
+  function: bsrsv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  block_dim: [7, 29]
+  alpha_alphai: *alpha_range
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  diag: [rocsparse_diag_type_non_unit]
+  uplo: [rocsparse_fill_mode_lower]
+  apol: [rocsparse_analysis_policy_force]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mplate]
+
+- name: bsrsv_file
+  category: pre_checkin
+  function: bsrsv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  block_dim: [6]
+  alpha_alphai: *alpha_range_checkin
+  direction: [rocsparse_direction_column]
+  transA: [rocsparse_operation_transpose]
+  diag: [rocsparse_diag_type_non_unit]
+  uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
+  apol: [rocsparse_analysis_policy_reuse]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [nos3,
+             nos7,
+             scircuit]
+
 - name: bsrsv
-  category: nightly
+  category: quick
   function: bsrsv
   precision: *single_double_precisions_complex_real
-  M_N: *M_N_range_nightly
-  block_dim: [1, 4, 11, 20]
-  alpha_alphai: *alpha_range_nightly
+  M_N: *M_N_range_quick
+  block_dim: [2, 9, 16, 33, 174]
+  alpha_alphai: *alpha_range_quick
   direction: [rocsparse_direction_row]
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   diag: [rocsparse_diag_type_non_unit, rocsparse_diag_type_unit]
   uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
   apol: [rocsparse_analysis_policy_reuse]
   spol: [rocsparse_solve_policy_auto]
-  baseA: [rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
 - name: bsrsv_file
@@ -113,10 +137,10 @@ Tests:
   precision: *single_double_precisions
   M: 1
   N: 1
-  block_dim: [3, 9, 16, 87]
+  block_dim: [3, 16, 87]
   alpha_alphai: *alpha_range_quick
   direction: [rocsparse_direction_column]
-  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transA: [rocsparse_operation_none]
   diag: [rocsparse_diag_type_non_unit]
   uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
   apol: [rocsparse_analysis_policy_force]
@@ -129,25 +153,40 @@ Tests:
              nos6]
 
 - name: bsrsv_file
-  category: pre_checkin
+  category: quick
   function: bsrsv
-  precision: *single_double_precisions
+  precision: *single_double_precisions_complex
   M: 1
   N: 1
-  block_dim: [-1, 2, 6]
-  alpha_alphai: *alpha_range_checkin
-  direction: [rocsparse_direction_column]
+  block_dim: [10, 19]
+  alpha_alphai: *alpha_range_quick
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_transpose]
+  diag: [rocsparse_diag_type_non_unit, rocsparse_diag_type_unit]
+  uplo: [rocsparse_fill_mode_upper]
+  apol: [rocsparse_analysis_policy_reuse]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron2]
+
+
+
+- name: bsrsv
+  category: nightly
+  function: bsrsv
+  precision: *single_double_precisions_complex_real
+  M_N: *M_N_range_nightly
+  block_dim: [4, 11, 20]
+  alpha_alphai: *alpha_range_nightly
+  direction: [rocsparse_direction_row]
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   diag: [rocsparse_diag_type_non_unit, rocsparse_diag_type_unit]
   uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
   apol: [rocsparse_analysis_policy_reuse]
   spol: [rocsparse_solve_policy_auto]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mc2depi,
-             nos3,
-             nos7,
-             scircuit]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
 
 - name: bsrsv_file
   category: nightly
@@ -158,55 +197,35 @@ Tests:
   block_dim: [2, 12]
   alpha_alphai: *alpha_range_nightly
   direction: [rocsparse_direction_row]
-  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transA: [rocsparse_operation_transpose]
   diag: [rocsparse_diag_type_non_unit]
-  uplo: [rocsparse_fill_mode_lower, rocsparse_fill_mode_upper]
+  uplo: [rocsparse_fill_mode_lower]
   apol: [rocsparse_analysis_policy_force]
   spol: [rocsparse_solve_policy_auto]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [bmwcra_1,
-             amazon0312,
-             ASIC_320k,
              sme3Dc,
              shipsec1]
 
 - name: bsrsv_file
-  category: quick
+  category: nightly
   function: bsrsv
-  precision: *single_double_precisions_complex
+  precision: *single_double_precisions
   M: 1
   N: 1
-  block_dim: [10, 19]
-  alpha_alphai: *alpha_range_quick
-  direction: [rocsparse_direction_row]
+  block_dim: [7]
+  alpha_alphai: *alpha_range_nightly
+  direction: [rocsparse_direction_column]
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
-  diag: [rocsparse_diag_type_non_unit, rocsparse_diag_type_unit]
+  diag: [rocsparse_diag_type_unit]
   uplo: [rocsparse_fill_mode_upper]
   apol: [rocsparse_analysis_policy_reuse]
   spol: [rocsparse_solve_policy_auto]
-  baseA: [rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron2]
-
-- name: bsrsv_file
-  category: pre_checkin
-  function: bsrsv
-  precision: *single_double_precisions_complex
-  M: 1
-  N: 1
-  block_dim: [-1, 7, 18, 29]
-  alpha_alphai: *alpha_range_checkin
-  direction: [rocsparse_direction_row]
-  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
-  diag: [rocsparse_diag_type_non_unit]
-  uplo: [rocsparse_fill_mode_lower]
-  apol: [rocsparse_analysis_policy_force]
-  spol: [rocsparse_solve_policy_auto]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mplate,
-             Chevron3]
+  filename: [amazon0312,
+             ASIC_320k]
 
 - name: bsrsv_file
   category: nightly
@@ -214,11 +233,11 @@ Tests:
   precision: *single_double_precisions_complex
   M: 1
   N: 1
-  block_dim: [2, 13]
+  block_dim: [7]
   alpha_alphai: *alpha_range_nightly
   direction: [rocsparse_direction_column]
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
-  diag: [rocsparse_diag_type_non_unit, rocsparse_diag_type_unit]
+  diag: [rocsparse_diag_type_unit]
   uplo: [rocsparse_fill_mode_upper]
   apol: [rocsparse_analysis_policy_reuse]
   spol: [rocsparse_solve_policy_auto]

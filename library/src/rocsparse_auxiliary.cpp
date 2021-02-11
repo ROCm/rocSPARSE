@@ -268,10 +268,12 @@ rocsparse_status rocsparse_set_mat_index_base(rocsparse_mat_descr descr, rocspar
     {
         return rocsparse_status_invalid_pointer;
     }
-    if(base != rocsparse_index_base_zero && base != rocsparse_index_base_one)
+
+    if(rocsparse_enum_utils::is_invalid(base))
     {
         return rocsparse_status_invalid_value;
     }
+
     descr->base = base;
     return rocsparse_status_success;
 }
@@ -299,11 +301,12 @@ rocsparse_status rocsparse_set_mat_type(rocsparse_mat_descr descr, rocsparse_mat
     {
         return rocsparse_status_invalid_pointer;
     }
-    if(type != rocsparse_matrix_type_general && type != rocsparse_matrix_type_symmetric
-       && type != rocsparse_matrix_type_hermitian && type != rocsparse_matrix_type_triangular)
+
+    if(rocsparse_enum_utils::is_invalid(type))
     {
         return rocsparse_status_invalid_value;
     }
+
     descr->type = type;
     return rocsparse_status_success;
 }
@@ -329,10 +332,12 @@ rocsparse_status rocsparse_set_mat_fill_mode(rocsparse_mat_descr descr,
     {
         return rocsparse_status_invalid_pointer;
     }
-    if(fill_mode != rocsparse_fill_mode_lower && fill_mode != rocsparse_fill_mode_upper)
+
+    if(rocsparse_enum_utils::is_invalid(fill_mode))
     {
         return rocsparse_status_invalid_value;
     }
+
     descr->fill_mode = fill_mode;
     return rocsparse_status_success;
 }
@@ -355,7 +360,8 @@ rocsparse_status rocsparse_set_mat_diag_type(rocsparse_mat_descr descr,
     {
         return rocsparse_status_invalid_pointer;
     }
-    if(diag_type != rocsparse_diag_type_unit && diag_type != rocsparse_diag_type_non_unit)
+
+    if(rocsparse_enum_utils::is_invalid(diag_type))
     {
         return rocsparse_status_invalid_value;
     }

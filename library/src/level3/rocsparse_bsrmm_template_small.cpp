@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -170,6 +170,7 @@ rocsparse_status rocsparse_bsrmm_template_small(rocsparse_handle          handle
 
         // Average nnzb per row of A
         rocsparse_int avg_row_nnzb = (nnzb - 1) / mb + 1;
+
         // Launch appropriate kernel depending on row nnz of A
         if(avg_row_nnzb < 16)
         {

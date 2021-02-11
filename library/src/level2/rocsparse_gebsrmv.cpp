@@ -466,11 +466,16 @@ rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle,
                   (const void*&)y);
     }
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
+    if(rocsparse_enum_utils::is_invalid(dir))
     {
         return rocsparse_status_invalid_value;
     }
+
+    if(rocsparse_enum_utils::is_invalid(trans))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO

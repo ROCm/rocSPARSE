@@ -24,6 +24,22 @@
 
 #include "rocsparse.hpp"
 
+#include "rocsparse_enum.hpp"
+constexpr rocsparse_matrix_type_t::value_t
+    rocsparse_matrix_type_t::values[rocsparse_matrix_type_t::nvalues];
+
+std::ostream& operator<<(std::ostream& out, const rocsparse_operation& v)
+{
+    out << rocsparse_operation2string(v);
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const rocsparse_direction& v)
+{
+    out << rocsparse_direction2string(v);
+    return out;
+}
+
 /*
  * ===========================================================================
  *    level 1 SPARSE

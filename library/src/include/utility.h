@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -185,5 +185,161 @@ __forceinline__ __device__ __host__ T zero_scalar_device_host(const T* xp)
 {
     return static_cast<T>(0);
 }
+
+//
+// Provide some utility methods for enums.
+//
+struct rocsparse_enum_utils
+{
+    template <typename U>
+    static inline bool is_invalid(U value_);
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_diag_type value)
+{
+    switch(value)
+    {
+    case rocsparse_diag_type_unit:
+    case rocsparse_diag_type_non_unit:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_fill_mode value_)
+{
+    switch(value_)
+    {
+    case rocsparse_fill_mode_lower:
+    case rocsparse_fill_mode_upper:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_index_base value_)
+{
+    switch(value_)
+    {
+    case rocsparse_index_base_zero:
+    case rocsparse_index_base_one:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_matrix_type value_)
+{
+    switch(value_)
+    {
+    case rocsparse_matrix_type_general:
+    case rocsparse_matrix_type_symmetric:
+    case rocsparse_matrix_type_hermitian:
+    case rocsparse_matrix_type_triangular:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_direction value_)
+{
+    switch(value_)
+    {
+    case rocsparse_direction_row:
+    case rocsparse_direction_column:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_operation value_)
+{
+    switch(value_)
+    {
+    case rocsparse_operation_none:
+    case rocsparse_operation_transpose:
+    case rocsparse_operation_conjugate_transpose:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_datatype value_)
+{
+    switch(value_)
+    {
+    case rocsparse_datatype_f32_r:
+    case rocsparse_datatype_f64_r:
+    case rocsparse_datatype_f32_c:
+    case rocsparse_datatype_f64_c:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spmv_alg_default:
+    case rocsparse_spmv_alg_coo:
+    case rocsparse_spmv_alg_csr_adaptive:
+    case rocsparse_spmv_alg_csr_stream:
+    case rocsparse_spmv_alg_ell:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_solve_policy value_)
+{
+    switch(value_)
+    {
+    case rocsparse_solve_policy_auto:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_analysis_policy value_)
+{
+    switch(value_)
+    {
+    case rocsparse_analysis_policy_reuse:
+    case rocsparse_analysis_policy_force:
+    {
+        return false;
+    }
+    }
+    return true;
+};
 
 #endif // UTILITY_H

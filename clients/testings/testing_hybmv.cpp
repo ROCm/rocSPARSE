@@ -144,8 +144,8 @@ void testing_hybmv(const Arguments& arg)
     host_vector<T> hy_gold(M);
 
     // Initialize data on CPU
-    rocsparse_init<T>(hx, 1, N, 1);
-    rocsparse_init<T>(hy_1, 1, M, 1);
+    rocsparse_init_exact<T>(hx, 1, N, 1);
+    rocsparse_init_exact<T>(hy_1, 1, M, 1);
     hy_2    = hy_1;
     hy_gold = hy_1;
 

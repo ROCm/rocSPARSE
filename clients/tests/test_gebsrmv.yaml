@@ -35,6 +35,9 @@ Definitions:
     - { alpha:   2.0, beta:  0.67, alphai: -1.0, betai:  1.5 }
     - { alpha:   0.0, beta:  1.0,  alphai:  1.5, betai:  0.5 }
 
+  - &alpha_beta_range_1
+    - { alpha:   1.0, beta:  1.0,  alphai:  1.0, betai:  1.0 }
+
   - &alpha_beta_range_nightly
     - { alpha:   2.0, beta:  0.67, alphai:  0.0, betai:  1.5 }
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
@@ -46,32 +49,102 @@ Tests:
   precision: *single_double_precisions_complex_real
 
 - name: gebsrmv
+  category: pre_checkin
+  function: gebsrmv
+  precision: *single_double_precisions_complex_real
+  M: [0, -1, 2, 852, 711]
+  N: [0, -1, 2, 42, 441]
+  row_block_dimA: [-1, 0, 1, 2, 5, 14, 23, 81]
+  col_block_dimA: [-1, 0, 1, 2, 8]
+  alpha_beta: *alpha_beta_range_checkin
+  direction: [rocsparse_direction_column]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+
+- name: gebsrmv_file
+  category: pre_checkin
+  function: gebsrmv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  row_block_dimA: [2, 17]
+  col_block_dimA: [5, 6]
+  alpha_beta: *alpha_beta_range_checkin
+  direction: [rocsparse_direction_column]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [rma10,
+             scircuit,
+             nos5,
+             nos7]
+
+- name: gebsrmv_file
+  category: pre_checkin
+  function: gebsrmv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  row_block_dimA: [9, 18]
+  col_block_dimA: [4, 7]
+  alpha_beta: *alpha_beta_range_1
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron3]
+
+- name: gebsrmv
   category: quick
   function: gebsrmv
   precision: *single_double_precisions_complex_real
   M: [10, 500]
   N: [33, 842]
-  row_block_dimA: [2, 8, 17, 28, 33, 66, 174]
-  col_block_dimA: [2, 8]
+  row_block_dimA: [17, 33, 66]
+  col_block_dimA: [8, 12]
   alpha_beta: *alpha_beta_range_quick
   direction: [rocsparse_direction_row]
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
-- name: gebsrmv
-  category: pre_checkin
+
+- name: gebsrmv_file
+  category: quick
   function: gebsrmv
-  precision: *single_double_precisions_complex_real
-  M: [0, -1, 1852, 7111]
-  N: [0, -1, 942, 4441]
-  row_block_dimA: [-1, 2, 5, 14, 23, 81]
-  col_block_dimA: [2, 8]
-  alpha_beta: *alpha_beta_range_checkin
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  row_block_dimA: [9, 26, 190]
+  col_block_dimA: [7, 11]
+  alpha_beta: *alpha_beta_range_quick
   direction: [rocsparse_direction_column]
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_random]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [nos1,
+             nos2,
+             nos3,
+             nos4,
+             nos6]
+
+- name: gebsrmv_file
+  category: quick
+  function: gebsrmv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  row_block_dimA: [10, 57, 236]
+  col_block_dimA: [17, 39]
+  alpha_beta: *alpha_beta_range_quick
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron2,
+             qc2534]
+
 
 - name: gebsrmv
   category: nightly
@@ -87,44 +160,6 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
 
-- name: gebsrmv_file
-  category: quick
-  function: gebsrmv
-  precision: *single_double_precisions
-  M: 1
-  N: 1
-  row_block_dimA: [3, 9, 16, 26, 42, 190]
-  col_block_dimA: [2, 8]
-  alpha_beta: *alpha_beta_range_quick
-  direction: [rocsparse_direction_column]
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_file_rocalution]
-  filename: [nos1,
-             nos2,
-             nos3,
-             nos4,
-             nos6]
-
-- name: gebsrmv_file
-  category: pre_checkin
-  function: gebsrmv
-  precision: *single_double_precisions
-  M: 1
-  N: 1
-  row_block_dimA: [-1, 2, 17]
-  col_block_dimA: [5, 6]
-  alpha_beta: *alpha_beta_range_checkin
-  direction: [rocsparse_direction_column]
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_file_rocalution]
-  filename: [rma10,
-             mac_econ_fwd500,
-             mc2depi,
-             scircuit,
-             nos5,
-             nos7]
 
 - name: gebsrmv_file
   category: nightly
@@ -134,46 +169,14 @@ Tests:
   N: 1
   row_block_dimA: [4]
   col_block_dimA: [2, 5, 8]
-  alpha_beta: *alpha_beta_range_nightly
+  alpha_beta: *alpha_beta_range_1
   direction: [rocsparse_direction_row]
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [bmwcra_1,
-             amazon0312,
+  filename: [amazon0312,
              shipsec1,
              webbase-1M]
-
-- name: gebsrmv_file
-  category: quick
-  function: gebsrmv
-  precision: *single_double_precisions_complex
-  M: 1
-  N: 1
-  row_block_dimA: [10, 19, 57, 236]
-  col_block_dimA: [2, 8]
-  alpha_beta: *alpha_beta_range_quick
-  direction: [rocsparse_direction_row]
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron2,
-             qc2534]
-
-- name: gebsrmv_file
-  category: pre_checkin
-  function: gebsrmv
-  precision: *single_double_precisions_complex
-  M: 1
-  N: 1
-  row_block_dimA: [-1, 9, 18, 29, 116]
-  col_block_dimA: [2, 8]
-  alpha_beta: *alpha_beta_range_checkin
-  direction: [rocsparse_direction_row]
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron3]
 
 - name: gebsrmv_file
   category: nightly
@@ -181,9 +184,9 @@ Tests:
   precision: *single_double_precisions_complex
   M: 1
   N: 1
-  row_block_dimA: [2, 13, 22]
+  row_block_dimA: [2, 13]
   col_block_dimA: [2, 8]
-  alpha_beta: *alpha_beta_range_nightly
+  alpha_beta: *alpha_beta_range_1
   direction: [rocsparse_direction_column]
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]

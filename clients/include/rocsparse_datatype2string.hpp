@@ -51,9 +51,8 @@ constexpr auto rocsparse_matrix2string(rocsparse_matrix_init matrix)
         return "mtx";
     case rocsparse_matrix_file_rocalution:
         return "csr";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_indextype2string(rocsparse_indextype type)
@@ -66,9 +65,8 @@ constexpr auto rocsparse_indextype2string(rocsparse_indextype type)
         return "i32";
     case rocsparse_indextype_i64:
         return "i64";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_datatype2string(rocsparse_datatype type)
@@ -83,9 +81,8 @@ constexpr auto rocsparse_datatype2string(rocsparse_datatype type)
         return "f32_c";
     case rocsparse_datatype_f64_c:
         return "f64_c";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_indexbase2string(rocsparse_index_base base)
@@ -96,9 +93,8 @@ constexpr auto rocsparse_indexbase2string(rocsparse_index_base base)
         return "0b";
     case rocsparse_index_base_one:
         return "1b";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_operation2string(rocsparse_operation trans)
@@ -111,9 +107,8 @@ constexpr auto rocsparse_operation2string(rocsparse_operation trans)
         return "T";
     case rocsparse_operation_conjugate_transpose:
         return "CT";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_diagtype2string(rocsparse_diag_type diag)
@@ -124,9 +119,8 @@ constexpr auto rocsparse_diagtype2string(rocsparse_diag_type diag)
         return "ND";
     case rocsparse_diag_type_unit:
         return "UD";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_fillmode2string(rocsparse_fill_mode uplo)
@@ -137,9 +131,8 @@ constexpr auto rocsparse_fillmode2string(rocsparse_fill_mode uplo)
         return "L";
     case rocsparse_fill_mode_upper:
         return "U";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_action2string(rocsparse_action action)
@@ -150,9 +143,8 @@ constexpr auto rocsparse_action2string(rocsparse_action action)
         return "sym";
     case rocsparse_action_numeric:
         return "num";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_partition2string(rocsparse_hyb_partition part)
@@ -165,9 +157,8 @@ constexpr auto rocsparse_partition2string(rocsparse_hyb_partition part)
         return "user";
     case rocsparse_hyb_partition_max:
         return "max";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_analysis2string(rocsparse_analysis_policy policy)
@@ -178,9 +169,8 @@ constexpr auto rocsparse_analysis2string(rocsparse_analysis_policy policy)
         return "reuse";
     case rocsparse_analysis_policy_force:
         return "force";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_solve2string(rocsparse_solve_policy policy)
@@ -189,9 +179,8 @@ constexpr auto rocsparse_solve2string(rocsparse_solve_policy policy)
     {
     case rocsparse_solve_policy_auto:
         return "auto";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_direction2string(rocsparse_direction direction)
@@ -202,9 +191,8 @@ constexpr auto rocsparse_direction2string(rocsparse_direction direction)
         return "row";
     case rocsparse_direction_column:
         return "column";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_order2string(rocsparse_order order)
@@ -215,9 +203,8 @@ constexpr auto rocsparse_order2string(rocsparse_order order)
         return "row";
     case rocsparse_order_column:
         return "col";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_spmvalg2string(rocsparse_spmv_alg alg)
@@ -234,9 +221,8 @@ constexpr auto rocsparse_spmvalg2string(rocsparse_spmv_alg alg)
         return "csrstream";
     case rocsparse_spmv_alg_ell:
         return "ell";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_spmmalg2string(rocsparse_spmm_alg alg)
@@ -256,9 +242,8 @@ constexpr auto rocsparse_spgemmalg2string(rocsparse_spgemm_alg alg)
     {
     case rocsparse_spgemm_alg_default:
         return "default";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_sparsetodensealg2string(rocsparse_sparse_to_dense_alg alg)
@@ -267,9 +252,8 @@ constexpr auto rocsparse_sparsetodensealg2string(rocsparse_sparse_to_dense_alg a
     {
     case rocsparse_sparse_to_dense_alg_default:
         return "default";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_densetosparsealg2string(rocsparse_dense_to_sparse_alg alg)
@@ -278,9 +262,8 @@ constexpr auto rocsparse_densetosparsealg2string(rocsparse_dense_to_sparse_alg a
     {
     case rocsparse_dense_to_sparse_alg_default:
         return "default";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 // Return a string without '/' or '\\'
