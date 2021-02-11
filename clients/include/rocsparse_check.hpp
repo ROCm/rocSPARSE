@@ -93,62 +93,74 @@
     } while(0)
 
 template <typename T>
-void unit_check_general(int64_t M, int64_t N, int64_t lda, T* hCPU, T* hGPU);
+void unit_check_general(int64_t M, int64_t N, int64_t lda, const T* hCPU, const T* hGPU);
 
 template <>
-inline void unit_check_general(int64_t M, int64_t N, int64_t lda, float* hCPU, float* hGPU)
+inline void
+    unit_check_general(int64_t M, int64_t N, int64_t lda, const float* hCPU, const float* hGPU)
 {
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_FLOAT_EQ);
 }
 
 template <>
-inline void unit_check_general(int64_t M, int64_t N, int64_t lda, double* hCPU, double* hGPU)
+inline void
+    unit_check_general(int64_t M, int64_t N, int64_t lda, const double* hCPU, const double* hGPU)
 {
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_DOUBLE_EQ);
 }
 
 template <>
-inline void unit_check_general(
-    int64_t M, int64_t N, int64_t lda, rocsparse_float_complex* hCPU, rocsparse_float_complex* hGPU)
+inline void unit_check_general(int64_t                        M,
+                               int64_t                        N,
+                               int64_t                        lda,
+                               const rocsparse_float_complex* hCPU,
+                               const rocsparse_float_complex* hGPU)
 {
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_FLOAT_COMPLEX_EQ);
 }
 
 template <>
-inline void unit_check_general(int64_t                   M,
-                               int64_t                   N,
-                               int64_t                   lda,
-                               rocsparse_double_complex* hCPU,
-                               rocsparse_double_complex* hGPU)
+inline void unit_check_general(int64_t                         M,
+                               int64_t                         N,
+                               int64_t                         lda,
+                               const rocsparse_double_complex* hCPU,
+                               const rocsparse_double_complex* hGPU)
 {
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_DOUBLE_COMPLEX_EQ);
 }
 
 template <>
-inline void unit_check_general(int64_t M, int64_t N, int64_t lda, int32_t* hCPU, int32_t* hGPU)
+inline void
+    unit_check_general(int64_t M, int64_t N, int64_t lda, const int32_t* hCPU, const int32_t* hGPU)
 {
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_EQ);
 }
 
 template <>
-inline void unit_check_general(int64_t M, int64_t N, int64_t lda, int64_t* hCPU, int64_t* hGPU)
+inline void
+    unit_check_general(int64_t M, int64_t N, int64_t lda, const int64_t* hCPU, const int64_t* hGPU)
 {
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_EQ);
 }
 
 template <>
-inline void unit_check_general(int64_t M, int64_t N, int64_t lda, size_t* hCPU, size_t* hGPU)
+inline void
+    unit_check_general(int64_t M, int64_t N, int64_t lda, const size_t* hCPU, const size_t* hGPU)
 {
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_EQ);
 }
 
 template <typename U, typename V>
 void near_check_general_template(
-    rocsparse_int M, rocsparse_int N, rocsparse_int lda, U* hCPU, U* hGPU, V tol);
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, const U* hCPU, const U* hGPU, V tol);
 
 template <>
-inline void near_check_general_template(
-    rocsparse_int M, rocsparse_int N, rocsparse_int lda, float* hCPU, float* hGPU, float tol)
+inline void near_check_general_template(rocsparse_int M,
+                                        rocsparse_int N,
+                                        rocsparse_int lda,
+                                        const float*  hCPU,
+                                        const float*  hGPU,
+                                        float         tol)
 {
     for(rocsparse_int j = 0; j < N; ++j)
     {
@@ -184,8 +196,12 @@ inline void near_check_general_template(
 }
 
 template <>
-inline void near_check_general_template(
-    rocsparse_int M, rocsparse_int N, rocsparse_int lda, double* hCPU, double* hGPU, double tol)
+inline void near_check_general_template(rocsparse_int M,
+                                        rocsparse_int N,
+                                        rocsparse_int lda,
+                                        const double* hCPU,
+                                        const double* hGPU,
+                                        double        tol)
 {
     for(rocsparse_int j = 0; j < N; ++j)
     {
@@ -221,12 +237,12 @@ inline void near_check_general_template(
 }
 
 template <>
-inline void near_check_general_template(rocsparse_int            M,
-                                        rocsparse_int            N,
-                                        rocsparse_int            lda,
-                                        rocsparse_float_complex* hCPU,
-                                        rocsparse_float_complex* hGPU,
-                                        float                    tol)
+inline void near_check_general_template(rocsparse_int                  M,
+                                        rocsparse_int                  N,
+                                        rocsparse_int                  lda,
+                                        const rocsparse_float_complex* hCPU,
+                                        const rocsparse_float_complex* hGPU,
+                                        float                          tol)
 {
     for(rocsparse_int j = 0; j < N; ++j)
     {
@@ -273,12 +289,12 @@ inline void near_check_general_template(rocsparse_int            M,
 }
 
 template <>
-inline void near_check_general_template(rocsparse_int             M,
-                                        rocsparse_int             N,
-                                        rocsparse_int             lda,
-                                        rocsparse_double_complex* hCPU,
-                                        rocsparse_double_complex* hGPU,
-                                        double                    tol)
+inline void near_check_general_template(rocsparse_int                   M,
+                                        rocsparse_int                   N,
+                                        rocsparse_int                   lda,
+                                        const rocsparse_double_complex* hCPU,
+                                        const rocsparse_double_complex* hGPU,
+                                        double                          tol)
 {
     for(rocsparse_int j = 0; j < N; ++j)
     {
@@ -352,15 +368,15 @@ struct default_tolerance<rocsparse_double_complex>
 };
 
 template <typename T>
-inline void
-    near_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, T* hCPU, T* hGPU)
+inline void near_check_general(
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, const T* hCPU, const T* hGPU)
 {
     near_check_general_template<T>(M, N, lda, hCPU, hGPU, default_tolerance<T>::value);
 }
 
 template <typename U, typename V>
-inline void
-    near_check_general(rocsparse_int M, rocsparse_int N, rocsparse_int lda, U* hCPU, U* hGPU, V tol)
+inline void near_check_general(
+    rocsparse_int M, rocsparse_int N, rocsparse_int lda, const U* hCPU, const U* hGPU, V tol)
 {
     near_check_general_template<U>(M, N, lda, hCPU, hGPU, tol);
 }

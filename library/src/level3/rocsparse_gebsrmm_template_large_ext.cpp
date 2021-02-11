@@ -76,8 +76,7 @@ __launch_bounds__(BSR_BLOCK_DIM* BLK_SIZE_Y) __global__
 
 typedef enum
 {
-    large_config_ext_4_16 = 1,
-    large_config_ext_8_8,
+    large_config_ext_8_8 = 1,
     large_config_ext_16_16,
     large_config_ext_32_32
 } enum_large_config_ext;
@@ -88,11 +87,7 @@ typedef enum
 static enum_large_config_ext get_large_config_ext(rocsparse_int block_dim, rocsparse_int n)
 {
     enum_large_config_ext config;
-    if(block_dim <= 4)
-    {
-        config = large_config_ext_4_16;
-    }
-    else if(block_dim <= 8)
+    if(block_dim <= 8)
     {
         config = large_config_ext_8_8;
     }
@@ -173,7 +168,6 @@ rocsparse_status rocsparse_gebsrmm_template_large_ext(rocsparse_handle          
     }
 
         DEFINE_CASE(large_config_ext_8_8, 8, 8, 2);
-        DEFINE_CASE(large_config_ext_4_16, 4, 16, 2);
         DEFINE_CASE(large_config_ext_16_16, 16, 16, 2);
         DEFINE_CASE(large_config_ext_32_32, 32, 32, 2);
 

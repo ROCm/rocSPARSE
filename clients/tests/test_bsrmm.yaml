@@ -42,50 +42,20 @@ Definitions:
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
 
 Tests:
-- name: bsrmm_bad_arg
-  category: pre_checkin
-  function: bsrmm_bad_arg
-  precision: *single_double_precisions_complex_real
+
+# ########################################################################
+# # QUICK
+# ########################################################################
 
 - name: bsrmm
   category: quick
   function: bsrmm
   precision: *single_double_precisions_complex_real
-  M: [-1, 275, 708]
-  N: [-1, 128, 628]
-  K: [-1, 173, 747]
-  block_dim: [0, 5, 7, 16]
+  M: [275, 708]
+  N: [128, 628]
+  K: [173, 747]
+  block_dim: [5, 16]
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero]
-  direction: [rocsparse_direction_row]
-  matrix: [rocsparse_matrix_random]
-
-- name: bsrmm
-  category: pre_checkin
-  function: bsrmm
-  precision: *single_double_precisions_complex_real
-  M: [0, 511, 2059]
-  N: [0, 7, 33]
-  K: [0, 391, 1375]
-  block_dim: [17, 25]
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_one]
-  direction: [rocsparse_direction_column]
-  matrix: [rocsparse_matrix_random]
-
-- name: bsrmm
-  category: nightly
-  function: bsrmm
-  precision: *single_double_precisions_complex_real
-  M: [3943, 94912]
-  N: [27, 49]
-  K: [4134, 73291]
-  block_dim: [2, 9]
-  alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
@@ -113,26 +83,82 @@ Tests:
              scircuit]
 
 - name: bsrmm_file
+  category: quick
+  function: bsrmm
+  precision: *single_double_precisions_complex
+  M: 1
+  N: [3, 21]
+  K: 1
+  block_dim: [6]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  direction: [rocsparse_direction_column]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron2,
+             qc2534]
+
+
+# ########################################################################
+# # PRE CHECKIN
+# ########################################################################
+
+- name: bsrmm_bad_arg
+  category: pre_checkin
+  function: bsrmm_bad_arg
+  precision: *single_double_precisions_complex_real
+
+- name: bsrmm
+  category: pre_checkin
+  function: bsrmm
+  precision: *single_double_precisions_complex_real
+  M: [0, 1, 511]
+  N: [0, 1, 2, 37]
+  K: [0, 1, 391]
+  block_dim: [1, 2, 4, 8, 16, 32, 64]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  direction: [rocsparse_direction_column]
+  matrix: [rocsparse_matrix_random]
+
+- name: bsrmm
   category: pre_checkin
   function: bsrmm
   precision: *single_double_precisions
-  M: 1
-  N: [73]
-  K: 1
-  block_dim: [8]
+  M: [2511]
+  N: [37]
+  K: [391]
+  block_dim: [2]
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  percentage: [1]
+  direction: [rocsparse_direction_column]
+  matrix: [rocsparse_matrix_random]
+
+
+- name: bsrmm
+  category: nightly
+  function: bsrmm
+  precision: *single_double_precisions_complex_real
+  M: [3943, 94912]
+  N: [27, 49]
+  K: [4134, 73291]
+  block_dim: [2, 9]
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
-  matrix: [rocsparse_matrix_file_rocalution]
-  filename: [rma10,
-             mc2depi,
-             ASIC_320k,
-             nos1,
-             nos3,
-             nos5,
-             nos7]
+  matrix: [rocsparse_matrix_random]
+
+# ########################################################################
+# # NIGHTLY
+# ########################################################################
 
 - name: bsrmm_file
   category: nightly
@@ -156,38 +182,6 @@ Tests:
              webbase-1M,
              shipsec1]
 
-- name: bsrmm_file
-  category: quick
-  function: bsrmm
-  precision: *single_double_precisions_complex
-  M: 1
-  N: [3, 21]
-  K: 1
-  block_dim: [6]
-  alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_one]
-  direction: [rocsparse_direction_column]
-  matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron2]
-
-- name: bsrmm_file
-  category: pre_checkin
-  function: bsrmm
-  precision: *single_double_precisions_complex
-  M: 1
-  N: [68]
-  K: 1
-  block_dim: [7]
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero]
-  direction: [rocsparse_direction_row]
-  matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mplate,
-             Chevron3]
 
 - name: bsrmm_file
   category: nightly

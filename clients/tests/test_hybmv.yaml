@@ -31,23 +31,67 @@ Definitions:
     - { alpha:  -0.5, beta:  0.5, alphai: -0.5, betai:  1.0 }
 
   - &alpha_beta_range_checkin
-    - { alpha:   2.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
-    - { alpha:   2.0, beta:  0.67, alphai: -1.0, betai:  1.5 }
     - { alpha:   0.0, beta:  1.0,  alphai:  1.5, betai:  0.5 }
+    - { alpha:   2.0, beta:  0.67, alphai: -1.0, betai:  1.5 }
     - { alpha:   3.0, beta:  1.0,  alphai:  1.0, betai: -0.5 }
 
   - &alpha_beta_range_nightly
     - { alpha:   0.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
     - { alpha:   2.0, beta:  0.67, alphai:  0.0, betai:  1.5 }
     - { alpha:   3.0, beta:  1.0,  alphai:  1.5, betai:  0.0 }
-    - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
-    - { alpha:  -1.0, beta: -0.5,  alphai:  0.0, betai:  0.0 }
+
+
 
 Tests:
 - name: hybmv_bad_arg
   category: pre_checkin
   function: hybmv_bad_arg
   precision: *single_double_precisions_complex_real
+
+- name: hybmv
+  category: pre_checkin
+  function: hybmv
+  precision: *single_double_precisions_complex_real
+  M: [-1, 0, 16, 32, 111]
+  N: [-1, 0, 16, 32, 441]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
+  algo: [0, 1, 2]
+
+- name: hybmv_file
+  category: pre_checkin
+  function: hybmv
+  precision: *single_double_precisions
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max]
+  algo: [0, 1, 2]
+  filename: [nos1,
+             nos3,
+             nos5,
+             nos7]
+
+- name: hybmv_file
+  category: pre_checkin
+  function: hybmv
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  part: [rocsparse_hyb_partition_auto]
+  algo: [0, 1, 2]
+  filename: [mplate,
+             Chevron3]
 
 - name: hybmv
   category: quick
@@ -61,31 +105,6 @@ Tests:
   matrix: [rocsparse_matrix_random]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
   algo: [1]
-
-- name: hybmv
-  category: pre_checkin
-  function: hybmv
-  precision: *single_double_precisions_complex_real
-  M: [-1, 0, 7111, 10000]
-  N: [-3, 0, 4441, 10000]
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_random]
-  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
-  algo: [0, 1, 2]
-
-- name: hybmv
-  category: nightly
-  function: hybmv
-  precision: *single_double_precisions_complex_real
-  M: [39385, 193482, 639102]
-  N: [29348, 340123, 710341]
-  alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_random]
-  part: [rocsparse_hyb_partition_auto]
 
 - name: hybmv_file
   category: quick
@@ -105,45 +124,6 @@ Tests:
              scircuit]
 
 - name: hybmv_file
-  category: pre_checkin
-  function: hybmv
-  precision: *single_double_precisions
-  M: 1
-  N: 1
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_file_rocalution]
-  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
-  algo: [0, 1, 2]
-  filename: [rma10,
-             mc2depi,
-             ASIC_320k,
-             nos1,
-             nos3,
-             nos5,
-             nos7]
-
-- name: hybmv_file
-  category: nightly
-  function: hybmv
-  precision: *single_double_precisions
-  M: 1
-  N: 1
-  alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_file_rocalution]
-  part: [rocsparse_hyb_partition_auto]
-  filename: [bibd_22_8,
-             bmwcra_1,
-             amazon0312,
-             Chebyshev4,
-             sme3Dc,
-             webbase-1M,
-             shipsec1]
-
-- name: hybmv_file
   category: quick
   function: hybmv
   precision: *single_double_precisions_complex
@@ -157,20 +137,34 @@ Tests:
   filename: [Chevron2,
              qc2534]
 
-- name: hybmv_file
-  category: pre_checkin
+- name: hybmv
+  category: nightly
   function: hybmv
-  precision: *single_double_precisions_complex
+  precision: *single_double_precisions_complex_real
+  M: [39385, 193482, 639102]
+  N: [29348, 340123, 710341]
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  part: [rocsparse_hyb_partition_auto]
+
+- name: hybmv_file
+  category: nightly
+  function: hybmv
+  precision: *single_double_precisions
   M: 1
   N: 1
-  alpha_beta: *alpha_beta_range_checkin
+  alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
-  algo: [0, 1, 2]
-  filename: [mplate,
-             Chevron3]
+  part: [rocsparse_hyb_partition_auto]
+  filename: [amazon0312,
+             Chebyshev4,
+             sme3Dc,
+             webbase-1M,
+             shipsec1]
 
 - name: hybmv_file
   category: nightly

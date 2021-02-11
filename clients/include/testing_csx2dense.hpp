@@ -269,8 +269,8 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
                               hipMemcpyDeviceToHost));
 
     device_vector<rocsparse_int> d_csx_row_col_ptr(DIMDIR + 1);
-    device_vector<T>             d_csx_val(nnz);
-    device_vector<rocsparse_int> d_csx_col_row_ind(nnz);
+    device_vector<T>             d_csx_val(std::max(nnz, 1));
+    device_vector<rocsparse_int> d_csx_col_row_ind(std::max(nnz, 1));
     if(!d_csx_row_col_ptr || !d_csx_val || !d_csx_col_row_ind)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);

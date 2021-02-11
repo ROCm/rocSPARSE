@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -117,9 +117,10 @@ Tests:
   baseA: [rocsparse_index_base_one]
   direction: [rocsparse_direction_column]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mc2depi,
-             scircuit,
-             mac_econ_fwd500]
+  filename: [scircuit,
+             nos3,
+             nos5,
+             nos7]
 
 - name: bsric0_file
   category: nightly
@@ -137,9 +138,7 @@ Tests:
   filename: [ASIC_320k,
              amazon0312,
              Chebyshev4,
-             nos3,
-             nos5,
-             nos7]
+             mac_econ_fwd500]
 
 - name: bsric0_file
   category: quick
@@ -174,7 +173,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   direction: [rocsparse_direction_row]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron3]
+  filename: [Chevron2]
 
 - name: bsric0_file
   category: nightly

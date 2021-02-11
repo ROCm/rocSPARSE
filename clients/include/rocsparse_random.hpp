@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,13 @@
 /* ==================================================================================== */
 // Random number generator
 using rocsparse_rng_t = std::mt19937;
-extern rocsparse_rng_t rocsparse_rng, rocsparse_seed;
+extern rocsparse_rng_t rocsparse_rng, rocsparse_seed, rocsparse_rng_nan;
 
 // Reset the seed (mainly to ensure repeatability of failures in a given suite)
 inline void rocsparse_seedrand()
 {
-    rocsparse_rng = rocsparse_seed;
+    rocsparse_rng     = rocsparse_seed;
+    rocsparse_rng_nan = rocsparse_seed;
 }
 
 /* ==================================================================================== */
@@ -58,7 +59,7 @@ class rocsparse_nan_rng
             T      fp;
         } x;
         do
-            x.u = std::uniform_int_distribution<UINT_T>{}(rocsparse_rng);
+            x.u = std::uniform_int_distribution<UINT_T>{}(rocsparse_rng_nan);
         while(!(x.u & (((UINT_T)1 << SIG) - 1))); // Reject Inf (mantissa == 0)
         x.u |= (((UINT_T)1 << EXP) - 1) << SIG; // Exponent = all 1's
         return x.fp; // NaN with random bits
@@ -69,7 +70,7 @@ public:
     template <typename T, typename std::enable_if<std::is_integral<T>{}, int>::type = 0>
     explicit operator T()
     {
-        return std::uniform_int_distribution<T>{}(rocsparse_rng);
+        return std::uniform_int_distribution<T>{}(rocsparse_rng_nan);
     }
 
     // Random NaN double
@@ -99,22 +100,54 @@ public:
 /* generate random number :*/
 
 /*! \brief  generate a random number in range [a,b] */
+
 template <typename T>
-inline T random_generator(int a = 1, int b = 10)
+inline T random_generator_exact(int a = 1, int b = 10)
 {
     return std::uniform_int_distribution<int>(a, b)(rocsparse_rng);
 }
 
 template <>
-inline rocsparse_float_complex random_generator<rocsparse_float_complex>(int a, int b)
+inline rocsparse_float_complex random_generator_exact<rocsparse_float_complex>(int a, int b)
 {
-    return rocsparse_float_complex(random_generator<float>(a, b), random_generator<float>(a, b));
+    return rocsparse_float_complex(random_generator_exact<float>(a, b),
+                                   random_generator_exact<float>(a, b));
 }
 
 template <>
-inline rocsparse_double_complex random_generator<rocsparse_double_complex>(int a, int b)
+inline rocsparse_double_complex random_generator_exact<rocsparse_double_complex>(int a, int b)
 {
-    return rocsparse_double_complex(random_generator<double>(a, b), random_generator<double>(a, b));
+    return rocsparse_double_complex(random_generator_exact<double>(a, b),
+                                    random_generator_exact<double>(a, b));
+}
+
+template <typename T, typename std::enable_if_t<std::is_integral<T>::value, bool> = true>
+inline T random_generator(T a = static_cast<T>(1), T b = static_cast<T>(10))
+{
+    return random_generator_exact<T>(a, b);
+}
+
+template <typename T, typename std::enable_if_t<!std::is_integral<T>::value, bool> = true>
+inline T random_generator(T a = static_cast<T>(0), T b = static_cast<T>(1))
+{
+    return std::uniform_real_distribution<T>(a, b)(rocsparse_rng);
+}
+
+template <>
+inline rocsparse_float_complex random_generator<rocsparse_float_complex>(rocsparse_float_complex a,
+                                                                         rocsparse_float_complex b)
+{
+    return rocsparse_float_complex(random_generator<float>(std::abs(a), std::abs(b)),
+                                   random_generator<float>(std::abs(a), std::abs(b)));
+}
+
+template <>
+inline rocsparse_double_complex
+    random_generator<rocsparse_double_complex>(rocsparse_double_complex a,
+                                               rocsparse_double_complex b)
+{
+    return rocsparse_double_complex(random_generator<double>(std::abs(a), std::abs(b)),
+                                    random_generator<double>(std::abs(a), std::abs(b)));
 }
 
 /*! \brief generate a random normally distributed number around 0 with stddev 1 */

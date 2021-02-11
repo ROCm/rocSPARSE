@@ -30,6 +30,7 @@
 
 template <rocsparse_int ROW_BLOCK_DIM,
           rocsparse_int COL_BLOCK_DIM,
+          rocsparse_int BLOCK_DIM,
           rocsparse_int BLK_SIZE_Y,
           typename T>
 static __device__ void gebsrmm_small_blockdim_device(rocsparse_direction direction,
@@ -47,13 +48,13 @@ static __device__ void gebsrmm_small_blockdim_device(rocsparse_direction directi
                                                      rocsparse_int        ldc,
                                                      rocsparse_index_base idx_base)
 {
-    const rocsparse_int tidx = hipThreadIdx_x;
-    const rocsparse_int tidy = hipThreadIdx_y;
-
+    const rocsparse_int tidx       = hipThreadIdx_x;
+    const rocsparse_int tidy       = hipThreadIdx_y;
     const rocsparse_int global_row = tidx + hipBlockIdx_x * ROW_BLOCK_DIM;
     const rocsparse_int global_col = tidy + hipBlockIdx_y * BLK_SIZE_Y;
-
-    const rocsparse_int block_row = hipBlockIdx_x;
+    const rocsparse_int block_row  = hipBlockIdx_x;
+    const rocsparse_int colB       = global_col * ldb;
+    const rocsparse_int colC       = global_col * ldc;
 
     rocsparse_int block_row_start = 0;
     rocsparse_int block_row_end   = 0;
@@ -63,27 +64,23 @@ static __device__ void gebsrmm_small_blockdim_device(rocsparse_direction directi
         block_row_end   = bsr_row_ptr[block_row + 1] - idx_base;
     }
 
-    const rocsparse_int colB = global_col * ldb;
-    const rocsparse_int colC = global_col * ldc;
-
-    __shared__ T shared_B[COL_BLOCK_DIM * BLK_SIZE_Y];
-    __shared__ T shared_A[ROW_BLOCK_DIM * COL_BLOCK_DIM];
+    __shared__ T shared_B[BLOCK_DIM * BLK_SIZE_Y];
+    __shared__ T shared_A[BLOCK_DIM * BLOCK_DIM];
 
     T sum = static_cast<T>(0);
 
-    const rocsparse_int     index             = ROW_BLOCK_DIM * tidy + tidx;
+    const rocsparse_int     index             = BLOCK_DIM * tidy + tidx;
     constexpr rocsparse_int ROWXCOL_BLOCK_DIM = ROW_BLOCK_DIM * COL_BLOCK_DIM;
     const bool              is_loading_B      = (global_col < N && tidx < COL_BLOCK_DIM);
     const bool              is_loading_C      = (tidx < ROW_BLOCK_DIM && tidy < COL_BLOCK_DIM);
     for(rocsparse_int k = block_row_start; k < block_row_end; k++)
     {
         rocsparse_int block_col = (bsr_col_ind[k] - idx_base);
-
         if(is_loading_B)
         {
             if(trans_B == rocsparse_operation_none)
             {
-                shared_B[index] = B[COL_BLOCK_DIM * block_col + tidx + colB];
+                shared_B[index] = B[colB + COL_BLOCK_DIM * block_col + tidx];
             }
             else
             {
@@ -108,11 +105,10 @@ static __device__ void gebsrmm_small_blockdim_device(rocsparse_direction directi
         }
 
         __syncthreads();
-
         for(rocsparse_int j = 0; j < COL_BLOCK_DIM; j++)
         {
             sum = rocsparse_fma(
-                shared_A[ROW_BLOCK_DIM * j + tidx], shared_B[ROW_BLOCK_DIM * tidy + j], sum);
+                shared_A[BLOCK_DIM * j + tidx], shared_B[BLOCK_DIM * tidy + j], sum);
         }
 
         __syncthreads();

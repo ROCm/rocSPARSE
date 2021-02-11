@@ -25,425 +25,115 @@
 #include "utility.hpp"
 #include <rocsparse.hpp>
 
+#include "auto_testing_bad_arg.hpp"
+
 template <typename T>
 void testing_gebsrmm_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
-    T h_alpha = 0.6;
-    T h_beta  = 0.1;
-
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
     // Create matrix descriptor
-    rocsparse_local_mat_descr descr;
+    rocsparse_local_mat_descr local_descr;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dbsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dbsr_col_ind(safe_size);
-    device_vector<T>             dbsr_val(safe_size);
-    device_vector<T>             dB(safe_size);
-    device_vector<T>             dC(safe_size);
+    // Declaration.
+    rocsparse_handle     handle        = local_handle;
+    rocsparse_direction  dir           = rocsparse_direction_row;
+    rocsparse_operation  trans_A       = rocsparse_operation_none;
+    rocsparse_operation  trans_B       = rocsparse_operation_none;
+    rocsparse_int        mb            = safe_size;
+    rocsparse_int        n             = safe_size;
+    rocsparse_int        kb            = safe_size;
+    rocsparse_int        nnzb          = safe_size;
+    const T*             alpha         = (const T*)0x4;
+    rocsparse_mat_descr  descr         = local_descr;
+    const T*             bsr_val       = (const T*)0x4;
+    const rocsparse_int* bsr_row_ptr   = (const rocsparse_int*)0x4;
+    const rocsparse_int* bsr_col_ind   = (const rocsparse_int*)0x4;
+    rocsparse_int        row_block_dim = safe_size;
+    rocsparse_int        col_block_dim = safe_size;
+    const T*             B             = (const T*)0x4;
+    rocsparse_int        ldb           = safe_size;
+    const T*             beta          = (const T*)0x4;
+    T*                   C             = (T*)0x4;
+    rocsparse_int        ldc           = safe_size;
 
-    if(!dbsr_row_ptr || !dbsr_col_ind || !dbsr_val || !dB || !dC)
+#define PARAMS                                                                          \
+    handle, dir, trans_A, trans_B, mb, n, kb, nnzb, alpha, descr, bsr_val, bsr_row_ptr, \
+        bsr_col_ind, row_block_dim, col_block_dim, B, ldb, beta, C, ldc
+
+    auto_testing_bad_arg(rocsparse_gebsrmm<T>, PARAMS);
+
+    //
+    // CHECK NOT IMPLEMENTED CASE
+    //
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_symmetric));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_not_implemented);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
+
+    //
+    // CHECK NOT IMPLEMENTED CASE
+    //
     {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
+        auto tmp = trans_A;
+
+        trans_A = rocsparse_operation_transpose;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_not_implemented);
+
+        trans_A = rocsparse_operation_conjugate_transpose;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_not_implemented);
+
+        trans_A = tmp;
     }
 
-    // Test invalid handle
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(nullptr,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_handle);
+    //
+    // CHECK NOT IMPLEMENTED CASE
+    //
+    {
+        auto tmp = trans_B;
+        trans_B  = rocsparse_operation_conjugate_transpose;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_not_implemented);
 
-    // Test invalid pointers
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 nullptr,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 nullptr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 nullptr,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 nullptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 nullptr,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 nullptr,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 nullptr,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 nullptr,
-                                                 safe_size),
-                            rocsparse_status_invalid_pointer);
+        trans_B = tmp;
+    }
 
-    // Test invalid size
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 -1,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_size);
+    //
+    // CHECK INVALID SIZES
+    //
+    {
+        trans_B = rocsparse_operation_transpose;
+        mb      = 32;
+        n       = 256;
+        kb      = 33;
+        nnzb    = 35;
+        ldb     = 256 - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+    }
+    //
+    {
+        trans_B = rocsparse_operation_none;
+        mb      = 32;
+        n       = 33;
+        kb      = 256;
+        nnzb    = 35;
+        ldb     = 256 - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+    }
+    //
+    {
+        trans_B = rocsparse_operation_none;
+        mb      = 256;
+        n       = 33;
+        kb      = 34;
+        nnzb    = 35;
+        ldb     = 34;
+        ldc     = 256 - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+    }
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 -1,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 -1,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 -1,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 0,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 0,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_invalid_size);
-
-    // Test not implemented
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_transpose,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_not_implemented);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_conjugate_transpose,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_not_implemented);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_conjugate_transpose,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 safe_size,
-                                                 dB,
-                                                 safe_size,
-                                                 &h_beta,
-                                                 dC,
-                                                 safe_size),
-                            rocsparse_status_not_implemented);
+#undef PARAMS
 }
 
 template <typename T>
@@ -468,10 +158,10 @@ void testing_gebsrmm(const Arguments& arg)
         Kb = (K + col_block_dim - 1) / col_block_dim;
     }
 
-    T h_alpha = arg.get_alpha<T>();
-    T h_beta  = arg.get_beta<T>();
+    host_scalar<T> h_alpha, h_beta;
+    *h_alpha.val = arg.get_alpha<T>();
+    *h_beta.val  = arg.get_beta<T>();
 
-    h_beta = 0;
     // Create rocsparse handle
     rocsparse_local_handle handle;
 
@@ -485,19 +175,13 @@ void testing_gebsrmm(const Arguments& arg)
     // Argument sanity check before allocating invalid memory
     if(Mb <= 0 || N <= 0 || Kb <= 0 || row_block_dim <= 0 || col_block_dim <= 0)
     {
-        static const size_t safe_size = 100;
-        // Allocate memory on device
-        device_vector<rocsparse_int> dbsr_row_ptr(safe_size);
-        device_vector<rocsparse_int> dbsr_col_ind(safe_size);
-        device_vector<T>             dbsr_val(safe_size);
-        device_vector<T>             dB(safe_size);
-        device_vector<T>             dC(safe_size);
+        static const size_t safe_size    = 100;
+        rocsparse_int*      dbsr_row_ptr = (rocsparse_int*)0x4;
+        rocsparse_int*      dbsr_col_ind = (rocsparse_int*)0x4;
+        T*                  dbsr_val     = (T*)0x4;
+        T*                  dB           = (T*)0x4;
+        T*                  dC           = (T*)0x4;
 
-        if(!dbsr_row_ptr || !dbsr_col_ind || !dbsr_val || !dB || !dC)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
         EXPECT_ROCSPARSE_STATUS(
             rocsparse_gebsrmm<T>(handle,
                                  direction,
@@ -507,7 +191,7 @@ void testing_gebsrmm(const Arguments& arg)
                                  N,
                                  Kb,
                                  safe_size,
-                                 &h_alpha,
+                                 h_alpha.val,
                                  descr,
                                  dbsr_val,
                                  dbsr_row_ptr,
@@ -516,7 +200,7 @@ void testing_gebsrmm(const Arguments& arg)
                                  col_block_dim,
                                  dB,
                                  safe_size,
-                                 &h_beta,
+                                 h_beta.val,
                                  dC,
                                  safe_size),
             (Mb < 0 || N < 0 || Kb < 0 || row_block_dim <= 0 || col_block_dim <= 0)
@@ -525,161 +209,67 @@ void testing_gebsrmm(const Arguments& arg)
         return;
     }
 
-    // Allocate host memory for original CSR matrix
-    host_vector<rocsparse_int> hcsr_row_ptr_orig;
-    host_vector<rocsparse_int> hcsr_col_ind_orig;
-    host_vector<T>             hcsr_val_orig;
+#define PARAMS(alpha, A, B, beta, C)                                                             \
+    handle, A.block_direction, transA, transB, A.mb, C.n, A.nb, A.nnzb, alpha.val, descr, A.val, \
+        A.ptr, A.ind, A.row_block_dim, A.col_block_dim, B.val, B.ld, beta.val, C.val, C.ld
 
-    // Allocate host memory for output BSR matrix
-    host_vector<rocsparse_int> hbsr_row_ptr;
-    host_vector<rocsparse_int> hbsr_col_ind;
-    host_vector<T>             hbsr_val;
-
+    host_gebsr_matrix<T>        hA;
     rocsparse_matrix_factory<T> matrix_factory(arg);
+    matrix_factory.init_gebsr_spezial(hA, Mb, Kb);
 
-    rocsparse_int nnzb = 0;
-    rocsparse_init_gebsr_matrix_from_csr(matrix_factory,
-                                         hbsr_row_ptr,
-                                         hbsr_col_ind,
-                                         hbsr_val,
-                                         direction,
-                                         Mb,
-                                         Kb,
-                                         row_block_dim,
-                                         col_block_dim,
-                                         nnzb,
-                                         base);
+    M = hA.mb * hA.row_block_dim;
+    K = hA.nb * hA.col_block_dim;
 
-    // M and K and Mb and Kb can be modified by rocsparse_init_csr_and_bsr_matrix
-    M = Mb * row_block_dim;
-    K = Kb * col_block_dim;
-
-    // Some matrix properties
-    rocsparse_int ldb = (transB == rocsparse_operation_none) ? K : N;
-    rocsparse_int ldc = M;
-
-    rocsparse_int ncol_B = (transB == rocsparse_operation_none ? N : K);
-    rocsparse_int nnz_B  = ldb * ncol_B;
-    rocsparse_int nnz_C  = ldc * N;
-
-    // Allocate host memory for dense matrices
-    host_vector<T> hB(nnz_B);
-    host_vector<T> hC_1(nnz_C);
-    host_vector<T> hC_2(nnz_C);
-    host_vector<T> hC_gold(nnz_C);
-
-    // Initialize data on CPU
-    rocsparse_init<T>(hB, ldb, ncol_B, ldb);
-    rocsparse_init<T>(hC_1, ldc, N, ldc);
-    hC_2    = hC_1;
-    hC_gold = hC_1;
-
-    // Allocate device memory
-    device_vector<rocsparse_int> dbsr_row_ptr(Mb + 1);
-    device_vector<rocsparse_int> dbsr_col_ind(nnzb);
-    device_vector<T>             dbsr_val(nnzb * row_block_dim * col_block_dim);
-    device_vector<T>             dB(nnz_B);
-    device_vector<T>             dC_1(nnz_C);
-    device_vector<T>             dC_2(nnz_C);
-    device_vector<T>             d_alpha(1);
-    device_vector<T>             d_beta(1);
-
-    if(!dbsr_row_ptr || !dbsr_col_ind || !dbsr_val || !dB || !dC_1 || !dC_2 || !d_alpha || !d_beta)
+    device_gebsr_matrix<T> dA(hA);
+    if(!arg.unit_check)
     {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
+        hA.~host_gebsr_matrix<T>();
     }
 
-    // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dbsr_row_ptr, hbsr_row_ptr, sizeof(rocsparse_int) * (Mb + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(
-        hipMemcpy(dbsr_col_ind, hbsr_col_ind, sizeof(rocsparse_int) * nnzb, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dbsr_val,
-                              hbsr_val,
-                              sizeof(T) * nnzb * row_block_dim * col_block_dim,
-                              hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dB, hB, sizeof(T) * nnz_B, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dC_1, hC_1, sizeof(T) * nnz_C, hipMemcpyHostToDevice));
+    // Allocate host memory for dense matrices
+    host_dense_matrix<T> hC(M, N);
+    rocsparse_matrix_utils::init(hC);
+    device_dense_matrix<T> dC(hC);
+    if(!arg.unit_check)
+    {
+        hC.~host_dense_matrix<T>();
+    }
+
+    host_dense_matrix<T> hB((transB == rocsparse_operation_none) ? K : N,
+                            (transB == rocsparse_operation_none) ? N : K);
+    rocsparse_matrix_utils::init(hB);
+    device_dense_matrix<T> dB(hB);
+    if(!arg.unit_check)
+    {
+        hB.~host_dense_matrix<T>();
+    }
 
     if(arg.unit_check)
     {
-        // Copy data from CPU to device
-        CHECK_HIP_ERROR(hipMemcpy(dC_2, hC_2, sizeof(T) * nnz_C, hipMemcpyHostToDevice));
-        CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
-        CHECK_HIP_ERROR(hipMemcpy(d_beta, &h_beta, sizeof(T), hipMemcpyHostToDevice));
-
+        //
         // Pointer mode host
+        //
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmm<T>(handle,
-                                                   direction,
-                                                   transA,
-                                                   transB,
-                                                   Mb,
-                                                   N,
-                                                   Kb,
-                                                   nnzb,
-                                                   &h_alpha,
-                                                   descr,
-                                                   dbsr_val,
-                                                   dbsr_row_ptr,
-                                                   dbsr_col_ind,
-                                                   row_block_dim,
-                                                   col_block_dim,
-                                                   dB,
-                                                   ldb,
-                                                   &h_beta,
-                                                   dC_1,
-                                                   ldc));
+        CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmm<T>(PARAMS(h_alpha, dA, dB, h_beta, dC)));
+
+        //
+        // Compute on host
+        //
+        {
+            host_dense_matrix<T> hC_copy(hC);
+            host_gebsrmm<T>(PARAMS(h_alpha, hA, hB, h_beta, hC));
+            hC.near_check(dC);
+            dC.transfer_from(hC_copy);
+        }
+
+        // Copy data from CPU to device
+        device_scalar<T> d_alpha(h_alpha);
+        device_scalar<T> d_beta(h_beta);
+
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmm<T>(handle,
-                                                   direction,
-                                                   transA,
-                                                   transB,
-                                                   Mb,
-                                                   N,
-                                                   Kb,
-                                                   nnzb,
-                                                   d_alpha,
-                                                   descr,
-                                                   dbsr_val,
-                                                   dbsr_row_ptr,
-                                                   dbsr_col_ind,
-                                                   row_block_dim,
-                                                   col_block_dim,
-                                                   dB,
-                                                   ldb,
-                                                   d_beta,
-                                                   dC_2,
-                                                   ldc));
-
-        // Copy output to host
-        CHECK_HIP_ERROR(hipMemcpy(hC_1, dC_1, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
-
-        // CPU gebsrmm
-        host_gebsrmm<T>(Mb,
-                        N,
-                        Kb,
-                        row_block_dim,
-                        col_block_dim,
-                        direction,
-                        transA,
-                        transB,
-                        h_alpha,
-                        hbsr_row_ptr,
-                        hbsr_col_ind,
-                        hbsr_val,
-                        hB,
-                        ldb,
-                        h_beta,
-                        hC_gold,
-                        ldc,
-                        base);
-
-        near_check_general<T>(ldc, N, ldc, hC_gold, hC_1);
-        near_check_general<T>(ldc, N, ldc, hC_gold, hC_2);
+        CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmm<T>(PARAMS(d_alpha, dA, dB, d_beta, dC)));
+        hC.near_check(dC);
     }
 
     if(arg.timing)
@@ -692,26 +282,7 @@ void testing_gebsrmm(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmm<T>(handle,
-                                                       direction,
-                                                       transA,
-                                                       transB,
-                                                       Mb,
-                                                       N,
-                                                       Kb,
-                                                       nnzb,
-                                                       &h_alpha,
-                                                       descr,
-                                                       dbsr_val,
-                                                       dbsr_row_ptr,
-                                                       dbsr_col_ind,
-                                                       row_block_dim,
-                                                       col_block_dim,
-                                                       dB,
-                                                       ldb,
-                                                       &h_beta,
-                                                       dC_1,
-                                                       ldc));
+            CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmm<T>(PARAMS(h_alpha, dA, dB, h_beta, dC)));
         }
 
         double gpu_time_used = get_time_us();
@@ -719,60 +290,66 @@ void testing_gebsrmm(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmm<T>(handle,
-                                                       direction,
-                                                       transA,
-                                                       transB,
-                                                       Mb,
-                                                       N,
-                                                       Kb,
-                                                       nnzb,
-                                                       &h_alpha,
-                                                       descr,
-                                                       dbsr_val,
-                                                       dbsr_row_ptr,
-                                                       dbsr_col_ind,
-                                                       row_block_dim,
-                                                       col_block_dim,
-                                                       dB,
-                                                       ldb,
-                                                       &h_beta,
-                                                       dC_1,
-                                                       ldc));
+            CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmm<T>(PARAMS(h_alpha, dA, dB, h_beta, dC)));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gflops
-            = gebsrmm_gflop_count(
-                  N, nnzb, row_block_dim, col_block_dim, nnz_C, h_beta != static_cast<T>(0))
-              / gpu_time_used * 1e6;
-        double gpu_gbyte
-            = gebsrmm_gbyte_count<T>(
-                  Mb, nnzb, row_block_dim, col_block_dim, nnz_B, nnz_C, h_beta != static_cast<T>(0))
-              / gpu_time_used * 1e6;
+        double gflop_count = gebsrmm_gflop_count(dC.n,
+                                                 dA.nnzb,
+                                                 dA.row_block_dim,
+                                                 dA.col_block_dim,
+                                                 dC.m * dC.n,
+                                                 *h_beta.val != static_cast<T>(0));
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
+        double gbyte_count = gebsrmm_gbyte_count<T>(dA.mb,
+                                                    dA.nnzb,
+                                                    dA.row_block_dim,
+                                                    dA.col_block_dim,
+                                                    dB.m * dB.n,
+                                                    dC.m * dC.n,
+                                                    *h_beta.val != static_cast<T>(0));
 
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "K"
-                  << std::setw(12) << "dir" << std::setw(12) << "transA" << std::setw(12)
-                  << "transB" << std::setw(12) << "nnzb" << std::setw(12) << "row_block_dim"
-                  << std::setw(12) << "col_block_dim" << std::setw(12) << "nnz_B" << std::setw(12)
-                  << "nnz_C" << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12)
-                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(12) << "msec"
-                  << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
+        double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
 
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << K << std::setw(12)
-                  << rocsparse_direction2string(direction) << std::setw(12)
-                  << rocsparse_operation2string(transA) << std::setw(12)
-                  << rocsparse_operation2string(transB) << std::setw(12) << nnzb << std::setw(12)
-                  << row_block_dim << std::setw(12) << col_block_dim << std::setw(12) << nnz_B
-                  << std::setw(12) << nnz_C << std::setw(12) << h_alpha << std::setw(12) << h_beta
-                  << std::setw(12) << gpu_gflops << std::setw(12) << gpu_gbyte << std::setw(12)
-                  << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
+
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "K",
+                            K,
+                            "dir",
+                            dA.block_direction,
+                            "transA",
+                            transA,
+                            "transB",
+                            transB,
+                            "nnzb",
+                            dA.nnzb,
+                            "row_block_dim",
+                            dA.row_block_dim,
+                            "col_block_dim",
+                            dA.col_block_dim,
+                            "nnz_B",
+                            dB.m * dB.n,
+                            "nnz_C",
+                            dC.m * dC.n,
+                            "alpha",
+                            *h_alpha.val,
+                            "beta",
+                            *h_beta.val,
+                            "GFlop/s",
+                            gpu_gflops,
+                            "GB/s",
+                            gpu_gbyte,
+                            "msec",
+                            gpu_time_used / 1e3,
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
 }
 

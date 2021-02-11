@@ -240,6 +240,21 @@ extern "C" rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
     RETURN_IF_NULLPTR(alpha);
     RETURN_IF_NULLPTR(beta);
 
+    if(rocsparse_enum_utils::is_invalid(trans))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(compute_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(alg))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check for valid buffer_size pointer only if temp_buffer is nullptr
     if(temp_buffer == nullptr)
     {

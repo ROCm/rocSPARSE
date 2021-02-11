@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -106,10 +106,6 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     }
 
     // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO
@@ -140,7 +136,14 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
         return rocsparse_status_invalid_size;
     }
 
-    // TODO check ldb
+    if(trans_B == rocsparse_operation_none && ldb < m)
+    {
+        return rocsparse_status_invalid_size;
+    }
+    else if(trans_B == rocsparse_operation_transpose && ldb < nrhs)
+    {
+        return rocsparse_status_invalid_size;
+    }
 
     // Check for valid buffer_size pointer
     if(buffer_size == nullptr)
@@ -330,12 +333,6 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
     if(trans_B != rocsparse_operation_none && trans_B != rocsparse_operation_transpose)
     {
         return rocsparse_status_not_implemented;
-    }
-
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
     }
 
     // Check matrix type
@@ -631,11 +628,6 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                                        : info->csrsmt_upper_info)
               : ((trans_A == rocsparse_operation_none) ? info->csrsm_lower_info
                                                        : info->csrsmt_lower_info);
-
-    if(csrsm_info == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
 
     // If diag type is unit, re-initialize zero pivot to remove structural zeros
     if(descr->diag_type == rocsparse_diag_type_unit)
@@ -1064,11 +1056,6 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
         return rocsparse_status_not_implemented;
     }
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO

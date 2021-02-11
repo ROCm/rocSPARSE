@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -164,13 +164,33 @@ void host_csr_to_ell(J                     M,
 
 // Initialize vector with random values
 template <typename T>
-void rocsparse_init(
-    std::vector<T>& A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count)
+void rocsparse_init_exact(std::vector<T>& A,
+                          size_t          M,
+                          size_t          N,
+                          size_t          lda,
+                          size_t          stride,
+                          size_t          batch_count,
+                          int             a,
+                          int             b)
 {
     for(size_t i_batch = 0; i_batch < batch_count; i_batch++)
         for(size_t i = 0; i < M; ++i)
             for(size_t j = 0; j < N; ++j)
-                A[i + j * lda + i_batch * stride] = random_generator<T>();
+            {
+                A[i + j * lda + i_batch * stride] = random_generator_exact<T>(a, b);
+            }
+}
+
+template <typename T>
+void rocsparse_init(
+    std::vector<T>& A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count, T a, T b)
+{
+    for(size_t i_batch = 0; i_batch < batch_count; i_batch++)
+        for(size_t i = 0; i < M; ++i)
+            for(size_t j = 0; j < N; ++j)
+            {
+                A[i + j * lda + i_batch * stride] = random_generator<T>(a, b);
+            }
 }
 
 // Initializes sparse index vector with nnz entries ranging from start to end
@@ -209,7 +229,7 @@ void rocsparse_init_alternating_sign(
         for(size_t i = 0; i < M; ++i)
             for(size_t j = 0; j < N; ++j)
             {
-                auto value                        = random_generator<T>();
+                auto value                        = random_generator_exact<T>();
                 A[i + j * lda + i_batch * stride] = (i ^ j) & 1 ? value : -value;
             }
 }
@@ -249,8 +269,16 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
                                I                    N,
                                I                    nnz,
                                rocsparse_index_base base,
-                               bool                 full_rank)
+                               bool                 full_rank,
+                               bool                 to_int)
 {
+    if(nnz == 0)
+    {
+        row_ind.resize(nnz);
+        col_ind.resize(nnz);
+        val.resize(nnz);
+        return;
+    }
     // If M > N, full rank is not possible
     if(full_rank && M > N)
     {
@@ -278,83 +306,120 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
         val.resize(nnz);
     }
 
-    // Add diagonal entry, if full rank is flagged
-    I i = 0;
-
+    //
+    // Compute row indices.
+    //
+    std::vector<int> count(M, 0);
+    I                start = 0;
     if(full_rank)
     {
-        for(; i < M; ++i)
+        for(I k = 0; k < std::min(M, nnz); ++k)
         {
-            row_ind[i] = i;
+            count[k] += 1;
+            row_ind[k] = k;
         }
+        start = std::min(M, nnz);
     }
 
-    // Uniform distributed row indices
-    for(; i < nnz; ++i)
+    for(I k = start; k < nnz; ++k)
     {
-        row_ind[i] = random_generator<I>(0, M - 1);
+        I   i       = random_generator<I>(0, M - 1);
+        int maxiter = 0;
+        while(count[i] >= N && maxiter < 10)
+        {
+            i = random_generator<I>(0, M - 1);
+        }
+        if(maxiter >= 10)
+        {
+            for(i = 0; i < M; ++i)
+            {
+                if(count[i] < N)
+                {
+                    break;
+                }
+            }
+            if(i == M)
+            {
+                std::cerr << "rocsparse_init_coo_matrix error" << std::endl;
+                exit(1);
+            }
+        }
+        count[i] += 1;
+        row_ind[k] = i;
     }
 
-    // Sort row indices
     std::sort(row_ind.begin(), row_ind.end());
 
-    // Sample column indices
-    std::vector<bool> check(nnz, false);
-
-    i = 0;
-    while(i < nnz)
+    std::vector<bool> marker(N, false);
+    std::vector<I>    select(N, 0);
+    I                 mx = count[0];
+    for(I i = 1; i < M; ++i)
     {
-        I begin = i;
-        while(row_ind[i] == row_ind[begin])
+        if(mx < count[i])
+            mx = count[i];
+    }
+    I sec = std::min(2 * mx, N);
+    I at  = 0;
+    for(I i = 0; i < M; ++i)
+    {
+        I select_n = 0;
+        I begin    = at;
+        for(I k = 0; k < count[i]; ++k)
         {
-            ++i;
-            if(i >= nnz)
+            I j;
+            if(full_rank && k == 0)
             {
-                break;
+                j = i;
             }
+            else
+            {
+                I maxiter = 0;
+                do
+                {
+                    //
+                    // Generate coefficients close to the diagonal
+                    //
+                    I bmax = std::min(i + sec, N - 1);
+                    I bmin = std::max(bmax - 2 * sec, ((I)0));
+
+                    j = random_generator<I>(bmin, bmax);
+                    ++maxiter;
+                    if(maxiter == 10)
+                    {
+                        break;
+                    }
+                } while(j < 0 || j >= N || marker[j]);
+                if(maxiter == 10)
+                {
+                    for(j = 0; j < N; ++j)
+                    {
+                        if(!marker[j])
+                        {
+                            break;
+                        }
+                    }
+                    if(j == N)
+                    {
+                        std::cerr << "rocsparse_init_coo_matrix error" << std::endl;
+                        exit(1);
+                    }
+                }
+            }
+
+            select[select_n++] = j;
+            marker[j]          = true;
+            col_ind[at++]      = j;
         }
 
-        // Sample i disjunct column indices
-        I idx = begin;
-
-        if(full_rank)
+        for(I k = 0; k < select_n; ++k)
         {
-            check[row_ind[idx]] = true;
-            col_ind[idx++]      = row_ind[begin];
+            marker[select[k]] = false;
         }
 
-        while(idx < i)
+        if(count[i] > 0)
         {
-            // Normal distribution around the diagonal
-            I rng = (i - begin) * random_generator_normal<double>();
-
-            if(M <= N)
-            {
-                rng += row_ind[begin];
-            }
-
-            // Repeat if running out of bounds
-            if(rng < 0 || rng > N - 1)
-            {
-                continue;
-            }
-
-            // Check for disjunct column index in current row
-            if(!check[rng])
-            {
-                check[rng]     = true;
-                col_ind[idx++] = rng;
-            }
+            std::sort(&col_ind[begin], &col_ind[begin + count[i]]);
         }
-
-        // Reset disjunct check array
-        for(I j = begin; j < i; ++j)
-        {
-            check[col_ind[j]] = false;
-        }
-
-        // Partially sort column indices
-        std::sort(&col_ind[begin], &col_ind[i]);
     }
 
     // Correct index base accordingly
@@ -367,18 +432,38 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
         }
     }
 
-    // Sample random off-diagonal values
-    for(I i = 0; i < nnz; ++i)
+    if(to_int)
     {
-        if(row_ind[i] == col_ind[i])
+        // Sample random off-diagonal values
+        for(I i = 0; i < nnz; ++i)
         {
-            // Sample diagonal values
-            val[i] = random_generator<T>();
+            if(row_ind[i] == col_ind[i])
+            {
+                // Sample diagonal values
+                val[i] = random_generator_exact<T>();
+            }
+            else
+            {
+                // Samples off-diagonal values
+                val[i] = random_generator_exact<T>();
+            }
         }
-        else
+    }
+    else
+    {
+        // Sample random off-diagonal values
+        for(I i = 0; i < nnz; ++i)
         {
-            // Samples off-diagonal values
-            val[i] = random_generator<T>();
+            if(row_ind[i] == col_ind[i])
+            {
+                // Sample diagonal values
+                val[i] = random_generator<T>();
+            }
+            else
+            {
+                // Samples off-diagonal values
+                val[i] = random_generator<T>();
+            }
         }
     }
 }
@@ -1061,7 +1146,6 @@ void rocsparse_init_csr_rocalution(const char*          filename,
     in.read((char*)icol.data(), sizeof(int) * nnz);
 
     read_csr_values(in, (int64_t)nnz, val.data(), toint);
-
     in.close();
 
 #ifdef _OPENMP
@@ -1137,14 +1221,19 @@ void rocsparse_init_csr_random(std::vector<I>&      csr_row_ptr,
                                J                    N,
                                I&                   nnz,
                                rocsparse_index_base base,
-                               bool                 full_rank)
+                               bool                 full_rank,
+                               bool                 to_int)
 {
     // Compute non-zero entries of the matrix
     nnz = M * ((M > 1000 || N > 1000) ? 2.0 / std::max(M, N) : 0.02) * N;
 
     // Sample COO matrix
     std::vector<J> coo_row_ind;
-    rocsparse_init_coo_matrix<J>(coo_row_ind, csr_col_ind, csr_val, M, N, nnz, base, full_rank);
+    //
+    // unsafe conversion here.
+    //
+    rocsparse_init_coo_matrix<J>(
+        coo_row_ind, csr_col_ind, csr_val, M, N, nnz, base, full_rank, to_int);
 
     // Convert to CSR
     host_coo_to_csr(M, coo_row_ind, csr_row_ptr, base);
@@ -1160,13 +1249,14 @@ void rocsparse_init_coo_random(std::vector<I>&      row_ind,
                                I                    N,
                                I&                   nnz,
                                rocsparse_index_base base,
-                               bool                 full_rank)
+                               bool                 full_rank,
+                               bool                 to_int)
 {
     // Compute non-zero entries of the matrix
     nnz = M * ((M > 1000 || N > 1000) ? 2.0 / std::max(M, N) : 0.02) * N;
 
     // Sample random matrix
-    rocsparse_init_coo_matrix(row_ind, col_ind, val, M, N, nnz, base, full_rank);
+    rocsparse_init_coo_matrix(row_ind, col_ind, val, M, N, nnz, base, full_rank, to_int);
 }
 
 /* ==================================================================================== */
@@ -1282,7 +1372,8 @@ void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
     // Differentiate the different matrix generators
     if(matrix == rocsparse_matrix_random)
     {
-        rocsparse_init_coo_random(coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base, full_rank);
+        rocsparse_init_coo_random(
+            coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base, full_rank, toint);
     }
     else if(matrix == rocsparse_matrix_laplace_2d)
     {
@@ -1315,7 +1406,17 @@ void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
                                        size_t N,                                                   \
                                        size_t lda,                                                 \
                                        size_t stride,                                              \
-                                       size_t batch_count = 1);                                    \
+                                       size_t batch_count = 1,                                     \
+                                       TYPE   a           = static_cast<TYPE>(0),                  \
+                                       TYPE   b           = static_cast<TYPE>(1));                             \
+    template void rocsparse_init_exact<TYPE>(std::vector<TYPE> & A,                                \
+                                             size_t M,                                             \
+                                             size_t N,                                             \
+                                             size_t lda,                                           \
+                                             size_t stride,                                        \
+                                             size_t batch_count,                                   \
+                                             int    a = 1,                                         \
+                                             int    b = 10);                                          \
     template void rocsparse_init_alternating_sign<TYPE>(                                           \
         std::vector<TYPE> & A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count); \
     template void rocsparse_init_nan<TYPE>(TYPE * A, size_t N);                                    \
@@ -1372,7 +1473,8 @@ void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
                                                           ITYPE                N,            \
                                                           ITYPE                nnz,          \
                                                           rocsparse_index_base base,         \
-                                                          bool                 full_rank);                   \
+                                                          bool                 full_rank,    \
+                                                          bool                 to_int);                      \
     template void rocsparse_init_coo_laplace3d<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,   \
                                                              std::vector<ITYPE> & col_ind,   \
                                                              std::vector<TTYPE> & val,       \
@@ -1407,7 +1509,8 @@ void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
                                                           ITYPE N,                           \
                                                           ITYPE & nnz,                       \
                                                           rocsparse_index_base base,         \
-                                                          bool                 full_rank);                   \
+                                                          bool                 full_rank,    \
+                                                          bool                 to_int);                      \
     template void rocsparse_init_coo_matrix<ITYPE, TTYPE>(std::vector<ITYPE> & coo_row_ind,  \
                                                           std::vector<ITYPE> & coo_col_ind,  \
                                                           std::vector<TTYPE> & coo_val,      \
@@ -1482,7 +1585,8 @@ void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
                                                                  JTYPE N,                           \
                                                                  ITYPE & nnz,                       \
                                                                  rocsparse_index_base base,         \
-                                                                 bool                 full_rank);                   \
+                                                                 bool                 full_rank,    \
+                                                                 bool                 to_int);                      \
     template void rocsparse_init_csr_matrix<ITYPE, JTYPE, TTYPE>(std::vector<ITYPE> & csr_row_ptr,  \
                                                                  std::vector<JTYPE> & csr_col_ind,  \
                                                                  std::vector<TTYPE> & csr_val,      \

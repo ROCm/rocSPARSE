@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -306,17 +306,22 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
                   (const void*&)temp_buffer);
     }
 
+    if(rocsparse_enum_utils::is_invalid(trans))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(policy))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check operation type
     if(trans != rocsparse_operation_none && trans != rocsparse_operation_transpose)
     {
         return rocsparse_status_not_implemented;
     }
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO

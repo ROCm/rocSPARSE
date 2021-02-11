@@ -80,6 +80,7 @@ static __device__ void
 
             for(rocsparse_int y = 0; y < col_block_dim; y += BLK_SIZE_Y)
             {
+
                 if(trans_B == rocsparse_operation_none)
                 {
                     shared_B[BSR_BLOCK_DIM * tidy + tidx]
@@ -107,7 +108,7 @@ static __device__ void
                 {
                     shared_A[BSR_BLOCK_DIM * tidy + tidx]
                         = ((tidx + x) < row_block_dim && (tidy + y) < col_block_dim)
-                              ? bsr_val[row_block_dim * row_block_dim * k
+                              ? bsr_val[row_block_dim * col_block_dim * k
                                         + row_block_dim * (tidy + y) + (tidx + x)]
                               : static_cast<T>(0);
                 }

@@ -32,7 +32,6 @@
 #define FLOPS_HPP
 
 #include <rocsparse.h>
-#include <vector>
 
 /*
  * ===========================================================================
@@ -102,9 +101,15 @@ constexpr double gebsrmm_gflop_count(rocsparse_int N,
 }
 
 template <typename I, typename J>
-constexpr double spmm_gflop_count(J N, I nnz_A, I nnz_C, bool beta = false)
+constexpr double csrmm_gflop_count(J N, I nnz_A, I nnz_C, bool beta = false)
 {
     return (3.0 * nnz_A * N + (beta ? nnz_C : 0)) / 1e9;
+}
+
+template <typename I, typename J>
+constexpr double spmm_gflop_count(J N, I nnz_A, I nnz_C, bool beta = false)
+{
+    return csrmm_gflop_count(N, nnz_A, nnz_C, beta);
 }
 
 /*
@@ -144,15 +149,15 @@ constexpr double csrgeam_gflop_count(
     return flops / 1e9;
 }
 
-template <typename I, typename J, typename T>
-constexpr double csrgemm_gflop_count(J                     M,
-                                     const T*              alpha,
-                                     const std::vector<I>& csr_row_ptr_A,
-                                     const std::vector<J>& csr_col_ind_A,
-                                     const std::vector<I>& csr_row_ptr_B,
-                                     const T*              beta,
-                                     const std::vector<I>& csr_row_ptr_D,
-                                     rocsparse_index_base  baseA)
+template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
+constexpr double csrgemm_gflop_count(J                    M,
+                                     const T*             alpha,
+                                     const I*             csr_row_ptr_A,
+                                     const J*             csr_col_ind_A,
+                                     const I*             csr_row_ptr_B,
+                                     const T*             beta,
+                                     const I*             csr_row_ptr_D,
+                                     rocsparse_index_base baseA)
 {
     // Flop counter
     double flops = 0.0;

@@ -69,6 +69,7 @@ rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          han
     // Run different bsrmv kernels
     if(trans == rocsparse_operation_none)
     {
+        // LCOV_EXCL_START
         if(handle->wavefront_size == 32)
         {
             bsrmvn_general(handle,
@@ -86,6 +87,7 @@ rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          han
 
             return rocsparse_status_success;
         }
+        // LCOV_EXCL_STOP
 
         if(bsr_dim == 2)
         {
@@ -303,10 +305,12 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
                   (const void*&)y);
     }
 
-    //
-    // Check index base
-    //
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
+    if(rocsparse_enum_utils::is_invalid(dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(trans))
     {
         return rocsparse_status_invalid_value;
     }
@@ -355,6 +359,7 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
     //
     // Check the rest of pointer arguments
     //
+
     if(bsr_val == nullptr || bsr_row_ptr == nullptr || bsr_col_ind == nullptr || x == nullptr
        || y == nullptr)
     {
