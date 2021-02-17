@@ -91,6 +91,7 @@ set(rocsparse_source
   src/level3/rocsparse_bsrmm_template_general.cpp
   src/level3/rocsparse_bsrmm.cpp
   src/level3/rocsparse_csrmm.cpp
+  src/level3/rocsparse_coomm.cpp
   src/level3/rocsparse_spmm.cpp
   src/level3/rocsparse_csrsm.cpp
   src/level3/rocsparse_gemmi.cpp

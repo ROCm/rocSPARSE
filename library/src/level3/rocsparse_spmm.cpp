@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 #include "rocsparse.h"
 #include "utility.h"
 
+#include "rocsparse_coomm.hpp"
 #include "rocsparse_csrmm.hpp"
 
 #define RETURN_SPMM(itype, jtype, ctype, ...)                                           \
@@ -87,6 +88,19 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
                                          size_t*                     buffer_size,
                                          void*                       temp_buffer)
 {
+    rocsparse_spmm_alg algorithm = alg;
+    if(algorithm == rocsparse_spmm_alg_default)
+    {
+        if(mat_A->format == rocsparse_format_coo)
+        {
+            algorithm = rocsparse_spmm_alg_coo_atomic;
+        }
+        else if(mat_A->format == rocsparse_format_csr)
+        {
+            algorithm = rocsparse_spmm_alg_csr;
+        }
+    }
+
     // If temp_buffer is nullptr, return buffer_size
     if(temp_buffer == nullptr)
     {
@@ -94,6 +108,31 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
         *buffer_size = 4;
 
         return rocsparse_status_success;
+    }
+
+    // COO
+    if(mat_A->format == rocsparse_format_coo)
+    {
+        return rocsparse_coomm_template(handle,
+                                        trans_A,
+                                        trans_B,
+                                        mat_B->order,
+                                        mat_C->order,
+                                        algorithm,
+                                        (I)mat_A->rows,
+                                        (I)mat_C->cols,
+                                        (I)mat_A->cols,
+                                        (I)mat_A->nnz,
+                                        (const T*)alpha,
+                                        mat_A->descr,
+                                        (const T*)mat_A->val_data,
+                                        (const I*)mat_A->row_data,
+                                        (const I*)mat_A->col_data,
+                                        (const T*)mat_B->values,
+                                        (I)mat_B->ld,
+                                        (const T*)beta,
+                                        (T*)mat_C->values,
+                                        (I)mat_C->ld);
     }
 
     // CSR

@@ -23,13 +23,15 @@
 
 #include "testing.hpp"
 
-template <typename I, typename J, typename T>
-void testing_spmm_csr_bad_arg(const Arguments& arg)
+#include <algorithm>
+
+template <typename I, typename T>
+void testing_spmm_coo_bad_arg(const Arguments& arg)
 {
-    J m      = 100;
-    J n      = 100;
-    J k      = 100;
-    J ncol_B = 100;
+    I m      = 100;
+    I n      = 100;
+    I k      = 100;
+    I ncol_B = 100;
     I nnz    = 100;
 
     T alpha = 0.6;
@@ -38,41 +40,30 @@ void testing_spmm_csr_bad_arg(const Arguments& arg)
     rocsparse_operation  trans_A = rocsparse_operation_none;
     rocsparse_operation  trans_B = rocsparse_operation_none;
     rocsparse_index_base base    = rocsparse_index_base_zero;
-    rocsparse_spmm_alg   alg     = rocsparse_spmm_alg_csr;
+    rocsparse_spmm_alg   alg     = rocsparse_spmm_alg_coo_segmented;
 
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_indextype jtype = get_indextype<J>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
 
     // Allocate memory on device
-    device_vector<I> dcsr_row_ptr(nnz);
-    device_vector<I> dcsr_col_ind(nnz);
-    device_vector<T> dcsr_val(nnz);
+    device_vector<I> dcoo_row_ind(nnz);
+    device_vector<I> dcoo_col_ind(nnz);
+    device_vector<T> dcoo_val(nnz);
     device_vector<T> dB(k * ncol_B);
     device_vector<T> dC(m * n);
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC)
+    if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dB || !dC)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
     // SpMM structures
-    rocsparse_local_spmat A(m,
-                            n,
-                            nnz,
-                            dcsr_row_ptr,
-                            dcsr_col_ind,
-                            dcsr_val,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
+    rocsparse_local_spmat A(m, n, nnz, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
     rocsparse_local_dnmat B(k, ncol_B, k, dB, ttype, rocsparse_order_column);
     rocsparse_local_dnmat C(m, n, m, dC, ttype, rocsparse_order_column);
 
@@ -194,12 +185,12 @@ void testing_spmm_csr_bad_arg(const Arguments& arg)
     CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
-template <typename I, typename J, typename T>
-void testing_spmm_csr(const Arguments& arg)
+template <typename I, typename T>
+void testing_spmm_coo(const Arguments& arg)
 {
-    J                     M         = arg.M;
-    J                     N         = arg.N;
-    J                     K         = arg.K;
+    I                     M         = arg.M;
+    I                     N         = arg.N;
+    I                     K         = arg.K;
     int32_t               dim_x     = arg.dimx;
     int32_t               dim_y     = arg.dimy;
     int32_t               dim_z     = arg.dimz;
@@ -218,7 +209,6 @@ void testing_spmm_csr(const Arguments& arg)
 
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_indextype jtype = get_indextype<J>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create rocsparse handle
@@ -233,13 +223,13 @@ void testing_spmm_csr(const Arguments& arg)
         static const I safe_size = 100;
 
         // Allocate memory on device
-        device_vector<I> dcsr_row_ptr(safe_size);
-        device_vector<J> dcsr_col_ind(safe_size);
-        device_vector<T> dcsr_val(safe_size);
+        device_vector<I> dcoo_row_ind(safe_size);
+        device_vector<I> dcoo_col_ind(safe_size);
+        device_vector<T> dcoo_val(safe_size);
         device_vector<T> dB(safe_size);
         device_vector<T> dC(safe_size);
 
-        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC)
+        if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dB || !dC)
         {
             CHECK_HIP_ERROR(hipErrorOutOfMemory);
             return;
@@ -251,32 +241,23 @@ void testing_spmm_csr(const Arguments& arg)
             // Pointer mode
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-            J nrow_A = trans_A == rocsparse_operation_none ? M : K;
-            J ncol_A = trans_A == rocsparse_operation_none ? K : M;
+            I nrow_A = trans_A == rocsparse_operation_none ? M : K;
+            I ncol_A = trans_A == rocsparse_operation_none ? K : M;
 
-            J ldb = order == rocsparse_order_column
+            I ldb = order == rocsparse_order_column
                         ? (trans_B == rocsparse_operation_none ? 2 * K : 2 * N)
                         : (trans_B == rocsparse_operation_none ? 2 * N : 2 * K);
 
-            J nrow_B = trans_B == rocsparse_operation_none ? K : N;
-            J ncol_B = trans_B == rocsparse_operation_none ? N : K;
+            I nrow_B = trans_B == rocsparse_operation_none ? K : N;
+            I ncol_B = trans_B == rocsparse_operation_none ? N : K;
 
-            J ldc    = order == rocsparse_order_column ? 2 * M : 2 * N;
-            J nrow_C = M;
-            J ncol_C = N;
+            I ldc    = order == rocsparse_order_column ? 2 * M : 2 * N;
+            I nrow_C = M;
+            I ncol_C = N;
 
             // Check structures
-            rocsparse_local_spmat A(nrow_A,
-                                    ncol_A,
-                                    nnz_A,
-                                    dcsr_row_ptr,
-                                    dcsr_col_ind,
-                                    dcsr_val,
-                                    itype,
-                                    jtype,
-                                    base,
-                                    ttype,
-                                    rocsparse_format_csr);
+            rocsparse_local_spmat A(
+                nrow_A, ncol_A, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
             rocsparse_local_dnmat B(nrow_B, ncol_B, ldb, dB, ttype, order);
             rocsparse_local_dnmat C(nrow_C, ncol_C, ldc, dC, ttype, order);
 
@@ -317,24 +298,17 @@ void testing_spmm_csr(const Arguments& arg)
     }
 
     // Allocate host memory for matrix
-    host_vector<I> hcsr_row_ptr;
-    host_vector<J> hcsr_col_ind;
-    host_vector<T> hcsr_val;
+    host_vector<I> hcoo_row_ind;
+    host_vector<I> hcoo_col_ind;
+    host_vector<T> hcoo_val;
 
     rocsparse_seedrand();
 
-    // Wavefront size
-    int dev;
-    hipGetDevice(&dev);
-
-    hipDeviceProp_t prop;
-    hipGetDeviceProperties(&prop, dev);
-
     // Sample matrix
     I nnz_A;
-    rocsparse_init_csr_matrix(hcsr_row_ptr,
-                              hcsr_col_ind,
-                              hcsr_val,
+    rocsparse_init_coo_matrix(hcoo_row_ind,
+                              hcoo_col_ind,
+                              hcoo_val,
                               trans_A == rocsparse_operation_none ? M : K,
                               trans_A == rocsparse_operation_none ? K : M,
                               N,
@@ -349,27 +323,28 @@ void testing_spmm_csr(const Arguments& arg)
                               full_rank);
 
     // Some matrix properties
-    J nrow_A = trans_A == rocsparse_operation_none ? M : K;
-    J ncol_A = trans_A == rocsparse_operation_none ? K : M;
+    I nrow_A = trans_A == rocsparse_operation_none ? M : K;
+    I ncol_A = trans_A == rocsparse_operation_none ? K : M;
 
-    J ldb = order == rocsparse_order_column ? (trans_B == rocsparse_operation_none ? 2 * K : 2 * N)
+    I ldb = order == rocsparse_order_column ? (trans_B == rocsparse_operation_none ? 2 * K : 2 * N)
                                             : (trans_B == rocsparse_operation_none ? 2 * N : 2 * K);
 
-    J nrow_B = trans_B == rocsparse_operation_none ? K : N;
-    J ncol_B = trans_B == rocsparse_operation_none ? N : K;
+    I nrow_B = trans_B == rocsparse_operation_none ? K : N;
+    I ncol_B = trans_B == rocsparse_operation_none ? N : K;
 
-    J ldc    = order == rocsparse_order_column ? 2 * M : 2 * N;
-    J nrow_C = M;
-    J ncol_C = N;
+    // I ldc    = order == rocsparse_order_column ? 2 * M : 2 * N;
+    I ldc    = order == rocsparse_order_column ? M : N;
+    I nrow_C = M;
+    I ncol_C = N;
 
     I nnz_B = order == rocsparse_order_column ? ldb * ncol_B : nrow_B * ldb;
     I nnz_C = order == rocsparse_order_column ? ldc * ncol_C : nrow_C * ldc;
 
     // Allocate host memory for vectors
     host_vector<T> hB(nnz_B);
-    host_vector<T> hC_1(nnz_C);
-    host_vector<T> hC_2(nnz_C);
-    host_vector<T> hC_gold(nnz_C);
+    host_vector<T> hC_1(nnz_C, 0);
+    host_vector<T> hC_2(nnz_C, 0);
+    host_vector<T> hC_gold(nnz_C, 0);
 
     // Initialize data on CPU
     rocsparse_init<T>(hB, nnz_B, 1, 1);
@@ -379,27 +354,27 @@ void testing_spmm_csr(const Arguments& arg)
     hC_gold = hC_1;
 
     // Allocate device memory
-    device_vector<I> dcsr_row_ptr(nrow_A + 1);
-    device_vector<J> dcsr_col_ind(nnz_A);
-    device_vector<T> dcsr_val(nnz_A);
+    device_vector<I> dcoo_row_ind(nnz_A);
+    device_vector<I> dcoo_col_ind(nnz_A);
+    device_vector<T> dcoo_val(nnz_A);
     device_vector<T> dB(nnz_B);
     device_vector<T> dC_1(nnz_C);
     device_vector<T> dC_2(nnz_C);
     device_vector<T> dalpha(1);
     device_vector<T> dbeta(1);
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC_1 || !dC_2 || !dalpha || !dbeta)
+    if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dB || !dC_1 || !dC_2 || !dalpha || !dbeta)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
     // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(I) * (nrow_A + 1), hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(
-        hipMemcpy(dcsr_col_ind, hcsr_col_ind.data(), sizeof(J) * nnz_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val.data(), sizeof(T) * nnz_A, hipMemcpyHostToDevice));
+        hipMemcpy(dcoo_row_ind, hcoo_row_ind.data(), sizeof(I) * nnz_A, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(
+        hipMemcpy(dcoo_col_ind, hcoo_col_ind.data(), sizeof(I) * nnz_A, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dcoo_val, hcoo_val.data(), sizeof(T) * nnz_A, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dB, hB, sizeof(T) * nnz_B, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dC_1, hC_1, sizeof(T) * nnz_C, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dC_2, hC_2, sizeof(T) * nnz_C, hipMemcpyHostToDevice));
@@ -407,17 +382,8 @@ void testing_spmm_csr(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(dbeta, &hbeta, sizeof(T), hipMemcpyHostToDevice));
 
     // Create descriptors
-    rocsparse_local_spmat A(nrow_A,
-                            ncol_A,
-                            nnz_A,
-                            dcsr_row_ptr,
-                            dcsr_col_ind,
-                            dcsr_val,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
+    rocsparse_local_spmat A(
+        nrow_A, ncol_A, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
     rocsparse_local_dnmat B(nrow_B, ncol_B, ldb, dB, ttype, order);
     rocsparse_local_dnmat C1(nrow_C, ncol_C, ldc, dC_1, ttype, order);
     rocsparse_local_dnmat C2(nrow_C, ncol_C, ldc, dC_2, ttype, order);
@@ -459,14 +425,15 @@ void testing_spmm_csr(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hC_1, dC_1, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
 
-        // CPU csrmm
-        host_csrmm(nrow_A,
+        // CPU coomm
+        host_coomm(alg,
+                   nrow_A,
                    ncol_C,
                    trans_B,
                    halpha,
-                   hcsr_row_ptr,
-                   hcsr_col_ind,
-                   hcsr_val,
+                   hcoo_row_ind,
+                   hcoo_col_ind,
+                   hcoo_val,
                    hB,
                    ldb,
                    hbeta,
@@ -526,9 +493,8 @@ void testing_spmm_csr(const Arguments& arg)
 
         double gpu_gflops
             = spmm_gflop_count(N, nnz_A, nnz_C, hbeta != static_cast<T>(0)) / gpu_time_used * 1e6;
-        double gpu_gbyte
-            = csrmm_gbyte_count<T>(nrow_A, nnz_A, nnz_B, nnz_C, hbeta != static_cast<T>(0))
-              / gpu_time_used * 1e6;
+        double gpu_gbyte = coomm_gbyte_count<T>(nnz_A, nnz_B, nnz_C, hbeta != static_cast<T>(0))
+                           / gpu_time_used * 1e6;
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);
@@ -551,19 +517,15 @@ void testing_spmm_csr(const Arguments& arg)
     CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                               \
-    template void testing_spmm_csr_bad_arg<ITYPE, JTYPE, TTYPE>(const Arguments& arg); \
-    template void testing_spmm_csr<ITYPE, JTYPE, TTYPE>(const Arguments& arg)
+#define INSTANTIATE(ITYPE, TTYPE)                                               \
+    template void testing_spmm_coo_bad_arg<ITYPE, TTYPE>(const Arguments& arg); \
+    template void testing_spmm_coo<ITYPE, TTYPE>(const Arguments& arg)
 
-INSTANTIATE(int32_t, int32_t, float);
-INSTANTIATE(int32_t, int32_t, double);
-INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int32_t, float);
-INSTANTIATE(int64_t, int32_t, double);
-INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
-INSTANTIATE(int64_t, int64_t, float);
-INSTANTIATE(int64_t, int64_t, double);
-INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
-INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
+INSTANTIATE(int32_t, float);
+INSTANTIATE(int32_t, double);
+INSTANTIATE(int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, float);
+INSTANTIATE(int64_t, double);
+INSTANTIATE(int64_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, rocsparse_double_complex);

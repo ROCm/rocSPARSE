@@ -67,6 +67,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_gebsrmm.cpp
 ../testings/testing_csrmm.cpp
 ../testings/testing_spmm_csr.cpp
+../testings/testing_spmm_coo.cpp
 ../testings/testing_csrsm.cpp
 ../testings/testing_gemmi.cpp
 ../testings/testing_csrgeam.cpp
