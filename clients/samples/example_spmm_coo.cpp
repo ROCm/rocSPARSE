@@ -51,20 +51,20 @@
         }                                                                            \
     }
 
-template <typename I, typename J, typename T>
+template <typename I, typename T>
 void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
 {
-    // Generate CSR problem
-    std::vector<I> hAptr;
-    std::vector<J> hAcol;
+    // Generate COO problem
+    std::vector<I> hArow;
+    std::vector<I> hAcol;
     std::vector<T> hAval;
 
-    J m;
-    J k;
+    I m;
+    I k;
     I nnz_A;
 
-    rocsparse_init_csr_laplace2d(
-        hAptr, hAcol, hAval, ndim, ndim, m, k, nnz_A, rocsparse_index_base_zero);
+    rocsparse_init_coo_laplace2d(
+        hArow, hAcol, hAval, ndim, ndim, m, k, nnz_A, rocsparse_index_base_zero);
 
     // Sample some random data
     rocsparse_seedrand();
@@ -84,27 +84,26 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     rocsparse_init<T>(hC, m, n, m);
 
     // Offload data to device
-    I* dAptr = NULL;
-    J* dAcol = NULL;
+    I* dArow = NULL;
+    I* dAcol = NULL;
     T* dAval = NULL;
     T* dB    = NULL;
     T* dC    = NULL;
 
-    HIP_CHECK(hipMalloc((void**)&dAptr, sizeof(I) * (m + 1)));
-    HIP_CHECK(hipMalloc((void**)&dAcol, sizeof(J) * nnz_A));
+    HIP_CHECK(hipMalloc((void**)&dArow, sizeof(I) * nnz_A));
+    HIP_CHECK(hipMalloc((void**)&dAcol, sizeof(I) * nnz_A));
     HIP_CHECK(hipMalloc((void**)&dAval, sizeof(T) * nnz_A));
     HIP_CHECK(hipMalloc((void**)&dB, sizeof(T) * k * ncol_B));
     HIP_CHECK(hipMalloc((void**)&dC, sizeof(T) * m * n));
 
-    HIP_CHECK(hipMemcpy(dAptr, hAptr.data(), sizeof(I) * (m + 1), hipMemcpyHostToDevice));
-    HIP_CHECK(hipMemcpy(dAcol, hAcol.data(), sizeof(J) * nnz_A, hipMemcpyHostToDevice));
+    HIP_CHECK(hipMemcpy(dArow, hArow.data(), sizeof(I) * nnz_A, hipMemcpyHostToDevice));
+    HIP_CHECK(hipMemcpy(dAcol, hAcol.data(), sizeof(I) * nnz_A, hipMemcpyHostToDevice));
     HIP_CHECK(hipMemcpy(dAval, hAval.data(), sizeof(T) * nnz_A, hipMemcpyHostToDevice));
     HIP_CHECK(hipMemcpy(dB, hB.data(), sizeof(T) * k * ncol_B, hipMemcpyHostToDevice));
     HIP_CHECK(hipMemcpy(dC, hC.data(), sizeof(T) * m * n, hipMemcpyHostToDevice));
 
     // Types
     rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_indextype jtype = get_indextype<J>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
     // Create descriptors
@@ -112,8 +111,8 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     rocsparse_dnmat_descr B;
     rocsparse_dnmat_descr C;
 
-    ROCSPARSE_CHECK(rocsparse_create_csr_descr(
-        &A, m, k, nnz_A, dAptr, dAcol, dAval, itype, jtype, rocsparse_index_base_zero, ttype));
+    ROCSPARSE_CHECK(rocsparse_create_coo_descr(
+        &A, m, k, nnz_A, dArow, dAcol, dAval, itype, rocsparse_index_base_zero, ttype));
     ROCSPARSE_CHECK(
         rocsparse_create_dnmat_descr(&B, k, ncol_B, k, dB, ttype, rocsparse_order_column));
     ROCSPARSE_CHECK(rocsparse_create_dnmat_descr(&C, m, n, m, dC, ttype, rocsparse_order_column));
@@ -160,7 +159,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     // Start time measurement
     double time = get_time_us();
 
-    // CSR matrix matrix multiplication
+    // COO matrix matrix multiplication
     for(int i = 0; i < trials; ++i)
     {
         for(int i = 0; i < batch_size; ++i)
@@ -184,10 +183,10 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
         HIP_CHECK(hipDeviceSynchronize());
     }
 
-    time             = (get_time_us() - time) / (trials * batch_size * 1e3);
-    double bandwidth = static_cast<double>(sizeof(T) * (nnz_A + nnz_B + nnz_C) + sizeof(I) * (m + 1)
-                                           + sizeof(J) * nnz_A)
-                       / time / 1e6;
+    time = (get_time_us() - time) / (trials * batch_size * 1e3);
+    double bandwidth
+        = static_cast<double>(sizeof(T) * (nnz_A + nnz_B + nnz_C) + sizeof(I) * (2.0 * nnz_A))
+          / time / 1e6;
     double gflops = static_cast<double>(3.0 * nnz_A * n) / time / 1e6;
 
     std::cout << std::setw(12) << "m" << std::setw(12) << "k" << std::setw(12) << "n"
@@ -199,7 +198,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
               << gflops << std::setw(12) << bandwidth << std::setw(12) << time << std::endl;
 
     // Clear up on device
-    HIP_CHECK(hipFree(dAptr));
+    HIP_CHECK(hipFree(dArow));
     HIP_CHECK(hipFree(dAcol));
     HIP_CHECK(hipFree(dAval));
     HIP_CHECK(hipFree(dB));
@@ -250,39 +249,39 @@ int main(int argc, char* argv[])
     std::cout << std::endl;
 
     // single precision, real
-    std::cout << "### rocsparse_spmm<int32_t, int32_t, float> ###" << std::endl;
-    run_example<int32_t, int32_t, float>(handle, ndim, trials, batch_size);
-    std::cout << "### rocsparse_spmm<int64_t, int32_t, float> ###" << std::endl;
-    run_example<int64_t, int32_t, float>(handle, ndim, trials, batch_size);
-    std::cout << "### rocsparse_spmm<int64_t, int64_t, float> ###" << std::endl;
-    run_example<int64_t, int64_t, float>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int32_t, float> ###" << std::endl;
+    run_example<int32_t, float>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int64_t, float> ###" << std::endl;
+    run_example<int64_t, float>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int64_t, float> ###" << std::endl;
+    run_example<int64_t, float>(handle, ndim, trials, batch_size);
     std::cout << std::endl;
 
     // double precision, real
-    std::cout << "### rocsparse_spmm<int32_t, int32_t, double> ###" << std::endl;
-    run_example<int32_t, int32_t, double>(handle, ndim, trials, batch_size);
-    std::cout << "### rocsparse_spmm<int64_t, int32_t, double> ###" << std::endl;
-    run_example<int64_t, int32_t, double>(handle, ndim, trials, batch_size);
-    std::cout << "### rocsparse_spmm<int64_t, int64_t, double> ###" << std::endl;
-    run_example<int64_t, int64_t, double>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int32_t, double> ###" << std::endl;
+    run_example<int32_t, double>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int64_t, double> ###" << std::endl;
+    run_example<int64_t, double>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int64_t, double> ###" << std::endl;
+    run_example<int64_t, double>(handle, ndim, trials, batch_size);
     std::cout << std::endl;
 
     // single precision, complex
-    std::cout << "### rocsparse_spmm<int32_t, int32_t, rocsparse_float_complex> ###" << std::endl;
-    run_example<int32_t, int32_t, rocsparse_float_complex>(handle, ndim, trials, batch_size);
-    std::cout << "### rocsparse_spmm<int64_t, int32_t, rocsparse_float_complex> ###" << std::endl;
-    run_example<int64_t, int32_t, rocsparse_float_complex>(handle, ndim, trials, batch_size);
-    std::cout << "### rocsparse_spmm<int64_t, int64_t, rocsparse_float_complex> ###" << std::endl;
-    run_example<int64_t, int64_t, rocsparse_float_complex>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int32_t, rocsparse_float_complex> ###" << std::endl;
+    run_example<int32_t, rocsparse_float_complex>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int64_t, rocsparse_float_complex> ###" << std::endl;
+    run_example<int64_t, rocsparse_float_complex>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int64_t, rocsparse_float_complex> ###" << std::endl;
+    run_example<int64_t, rocsparse_float_complex>(handle, ndim, trials, batch_size);
     std::cout << std::endl;
 
     // double precision, complex
-    std::cout << "### rocsparse_spmm<int32_t, int32_t, rocsparse_double_complex> ###" << std::endl;
-    run_example<int32_t, int32_t, rocsparse_double_complex>(handle, ndim, trials, batch_size);
-    std::cout << "### rocsparse_spmm<int64_t, int32_t, rocsparse_double_complex> ###" << std::endl;
-    run_example<int64_t, int32_t, rocsparse_double_complex>(handle, ndim, trials, batch_size);
-    std::cout << "### rocsparse_spmm<int64_t, int64_t, rocsparse_double_complex> ###" << std::endl;
-    run_example<int64_t, int64_t, rocsparse_double_complex>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int32_t, rocsparse_double_complex> ###" << std::endl;
+    run_example<int32_t, rocsparse_double_complex>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int64_t, rocsparse_double_complex> ###" << std::endl;
+    run_example<int64_t, rocsparse_double_complex>(handle, ndim, trials, batch_size);
+    std::cout << "### rocsparse_spmm<int64_t, rocsparse_double_complex> ###" << std::endl;
+    run_example<int64_t, rocsparse_double_complex>(handle, ndim, trials, batch_size);
     std::cout << std::endl;
 
     ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));

@@ -110,7 +110,10 @@ Datatypes:
   - rocsparse_spmm_alg:
       bases: [c_int ]
       attr:
-        rocsparse_spmm_alg_csr: 0
+        rocsparse_spmm_alg_default: 0
+        rocsparse_spmm_alg_csr: 1
+        rocsparse_spmm_alg_coo_segmented: 2
+        rocsparse_spmm_alg_coo_atomic: 3
   - rocsparse_spgemm_alg:
       bases: [c_int ]
       attr:
@@ -163,7 +166,6 @@ Complex precisions: &complex_precisions
     { compute_type: f64_c }
 
 C precisions real: &single_double_precisions
-  - *single_precision
   - *double_precision
 
 C precisions complex: &single_double_precisions_complex
@@ -311,7 +313,7 @@ Defaults:
   direction: rocsparse_direction_row
   order: rocsparse_order_row
   spmv_alg: rocsparse_spmv_alg_default
-  spmm_alg: rocsparse_spmm_alg_csr
+  spmm_alg: rocsparse_spmm_alg_default
   spgemm_alg: rocsparse_spgemm_alg_default
   sparse_to_dense_alg: rocsparse_sparse_to_dense_alg_default
   dense_to_sparse_alg: rocsparse_dense_to_sparse_alg_default

@@ -229,8 +229,14 @@ constexpr auto rocsparse_spmmalg2string(rocsparse_spmm_alg alg)
 {
     switch(alg)
     {
+    case rocsparse_spmm_alg_default:
+        return "default";
     case rocsparse_spmm_alg_csr:
-        return "csr";
+        return "alg_csr";
+    case rocsparse_spmm_alg_coo_segmented:
+        return "alg_coo_segmented";
+    case rocsparse_spmm_alg_coo_atomic:
+        return "alg_coo_atomic";
     default:
         return "invalid";
     }

@@ -191,6 +191,13 @@ constexpr double csrmm_gbyte_count(J M, I nnz_A, I nnz_B, I nnz_C, bool beta = f
            / 1e9;
 }
 
+template <typename T, typename I>
+constexpr double coomm_gbyte_count(I nnz_A, I nnz_B, I nnz_C, bool beta = false)
+{
+    return (2.0 * nnz_A * sizeof(I) + (nnz_A + nnz_B + nnz_C + (beta ? nnz_C : 0)) * sizeof(T))
+           / 1e9;
+}
+
 /*
  * ===========================================================================
  *    extra SPARSE

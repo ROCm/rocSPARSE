@@ -416,7 +416,7 @@ pushd .
 
   compiler="hcc"
   if [[ "${build_hip_clang}" == true ]]; then
-    compiler="hipcc"
+    compiler="${rocm_path}/bin/hipcc"
   fi
 
   if [[ "${build_clients}" == false ]]; then

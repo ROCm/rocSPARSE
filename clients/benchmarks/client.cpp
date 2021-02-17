@@ -52,6 +52,7 @@
 #include "testing_csrsm.hpp"
 #include "testing_gebsrmm.hpp"
 #include "testing_gemmi.hpp"
+#include "testing_spmm_coo.hpp"
 #include "testing_spmm_csr.hpp"
 
 // Extra
@@ -117,7 +118,7 @@ int main(int argc, char* argv[])
     arg.threshold           = 0.0;
     arg.percentage          = 0.0;
     arg.spmv_alg            = rocsparse_spmv_alg_default;
-    arg.spmm_alg            = rocsparse_spmm_alg_csr;
+    arg.spmm_alg            = rocsparse_spmm_alg_default;
     arg.spgemm_alg          = rocsparse_spgemm_alg_default;
     arg.sparse_to_dense_alg = rocsparse_sparse_to_dense_alg_default;
     arg.dense_to_sparse_alg = rocsparse_dense_to_sparse_alg_default;
@@ -266,7 +267,7 @@ int main(int argc, char* argv[])
         "SPARSE function to test. Options:\n"
         "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
         "  Level2: bsrmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, ellmv, hybmv, gebsrmv\n"
-        "  Level3: bsrmm, gebsrmm, csrmm, csrsm, gemmi\n"
+        "  Level3: bsrmm, gebsrmm, csrmm, coomm, csrsm, gemmi\n"
         "  Extra: csrgeam, csrgemm\n"
         "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0\n"
         "  Conversion: csr2coo, csr2csc, gebsr2gebsc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
@@ -849,6 +850,37 @@ int main(int argc, char* argv[])
                 testing_spmm_csr<int64_t, int32_t, rocsparse_double_complex>(arg);
             else if(indextype == 'd')
                 testing_spmm_csr<int64_t, int64_t, rocsparse_double_complex>(arg);
+        }
+    }
+    else if(function == "coomm")
+    {
+        if(precision == 's')
+        {
+            if(indextype == 's')
+                testing_spmm_coo<int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_spmm_coo<int64_t, float>(arg);
+        }
+        else if(precision == 'd')
+        {
+            if(indextype == 's')
+                testing_spmm_coo<int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_spmm_coo<int64_t, double>(arg);
+        }
+        else if(precision == 'c')
+        {
+            if(indextype == 's')
+                testing_spmm_coo<int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmm_coo<int64_t, rocsparse_float_complex>(arg);
+        }
+        else if(precision == 'z')
+        {
+            if(indextype == 's')
+                testing_spmm_coo<int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmm_coo<int64_t, rocsparse_double_complex>(arg);
         }
     }
     else if(function == "csrsm")

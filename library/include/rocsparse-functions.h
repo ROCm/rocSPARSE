@@ -13427,11 +13427,11 @@ rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
                                 void*                       temp_buffer);
 
 /*! \ingroup generic_module
-*  \brief Sparse matrix multiplication
+*  \brief Sparse matrix dense matrix multiplication
 *
 *  \details
 *  \p rocsparse_spmm multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times k\f$
-*  matrix \f$A\f$, defined in CSR storage format, and the dense \f$k \times n\f$
+*  matrix \f$A\f$, defined in CSR or COO storage format, and the dense \f$k \times n\f$
 *  matrix \f$B\f$ and adds the result to the dense \f$m \times n\f$ matrix \f$C\f$ that
 *  is multiplied by the scalar \f$\beta\f$, such that
 *  \f[
@@ -13464,6 +13464,17 @@ rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
 *
 *  \note
 *  Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
+*
+*  \note
+*  Currently, only CSR and COO sparse formats are supported.
+*
+*  \note
+*  Different algorithms are available which can provide better performance for different matrices.
+*  Currently, the available algorithms are rocsparse_spmm_alg_csr for CSR matrices and
+*  rocsparse_spmm_alg_coo_segmented or rocsparse_spmm_alg_coo_atomic for COO matrices. Additionally,
+*  one can specify the algorithm to be rocsparse_spmm_alg_default. In the case of CSR matrices this will
+*  set the algorithm to be rocsparse_spmm_alg_csr and for COO matrices it will set the algorithm to be
+*  rocsparse_spmm_alg_coo_atomic.
 *
 *  \note
 *  This function writes the required allocation size (in bytes) to \p buffer_size and
