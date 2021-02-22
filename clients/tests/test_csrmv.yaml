@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +34,12 @@ Definitions:
     - { alpha:   2.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
     - { alpha:   2.0, beta:  0.67, alphai: -1.0, betai:  1.5 }
     - { alpha:   0.0, beta:  1.0,  alphai:  1.5, betai:  0.5 }
-    - { alpha:   3.0, beta:  1.0,  alphai:  2.0, betai: -0.5 }
+
+  - &alpha_beta_range_1
+    - { alpha:   2.0, beta:  -4.0,  alphai:  1.0, betai:  1.0 }
 
   - &alpha_beta_range_nightly
     - { alpha:   0.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
-    - { alpha:   2.0, beta:  0.67, alphai:  0.0, betai:  1.5 }
     - { alpha:   3.0, beta:  1.0,  alphai:  1.5, betai:  0.0 }
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
     - { alpha:  -1.0, beta: -0.5,  alphai:  0.0, betai:  0.0 }
@@ -73,6 +74,22 @@ Tests:
   matrix: [rocsparse_matrix_random]
   algo: [0, 1]
 
+#
+# For code coverage.
+#
+- name: csrmv
+  category: pre_checkin
+  function: csrmv
+  precision: *single_double_precisions
+  M: [512]
+  N: [128, 256, 512, 1024, 2048]
+  percentage: [1.0]
+  alpha_beta: *alpha_beta_range_1
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+  algo: [0, 1]
+
 - name: csrmv
   category: nightly
   function: csrmv
@@ -84,6 +101,7 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
   algo: [0, 1]
+  tolm: [2]
 
 - name: csrmv_file
   category: quick
@@ -99,8 +117,7 @@ Tests:
   filename: [mac_econ_fwd500,
              nos2,
              nos4,
-             nos6,
-             scircuit]
+             nos6]
 
 - name: csrmv_file
   category: pre_checkin
@@ -113,10 +130,8 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   algo: [0, 1]
-  filename: [rma10,
-             mc2depi,
-             ASIC_320k,
-             nos1,
+  filename: [scircuit,
+	     nos1,
              nos3,
              nos5,
              nos7]
@@ -135,7 +150,7 @@ Tests:
   filename: [bibd_22_8,
              bmwcra_1,
              amazon0312,
-             Chebyshev4,
+             ASIC_320k,
              sme3Dc,
              shipsec1]
 
@@ -150,7 +165,7 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   algo: [0, 1]
-  filename: [Chevron2,
+  filename: [rma10,
              qc2534]
 
 - name: csrmv_file
@@ -165,7 +180,7 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   algo: [0, 1]
   filename: [mplate,
-             Chevron3]
+             Chevron2]
 
 - name: csrmv_file
   category: nightly

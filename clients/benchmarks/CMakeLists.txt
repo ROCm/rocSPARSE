@@ -40,6 +40,7 @@ set(ROCSPARSE_BENCHMARK_SOURCES
 
 set(ROCSPARSE_CLIENTS_COMMON
   ../common/utility.cpp
+  ../common/rocsparse_check.cpp
   ../common/rocsparse_template_specialization.cpp
   ../common/rocsparse_init.cpp
   ../common/rocsparse_host.cpp

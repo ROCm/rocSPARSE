@@ -22,153 +22,80 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
+
+#include "auto_testing_bad_arg.hpp"
 
 template <typename T>
 void testing_ellmv_bad_arg(const Arguments& arg)
 {
-    static const size_t        safe_size  = 100;
-    static const rocsparse_int safe_width = 5;
+    static const size_t safe_size = 100;
 
-    T h_alpha = 0.6;
-    T h_beta  = 0.1;
+    const T h_alpha = static_cast<T>(1);
+    const T h_beta  = static_cast<T>(1);
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
     // Create matrix descriptor
-    rocsparse_local_mat_descr descr;
+    rocsparse_local_mat_descr local_descr;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dell_col_ind(safe_size);
-    device_vector<T>             dell_val(safe_size);
-    device_vector<T>             dx(safe_size);
-    device_vector<T>             dy(safe_size);
+    rocsparse_handle          handle            = local_handle;
+    rocsparse_operation       trans             = rocsparse_operation_none;
+    rocsparse_int             m                 = safe_size;
+    rocsparse_int             n                 = safe_size;
+    const T*                  alpha_device_host = &h_alpha;
+    const rocsparse_mat_descr descr             = local_descr;
+    const T*                  ell_val           = (const T*)0x4;
+    const rocsparse_int*      ell_col_ind       = (const rocsparse_int*)0x4;
+    rocsparse_int             ell_width         = safe_size;
+    const T*                  x                 = (const T*)0x4;
+    const T*                  beta_device_host  = &h_beta;
+    T*                        y                 = (T*)0x4;
 
-    if(!dell_col_ind || !dell_val || !dx || !dy)
+#define PARAMS                                                                         \
+    handle, trans, m, n, alpha_device_host, descr, ell_val, ell_col_ind, ell_width, x, \
+        beta_device_host, y
+
+    auto_testing_bad_arg(rocsparse_ellmv<T>, PARAMS);
+
+    for(auto operation : rocsparse_operation_t::values)
     {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
+        if(operation != rocsparse_operation_none)
+        {
+            {
+                auto tmp = trans;
+                trans    = operation;
+                EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(PARAMS),
+                                        rocsparse_status_not_implemented);
+                trans = tmp;
+            }
+        }
     }
 
-    // Test rocsparse_ellmv()
-    EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(nullptr,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               &h_alpha,
-                                               descr,
-                                               dell_val,
-                                               dell_col_ind,
-                                               safe_width,
-                                               dx,
-                                               &h_beta,
-                                               dy),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               nullptr,
-                                               descr,
-                                               dell_val,
-                                               dell_col_ind,
-                                               safe_width,
-                                               dx,
-                                               &h_beta,
-                                               dy),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               &h_alpha,
-                                               nullptr,
-                                               dell_val,
-                                               dell_col_ind,
-                                               safe_width,
-                                               dx,
-                                               &h_beta,
-                                               dy),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               &h_alpha,
-                                               descr,
-                                               nullptr,
-                                               dell_col_ind,
-                                               safe_width,
-                                               dx,
-                                               &h_beta,
-                                               dy),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               &h_alpha,
-                                               descr,
-                                               dell_val,
-                                               nullptr,
-                                               safe_width,
-                                               dx,
-                                               &h_beta,
-                                               dy),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               &h_alpha,
-                                               descr,
-                                               dell_val,
-                                               dell_col_ind,
-                                               safe_width,
-                                               nullptr,
-                                               &h_beta,
-                                               dy),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               &h_alpha,
-                                               descr,
-                                               dell_val,
-                                               dell_col_ind,
-                                               safe_width,
-                                               dx,
-                                               nullptr,
-                                               dy),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               &h_alpha,
-                                               descr,
-                                               dell_val,
-                                               dell_col_ind,
-                                               safe_width,
-                                               dx,
-                                               &h_beta,
-                                               nullptr),
-                            rocsparse_status_invalid_pointer);
+    for(auto matrix_type : rocsparse_matrix_type_t::values)
+    {
+        if(matrix_type != rocsparse_matrix_type_general)
+        {
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, matrix_type));
+            EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(PARAMS), rocsparse_status_not_implemented);
+        }
+    }
+
+#undef PARAMS
 }
 
 template <typename T>
 void testing_ellmv(const Arguments& arg)
 {
-    rocsparse_matrix_factory<T> matrix_factory(arg);
-    rocsparse_int               M     = arg.M;
-    rocsparse_int               N     = arg.N;
-    rocsparse_operation         trans = arg.transA;
-    rocsparse_index_base        base  = arg.baseA;
+    rocsparse_int        M     = arg.M;
+    rocsparse_int        N     = arg.N;
+    rocsparse_operation  trans = arg.transA;
+    rocsparse_index_base base  = arg.baseA;
 
-    T h_alpha = arg.get_alpha<T>();
-    T h_beta  = arg.get_beta<T>();
+    host_scalar<T> h_alpha(arg.get_alpha<T>());
+    host_scalar<T> h_beta(arg.get_beta<T>());
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -179,131 +106,75 @@ void testing_ellmv(const Arguments& arg)
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
+#define PARAMS(alpha_, A_, x_, beta_, y_) \
+    handle, trans, A_.m, A_.n, alpha_, descr, A_.val, A_.ind, A_.width, x_, beta_, y_
+
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0)
     {
+
         static const size_t safe_size = 100;
 
-        // Allocate memory on device
-        device_vector<rocsparse_int> dell_col_ind(safe_size);
-        device_vector<T>             dell_val(safe_size);
-        device_vector<T>             dx(safe_size);
-        device_vector<T>             dy(safe_size);
+        device_ell_matrix<T> dA;
+        device_vector<T>     dx, dy;
 
-        if(!dell_col_ind || !dell_val || !dx || !dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
+        dA.m     = M;
+        dA.n     = N;
+        dA.nnz   = safe_size;
+        dA.width = safe_size;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         EXPECT_ROCSPARSE_STATUS(
-            rocsparse_ellmv<T>(
-                handle, trans, M, N, &h_alpha, descr, dell_val, dell_col_ind, 0, dx, &h_beta, dy),
-            (M < 0 || N < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
+            rocsparse_ellmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
+            ((M < 0 || N < 0 || dA.width < 0) || ((M == 0 || N == 0) && dA.width != 0))
+                ? rocsparse_status_invalid_size
+                : rocsparse_status_success);
+
+        dA.width = 0;
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_ellmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
+            ((M < 0 || N < 0 || dA.width < 0) || ((M == 0 || N == 0) && dA.width != 0))
+                ? rocsparse_status_invalid_size
+                : rocsparse_status_success);
 
         return;
     }
 
-    // Allocate host memory for matrix
-    host_vector<rocsparse_int> hcsr_row_ptr;
-    host_vector<rocsparse_int> hcsr_col_ind;
-    host_vector<T>             hcsr_val;
-    host_vector<rocsparse_int> hell_col_ind;
-    host_vector<T>             hell_val;
-    rocsparse_int              ell_width;
+    rocsparse_matrix_factory<T> matrix_factory(arg);
 
-    // Sample matrix
-    rocsparse_int nnz;
-    matrix_factory.init_csr(hcsr_row_ptr, hcsr_col_ind, hcsr_val, M, N, nnz, base);
+    host_ell_matrix<T> hA;
 
-    // Allocate host memory for vectors
-    host_vector<T> hx(N);
-    host_vector<T> hy_1(M);
-    host_vector<T> hy_2(M);
-    host_vector<T> hy_gold(M);
+    matrix_factory.init_ell(hA, M, N, base);
 
-    // Initialize data on CPU
-    rocsparse_init<T>(hx, 1, N, 1);
-    rocsparse_init<T>(hy_1, 1, M, 1);
-    hy_2    = hy_1;
-    hy_gold = hy_1;
+    host_dense_matrix<T> hx(N, 1);
+    host_dense_matrix<T> hy(M, 1);
 
-    // Convert CSR matrix to ELL
-    host_csr_to_ell(
-        M, hcsr_row_ptr, hcsr_col_ind, hcsr_val, hell_col_ind, hell_val, ell_width, base, base);
+    rocsparse_matrix_utils::init(hx);
+    rocsparse_matrix_utils::init(hy);
 
-    rocsparse_int ell_nnz = ell_width * M;
-
-    // Allocate device memory
-    device_vector<rocsparse_int> dell_col_ind(ell_nnz);
-    device_vector<T>             dell_val(ell_nnz);
-    device_vector<T>             dx(N);
-    device_vector<T>             dy_1(M);
-    device_vector<T>             dy_2(M);
-    device_vector<T>             d_alpha(1);
-    device_vector<T>             d_beta(1);
-
-    if(!dell_col_ind || !dell_val || !dx || !dy_1 || !dy_2 || !d_alpha || !d_beta)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dell_col_ind, hell_col_ind, sizeof(rocsparse_int) * ell_nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dell_val, hell_val, sizeof(T) * ell_nnz, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dx, hx, sizeof(T) * N, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dy_1, hy_1, sizeof(T) * M, hipMemcpyHostToDevice));
+    device_ell_matrix<T>   dA(hA);
+    device_dense_matrix<T> dx(hx), dy(hy);
 
     if(arg.unit_check)
     {
-        // Copy data from CPU to device
-        CHECK_HIP_ERROR(hipMemcpy(dy_2, hy_2, sizeof(T) * M, hipMemcpyHostToDevice));
-        CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
-        CHECK_HIP_ERROR(hipMemcpy(d_beta, &h_beta, sizeof(T), hipMemcpyHostToDevice));
-
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<T>(handle,
-                                                 trans,
-                                                 M,
-                                                 N,
-                                                 &h_alpha,
-                                                 descr,
-                                                 dell_val,
-                                                 dell_col_ind,
-                                                 ell_width,
-                                                 dx,
-                                                 &h_beta,
-                                                 dy_1));
+        CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
+
+        {
+            host_dense_matrix<T> hy_copy(hy);
+            // CPU ellmv
+            host_ellmv<rocsparse_int, T>(
+                hA.m, hA.n, *h_alpha, hA.ind, hA.val, hA.width, hx, *h_beta, hy, hA.base);
+            hy.near_check(dy);
+            dy.transfer_from(hy_copy);
+        }
 
         // Pointer mode device
+        device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<T>(handle,
-                                                 trans,
-                                                 M,
-                                                 N,
-                                                 d_alpha,
-                                                 descr,
-                                                 dell_val,
-                                                 dell_col_ind,
-                                                 ell_width,
-                                                 dx,
-                                                 d_beta,
-                                                 dy_2));
-
-        // Copy output to host
-        CHECK_HIP_ERROR(hipMemcpy(hy_1, dy_1, sizeof(T) * M, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
-
-        // CPU ellmv
-        host_ellmv<rocsparse_int, T>(
-            M, N, h_alpha, hell_col_ind, hell_val, ell_width, hx, h_beta, hy_gold, base);
-
-        near_check_general<T>(1, M, 1, hy_gold, hy_1);
-        near_check_general<T>(1, M, 1, hy_gold, hy_2);
+        CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
+        hy.near_check(dy);
     }
 
     if(arg.timing)
@@ -316,18 +187,7 @@ void testing_ellmv(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<T>(handle,
-                                                     trans,
-                                                     M,
-                                                     N,
-                                                     &h_alpha,
-                                                     descr,
-                                                     dell_val,
-                                                     dell_col_ind,
-                                                     ell_width,
-                                                     dx,
-                                                     &h_beta,
-                                                     dy_1));
+            CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
         }
 
         double gpu_time_used = get_time_us();
@@ -335,42 +195,39 @@ void testing_ellmv(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<T>(handle,
-                                                     trans,
-                                                     M,
-                                                     N,
-                                                     &h_alpha,
-                                                     descr,
-                                                     dell_val,
-                                                     dell_col_ind,
-                                                     ell_width,
-                                                     dx,
-                                                     &h_beta,
-                                                     dy_1));
+            CHECK_ROCSPARSE_ERROR(rocsparse_ellmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gflops
-            = spmv_gflop_count(M, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
-        double gpu_gbyte
-            = ellmv_gbyte_count<T>(M, N, nnz, h_beta != static_cast<T>(0)) / gpu_time_used * 1e6;
+        double gflop_count = spmv_gflop_count(M, dA.nnz, *h_beta != static_cast<T>(0));
+        double gbyte_count = ellmv_gbyte_count<T>(M, N, dA.nnz, *h_beta != static_cast<T>(0));
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
+        double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
+        double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "ELL nnz"
-                  << std::setw(12) << "ELL width" << std::setw(12) << "alpha" << std::setw(12)
-                  << "beta" << std::setw(12) << "GFlop/s" << std::setw(12) << "GB/s"
-                  << std::setw(12) << "msec" << std::setw(12) << "iter" << std::setw(12)
-                  << "verified" << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << ell_nnz
-                  << std::setw(12) << ell_width << std::setw(12) << h_alpha << std::setw(12)
-                  << h_beta << std::setw(12) << gpu_gflops << std::setw(12) << gpu_gbyte
-                  << std::setw(12) << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls
-                  << std::setw(12) << (arg.unit_check ? "yes" : "no") << std::endl;
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "ELL_nnz",
+                            dA.nnz,
+                            "ELL_width",
+                            dA.width,
+                            "alpha",
+                            *h_alpha,
+                            "beta",
+                            *h_beta,
+                            "GFlop/s",
+                            gpu_gflops,
+                            "GB/s",
+                            gpu_gbyte,
+                            "msec",
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
 }
 

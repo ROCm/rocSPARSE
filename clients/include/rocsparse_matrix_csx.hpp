@@ -202,14 +202,15 @@ struct csx_matrix
     }
 
     template <memory_mode::value_t THAT_MODE>
-    void near_check(const csx_matrix<THAT_MODE, direction_, T, I, J>& that_) const
+    void near_check(const csx_matrix<THAT_MODE, direction_, T, I, J>& that_,
+                    floating_data_t<T> tol = default_tolerance<T>::value) const
     {
         switch(MODE)
         {
         case memory_mode::device:
         {
             csx_matrix<memory_mode::host, direction_, T, I, J> on_host(*this);
-            on_host.near_check(that_);
+            on_host.near_check(that_, tol);
             break;
         }
 
@@ -231,13 +232,13 @@ struct csx_matrix
                 }
                 unit_check_general<I>(1, this->m + 1, 1, this->ptr, that_.ptr);
                 unit_check_general<J>(1, that_.nnz, 1, this->ind, that_.ind);
-                near_check_general<T>(1, that_.nnz, 1, this->val, that_.val);
+                near_check_general<T>(1, that_.nnz, 1, this->val, that_.val, tol);
                 break;
             }
             case memory_mode::device:
             {
                 csx_matrix<memory_mode::host, direction_, T, I, J> that(that_);
-                this->near_check(that);
+                this->near_check(that, tol);
                 break;
             }
             }

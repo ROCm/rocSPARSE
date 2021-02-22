@@ -32,14 +32,12 @@ Definitions:
 
   - &alpha_beta_range_checkin
     - { alpha:   2.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
-    - { alpha:   2.0, beta:  0.67, alphai: -1.0, betai:  1.5 }
     - { alpha:   0.0, beta:  1.0,  alphai:  1.5, betai:  0.5 }
     - { alpha:   3.0, beta:  1.0,  alphai:  2.0, betai: -0.5 }
 
   - &alpha_beta_range_nightly
     - { alpha:   0.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
     - { alpha:   2.0, beta:  0.67, alphai:  0.0, betai:  1.5 }
-    - { alpha:   3.0, beta:  1.0,  alphai:  1.5, betai:  0.0 }
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
     - { alpha:  -1.0, beta: -0.5,  alphai:  0.0, betai:  0.0 }
 
@@ -113,10 +111,7 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   algo: [0, 1]
-  filename: [rma10,
-             mc2depi,
-             ASIC_320k,
-             nos1,
+  filename: [nos1,
              nos3,
              nos5,
              nos7]
@@ -133,7 +128,7 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   algo: [0, 1]
   filename: [bibd_22_8,
-             bmwcra_1,
+             ASIC_320k,
              amazon0312,
              Chebyshev4,
              sme3Dc,
@@ -150,8 +145,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   algo: [0, 1]
-  filename: [Chevron2,
-             qc2534]
+  filename: [mplate, qc2534]
 
 - name: csrmv_managed_file
   category: pre_checkin
@@ -164,8 +158,7 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   algo: [0, 1]
-  filename: [mplate,
-             Chevron3]
+  filename: [Chevron2]
 
 - name: csrmv_managed_file
   category: nightly
@@ -178,4 +171,4 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   algo: [0, 1]
-  filename: [Chevron4]
+  filename: [Chevron3]

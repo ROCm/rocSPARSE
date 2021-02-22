@@ -220,29 +220,16 @@ void testing_gebsrmm(const Arguments& arg)
     M = hA.mb * hA.row_block_dim;
     K = hA.nb * hA.col_block_dim;
 
-    device_gebsr_matrix<T> dA(hA);
-    if(!arg.unit_check)
-    {
-        hA.~host_gebsr_matrix<T>();
-    }
-
     // Allocate host memory for dense matrices
     host_dense_matrix<T> hC(M, N);
     rocsparse_matrix_utils::init(hC);
-    device_dense_matrix<T> dC(hC);
-    if(!arg.unit_check)
-    {
-        hC.~host_dense_matrix<T>();
-    }
 
     host_dense_matrix<T> hB((transB == rocsparse_operation_none) ? K : N,
                             (transB == rocsparse_operation_none) ? N : K);
     rocsparse_matrix_utils::init(hB);
-    device_dense_matrix<T> dB(hB);
-    if(!arg.unit_check)
-    {
-        hB.~host_dense_matrix<T>();
-    }
+
+    device_gebsr_matrix<T> dA(hA);
+    device_dense_matrix<T> dB(hB), dC(hC);
 
     if(arg.unit_check)
     {

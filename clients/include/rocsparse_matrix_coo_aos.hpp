@@ -23,13 +23,13 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_MATRIX_COO_HPP
-#define ROCSPARSE_MATRIX_COO_HPP
+#ifndef ROCSPARSE_MATRIX_COO_AOS_HPP
+#define ROCSPARSE_MATRIX_COO_AOS_HPP
 
 #include "rocsparse_vector.hpp"
 
 template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
-struct coo_matrix
+struct coo_aos_matrix
 {
     template <typename S>
     using array_t = typename memory_traits<MODE>::template array_t<S>;
@@ -38,24 +38,22 @@ struct coo_matrix
     I                    n{};
     I                    nnz{};
     rocsparse_index_base base{};
-    array_t<I>           row_ind{};
-    array_t<I>           col_ind{};
+    array_t<I>           ind{};
     array_t<T>           val{};
 
-    coo_matrix(){};
-    ~coo_matrix(){};
+    coo_aos_matrix(){};
+    ~coo_aos_matrix(){};
 
-    coo_matrix(I m_, I n_, I nnz_, rocsparse_index_base base_)
+    coo_aos_matrix(I m_, I n_, I nnz_, rocsparse_index_base base_)
         : m(m_)
         , n(n_)
         , nnz(nnz_)
         , base(base_)
-        , row_ind(nnz_)
-        , col_ind(nnz_)
+        , ind(2 * nnz_)
         , val(nnz_){};
 
-    coo_matrix(const coo_matrix<MODE, T, I>& that_, bool transfer = true)
-        : coo_matrix<MODE, T, I>(that_.m, that_.n, that_.nnz, that_.base)
+    coo_aos_matrix(const coo_aos_matrix<MODE, T, I>& that_, bool transfer = true)
+        : coo_aos_matrix<MODE, T, I>(that_.m, that_.n, that_.nnz, that_.base)
     {
         if(transfer)
         {
@@ -64,8 +62,8 @@ struct coo_matrix
     }
 
     template <memory_mode::value_t THAT_MODE>
-    coo_matrix(const coo_matrix<THAT_MODE, T, I>& that_, bool transfer = true)
-        : coo_matrix<MODE, T, I>(that_.m, that_.n, that_.nnz, that_.base)
+    coo_aos_matrix(const coo_aos_matrix<THAT_MODE, T, I>& that_, bool transfer = true)
+        : coo_aos_matrix<MODE, T, I>(that_.m, that_.n, that_.nnz, that_.base)
     {
         if(transfer)
         {
@@ -74,15 +72,14 @@ struct coo_matrix
     }
 
     template <memory_mode::value_t THAT_MODE>
-    void transfer_from(const coo_matrix<THAT_MODE, T, I>& that)
+    void transfer_from(const coo_aos_matrix<THAT_MODE, T, I>& that)
     {
         CHECK_HIP_ERROR((this->m == that.m && this->n == that.n && this->nnz == that.nnz
                          && this->base == that.base)
                             ? hipSuccess
                             : hipErrorInvalidValue);
 
-        this->row_ind.transfer_from(that.row_ind);
-        this->col_ind.transfer_from(that.col_ind);
+        this->ind.transfer_from(that.ind);
         this->val.transfer_from(that.val);
     };
 
@@ -101,8 +98,7 @@ struct coo_matrix
         if(nnz_ != this->nnz)
         {
             this->nnz = nnz_;
-            this->row_ind.resize(this->nnz);
-            this->col_ind.resize(this->nnz);
+            this->ind.resize(2 * this->nnz);
             this->val.resize(this->nnz);
         }
 
@@ -114,10 +110,10 @@ struct coo_matrix
 };
 
 template <typename T, typename I = rocsparse_int>
-using host_coo_matrix = coo_matrix<memory_mode::host, T, I>;
+using host_coo_aos_matrix = coo_aos_matrix<memory_mode::host, T, I>;
 template <typename T, typename I = rocsparse_int>
-using device_coo_matrix = coo_matrix<memory_mode::device, T, I>;
+using device_coo_aos_matrix = coo_aos_matrix<memory_mode::device, T, I>;
 template <typename T, typename I = rocsparse_int>
-using managed_coo_matrix = coo_matrix<memory_mode::managed, T, I>;
+using managed_coo_aos_matrix = coo_aos_matrix<memory_mode::managed, T, I>;
 
-#endif // ROCSPARSE_MATRIX_COO_HPP
+#endif // ROCSPARSE_MATRIX_COO_AOS_HPP

@@ -718,19 +718,19 @@ void host_gebsrmv(rocsparse_direction  dir,
 }
 
 template <typename T>
-static inline void host_bsr_lsolve(rocsparse_direction               dir,
-                                   rocsparse_int                     mb,
-                                   T                                 alpha,
-                                   const std::vector<rocsparse_int>& bsr_row_ptr,
-                                   const std::vector<rocsparse_int>& bsr_col_ind,
-                                   const std::vector<T>&             bsr_val,
-                                   rocsparse_int                     bsr_dim,
-                                   const std::vector<T>&             x,
-                                   std::vector<T>&                   y,
-                                   rocsparse_diag_type               diag_type,
-                                   rocsparse_index_base              base,
-                                   rocsparse_int*                    struct_pivot,
-                                   rocsparse_int*                    numeric_pivot)
+static inline void host_bsr_lsolve(rocsparse_direction  dir,
+                                   rocsparse_int        mb,
+                                   T                    alpha,
+                                   const rocsparse_int* bsr_row_ptr,
+                                   const rocsparse_int* bsr_col_ind,
+                                   const T*             bsr_val,
+                                   rocsparse_int        bsr_dim,
+                                   const T*             x,
+                                   T*                   y,
+                                   rocsparse_diag_type  diag_type,
+                                   rocsparse_index_base base,
+                                   rocsparse_int*       struct_pivot,
+                                   rocsparse_int*       numeric_pivot)
 {
     // Process lower triangular part
     for(rocsparse_int bsr_row = 0; bsr_row < mb; ++bsr_row)
@@ -812,19 +812,19 @@ static inline void host_bsr_lsolve(rocsparse_direction               dir,
 }
 
 template <typename T>
-static inline void host_bsr_usolve(rocsparse_direction               dir,
-                                   rocsparse_int                     mb,
-                                   T                                 alpha,
-                                   const std::vector<rocsparse_int>& bsr_row_ptr,
-                                   const std::vector<rocsparse_int>& bsr_col_ind,
-                                   const std::vector<T>&             bsr_val,
-                                   rocsparse_int                     bsr_dim,
-                                   const std::vector<T>&             x,
-                                   std::vector<T>&                   y,
-                                   rocsparse_diag_type               diag_type,
-                                   rocsparse_index_base              base,
-                                   rocsparse_int*                    struct_pivot,
-                                   rocsparse_int*                    numeric_pivot)
+static inline void host_bsr_usolve(rocsparse_direction  dir,
+                                   rocsparse_int        mb,
+                                   T                    alpha,
+                                   const rocsparse_int* bsr_row_ptr,
+                                   const rocsparse_int* bsr_col_ind,
+                                   const T*             bsr_val,
+                                   rocsparse_int        bsr_dim,
+                                   const T*             x,
+                                   T*                   y,
+                                   rocsparse_diag_type  diag_type,
+                                   rocsparse_index_base base,
+                                   rocsparse_int*       struct_pivot,
+                                   rocsparse_int*       numeric_pivot)
 {
     // Process upper triangular part
     for(rocsparse_int bsr_row = mb - 1; bsr_row >= 0; --bsr_row)
@@ -900,22 +900,22 @@ static inline void host_bsr_usolve(rocsparse_direction               dir,
 }
 
 template <typename T>
-void host_bsrsv(rocsparse_operation               trans,
-                rocsparse_direction               dir,
-                rocsparse_int                     mb,
-                rocsparse_int                     nnzb,
-                T                                 alpha,
-                const std::vector<rocsparse_int>& bsr_row_ptr,
-                const std::vector<rocsparse_int>& bsr_col_ind,
-                const std::vector<T>&             bsr_val,
-                rocsparse_int                     bsr_dim,
-                const std::vector<T>&             x,
-                std::vector<T>&                   y,
-                rocsparse_diag_type               diag_type,
-                rocsparse_fill_mode               fill_mode,
-                rocsparse_index_base              base,
-                rocsparse_int*                    struct_pivot,
-                rocsparse_int*                    numeric_pivot)
+void host_bsrsv(rocsparse_operation  trans,
+                rocsparse_direction  dir,
+                rocsparse_int        mb,
+                rocsparse_int        nnzb,
+                T                    alpha,
+                const rocsparse_int* bsr_row_ptr,
+                const rocsparse_int* bsr_col_ind,
+                const T*             bsr_val,
+                rocsparse_int        bsr_dim,
+                const T*             x,
+                T*                   y,
+                rocsparse_diag_type  diag_type,
+                rocsparse_fill_mode  fill_mode,
+                rocsparse_index_base base,
+                rocsparse_int*       struct_pivot,
+                rocsparse_int*       numeric_pivot)
 {
     // Initialize pivot
     *struct_pivot  = mb + 1;
@@ -981,9 +981,9 @@ void host_bsrsv(rocsparse_operation               trans,
             host_bsr_usolve(dir,
                             mb,
                             alpha,
-                            bsrt_row_ptr,
-                            bsrt_col_ind,
-                            bsrt_val,
+                            bsrt_row_ptr.data(),
+                            bsrt_col_ind.data(),
+                            bsrt_val.data(),
                             bsr_dim,
                             x,
                             y,
@@ -997,9 +997,9 @@ void host_bsrsv(rocsparse_operation               trans,
             host_bsr_lsolve(dir,
                             mb,
                             alpha,
-                            bsrt_row_ptr,
-                            bsrt_col_ind,
-                            bsrt_val,
+                            bsrt_row_ptr.data(),
+                            bsrt_col_ind.data(),
+                            bsrt_val.data(),
                             bsr_dim,
                             x,
                             y,
@@ -2721,8 +2721,8 @@ void host_csrgemm_nnz(J                     M,
         int nthreads = omp_get_num_threads();
         int tid      = omp_get_thread_num();
 #else
-        int nthreads = 1;
-        int tid      = 0;
+        int           nthreads = 1;
+        int           tid      = 0;
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;
@@ -2832,8 +2832,8 @@ void host_csrgemm(J                     M,
         int nthreads = omp_get_num_threads();
         int tid      = omp_get_thread_num();
 #else
-        int nthreads = 1;
-        int tid      = 0;
+        int           nthreads = 1;
+        int           tid      = 0;
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;
@@ -4408,18 +4408,18 @@ void host_gebsr_to_gebsr(rocsparse_direction               direction,
 }
 
 template <typename T>
-void host_bsr_to_bsc(rocsparse_int                     mb,
-                     rocsparse_int                     nb,
-                     rocsparse_int                     nnzb,
-                     rocsparse_int                     bsr_dim,
-                     const std::vector<rocsparse_int>& bsr_row_ptr,
-                     const std::vector<rocsparse_int>& bsr_col_ind,
-                     const std::vector<T>&             bsr_val,
-                     std::vector<rocsparse_int>&       bsc_row_ind,
-                     std::vector<rocsparse_int>&       bsc_col_ptr,
-                     std::vector<T>&                   bsc_val,
-                     rocsparse_index_base              bsr_base,
-                     rocsparse_index_base              bsc_base)
+void host_bsr_to_bsc(rocsparse_int               mb,
+                     rocsparse_int               nb,
+                     rocsparse_int               nnzb,
+                     rocsparse_int               bsr_dim,
+                     const rocsparse_int*        bsr_row_ptr,
+                     const rocsparse_int*        bsr_col_ind,
+                     const T*                    bsr_val,
+                     std::vector<rocsparse_int>& bsc_row_ind,
+                     std::vector<rocsparse_int>& bsc_col_ptr,
+                     std::vector<T>&             bsc_val,
+                     rocsparse_index_base        bsr_base,
+                     rocsparse_index_base        bsc_base)
 {
     bsc_row_ind.resize(nnzb);
     bsc_col_ptr.resize(nb + 1, 0);
@@ -4921,22 +4921,22 @@ template void host_bsrmv(rocsparse_direction  dir,
                          float*               y,
                          rocsparse_index_base base);
 
-template void host_bsrsv(rocsparse_operation               trans,
-                         rocsparse_direction               dir,
-                         rocsparse_int                     mb,
-                         rocsparse_int                     nnzb,
-                         float                             alpha,
-                         const std::vector<rocsparse_int>& bsr_row_ptr,
-                         const std::vector<rocsparse_int>& bsr_col_ind,
-                         const std::vector<float>&         bsr_val,
-                         rocsparse_int                     bsr_dim,
-                         const std::vector<float>&         x,
-                         std::vector<float>&               y,
-                         rocsparse_diag_type               diag_type,
-                         rocsparse_fill_mode               fill_mode,
-                         rocsparse_index_base              base,
-                         rocsparse_int*                    struct_pivot,
-                         rocsparse_int*                    numeric_pivot);
+template void host_bsrsv(rocsparse_operation  trans,
+                         rocsparse_direction  dir,
+                         rocsparse_int        mb,
+                         rocsparse_int        nnzb,
+                         float                alpha,
+                         const rocsparse_int* bsr_row_ptr,
+                         const rocsparse_int* bsr_col_ind,
+                         const float*         bsr_val,
+                         rocsparse_int        bsr_dim,
+                         const float*         x,
+                         float*               y,
+                         rocsparse_diag_type  diag_type,
+                         rocsparse_fill_mode  fill_mode,
+                         rocsparse_index_base base,
+                         rocsparse_int*       struct_pivot,
+                         rocsparse_int*       numeric_pivot);
 
 template void host_csrsv(rocsparse_operation  trans,
                          rocsparse_int        M,
@@ -5316,18 +5316,18 @@ template void host_gebsr_to_gebsr(rocsparse_direction               direction,
                                   rocsparse_int                     col_block_dim_C,
                                   rocsparse_index_base              base_C);
 
-template void host_bsr_to_bsc(rocsparse_int                     mb,
-                              rocsparse_int                     nb,
-                              rocsparse_int                     nnzb,
-                              rocsparse_int                     bsr_dim,
-                              const std::vector<rocsparse_int>& bsr_row_ptr,
-                              const std::vector<rocsparse_int>& bsr_col_ind,
-                              const std::vector<float>&         bsr_val,
-                              std::vector<rocsparse_int>&       bsc_row_ind,
-                              std::vector<rocsparse_int>&       bsc_col_ptr,
-                              std::vector<float>&               bsc_val,
-                              rocsparse_index_base              bsr_base,
-                              rocsparse_index_base              bsc_base);
+template void host_bsr_to_bsc(rocsparse_int               mb,
+                              rocsparse_int               nb,
+                              rocsparse_int               nnzb,
+                              rocsparse_int               bsr_dim,
+                              const rocsparse_int*        bsr_row_ptr,
+                              const rocsparse_int*        bsr_col_ind,
+                              const float*                bsr_val,
+                              std::vector<rocsparse_int>& bsc_row_ind,
+                              std::vector<rocsparse_int>& bsc_col_ptr,
+                              std::vector<float>&         bsc_val,
+                              rocsparse_index_base        bsr_base,
+                              rocsparse_index_base        bsc_base);
 
 template void host_csr_to_hyb(rocsparse_int                     M,
                               rocsparse_int                     nnz,
@@ -5435,22 +5435,22 @@ template void host_bsrmv(rocsparse_direction  dir,
                          double*              y,
                          rocsparse_index_base base);
 
-template void host_bsrsv(rocsparse_operation               trans,
-                         rocsparse_direction               dir,
-                         rocsparse_int                     mb,
-                         rocsparse_int                     nnzb,
-                         double                            alpha,
-                         const std::vector<rocsparse_int>& bsr_row_ptr,
-                         const std::vector<rocsparse_int>& bsr_col_ind,
-                         const std::vector<double>&        bsr_val,
-                         rocsparse_int                     bsr_dim,
-                         const std::vector<double>&        x,
-                         std::vector<double>&              y,
-                         rocsparse_diag_type               diag_type,
-                         rocsparse_fill_mode               fill_mode,
-                         rocsparse_index_base              base,
-                         rocsparse_int*                    struct_pivot,
-                         rocsparse_int*                    numeric_pivot);
+template void host_bsrsv(rocsparse_operation  trans,
+                         rocsparse_direction  dir,
+                         rocsparse_int        mb,
+                         rocsparse_int        nnzb,
+                         double               alpha,
+                         const rocsparse_int* bsr_row_ptr,
+                         const rocsparse_int* bsr_col_ind,
+                         const double*        bsr_val,
+                         rocsparse_int        bsr_dim,
+                         const double*        x,
+                         double*              y,
+                         rocsparse_diag_type  diag_type,
+                         rocsparse_fill_mode  fill_mode,
+                         rocsparse_index_base base,
+                         rocsparse_int*       struct_pivot,
+                         rocsparse_int*       numeric_pivot);
 
 template void host_csrsv(rocsparse_operation  trans,
                          rocsparse_int        M,
@@ -5746,18 +5746,18 @@ template void host_gebsr_to_gebsr(rocsparse_direction               direction,
                                   rocsparse_int                     col_block_dim_C,
                                   rocsparse_index_base              base_C);
 
-template void host_bsr_to_bsc(rocsparse_int                     mb,
-                              rocsparse_int                     nb,
-                              rocsparse_int                     nnzb,
-                              rocsparse_int                     bsr_dim,
-                              const std::vector<rocsparse_int>& bsr_row_ptr,
-                              const std::vector<rocsparse_int>& bsr_col_ind,
-                              const std::vector<double>&        bsr_val,
-                              std::vector<rocsparse_int>&       bsc_row_ind,
-                              std::vector<rocsparse_int>&       bsc_col_ptr,
-                              std::vector<double>&              bsc_val,
-                              rocsparse_index_base              bsr_base,
-                              rocsparse_index_base              bsc_base);
+template void host_bsr_to_bsc(rocsparse_int               mb,
+                              rocsparse_int               nb,
+                              rocsparse_int               nnzb,
+                              rocsparse_int               bsr_dim,
+                              const rocsparse_int*        bsr_row_ptr,
+                              const rocsparse_int*        bsr_col_ind,
+                              const double*               bsr_val,
+                              std::vector<rocsparse_int>& bsc_row_ind,
+                              std::vector<rocsparse_int>& bsc_col_ptr,
+                              std::vector<double>&        bsc_val,
+                              rocsparse_index_base        bsr_base,
+                              rocsparse_index_base        bsc_base);
 
 template void host_csr_to_hyb(rocsparse_int                     M,
                               rocsparse_int                     nnz,
@@ -5865,22 +5865,22 @@ template void host_bsrmv(rocsparse_direction             dir,
                          rocsparse_double_complex*       y,
                          rocsparse_index_base            base);
 
-template void host_bsrsv(rocsparse_operation                          trans,
-                         rocsparse_direction                          dir,
-                         rocsparse_int                                mb,
-                         rocsparse_int                                nnzb,
-                         rocsparse_double_complex                     alpha,
-                         const std::vector<rocsparse_int>&            bsr_row_ptr,
-                         const std::vector<rocsparse_int>&            bsr_col_ind,
-                         const std::vector<rocsparse_double_complex>& bsr_val,
-                         rocsparse_int                                bsr_dim,
-                         const std::vector<rocsparse_double_complex>& x,
-                         std::vector<rocsparse_double_complex>&       y,
-                         rocsparse_diag_type                          diag_type,
-                         rocsparse_fill_mode                          fill_mode,
-                         rocsparse_index_base                         base,
-                         rocsparse_int*                               struct_pivot,
-                         rocsparse_int*                               numeric_pivot);
+template void host_bsrsv(rocsparse_operation             trans,
+                         rocsparse_direction             dir,
+                         rocsparse_int                   mb,
+                         rocsparse_int                   nnzb,
+                         rocsparse_double_complex        alpha,
+                         const rocsparse_int*            bsr_row_ptr,
+                         const rocsparse_int*            bsr_col_ind,
+                         const rocsparse_double_complex* bsr_val,
+                         rocsparse_int                   bsr_dim,
+                         const rocsparse_double_complex* x,
+                         rocsparse_double_complex*       y,
+                         rocsparse_diag_type             diag_type,
+                         rocsparse_fill_mode             fill_mode,
+                         rocsparse_index_base            base,
+                         rocsparse_int*                  struct_pivot,
+                         rocsparse_int*                  numeric_pivot);
 
 template void host_csrsv(rocsparse_operation             trans,
                          rocsparse_int                   M,
@@ -6155,18 +6155,18 @@ template void host_gebsr_to_gebsr(rocsparse_direction                          d
                                   rocsparse_int                                col_block_dim_C,
                                   rocsparse_index_base                         base_C);
 
-template void host_bsr_to_bsc(rocsparse_int                                mb,
-                              rocsparse_int                                nb,
-                              rocsparse_int                                nnzb,
-                              rocsparse_int                                bsr_dim,
-                              const std::vector<rocsparse_int>&            bsr_row_ptr,
-                              const std::vector<rocsparse_int>&            bsr_col_ind,
-                              const std::vector<rocsparse_double_complex>& bsr_val,
-                              std::vector<rocsparse_int>&                  bsc_row_ind,
-                              std::vector<rocsparse_int>&                  bsc_col_ptr,
-                              std::vector<rocsparse_double_complex>&       bsc_val,
-                              rocsparse_index_base                         bsr_base,
-                              rocsparse_index_base                         bsc_base);
+template void host_bsr_to_bsc(rocsparse_int                          mb,
+                              rocsparse_int                          nb,
+                              rocsparse_int                          nnzb,
+                              rocsparse_int                          bsr_dim,
+                              const rocsparse_int*                   bsr_row_ptr,
+                              const rocsparse_int*                   bsr_col_ind,
+                              const rocsparse_double_complex*        bsr_val,
+                              std::vector<rocsparse_int>&            bsc_row_ind,
+                              std::vector<rocsparse_int>&            bsc_col_ptr,
+                              std::vector<rocsparse_double_complex>& bsc_val,
+                              rocsparse_index_base                   bsr_base,
+                              rocsparse_index_base                   bsc_base);
 
 template void host_csr_to_hyb(rocsparse_int                                M,
                               rocsparse_int                                nnz,
@@ -6247,22 +6247,22 @@ template void host_bsrmv(rocsparse_direction            dir,
                          rocsparse_float_complex*       y,
                          rocsparse_index_base           base);
 
-template void host_bsrsv(rocsparse_operation                         trans,
-                         rocsparse_direction                         dir,
-                         rocsparse_int                               mb,
-                         rocsparse_int                               nnzb,
-                         rocsparse_float_complex                     alpha,
-                         const std::vector<rocsparse_int>&           bsr_row_ptr,
-                         const std::vector<rocsparse_int>&           bsr_col_ind,
-                         const std::vector<rocsparse_float_complex>& bsr_val,
-                         rocsparse_int                               bsr_dim,
-                         const std::vector<rocsparse_float_complex>& x,
-                         std::vector<rocsparse_float_complex>&       y,
-                         rocsparse_diag_type                         diag_type,
-                         rocsparse_fill_mode                         fill_mode,
-                         rocsparse_index_base                        base,
-                         rocsparse_int*                              struct_pivot,
-                         rocsparse_int*                              numeric_pivot);
+template void host_bsrsv(rocsparse_operation            trans,
+                         rocsparse_direction            dir,
+                         rocsparse_int                  mb,
+                         rocsparse_int                  nnzb,
+                         rocsparse_float_complex        alpha,
+                         const rocsparse_int*           bsr_row_ptr,
+                         const rocsparse_int*           bsr_col_ind,
+                         const rocsparse_float_complex* bsr_val,
+                         rocsparse_int                  bsr_dim,
+                         const rocsparse_float_complex* x,
+                         rocsparse_float_complex*       y,
+                         rocsparse_diag_type            diag_type,
+                         rocsparse_fill_mode            fill_mode,
+                         rocsparse_index_base           base,
+                         rocsparse_int*                 struct_pivot,
+                         rocsparse_int*                 numeric_pivot);
 
 template void host_csrsv(rocsparse_operation            trans,
                          rocsparse_int                  M,
@@ -6537,18 +6537,18 @@ template void host_gebsr_to_gebsr(rocsparse_direction                         di
                                   rocsparse_int                               col_block_dim_C,
                                   rocsparse_index_base                        base_C);
 
-template void host_bsr_to_bsc(rocsparse_int                               mb,
-                              rocsparse_int                               nb,
-                              rocsparse_int                               nnzb,
-                              rocsparse_int                               bsr_dim,
-                              const std::vector<rocsparse_int>&           bsr_row_ptr,
-                              const std::vector<rocsparse_int>&           bsr_col_ind,
-                              const std::vector<rocsparse_float_complex>& bsr_val,
-                              std::vector<rocsparse_int>&                 bsc_row_ind,
-                              std::vector<rocsparse_int>&                 bsc_col_ptr,
-                              std::vector<rocsparse_float_complex>&       bsc_val,
-                              rocsparse_index_base                        bsr_base,
-                              rocsparse_index_base                        bsc_base);
+template void host_bsr_to_bsc(rocsparse_int                         mb,
+                              rocsparse_int                         nb,
+                              rocsparse_int                         nnzb,
+                              rocsparse_int                         bsr_dim,
+                              const rocsparse_int*                  bsr_row_ptr,
+                              const rocsparse_int*                  bsr_col_ind,
+                              const rocsparse_float_complex*        bsr_val,
+                              std::vector<rocsparse_int>&           bsc_row_ind,
+                              std::vector<rocsparse_int>&           bsc_col_ptr,
+                              std::vector<rocsparse_float_complex>& bsc_val,
+                              rocsparse_index_base                  bsr_base,
+                              rocsparse_index_base                  bsc_base);
 
 template void host_csr_to_hyb(rocsparse_int                               M,
                               rocsparse_int                               nnz,

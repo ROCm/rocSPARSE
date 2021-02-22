@@ -66,9 +66,8 @@ Tests:
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
-  percentage: [0.0, 1.0]
+  matrix_init_kind: [rocsparse_matrix_init_kind_default, rocsparse_matrix_init_kind_tunedavg]
   matrix: [rocsparse_matrix_random]
-
 
 - name: csrmm
   category: pre_checkin
@@ -81,7 +80,7 @@ Tests:
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
-  percentage: [0.0, 1.0]
+  matrix_init_kind: [rocsparse_matrix_init_kind_default, rocsparse_matrix_init_kind_tunedavg]
   matrix: [rocsparse_matrix_random]
 
 - name: csrmm_file

@@ -86,7 +86,8 @@ struct Arguments
     rocsparse_sparse_to_dense_alg sparse_to_dense_alg;
     rocsparse_dense_to_sparse_alg dense_to_sparse_alg;
 
-    rocsparse_matrix_init matrix;
+    rocsparse_matrix_init      matrix;
+    rocsparse_matrix_init_kind matrix_init_kind;
 
     rocsparse_int unit_check;
     rocsparse_int timing;
@@ -100,6 +101,8 @@ struct Arguments
     double boosttol;
     double boostval;
     double boostvali;
+
+    double tolm;
 
     char filename[64];
     char function[64];
@@ -184,6 +187,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(sparse_to_dense_alg);
         ROCSPARSE_FORMAT_CHECK(dense_to_sparse_alg);
         ROCSPARSE_FORMAT_CHECK(matrix);
+        ROCSPARSE_FORMAT_CHECK(matrix_init_kind);
         ROCSPARSE_FORMAT_CHECK(unit_check);
         ROCSPARSE_FORMAT_CHECK(timing);
         ROCSPARSE_FORMAT_CHECK(iters);
@@ -193,6 +197,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(boosttol);
         ROCSPARSE_FORMAT_CHECK(boostval);
         ROCSPARSE_FORMAT_CHECK(boostvali);
+        ROCSPARSE_FORMAT_CHECK(tolm);
         ROCSPARSE_FORMAT_CHECK(filename);
         ROCSPARSE_FORMAT_CHECK(function);
         ROCSPARSE_FORMAT_CHECK(name);
@@ -362,12 +367,14 @@ private:
         print("sparse_to_dense_alg", rocsparse_sparsetodensealg2string(arg.sparse_to_dense_alg));
         print("dense_to_sparse_alg", rocsparse_densetosparsealg2string(arg.dense_to_sparse_alg));
         print("matrix", rocsparse_matrix2string(arg.matrix));
+        print("matrix_init_kind", rocsparse_matrix_init_kind2string(arg.matrix_init_kind));
         print("file", arg.filename);
         print("algo", arg.algo);
         print("numeric_boost", arg.numericboost);
         print("boost_tol", arg.boosttol);
         print("boost_val", arg.boostval);
         print("boost_vali", arg.boostvali);
+        print("tolm", arg.tolm);
         print("name", arg.name);
         print("category", arg.category);
         print("unit_check", arg.unit_check);

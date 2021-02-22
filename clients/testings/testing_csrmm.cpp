@@ -150,12 +150,6 @@ void testing_csrmm(const Arguments& arg)
                             (transA == rocsparse_operation_none ? M : K),
                             (transA == rocsparse_operation_none ? K : M));
 
-    device_csr_matrix<T> dA(hA);
-    if(!arg.unit_check)
-    {
-        hA.~host_csr_matrix<T>();
-    }
-
     // Some matrix properties
     rocsparse_int B_m
         = (transB == rocsparse_operation_none) ? (transA == rocsparse_operation_none ? K : M) : N;
@@ -163,23 +157,15 @@ void testing_csrmm(const Arguments& arg)
     rocsparse_int C_m = (transA == rocsparse_operation_none) ? M : K;
     rocsparse_int C_n = N;
 
-    host_dense_matrix<T> hB(B_m, B_n);
+    host_dense_matrix<T> hB(B_m, B_n), hC(C_m, C_n);
+
     rocsparse_matrix_utils::init(hB);
-    device_dense_matrix<T> dB(hB);
-    if(!arg.unit_check)
-    {
-        hB.~host_dense_matrix<T>();
-    }
-
-    host_dense_matrix<T> hC(C_m, C_n);
     rocsparse_matrix_utils::init(hC);
-    device_dense_matrix<T> dC(hC);
-    if(!arg.unit_check)
-    {
-        hC.~host_dense_matrix<T>();
-    }
 
-    // Allocate device memory
+    device_csr_matrix<T>   dA(hA);
+    device_dense_matrix<T> dC(hC);
+    device_dense_matrix<T> dB(hB);
+
     // Copy data from CPU to device
 #define PARAMS(alpha_, A_, B_, beta_, C_)                                                       \
     handle, transA, transB, M, N, K, A_.nnz, alpha_.val, descr, A_.val, A_.ptr, A_.ind, B_.val, \

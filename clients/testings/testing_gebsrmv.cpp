@@ -62,6 +62,33 @@ void testing_gebsrmv_bad_arg(const Arguments& arg)
 
     auto_testing_bad_arg(rocsparse_gebsrmv<T>, PARAMS);
 
+    //
+    // operation different from rocsparse_operation_none is not implemented.
+    //
+    for(auto operation : rocsparse_operation_t::values)
+    {
+        if(operation != rocsparse_operation_none)
+        {
+            {
+                auto tmp = trans;
+                trans    = operation;
+                for(rocsparse_int i = 1; i <= 17; ++i)
+                {
+                    row_block_dim = i;
+                    col_block_dim = i + 1;
+                    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmv<T>(PARAMS),
+                                            rocsparse_status_not_implemented);
+                }
+                row_block_dim = safe_size;
+                col_block_dim = safe_size;
+                trans         = tmp;
+            }
+        }
+    }
+
+    //
+    // Matrix types different from general.
+    //
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {
         if(matrix_type != rocsparse_matrix_type_general)
@@ -77,6 +104,7 @@ void testing_gebsrmv_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_gebsrmv(const Arguments& arg)
 {
+    auto                 tol   = get_near_check_tol<T>(arg);
     rocsparse_int        M     = arg.M;
     rocsparse_int        N     = arg.N;
     rocsparse_operation  trans = arg.transA;
@@ -107,6 +135,7 @@ void testing_gebsrmv(const Arguments& arg)
         rocsparse_int nb = (col_block_dim > 0) ? (N + col_block_dim - 1) / col_block_dim : 0;
         if(mb <= 0 || nb <= 0 || M <= 0 || N <= 0 || row_block_dim <= 0 || col_block_dim <= 0)
         {
+
             rocsparse_direction dir = arg.direction;
 
             device_gebsr_matrix<T> dA;
@@ -136,53 +165,25 @@ void testing_gebsrmv(const Arguments& arg)
     hipDeviceProp_t prop;
     hipGetDeviceProperties(&prop, dev);
 
-    bool                  type      = (prop.warpSize == 32) ? (arg.timing ? false : true) : false;
-    static constexpr bool full_rank = false;
-
-    rocsparse_matrix_factory<T> matrix_factory(arg, type, full_rank);
-    //
-    // A
-    //
-    host_gebsr_matrix<T>   hA;
-    device_gebsr_matrix<T> dA;
+    host_gebsr_matrix<T> hA;
 
     {
-        rocsparse_int row_block_dim = arg.row_block_dimA;
-        rocsparse_int col_block_dim = arg.col_block_dimA;
-        rocsparse_int mb = (row_block_dim > 0) ? (M + row_block_dim - 1) / row_block_dim : 0;
-        rocsparse_int nb = (col_block_dim > 0) ? (N + col_block_dim - 1) / col_block_dim : 0;
-        matrix_factory.init_gebsr(hA, dA, mb, nb);
+        bool                  type = (prop.warpSize == 32) ? (arg.timing ? false : true) : false;
+        static constexpr bool full_rank = false;
+        rocsparse_matrix_factory<T> matrix_factory(arg, type, full_rank);
+
+        matrix_factory.init_gebsr(hA);
     }
 
-    if(!arg.unit_check)
-    {
-        hA.~host_gebsr_matrix<T>();
-    }
+    M = hA.mb * hA.row_block_dim;
+    N = hA.nb * hA.col_block_dim;
 
-    M = dA.mb * dA.row_block_dim;
-    N = dA.nb * dA.col_block_dim;
-
-    //
-    // X
-    //
-    host_dense_matrix<T> hx(N, 1);
+    host_dense_matrix<T> hx(N, 1), hy(M, 1);
     rocsparse_matrix_utils::init(hx);
-    device_dense_matrix<T> dx(hx);
-    if(!arg.unit_check)
-    {
-        hx.~host_dense_matrix<T>();
-    }
-
-    //
-    // Y
-    //
-    host_dense_matrix<T> hy(M, 1);
     rocsparse_matrix_utils::init(hy);
-    device_dense_matrix<T> dy(hy);
-    if(!arg.unit_check)
-    {
-        hy.~host_dense_matrix<T>();
-    }
+
+    device_gebsr_matrix<T> dA(hA);
+    device_dense_matrix<T> dx(hx), dy(hy);
 
 #define PARAMS(alpha_, A_, x_, beta_, y_)                                                    \
     handle, A_.block_direction, trans, A_.mb, A_.nb, A_.nnzb, alpha_, descr, A_.val, A_.ptr, \
@@ -212,14 +213,14 @@ void testing_gebsrmv(const Arguments& arg)
                             *h_beta,
                             hy,
                             base);
-            hy.near_check(dy);
+            hy.near_check(dy, tol);
             dy.transfer_from(hy_copy);
         }
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
         CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmv<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
-        hy.near_check(dy);
+        hy.near_check(dy, tol);
     }
 
     if(arg.timing)

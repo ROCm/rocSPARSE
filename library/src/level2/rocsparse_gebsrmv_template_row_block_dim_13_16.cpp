@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -315,7 +315,10 @@ void launch_gebsrmvn_row_block_dim_13_16(rocsparse_handle     handle,
         }
         else if(col_block_dim <= 16)
         {
+            // BECAUSE HOOKED BY BSRMV
+            // LCOV_EXCL_START
             LAUNCH_GEBSRMV_GENERAL_KERNEL(16 * 16, 16);
+            // LCOV_EXCL_STOP
         }
         else
         {

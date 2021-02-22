@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -220,7 +220,10 @@ void launch_gebsrmvn_row_block_dim_5_8(rocsparse_handle     handle,
         }
         else if(col_block_dim == 5)
         {
+            // BECAUSE HOOKED BY BSRMV
+            // LCOV_EXCL_START
             LAUNCH_GEBSRMV_MXN_KERNEL(50, 5, 5);
+            // LCOV_EXCL_STOP
         }
         else if(col_block_dim == 6)
         {
@@ -275,7 +278,10 @@ void launch_gebsrmvn_row_block_dim_5_8(rocsparse_handle     handle,
         }
         else if(col_block_dim == 6)
         {
+            // BECAUSE HOOKED BY BSRMV
+            // LCOV_EXCL_START
             LAUNCH_GEBSRMV_MXN_KERNEL(36, 6, 6);
+            // LCOV_EXCL_STOP
         }
         else if(col_block_dim == 7)
         {
@@ -322,7 +328,10 @@ void launch_gebsrmvn_row_block_dim_5_8(rocsparse_handle     handle,
         }
         else if(col_block_dim == 7)
         {
+            // BECAUSE HOOKED BY BSRMV
+            // LCOV_EXCL_START
             LAUNCH_GEBSRMV_MXN_KERNEL(49, 7, 7);
+            // LCOV_EXCL_STOP
         }
         else if(col_block_dim == 8)
         {
@@ -369,7 +378,10 @@ void launch_gebsrmvn_row_block_dim_5_8(rocsparse_handle     handle,
         }
         else if(col_block_dim == 8)
         {
+            // BECAUSE HOOKED BY BSRMV
+            // LCOV_EXCL_START
             LAUNCH_GEBSRMV_MXN_KERNEL(64, 8, 8);
+            // LCOV_EXCL_STOP
         }
         else if(col_block_dim <= 16)
         {

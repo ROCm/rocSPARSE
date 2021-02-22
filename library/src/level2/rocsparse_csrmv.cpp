@@ -97,12 +97,15 @@ static inline void ComputeRowBlocks(unsigned long long* rowBlocks,
     unsigned long long last_i = 0;
 
     // Check to ensure nRows can fit in 32 bits
+    // NOTE: There is a flaw here.
+    // LCOV_EXCL_START
     if(static_cast<unsigned long long>(nRows)
        > static_cast<unsigned long long>(std::pow(2, ROW_BITS)))
     {
         fprintf(stderr, "nrow does not fit in 32 bits\n");
         exit(1);
     }
+    // LCOV_EXCL_STOP
 
     I consecutive_long_rows = 0;
     for(i = 1; i <= static_cast<unsigned long long>(nRows); ++i)
@@ -495,6 +498,7 @@ rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          han
 
         if(handle->wavefront_size == 32)
         {
+            // LCOV_EXCL_START
             if(nnz_per_row < 4)
             {
                 hipLaunchKernelGGL((csrmvn_general_kernel<CSRMVN_DIM, 2>),
@@ -580,9 +584,11 @@ rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          han
                                    y,
                                    descr->base);
             }
+            // LCOV_EXCL_STOP
         }
-        else if(handle->wavefront_size == 64)
+        else
         {
+            assert(handle->wavefront_size == 64);
             if(nnz_per_row < 4)
             {
                 hipLaunchKernelGGL((csrmvn_general_kernel<CSRMVN_DIM, 2>),
@@ -685,10 +691,6 @@ rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          han
                                    y,
                                    descr->base);
             }
-        }
-        else
-        {
-            return rocsparse_status_arch_mismatch;
         }
 
 #undef CSRMVN_DIM

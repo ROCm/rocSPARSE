@@ -48,6 +48,11 @@ Datatypes:
         rocsparse_matrix_laplace_3d: 2
         rocsparse_matrix_file_mtx: 3
         rocsparse_matrix_file_rocalution: 4
+  - rocsparse_matrix_init_kind:
+      bases: [ c_int ]
+      attr:
+        rocsparse_matrix_init_kind_default: 0
+        rocsparse_matrix_init_kind_tunedavg: 1
   - rocsparse_operation:
       bases: [ c_int ]
       attr:
@@ -224,6 +229,7 @@ Arguments:
   - sparse_to_dense_alg: rocsparse_sparse_to_dense_alg
   - dense_to_sparse_alg: rocsparse_dense_to_sparse_alg
   - matrix: rocsparse_matrix_init
+  - matrix_init_kind: rocsparse_matrix_init_kind
   - unit_check: rocsparse_int
   - timing: rocsparse_int
   - iters: rocsparse_int
@@ -233,6 +239,7 @@ Arguments:
   - boosttol: c_double
   - boostval: c_double
   - boostvali: c_double
+  - tolm: c_double
   - filename: c_char*64
   - function: c_char*64
   - name: c_char*64
@@ -318,6 +325,7 @@ Defaults:
   sparse_to_dense_alg: rocsparse_sparse_to_dense_alg_default
   dense_to_sparse_alg: rocsparse_dense_to_sparse_alg_default
   matrix: rocsparse_matrix_random
+  matrix_init_kind: rocsparse_matrix_init_kind_default
   unit_check: 1
   timing: 0
   iters: 10
@@ -327,6 +335,7 @@ Defaults:
   boosttol: 0.0
   boostval: 1.0
   boostvali: 0.0
+  tolm: 1.0
   workspace_size: 0
   category: nightly
   filename: '*'

@@ -28,6 +28,24 @@
 
 #include <rocsparse.h>
 
+typedef enum rocsparse_matrix_init_kind_
+{
+    rocsparse_matrix_init_kind_default  = 0,
+    rocsparse_matrix_init_kind_tunedavg = 1
+} rocsparse_matrix_init_kind;
+
+constexpr auto rocsparse_matrix_init_kind2string(rocsparse_matrix_init_kind matrix)
+{
+    switch(matrix)
+    {
+    case rocsparse_matrix_init_kind_default:
+        return "default";
+    case rocsparse_matrix_init_kind_tunedavg:
+        return "tunedavg";
+    }
+    return "invalid";
+}
+
 typedef enum rocsparse_matrix_init_
 {
     rocsparse_matrix_random          = 0, /**< Random initialization */

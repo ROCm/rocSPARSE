@@ -248,6 +248,67 @@ template <typename T,
           typename U                = T>
 class device_vector;
 
+constexpr hipMemcpyKind get_transfer_mode(memory_mode::value_t TARGET, memory_mode::value_t SOURCE)
+{
+    switch(TARGET)
+    {
+    case memory_mode::host:
+    {
+        switch(SOURCE)
+        {
+        case memory_mode::host:
+        {
+            return hipMemcpyHostToHost;
+        }
+        case memory_mode::device:
+        {
+            return hipMemcpyDeviceToHost;
+        }
+        case memory_mode::managed:
+        {
+            return hipMemcpyHostToHost;
+        }
+        }
+    }
+    case memory_mode::device:
+    {
+        switch(SOURCE)
+        {
+        case memory_mode::host:
+        {
+            return hipMemcpyHostToDevice;
+        }
+        case memory_mode::device:
+        {
+            return hipMemcpyDeviceToDevice;
+        }
+        case memory_mode::managed:
+        {
+            return hipMemcpyDeviceToDevice;
+        }
+        }
+    }
+    case memory_mode::managed:
+    {
+        switch(SOURCE)
+        {
+        case memory_mode::host:
+        {
+            return hipMemcpyHostToHost;
+        }
+        case memory_mode::managed:
+        {
+            return hipMemcpyHostToHost;
+        }
+        case memory_mode::device:
+        {
+            return hipMemcpyDeviceToDevice;
+        }
+        }
+    }
+    }
+}
+
 /* ============================================================================================ */
 /*! \brief  pseudo-vector subclass which uses host memory */
 template <typename T>
@@ -268,68 +329,16 @@ struct host_vector : std::vector<T>
     template <memory_mode::value_t THAT_MODE>
     void transfer_from(const device_vector<T, THAT_MODE>& that);
     void transfer_from(const host_vector<T>& that);
-};
 
-constexpr hipMemcpyKind get_transfer_mode(memory_mode::value_t MODE, memory_mode::value_t THAT_MODE)
-{
-    switch(MODE)
+    template <memory_mode::value_t THAT_MODE>
+    void transfer_from(const T* that)
     {
-    case memory_mode::host:
-    {
-        switch(THAT_MODE)
-        {
-        case memory_mode::host:
-        {
-            return hipMemcpyHostToHost;
-        }
-        case memory_mode::device:
-        {
-            return hipMemcpyDeviceToHost;
-        }
-        case memory_mode::managed:
-        {
-            return hipMemcpyHostToHost;
-        }
-        }
-    }
-    case memory_mode::device:
-    {
-        switch(THAT_MODE)
-        {
-        case memory_mode::host:
-        {
-            return hipMemcpyHostToDevice;
-        }
-        case memory_mode::device:
-        {
-            return hipMemcpyDeviceToDevice;
-        }
-        case memory_mode::managed:
-        {
-            return hipMemcpyDeviceToDevice;
-        }
-        }
-    }
-    case memory_mode::managed:
-    {
-        switch(THAT_MODE)
-        {
-        case memory_mode::host:
-        {
-            return hipMemcpyHostToHost;
-        }
-        case memory_mode::managed:
-        {
-            return hipMemcpyHostToHost;
-        }
-        case memory_mode::device:
-        {
-            return hipMemcpyDeviceToDevice;
-        }
-        }
-    }
-    }
-}
+        CHECK_HIP_ERROR(hipMemcpy(this->data(),
+                                  that,
+                                  sizeof(T) * this->size(),
+                                  get_transfer_mode(memory_mode::host, THAT_MODE)));
+    };
+};
 
 /* ============================================================================================ */
 /*! \brief  pseudo-vector subclass which uses device memory */
@@ -415,6 +424,15 @@ public:
                                   (const T*)that,
                                   sizeof(T) * that.size(),
                                   get_transfer_mode(MODE, memory_mode::host)));
+    }
+
+    void transfer_to(std::vector<T>& that) const
+    {
+        that.resize(this->m_size);
+        CHECK_HIP_ERROR(hipMemcpy(that.data(),
+                                  this->data,
+                                  sizeof(T) * this->m_size,
+                                  get_transfer_mode(memory_mode::host, MODE)));
     }
 
 private:

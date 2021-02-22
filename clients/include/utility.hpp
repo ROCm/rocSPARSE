@@ -236,6 +236,21 @@ public:
                                    idx_base,
                                    compute_type);
     }
+
+    template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
+    rocsparse_local_spmat(coo_matrix<MODE, T, I>& h)
+        : rocsparse_local_spmat(h.m,
+                                h.n,
+                                h.nnz,
+                                h.row_ind,
+                                h.col_ind,
+                                h.val,
+                                get_indextype<I>(),
+                                h.base,
+                                get_datatype<T>())
+    {
+    }
+
     rocsparse_local_spmat(int64_t              m,
                           int64_t              n,
                           int64_t              nnz,
@@ -247,6 +262,13 @@ public:
     {
         rocsparse_create_coo_aos_descr(
             &this->descr, m, n, nnz, coo_ind, coo_val, idx_type, idx_base, compute_type);
+    }
+
+    template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
+    rocsparse_local_spmat(coo_aos_matrix<MODE, T, I>& h)
+        : rocsparse_local_spmat(
+            h.m, h.n, h.nnz, h.ind, h.val, get_indextype<I>(), h.base, get_datatype<T>())
+    {
     }
 
     rocsparse_local_spmat(int64_t              m,
@@ -324,6 +346,14 @@ public:
         rocsparse_create_ell_descr(
             &this->descr, m, n, ell_col_ind, ell_val, ell_width, idx_type, idx_base, compute_type);
     }
+
+    template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
+    rocsparse_local_spmat(ell_matrix<MODE, T, I>& h)
+        : rocsparse_local_spmat(
+            h.m, h.n, h.ind, h.val, h.width, get_indextype<I>(), h.base, get_datatype<T>())
+    {
+    }
+
     ~rocsparse_local_spmat()
     {
         if(this->descr != nullptr)

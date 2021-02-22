@@ -48,11 +48,14 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     // If analyzing transposed, allocate some info memory to hold the transposed matrix
     if(trans == rocsparse_operation_transpose)
     {
+        // TODO: this need to be changed.
+        // LCOV_EXCL_START
         if(info->trmt_perm != nullptr || info->trmt_row_ptr != nullptr
            || info->trmt_col_ind != nullptr)
         {
             return rocsparse_status_internal_error;
         }
+        // LCOV_EXCL_STOP
 
         // Buffer
         char* ptr = reinterpret_cast<char*>(temp_buffer);
@@ -178,6 +181,7 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     {
         if(gcnArch == 908 && asicRev < 2)
         {
+            // LCOV_EXCL_START
             if(descr->fill_mode == rocsparse_fill_mode_upper)
             {
                 hipLaunchKernelGGL((csrsv_analysis_upper_kernel<CSRSV_DIM, 64, true>),
@@ -212,11 +216,13 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                    descr->base,
                                    descr->diag_type);
             }
+            // LCOV_EXCL_STOP
         }
         else
         {
             if(handle->wavefront_size == 32)
             {
+                // LCOV_EXCL_START
                 if(descr->fill_mode == rocsparse_fill_mode_upper)
                 {
                     hipLaunchKernelGGL((csrsv_analysis_upper_kernel<CSRSV_DIM, 32, false>),
@@ -251,9 +257,11 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        descr->base,
                                        descr->diag_type);
                 }
+                // LCOV_EXCL_STOP
             }
-            else if(handle->wavefront_size == 64)
+            else
             {
+                assert(handle->wavefront_size == 64);
                 if(descr->fill_mode == rocsparse_fill_mode_upper)
                 {
                     hipLaunchKernelGGL((csrsv_analysis_upper_kernel<CSRSV_DIM, 64, false>),
@@ -288,10 +296,6 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        descr->base,
                                        descr->diag_type);
                 }
-            }
-            else
-            {
-                return rocsparse_status_arch_mismatch;
             }
         }
     }
@@ -299,6 +303,7 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     {
         if(gcnArch == 908 && asicRev < 2)
         {
+            // LCOV_EXCL_START
             if(descr->fill_mode == rocsparse_fill_mode_upper)
             {
                 hipLaunchKernelGGL((csrsv_analysis_lower_kernel<CSRSV_DIM, 64, true>),
@@ -333,11 +338,13 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                    descr->base,
                                    descr->diag_type);
             }
+            // LCOV_EXCL_STOP
         }
         else
         {
             if(handle->wavefront_size == 32)
             {
+                // LCOV_EXCL_START
                 if(descr->fill_mode == rocsparse_fill_mode_upper)
                 {
                     hipLaunchKernelGGL((csrsv_analysis_lower_kernel<CSRSV_DIM, 32, false>),
@@ -372,9 +379,11 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        descr->base,
                                        descr->diag_type);
                 }
+                // LCOV_EXCL_STOP
             }
-            else if(handle->wavefront_size == 64)
+            else
             {
+                assert(handle->wavefront_size == 64);
                 if(descr->fill_mode == rocsparse_fill_mode_upper)
                 {
                     hipLaunchKernelGGL((csrsv_analysis_lower_kernel<CSRSV_DIM, 64, false>),
@@ -410,15 +419,13 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        descr->diag_type);
                 }
             }
-            else
-            {
-                return rocsparse_status_arch_mismatch;
-            }
         }
     }
     else
     {
+        // LCOV_EXCL_START
         return rocsparse_status_internal_error;
+        // LCOV_EXCL_STOP
     }
 #undef CSRSV_DIM
 
@@ -525,29 +532,11 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
         return rocsparse_status_not_implemented;
     }
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
-
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO
         return rocsparse_status_not_implemented;
-    }
-
-    // Check analysis policy
-    if(analysis != rocsparse_analysis_policy_reuse && analysis != rocsparse_analysis_policy_force)
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    // Check solve policy
-    if(solve != rocsparse_solve_policy_auto)
-    {
-        return rocsparse_status_invalid_value;
     }
 
     // Check sizes

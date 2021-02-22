@@ -34,6 +34,9 @@ Definitions:
     - { alpha:   2.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
     - { alpha:   0.0, beta:  1.0,  alphai:  1.5, betai:  0.5 }
 
+  - &alpha_beta_range_1
+    - { alpha:   1.0, beta:  1.0,  alphai:  1.0, betai:  1.0 }
+
   - &alpha_beta_range_nightly
     - { alpha:   2.0, beta:  0.67, alphai:  0.0, betai:  1.5 }
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
@@ -70,6 +73,36 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
 
+#
+# For code coverage
+#
+- name: bsrmv
+  category: pre_checkin
+  function: bsrmv
+  precision: *single_double_precisions
+  M: [512]
+  N: [512, 1024, 2048, 4096, 8192, 16384]
+  block_dim: [2, 3, 4]
+  matrix_init_kind: [rocsparse_matrix_init_kind_tunedavg]
+  alpha_beta: *alpha_beta_range_1
+  direction: [rocsparse_direction_column]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+
+- name: bsrmv
+  category: pre_checkin
+  function: bsrmv
+  precision: *single_double_precisions_complex_real
+  M: [64]
+  N: [64]
+  block_dim: [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+  alpha_beta: *alpha_beta_range_1
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+
 - name: bsrmv_file
   category: pre_checkin
   function: bsrmv
@@ -82,8 +115,8 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mac_econ_fwd500,
-             scircuit,
+  filename: [scircuit,
+             nos3,
              nos5,
              nos7]
 
@@ -99,7 +132,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron3]
+  filename: [Chevron2]
 
 - name: bsrmv
   category: quick
@@ -144,8 +177,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron2,
-             qc2534]
+  filename: [qc2534]
 
 
 - name: bsrmv
@@ -173,8 +205,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [bmwcra_1,
-             amazon0312,
+  filename: [amazon0312,
              Chebyshev4,
              sme3Dc,
              shipsec1,
@@ -192,4 +223,4 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron4]
+  filename: [Chevron3]
