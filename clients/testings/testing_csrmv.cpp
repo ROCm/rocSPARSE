@@ -58,26 +58,43 @@ void testing_csrmv_bad_arg(const Arguments& arg)
     const T*                  x                 = (const T*)0x4;
     const T*                  beta_device_host  = &h_beta;
     T*                        y                 = (T*)0x4;
-#define PARAMS handle, trans, m, n, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info
-    auto_testing_bad_arg(rocsparse_csrmv_analysis<T>, PARAMS);
-#undef PARAMS
+
+#define PARAMS_ANALYSIS handle, trans, m, n, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info
+    auto_testing_bad_arg(rocsparse_csrmv_analysis<T>, PARAMS_ANALYSIS);
 
 #define PARAMS                                                                                   \
     handle, trans, m, n, nnz, alpha_device_host, descr, csr_val, csr_row_ptr, csr_col_ind, info, \
         x, beta_device_host, y
-    static constexpr int num_exclusions  = 1;
-    static constexpr int exclude_args[1] = {10};
-    auto_testing_bad_arg(rocsparse_csrmv<T>, num_exclusions, exclude_args, PARAMS);
-#undef PARAMS
+
+    {
+        static constexpr int num_exclusions  = 1;
+        static constexpr int exclude_args[1] = {10};
+        auto_testing_bad_arg(rocsparse_csrmv<T>, num_exclusions, exclude_args, PARAMS);
+    }
 
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_clear(nullptr, info), rocsparse_status_invalid_handle);
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_clear(handle, nullptr),
                             rocsparse_status_invalid_pointer);
+
+    for(auto matrix_type : rocsparse_matrix_type_t::values)
+    {
+        if(matrix_type != rocsparse_matrix_type_general)
+        {
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, matrix_type));
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(PARAMS_ANALYSIS),
+                                    rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(PARAMS), rocsparse_status_not_implemented);
+        }
+    }
+
+#undef PARAMS_ANALYSIS
+#undef PARAMS
 }
 
 template <typename T>
 void testing_csrmv(const Arguments& arg)
 {
+    auto                 tol      = get_near_check_tol<T>(arg);
     rocsparse_int        M        = arg.M;
     rocsparse_int        N        = arg.N;
     rocsparse_operation  trans    = arg.transA;
@@ -160,11 +177,11 @@ void testing_csrmv(const Arguments& arg)
     device_csr_matrix<T> dA(hA);
 
     host_dense_matrix<T> hx(N, 1);
-    rocsparse_matrix_utils::init(hx);
+    rocsparse_matrix_utils::init_exact(hx);
     device_dense_matrix<T> dx(hx);
 
     host_dense_matrix<T> hy(M, 1);
-    rocsparse_matrix_utils::init(hy);
+    rocsparse_matrix_utils::init_exact(hy);
     device_dense_matrix<T> dy(hy);
 
     // If adaptive, run analysis step
@@ -184,7 +201,7 @@ void testing_csrmv(const Arguments& arg)
             // CPU csrmv
             host_csrmv<rocsparse_int, rocsparse_int, T>(
                 M, hA.nnz, *h_alpha, hA.ptr, hA.ind, hA.val, hx, *h_beta, hy, base, adaptive);
-            hy.near_check(dy);
+            hy.near_check(dy, tol);
             dy.transfer_from(hy_copy);
         }
 
@@ -192,7 +209,7 @@ void testing_csrmv(const Arguments& arg)
         device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
-        hy.near_check(dy);
+        hy.near_check(dy, tol);
     }
 
     if(arg.timing)

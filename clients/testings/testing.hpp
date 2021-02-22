@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,3 +28,9 @@
 #include "rocsparse_matrix_factory.hpp"
 #include "utility.hpp"
 #include <rocsparse.hpp>
+
+template <typename T>
+floating_data_t<T> get_near_check_tol(const Arguments& arg)
+{
+    return static_cast<floating_data_t<T>>(arg.tolm) * default_tolerance<T>::value;
+}

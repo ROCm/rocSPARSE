@@ -28,6 +28,9 @@
 constexpr rocsparse_matrix_type_t::value_t
     rocsparse_matrix_type_t::values[rocsparse_matrix_type_t::nvalues];
 
+constexpr rocsparse_operation_t::value_t
+    rocsparse_operation_t::values[rocsparse_operation_t::nvalues];
+
 std::ostream& operator<<(std::ostream& out, const rocsparse_operation& v)
 {
     out << rocsparse_operation2string(v);

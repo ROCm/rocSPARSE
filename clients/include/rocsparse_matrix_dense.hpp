@@ -155,14 +155,15 @@ struct dense_matrix
     }
 
     template <memory_mode::value_t THAT_MODE>
-    void near_check(const dense_matrix<THAT_MODE, T>& that_) const
+    void near_check(const dense_matrix<THAT_MODE, T>& that_,
+                    floating_data_t<T>                tol = default_tolerance<T>::value) const
     {
         switch(MODE)
         {
         case memory_mode::device:
         {
             dense_matrix<memory_mode::host, T> on_host(*this);
-            on_host.near_check(that_);
+            on_host.near_check(that_, tol);
             break;
         }
 
@@ -177,13 +178,13 @@ struct dense_matrix
                 unit_check_general<rocsparse_int>(1, 1, 1, &this->m, &that_.m);
                 unit_check_general<rocsparse_int>(1, 1, 1, &this->n, &that_.n);
                 unit_check_general<rocsparse_int>(1, 1, 1, &this->ld, &that_.ld);
-                near_check_general<T>(this->m, this->n, this->ld, this->val, that_.val);
+                near_check_general<T>(this->m, this->n, this->ld, this->val, that_.val, tol);
                 break;
             }
             case memory_mode::device:
             {
                 dense_matrix<memory_mode::host, T> that(that_);
-                this->near_check(that);
+                this->near_check(that, tol);
                 break;
             }
             }

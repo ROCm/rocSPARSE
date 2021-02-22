@@ -154,6 +154,7 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
     // gfx908
     if(gcnArch == 908 && asicRev < 2)
     {
+        // LCOV_EXCL_START
         hipLaunchKernelGGL((csrsv_kernel<CSRSV_DIM, 64, true>),
                            csrsv_blocks,
                            csrsv_threads,
@@ -173,12 +174,14 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
                            descr->base,
                            fill_mode,
                            descr->diag_type);
+        // LCOV_EXCL_STOP
     }
     else
     {
         // rocsparse_pointer_mode_device
         if(handle->wavefront_size == 32)
         {
+            // LCOV_EXCL_START
             hipLaunchKernelGGL((csrsv_kernel<CSRSV_DIM, 32, false>),
                                csrsv_blocks,
                                csrsv_threads,
@@ -198,9 +201,11 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
                                descr->base,
                                fill_mode,
                                descr->diag_type);
+            // LCOV_EXCL_STOP
         }
-        else if(handle->wavefront_size == 64)
+        else
         {
+            assert(handle->wavefront_size == 64);
             hipLaunchKernelGGL((csrsv_kernel<CSRSV_DIM, 64, false>),
                                csrsv_blocks,
                                csrsv_threads,
@@ -220,10 +225,6 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
                                descr->base,
                                fill_mode,
                                descr->diag_type);
-        }
-        else
-        {
-            return rocsparse_status_arch_mismatch;
         }
     }
 #undef CSRSV_DIM

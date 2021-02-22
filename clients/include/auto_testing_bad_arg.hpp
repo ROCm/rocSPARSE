@@ -228,6 +228,7 @@ inline void auto_testing_bad_arg(F f, Ts... ts)
             {
                 std::cout << "auto testing bad arg failed on " << iarg << " 'th argument"
                           << std::endl;
+                auto_testing_bad_arg_print(ts...);
                 EXPECT_ROCSPARSE_STATUS(f(ts...), status);
             }
         }

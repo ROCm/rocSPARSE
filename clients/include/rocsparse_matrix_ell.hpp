@@ -23,39 +23,39 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_MATRIX_COO_HPP
-#define ROCSPARSE_MATRIX_COO_HPP
+#ifndef ROCSPARSE_MATRIX_ELL_HPP
+#define ROCSPARSE_MATRIX_ELL_HPP
 
 #include "rocsparse_vector.hpp"
 
 template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
-struct coo_matrix
+struct ell_matrix
 {
     template <typename S>
     using array_t = typename memory_traits<MODE>::template array_t<S>;
 
     I                    m{};
     I                    n{};
+    I                    width{};
     I                    nnz{};
     rocsparse_index_base base{};
-    array_t<I>           row_ind{};
-    array_t<I>           col_ind{};
+    array_t<I>           ind{};
     array_t<T>           val{};
 
-    coo_matrix(){};
-    ~coo_matrix(){};
+    ell_matrix(){};
+    ~ell_matrix(){};
 
-    coo_matrix(I m_, I n_, I nnz_, rocsparse_index_base base_)
+    ell_matrix(I m_, I n_, I width_, rocsparse_index_base base_)
         : m(m_)
         , n(n_)
-        , nnz(nnz_)
+        , width(width_)
+        , nnz(m_ * width_)
         , base(base_)
-        , row_ind(nnz_)
-        , col_ind(nnz_)
-        , val(nnz_){};
+        , ind(nnz)
+        , val(nnz){};
 
-    coo_matrix(const coo_matrix<MODE, T, I>& that_, bool transfer = true)
-        : coo_matrix<MODE, T, I>(that_.m, that_.n, that_.nnz, that_.base)
+    ell_matrix(const ell_matrix<MODE, T, I>& that_, bool transfer = true)
+        : ell_matrix<MODE, T, I>(that_.m, that_.n, that_.width, that_.base)
     {
         if(transfer)
         {
@@ -64,8 +64,8 @@ struct coo_matrix
     }
 
     template <memory_mode::value_t THAT_MODE>
-    coo_matrix(const coo_matrix<THAT_MODE, T, I>& that_, bool transfer = true)
-        : coo_matrix<MODE, T, I>(that_.m, that_.n, that_.nnz, that_.base)
+    ell_matrix(const ell_matrix<THAT_MODE, T, I>& that_, bool transfer = true)
+        : ell_matrix<MODE, T, I>(that_.m, that_.n, that_.width, that_.base)
     {
         if(transfer)
         {
@@ -74,19 +74,18 @@ struct coo_matrix
     }
 
     template <memory_mode::value_t THAT_MODE>
-    void transfer_from(const coo_matrix<THAT_MODE, T, I>& that)
+    void transfer_from(const ell_matrix<THAT_MODE, T, I>& that)
     {
         CHECK_HIP_ERROR((this->m == that.m && this->n == that.n && this->nnz == that.nnz
                          && this->base == that.base)
                             ? hipSuccess
                             : hipErrorInvalidValue);
 
-        this->row_ind.transfer_from(that.row_ind);
-        this->col_ind.transfer_from(that.col_ind);
+        this->ind.transfer_from(that.ind);
         this->val.transfer_from(that.val);
     };
 
-    void define(I m_, I n_, I nnz_, rocsparse_index_base base_)
+    void define(I m_, I n_, I width_, rocsparse_index_base base_)
     {
         if(m_ != this->m)
         {
@@ -98,26 +97,30 @@ struct coo_matrix
             this->n = n_;
         }
 
-        if(nnz_ != this->nnz)
+        if(width_ != this->width)
         {
-            this->nnz = nnz_;
-            this->row_ind.resize(this->nnz);
-            this->col_ind.resize(this->nnz);
-            this->val.resize(this->nnz);
+            this->width = width_;
         }
 
         if(base_ != this->base)
         {
             this->base = base_;
         }
+
+        if(this->m * this->width != this->nnz)
+        {
+            this->nnz = this->m * this->width;
+            this->ind.resize(this->nnz);
+            this->val.resize(this->nnz);
+        }
     }
 };
 
 template <typename T, typename I = rocsparse_int>
-using host_coo_matrix = coo_matrix<memory_mode::host, T, I>;
+using host_ell_matrix = ell_matrix<memory_mode::host, T, I>;
 template <typename T, typename I = rocsparse_int>
-using device_coo_matrix = coo_matrix<memory_mode::device, T, I>;
+using device_ell_matrix = ell_matrix<memory_mode::device, T, I>;
 template <typename T, typename I = rocsparse_int>
-using managed_coo_matrix = coo_matrix<memory_mode::managed, T, I>;
+using managed_ell_matrix = ell_matrix<memory_mode::managed, T, I>;
 
 #endif // ROCSPARSE_MATRIX_COO_HPP

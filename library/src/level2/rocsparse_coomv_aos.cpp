@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -102,6 +102,7 @@ rocsparse_status rocsparse_coomv_aos_dispatch(rocsparse_handle          handle,
 
         if(handle->wavefront_size == 32)
         {
+            // LCOV_EXCL_START
             hipLaunchKernelGGL((coomvn_aos_wf<COOMVN_DIM, 32>),
                                coomvn_blocks,
                                coomvn_threads,
@@ -117,9 +118,11 @@ rocsparse_status rocsparse_coomv_aos_dispatch(rocsparse_handle          handle,
                                row_block_red,
                                val_block_red,
                                descr->base);
+            // LCOV_EXCL_STOP
         }
-        else if(handle->wavefront_size == 64)
+        else
         {
+            assert(handle->wavefront_size == 64);
             hipLaunchKernelGGL((coomvn_aos_wf<COOMVN_DIM, 64>),
                                coomvn_blocks,
                                coomvn_threads,
@@ -135,10 +138,6 @@ rocsparse_status rocsparse_coomv_aos_dispatch(rocsparse_handle          handle,
                                row_block_red,
                                val_block_red,
                                descr->base);
-        }
-        else
-        {
-            return rocsparse_status_arch_mismatch;
         }
 
         hipLaunchKernelGGL((coomvn_general_block_reduce<COOMVN_DIM>),
@@ -229,10 +228,11 @@ rocsparse_status rocsparse_coomv_aos_template(rocsparse_handle          handle,
     }
 
     // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
+    if(rocsparse_enum_utils::is_invalid(trans))
     {
         return rocsparse_status_invalid_value;
     }
+
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {

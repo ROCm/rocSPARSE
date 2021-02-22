@@ -61,6 +61,13 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
 
     auto_testing_bad_arg(rocsparse_bsrmv<T>, PARAMS);
 
+    {
+        auto tmp = trans;
+        trans    = rocsparse_operation_transpose;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv<T>(PARAMS), rocsparse_status_not_implemented);
+        trans = tmp;
+    }
+
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {
         if(matrix_type != rocsparse_matrix_type_general)
@@ -137,43 +144,25 @@ void testing_bsrmv(const Arguments& arg)
     rocsparse_matrix_factory<T> matrix_factory(arg, type, full_rank);
 
     //
-    // A
+    // Declare and initialize matrices.
     //
     host_gebsr_matrix<T>   hA;
     device_gebsr_matrix<T> dA;
     matrix_factory.init_bsr(hA, dA, mb, nb);
-    if(!arg.unit_check)
-    {
-        hA.~host_gebsr_matrix<T>();
-    }
 
     M = dA.mb * dA.row_block_dim;
     N = dA.nb * dA.col_block_dim;
 
-    //
-    // X
-    //
-    host_dense_matrix<T> hx(N, 1);
-    rocsparse_matrix_utils::init(hx);
-    device_dense_matrix<T> dx(hx);
-    if(!arg.unit_check)
-    {
-        hx.~host_dense_matrix<T>();
-    }
+    host_dense_matrix<T> hx(N, 1), hy(M, 1);
 
-    //
-    // Y
-    //
-    host_dense_matrix<T> hy(M, 1);
+    rocsparse_matrix_utils::init(hx);
     rocsparse_matrix_utils::init(hy);
-    device_dense_matrix<T> dy(hy);
-    if(!arg.unit_check)
-    {
-        hy.~host_dense_matrix<T>();
-    }
+
+    device_dense_matrix<T> dx(hx), dy(hy);
 
     if(arg.unit_check)
     {
+
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_bsrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));

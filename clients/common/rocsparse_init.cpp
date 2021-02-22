@@ -434,6 +434,7 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
 
     if(to_int)
     {
+
         // Sample random off-diagonal values
         for(I i = 0; i < nnz; ++i)
         {
@@ -451,18 +452,32 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
     }
     else
     {
-        // Sample random off-diagonal values
-        for(I i = 0; i < nnz; ++i)
+        if(full_rank)
         {
-            if(row_ind[i] == col_ind[i])
+            // Sample random off-diagonal values
+            for(I i = 0; i < nnz; ++i)
             {
-                // Sample diagonal values
-                val[i] = random_generator<T>();
+                if(row_ind[i] == col_ind[i])
+                {
+                    // Sample diagonal values
+                    val[i] = random_generator<T>(static_cast<T>(4.0), static_cast<T>(8.0));
+                    val[i]
+                        += val[i]
+                           * random_generator<T>(static_cast<T>(-1.0e-2), static_cast<T>(1.0e-2));
+                }
+                else
+                {
+                    // Samples off-diagonal values
+                    val[i] = random_generator<T>(static_cast<T>(-0.5), static_cast<T>(0.5));
+                }
             }
-            else
+        }
+        else
+        {
+            // Sample random off-diagonal values
+            for(I i = 0; i < nnz; ++i)
             {
-                // Samples off-diagonal values
-                val[i] = random_generator<T>();
+                val[i] = random_generator<T>(static_cast<T>(-1.0), static_cast<T>(1.0));
             }
         }
     }

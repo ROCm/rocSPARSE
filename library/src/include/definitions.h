@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,12 @@
  * this file to not include any others
  * thereby it can include top-level definitions included by all
  ******************************************************************************/
+
+//
+// @brief Macros for coverage exclusion
+//
+#define ROCSPARSE_COV_EXCL_START (void)("LCOV_EXCL_START")
+#define ROCSPARSE_COV_EXCL_STOP (void)("LCOV_EXCL_STOP")
 
 #define RETURN_IF_HIP_ERROR(INPUT_STATUS_FOR_CHECK)                           \
     {                                                                         \

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,56 +84,16 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle          handle,
                   (const void*&)y);
     }
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO
         return rocsparse_status_not_implemented;
     }
-    // Check partition type
-    if(hyb->partition != rocsparse_hyb_partition_max
-       && hyb->partition != rocsparse_hyb_partition_auto
-       && hyb->partition != rocsparse_hyb_partition_user)
+
+    if(rocsparse_enum_utils::is_invalid(trans))
     {
         return rocsparse_status_invalid_value;
-    }
-
-    // Check sizes
-    if(hyb->m < 0 || hyb->n < 0 || hyb->ell_nnz + hyb->coo_nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check ELL-HYB structure
-    if(hyb->ell_nnz > 0)
-    {
-        if(hyb->ell_width < 0)
-        {
-            return rocsparse_status_invalid_size;
-        }
-        else if(hyb->ell_col_ind == nullptr || hyb->ell_val == nullptr)
-        {
-            return rocsparse_status_invalid_pointer;
-        }
-    }
-
-    // Check COO-HYB structure
-    if(hyb->coo_nnz > 0)
-    {
-        if(hyb->coo_row_ind == nullptr || hyb->coo_col_ind == nullptr || hyb->coo_val == nullptr)
-        {
-            return rocsparse_status_invalid_pointer;
-        }
-    }
-
-    if(x == nullptr || y == nullptr || alpha_device_host == nullptr || beta_device_host == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     // Check pointer arguments
@@ -154,15 +114,52 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Quick return if possible
-    if(hyb->m == 0 || hyb->n == 0 || hyb->ell_nnz + hyb->coo_nnz == 0)
-    {
-        return rocsparse_status_success;
-    }
-
     // Run different hybmv kernels
     if(trans == rocsparse_operation_none)
     {
+
+        //
+        // THESE CHECKS SHOULDN'T BE HERE
+        //
+        // LCOV_EXCL_START
+        {
+            // Check sizes
+            if(hyb->m < 0 || hyb->n < 0 || hyb->ell_nnz + hyb->coo_nnz < 0)
+            {
+                return rocsparse_status_invalid_size;
+            }
+
+            // Check ELL-HYB structure
+            if(hyb->ell_nnz > 0)
+            {
+                if(hyb->ell_width < 0)
+                {
+                    return rocsparse_status_invalid_size;
+                }
+                else if(hyb->ell_col_ind == nullptr || hyb->ell_val == nullptr)
+                {
+                    return rocsparse_status_invalid_pointer;
+                }
+            }
+
+            // Check COO-HYB structure
+            if(hyb->coo_nnz > 0)
+            {
+                if(hyb->coo_row_ind == nullptr || hyb->coo_col_ind == nullptr
+                   || hyb->coo_val == nullptr)
+                {
+                    return rocsparse_status_invalid_pointer;
+                }
+            }
+        }
+        // LCOV_EXCL_STOP
+
+        // Quick return if possible
+        if(hyb->m == 0 || hyb->n == 0 || hyb->ell_nnz + hyb->coo_nnz == 0)
+        {
+            return rocsparse_status_success;
+        }
+
         // ELL part
         if(hyb->ell_nnz > 0)
         {

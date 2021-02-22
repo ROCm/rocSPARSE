@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,10 @@ Definitions:
   - &alpha_beta_range_checkin
     - { alpha:   2.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
     - { alpha:   2.0, beta:  0.67, alphai: -1.0, betai:  1.5 }
-    - { alpha:   0.0, beta:  1.0,  alphai:  1.5, betai:  0.5 }
     - { alpha:   3.0, beta:  1.0,  alphai:  1.0, betai: -0.5 }
+
+  - &alpha_beta_range_0_1
+    - { alpha:   0.0, beta:  1.0,  alphai:  0.0, betai:  0.0 }
 
   - &alpha_beta_range_nightly
     - { alpha:   0.0, beta:  0.0,  alphai:  1.5, betai:  0.5 }
@@ -64,11 +66,22 @@ Tests:
   category: pre_checkin
   function: ellmv
   precision: *single_double_precisions_complex_real
-  M: [-1, 0, 7111, 10000]
-  N: [-3, 0, 4441, 10000]
+  M: [-1, 0, 711]
+  N: [-3, 0, 444]
+  alpha_beta: *alpha_beta_range_0_1
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+
+- name: ellmv
+  category: pre_checkin
+  function: ellmv
+  precision: *single_double_precisions
+  M: [7111, 10000]
+  N: [4441, 10000]
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
 
 - name: ellmv
@@ -108,9 +121,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [rma10,
-             mc2depi,
-             nos1,
+  filename: [nos1,
              nos3,
              nos5,
              nos7]
@@ -152,9 +163,10 @@ Tests:
   N: 1
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mplate,
+             rma10,
              Chevron3]
 
 - name: ellmv_file

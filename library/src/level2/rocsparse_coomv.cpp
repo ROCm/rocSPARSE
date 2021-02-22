@@ -87,6 +87,40 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
     // Run different coomv kernels
     if(trans == rocsparse_operation_none)
     {
+
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            // Scale y with beta
+            hipLaunchKernelGGL((coomv_scale<1024>),
+                               dim3((m - 1) / 1024 + 1),
+                               dim3(1024),
+                               0,
+                               handle->stream,
+                               m,
+                               beta_device_host,
+                               y);
+        }
+        else
+        {
+            auto beta = load_scalar_device_host(beta_device_host);
+            // If beta == 0.0 we need to set y to 0
+            if(beta == static_cast<T>(0))
+            {
+                RETURN_IF_HIP_ERROR(hipMemsetAsync(y, 0, sizeof(T) * m, handle->stream));
+            }
+            else if(beta != static_cast<T>(1))
+            {
+                hipLaunchKernelGGL((coomv_scale<1024>),
+                                   dim3((m - 1) / 1024 + 1),
+                                   dim3(1024),
+                                   0,
+                                   handle->stream,
+                                   m,
+                                   beta,
+                                   y);
+            }
+        }
+
 #define COOMVN_DIM 128
         int maxthreads = handle->properties.maxThreadsPerBlock;
         int nprocs     = handle->properties.multiProcessorCount;
@@ -113,6 +147,7 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
 
         if(handle->wavefront_size == 32)
         {
+            // LCOV_EXCL_START
             hipLaunchKernelGGL((coomvn_wf<COOMVN_DIM, 32>),
                                coomvn_blocks,
                                coomvn_threads,
@@ -129,9 +164,11 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
                                row_block_red,
                                val_block_red,
                                descr->base);
+            // LCOV_EXCL_STOP
         }
-        else if(handle->wavefront_size == 64)
+        else
         {
+            assert(handle->wavefront_size == 64);
             hipLaunchKernelGGL((coomvn_wf<COOMVN_DIM, 64>),
                                coomvn_blocks,
                                coomvn_threads,
@@ -148,10 +185,6 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
                                row_block_red,
                                val_block_red,
                                descr->base);
-        }
-        else
-        {
-            return rocsparse_status_arch_mismatch;
         }
 
         hipLaunchKernelGGL((coomvn_general_block_reduce<COOMVN_DIM>),
@@ -244,11 +277,11 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
                   (const void*&)y);
     }
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
+    if(rocsparse_enum_utils::is_invalid(trans))
     {
         return rocsparse_status_invalid_value;
     }
+
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
@@ -289,16 +322,6 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        // Scale y with beta
-        hipLaunchKernelGGL((coomv_scale<1024>),
-                           dim3((m - 1) / 1024 + 1),
-                           dim3(1024),
-                           0,
-                           handle->stream,
-                           m,
-                           beta_device_host,
-                           y);
-
         return rocsparse_coomv_dispatch(handle,
                                         trans,
                                         m,
@@ -315,23 +338,6 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
     }
     else
     {
-
-        // If beta == 0.0 we need to set y to 0
-        if(*beta_device_host == static_cast<T>(0))
-        {
-            RETURN_IF_HIP_ERROR(hipMemsetAsync(y, 0, sizeof(T) * m, handle->stream));
-        }
-        else if(*beta_device_host != static_cast<T>(1))
-        {
-            hipLaunchKernelGGL((coomv_scale<1024>),
-                               dim3((m - 1) / 1024 + 1),
-                               dim3(1024),
-                               0,
-                               handle->stream,
-                               m,
-                               *beta_device_host,
-                               y);
-        }
         return rocsparse_coomv_dispatch(handle,
                                         trans,
                                         m,

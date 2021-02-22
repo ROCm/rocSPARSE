@@ -417,6 +417,8 @@ int main(int argc, char* argv[])
         arg.matrix = rocsparse_matrix_random;
     }
 
+    arg.matrix_init_kind = rocsparse_matrix_init_kind_default;
+
     // Device query
     int devs;
     if(hipGetDeviceCount(&devs) != hipSuccess)

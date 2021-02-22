@@ -44,6 +44,15 @@ struct rocsparse_matrix_type_t
                                                 rocsparse_matrix_type_triangular};
 };
 
+struct rocsparse_operation_t
+{
+    using value_t                                 = rocsparse_operation;
+    static constexpr unsigned int nvalues         = 3;
+    static constexpr value_t      values[nvalues] = {rocsparse_operation_none,
+                                                rocsparse_operation_transpose,
+                                                rocsparse_operation_conjugate_transpose};
+};
+
 std::ostream& operator<<(std::ostream& out, const rocsparse_operation& v);
 std::ostream& operator<<(std::ostream& out, const rocsparse_direction& v);
 

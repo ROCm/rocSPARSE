@@ -102,7 +102,9 @@ struct managed_scalar : public managed_dense_matrix<T>
 };
 
 #include "rocsparse_matrix_coo.hpp"
+#include "rocsparse_matrix_coo_aos.hpp"
 #include "rocsparse_matrix_csx.hpp"
+#include "rocsparse_matrix_ell.hpp"
 #include "rocsparse_matrix_gebsx.hpp"
 
-#endif // ROCSPARSE_MATRIX_HPP
+#endif // ROCSPARSE_MATRIX_HPP.

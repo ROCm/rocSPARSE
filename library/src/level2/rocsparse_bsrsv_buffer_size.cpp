@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 
 #include "rocsparse_bsrsv.hpp"
 #include "templates.h"
+#include "utility.h"
 
 /*
  * ===========================================================================
@@ -47,7 +48,11 @@
                                      size_t*                   buffer_size)                        \
     {                                                                                              \
         /* Check direction */                                                                      \
-        if(dir != rocsparse_direction_row && dir != rocsparse_direction_column)                    \
+        if(rocsparse_enum_utils::is_invalid(dir))                                                  \
+        {                                                                                          \
+            return rocsparse_status_invalid_value;                                                 \
+        }                                                                                          \
+        if(rocsparse_enum_utils::is_invalid(trans))                                                \
         {                                                                                          \
             return rocsparse_status_invalid_value;                                                 \
         }                                                                                          \

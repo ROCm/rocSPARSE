@@ -31,52 +31,6 @@
 #include "rocsparse_csrmv.hpp"
 #include "rocsparse_ellmv.hpp"
 
-#define RETURN_SPMV(itype, jtype, ctype, ...)                                           \
-    {                                                                                   \
-        if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32         \
-           && ctype == rocsparse_datatype_f32_r)                                        \
-            return rocsparse_spmv_template<int32_t, int32_t, float>(__VA_ARGS__);       \
-        if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32         \
-           && ctype == rocsparse_datatype_f64_r)                                        \
-            return rocsparse_spmv_template<int32_t, int32_t, double>(__VA_ARGS__);      \
-        if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32         \
-           && ctype == rocsparse_datatype_f32_c)                                        \
-            return rocsparse_spmv_template<int32_t, int32_t, rocsparse_float_complex>(  \
-                __VA_ARGS__);                                                           \
-        if(itype == rocsparse_indextype_i32 && jtype == rocsparse_indextype_i32         \
-           && ctype == rocsparse_datatype_f64_c)                                        \
-            return rocsparse_spmv_template<int32_t, int32_t, rocsparse_double_complex>( \
-                __VA_ARGS__);                                                           \
-        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32         \
-           && ctype == rocsparse_datatype_f32_r)                                        \
-            return rocsparse_spmv_template<int64_t, int32_t, float>(__VA_ARGS__);       \
-        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32         \
-           && ctype == rocsparse_datatype_f64_r)                                        \
-            return rocsparse_spmv_template<int64_t, int32_t, double>(__VA_ARGS__);      \
-        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32         \
-           && ctype == rocsparse_datatype_f32_c)                                        \
-            return rocsparse_spmv_template<int64_t, int32_t, rocsparse_float_complex>(  \
-                __VA_ARGS__);                                                           \
-        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i32         \
-           && ctype == rocsparse_datatype_f64_c)                                        \
-            return rocsparse_spmv_template<int64_t, int32_t, rocsparse_double_complex>( \
-                __VA_ARGS__);                                                           \
-        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64         \
-           && ctype == rocsparse_datatype_f32_r)                                        \
-            return rocsparse_spmv_template<int64_t, int64_t, float>(__VA_ARGS__);       \
-        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64         \
-           && ctype == rocsparse_datatype_f64_r)                                        \
-            return rocsparse_spmv_template<int64_t, int64_t, double>(__VA_ARGS__);      \
-        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64         \
-           && ctype == rocsparse_datatype_f32_c)                                        \
-            return rocsparse_spmv_template<int64_t, int64_t, rocsparse_float_complex>(  \
-                __VA_ARGS__);                                                           \
-        if(itype == rocsparse_indextype_i64 && jtype == rocsparse_indextype_i64         \
-           && ctype == rocsparse_datatype_f64_c)                                        \
-            return rocsparse_spmv_template<int64_t, int64_t, rocsparse_double_complex>( \
-                __VA_ARGS__);                                                           \
-    }
-
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                          rocsparse_operation         trans,
@@ -121,8 +75,9 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
         return rocsparse_status_success;
     }
 
-    // COO
-    if(mat->format == rocsparse_format_coo)
+    switch(mat->format)
+    {
+    case rocsparse_format_coo:
     {
         return rocsparse_coomv_template(handle,
                                         trans,
@@ -139,8 +94,8 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                         (T*)y->values);
     }
 
-    // COO (AoS)
-    if(mat->format == rocsparse_format_coo_aos)
+        // COO (AoS)
+    case rocsparse_format_coo_aos:
     {
         return rocsparse_coomv_aos_template(handle,
                                             trans,
@@ -156,8 +111,8 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                             (T*)y->values);
     }
 
-    // CSR
-    if(mat->format == rocsparse_format_csr)
+        // CSR
+    case rocsparse_format_csr:
     {
         return rocsparse_csrmv_template(handle,
                                         trans,
@@ -176,8 +131,8 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                         (T*)y->values);
     }
 
-    // ELL
-    if(mat->format == rocsparse_format_ell)
+        // ELL
+    case rocsparse_format_ell:
     {
         return rocsparse_ellmv_template(handle,
                                         trans,
@@ -193,7 +148,84 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                         (T*)y->values);
     }
 
-    return rocsparse_status_not_implemented;
+        // CSC
+    case rocsparse_format_csc:
+    {
+        // LCOV_EXCL_START
+        return rocsparse_status_not_implemented;
+        // LCOV_EXCL_STOP
+    }
+    }
+
+    // LCOV_EXCL_START
+    return rocsparse_status_invalid_value;
+    // LCOV_EXCL_STOP
+}
+
+template <typename... Ts>
+rocsparse_status rocsparse_spmv_dynamic_dispatch(rocsparse_indextype itype,
+                                                 rocsparse_indextype jtype,
+                                                 rocsparse_datatype  ctype,
+                                                 Ts&&... ts)
+{
+    switch(ctype)
+    {
+
+#define DATATYPE_CASE(ENUMVAL, TYPE)                                           \
+    case ENUMVAL:                                                              \
+    {                                                                          \
+        switch(itype)                                                          \
+        {                                                                      \
+        case rocsparse_indextype_u16:                                          \
+        {                                                                      \
+            return rocsparse_status_not_implemented;                           \
+        }                                                                      \
+        case rocsparse_indextype_i32:                                          \
+        {                                                                      \
+            switch(jtype)                                                      \
+            {                                                                  \
+            case rocsparse_indextype_u16:                                      \
+            case rocsparse_indextype_i64:                                      \
+            {                                                                  \
+                return rocsparse_status_not_implemented;                       \
+            }                                                                  \
+            case rocsparse_indextype_i32:                                      \
+            {                                                                  \
+                return rocsparse_spmv_template<int32_t, int32_t, TYPE>(ts...); \
+            }                                                                  \
+            }                                                                  \
+        }                                                                      \
+        case rocsparse_indextype_i64:                                          \
+        {                                                                      \
+            switch(jtype)                                                      \
+            {                                                                  \
+            case rocsparse_indextype_u16:                                      \
+            {                                                                  \
+                return rocsparse_status_not_implemented;                       \
+            }                                                                  \
+            case rocsparse_indextype_i32:                                      \
+            {                                                                  \
+                return rocsparse_spmv_template<int64_t, int32_t, TYPE>(ts...); \
+            }                                                                  \
+            case rocsparse_indextype_i64:                                      \
+            {                                                                  \
+                return rocsparse_spmv_template<int64_t, int64_t, TYPE>(ts...); \
+            }                                                                  \
+            }                                                                  \
+        }                                                                      \
+        }                                                                      \
+    }
+
+        DATATYPE_CASE(rocsparse_datatype_f32_r, float);
+        DATATYPE_CASE(rocsparse_datatype_f64_r, double);
+        DATATYPE_CASE(rocsparse_datatype_f32_c, rocsparse_float_complex);
+        DATATYPE_CASE(rocsparse_datatype_f64_c, rocsparse_double_complex);
+
+#undef DATATYPE_CASE
+    }
+    // LCOV_EXCL_START
+    return rocsparse_status_invalid_value;
+    // LCOV_EXCL_STOP
 }
 
 /*
@@ -262,10 +294,13 @@ extern "C" rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
     }
 
     // Check if descriptors are initialized
+    // Basically this never happens, but I let it here.
+    // LCOV_EXCL_START
     if(mat->init == false || x->init == false || y->init == false)
     {
         return rocsparse_status_not_initialized;
     }
+    // LCOV_EXCL_STOP
 
     // Check for matching types while we do not support mixed precision computation
     if(compute_type != mat->data_type || compute_type != x->data_type
@@ -274,19 +309,17 @@ extern "C" rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
         return rocsparse_status_not_implemented;
     }
 
-    RETURN_SPMV(mat->row_type,
-                mat->col_type,
-                compute_type,
-                handle,
-                trans,
-                alpha,
-                mat,
-                x,
-                beta,
-                y,
-                alg,
-                buffer_size,
-                temp_buffer);
-
-    return rocsparse_status_not_implemented;
+    return rocsparse_spmv_dynamic_dispatch(mat->row_type,
+                                           mat->col_type,
+                                           compute_type,
+                                           handle,
+                                           trans,
+                                           alpha,
+                                           mat,
+                                           x,
+                                           beta,
+                                           y,
+                                           alg,
+                                           buffer_size,
+                                           temp_buffer);
 }

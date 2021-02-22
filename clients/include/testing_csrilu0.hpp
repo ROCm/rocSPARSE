@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -25,26 +25,6 @@
 #pragma once
 #ifndef TESTING_CSRILU0_HPP
 #define TESTING_CSRILU0_HPP
-
-static inline const float* get_boost_tol(const float* tol)
-{
-    return tol;
-}
-
-static inline const double* get_boost_tol(const double* tol)
-{
-    return tol;
-}
-
-static inline const float* get_boost_tol(const rocsparse_float_complex* tol)
-{
-    return reinterpret_cast<const float*>(tol);
-}
-
-static inline const double* get_boost_tol(const rocsparse_double_complex* tol)
-{
-    return reinterpret_cast<const double*>(tol);
-}
 
 template <typename T>
 void testing_csrilu0_bad_arg(const Arguments& arg);

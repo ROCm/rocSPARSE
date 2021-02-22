@@ -137,8 +137,8 @@ template <>
 inline rocsparse_float_complex random_generator<rocsparse_float_complex>(rocsparse_float_complex a,
                                                                          rocsparse_float_complex b)
 {
-    return rocsparse_float_complex(random_generator<float>(std::abs(a), std::abs(b)),
-                                   random_generator<float>(std::abs(a), std::abs(b)));
+    return rocsparse_float_complex(random_generator<float>(std::real(a), std::real(b)),
+                                   random_generator<float>(std::imag(a), std::imag(b)));
 }
 
 template <>
@@ -146,8 +146,8 @@ inline rocsparse_double_complex
     random_generator<rocsparse_double_complex>(rocsparse_double_complex a,
                                                rocsparse_double_complex b)
 {
-    return rocsparse_double_complex(random_generator<double>(std::abs(a), std::abs(b)),
-                                    random_generator<double>(std::abs(a), std::abs(b)));
+    return rocsparse_double_complex(random_generator<double>(std::real(a), std::real(b)),
+                                    random_generator<double>(std::imag(a), std::imag(b)));
 }
 
 /*! \brief generate a random normally distributed number around 0 with stddev 1 */

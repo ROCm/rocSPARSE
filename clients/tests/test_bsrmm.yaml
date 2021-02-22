@@ -136,7 +136,7 @@ Tests:
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
-  percentage: [1]
+  matrix_init_kind: [rocsparse_matrix_init_kind_tunedavg]
   direction: [rocsparse_direction_column]
   matrix: [rocsparse_matrix_random]
 

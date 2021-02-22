@@ -126,34 +126,19 @@ void testing_gemmi(const Arguments& arg)
     }
 
     //
-    // Sample matrix B
+    // Sample matrices.
     //
     host_csr_matrix<T> hB;
     matrix_factory.init_csr(hB,
                             (transB == rocsparse_operation_none) ? K : N,
                             (transB == rocsparse_operation_none) ? N : K);
 
-    device_csr_matrix<T> dB(hB);
-    if(!arg.unit_check)
-        hB.~host_csr_matrix<T>();
-
-    //
-    // Sample matrix A
-    //
-    host_dense_matrix<T> hA(M, K);
+    host_dense_matrix<T> hA(M, K), hC(M, N);
     rocsparse_matrix_utils::init(hA);
-    device_dense_matrix<T> dA(hA);
-    if(!arg.unit_check)
-        hA.~host_dense_matrix<T>();
-
-    //
-    // Sample matrix C
-    //
-    host_dense_matrix<T> hC(M, N);
     rocsparse_matrix_utils::init(hC);
-    device_dense_matrix<T> dC(hC);
-    if(!arg.unit_check)
-        hC.~host_dense_matrix<T>();
+
+    device_csr_matrix<T>   dB(hB);
+    device_dense_matrix<T> dA(hA), dC(hC);
 
 #define GEMMI(_ta, _tb, _a, _da, _db, _b, _dc)                            \
     rocsparse_gemmi<T>(handle,                                            \

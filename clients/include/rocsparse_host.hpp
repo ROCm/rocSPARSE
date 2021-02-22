@@ -97,22 +97,22 @@ void host_bsrmv(rocsparse_direction  dir,
                 rocsparse_index_base base);
 
 template <typename T>
-void host_bsrsv(rocsparse_operation               trans,
-                rocsparse_direction               dir,
-                rocsparse_int                     mb,
-                rocsparse_int                     nnzb,
-                T                                 alpha,
-                const std::vector<rocsparse_int>& bsr_row_ptr,
-                const std::vector<rocsparse_int>& bsr_col_ind,
-                const std::vector<T>&             bsr_val,
-                rocsparse_int                     bsr_dim,
-                const std::vector<T>&             x,
-                std::vector<T>&                   y,
-                rocsparse_diag_type               diag_type,
-                rocsparse_fill_mode               fill_mode,
-                rocsparse_index_base              base,
-                rocsparse_int*                    struct_pivot,
-                rocsparse_int*                    numeric_pivot);
+void host_bsrsv(rocsparse_operation  trans,
+                rocsparse_direction  dir,
+                rocsparse_int        mb,
+                rocsparse_int        nnzb,
+                T                    alpha,
+                const rocsparse_int* bsr_row_ptr,
+                const rocsparse_int* bsr_col_ind,
+                const T*             bsr_val,
+                rocsparse_int        bsr_dim,
+                const T*             x,
+                T*                   y,
+                rocsparse_diag_type  diag_type,
+                rocsparse_fill_mode  fill_mode,
+                rocsparse_index_base base,
+                rocsparse_int*       struct_pivot,
+                rocsparse_int*       numeric_pivot);
 
 template <typename I, typename T>
 void host_coomv(I                    M,
@@ -636,18 +636,18 @@ void host_gebsr_to_gebsr(rocsparse_direction               direction,
                          rocsparse_index_base              base_C);
 
 template <typename T>
-void host_bsr_to_bsc(rocsparse_int                     mb,
-                     rocsparse_int                     nb,
-                     rocsparse_int                     nnzb,
-                     rocsparse_int                     bsr_dim,
-                     const std::vector<rocsparse_int>& bsr_row_ptr,
-                     const std::vector<rocsparse_int>& bsr_col_ind,
-                     const std::vector<T>&             bsr_val,
-                     std::vector<rocsparse_int>&       bsc_row_ind,
-                     std::vector<rocsparse_int>&       bsc_col_ptr,
-                     std::vector<T>&                   bsc_val,
-                     rocsparse_index_base              bsr_base,
-                     rocsparse_index_base              bsc_base);
+void host_bsr_to_bsc(rocsparse_int               mb,
+                     rocsparse_int               nb,
+                     rocsparse_int               nnzb,
+                     rocsparse_int               bsr_dim,
+                     const rocsparse_int*        bsr_row_ptr,
+                     const rocsparse_int*        bsr_col_ind,
+                     const T*                    bsr_val,
+                     std::vector<rocsparse_int>& bsc_row_ind,
+                     std::vector<rocsparse_int>& bsc_col_ptr,
+                     std::vector<T>&             bsc_val,
+                     rocsparse_index_base        bsr_base,
+                     rocsparse_index_base        bsc_base);
 
 template <typename I, typename J, typename T>
 void host_csr_to_ell(J                     M,

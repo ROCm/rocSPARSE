@@ -43,6 +43,10 @@ rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          han
                                                    U                         beta_device_host,
                                                    T*                        y)
 {
+    if(trans != rocsparse_operation_none)
+    {
+        return rocsparse_status_not_implemented;
+    }
 
     //
     // bsr_dim == 1 is the CSR case
@@ -66,156 +70,148 @@ rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          han
         return rocsparse_status_success;
     }
 
+    // LCOV_EXCL_START
     // Run different bsrmv kernels
-    if(trans == rocsparse_operation_none)
+    if(handle->wavefront_size == 32)
     {
-        // LCOV_EXCL_START
-        if(handle->wavefront_size == 32)
-        {
-            bsrmvn_general(handle,
-                           dir,
-                           mb,
-                           alpha_device_host,
-                           bsr_row_ptr,
-                           bsr_col_ind,
-                           bsr_val,
-                           bsr_dim,
-                           x,
-                           beta_device_host,
-                           y,
-                           descr->base);
 
-            return rocsparse_status_success;
-        }
-        // LCOV_EXCL_STOP
+        bsrmvn_general(handle,
+                       dir,
+                       mb,
+                       alpha_device_host,
+                       bsr_row_ptr,
+                       bsr_col_ind,
+                       bsr_val,
+                       bsr_dim,
+                       x,
+                       beta_device_host,
+                       y,
+                       descr->base);
+        return rocsparse_status_success;
+    }
+    // LCOV_EXCL_STOP
 
-        if(bsr_dim == 2)
-        {
-            bsrmvn_2x2(handle,
-                       dir,
-                       mb,
-                       nnzb,
-                       alpha_device_host,
-                       bsr_row_ptr,
-                       bsr_col_ind,
-                       bsr_val,
-                       x,
-                       beta_device_host,
-                       y,
-                       descr->base);
-        }
-        else if(bsr_dim == 3)
-        {
-            bsrmvn_3x3(handle,
-                       dir,
-                       mb,
-                       nnzb,
-                       alpha_device_host,
-                       bsr_row_ptr,
-                       bsr_col_ind,
-                       bsr_val,
-                       x,
-                       beta_device_host,
-                       y,
-                       descr->base);
-        }
-        else if(bsr_dim == 4)
-        {
-            bsrmvn_4x4(handle,
-                       dir,
-                       mb,
-                       nnzb,
-                       alpha_device_host,
-                       bsr_row_ptr,
-                       bsr_col_ind,
-                       bsr_val,
-                       x,
-                       beta_device_host,
-                       y,
-                       descr->base);
-        }
-        else if(bsr_dim == 5)
-        {
-            bsrmvn_5x5(handle,
-                       dir,
-                       mb,
-                       nnzb,
-                       alpha_device_host,
-                       bsr_row_ptr,
-                       bsr_col_ind,
-                       bsr_val,
-                       x,
-                       beta_device_host,
-                       y,
-                       descr->base);
-        }
-        else if(bsr_dim == 8)
-        {
-            bsrmvn_8x8(handle,
-                       dir,
-                       mb,
-                       nnzb,
-                       alpha_device_host,
-                       bsr_row_ptr,
-                       bsr_col_ind,
-                       bsr_val,
-                       x,
-                       beta_device_host,
-                       y,
-                       descr->base);
-        }
-        else if(bsr_dim == 16)
-        {
-            bsrmvn_16x16(handle,
-                         dir,
-                         mb,
-                         nnzb,
-                         alpha_device_host,
-                         bsr_row_ptr,
-                         bsr_col_ind,
-                         bsr_val,
-                         x,
-                         beta_device_host,
-                         y,
-                         descr->base);
-        }
-        else if(bsr_dim > 16 && bsr_dim <= 32)
-        {
+    if(bsr_dim == 2)
+    {
+        bsrmvn_2x2(handle,
+                   dir,
+                   mb,
+                   nnzb,
+                   alpha_device_host,
+                   bsr_row_ptr,
+                   bsr_col_ind,
+                   bsr_val,
+                   x,
+                   beta_device_host,
+                   y,
+                   descr->base);
+    }
+    else if(bsr_dim == 3)
+    {
+        bsrmvn_3x3(handle,
+                   dir,
+                   mb,
+                   nnzb,
+                   alpha_device_host,
+                   bsr_row_ptr,
+                   bsr_col_ind,
+                   bsr_val,
+                   x,
+                   beta_device_host,
+                   y,
+                   descr->base);
+    }
+    else if(bsr_dim == 4)
+    {
+        bsrmvn_4x4(handle,
+                   dir,
+                   mb,
+                   nnzb,
+                   alpha_device_host,
+                   bsr_row_ptr,
+                   bsr_col_ind,
+                   bsr_val,
+                   x,
+                   beta_device_host,
+                   y,
+                   descr->base);
+    }
+    else if(bsr_dim == 5)
+    {
+        bsrmvn_5x5(handle,
+                   dir,
+                   mb,
+                   nnzb,
+                   alpha_device_host,
+                   bsr_row_ptr,
+                   bsr_col_ind,
+                   bsr_val,
+                   x,
+                   beta_device_host,
+                   y,
+                   descr->base);
+    }
+    else if(bsr_dim == 8)
+    {
+        bsrmvn_8x8(handle,
+                   dir,
+                   mb,
+                   nnzb,
+                   alpha_device_host,
+                   bsr_row_ptr,
+                   bsr_col_ind,
+                   bsr_val,
+                   x,
+                   beta_device_host,
+                   y,
+                   descr->base);
+    }
+    else if(bsr_dim == 16)
+    {
+        bsrmvn_16x16(handle,
+                     dir,
+                     mb,
+                     nnzb,
+                     alpha_device_host,
+                     bsr_row_ptr,
+                     bsr_col_ind,
+                     bsr_val,
+                     x,
+                     beta_device_host,
+                     y,
+                     descr->base);
+    }
+    else if(bsr_dim > 16 && bsr_dim <= 32)
+    {
 
-            bsrmvn_17_32(handle,
-                         dir,
-                         mb,
-                         nnzb,
-                         alpha_device_host,
-                         bsr_row_ptr,
-                         bsr_col_ind,
-                         bsr_val,
-                         bsr_dim,
-                         x,
-                         beta_device_host,
-                         y,
-                         descr->base);
-        }
-        else
-        {
-            bsrmvn_general(handle,
-                           dir,
-                           mb,
-                           alpha_device_host,
-                           bsr_row_ptr,
-                           bsr_col_ind,
-                           bsr_val,
-                           bsr_dim,
-                           x,
-                           beta_device_host,
-                           y,
-                           descr->base);
-        }
+        bsrmvn_17_32(handle,
+                     dir,
+                     mb,
+                     nnzb,
+                     alpha_device_host,
+                     bsr_row_ptr,
+                     bsr_col_ind,
+                     bsr_val,
+                     bsr_dim,
+                     x,
+                     beta_device_host,
+                     y,
+                     descr->base);
     }
     else
     {
-        // TODO
-        return rocsparse_status_not_implemented;
+        bsrmvn_general(handle,
+                       dir,
+                       mb,
+                       alpha_device_host,
+                       bsr_row_ptr,
+                       bsr_col_ind,
+                       bsr_val,
+                       bsr_dim,
+                       x,
+                       beta_device_host,
+                       y,
+                       descr->base);
     }
 
     return rocsparse_status_success;
