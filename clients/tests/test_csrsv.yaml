@@ -112,8 +112,7 @@ Tests:
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mplate,
-             mc2depi,
-             ASIC_320k]
+             mc2depi]
 
 
 - name: csrsv

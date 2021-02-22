@@ -2717,12 +2717,12 @@ void host_csrgemm_nnz(J                     M,
     {
         std::vector<J> nnz(N, -1);
 
+        int nthreads = 1;
+        int tid      = 0;
+
 #ifdef _OPENMP
-        int nthreads = omp_get_num_threads();
-        int tid      = omp_get_thread_num();
-#else
-        int           nthreads = 1;
-        int           tid      = 0;
+        nthreads = omp_get_num_threads();
+        tid      = omp_get_thread_num();
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;
@@ -2828,12 +2828,12 @@ void host_csrgemm(J                     M,
     {
         std::vector<I> nnz(N, -1);
 
+        int nthreads = 1;
+        int tid      = 0;
+
 #ifdef _OPENMP
-        int nthreads = omp_get_num_threads();
-        int tid      = omp_get_thread_num();
-#else
-        int           nthreads = 1;
-        int           tid      = 0;
+        nthreads = omp_get_num_threads();
+        tid      = omp_get_thread_num();
 #endif
 
         J rows_per_thread = (M + nthreads - 1) / nthreads;

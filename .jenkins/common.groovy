@@ -52,7 +52,7 @@ def runCoverageCommand (platform, project, gfilter, String dirmode = "release")
                 cd ${project.paths.project_build_prefix}/build/${dirmode}
                 ${sudo} LD_LIBRARY_PATH=/opt/rocm/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG make coverage_cleanup coverage GTEST_FILTER=${gfilter}-*known_bug*
             """
-	    
+
     platform.runCommand(this, command)
 
     publishHTML([allowMissing: false,
