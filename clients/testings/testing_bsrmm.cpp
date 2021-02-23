@@ -39,8 +39,10 @@ void testing_bsrmm_bad_arg(const Arguments& arg)
     // Create matrix descriptor
     rocsparse_local_mat_descr local_descr;
 
-    // local declaration
+    T h_alpha = static_cast<T>(1);
+    T h_beta  = static_cast<T>(1);
 
+    // local declaration
     rocsparse_handle     handle      = local_handle;
     rocsparse_direction  dir         = rocsparse_direction_row;
     rocsparse_operation  trans_A     = rocsparse_operation_none;
@@ -49,7 +51,7 @@ void testing_bsrmm_bad_arg(const Arguments& arg)
     rocsparse_int        n           = safe_size;
     rocsparse_int        kb          = safe_size;
     rocsparse_int        nnzb        = safe_size;
-    const T*             alpha       = (const T*)0x4;
+    const T*             alpha       = &h_alpha;
     rocsparse_mat_descr  descr       = local_descr;
     const T*             bsr_val     = (const T*)0x4;
     const rocsparse_int* bsr_row_ptr = (const rocsparse_int*)0x4;
@@ -57,7 +59,7 @@ void testing_bsrmm_bad_arg(const Arguments& arg)
     rocsparse_int        block_dim   = safe_size;
     const T*             B           = (const T*)0x4;
     rocsparse_int        ldb         = safe_size;
-    const T*             beta        = (const T*)0x4;
+    const T*             beta        = &h_beta;
     T*                   C           = (T*)0x4;
     rocsparse_int        ldc         = safe_size;
 
