@@ -37,6 +37,9 @@ void testing_gemmi_bad_arg(const Arguments& arg)
     // Create rocsparse mat descriptor
     rocsparse_local_mat_descr local_descr;
 
+    T h_alpha = static_cast<T>(1);
+    T h_beta  = static_cast<T>(1);
+
     rocsparse_handle          handle      = local_handle;
     rocsparse_operation       trans_A     = rocsparse_operation_none;
     rocsparse_operation       trans_B     = rocsparse_operation_transpose;
@@ -44,14 +47,14 @@ void testing_gemmi_bad_arg(const Arguments& arg)
     rocsparse_int             n           = safe_size;
     rocsparse_int             k           = safe_size;
     rocsparse_int             nnz         = safe_size;
-    const T*                  alpha       = (const T*)0x4;
+    const T*                  alpha       = &h_alpha;
     const T*                  A           = (const T*)0x4;
     rocsparse_int             lda         = safe_size;
     const rocsparse_mat_descr descr       = local_descr;
     const T*                  csr_val     = (const T*)0x4;
     const rocsparse_int*      csr_row_ptr = (const rocsparse_int*)0x4;
     const rocsparse_int*      csr_col_ind = (const rocsparse_int*)0x4;
-    const T*                  beta        = (const T*)0x4;
+    const T*                  beta        = &h_beta;
     T*                        C           = (T*)0x4;
     rocsparse_int             ldc         = safe_size;
 
