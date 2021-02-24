@@ -116,6 +116,13 @@ public:
         rocsparse_destroy_mat_info(this->info);
     }
 
+    // Sometimes useful to reset local info
+    void reset()
+    {
+        rocsparse_destroy_mat_info(this->info);
+        rocsparse_create_mat_info(&this->info);
+    }
+
     // Allow rocsparse_local_mat_info to be used anywhere rocsparse_mat_info is expected
     operator rocsparse_mat_info&()
     {

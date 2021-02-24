@@ -933,6 +933,9 @@ void testing_csrsm(const Arguments& arg)
     rocsparse_local_mat_descr descr;
 
     // Create matrix info
+    rocsparse_local_mat_info info;
+
+    // Create matrix info
 
     // Set matrix diag type
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(descr, diag));
@@ -942,9 +945,6 @@ void testing_csrsm(const Arguments& arg)
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
-
-    rocsparse_mat_info info = nullptr;
-    rocsparse_create_mat_info(&info);
 
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || nrhs <= 0)
@@ -1198,7 +1198,7 @@ void testing_csrsm(const Arguments& arg)
         //
         // RESET MAT INFO.
         //
-        rocsparse_create_mat_info(&info);
+        info.reset();
 
         //
         // CALL BUFFER SIZE WITH DEVICE MODE.

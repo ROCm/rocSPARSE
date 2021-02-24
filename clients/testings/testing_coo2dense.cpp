@@ -33,6 +33,7 @@ void testing_coo2dense_bad_arg(const Arguments& arg)
     static constexpr rocsparse_int NNZ       = 10;
     static constexpr rocsparse_int LD        = M;
     rocsparse_local_handle         handle;
+    rocsparse_local_mat_descr      descr;
 
     device_vector<T>             d_dense_val(safe_size);
     device_vector<rocsparse_int> d_coo_row_ind(2);
@@ -44,9 +45,6 @@ void testing_coo2dense_bad_arg(const Arguments& arg)
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
-
-    rocsparse_mat_descr descr = nullptr;
-    rocsparse_create_mat_descr(&descr);
 
     // Testing invalid handle.
     EXPECT_ROCSPARSE_STATUS(
@@ -159,18 +157,17 @@ void testing_coo2dense_bad_arg(const Arguments& arg)
                                                 (T*)d_dense_val,
                                                 M - 1),
                             rocsparse_status_invalid_size);
-    rocsparse_destroy_mat_descr(descr);
 }
 
 template <typename T>
 void testing_coo2dense(const Arguments& arg)
 {
-    rocsparse_int          M  = arg.M;
-    rocsparse_int          N  = arg.N;
-    rocsparse_int          LD = arg.denseld;
-    rocsparse_local_handle handle;
-    rocsparse_mat_descr    descr;
-    rocsparse_create_mat_descr(&descr);
+    rocsparse_int             M  = arg.M;
+    rocsparse_int             N  = arg.N;
+    rocsparse_int             LD = arg.denseld;
+    rocsparse_local_handle    handle;
+    rocsparse_local_mat_descr descr;
+
     rocsparse_set_mat_index_base(descr, arg.baseA);
 
     // Argument sanity check before allocating invalid memory
@@ -383,9 +380,6 @@ void testing_coo2dense(const Arguments& arg)
 	  << std::endl;
         // clang-format on
     }
-
-    // Destroy the matrix descriptor.
-    rocsparse_destroy_mat_descr(descr);
 }
 
 #define INSTANTIATE(TYPE)                                                \

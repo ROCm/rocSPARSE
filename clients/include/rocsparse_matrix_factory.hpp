@@ -290,11 +290,11 @@ struct rocsparse_matrix_utils
                         bsrilu0_step              step = bsrilu0_all)
     {
 
-        rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         if(!buffer)
         {
+            rocsparse_handle handle;
+            CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
             CHECK_ROCSPARSE_ERROR(rocsparse_bsrilu0_buffer_size<T>(handle,
                                                                    that.block_direction,
                                                                    that.mb,
@@ -306,8 +306,15 @@ struct rocsparse_matrix_utils
                                                                    that.row_block_dim,
                                                                    info,
                                                                    p_buffer_size));
+            CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+
             return;
         }
+
+        rocsparse_handle handle;
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
         switch(step)
         {
         case bsrilu0_all:
@@ -381,11 +388,11 @@ struct rocsparse_matrix_utils
                        void*                     buffer,
                        bsric0_step               step = bsric0_all)
     {
-        rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         if(!buffer)
         {
+            rocsparse_handle handle;
+            CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
             CHECK_ROCSPARSE_ERROR(rocsparse_bsric0_buffer_size<T>(handle,
                                                                   that.block_direction,
                                                                   that.mb,
@@ -397,8 +404,14 @@ struct rocsparse_matrix_utils
                                                                   that.row_block_dim,
                                                                   info,
                                                                   p_buffer_size));
+            CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
             return;
         }
+
+        rocsparse_handle handle;
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
         switch(step)
         {
         case bsric0_all:
@@ -470,11 +483,11 @@ struct rocsparse_matrix_utils
                        void*                     buffer,
                        csric0_step               step = csric0_all)
     {
-        rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         if(!buffer)
         {
+            rocsparse_handle handle;
+            CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
             CHECK_ROCSPARSE_ERROR(rocsparse_csric0_buffer_size<T>(handle,
                                                                   that.m,
                                                                   that.nnz,
@@ -484,8 +497,14 @@ struct rocsparse_matrix_utils
                                                                   that.ind,
                                                                   info,
                                                                   p_buffer_size));
+            CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
             return;
         }
+
+        rocsparse_handle handle;
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
         switch(step)
         {
         case csric0_all:
@@ -556,12 +575,11 @@ struct rocsparse_matrix_utils
                         void*                     buffer,
                         csrilu0_step              step = csrilu0_all)
     {
-
-        rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         if(!buffer)
         {
+            rocsparse_handle handle;
+            CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
             CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_buffer_size<T>(handle,
                                                                    that.m,
                                                                    that.nnz,
@@ -571,8 +589,14 @@ struct rocsparse_matrix_utils
                                                                    that.ind,
                                                                    info,
                                                                    p_buffer_size));
+            CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
             return;
         }
+
+        rocsparse_handle handle;
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+
         switch(step)
         {
         case csrilu0_all:
@@ -1614,13 +1638,6 @@ public:
     void init_hyb(
         rocsparse_hyb_mat hyb, I& M, I& N, I& nnz, rocsparse_index_base base, bool& conform)
     {
-        rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-        rocsparse_mat_descr descr;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&descr));
-        // Set matrix index base
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
-
         conform                                = true;
         rocsparse_hyb_partition part           = this->m_arg.part;
         rocsparse_int           user_ell_width = this->m_arg.algo;
@@ -1656,6 +1673,14 @@ public:
         }
 
         device_csr_matrix<T, I, I> dA(hA);
+
+        rocsparse_handle handle;
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+        rocsparse_mat_descr descr;
+        CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&descr));
+        // Set matrix index base
+        CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
+
         // Convert CSR matrix to HYB
         CHECK_ROCSPARSE_ERROR(rocsparse_csr2hyb<T>(
             handle, M, N, descr, dA.val, dA.ptr, dA.ind, hyb, user_ell_width, part));
