@@ -33,8 +33,9 @@ void testing_nnz_bad_arg(const Arguments& arg)
     static constexpr rocsparse_int N         = 10;
     static constexpr rocsparse_int LD        = M;
 
-    rocsparse_direction    dirA = rocsparse_direction_row;
-    rocsparse_local_handle handle;
+    rocsparse_direction       dirA = rocsparse_direction_row;
+    rocsparse_local_handle    handle;
+    rocsparse_local_mat_descr descrA;
 
     device_vector<T> d_A(safe_size);
 
@@ -45,9 +46,6 @@ void testing_nnz_bad_arg(const Arguments& arg)
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
-
-    rocsparse_mat_descr descrA = nullptr;
-    rocsparse_create_mat_descr(&descrA);
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
@@ -168,8 +166,6 @@ void testing_nnz_bad_arg(const Arguments& arg)
                                           d_nnzPerRowColumn,
                                           d_nnzTotalDevHostPtr),
                             rocsparse_status_invalid_size);
-
-    rocsparse_destroy_mat_descr(descrA);
 }
 
 template <typename T>
@@ -180,9 +176,8 @@ void testing_nnz(const Arguments& arg)
     rocsparse_direction dirA = arg.direction;
     rocsparse_int       LD   = arg.denseld;
 
-    rocsparse_local_handle handle;
-    rocsparse_mat_descr    descrA;
-    rocsparse_create_mat_descr(&descrA);
+    rocsparse_local_handle    handle;
+    rocsparse_local_mat_descr descrA;
 
     //
     // Argument sanity check before allocating invalid memory
@@ -425,11 +420,6 @@ void testing_nnz(const Arguments& arg)
 	    << std::endl;
         // clang-format on
     }
-
-    //
-    // Destroy the matrix descriptor.
-    //
-    rocsparse_destroy_mat_descr(descrA);
 }
 
 #define INSTANTIATE(TYPE)                                          \

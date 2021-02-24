@@ -164,8 +164,7 @@ void testing_bsrsv(const Arguments& arg)
     rocsparse_local_mat_descr descr;
 
     // Create matrix info
-    rocsparse_mat_info info;
-    CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_info(&info));
+    rocsparse_local_mat_info info;
 
     // Set matrix diag type
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_diag_type(descr, diag));
@@ -331,9 +330,7 @@ void testing_bsrsv(const Arguments& arg)
         //
         // RESET MAT INFO.
         //
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_mat_info(info));
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_info(&info));
-
+        info.reset();
         {
             device_scalar<rocsparse_int> d_analysis_pivot;
             device_scalar<rocsparse_int> d_solve_pivot;
@@ -376,8 +373,7 @@ void testing_bsrsv(const Arguments& arg)
         //
         // RESET MAT INFO
         //
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_mat_info(info));
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_info(&info));
+        info.reset();
 
         //
         // A BIT MORE FOR CODE COVERAGE, WE ONLY DO ANALYSIS FOR INFO ASSIGNMENT.
@@ -418,8 +414,7 @@ void testing_bsrsv(const Arguments& arg)
             CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
         }
 
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_mat_info(info));
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_info(&info));
+        info.reset();
 
         //
         // A BIT MORE FOR CODE COVERAGE, WE ONLY DO ANALYSIS FOR INFO ASSIGNMENT.

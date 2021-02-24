@@ -49,6 +49,7 @@ void testing_csx2dense_bad_arg(const Arguments& arg, FUNC& csx2dense)
     static constexpr rocsparse_int N         = 10;
     static constexpr rocsparse_int LD        = M;
     rocsparse_local_handle         handle;
+    rocsparse_local_mat_descr      descr;
 
     device_vector<T>             d_dense_val(safe_size);
     device_vector<rocsparse_int> d_csx_row_col_ptr(2);
@@ -61,8 +62,6 @@ void testing_csx2dense_bad_arg(const Arguments& arg, FUNC& csx2dense)
         return;
     }
 
-    rocsparse_mat_descr descr = nullptr;
-    rocsparse_create_mat_descr(&descr);
     //
     // Testing invalid handle.
     //
@@ -163,20 +162,18 @@ void testing_csx2dense_bad_arg(const Arguments& arg, FUNC& csx2dense)
                                       (T*)d_dense_val,
                                       M - 1),
                             rocsparse_status_invalid_size);
-    rocsparse_destroy_mat_descr(descr);
 }
 
 template <rocsparse_direction DIRA, typename T, typename FUNC1, typename FUNC2>
 void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
 
 {
-    rocsparse_int          M      = arg.M;
-    rocsparse_int          N      = arg.N;
-    rocsparse_int          LD     = arg.denseld;
-    rocsparse_int          DIMDIR = (rocsparse_direction_row == DIRA) ? M : N;
-    rocsparse_local_handle handle;
-    rocsparse_mat_descr    descr;
-    rocsparse_create_mat_descr(&descr);
+    rocsparse_int             M      = arg.M;
+    rocsparse_int             N      = arg.N;
+    rocsparse_int             LD     = arg.denseld;
+    rocsparse_int             DIMDIR = (rocsparse_direction_row == DIRA) ? M : N;
+    rocsparse_local_handle    handle;
+    rocsparse_local_mat_descr descr;
     rocsparse_set_mat_index_base(descr, arg.baseA);
 
     //
@@ -420,11 +417,6 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
 	  << std::endl;
         // clang-format on
     }
-
-    //
-    // Destroy the matrix descriptor.
-    //
-    rocsparse_destroy_mat_descr(descr);
 }
 
 #endif // TESTING_CSX2DENSE_HPP
