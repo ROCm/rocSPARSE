@@ -137,7 +137,6 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [nos7]
-  tolm: [2]
 
 #
 # More tests for code coverage
