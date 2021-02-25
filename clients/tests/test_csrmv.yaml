@@ -101,7 +101,6 @@ Tests:
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
   algo: [0, 1]
-  tolm: [2]
 
 - name: csrmv_file
   category: quick

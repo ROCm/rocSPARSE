@@ -135,6 +135,8 @@ void unit_check_general(int64_t M, int64_t N, int64_t lda, const size_t* hCPU, c
     UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_EQ);
 }
 
+#define MAX_TOL_MULTIPLIER 4
+
 template <typename T>
 void near_check_general_template(rocsparse_int      M,
                                  rocsparse_int      N,
@@ -143,6 +145,7 @@ void near_check_general_template(rocsparse_int      M,
                                  const T*           hGPU,
                                  floating_data_t<T> tol = default_tolerance<T>::value)
 {
+    int tolm = 1;
     for(rocsparse_int j = 0; j < N; ++j)
     {
         for(rocsparse_int i = 0; i < M; ++i)
@@ -160,19 +163,50 @@ void near_check_general_template(rocsparse_int      M,
             }
             else
             {
-                ASSERT_NEAR(hCPU[i + j * lda], hGPU[i + j * lda], compare_val);
+                int k;
+                for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
+                {
+                    if(std::abs(hCPU[i + j * lda] - hGPU[i + j * lda]) <= compare_val * k)
+                    {
+                        break;
+                    }
+                }
+
+                if(k > MAX_TOL_MULTIPLIER)
+                {
+                    ASSERT_NEAR(hCPU[i + j * lda], hGPU[i + j * lda], compare_val);
+                }
+                tolm = std::max(tolm, k);
             }
 #else
-            if(std::abs(hCPU[i + j * lda] - hGPU[i + j * lda]) >= compare_val)
+
+            int k;
+            for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
+            {
+                if(std::abs(hCPU[i + j * lda] - hGPU[i + j * lda]) <= compare_val * k)
+                {
+                    break;
+                }
+            }
+
+            if(k > MAX_TOL_MULTIPLIER)
             {
                 std::cerr.precision(12);
                 std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
                           << ") failed: " << std::abs(hCPU[i + j * lda] - hGPU[i + j * lda])
-                          << " exceeds compare_val " << compare_val << std::endl;
+                          << " exceeds permissive range [" << compare_val << ","
+                          << compare_val * MAX_TOL_MULTIPLIER << " ]" << std::endl;
                 exit(EXIT_FAILURE);
             }
+            tolm = std::max(tolm, k);
 #endif
         }
+    }
+
+    if(tolm > 1)
+    {
+        std::cerr << "WARNING near_check has been permissive with a tolerance multiplier equal to "
+                  << tolm << std::endl;
     }
 }
 
@@ -184,6 +218,7 @@ void near_check_general_template(rocsparse_int                  M,
                                  const rocsparse_float_complex* hGPU,
                                  float                          tol)
 {
+    int tolm = 1;
     for(rocsparse_int j = 0; j < N; ++j)
     {
         for(rocsparse_int i = 0; i < M; ++i)
@@ -204,27 +239,61 @@ void near_check_general_template(rocsparse_int                  M,
             }
             else
             {
-                ASSERT_NEAR(std::real(hCPU[i + j * lda]),
-                            std::real(hGPU[i + j * lda]),
-                            std::real(compare_val));
-                ASSERT_NEAR(std::imag(hCPU[i + j * lda]),
-                            std::imag(hGPU[i + j * lda]),
-                            std::imag(compare_val));
+                int k;
+                for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
+                {
+                    if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
+                           <= std::real(compare_val) * k
+                       && std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
+                              <= std::imag(compare_val) * k)
+                    {
+                        break;
+                    }
+                }
+
+                if(k > MAX_TOL_MULTIPLIER)
+                {
+                    ASSERT_NEAR(std::real(hCPU[i + j * lda]),
+                                std::real(hGPU[i + j * lda]),
+                                std::real(compare_val));
+                    ASSERT_NEAR(std::imag(hCPU[i + j * lda]),
+                                std::imag(hGPU[i + j * lda]),
+                                std::imag(compare_val));
+                }
+                tolm = std::max(tolm, k);
             }
 #else
-            if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
-                   >= std::real(compare_val)
-               || std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
-                      >= std::imag(compare_val))
+
+            int k;
+            for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
+            {
+                if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
+                       <= std::real(compare_val) * k
+                   && std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
+                          <= std::imag(compare_val) * k)
+                {
+                    break;
+                }
+            }
+
+            if(k > MAX_TOL_MULTIPLIER)
             {
                 std::cerr.precision(16);
                 std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
                           << ") failed: " << std::abs(hCPU[i + j * lda] - hGPU[i + j * lda])
-                          << " exceeds compare_val " << compare_val << std::endl;
+                          << " exceeds permissive range [" << compare_val << ","
+                          << compare_val * MAX_TOL_MULTIPLIER << " ]" << std::endl;
                 exit(EXIT_FAILURE);
             }
+            tolm = std::max(tolm, k);
 #endif
         }
+    }
+
+    if(tolm > 1)
+    {
+        std::cerr << "WARNING near_check has been permissive with a tolerance multiplier equal to "
+                  << tolm << std::endl;
     }
 }
 
@@ -236,6 +305,7 @@ void near_check_general_template(rocsparse_int                   M,
                                  const rocsparse_double_complex* hGPU,
                                  double                          tol)
 {
+    int tolm = 1;
     for(rocsparse_int j = 0; j < N; ++j)
     {
         for(rocsparse_int i = 0; i < M; ++i)
@@ -256,27 +326,61 @@ void near_check_general_template(rocsparse_int                   M,
             }
             else
             {
-                ASSERT_NEAR(std::real(hCPU[i + j * lda]),
-                            std::real(hGPU[i + j * lda]),
-                            std::real(compare_val));
-                ASSERT_NEAR(std::imag(hCPU[i + j * lda]),
-                            std::imag(hGPU[i + j * lda]),
-                            std::imag(compare_val));
+                int k;
+                for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
+                {
+                    if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
+                           <= std::real(compare_val) * k
+                       && std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
+                              <= std::imag(compare_val) * k)
+                    {
+                        break;
+                    }
+                }
+
+                if(k > MAX_TOL_MULTIPLIER)
+                {
+                    ASSERT_NEAR(std::real(hCPU[i + j * lda]),
+                                std::real(hGPU[i + j * lda]),
+                                std::real(compare_val));
+                    ASSERT_NEAR(std::imag(hCPU[i + j * lda]),
+                                std::imag(hGPU[i + j * lda]),
+                                std::imag(compare_val));
+                }
+                tolm = std::max(tolm, k);
             }
 #else
-            if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
-                   >= std::real(compare_val)
-               || std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
-                      >= std::imag(compare_val))
+
+            int k;
+            for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
+            {
+                if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
+                       <= std::real(compare_val) * k
+                   && std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
+                          <= std::imag(compare_val) * k)
+                {
+                    break;
+                }
+            }
+
+            if(k > MAX_TOL_MULTIPLIER)
             {
                 std::cerr.precision(16);
                 std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
                           << ") failed: " << std::abs(hCPU[i + j * lda] - hGPU[i + j * lda])
-                          << " exceeds compare_val " << compare_val << std::endl;
+                          << " exceeds permissive range [" << compare_val << ","
+                          << compare_val * MAX_TOL_MULTIPLIER << " ]" << std::endl;
                 exit(EXIT_FAILURE);
             }
+            tolm = std::max(tolm, k);
 #endif
         }
+    }
+
+    if(tolm > 1)
+    {
+        std::cerr << "WARNING near_check has been permissive with a tolerance multiplier equal to "
+                  << tolm << std::endl;
     }
 }
 
