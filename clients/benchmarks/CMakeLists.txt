@@ -21,19 +21,6 @@
 #
 # ########################################################################
 
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_DETAILED_FAILURE_MSG ON)
-set(Boost_ADDITIONAL_VERSIONS 1.65.1 1.65)
-set(Boost_USE_STATIC_LIBS OFF)
-
-find_package(Boost COMPONENTS program_options)
-
-if(NOT Boost_FOUND)
-  message(STATUS "Dynamic boost libraries not found. Attempting to find static libraries...")
-  set(Boost_USE_STATIC_LIBS ON)
-  find_package(Boost REQUIRED COMPONENTS program_options)
-endif()
-
 set(ROCSPARSE_BENCHMARK_SOURCES
   client.cpp
 )
@@ -130,7 +117,7 @@ target_compile_options(rocsparse-bench PRIVATE -Wno-unused-command-line-argument
 target_include_directories(rocsparse-bench PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
 # Target link libraries
-target_link_libraries(rocsparse-bench PRIVATE Boost::program_options roc::rocsparse hip::host)
+target_link_libraries(rocsparse-bench PRIVATE roc::rocsparse hip::host)
 
 # Add OpenMP if available
 if(OPENMP_FOUND)

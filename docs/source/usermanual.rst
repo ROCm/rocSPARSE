@@ -58,7 +58,6 @@ Furthermore, the following compile-time dependencies must be met
 - `AMD ROCm <https://github.com/RadeonOpenCompute/ROCm>`_
 - `rocPRIM <https://github.com/ROCmSoftwarePlatform/rocPRIM>`_
 - `googletest <https://github.com/google/googletest>`_ (optional, for clients)
-- `libboost-program-options <https://www.boost.org/>`_ (optional, for clients)
 
 Download rocSPARSE
 ``````````````````
@@ -127,14 +126,11 @@ rocSPARSE can be built using the following commands:
   # Install rocSPARSE to /opt/rocm
   $ make install
 
-Boost and GoogleTest is required in order to build rocSPARSE clients.
+GoogleTest is required in order to build rocSPARSE clients.
 
 rocSPARSE with dependencies and clients can be built using the following commands:
 
 ::
-
-  # Install boost on e.g. Ubuntu
-  $ apt install libboost-program-options-dev
 
   # Install googletest
   $ mkdir -p build/release/deps ; cd build/release/deps

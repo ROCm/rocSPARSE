@@ -223,11 +223,6 @@ void testing_bsrmm(const Arguments& arg)
 
     matrix_factory.init_bsr(hA, dA, Mb, Kb);
 
-    if(!arg.unit_check)
-    {
-        hA.~host_gebsr_matrix<T>();
-    }
-
     M = Mb * dA.row_block_dim;
     K = Kb * dA.col_block_dim;
 
@@ -240,10 +235,6 @@ void testing_bsrmm(const Arguments& arg)
     rocsparse_matrix_utils::init(hB);
 
     device_dense_matrix<T> dB(hB);
-    if(!arg.unit_check)
-    {
-        hB.~host_dense_matrix<T>();
-    }
 
     //
     // C
@@ -251,10 +242,6 @@ void testing_bsrmm(const Arguments& arg)
     host_dense_matrix<T> hC(M, N);
     rocsparse_matrix_utils::init(hC);
     device_dense_matrix<T> dC(hC);
-    if(!arg.unit_check)
-    {
-        hC.~host_dense_matrix<T>();
-    }
 
 #define PARAMS(alpha_, dA_, dB_, beta_, dC_)                                                     \
     handle, direction, transA, transB, Mb, N, Kb, dA_.nnzb, alpha_.val, descr, dA_.val, dA_.ptr, \

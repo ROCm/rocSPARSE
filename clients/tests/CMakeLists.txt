@@ -21,19 +21,7 @@
 #
 # ########################################################################
 
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_DETAILED_FAILURE_MSG ON)
-set(Boost_ADDITIONAL_VERSIONS 1.65.1 1.65)
-set(Boost_USE_STATIC_LIBS OFF)
-
 find_package(GTest REQUIRED)
-find_package(Boost COMPONENTS program_options)
-
-if(NOT Boost_FOUND)
-  message(STATUS "Dynamic boost libraries not found. Attempting to find static libraries...")
-  set(Boost_USE_STATIC_LIBS ON)
-  find_package(Boost REQUIRED COMPONENTS program_options)
-endif()
 
 # Download some test matrices
 set(TEST_MATRICES
@@ -346,7 +334,7 @@ target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-unused
 target_include_directories(rocsparse-test PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
 # Target link libraries
-target_link_libraries(rocsparse-test PRIVATE GTest::GTest Boost::program_options roc::rocsparse hip::host)
+target_link_libraries(rocsparse-test PRIVATE GTest::GTest roc::rocsparse hip::host)
 
 # Add OpenMP if available
 if(OPENMP_FOUND)

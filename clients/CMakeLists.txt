@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +65,7 @@ if(NOT TARGET rocsparse)
   find_package(rocsparse REQUIRED CONFIG PATHS /opt/rocm/rocsparse)
 
   option(BUILD_CLIENTS_TESTS "Build tests (requires googletest)" OFF)
-  option(BUILD_CLIENTS_BENCHMARKS "Build benchmarks (requires boost)" OFF)
+  option(BUILD_CLIENTS_BENCHMARKS "Build benchmarks" OFF)
   option(BUILD_CLIENTS_SAMPLES "Build examples" ON)
 endif()
 
