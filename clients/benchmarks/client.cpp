@@ -102,11 +102,11 @@
 #include "testing_sparse_to_dense_csc.hpp"
 #include "testing_sparse_to_dense_csr.hpp"
 
-#include <boost/program_options.hpp>
 #include <iostream>
 #include <rocsparse.h>
+#include <unordered_set>
 
-namespace po = boost::program_options;
+#include "program_options.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -142,128 +142,134 @@ int main(int argc, char* argv[])
     rocsparse_int dir;
     rocsparse_int order;
 
-    std::vector<rocsparse_int> laplace(3, 0);
-
     rocsparse_int device_id;
 
-    po::options_description desc("rocsparse client command line options");
-    desc.add_options()("help,h", "produces this help message")
+    // clang-format off
+
+    options_description desc("rocsparse client command line options");
+    desc.add_options() ("help,h", "produces this help message")
         // clang-format off
         ("sizem,m",
-        po::value<rocsparse_int>(&arg.M)->default_value(128),
+        value<rocsparse_int>(&arg.M)->default_value(128),
         "Specific matrix size testing: sizem is only applicable to SPARSE-2 "
         "& SPARSE-3: the number of rows.")
 
         ("sizen,n",
-        po::value<rocsparse_int>(&arg.N)->default_value(128),
+        value<rocsparse_int>(&arg.N)->default_value(128),
         "Specific matrix/vector size testing: SPARSE-1: the length of the "
         "dense vector. SPARSE-2 & SPARSE-3: the number of columns")
 
         ("sizek,k",
-        po::value<rocsparse_int>(&arg.K)->default_value(128),
+        value<rocsparse_int>(&arg.K)->default_value(128),
         "Specific matrix/vector size testing: SPARSE-3: the number of columns")
 
         ("sizennz,z",
-        po::value<rocsparse_int>(&arg.nnz)->default_value(32),
+        value<rocsparse_int>(&arg.nnz)->default_value(32),
         "Specific vector size testing, LEVEL-1: the number of non-zero elements "
         "of the sparse vector.")
 
         ("blockdim",
-        po::value<rocsparse_int>(&arg.block_dim)->default_value(2),
+        value<rocsparse_int>(&arg.block_dim)->default_value(2),
         "BSR block dimension (default: 2)")
 
         ("row-blockdimA",
-        po::value<rocsparse_int>(&arg.row_block_dimA)->default_value(2),
+        value<rocsparse_int>(&arg.row_block_dimA)->default_value(2),
         "General BSR row block dimension (default: 2)")
 
         ("col-blockdimA",
-        po::value<rocsparse_int>(&arg.col_block_dimA)->default_value(2),
+        value<rocsparse_int>(&arg.col_block_dimA)->default_value(2),
         "General BSR col block dimension (default: 2)")
 
         ("row-blockdimB",
-        po::value<rocsparse_int>(&arg.row_block_dimB)->default_value(2),
+        value<rocsparse_int>(&arg.row_block_dimB)->default_value(2),
         "General BSR row block dimension (default: 2)")
 
         ("col-blockdimB",
-        po::value<rocsparse_int>(&arg.col_block_dimB)->default_value(2),
+        value<rocsparse_int>(&arg.col_block_dimB)->default_value(2),
         "General BSR col block dimension (default: 2)")
 
         ("mtx",
-        po::value<std::string>(&filename)->default_value(""), "read from matrix "
+        value<std::string>(&filename)->default_value(""), "read from matrix "
         "market (.mtx) format. This will override parameters -m, -n, and -z.")
 
         ("rocalution",
-        po::value<std::string>(&rocalution)->default_value(""),
+        value<std::string>(&rocalution)->default_value(""),
         "read from rocalution matrix binary file. This will override parameter --mtx")
 
-        ("laplacian-dim",
-        po::value<std::vector<rocsparse_int> >(&laplace)->multitoken(), "assemble "
+        ("dimx",
+        value<rocsparse_int>(&arg.dimx)->default_value(0.0), "assemble "
+        "laplacian matrix with dimensions <dimx dimy dimz>. dimz is optional. This "
+        "will override parameters -m, -n, -z and --mtx.")
+
+        ("dimy",
+        value<rocsparse_int>(&arg.dimy)->default_value(0.0), "assemble "
+        "laplacian matrix with dimensions <dimx dimy dimz>. dimz is optional. This "
+        "will override parameters -m, -n, -z and --mtx.")
+
+        ("dimz",
+        value<rocsparse_int>(&arg.dimz)->default_value(0.0), "assemble "
         "laplacian matrix with dimensions <dimx dimy dimz>. dimz is optional. This "
         "will override parameters -m, -n, -z and --mtx.")
 
         ("alpha",
-        po::value<double>(&arg.alpha)->default_value(1.0), "specifies the scalar alpha")
+        value<double>(&arg.alpha)->default_value(1.0), "specifies the scalar alpha")
 
         ("beta",
-        po::value<double>(&arg.beta)->default_value(0.0), "specifies the scalar beta")
+        value<double>(&arg.beta)->default_value(0.0), "specifies the scalar beta")
 
         ("threshold",
-        po::value<double>(&arg.threshold)->default_value(1.0), "specifies the scalar threshold")
+        value<double>(&arg.threshold)->default_value(1.0), "specifies the scalar threshold")
 
         ("percentage",
-        po::value<double>(&arg.percentage)->default_value(0.0), "specifies the scalar percentage")
+        value<double>(&arg.percentage)->default_value(0.0), "specifies the scalar percentage")
 
         ("transposeA",
-        po::value<char>(&transA)->default_value('N'),
+        value<char>(&transA)->default_value('N'),
         "N = no transpose, T = transpose, C = conjugate transpose")
 
         ("transposeB",
-        po::value<char>(&transB)->default_value('N'),
+        value<char>(&transB)->default_value('N'),
         "N = no transpose, T = transpose, C = conjugate transpose, (default = N)")
 
         ("indexbaseA",
-        po::value<int>(&baseA)->default_value(0),
+        value<int>(&baseA)->default_value(0),
         "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
 
         ("indexbaseB",
-        po::value<int>(&baseB)->default_value(0),
+        value<int>(&baseB)->default_value(0),
         "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
 
         ("indexbaseC",
-        po::value<int>(&baseC)->default_value(0),
+        value<int>(&baseC)->default_value(0),
         "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
 
         ("indexbaseD",
-        po::value<int>(&baseD)->default_value(0),
+        value<int>(&baseD)->default_value(0),
         "0 = zero-based indexing, 1 = one-based indexing, (default: 0)")
 
         ("action",
-        po::value<int>(&action)->default_value(0),
+        value<int>(&action)->default_value(0),
         "0 = rocsparse_action_numeric, 1 = rocsparse_action_symbolic, (default: 0)")
 
         ("hybpart",
-        po::value<int>(&part)->default_value(0),
+        value<int>(&part)->default_value(0),
         "0 = rocsparse_hyb_partition_auto, 1 = rocsparse_hyb_partition_user,\n"
         "2 = rocsparse_hyb_partition_max, (default: 0)")
 
         ("diag",
-        po::value<char>(&diag)->default_value('N'),
+        value<char>(&diag)->default_value('N'),
         "N = non-unit diagonal, U = unit diagonal, (default = N)")
 
         ("uplo",
-        po::value<char>(&uplo)->default_value('L'),
+        value<char>(&uplo)->default_value('L'),
         "L = lower fill, U = upper fill, (default = L)")
 
         ("apolicy",
-        po::value<char>(&apol)->default_value('R'),
+        value<char>(&apol)->default_value('R'),
         "R = reuse meta data, F = force re-build, (default = R)")
 
-//        ("spolicy",
-//          po::value<char>(&spol)->default_value('A'),
-//          "A = auto, (default = A)")
-
         ("function,f",
-        po::value<std::string>(&function)->default_value("axpyi"),
+        value<std::string>(&function)->default_value("axpyi"),
         "SPARSE function to test. Options:\n"
         "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
         "  Level2: bsrmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, ellmv, hybmv, gebsrmv\n"
@@ -278,41 +284,41 @@ int main(int argc, char* argv[])
         "  Misc: identity, nnz")
 
         ("indextype",
-        po::value<char>(&indextype)->default_value('s'),
+        value<char>(&indextype)->default_value('s'),
         "Specify index types to be int32_t (s), int64_t (d) or mixed (m). Options: s,d,m")
 
         ("precision,r",
-        po::value<char>(&precision)->default_value('s'), "Options: s,d,c,z")
+        value<char>(&precision)->default_value('s'), "Options: s,d,c,z")
 
         ("verify,v",
-        po::value<rocsparse_int>(&arg.unit_check)->default_value(0),
+        value<rocsparse_int>(&arg.unit_check)->default_value(0),
         "Validate GPU results with CPU? 0 = No, 1 = Yes (default: No)")
 
         ("iters,i",
-        po::value<int>(&arg.iters)->default_value(10),
+        value<int>(&arg.iters)->default_value(10),
         "Iterations to run inside timing loop")
 
         ("device,d",
-        po::value<rocsparse_int>(&device_id)->default_value(0),
+        value<rocsparse_int>(&device_id)->default_value(0),
         "Set default device to be used for subsequent program runs")
 
         ("direction",
-        po::value<rocsparse_int>(&dir)->default_value(rocsparse_direction_row),
+        value<rocsparse_int>(&dir)->default_value(rocsparse_direction_row),
         "Indicates whether a dense matrix should be parsed by rows or by columns, assuming column-major storage: row = 0, column = 1 (default: 0)")
 
         ("order",
-        po::value<rocsparse_int>(&order)->default_value(rocsparse_order_column),
+        value<rocsparse_int>(&order)->default_value(rocsparse_order_column),
         "Indicates whether a dense matrix is laid out in column-major storage: 1, or row-major storage 0 (default: 1)")
 
         ("denseld",
-        po::value<rocsparse_int>(&arg.denseld)->default_value(128),
+        value<rocsparse_int>(&arg.denseld)->default_value(128),
         "Indicates the leading dimension of a dense matrix >= M, assuming a column-oriented storage.");
 
     // clang-format on
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+    variables_map vm;
+    store(parse_command_line(argc, argv, desc), vm);
+    notify(vm);
 
     if(vm.count("help"))
     {
@@ -387,11 +393,6 @@ int main(int argc, char* argv[])
     arg.direction
         = (dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
     arg.order = (order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
-
-    // Set laplace dimensions
-    arg.dimx = laplace[0];
-    arg.dimy = laplace[1];
-    arg.dimz = laplace[2];
 
     // rocALUTION parameter overrides filename parameter
     if(rocalution != "")

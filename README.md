@@ -14,8 +14,6 @@ Optional:
   * Required for tests.
   * Use GTEST_ROOT to specify GTest location.
   * If [GTest][] is not found, it will be downloaded and built automatically.
-* [Boost][]
-  * Required for benchmarks.
 
 ## Quickstart rocSPARSE build and install
 
@@ -92,7 +90,6 @@ The [license file][] can be found in the main repository.
 [ROCm]: https://github.com/RadeonOpenCompute/ROCm
 [HIP]: https://github.com/GPUOpen-ProfessionalCompute-Tools/HIP/
 [GTest]: https://github.com/google/googletest
-[Boost]: https://www.boost.org/
 [the issue tracker]: https://github.com/ROCmSoftwarePlatform/rocSPARSE/issues
 [license file]: https://github.com/ROCmSoftwarePlatform/rocSPARSE
 [here]: https://rocsparse.readthedocs.io

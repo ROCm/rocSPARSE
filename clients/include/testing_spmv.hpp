@@ -419,25 +419,14 @@ public:
         }
 
         device_sparse_matrix<T> dA(hA);
-        if(!arg.unit_check)
-        {
-            hA.~host_sparse_matrix<T>();
-        }
 
         host_dense_matrix<T> hx(N, 1);
         rocsparse_matrix_utils::init_exact(hx);
         device_dense_matrix<T> dx(hx);
-        if(!arg.unit_check)
-        {
-            hx.~host_dense_matrix<T>();
-        }
 
         host_dense_matrix<T> hy(M, 1);
         rocsparse_matrix_utils::init_exact(hy);
-        if(!arg.unit_check)
-        {
-            hy.~host_dense_matrix<T>();
-        }
+
         device_dense_matrix<T> dy(hy);
 
         rocsparse_local_spmat A(dA);
