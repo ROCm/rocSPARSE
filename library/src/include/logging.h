@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,7 +99,7 @@ inline void open_log_stream(std::ostream** log_os,
  * @parm xs variadic parameter pack with list of arguments
  */
 template <typename F, typename... Ts>
-void each_args(F f, Ts&... xs)
+void each_args(F f, Ts&&... xs)
 {
     (void)std::initializer_list<int>{((void)f(xs), 0)...};
 }
@@ -180,10 +180,10 @@ private:
  *                 separator.
  */
 template <typename H, typename... Ts>
-void log_arguments(std::ostream& os, std::string& separator, H head, Ts&... xs)
+void log_arguments(std::ostream& os, std::string& separator, H head, Ts&&... xs)
 {
     os << "\n" << head;
-    each_args(log_arg{os, separator}, xs...);
+    each_args(log_arg{os, separator}, std::forward<Ts>(xs)...);
 }
 
 /**

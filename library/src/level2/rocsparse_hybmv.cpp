@@ -50,39 +50,24 @@ rocsparse_status rocsparse_hybmv_template(rocsparse_handle          handle,
     }
 
     // Logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xhybmv"),
-                  trans,
-                  *alpha_device_host,
-                  (const void*&)descr,
-                  (const void*&)hyb,
-                  (const void*&)x,
-                  *beta_device_host,
-                  (const void*&)y);
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xhybmv"),
+              trans,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+              (const void*&)descr,
+              (const void*&)hyb,
+              (const void*&)x,
+              LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+              (const void*&)y);
 
-        log_bench(handle,
-                  "./rocsparse-bench -f hybmv -r",
-                  replaceX<T>("X"),
-                  "--mtx <matrix.mtx> "
-                  "--alpha",
-                  *alpha_device_host,
-                  "--beta",
-                  *beta_device_host);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xhybmv"),
-                  trans,
-                  (const void*&)alpha_device_host,
-                  (const void*&)descr,
-                  (const void*&)hyb,
-                  (const void*&)x,
-                  (const void*&)beta_device_host,
-                  (const void*&)y);
-    }
+    log_bench(handle,
+              "./rocsparse-bench -f hybmv -r",
+              replaceX<T>("X"),
+              "--mtx <matrix.mtx> ",
+              "--alpha",
+              LOG_BENCH_SCALAR_VALUE(handle, alpha_device_host),
+              "--beta",
+              LOG_BENCH_SCALAR_VALUE(handle, beta_device_host));
 
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)

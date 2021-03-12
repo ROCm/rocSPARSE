@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -227,7 +227,7 @@ rocsparse_status rocsparse_prune_csr2csr_buffer_size_template(rocsparse_handle  
               (const void*&)csr_val_C,
               (const void*&)csr_row_ptr_C,
               (const void*&)csr_col_ind_C,
-              (void*&)buffer_size);
+              (const void*&)buffer_size);
 
     log_bench(handle,
               "./rocsparse-bench -f prune_csr2csr_buffer_size -r",
@@ -290,9 +290,9 @@ rocsparse_status rocsparse_prune_csr2csr_nnz_template(rocsparse_handle          
               (const void*&)csr_col_ind_A,
               (const void*&)threshold,
               csr_descr_C,
-              (void*&)csr_row_ptr_C,
-              (void*&)nnz_total_dev_host_ptr,
-              (void*&)temp_buffer);
+              (const void*&)csr_row_ptr_C,
+              (const void*&)nnz_total_dev_host_ptr,
+              (const void*&)temp_buffer);
 
     log_bench(handle,
               "./rocsparse-bench -f prune_csr2csr_nnz -r",
@@ -583,10 +583,10 @@ rocsparse_status rocsparse_prune_csr2csr_template(rocsparse_handle          hand
               (const void*&)csr_col_ind_A,
               (const void*&)threshold,
               csr_descr_C,
-              (void*&)csr_val_C,
+              (const void*&)csr_val_C,
               (const void*&)csr_row_ptr_C,
-              (void*&)csr_col_ind_C,
-              (void*&)temp_buffer);
+              (const void*&)csr_col_ind_C,
+              (const void*&)temp_buffer);
 
     log_bench(
         handle, "./rocsparse-bench -f prune_csr2csr -r", replaceX<T>("X"), "--mtx <matrix.mtx>");

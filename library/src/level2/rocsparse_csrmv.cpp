@@ -799,50 +799,29 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
     }
 
     // Logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrmv"),
-                  trans,
-                  m,
-                  n,
-                  nnz,
-                  *alpha_device_host,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)x,
-                  *beta_device_host,
-                  (const void*&)y,
-                  (const void*&)info);
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xcsrmv"),
+              trans,
+              m,
+              n,
+              nnz,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+              (const void*&)descr,
+              (const void*&)csr_val,
+              (const void*&)csr_row_ptr,
+              (const void*&)csr_col_ind,
+              (const void*&)x,
+              LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+              (const void*&)y);
 
-        log_bench(handle,
-                  "./rocsparse-bench -f csrmv -r",
-                  replaceX<T>("X"),
-                  "--mtx <matrix.mtx> "
-                  "--alpha",
-                  *alpha_device_host,
-                  "--beta",
-                  *beta_device_host);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrmv"),
-                  trans,
-                  m,
-                  n,
-                  nnz,
-                  (const void*&)alpha_device_host,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)x,
-                  (const void*&)beta_device_host,
-                  (const void*&)y);
-    }
+    log_bench(handle,
+              "./rocsparse-bench -f csrmv -r",
+              replaceX<T>("X"),
+              "--mtx <matrix.mtx> ",
+              "--alpha",
+              LOG_BENCH_SCALAR_VALUE(handle, alpha_device_host),
+              "--beta",
+              LOG_BENCH_SCALAR_VALUE(handle, beta_device_host));
 
     // Check index base
     if(rocsparse_enum_utils::is_invalid(trans))

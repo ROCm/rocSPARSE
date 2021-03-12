@@ -53,33 +53,20 @@ rocsparse_status rocsparse_axpyi_template(rocsparse_handle     handle,
     }
 
     // Logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xaxpyi"),
-                  nnz,
-                  *alpha,
-                  (const void*&)x_val,
-                  (const void*&)x_ind,
-                  (const void*&)y);
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xaxpyi"),
+              nnz,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha),
+              (const void*&)x_val,
+              (const void*&)x_ind,
+              (const void*&)y);
 
-        log_bench(handle,
-                  "./rocsparse-bench -f axpyi -r",
-                  replaceX<T>("X"),
-                  "--mtx <vector.mtx> ",
-                  "--alpha",
-                  *alpha);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xaxpyi"),
-                  nnz,
-                  (const void*&)alpha,
-                  (const void*&)x_val,
-                  (const void*&)x_ind,
-                  (const void*&)y);
-    }
+    log_bench(handle,
+              "./rocsparse-bench -f axpyi -r",
+              replaceX<T>("X"),
+              "--mtx <vector.mtx> ",
+              "--alpha",
+              LOG_BENCH_SCALAR_VALUE(handle, alpha));
 
     // Check index base
     if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)

@@ -88,48 +88,24 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
     }
 
     // Logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xgemmi"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  n,
-                  k,
-                  nnz,
-                  *alpha,
-                  (const void*&)A,
-                  lda,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  *beta,
-                  (const void*&)C,
-                  ldc);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xgemmi"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  n,
-                  k,
-                  nnz,
-                  (const void*&)alpha,
-                  (const void*&)A,
-                  lda,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)beta,
-                  (const void*&)C,
-                  ldc);
-    }
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xgemmi"),
+              trans_A,
+              trans_B,
+              m,
+              n,
+              k,
+              nnz,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha),
+              (const void*&)A,
+              lda,
+              (const void*&)descr,
+              (const void*&)csr_val,
+              (const void*&)csr_row_ptr,
+              (const void*&)csr_col_ind,
+              LOG_TRACE_SCALAR_VALUE(handle, beta),
+              (const void*&)C,
+              ldc);
 
     if(rocsparse_enum_utils::is_invalid(trans_A))
     {

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -140,8 +140,7 @@ rocsparse_status rocsparse_gebsrmv_template_row_block_dim_17_inf(rocsparse_handl
                                                                  U                    beta,
                                                                  T*                   y)
 {
-    assert(row_block_dim >= 13);
-    assert(row_block_dim <= 16);
+    assert(row_block_dim >= 17);
 
     if(trans == rocsparse_operation_none)
     {

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,13 +72,11 @@ void testing_spvec_descr_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(
         rocsparse_create_spvec_descr(&x, 0, 0, nullptr, nullptr, itype, base, ttype),
         rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(nullptr),
-                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(x), rocsparse_status_success);
     EXPECT_ROCSPARSE_STATUS(
         rocsparse_create_spvec_descr(&x, size, 0, nullptr, nullptr, itype, base, ttype),
         rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(nullptr),
-                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(x), rocsparse_status_success);
 
     // Create valid descriptor
     EXPECT_ROCSPARSE_STATUS(

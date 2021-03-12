@@ -127,6 +127,7 @@ rocsparse_status rocsparse_gebsrmm_template_large_ext(rocsparse_handle          
 {
     hipStream_t stream = handle->stream;
     assert(row_block_dim <= 32);
+    assert(col_block_dim <= 32);
 
 #define LAUNCH_LARGE_KERNEL(M_, N_, K_)                                 \
     dim3 gebsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / (N_ * K_) + 1);     \

@@ -485,48 +485,24 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
     }
 
     // Logging TODO bench logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrmm"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  n,
-                  k,
-                  nnz,
-                  *alpha_device_host,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)B,
-                  ldb,
-                  *beta_device_host,
-                  (const void*&)C,
-                  ldc);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrmm"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  n,
-                  k,
-                  nnz,
-                  (const void*&)alpha_device_host,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)B,
-                  ldb,
-                  (const void*&)beta_device_host,
-                  (const void*&)C,
-                  ldc);
-    }
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xcsrmm"),
+              trans_A,
+              trans_B,
+              m,
+              n,
+              k,
+              nnz,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+              (const void*&)descr,
+              (const void*&)csr_val,
+              (const void*&)csr_row_ptr,
+              (const void*&)csr_col_ind,
+              (const void*&)B,
+              ldb,
+              LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
+              (const void*&)C,
+              ldc);
 
     if(rocsparse_enum_utils::is_invalid(trans_A))
     {

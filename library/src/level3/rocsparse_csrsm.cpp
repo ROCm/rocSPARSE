@@ -64,46 +64,23 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     }
 
     // Logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrsm_buffer_size"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  nrhs,
-                  nnz,
-                  *alpha,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)B,
-                  ldb,
-                  (const void*&)info,
-                  policy,
-                  (const void*&)buffer_size);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrsm_buffer_size"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  nrhs,
-                  nnz,
-                  (const void*&)alpha,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)B,
-                  ldb,
-                  (const void*&)info,
-                  policy,
-                  (const void*&)buffer_size);
-    }
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xcsrsm_buffer_size"),
+              trans_A,
+              trans_B,
+              m,
+              nrhs,
+              nnz,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha),
+              (const void*&)descr,
+              (const void*&)csr_val,
+              (const void*&)csr_row_ptr,
+              (const void*&)csr_col_ind,
+              (const void*&)B,
+              ldb,
+              (const void*&)info,
+              policy,
+              (const void*&)buffer_size);
 
     // Check index base
     if(descr->type != rocsparse_matrix_type_general)
@@ -282,48 +259,24 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
     }
 
     // Logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrsm_analysis"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  nrhs,
-                  nnz,
-                  *alpha,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)B,
-                  ldb,
-                  (const void*&)info,
-                  analysis,
-                  solve,
-                  (const void*&)temp_buffer);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrsm_analysis"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  nrhs,
-                  nnz,
-                  (const void*&)alpha,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)B,
-                  ldb,
-                  (const void*&)info,
-                  analysis,
-                  solve,
-                  (const void*&)temp_buffer);
-    }
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xcsrsm_analysis"),
+              trans_A,
+              trans_B,
+              m,
+              nrhs,
+              nnz,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha),
+              (const void*&)descr,
+              (const void*&)csr_val,
+              (const void*&)csr_row_ptr,
+              (const void*&)csr_col_ind,
+              (const void*&)B,
+              ldb,
+              (const void*&)info,
+              analysis,
+              solve,
+              (const void*&)temp_buffer);
 
     // Check operation type
     if(trans_A != rocsparse_operation_none && trans_A != rocsparse_operation_transpose)
@@ -998,53 +951,30 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
     }
 
     // Logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrsm_solve"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  nrhs,
-                  nnz,
-                  *alpha_device_host,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)B,
-                  ldb,
-                  (const void*&)info,
-                  policy,
-                  (const void*&)temp_buffer);
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xcsrsm_solve"),
+              trans_A,
+              trans_B,
+              m,
+              nrhs,
+              nnz,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
+              (const void*&)descr,
+              (const void*&)csr_val,
+              (const void*&)csr_row_ptr,
+              (const void*&)csr_col_ind,
+              (const void*&)B,
+              ldb,
+              (const void*&)info,
+              policy,
+              (const void*&)temp_buffer);
 
-        log_bench(handle,
-                  "./rocsparse-bench -f csrsm -r",
-                  replaceX<T>("X"),
-                  "--mtx <matrix.mtx> ",
-                  "--alpha",
-                  *alpha_device_host);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrsm_solve"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  nrhs,
-                  nnz,
-                  (const void*&)alpha_device_host,
-                  (const void*&)descr,
-                  (const void*&)csr_val,
-                  (const void*&)csr_row_ptr,
-                  (const void*&)csr_col_ind,
-                  (const void*&)B,
-                  ldb,
-                  (const void*&)info,
-                  policy,
-                  (const void*&)temp_buffer);
-    }
+    log_bench(handle,
+              "./rocsparse-bench -f csrsm -r",
+              replaceX<T>("X"),
+              "--mtx <matrix.mtx> ",
+              "--alpha",
+              LOG_BENCH_SCALAR_VALUE(handle, alpha_device_host));
 
     // Check operation type
     if(trans_A != rocsparse_operation_none && trans_A != rocsparse_operation_transpose)

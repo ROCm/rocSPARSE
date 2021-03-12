@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,7 +98,7 @@ rocsparse_status rocsparse_gebsr2gebsr_buffer_size_template(rocsparse_handle    
               col_block_dim_A,
               row_block_dim_C,
               col_block_dim_C,
-              (void*&)buffer_size);
+              (const void*&)buffer_size);
 
     log_bench(handle,
               "./rocsparse-bench -f gebsr2gebsr_buffer_size -r",
@@ -203,7 +203,7 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
               (const void*&)bsr_col_ind_C,
               row_block_dim_C,
               col_block_dim_C,
-              (void*&)temp_buffer);
+              (const void*&)temp_buffer);
 
     log_bench(
         handle, "./rocsparse-bench -f gebsr2gebsr -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
@@ -645,8 +645,8 @@ extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          
               (const void*&)bsr_row_ptr_C,
               row_block_dim_C,
               col_block_dim_C,
-              (void*&)nnz_total_dev_host_ptr,
-              (void*&)temp_buffer);
+              (const void*&)nnz_total_dev_host_ptr,
+              (const void*&)temp_buffer);
 
     // Check direction
     if(dir != rocsparse_direction_row && dir != rocsparse_direction_column)
