@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -94,7 +94,7 @@ rocsparse_status
               (const void*&)csr_row_ptr,
               (const void*&)csr_col_ind,
               info,
-              (void*&)buffer_size);
+              (const void*&)buffer_size);
 
     log_bench(handle,
               "./rocsparse-bench -f prune_dense2csr_by_percentage_buffer_size -r",
@@ -140,10 +140,10 @@ rocsparse_status
               lda,
               percentage,
               descr,
-              (void*&)csr_row_ptr,
-              (void*&)nnz_total_dev_host_ptr,
+              (const void*&)csr_row_ptr,
+              (const void*&)nnz_total_dev_host_ptr,
               info,
-              (void*&)temp_buffer);
+              (const void*&)temp_buffer);
 
     log_bench(handle,
               "./rocsparse-bench -f prune_dense2csr_nnz_by_percentage -r",
@@ -375,11 +375,11 @@ rocsparse_status rocsparse_prune_dense2csr_by_percentage_template(rocsparse_hand
               lda,
               percentage,
               descr,
-              (void*&)csr_val,
+              (const void*&)csr_val,
               (const void*&)csr_row_ptr,
-              (void*&)csr_col_ind,
+              (const void*&)csr_col_ind,
               info,
-              (void*&)temp_buffer);
+              (const void*&)temp_buffer);
 
     log_bench(handle,
               "./rocsparse-bench -f prune_dense2csr_by_percentage -r",

@@ -52,6 +52,11 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
         return rocsparse_status_invalid_handle;
     }
 
+    if(nullptr == descr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     //
     // Loggings
     //
@@ -98,7 +103,7 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
     //
     // Check invalid pointers.
     //
-    if(nullptr == descr || nullptr == A || nullptr == csx_row_col_ptr || nullptr == csx_col_row_ind
+    if(nullptr == A || nullptr == csx_row_col_ptr || nullptr == csx_col_row_ind
        || nullptr == csx_val)
     {
         return rocsparse_status_invalid_pointer;

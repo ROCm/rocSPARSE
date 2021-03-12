@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,30 +64,15 @@ rocsparse_status rocsparse_roti_template(rocsparse_handle     handle,
     }
 
     // Logging // TODO bench logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xroti"),
-                  nnz,
-                  (const void*&)x_val,
-                  (const void*&)x_ind,
-                  (const void*&)y,
-                  *c,
-                  *s,
-                  idx_base);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xroti"),
-                  nnz,
-                  (const void*&)x_val,
-                  (const void*&)x_ind,
-                  (const void*&)y,
-                  (const void*&)c,
-                  (const void*&)s,
-                  idx_base);
-    }
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xroti"),
+              nnz,
+              (const void*&)x_val,
+              (const void*&)x_ind,
+              (const void*&)y,
+              LOG_TRACE_SCALAR_VALUE(handle, c),
+              LOG_TRACE_SCALAR_VALUE(handle, s),
+              idx_base);
 
     // Check index base
     if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)

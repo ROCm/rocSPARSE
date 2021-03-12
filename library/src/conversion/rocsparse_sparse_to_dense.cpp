@@ -166,10 +166,10 @@ extern "C" rocsparse_status rocsparse_sparse_to_dense(rocsparse_handle          
     log_trace(handle,
               "rocsparse_sparse_dense",
               (const void*&)mat_A,
-              (void*&)mat_B,
+              (const void*&)mat_B,
               alg,
-              (void*&)buffer_size,
-              (void*&)temp_buffer);
+              (const void*&)buffer_size,
+              (const void*&)temp_buffer);
 
     // Check for invalid descriptors
     RETURN_IF_NULLPTR(mat_A);

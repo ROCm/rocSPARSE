@@ -82,10 +82,16 @@ option(BUILD_CLIENTS_BENCHMARKS "Build benchmarks" OFF)
 option(BUILD_CLIENTS_SAMPLES "Build examples" ON)
 option(BUILD_VERBOSE "Output additional build information" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSPARSE with code coverage enabled" OFF)
+option(BUILD_ADDRESS_SANITIZER "Build rocSPARSE with address sanitizer enabled" OFF)
 
 if(BUILD_CODE_COVERAGE)
   add_compile_options(-g -fprofile-arcs -ftest-coverage)
   add_link_options(-g --coverage)
+endif()
+
+if(BUILD_ADDRESS_SANITIZER)
+  add_compile_options(-g -fsanitize=address -fno-omit-frame-pointer)
+  add_link_options(-g -fsanitize=address -fuse-ld=lld)
 endif()
 
 # Detect compiler support for target ID

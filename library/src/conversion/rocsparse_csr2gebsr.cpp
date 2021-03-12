@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -620,7 +620,7 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
               row_block_dim,
               col_block_dim,
               (const void*&)bsr_nnz_devhost,
-              p_buffer);
+              (const void*&)p_buffer);
 
     log_bench(handle, "./rocsparse-bench -f csr2gebsr_nnz", "--mtx <matrix.mtx>");
 

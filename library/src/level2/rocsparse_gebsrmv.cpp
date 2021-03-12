@@ -307,59 +307,36 @@ rocsparse_status rocsparse_gebsrmv_template(rocsparse_handle          handle,
     }
 
     // Logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xgebsrmv"),
-                  dir,
-                  trans,
-                  mb,
-                  nb,
-                  nnzb,
-                  *alpha,
-                  (const void*&)descr,
-                  (const void*&)bsr_val,
-                  (const void*&)bsr_row_ptr,
-                  (const void*&)bsr_col_ind,
-                  row_block_dim,
-                  col_block_dim,
-                  (const void*&)x,
-                  *beta,
-                  (const void*&)y);
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xgebsrmv"),
+              dir,
+              trans,
+              mb,
+              nb,
+              nnzb,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha),
+              (const void*&)descr,
+              (const void*&)bsr_val,
+              (const void*&)bsr_row_ptr,
+              (const void*&)bsr_col_ind,
+              row_block_dim,
+              col_block_dim,
+              (const void*&)x,
+              LOG_TRACE_SCALAR_VALUE(handle, beta),
+              (const void*&)y);
 
-        log_bench(handle,
-                  "./rocsparse-bench -f gebsrmv -r",
-                  replaceX<T>("X"),
-                  "--mtx <matrix.mtx> "
-                  "--rblockdim",
-                  row_block_dim,
-                  "--cblockdim",
-                  col_block_dim,
-                  "--alpha",
-                  *alpha,
-                  "--beta",
-                  *beta);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xgebsrmv"),
-                  dir,
-                  trans,
-                  mb,
-                  nb,
-                  nnzb,
-                  (const void*&)alpha,
-                  (const void*&)descr,
-                  (const void*&)bsr_val,
-                  (const void*&)bsr_row_ptr,
-                  (const void*&)bsr_col_ind,
-                  row_block_dim,
-                  col_block_dim,
-                  (const void*&)x,
-                  (const void*&)beta,
-                  (const void*&)y);
-    }
+    log_bench(handle,
+              "./rocsparse-bench -f gebsrmv -r",
+              replaceX<T>("X"),
+              "--mtx <matrix.mtx> "
+              "--rblockdim",
+              row_block_dim,
+              "--cblockdim",
+              col_block_dim,
+              "--alpha",
+              LOG_BENCH_SCALAR_VALUE(handle, alpha),
+              "--beta",
+              LOG_BENCH_SCALAR_VALUE(handle, beta));
 
     if(rocsparse_enum_utils::is_invalid(dir))
     {

@@ -394,58 +394,29 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
     }
 
     // Logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrgemm_buffer_size"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  n,
-                  k,
-                  *alpha,
-                  (const void*&)descr_A,
-                  nnz_A,
-                  (const void*&)csr_row_ptr_A,
-                  (const void*&)csr_col_ind_A,
-                  (const void*&)descr_B,
-                  nnz_B,
-                  (const void*&)csr_row_ptr_B,
-                  (const void*&)csr_col_ind_B,
-                  *beta,
-                  (const void*&)descr_D,
-                  nnz_D,
-                  (const void*&)csr_row_ptr_D,
-                  (const void*&)csr_col_ind_D,
-                  (const void*&)info_C,
-                  (const void*&)buffer_size);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xcsrgemm_buffer_size"),
-                  trans_A,
-                  trans_B,
-                  m,
-                  n,
-                  k,
-                  (const void*&)alpha,
-                  (const void*&)descr_A,
-                  nnz_A,
-                  (const void*&)csr_row_ptr_A,
-                  (const void*&)csr_col_ind_A,
-                  (const void*&)descr_B,
-                  nnz_B,
-                  (const void*&)csr_row_ptr_B,
-                  (const void*&)csr_col_ind_B,
-                  (const void*&)beta,
-                  (const void*&)descr_D,
-                  nnz_D,
-                  (const void*&)csr_row_ptr_D,
-                  (const void*&)csr_col_ind_D,
-                  (const void*&)info_C,
-                  (const void*&)buffer_size);
-    }
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xcsrgemm_buffer_size"),
+              trans_A,
+              trans_B,
+              m,
+              n,
+              k,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha),
+              (const void*&)descr_A,
+              nnz_A,
+              (const void*&)csr_row_ptr_A,
+              (const void*&)csr_col_ind_A,
+              (const void*&)descr_B,
+              nnz_B,
+              (const void*&)csr_row_ptr_B,
+              (const void*&)csr_col_ind_B,
+              LOG_TRACE_SCALAR_VALUE(handle, beta),
+              (const void*&)descr_D,
+              nnz_D,
+              (const void*&)csr_row_ptr_D,
+              (const void*&)csr_col_ind_D,
+              (const void*&)info_C,
+              (const void*&)buffer_size);
 
     // Check for valid rocsparse_mat_info
     if(info_C == nullptr)

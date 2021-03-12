@@ -43,6 +43,20 @@ def runTestCommand (platform, project, gfilter, String dirmode = "release")
     junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
 }
 
+def runTestWithSanitizerCommand (platform, project, gfilter, String dirmode = "release")
+{
+    String sudo = auxiliary.sudo(platform.jenkinsLabel)
+
+    def command = """#!/usr/bin/env bash
+                set -x
+                cd ${project.paths.project_build_prefix}/build/${dirmode}/clients/staging
+                ${sudo} LD_LIBRARY_PATH=/opt/rocm/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ASAN_SYMBOLIZER_PATH=/opt/rocm/llvm/bin/llvm-symbolizer ASAN_OPTIONS=detect_leaks=1 LSAN_OPTIONS=suppressions=../../../../suppr.txt ./rocsparse-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}-*known_bug*
+            """
+
+    platform.runCommand(this, command)
+    junit "${project.paths.project_build_prefix}/build/release/clients/staging/*.xml"
+}
+
 def runCoverageCommand (platform, project, gfilter, String dirmode = "release")
 {
     String sudo = auxiliary.sudo(platform.jenkinsLabel)

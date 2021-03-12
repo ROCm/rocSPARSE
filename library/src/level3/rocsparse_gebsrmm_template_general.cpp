@@ -93,7 +93,7 @@ rocsparse_status rocsparse_gebsrmm_template_general(rocsparse_handle          ha
                                                     rocsparse_int             ldc)
 {
     hipStream_t stream = handle->stream;
-    assert(row_block_dim > 32);
+
     dim3 gebsrmm_blocks((mb - 1) / 1 + 1, (n - 1) / 32 + 1);
     dim3 gebsrmm_threads(32, 32, 1);
     hipLaunchKernelGGL((gebsrmm_general_blockdim_kernel<32, 32>),

@@ -71,7 +71,7 @@ static inline void rocsparse_one(const rocsparse_handle handle, rocsparse_double
 // log_function will call log_arguments to log function
 // arguments with a comma separator
 template <typename H, typename... Ts>
-void log_trace(rocsparse_handle handle, H head, Ts&... xs)
+void log_trace(rocsparse_handle handle, H head, Ts&&... xs)
 {
     if(nullptr != handle)
     {
@@ -80,7 +80,7 @@ void log_trace(rocsparse_handle handle, H head, Ts&... xs)
             std::string comma_separator = ",";
 
             std::ostream* os = handle->log_trace_os;
-            log_arguments(*os, comma_separator, head, xs...);
+            log_arguments(*os, comma_separator, head, std::forward<Ts>(xs)...);
         }
     }
 }
@@ -91,7 +91,7 @@ void log_trace(rocsparse_handle handle, H head, Ts&... xs)
 // log_bench will call log_arguments to log a string that
 // can be input to the executable rocsparse-bench.
 template <typename H, typename... Ts>
-void log_bench(rocsparse_handle handle, H head, std::string precision, Ts&... xs)
+void log_bench(rocsparse_handle handle, H head, std::string precision, Ts&&... xs)
 {
     if(nullptr != handle)
     {
@@ -100,10 +100,52 @@ void log_bench(rocsparse_handle handle, H head, std::string precision, Ts&... xs
             std::string space_separator = " ";
 
             std::ostream* os = handle->log_bench_os;
-            log_arguments(*os, space_separator, head, precision, xs...);
+            log_arguments(*os, space_separator, head, precision, std::forward<Ts>(xs)...);
         }
     }
 }
+
+// Trace log scalar values pointed to by pointer
+template <typename T>
+T log_trace_scalar_value(const T* value)
+{
+    return value ? *value : std::numeric_limits<T>::quiet_NaN();
+}
+
+template <typename T>
+T log_trace_scalar_value(rocsparse_handle handle, const T* value)
+{
+    T host;
+    if(value && handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        hipMemcpy(&host, value, sizeof(host), hipMemcpyDeviceToHost);
+        value = &host;
+    }
+    return log_trace_scalar_value(value);
+}
+
+#define LOG_TRACE_SCALAR_VALUE(handle, value) log_trace_scalar_value(handle, value)
+
+// Bench log scalar values pointed to by pointer
+template <typename T>
+T log_bench_scalar_value(const T* value)
+{
+    return (value ? *value : std::numeric_limits<T>::quiet_NaN());
+}
+
+template <typename T>
+T log_bench_scalar_value(rocsparse_handle handle, const T* value)
+{
+    T host;
+    if(value && handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        hipMemcpy(&host, value, sizeof(host), hipMemcpyDeviceToHost);
+        value = &host;
+    }
+    return log_bench_scalar_value(value);
+}
+
+#define LOG_BENCH_SCALAR_VALUE(handle, name) log_bench_scalar_value(handle, name)
 
 // replaces X in string with s, d, c, z or h depending on typename T
 template <typename T>

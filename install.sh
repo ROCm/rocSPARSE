@@ -20,6 +20,7 @@ function display_help()
   echo "    [-k|--relwithdebinfo] -DCMAKE_BUILD_TYPE=RelWithDebInfo"
   echo "    [--hip-clang] build library for amdgpu backend using hip-clang"
   echo "    [--static] build static library"
+  echo "    [--sanitizer] build with address sanitizer"
   echo "    [-p|--profile] build with code coverage profiling enabled"
 }
 
@@ -43,11 +44,11 @@ supported_distro( )
   esac
 }
 
-# This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
+# checks the exit code of the last call, requires exit code to be passed in to the function
 check_exit_code( )
 {
-  if (( $? != 0 )); then
-    exit $?
+  if (( $1 != 0 )); then
+    exit $1
   fi
 }
 
@@ -58,10 +59,10 @@ elevate_if_not_root( )
 
   if (( ${uid} )); then
     sudo $@
-    check_exit_code
+    check_exit_code "$?"
   else
     $@
-    check_exit_code
+    check_exit_code "$?"
   fi
 }
 
@@ -248,6 +249,7 @@ build_coverage=false
 install_prefix=rocsparse-install
 rocm_path=/opt/rocm
 build_relocatable=false
+build_sanitizer=false
 
 # #################################################
 # Parameter parsing
@@ -256,7 +258,7 @@ build_relocatable=false
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,profile --options hicdgrpk -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,profile,sanitizer --options hicdgrpk -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -295,6 +297,9 @@ while true; do
         shift ;;
     --static)
         build_static=true
+        shift ;;
+    --sanitizer)
+        build_sanitizer=true
         shift ;;
     -k)
         build_release=false
@@ -398,6 +403,11 @@ pushd .
     cmake_common_options="${cmake_common_options} -DCMAKE_BUILD_TYPE=Debug"
   fi
 
+  # address sanitizer
+  if [[ "${build_sanitizer}" == true ]]; then
+    cmake_common_options="${cmake_common_options} -DBUILD_ADDRESS_SANITIZER=ON"
+  fi
+
   # code coverage
   if [[ "${build_coverage}" == true ]]; then
       cmake_common_options="${cmake_common_options} -DBUILD_CODE_COVERAGE=ON"
@@ -436,10 +446,10 @@ pushd .
   else
     CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${install_prefix} -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} -DROCM_PATH="${rocm_path}" ../..
   fi
-  check_exit_code
+  check_exit_code "$?"
 
   make -j$(nproc) install
-  check_exit_code
+  check_exit_code "$?"
 
   # #################################################
   # install
@@ -447,7 +457,7 @@ pushd .
   # installing through package manager, which makes uninstalling easy
   if [[ "${install_package}" == true ]]; then
     make package
-    check_exit_code
+    check_exit_code "$?"
 
     case "${ID}" in
       ubuntu)

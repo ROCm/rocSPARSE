@@ -265,52 +265,26 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
     }
 
     // Logging TODO bench logging
-    if(handle->pointer_mode == rocsparse_pointer_mode_host)
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xbsrmm"),
-                  dir,
-                  trans_A,
-                  trans_B,
-                  mb,
-                  n,
-                  kb,
-                  nnzb,
-                  *alpha,
-                  (const void*&)descr,
-                  (const void*&)bsr_val,
-                  (const void*&)bsr_row_ptr,
-                  (const void*&)bsr_col_ind,
-                  block_dim,
-                  (const void*&)B,
-                  ldb,
-                  *beta,
-                  (const void*&)C,
-                  ldc);
-    }
-    else
-    {
-        log_trace(handle,
-                  replaceX<T>("rocsparse_Xbsrmm"),
-                  dir,
-                  trans_A,
-                  trans_B,
-                  mb,
-                  n,
-                  kb,
-                  nnzb,
-                  (const void*&)alpha,
-                  (const void*&)descr,
-                  (const void*&)bsr_val,
-                  (const void*&)bsr_row_ptr,
-                  (const void*&)bsr_col_ind,
-                  block_dim,
-                  (const void*&)B,
-                  ldb,
-                  (const void*&)beta,
-                  (const void*&)C,
-                  ldc);
-    }
+    log_trace(handle,
+              replaceX<T>("rocsparse_Xbsrmm"),
+              dir,
+              trans_A,
+              trans_B,
+              mb,
+              n,
+              kb,
+              nnzb,
+              LOG_TRACE_SCALAR_VALUE(handle, alpha),
+              (const void*&)descr,
+              (const void*&)bsr_val,
+              (const void*&)bsr_row_ptr,
+              (const void*&)bsr_col_ind,
+              block_dim,
+              (const void*&)B,
+              ldb,
+              LOG_TRACE_SCALAR_VALUE(handle, beta),
+              (const void*&)C,
+              ldc);
 
     if(rocsparse_enum_utils::is_invalid(dir))
     {

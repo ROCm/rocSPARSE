@@ -60,9 +60,9 @@ rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle,
               (const void*&)A,
               ld,
               (const void*&)nnz_per_rows,
-              (void*&)coo_val,
-              (void*&)coo_row_ind,
-              (void*&)coo_col_ind);
+              (const void*&)coo_val,
+              (const void*&)coo_row_ind,
+              (const void*&)coo_col_ind);
 
     log_bench(handle, "./rocsparse-bench -f dense2coo -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
