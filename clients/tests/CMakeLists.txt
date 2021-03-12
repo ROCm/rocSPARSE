@@ -78,7 +78,6 @@ set(TEST_MD5HASH
   01e49e63fa0ac2204baef0f5f33974ad
 )
 
-
 if(NOT TARGET rocsparse)
   set(CONVERT ${CMAKE_SOURCE_DIR}/../deps/convert)
 else()
@@ -99,18 +98,10 @@ foreach(i RANGE 0 ${len1})
   # Download test matrices if not already downloaded
   set(CMAKE_MATRICES_DIR ${PROJECT_BINARY_DIR}/matrices)
   if(NOT EXISTS "${CMAKE_MATRICES_DIR}/${mat}.csr")
-    message("-- Downloading and extracting test matrix ${m}.tar.gz")
-    file(DOWNLOAD https://sparse.tamu.edu/MM/${m}.tar.gz ${CMAKE_MATRICES_DIR}/${mat}.tar.gz
-         INACTIVITY_TIMEOUT 3
-         STATUS DL)
-
-    list(GET DL 0 stat)
-    list(GET DL 1 msg)
-
-    if(NOT stat EQUAL 0)
-      message("-- Timeout has been reached, trying mirror ...")
-      # Try again using ufl links
-      file(DOWNLOAD https://www.cise.ufl.edu/research/sparse/MM/${m}.tar.gz ${CMAKE_MATRICES_DIR}/${mat}.tar.gz
+    # First try user specified mirror, if available
+    if(DEFINED ENV{ROCSPARSE_TEST_MIRROR} AND $ENV{ROCSPARSE_TEST_MIRROR} NOT STREQUAL "")
+      message("-- Downloading and extracting test matrix ${m}.tar.gz from user specified test mirror: $ENV{ROCSPARSE_TEST_MIRROR}")
+      file(DOWNLOAD $ENV{ROCSPARSE_TEST_MIRROR}/${mat}.tar.gz ${CMAKE_MATRICES_DIR}/${mat}.tar.gz
            INACTIVITY_TIMEOUT 3
            STATUS DL)
 
@@ -118,7 +109,30 @@ foreach(i RANGE 0 ${len1})
       list(GET DL 1 msg)
 
       if(NOT stat EQUAL 0)
-        message(FATAL_ERROR "${msg}")
+        message(FATAL_ERROR "-- Timeout has been reached, specified test mirror is not reachable: ${msg}")
+      endif()
+    else()
+      message("-- Downloading and extracting test matrix ${m}.tar.gz")
+      file(DOWNLOAD https://sparse.tamu.edu/MM/${m}.tar.gz ${CMAKE_MATRICES_DIR}/${mat}.tar.gz
+           INACTIVITY_TIMEOUT 3
+           STATUS DL)
+
+      list(GET DL 0 stat)
+      list(GET DL 1 msg)
+
+      if(NOT stat EQUAL 0)
+        message("-- Timeout has been reached, trying mirror ...")
+        # Try again using ufl links
+        file(DOWNLOAD https://www.cise.ufl.edu/research/sparse/MM/${m}.tar.gz ${CMAKE_MATRICES_DIR}/${mat}.tar.gz
+             INACTIVITY_TIMEOUT 3
+             STATUS DL)
+
+        list(GET DL 0 stat)
+        list(GET DL 1 msg)
+
+        if(NOT stat EQUAL 0)
+          message(FATAL_ERROR "${msg}")
+        endif()
       endif()
     endif()
 
