@@ -61,7 +61,8 @@ string(REGEX MATCH "[A-Za-z]* ?clang version" TMP_CXX_VERSION ${CXX_OUTPUT})
 string(REGEX MATCH "[A-Za-z]+" CXX_VERSION_STRING ${TMP_CXX_VERSION})
 
 # Print compiler information
-if(CXX_VERSION_STRING MATCHES "clang")
+if(CXX_VERSION_STRING MATCHES "clang" OR 
+   CXX_VERSION_STRING MATCHES "AMD")
   message(STATUS "Using hip-clang to build for amdgpu backend")
 else()
   message(FATAL_ERROR "'hipcc' compiler required to compile for ROCm platform.")
