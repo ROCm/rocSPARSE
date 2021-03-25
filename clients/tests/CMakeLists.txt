@@ -99,7 +99,7 @@ foreach(i RANGE 0 ${len1})
   set(CMAKE_MATRICES_DIR ${PROJECT_BINARY_DIR}/matrices)
   if(NOT EXISTS "${CMAKE_MATRICES_DIR}/${mat}.csr")
     # First try user specified mirror, if available
-    if(DEFINED ENV{ROCSPARSE_TEST_MIRROR} AND $ENV{ROCSPARSE_TEST_MIRROR} NOT STREQUAL "")
+    if(DEFINED ENV{ROCSPARSE_TEST_MIRROR} AND NOT $ENV{ROCSPARSE_TEST_MIRROR} STREQUAL "")
       message("-- Downloading and extracting test matrix ${m}.tar.gz from user specified test mirror: $ENV{ROCSPARSE_TEST_MIRROR}")
       file(DOWNLOAD $ENV{ROCSPARSE_TEST_MIRROR}/${mat}.tar.gz ${CMAKE_MATRICES_DIR}/${mat}.tar.gz
            INACTIVITY_TIMEOUT 3

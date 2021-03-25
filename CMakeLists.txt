@@ -116,7 +116,7 @@ endif()
 include(cmake/Dependencies.cmake)
 
 # Setup version
-set(VERSION_STRING "1.19.6")
+set(VERSION_STRING "1.19.7")
 rocm_setup_version(VERSION ${VERSION_STRING})
 set(rocsparse_SOVERSION 0.1)
 
