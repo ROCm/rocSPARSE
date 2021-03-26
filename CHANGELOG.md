@@ -2,7 +2,18 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## [(Unreleased) rocSPARSE 1.19.4 for ROCm 4.1.0]
+## [rocSPARSE 1.19.5 for ROCm 4.2.0]
+### Added
+- SpMM (CSR, COO)
+- Code coverage analysis
+### Improved
+- Install script
+- Level 2/3 unit tests
+- rocsparse-bench does not depend on boost anymore
+### Known Issues
+- none
+
+## [rocSPARSE 1.19.4 for ROCm 4.1.0]
 ### Added
 - gebsrmm
 - gebsrmv
