@@ -95,6 +95,12 @@ set(rocsparse_source
   src/level3/rocsparse_spmm.cpp
   src/level3/rocsparse_csrsm.cpp
   src/level3/rocsparse_gemmi.cpp
+  src/level3/rocsparse_sddmm.cpp
+  src/level3/rocsparse_sddmm_coo.cpp
+  src/level3/rocsparse_sddmm_coo_aos.cpp
+  src/level3/rocsparse_sddmm_csr.cpp
+  src/level3/rocsparse_sddmm_csc.cpp
+  src/level3/rocsparse_sddmm_ell.cpp
 
 # Extra
   src/extra/rocsparse_csrgeam.cpp

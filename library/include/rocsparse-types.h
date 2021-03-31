@@ -385,6 +385,18 @@ typedef enum rocsparse_spmm_alg_
 } rocsparse_spmm_alg;
 
 /*! \ingroup types_module
+ *  \brief List of sddmm algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_sddmm_alg types that are used to perform
+ *  matrix vector product.
+ */
+typedef enum rocsparse_sddmm_alg_
+{
+    rocsparse_sddmm_alg_default = 0, /**< Default sddmm algorithm for the given format. */
+} rocsparse_sddmm_alg;
+
+/*! \ingroup types_module
  *  \brief List of sparse to dense algorithms.
  *
  *  \details

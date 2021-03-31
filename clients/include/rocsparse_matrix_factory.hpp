@@ -64,7 +64,24 @@ struct rocsparse_matrix_utils
     template <typename T>
     static void init(host_dense_matrix<T>& that)
     {
-        rocsparse_init(that.val, that.m, that.n, that.ld);
+        switch(that.order)
+        {
+        case rocsparse_order_column:
+        {
+            rocsparse_init(that.val, that.m, that.n, that.ld);
+            break;
+        }
+
+        case rocsparse_order_row:
+        {
+            //
+            // Little trick but the resulting matrix is the transpose of the matrix obtained from rocsparse_order_column.
+            // If this poses a problem, we need to refactor rocsparse_init.
+            //
+            rocsparse_init(that.val, that.n, that.m, that.ld);
+            break;
+        }
+        }
     }
 
     //
@@ -74,7 +91,24 @@ struct rocsparse_matrix_utils
     template <typename T>
     static void init_exact(host_dense_matrix<T>& that)
     {
-        rocsparse_init_exact(that.val, that.m, that.n, that.ld);
+        switch(that.order)
+        {
+        case rocsparse_order_column:
+        {
+            rocsparse_init_exact(that.val, that.m, that.n, that.ld);
+            break;
+        }
+
+        case rocsparse_order_row:
+        {
+            //
+            // Little trick but the resulting matrix is the transpose of the matrix obtained from rocsparse_order_column.
+            // If this poses a problem, we need to refactor rocsparse_init_exact.
+            //
+            rocsparse_init_exact(that.val, that.n, that.m, that.ld);
+            break;
+        }
+        }
     }
 
     //
@@ -1404,6 +1438,14 @@ public:
             that.ptr, that.ind, that.val, that.m, that.n, that.nnz, that.base);
         m = that.m;
         n = that.n;
+    }
+
+    void init_csc(host_csc_matrix<T, I, J>& that, J& m, J& n, rocsparse_index_base base)
+    {
+        that.base = base;
+        this->m_instance->init_csr(that.ptr, that.ind, that.val, n, m, that.nnz, that.base);
+        that.m = m;
+        that.n = n;
     }
 
     void init_csr(host_csr_matrix<T, I, J>& that)

@@ -358,6 +358,19 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_sddmm_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_sddmm_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_solve_policy value_)
 {
     switch(value_)

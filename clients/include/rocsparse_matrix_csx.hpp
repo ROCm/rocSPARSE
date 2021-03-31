@@ -29,7 +29,7 @@
 #include "rocsparse_vector.hpp"
 
 template <memory_mode::value_t MODE,
-          rocsparse_direction  direction_,
+          rocsparse_direction  DIRECTION,
           typename T,
           typename I,
           typename J>
@@ -38,7 +38,7 @@ struct csx_matrix
     template <typename S>
     using array_t = typename memory_traits<MODE>::template array_t<S>;
 
-    static constexpr rocsparse_direction dir = direction_;
+    static constexpr rocsparse_direction dir = DIRECTION;
     J                                    m{};
     J                                    n{};
     I                                    nnz{};
@@ -55,11 +55,11 @@ struct csx_matrix
         , n(n_)
         , nnz(nnz_)
         , base(base_)
-        , ptr((rocsparse_direction_row == direction_) ? (m_ + 1) : (n_ + 1))
+        , ptr((rocsparse_direction_row == DIRECTION) ? (m_ + 1) : (n_ + 1))
         , ind(nnz_)
         , val(nnz_){};
-    csx_matrix(const csx_matrix<MODE, direction_, T, I, J>& that_, bool transfer = true)
-        : csx_matrix<MODE, direction_, T, I, J>(that_.m, that_.n, that_.nnz, that_.base)
+    csx_matrix(const csx_matrix<MODE, DIRECTION, T, I, J>& that_, bool transfer = true)
+        : csx_matrix<MODE, DIRECTION, T, I, J>(that_.m, that_.n, that_.nnz, that_.base)
     {
         if(transfer)
         {
@@ -68,8 +68,8 @@ struct csx_matrix
     }
 
     template <memory_mode::value_t THAT_MODE>
-    csx_matrix(const csx_matrix<THAT_MODE, direction_, T, I, J>& that_, bool transfer = true)
-        : csx_matrix<MODE, direction_, T, I, J>(that_.m, that_.n, that_.nnz, that_.base)
+    csx_matrix(const csx_matrix<THAT_MODE, DIRECTION, T, I, J>& that_, bool transfer = true)
+        : csx_matrix<MODE, DIRECTION, T, I, J>(that_.m, that_.n, that_.nnz, that_.base)
     {
         if(transfer)
         {
@@ -82,7 +82,7 @@ struct csx_matrix
         if(m_ != this->m)
         {
             this->m = m_;
-            if(direction_ == rocsparse_direction_row)
+            if(DIRECTION == rocsparse_direction_row)
             {
                 this->ptr.resize(this->m + 1);
             }
@@ -91,7 +91,7 @@ struct csx_matrix
         if(n_ != this->n)
         {
             this->n = n_;
-            if(direction_ == rocsparse_direction_column)
+            if(DIRECTION == rocsparse_direction_column)
             {
                 this->ptr.resize(this->n + 1);
             }
@@ -113,11 +113,71 @@ struct csx_matrix
     void info() const
     {
         std::cout << "INFO CSX " << std::endl;
-        std::cout << " dir  : " << direction_ << std::endl;
+        std::cout << " dir  : " << DIRECTION << std::endl;
         std::cout << " m    : " << this->m << std::endl;
         std::cout << " n    : " << this->n << std::endl;
         std::cout << " nnz  : " << this->nnz << std::endl;
         std::cout << " base : " << this->base << std::endl;
+    }
+
+    void print() const
+    {
+        switch(MODE)
+        {
+        case memory_mode::host:
+        case memory_mode::managed:
+        {
+            std::cout << "CSX MATRIX" << std::endl;
+            std::cout << "DIR:" << DIRECTION << std::endl;
+            std::cout << "M:" << this->m << std::endl;
+            std::cout << "N:" << this->n << std::endl;
+            std::cout << "NNZ:" << this->nnz << std::endl;
+            std::cout << "BASE:" << this->base << std::endl;
+            const I* p  = (const I*)this->ptr;
+            const J* pj = (const J*)this->ind;
+            const T* v  = (const T*)val;
+
+            switch(DIRECTION)
+            {
+            case rocsparse_direction_row:
+            {
+                for(J i = 0; i < this->m; ++i)
+                {
+                    std::cout << "ROW " << i << std::endl;
+                    for(I k = p[i] - this->base; k < p[i + 1] - this->base; ++k)
+                    {
+                        J j = pj[k] - this->base;
+                        std::cout << "   (" << j << "," << v[k] << ")" << std::endl;
+                    }
+                    std::cout << std::endl;
+                }
+                break;
+            }
+
+            case rocsparse_direction_column:
+            {
+                for(J j = 0; j < this->n; ++j)
+                {
+                    std::cout << "COLUMN " << j << std::endl;
+                    for(I k = p[j] - this->base; k < p[j + 1] - this->base; ++k)
+                    {
+                        J i = pj[k] - this->base;
+                        std::cout << "   (" << i << "," << v[k] << ")" << std::endl;
+                    }
+                    std::cout << std::endl;
+                }
+                break;
+            }
+            }
+            break;
+        }
+        case memory_mode::device:
+        {
+            csx_matrix<memory_mode::host, DIRECTION, T, I, J> on_host(*this);
+            on_host.print();
+            break;
+        }
+        }
     }
 
     bool is_invalid() const
@@ -131,9 +191,9 @@ struct csx_matrix
         if(this->nnz > this->m * this->n)
             return true;
 
-        if(direction_ == rocsparse_direction_row && this->ptr.size() != this->m + 1)
+        if(DIRECTION == rocsparse_direction_row && this->ptr.size() != this->m + 1)
             return true;
-        else if(direction_ == rocsparse_direction_column && this->ptr.size() != this->n + 1)
+        else if(DIRECTION == rocsparse_direction_column && this->ptr.size() != this->n + 1)
             return true;
 
         if(this->ind.size() != this->nnz)
@@ -144,7 +204,7 @@ struct csx_matrix
     };
 
     template <memory_mode::value_t THAT_MODE>
-    void transfer_from(const csx_matrix<THAT_MODE, direction_, T, I, J>& that)
+    void transfer_from(const csx_matrix<THAT_MODE, DIRECTION, T, I, J>& that)
     {
         CHECK_HIP_ERROR((this->m == that.m && this->n == that.n && this->nnz == that.nnz
                          && this->dir == that.dir && this->base == that.base)
@@ -157,13 +217,13 @@ struct csx_matrix
     };
 
     template <memory_mode::value_t THAT_MODE>
-    void unit_check(const csx_matrix<THAT_MODE, direction_, T, I, J>& that_) const
+    void unit_check(const csx_matrix<THAT_MODE, DIRECTION, T, I, J>& that_) const
     {
         switch(MODE)
         {
         case memory_mode::device:
         {
-            csx_matrix<memory_mode::host, direction_, T, I, J> on_host(*this);
+            csx_matrix<memory_mode::host, DIRECTION, T, I, J> on_host(*this);
             on_host.unit_check(that_);
             break;
         }
@@ -184,14 +244,28 @@ struct csx_matrix
                     I b = (I)that_.base;
                     unit_check_general<I>(1, 1, 1, &a, &b);
                 }
-                unit_check_general<I>(1, this->m + 1, 1, this->ptr, that_.ptr);
+
+                switch(DIRECTION)
+                {
+                case rocsparse_direction_row:
+                {
+                    unit_check_general<I>(1, this->m + 1, 1, this->ptr, that_.ptr);
+                    break;
+                }
+                case rocsparse_direction_column:
+                {
+                    unit_check_general<I>(1, this->n + 1, 1, this->ptr, that_.ptr);
+                    break;
+                }
+                }
+
                 unit_check_general<J>(1, that_.nnz, 1, this->ind, that_.ind);
                 unit_check_general<T>(1, that_.nnz, 1, this->val, that_.val);
                 break;
             }
             case memory_mode::device:
             {
-                csx_matrix<memory_mode::host, direction_, T, I, J> that(that_);
+                csx_matrix<memory_mode::host, DIRECTION, T, I, J> that(that_);
                 this->unit_check(that);
                 break;
             }
@@ -202,14 +276,14 @@ struct csx_matrix
     }
 
     template <memory_mode::value_t THAT_MODE>
-    void near_check(const csx_matrix<THAT_MODE, direction_, T, I, J>& that_,
+    void near_check(const csx_matrix<THAT_MODE, DIRECTION, T, I, J>& that_,
                     floating_data_t<T> tol = default_tolerance<T>::value) const
     {
         switch(MODE)
         {
         case memory_mode::device:
         {
-            csx_matrix<memory_mode::host, direction_, T, I, J> on_host(*this);
+            csx_matrix<memory_mode::host, DIRECTION, T, I, J> on_host(*this);
             on_host.near_check(that_, tol);
             break;
         }
@@ -230,14 +304,28 @@ struct csx_matrix
                     I b = (I)that_.base;
                     unit_check_general<I>(1, 1, 1, &a, &b);
                 }
-                unit_check_general<I>(1, this->m + 1, 1, this->ptr, that_.ptr);
+
+                switch(DIRECTION)
+                {
+                case rocsparse_direction_row:
+                {
+                    unit_check_general<I>(1, this->m + 1, 1, this->ptr, that_.ptr);
+                    break;
+                }
+                case rocsparse_direction_column:
+                {
+                    unit_check_general<I>(1, this->n + 1, 1, this->ptr, that_.ptr);
+                    break;
+                }
+                }
+
                 unit_check_general<J>(1, that_.nnz, 1, this->ind, that_.ind);
                 near_check_general<T>(1, that_.nnz, 1, this->val, that_.val, tol);
                 break;
             }
             case memory_mode::device:
             {
-                csx_matrix<memory_mode::host, direction_, T, I, J> that(that_);
+                csx_matrix<memory_mode::host, DIRECTION, T, I, J> that(that_);
                 this->near_check(that, tol);
                 break;
             }
@@ -248,23 +336,23 @@ struct csx_matrix
     }
 };
 
-template <rocsparse_direction direction_,
+template <rocsparse_direction DIRECTION,
           typename T,
           typename I = rocsparse_int,
           typename J = rocsparse_int>
-using host_csx_matrix = csx_matrix<memory_mode::host, direction_, T, I, J>;
+using host_csx_matrix = csx_matrix<memory_mode::host, DIRECTION, T, I, J>;
 
-template <rocsparse_direction direction_,
+template <rocsparse_direction DIRECTION,
           typename T,
           typename I = rocsparse_int,
           typename J = rocsparse_int>
-using device_csx_matrix = csx_matrix<memory_mode::device, direction_, T, I, J>;
+using device_csx_matrix = csx_matrix<memory_mode::device, DIRECTION, T, I, J>;
 
-template <rocsparse_direction direction_,
+template <rocsparse_direction DIRECTION,
           typename T,
           typename I = rocsparse_int,
           typename J = rocsparse_int>
-using managed_csx_matrix = csx_matrix<memory_mode::managed, direction_, T, I, J>;
+using managed_csx_matrix = csx_matrix<memory_mode::managed, DIRECTION, T, I, J>;
 
 template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
 using host_csr_matrix = host_csx_matrix<rocsparse_direction_row, T, I, J>;

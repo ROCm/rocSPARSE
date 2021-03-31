@@ -112,6 +112,69 @@ constexpr double spmm_gflop_count(J N, I nnz_A, I nnz_C, bool beta = false)
     return csrmm_gflop_count(N, nnz_A, nnz_C, beta);
 }
 
+template <rocsparse_format FORMAT>
+struct rocsparse_gflop_count
+{
+    template <typename T, typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false);
+};
+
+template <>
+struct rocsparse_gflop_count<rocsparse_format_csr>
+{
+    template <typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
+    {
+        if(beta)
+            return (nnz + nnz * (2 * K - 1)) / 1e9;
+        else
+            return (3.0 * nnz + nnz * (2 * K - 1)) / 1e9;
+    }
+};
+
+template <>
+struct rocsparse_gflop_count<rocsparse_format_csc>
+{
+    template <typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
+    {
+        if(beta)
+            return (nnz + nnz * (2 * K - 1)) / 1e9;
+        else
+            return (3.0 * nnz + nnz * (2 * K - 1)) / 1e9;
+    }
+};
+
+template <>
+struct rocsparse_gflop_count<rocsparse_format_coo>
+{
+    template <typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
+    {
+        return (nnz * (K + 1 + (beta ? 1 : 0))) / 1e9;
+    }
+};
+
+template <>
+struct rocsparse_gflop_count<rocsparse_format_coo_aos>
+{
+    template <typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
+    {
+        return (nnz * (K + 1 + (beta ? 1 : 0))) / 1e9;
+    }
+};
+
+template <>
+struct rocsparse_gflop_count<rocsparse_format_ell>
+{
+    template <typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
+    {
+        return (nnz * (K + 1 + (beta ? 1 : 0))) / 1e9;
+    }
+};
+
 /*
  * ===========================================================================
  *    extra SPARSE

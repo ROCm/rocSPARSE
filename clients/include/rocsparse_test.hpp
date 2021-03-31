@@ -110,16 +110,17 @@ inline void rocsparse_expect_status(rocsparse_status status, rocsparse_status ex
 // The tests are instantiated by filtering through the RocSPARSE_Data stream
 // The filter is by category and by the type_filter() and function_filter()
 // functions in the testclass
-#define INSTANTIATE_TEST_CATEGORY(testclass, categ0ry)                                             \
-    INSTANTIATE_TEST_CASE_P(categ0ry,                                                              \
-                            testclass,                                                             \
-                            testing::ValuesIn(RocSPARSE_TestData::begin([](const Arguments& arg) { \
-                                                  return !strcmp(arg.category, #categ0ry)          \
-                                                         && testclass::type_filter(arg)            \
-                                                         && testclass::function_filter(arg);       \
-                                              }),                                                  \
-                                              RocSPARSE_TestData::end()),                          \
-                            testclass::PrintToStringParamName());
+#define INSTANTIATE_TEST_CATEGORY(testclass, categ0ry)                         \
+    INSTANTIATE_TEST_SUITE_P(                                                  \
+        categ0ry,                                                              \
+        testclass,                                                             \
+        testing::ValuesIn(RocSPARSE_TestData::begin([](const Arguments& arg) { \
+                              return !strcmp(arg.category, #categ0ry)          \
+                                     && testclass::type_filter(arg)            \
+                                     && testclass::function_filter(arg);       \
+                          }),                                                  \
+                          RocSPARSE_TestData::end()),                          \
+        testclass::PrintToStringParamName());
 
 // Instantiate all test categories
 #define INSTANTIATE_TEST_CATEGORIES(testclass)        \

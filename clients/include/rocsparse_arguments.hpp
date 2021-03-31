@@ -80,6 +80,8 @@ struct Arguments
     rocsparse_solve_policy        spol;
     rocsparse_direction           direction;
     rocsparse_order               order;
+    rocsparse_format              format;
+    rocsparse_sddmm_alg           sddmm_alg;
     rocsparse_spmv_alg            spmv_alg;
     rocsparse_spmm_alg            spmm_alg;
     rocsparse_spgemm_alg          spgemm_alg;
@@ -181,6 +183,8 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(spol);
         ROCSPARSE_FORMAT_CHECK(direction);
         ROCSPARSE_FORMAT_CHECK(order);
+        ROCSPARSE_FORMAT_CHECK(format);
+        ROCSPARSE_FORMAT_CHECK(sddmm_alg);
         ROCSPARSE_FORMAT_CHECK(spmv_alg);
         ROCSPARSE_FORMAT_CHECK(spmm_alg);
         ROCSPARSE_FORMAT_CHECK(spgemm_alg);
@@ -361,6 +365,8 @@ private:
         print("solve_policy", rocsparse_solve2string(arg.spol));
         print("direction", rocsparse_direction2string(arg.direction));
         print("order", rocsparse_order2string(arg.order));
+        print("format", rocsparse_format2string(arg.format));
+        print("sddmm_alg", rocsparse_sddmmalg2string(arg.sddmm_alg));
         print("spmv_alg", rocsparse_spmvalg2string(arg.spmv_alg));
         print("spmm_alg", rocsparse_spmmalg2string(arg.spmm_alg));
         print("spgemm_alg", rocsparse_spgemmalg2string(arg.spgemm_alg));

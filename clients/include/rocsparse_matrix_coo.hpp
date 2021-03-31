@@ -111,6 +111,130 @@ struct coo_matrix
             this->base = base_;
         }
     }
+
+    template <memory_mode::value_t THAT_MODE>
+    void unit_check(const coo_matrix<THAT_MODE, T, I>& that_) const
+    {
+        switch(MODE)
+        {
+        case memory_mode::device:
+        {
+            coo_matrix<memory_mode::host, T, I> on_host(*this);
+            on_host.unit_check(that_);
+            break;
+        }
+
+        case memory_mode::managed:
+        case memory_mode::host:
+        {
+            switch(THAT_MODE)
+            {
+            case memory_mode::managed:
+            case memory_mode::host:
+            {
+                unit_check_general<I>(1, 1, 1, &this->m, &that_.m);
+                unit_check_general<I>(1, 1, 1, &this->n, &that_.n);
+                unit_check_general<I>(1, 1, 1, &this->nnz, &that_.nnz);
+                {
+                    I a = (I)this->base;
+                    I b = (I)that_.base;
+                    unit_check_general<I>(1, 1, 1, &a, &b);
+                }
+                unit_check_general<I>(1, that_.nnz, 1, this->row_ind, that_.row_ind);
+                unit_check_general<I>(1, that_.nnz, 1, this->col_ind, that_.col_ind);
+                unit_check_general<T>(1, that_.nnz, 1, this->val, that_.val);
+                break;
+            }
+            case memory_mode::device:
+            {
+                coo_matrix<memory_mode::host, T, I> that(that_);
+                this->unit_check(that);
+                break;
+            }
+            }
+            break;
+        }
+        }
+    }
+
+    template <memory_mode::value_t THAT_MODE>
+    void near_check(const coo_matrix<THAT_MODE, T, I>& that_,
+                    floating_data_t<T>                 tol = default_tolerance<T>::value) const
+    {
+        switch(MODE)
+        {
+        case memory_mode::device:
+        {
+            coo_matrix<memory_mode::host, T, I> on_host(*this);
+            on_host.near_check(that_, tol);
+            break;
+        }
+
+        case memory_mode::managed:
+        case memory_mode::host:
+        {
+            switch(THAT_MODE)
+            {
+            case memory_mode::managed:
+            case memory_mode::host:
+            {
+                unit_check_general<I>(1, 1, 1, &this->m, &that_.m);
+                unit_check_general<I>(1, 1, 1, &this->n, &that_.n);
+                unit_check_general<I>(1, 1, 1, &this->nnz, &that_.nnz);
+                {
+                    I a = (I)this->base;
+                    I b = (I)that_.base;
+                    unit_check_general<I>(1, 1, 1, &a, &b);
+                }
+                unit_check_general<I>(1, that_.nnz, 1, this->row_ind, that_.row_ind);
+                unit_check_general<I>(1, that_.nnz, 1, this->col_ind, that_.col_ind);
+                near_check_general<T>(1, that_.nnz, 1, this->val, that_.val, tol);
+                break;
+            }
+            case memory_mode::device:
+            {
+                coo_matrix<memory_mode::host, T, I> that(that_);
+                this->near_check(that, tol);
+                break;
+            }
+            }
+            break;
+        }
+        }
+    }
+
+    void print() const
+    {
+        switch(MODE)
+        {
+        case memory_mode::host:
+        case memory_mode::managed:
+        {
+            const I* pi = (const I*)this->row_ind;
+            const I* pj = (const I*)this->col_ind;
+            const T* v  = (const T*)val;
+
+            std::cout << "COO MATRIX" << std::endl;
+            std::cout << "M:" << this->m << std::endl;
+            std::cout << "N:" << this->n << std::endl;
+            std::cout << "NNZ:" << this->nnz << std::endl;
+            std::cout << "BASE:" << this->base << std::endl;
+            for(I k = 0; k < this->nnz; ++k)
+            {
+                I i = pi[k] - this->base;
+                I j = pj[k] - this->base;
+                std::cout << "( " << i << ", " << j << ", " << v[k] << " )" << std::endl;
+            }
+            break;
+        }
+        case memory_mode::device:
+        {
+            coo_matrix<memory_mode::host, T, I> on_host(*this);
+            on_host.print();
+            break;
+        }
+        }
+    }
 };
 
 template <typename T, typename I = rocsparse_int>

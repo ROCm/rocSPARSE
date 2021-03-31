@@ -52,6 +52,7 @@
 #include "testing_csrsm.hpp"
 #include "testing_gebsrmm.hpp"
 #include "testing_gemmi.hpp"
+#include "testing_sddmm.hpp"
 #include "testing_spmm_coo.hpp"
 #include "testing_spmm_csr.hpp"
 
@@ -117,6 +118,7 @@ int main(int argc, char* argv[])
     arg.betai               = 0.0;
     arg.threshold           = 0.0;
     arg.percentage          = 0.0;
+    arg.sddmm_alg           = rocsparse_sddmm_alg_default;
     arg.spmv_alg            = rocsparse_spmv_alg_default;
     arg.spmm_alg            = rocsparse_spmm_alg_default;
     arg.spgemm_alg          = rocsparse_spgemm_alg_default;
@@ -141,6 +143,7 @@ int main(int argc, char* argv[])
     char          apol;
     rocsparse_int dir;
     rocsparse_int order;
+    rocsparse_int format;
 
     rocsparse_int device_id;
 
@@ -273,7 +276,7 @@ int main(int argc, char* argv[])
         "SPARSE function to test. Options:\n"
         "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
         "  Level2: bsrmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, ellmv, hybmv, gebsrmv\n"
-        "  Level3: bsrmm, gebsrmm, csrmm, coomm, csrsm, gemmi\n"
+        "  Level3: bsrmm, gebsrmm, csrmm, coomm, csrsm, gemmi, sddmm\n"
         "  Extra: csrgeam, csrgemm\n"
         "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0\n"
         "  Conversion: csr2coo, csr2csc, gebsr2gebsc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
@@ -310,6 +313,10 @@ int main(int argc, char* argv[])
         value<rocsparse_int>(&order)->default_value(rocsparse_order_column),
         "Indicates whether a dense matrix is laid out in column-major storage: 1, or row-major storage 0 (default: 1)")
 
+        ("format",
+        value<rocsparse_int>(&format)->default_value(rocsparse_format_coo),
+        "Indicates wther a sparse matrix is laid out in coo format: 0, coo_aos format: 1, csr format: 2, csc format: 3 or ell format: 4 (default:0)")
+
         ("denseld",
         value<rocsparse_int>(&arg.denseld)->default_value(128),
         "Indicates the leading dimension of a dense matrix >= M, assuming a column-oriented storage.");
@@ -335,6 +342,14 @@ int main(int argc, char* argv[])
     if(order != rocsparse_order_row && order != rocsparse_order_column)
     {
         std::cerr << "Invalid value for --order" << std::endl;
+        return -1;
+    }
+
+    if(format != rocsparse_format_csr && format != rocsparse_format_coo
+       && format != rocsparse_format_coo_aos && format != rocsparse_format_ell
+       && format != rocsparse_format_csc)
+    {
+        std::cerr << "Invalid value for --format" << std::endl;
         return -1;
     }
 
@@ -392,7 +407,8 @@ int main(int argc, char* argv[])
     arg.spol   = rocsparse_solve_policy_auto;
     arg.direction
         = (dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
-    arg.order = (order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
+    arg.order  = (order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
+    arg.format = (rocsparse_format)format;
 
     // rocALUTION parameter overrides filename parameter
     if(rocalution != "")
@@ -956,6 +972,45 @@ int main(int argc, char* argv[])
                 testing_spgemm_csr<int64_t, int32_t, rocsparse_double_complex>(arg);
             else if(indextype == 'd')
                 testing_spgemm_csr<int64_t, int64_t, rocsparse_double_complex>(arg);
+        }
+    }
+    else if(function == "sddmm")
+    {
+        if(precision == 's')
+        {
+            if(indextype == 's')
+                testing_sddmm<int32_t, int32_t, float>(arg);
+            else if(indextype == 'm')
+                testing_sddmm<int64_t, int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_sddmm<int64_t, int64_t, float>(arg);
+        }
+        else if(precision == 'd')
+        {
+            if(indextype == 's')
+                testing_sddmm<int32_t, int32_t, double>(arg);
+            else if(indextype == 'm')
+                testing_sddmm<int64_t, int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_sddmm<int64_t, int64_t, double>(arg);
+        }
+        else if(precision == 'c')
+        {
+            if(indextype == 's')
+                testing_sddmm<int32_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'm')
+                testing_sddmm<int64_t, int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_sddmm<int64_t, int64_t, rocsparse_float_complex>(arg);
+        }
+        else if(precision == 'z')
+        {
+            if(indextype == 's')
+                testing_sddmm<int32_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'm')
+                testing_sddmm<int64_t, int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_sddmm<int64_t, int64_t, rocsparse_double_complex>(arg);
         }
     }
     else if(function == "bsric0")

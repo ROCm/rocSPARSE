@@ -174,8 +174,8 @@ void rocsparse_init_exact(std::vector<T>& A,
                           int             b)
 {
     for(size_t i_batch = 0; i_batch < batch_count; i_batch++)
-        for(size_t i = 0; i < M; ++i)
-            for(size_t j = 0; j < N; ++j)
+        for(size_t j = 0; j < N; ++j)
+            for(size_t i = 0; i < M; ++i)
             {
                 A[i + j * lda + i_batch * stride] = random_generator_exact<T>(a, b);
             }
@@ -186,8 +186,8 @@ void rocsparse_init(
     std::vector<T>& A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count, T a, T b)
 {
     for(size_t i_batch = 0; i_batch < batch_count; i_batch++)
-        for(size_t i = 0; i < M; ++i)
-            for(size_t j = 0; j < N; ++j)
+        for(size_t j = 0; j < N; ++j)
+            for(size_t i = 0; i < M; ++i)
             {
                 A[i + j * lda + i_batch * stride] = random_generator<T>(a, b);
             }

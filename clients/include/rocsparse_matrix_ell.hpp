@@ -114,6 +114,52 @@ struct ell_matrix
             this->val.resize(this->nnz);
         }
     }
+
+    template <memory_mode::value_t THAT_MODE>
+    void near_check(const ell_matrix<THAT_MODE, T, I>& that_,
+                    floating_data_t<T>                 tol = default_tolerance<T>::value) const
+    {
+        switch(MODE)
+        {
+        case memory_mode::device:
+        {
+            ell_matrix<memory_mode::host, T, I> on_host(*this);
+            on_host.near_check(that_, tol);
+            break;
+        }
+
+        case memory_mode::managed:
+        case memory_mode::host:
+        {
+            switch(THAT_MODE)
+            {
+            case memory_mode::managed:
+            case memory_mode::host:
+            {
+                unit_check_general<I>(1, 1, 1, &this->m, &that_.m);
+                unit_check_general<I>(1, 1, 1, &this->n, &that_.n);
+                unit_check_general<I>(1, 1, 1, &this->width, &that_.width);
+                unit_check_general<I>(1, 1, 1, &this->nnz, &that_.nnz);
+                {
+                    I a = (I)this->base;
+                    I b = (I)that_.base;
+                    unit_check_general<I>(1, 1, 1, &a, &b);
+                }
+                unit_check_general<I>(1, that_.nnz, 1, this->ind, that_.ind);
+                near_check_general<T>(1, that_.nnz, 1, this->val, that_.val, tol);
+                break;
+            }
+            case memory_mode::device:
+            {
+                ell_matrix<memory_mode::host, T, I> that(that_);
+                this->near_check(that, tol);
+                break;
+            }
+            }
+            break;
+        }
+        }
+    }
 };
 
 template <typename T, typename I = rocsparse_int>
@@ -123,4 +169,4 @@ using device_ell_matrix = ell_matrix<memory_mode::device, T, I>;
 template <typename T, typename I = rocsparse_int>
 using managed_ell_matrix = ell_matrix<memory_mode::managed, T, I>;
 
-#endif // ROCSPARSE_MATRIX_COO_HPP
+#endif // ROCSPARSE_MATRIX_ELL_HPP

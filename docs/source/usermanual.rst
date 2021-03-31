@@ -640,6 +640,11 @@ rocsparse_spmm_alg
 
 .. doxygenenum:: rocsparse_spmm_alg
 
+rocsparse_sddmm_alg
+------------------
+
+.. doxygenenum:: rocsparse_sddmm_alg
+
 rocsparse_spgemm_stage
 ----------------------
 
@@ -969,6 +974,7 @@ Function name                   single double single complex double complex
 :cpp:func:`rocsparse_spmv()`    x      x      x              x
 :cpp:func:`rocsparse_spmm()`    x      x      x              x
 :cpp:func:`rocsparse_spgemm()`  x      x      x              x
+:cpp:func:`rocsparse_sddmm()`   x      x      x              x
 =============================== ====== ====== ============== ==============
 
 Storage schemes and indexing base
@@ -2370,3 +2376,9 @@ rocsparse_spgemm()
 ------------------
 
 .. doxygenfunction:: rocsparse_spgemm
+
+rocsparse_sddmm()
+----------------
+
+.. doxygenfunction:: rocsparse_sddmm
+
