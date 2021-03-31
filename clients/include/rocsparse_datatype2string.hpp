@@ -225,6 +225,34 @@ constexpr auto rocsparse_order2string(rocsparse_order order)
     return "invalid";
 }
 
+constexpr auto rocsparse_format2string(rocsparse_format format)
+{
+    switch(format)
+    {
+    case rocsparse_format_coo:
+        return "coo";
+    case rocsparse_format_coo_aos:
+        return "coo_aos";
+    case rocsparse_format_csr:
+        return "csr";
+    case rocsparse_format_csc:
+        return "csc";
+    case rocsparse_format_ell:
+        return "ell";
+    }
+    return "invalid";
+}
+
+constexpr auto rocsparse_sddmmalg2string(rocsparse_sddmm_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_sddmm_alg_default:
+        return "default";
+    }
+    return "invalid";
+}
+
 constexpr auto rocsparse_spmvalg2string(rocsparse_spmv_alg alg)
 {
     switch(alg)

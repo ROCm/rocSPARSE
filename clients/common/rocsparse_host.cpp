@@ -2956,6 +2956,292 @@ void host_csrgemm(J                     M,
     }
 }
 
+template <typename T, typename I, typename J>
+void rocsparse_host<T, I, J>::cooddmm(rocsparse_operation  transA,
+                                      rocsparse_operation  transB,
+                                      rocsparse_order      orderA,
+                                      rocsparse_order      orderB,
+                                      J                    M,
+                                      J                    N,
+                                      J                    K,
+                                      I                    nnz,
+                                      const T*             alpha,
+                                      const T*             A,
+                                      J                    lda,
+                                      const T*             B,
+                                      J                    ldb,
+                                      const T*             beta,
+                                      const I*             coo_row_ind_C,
+                                      const I*             coo_col_ind_C,
+                                      T*                   coo_val_C,
+                                      rocsparse_index_base base_C)
+{
+
+    const T a = *alpha;
+    const T b = *beta;
+
+    const J incx = (orderA == rocsparse_order_column)
+                       ? ((transA == rocsparse_operation_none) ? lda : 1)
+                       : ((transA == rocsparse_operation_none) ? 1 : lda);
+    const J incy = (orderB == rocsparse_order_column)
+                       ? ((transB == rocsparse_operation_none) ? 1 : ldb)
+                       : ((transB == rocsparse_operation_none) ? ldb : 1);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(I s = 0; s < nnz; ++s)
+    {
+        const I i = coo_row_ind_C[s] - base_C;
+        const I j = coo_col_ind_C[s] - base_C;
+
+        const T* x = (orderA == rocsparse_order_column)
+                         ? ((transA == rocsparse_operation_none) ? (A + i) : (A + lda * i))
+                         : ((transA == rocsparse_operation_none) ? (A + lda * i) : (A + i));
+
+        const T* y = (orderB == rocsparse_order_column)
+                         ? ((transB == rocsparse_operation_none) ? (B + ldb * j) : (B + j))
+                         : ((transB == rocsparse_operation_none) ? (B + j) : (B + ldb * j));
+
+        T sum = static_cast<T>(0);
+        for(J k = 0; k < K; ++k)
+        {
+            sum += x[incx * k] * y[incy * k];
+        }
+        coo_val_C[s] = coo_val_C[s] * b + a * sum;
+    }
+}
+
+template <typename T, typename I, typename J>
+void rocsparse_host<T, I, J>::cooaosddmm(rocsparse_operation  transA,
+                                         rocsparse_operation  transB,
+                                         rocsparse_order      orderA,
+                                         rocsparse_order      orderB,
+                                         J                    M,
+                                         J                    N,
+                                         J                    K,
+                                         I                    nnz,
+                                         const T*             alpha,
+                                         const T*             A,
+                                         J                    lda,
+                                         const T*             B,
+                                         J                    ldb,
+                                         const T*             beta,
+                                         const I*             coo_row_ind_C,
+                                         const I*             coo_col_ind_C,
+                                         T*                   coo_val_C,
+                                         rocsparse_index_base base_C)
+{
+
+    const T a = *alpha;
+    const T b = *beta;
+
+    const J incx = (orderA == rocsparse_order_column)
+                       ? ((transA == rocsparse_operation_none) ? lda : 1)
+                       : ((transA == rocsparse_operation_none) ? 1 : lda);
+    const J incy = (orderB == rocsparse_order_column)
+                       ? ((transB == rocsparse_operation_none) ? 1 : ldb)
+                       : ((transB == rocsparse_operation_none) ? ldb : 1);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(I s = 0; s < nnz; ++s)
+    {
+        const I i = coo_row_ind_C[2 * s] - base_C;
+        const I j = coo_col_ind_C[2 * s] - base_C;
+
+        const T* x = (orderA == rocsparse_order_column)
+                         ? ((transA == rocsparse_operation_none) ? (A + i) : (A + lda * i))
+                         : ((transA == rocsparse_operation_none) ? (A + lda * i) : (A + i));
+
+        const T* y = (orderB == rocsparse_order_column)
+                         ? ((transB == rocsparse_operation_none) ? (B + ldb * j) : (B + j))
+                         : ((transB == rocsparse_operation_none) ? (B + j) : (B + ldb * j));
+
+        T sum = static_cast<T>(0);
+        for(J k = 0; k < K; ++k)
+        {
+            sum += x[incx * k] * y[incy * k];
+        }
+        coo_val_C[s] = coo_val_C[s] * b + a * sum;
+    }
+}
+
+template <typename T, typename I, typename J>
+void rocsparse_host<T, I, J>::csrddmm(rocsparse_operation  transA,
+                                      rocsparse_operation  transB,
+                                      rocsparse_order      orderA,
+                                      rocsparse_order      orderB,
+                                      J                    M,
+                                      J                    N,
+                                      J                    K,
+                                      I                    nnz,
+                                      const T*             alpha,
+                                      const T*             A,
+                                      J                    lda,
+                                      const T*             B,
+                                      J                    ldb,
+                                      const T*             beta,
+                                      const I*             csr_row_ptr_C,
+                                      const J*             csr_col_ind_C,
+                                      T*                   csr_val_C,
+                                      rocsparse_index_base base_C)
+{
+    const T a = *alpha;
+    const T b = *beta;
+
+    const J incx = (orderA == rocsparse_order_column)
+                       ? ((transA == rocsparse_operation_none) ? lda : 1)
+                       : ((transA == rocsparse_operation_none) ? 1 : lda);
+
+    const J incy = (orderB == rocsparse_order_column)
+                       ? ((transB == rocsparse_operation_none) ? 1 : ldb)
+                       : ((transB == rocsparse_operation_none) ? ldb : 1);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(J i = 0; i < M; ++i)
+    {
+        for(I at = csr_row_ptr_C[i] - base_C; at < csr_row_ptr_C[i + 1] - base_C; ++at)
+        {
+            J j = csr_col_ind_C[at] - base_C;
+
+            const T* x = (orderA == rocsparse_order_column)
+                             ? ((transA == rocsparse_operation_none) ? (A + i) : (A + lda * i))
+                             : ((transA == rocsparse_operation_none) ? (A + lda * i) : (A + i));
+            const T* y = (orderB == rocsparse_order_column)
+                             ? ((transB == rocsparse_operation_none) ? (B + ldb * j) : (B + j))
+                             : ((transB == rocsparse_operation_none) ? (B + j) : (B + ldb * j));
+
+            T sum = static_cast<T>(0);
+            for(J k = 0; k < K; ++k)
+            {
+                sum += x[incx * k] * y[incy * k];
+            }
+            csr_val_C[at] = csr_val_C[at] * b + a * sum;
+        }
+    }
+}
+
+template <typename T, typename I, typename J>
+void rocsparse_host<T, I, J>::ellddmm(rocsparse_operation  transA,
+                                      rocsparse_operation  transB,
+                                      rocsparse_order      orderA,
+                                      rocsparse_order      orderB,
+                                      J                    M,
+                                      J                    N,
+                                      J                    K,
+                                      I                    nnz,
+                                      const T*             alpha,
+                                      const T*             A,
+                                      J                    lda,
+                                      const T*             B,
+                                      J                    ldb,
+                                      const T*             beta,
+                                      const J              ell_width,
+                                      const I*             ell_ind_C,
+                                      T*                   ell_val_C,
+                                      rocsparse_index_base ell_base)
+{
+    const T a = *alpha;
+    const T b = *beta;
+
+    const J incx = (orderA == rocsparse_order_column)
+                       ? ((transA == rocsparse_operation_none) ? lda : 1)
+                       : ((transA == rocsparse_operation_none) ? 1 : lda);
+
+    const J incy = (orderB == rocsparse_order_column)
+                       ? ((transB == rocsparse_operation_none) ? 1 : ldb)
+                       : ((transB == rocsparse_operation_none) ? ldb : 1);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(J i = 0; i < M; ++i)
+    {
+        for(J p = 0; p < ell_width; ++p)
+        {
+            I at = p * M + i;
+            J j  = ell_ind_C[at] - ell_base;
+            if(j >= 0 && j < N)
+            {
+                const T* x = (orderA == rocsparse_order_column)
+                                 ? ((transA == rocsparse_operation_none) ? (A + i) : (A + lda * i))
+                                 : ((transA == rocsparse_operation_none) ? (A + lda * i) : (A + i));
+                const T* y = (orderB == rocsparse_order_column)
+                                 ? ((transB == rocsparse_operation_none) ? (B + ldb * j) : (B + j))
+                                 : ((transB == rocsparse_operation_none) ? (B + j) : (B + ldb * j));
+
+                T sum = static_cast<T>(0);
+                for(J k = 0; k < K; ++k)
+                {
+                    sum += x[incx * k] * y[incy * k];
+                }
+                ell_val_C[at] = ell_val_C[at] * b + a * sum;
+            }
+        }
+    }
+}
+
+template <typename T, typename I, typename J>
+void rocsparse_host<T, I, J>::cscddmm(rocsparse_operation  transA,
+                                      rocsparse_operation  transB,
+                                      rocsparse_order      orderA,
+                                      rocsparse_order      orderB,
+                                      J                    M,
+                                      J                    N,
+                                      J                    K,
+                                      I                    nnz,
+                                      const T*             alpha,
+                                      const T*             A,
+                                      J                    lda,
+                                      const T*             B,
+                                      J                    ldb,
+                                      const T*             beta,
+                                      const I*             csr_ptr_C,
+                                      const J*             csr_ind_C,
+                                      T*                   csr_val_C,
+                                      rocsparse_index_base base_C)
+{
+    const T a = *alpha;
+    const T b = *beta;
+
+    const J incx = (orderA == rocsparse_order_column)
+                       ? ((transA == rocsparse_operation_none) ? lda : 1)
+                       : ((transA == rocsparse_operation_none) ? 1 : lda);
+
+    const J incy = (orderB == rocsparse_order_column)
+                       ? ((transB == rocsparse_operation_none) ? 1 : ldb)
+                       : ((transB == rocsparse_operation_none) ? ldb : 1);
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+
+    for(J j = 0; j < N; ++j)
+    {
+        for(I at = csr_ptr_C[j] - base_C; at < csr_ptr_C[j + 1] - base_C; ++at)
+        {
+            J        i = csr_ind_C[at] - base_C;
+            const T* x = (orderA == rocsparse_order_column)
+                             ? ((transA == rocsparse_operation_none) ? (A + i) : (A + lda * i))
+                             : ((transA == rocsparse_operation_none) ? (A + lda * i) : (A + i));
+            const T* y = (orderB == rocsparse_order_column)
+                             ? ((transB == rocsparse_operation_none) ? (B + ldb * j) : (B + j))
+                             : ((transB == rocsparse_operation_none) ? (B + j) : (B + ldb * j));
+
+            T sum = static_cast<T>(0);
+            for(J k = 0; k < K; ++k)
+            {
+                sum += x[incx * k] * y[incy * k];
+            }
+            csr_val_C[at] = csr_val_C[at] * b + a * sum;
+        }
+    }
+}
+
 /*
  * ===========================================================================
  *    precond SPARSE
@@ -4889,6 +5175,21 @@ void host_coosort_by_column(rocsparse_int               M,
 }
 
 // INSTANTIATE
+
+template struct rocsparse_host<float, int32_t, int32_t>;
+template struct rocsparse_host<double, int32_t, int32_t>;
+template struct rocsparse_host<rocsparse_float_complex, int32_t, int32_t>;
+template struct rocsparse_host<rocsparse_double_complex, int32_t, int32_t>;
+
+template struct rocsparse_host<float, int64_t, int32_t>;
+template struct rocsparse_host<double, int64_t, int32_t>;
+template struct rocsparse_host<rocsparse_float_complex, int64_t, int32_t>;
+template struct rocsparse_host<rocsparse_double_complex, int64_t, int32_t>;
+
+template struct rocsparse_host<float, int64_t, int64_t>;
+template struct rocsparse_host<double, int64_t, int64_t>;
+template struct rocsparse_host<rocsparse_float_complex, int64_t, int64_t>;
+template struct rocsparse_host<rocsparse_double_complex, int64_t, int64_t>;
 
 /*
  * ===========================================================================

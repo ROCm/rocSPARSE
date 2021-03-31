@@ -322,11 +322,11 @@ public:
     }
 
     template <memory_mode::value_t MODE,
-              rocsparse_direction  direction_,
+              rocsparse_direction  DIRECTION_,
               typename T,
               typename I = rocsparse_int,
               typename J = rocsparse_int>
-    rocsparse_local_spmat(csx_matrix<MODE, direction_, T, I, J>& h)
+    rocsparse_local_spmat(csx_matrix<MODE, DIRECTION_, T, I, J>& h)
         : rocsparse_local_spmat(h.m,
                                 h.n,
                                 h.nnz,
@@ -337,7 +337,8 @@ public:
                                 get_indextype<J>(),
                                 h.base,
                                 get_datatype<T>(),
-                                rocsparse_format_csr)
+                                (DIRECTION_ == rocsparse_direction_row) ? rocsparse_format_csr
+                                                                        : rocsparse_format_csc)
     {
     }
 
@@ -431,8 +432,8 @@ public:
     }
 
     template <memory_mode::value_t MODE, typename T>
-    rocsparse_local_dnmat(dense_matrix<MODE, T>& h, rocsparse_order order)
-        : rocsparse_local_dnmat(h.m, h.n, h.ld, h.val, get_datatype<T>(), order)
+    rocsparse_local_dnmat(dense_matrix<MODE, T>& h)
+        : rocsparse_local_dnmat(h.m, h.n, h.ld, h.val, get_datatype<T>(), h.order)
     {
     }
 

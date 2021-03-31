@@ -104,6 +104,18 @@ Datatypes:
       attr:
         rocsparse_order_row: 0
         rocsparse_order_column: 1
+  - rocsparse_format:
+      bases: [c_int ]
+      attr:
+        rocsparse_format_coo: 0
+        rocsparse_format_coo_aos: 1
+        rocsparse_format_csr: 2
+        rocsparse_format_csc: 3
+        rocsparse_format_ell: 4
+  - rocsparse_sddmm_alg:
+      bases: [c_int ]
+      attr:
+        rocsparse_sddmm_alg_default: 0
   - rocsparse_spmv_alg:
       bases: [c_int ]
       attr:
@@ -223,6 +235,8 @@ Arguments:
   - spol: rocsparse_solve_policy
   - direction: rocsparse_direction
   - order: rocsparse_order
+  - format: rocsparse_format
+  - sddmm_alg: rocsparse_sddmm_alg
   - spmv_alg: rocsparse_spmv_alg
   - spmm_alg: rocsparse_spmm_alg
   - spgemm_alg: rocsparse_spgemm_alg
@@ -318,7 +332,9 @@ Defaults:
   apol: rocsparse_analysis_policy_reuse
   spol: rocsparse_solve_policy_auto
   direction: rocsparse_direction_row
-  order: rocsparse_order_row
+  order: rocsparse_order_column
+  format: rocsparse_format_coo
+  sddmm_alg: rocsparse_sddmm_alg_default
   spmv_alg: rocsparse_spmv_alg_default
   spmm_alg: rocsparse_spmm_alg_default
   spgemm_alg: rocsparse_spgemm_alg_default

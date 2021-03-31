@@ -82,6 +82,9 @@ template <typename T>
 void unit_check_general(int64_t M, int64_t N, int64_t lda, const T* hCPU, const T* hGPU);
 
 template <typename T>
+void unit_check(const T this_, const T that_);
+
+template <typename T>
 void near_check_general(rocsparse_int      M,
                         rocsparse_int      N,
                         rocsparse_int      lda,

@@ -107,6 +107,84 @@ struct coo_aos_matrix
             this->base = base_;
         }
     }
+
+    template <memory_mode::value_t THAT_MODE>
+    void near_check(const coo_aos_matrix<THAT_MODE, T, I>& that_,
+                    floating_data_t<T>                     tol = default_tolerance<T>::value) const
+    {
+        switch(MODE)
+        {
+        case memory_mode::device:
+        {
+            coo_aos_matrix<memory_mode::host, T, I> on_host(*this);
+            on_host.near_check(that_, tol);
+            break;
+        }
+
+        case memory_mode::managed:
+        case memory_mode::host:
+        {
+            switch(THAT_MODE)
+            {
+            case memory_mode::managed:
+            case memory_mode::host:
+            {
+                unit_check_general<I>(1, 1, 1, &this->m, &that_.m);
+                unit_check_general<I>(1, 1, 1, &this->n, &that_.n);
+                unit_check_general<I>(1, 1, 1, &this->nnz, &that_.nnz);
+                {
+                    I a = (I)this->base;
+                    I b = (I)that_.base;
+                    unit_check_general<I>(1, 1, 1, &a, &b);
+                }
+                unit_check_general<I>(1, that_.nnz * 2, 1, this->ind, that_.ind);
+                near_check_general<T>(1, that_.nnz, 1, this->val, that_.val, tol);
+                break;
+            }
+            case memory_mode::device:
+            {
+                coo_aos_matrix<memory_mode::host, T, I> that(that_);
+                this->near_check(that, tol);
+                break;
+            }
+            }
+            break;
+        }
+        }
+    }
+
+    void print() const
+    {
+
+        switch(MODE)
+        {
+        case memory_mode::host:
+        case memory_mode::managed:
+        {
+            const I* pi = (const I*)this->ind;
+            const I* pj = pi + 1;
+            const T* v  = (const T*)val;
+            std::cout << "COO AOS MATRIX" << std::endl;
+            std::cout << "M:" << this->m << std::endl;
+            std::cout << "N:" << this->n << std::endl;
+            std::cout << "NNZ:" << this->nnz << std::endl;
+            std::cout << "BASE:" << this->base << std::endl;
+            for(I k = 0; k < this->nnz; ++k)
+            {
+                I i = pi[2 * k] - this->base;
+                I j = pj[2 * k] - this->base;
+                std::cout << "( " << i << ", " << j << ", " << v[k] << " )" << std::endl;
+            }
+            break;
+        }
+        case memory_mode::device:
+        {
+            coo_aos_matrix<memory_mode::host, T, I> on_host(*this);
+            on_host.print();
+            break;
+        }
+        }
+    }
 };
 
 template <typename T, typename I = rocsparse_int>

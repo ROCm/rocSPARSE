@@ -198,6 +198,65 @@ constexpr double coomm_gbyte_count(I nnz_A, I nnz_B, I nnz_C, bool beta = false)
            / 1e9;
 }
 
+template <rocsparse_format FORMAT>
+struct rocsparse_gbyte_count
+{
+    template <typename T, typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false);
+};
+
+template <>
+struct rocsparse_gbyte_count<rocsparse_format_csr>
+{
+    template <typename T, typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
+    {
+        return ((M + 1 + nnz) * sizeof(I) + ((M + N) * K + nnz + (beta ? nnz : 0)) * sizeof(T))
+               / 1e9;
+    }
+};
+
+template <>
+struct rocsparse_gbyte_count<rocsparse_format_csc>
+{
+    template <typename T, typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
+    {
+        return ((N + 1 + nnz) * sizeof(I) + ((M + N) * K + nnz + (beta ? nnz : 0)) * sizeof(T))
+               / 1e9;
+    }
+};
+
+template <>
+struct rocsparse_gbyte_count<rocsparse_format_coo>
+{
+    template <typename T, typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
+    {
+        return ((2.0 * nnz) * sizeof(I) + ((M + N) * K + nnz + (beta ? nnz : 0)) * sizeof(T)) / 1e9;
+    }
+};
+
+template <>
+struct rocsparse_gbyte_count<rocsparse_format_coo_aos>
+{
+    template <typename T, typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
+    {
+        return ((2.0 * nnz) * sizeof(I) + ((M + N) * K + nnz + (beta ? nnz : 0)) * sizeof(T)) / 1e9;
+    }
+};
+
+template <>
+struct rocsparse_gbyte_count<rocsparse_format_ell>
+{
+    template <typename T, typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
+    {
+        return ((2.0 * nnz) * sizeof(I) + ((M + N) * K + nnz + (beta ? nnz : 0)) * sizeof(T)) / 1e9;
+    }
+};
+
 /*
  * ===========================================================================
  *    extra SPARSE

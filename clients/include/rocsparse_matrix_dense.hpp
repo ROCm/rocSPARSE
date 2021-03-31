@@ -33,18 +33,22 @@ struct dense_matrix
 {
     template <typename S>
     using array_t = typename memory_traits<MODE>::template array_t<S>;
-    rocsparse_int m{};
-    rocsparse_int n{};
-    rocsparse_int ld{};
-    array_t<T>    val{};
+    rocsparse_int   m{};
+    rocsparse_int   n{};
+    rocsparse_int   ld{};
+    array_t<T>      val{};
+    rocsparse_order order;
     dense_matrix(){};
     ~dense_matrix(){};
 
-    dense_matrix(rocsparse_int m_, rocsparse_int n_)
+    dense_matrix(rocsparse_int   m_,
+                 rocsparse_int   n_,
+                 rocsparse_order order_ = rocsparse_order_column)
         : m(m_)
         , n(n_)
-        , ld(m_)
-        , val(m_ * n_){};
+        , ld((order_ == rocsparse_order_column) ? m_ : n_)
+        , val(m_ * n_)
+        , order(order_){};
 
     void print() const
     {
@@ -53,19 +57,39 @@ struct dense_matrix
         case memory_mode::host:
         case memory_mode::managed:
         {
-            for(int i = 0; i < std::min(this->m, this->m); ++i)
+            switch(this->order)
             {
-                for(int j = 0; j < std::min(this->n, this->n); ++j)
+            case rocsparse_order_column:
+            {
+                for(int i = 0; i < this->m; ++i)
                 {
-                    std::cout << " " << this->val[j * this->ld + i];
+                    for(int j = 0; j < this->n; ++j)
+                    {
+                        std::cout << " " << this->val[j * this->ld + i];
+                    }
+                    std::cout << std::endl;
                 }
-                std::cout << std::endl;
+                break;
+            }
+            case rocsparse_order_row:
+            {
+                for(int i = 0; i < this->m; ++i)
+                {
+                    for(int j = 0; j < this->n; ++j)
+                    {
+                        std::cout << " " << this->val[i * this->ld + j];
+                    }
+                    std::cout << std::endl;
+                }
+                break;
+            }
             }
             break;
         }
         case memory_mode::device:
         {
-            std::cout << "DO NOT PRINT MATRIX FROM DEVICE" << std::endl;
+            dense_matrix<memory_mode::host, T> on_host(*this);
+            on_host.print();
             break;
         }
         }
@@ -84,8 +108,9 @@ struct dense_matrix
     dense_matrix(const dense_matrix<MODE, T>& that, bool transfer = true)
         : m(that.m)
         , n(that.n)
-        , ld(that.m)
+        , ld((that.order == rocsparse_order_column) ? that.m : that.n)
         , val(that.m * that.n)
+        , order(that.order)
     {
         if(transfer)
         {
@@ -97,8 +122,9 @@ struct dense_matrix
     dense_matrix(const dense_matrix<THAT_MODE, T>& that, bool transfer = true)
         : m(that.m)
         , n(that.n)
-        , ld(that.m)
+        , ld((that.order == rocsparse_order_column) ? that.m : that.n)
         , val(that.m * that.n)
+        , order(that.order)
     {
         if(transfer)
         {
@@ -111,8 +137,25 @@ struct dense_matrix
     {
         CHECK_HIP_ERROR((this->m == that_.m && this->n == that_.n) ? hipSuccess
                                                                    : hipErrorInvalidValue);
-        CHECK_HIP_ERROR((this->m == this->ld) ? hipSuccess : hipErrorInvalidValue);
-        CHECK_HIP_ERROR((that_.m == that_.ld) ? hipSuccess : hipErrorInvalidValue);
+        CHECK_HIP_ERROR((this->order == that_.order) ? hipSuccess : hipErrorInvalidValue);
+        //
+        // FOR NOW RESTRUCTION..
+        //
+        switch(that_.order)
+        {
+        case rocsparse_order_row:
+        {
+            CHECK_HIP_ERROR((that_.n == that_.ld) ? hipSuccess : hipErrorInvalidValue);
+            CHECK_HIP_ERROR((this->n == this->ld) ? hipSuccess : hipErrorInvalidValue);
+            break;
+        }
+        case rocsparse_order_column:
+        {
+            CHECK_HIP_ERROR((that_.m == that_.ld) ? hipSuccess : hipErrorInvalidValue);
+            CHECK_HIP_ERROR((this->m == this->ld) ? hipSuccess : hipErrorInvalidValue);
+            break;
+        }
+        }
         this->val.transfer_from(that_.val);
     }
 
@@ -139,7 +182,31 @@ struct dense_matrix
                 unit_check_general<rocsparse_int>(1, 1, 1, &this->m, &that_.m);
                 unit_check_general<rocsparse_int>(1, 1, 1, &this->n, &that_.n);
                 unit_check_general<rocsparse_int>(1, 1, 1, &this->ld, &that_.ld);
-                unit_check_general<T>(this->m, this->n, this->ld, this->val, that_.val);
+
+                {
+                    rocsparse_int a = (rocsparse_int)this->order;
+                    rocsparse_int b = (rocsparse_int)that_.order;
+                    unit_check_general<rocsparse_int>(1, 1, 1, &a, &b);
+                }
+
+                switch(this->order)
+                {
+                case rocsparse_order_column:
+                {
+                    unit_check_general<T>(this->m, this->n, this->ld, this->val, that_.val);
+                    break;
+                }
+
+                case rocsparse_order_row:
+                {
+                    //
+                    // Little trick
+                    // If this poses a problem, we need to refactor unit_check_general.
+                    //
+                    unit_check_general<T>(this->n, this->m, this->ld, this->val, that_.val);
+                    break;
+                }
+                }
                 break;
             }
             case memory_mode::device:
@@ -178,7 +245,32 @@ struct dense_matrix
                 unit_check_general<rocsparse_int>(1, 1, 1, &this->m, &that_.m);
                 unit_check_general<rocsparse_int>(1, 1, 1, &this->n, &that_.n);
                 unit_check_general<rocsparse_int>(1, 1, 1, &this->ld, &that_.ld);
-                near_check_general<T>(this->m, this->n, this->ld, this->val, that_.val, tol);
+
+                {
+                    rocsparse_int a = (rocsparse_int)this->order;
+                    rocsparse_int b = (rocsparse_int)that_.order;
+                    unit_check_general<rocsparse_int>(1, 1, 1, &a, &b);
+                }
+
+                switch(this->order)
+                {
+                case rocsparse_order_column:
+                {
+                    near_check_general<T>(this->m, this->n, this->ld, this->val, that_.val, tol);
+                    break;
+                }
+
+                case rocsparse_order_row:
+                {
+                    //
+                    // Little trick
+                    // If this poses a problem, we need to refactor unit_check_general.
+                    //
+                    near_check_general<T>(this->n, this->m, this->ld, this->val, that_.val, tol);
+                    break;
+                }
+                }
+
                 break;
             }
             case memory_mode::device:

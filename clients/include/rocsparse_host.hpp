@@ -36,6 +36,105 @@
 #include <omp.h>
 #endif
 
+template <typename T, typename I, typename J>
+struct rocsparse_host
+{
+    static void csrddmm(rocsparse_operation  trans_A,
+                        rocsparse_operation  trans_B,
+                        rocsparse_order      order_A,
+                        rocsparse_order      order_B,
+                        J                    M,
+                        J                    N,
+                        J                    K,
+                        I                    nnz,
+                        const T*             alpha,
+                        const T*             A,
+                        J                    lda,
+                        const T*             B,
+                        J                    ldb,
+                        const T*             beta,
+                        const I*             csr_row_ptr_C,
+                        const J*             csr_col_ind_C,
+                        T*                   csr_val_C,
+                        rocsparse_index_base base_C);
+
+    static void cscddmm(rocsparse_operation  trans_A,
+                        rocsparse_operation  trans_B,
+                        rocsparse_order      order_A,
+                        rocsparse_order      order_B,
+                        J                    M,
+                        J                    N,
+                        J                    K,
+                        I                    nnz,
+                        const T*             alpha,
+                        const T*             A,
+                        J                    lda,
+                        const T*             B,
+                        J                    ldb,
+                        const T*             beta,
+                        const I*             csr_row_ptr_C,
+                        const J*             csr_col_ind_C,
+                        T*                   csr_val_C,
+                        rocsparse_index_base base_C);
+
+    static void cooddmm(rocsparse_operation  trans_A,
+                        rocsparse_operation  trans_B,
+                        rocsparse_order      order_A,
+                        rocsparse_order      order_B,
+                        J                    M,
+                        J                    N,
+                        J                    K,
+                        I                    nnz,
+                        const T*             alpha,
+                        const T*             A,
+                        J                    lda,
+                        const T*             B,
+                        J                    ldb,
+                        const T*             beta,
+                        const I*             coo_row_ind_C,
+                        const I*             coo_col_ind_C,
+                        T*                   coo_val_C,
+                        rocsparse_index_base base_C);
+
+    static void cooaosddmm(rocsparse_operation  trans_A,
+                           rocsparse_operation  trans_B,
+                           rocsparse_order      order_A,
+                           rocsparse_order      order_B,
+                           J                    M,
+                           J                    N,
+                           J                    K,
+                           I                    nnz,
+                           const T*             alpha,
+                           const T*             A,
+                           J                    lda,
+                           const T*             B,
+                           J                    ldb,
+                           const T*             beta,
+                           const I*             coo_row_ind_C,
+                           const I*             coo_col_ind_C,
+                           T*                   coo_val_C,
+                           rocsparse_index_base base_C);
+
+    static void ellddmm(rocsparse_operation  trans_A,
+                        rocsparse_operation  trans_B,
+                        rocsparse_order      order_A,
+                        rocsparse_order      order_B,
+                        J                    M,
+                        J                    N,
+                        J                    K,
+                        I                    nnz,
+                        const T*             alpha,
+                        const T*             A,
+                        J                    lda,
+                        const T*             B,
+                        J                    ldb,
+                        const T*             beta,
+                        const J              ell_width,
+                        const I*             ell_ind_C,
+                        T*                   ell_val_C,
+                        rocsparse_index_base base_C);
+};
+
 // BSR indexing macros
 #define BSR_IND(j, bi, bj, dir) \
     ((dir == rocsparse_direction_row) ? BSR_IND_R(j, bi, bj) : BSR_IND_C(j, bi, bj))
