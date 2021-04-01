@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -163,7 +163,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 2, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 2, 32);
         }
@@ -186,7 +186,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 3, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 3, 32);
         }
@@ -209,7 +209,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 4, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 4, 32);
         }
@@ -232,7 +232,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 5, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 5, 32);
         }
@@ -255,7 +255,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 6, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 6, 32);
         }
@@ -278,7 +278,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 7, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 7, 32);
         }
@@ -301,7 +301,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 8, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 8, 32);
         }
@@ -324,7 +324,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 9, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 9, 32);
         }
@@ -347,7 +347,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 10, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 10, 32);
         }
@@ -370,7 +370,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 11, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 11, 32);
         }
@@ -393,7 +393,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 12, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 12, 32);
         }
@@ -416,7 +416,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 13, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 13, 32);
         }
@@ -439,7 +439,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 14, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 14, 32);
         }
@@ -462,7 +462,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 15, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 15, 32);
         }
@@ -485,7 +485,7 @@ void launch_gebsrmv_row_block_dim_1(rocsparse_handle     handle,
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 16, 16);
         }
-        else if(blocks_per_row < 64)
+        else if(blocks_per_row < 64 || handle->wavefront_size == 32)
         {
             LAUNCH_GEBSRMV_1XN_KERNEL(BSRMVN_DIM, 16, 32);
         }
