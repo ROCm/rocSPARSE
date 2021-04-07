@@ -2436,6 +2436,35 @@ void host_csrsm(rocsparse_int                     M,
     *numeric_pivot = (*numeric_pivot == M + 1) ? -1 : *numeric_pivot;
 }
 
+template <typename I, typename T>
+void host_gemvi(I                    M,
+                I                    N,
+                T                    alpha,
+                const T*             A,
+                I                    lda,
+                I                    nnz,
+                const T*             x_val,
+                const I*             x_ind,
+                T                    beta,
+                T*                   y,
+                rocsparse_index_base base)
+{
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(I i = 0; i < M; ++i)
+    {
+        T sum = static_cast<T>(0);
+
+        for(I j = 0; j < nnz; ++j)
+        {
+            sum = std::fma(x_val[j], A[x_ind[j] * lda + i], sum);
+        }
+
+        y[i] = std::fma(alpha, sum, beta * y[i]);
+    }
+}
+
 template <typename T>
 void host_gemmi(rocsparse_int        M,
                 rocsparse_int        N,
@@ -6898,6 +6927,17 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                      std::vector<rocsparse_float_complex>& coo_val);
 
 #define INSTANTIATE2(ITYPE, TTYPE)                                                               \
+    template void host_gemvi<ITYPE, TTYPE>(ITYPE                M,                               \
+                                           ITYPE                N,                               \
+                                           TTYPE                alpha,                           \
+                                           const TTYPE*         A,                               \
+                                           ITYPE                lda,                             \
+                                           ITYPE                nnz,                             \
+                                           const TTYPE*         x_val,                           \
+                                           const ITYPE*         x_ind,                           \
+                                           TTYPE                beta,                            \
+                                           TTYPE*               y,                               \
+                                           rocsparse_index_base base);                           \
     template void host_coo_to_dense<ITYPE, TTYPE>(ITYPE                     m,                   \
                                                   ITYPE                     n,                   \
                                                   ITYPE                     nnz,                 \

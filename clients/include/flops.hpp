@@ -76,6 +76,12 @@ constexpr double csrsv_gflop_count(rocsparse_int M, rocsparse_int nnz, rocsparse
     return (2.0 * nnz + M + (diag == rocsparse_diag_type_non_unit ? M : 0)) / 1e9;
 }
 
+template <typename I>
+constexpr double gemvi_gflop_count(I M, I nnz)
+{
+    return (M + 2.0 * nnz * M) / 1e9;
+}
+
 /*
  * ===========================================================================
  *    level 3 SPARSE

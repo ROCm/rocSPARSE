@@ -1679,6 +1679,131 @@ rocsparse_status rocsparse_gebsrmv(rocsparse_handle                handle,
                               y);
 }
 
+// gemvi
+template <>
+rocsparse_status rocsparse_gemvi_buffer_size<float>(rocsparse_handle    handle,
+                                                    rocsparse_operation trans,
+                                                    rocsparse_int       m,
+                                                    rocsparse_int       n,
+                                                    rocsparse_int       nnz,
+                                                    size_t*             buffer_size)
+{
+    return rocsparse_sgemvi_buffer_size(handle, trans, m, n, nnz, buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gemvi_buffer_size<double>(rocsparse_handle    handle,
+                                                     rocsparse_operation trans,
+                                                     rocsparse_int       m,
+                                                     rocsparse_int       n,
+                                                     rocsparse_int       nnz,
+                                                     size_t*             buffer_size)
+{
+    return rocsparse_dgemvi_buffer_size(handle, trans, m, n, nnz, buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gemvi_buffer_size<rocsparse_float_complex>(rocsparse_handle    handle,
+                                                                      rocsparse_operation trans,
+                                                                      rocsparse_int       m,
+                                                                      rocsparse_int       n,
+                                                                      rocsparse_int       nnz,
+                                                                      size_t* buffer_size)
+{
+    return rocsparse_cgemvi_buffer_size(handle, trans, m, n, nnz, buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gemvi_buffer_size<rocsparse_double_complex>(rocsparse_handle    handle,
+                                                                       rocsparse_operation trans,
+                                                                       rocsparse_int       m,
+                                                                       rocsparse_int       n,
+                                                                       rocsparse_int       nnz,
+                                                                       size_t* buffer_size)
+{
+    return rocsparse_zgemvi_buffer_size(handle, trans, m, n, nnz, buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gemvi(rocsparse_handle     handle,
+                                 rocsparse_operation  trans,
+                                 rocsparse_int        m,
+                                 rocsparse_int        n,
+                                 const float*         alpha,
+                                 const float*         A,
+                                 rocsparse_int        lda,
+                                 rocsparse_int        nnz,
+                                 const float*         x_val,
+                                 const rocsparse_int* x_ind,
+                                 const float*         beta,
+                                 float*               y,
+                                 rocsparse_index_base idx_base,
+                                 void*                temp_buffer)
+{
+    return rocsparse_sgemvi(
+        handle, trans, m, n, alpha, A, lda, nnz, x_val, x_ind, beta, y, idx_base, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gemvi(rocsparse_handle     handle,
+                                 rocsparse_operation  trans,
+                                 rocsparse_int        m,
+                                 rocsparse_int        n,
+                                 const double*        alpha,
+                                 const double*        A,
+                                 rocsparse_int        lda,
+                                 rocsparse_int        nnz,
+                                 const double*        x_val,
+                                 const rocsparse_int* x_ind,
+                                 const double*        beta,
+                                 double*              y,
+                                 rocsparse_index_base idx_base,
+                                 void*                temp_buffer)
+{
+    return rocsparse_dgemvi(
+        handle, trans, m, n, alpha, A, lda, nnz, x_val, x_ind, beta, y, idx_base, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gemvi(rocsparse_handle               handle,
+                                 rocsparse_operation            trans,
+                                 rocsparse_int                  m,
+                                 rocsparse_int                  n,
+                                 const rocsparse_float_complex* alpha,
+                                 const rocsparse_float_complex* A,
+                                 rocsparse_int                  lda,
+                                 rocsparse_int                  nnz,
+                                 const rocsparse_float_complex* x_val,
+                                 const rocsparse_int*           x_ind,
+                                 const rocsparse_float_complex* beta,
+                                 rocsparse_float_complex*       y,
+                                 rocsparse_index_base           idx_base,
+                                 void*                          temp_buffer)
+{
+    return rocsparse_cgemvi(
+        handle, trans, m, n, alpha, A, lda, nnz, x_val, x_ind, beta, y, idx_base, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gemvi(rocsparse_handle                handle,
+                                 rocsparse_operation             trans,
+                                 rocsparse_int                   m,
+                                 rocsparse_int                   n,
+                                 const rocsparse_double_complex* alpha,
+                                 const rocsparse_double_complex* A,
+                                 rocsparse_int                   lda,
+                                 rocsparse_int                   nnz,
+                                 const rocsparse_double_complex* x_val,
+                                 const rocsparse_int*            x_ind,
+                                 const rocsparse_double_complex* beta,
+                                 rocsparse_double_complex*       y,
+                                 rocsparse_index_base            idx_base,
+                                 void*                           temp_buffer)
+{
+    return rocsparse_zgemvi(
+        handle, trans, m, n, alpha, A, lda, nnz, x_val, x_ind, beta, y, idx_base, temp_buffer);
+}
+
 /*
  * ===========================================================================
  *    level 3 SPARSE
