@@ -317,6 +317,31 @@ rocsparse_status rocsparse_gebsrmv(rocsparse_handle          handle,
                                    const T*                  beta,
                                    T*                        y);
 
+// gemvi
+template <typename T>
+rocsparse_status rocsparse_gemvi_buffer_size(rocsparse_handle    handle,
+                                             rocsparse_operation trans,
+                                             rocsparse_int       m,
+                                             rocsparse_int       n,
+                                             rocsparse_int       nnz,
+                                             size_t*             buffer_size);
+
+template <typename T>
+rocsparse_status rocsparse_gemvi(rocsparse_handle     handle,
+                                 rocsparse_operation  trans,
+                                 rocsparse_int        m,
+                                 rocsparse_int        n,
+                                 const T*             alpha,
+                                 const T*             A,
+                                 rocsparse_int        lda,
+                                 rocsparse_int        nnz,
+                                 const T*             x_val,
+                                 const rocsparse_int* x_ind,
+                                 const T*             beta,
+                                 T*                   y,
+                                 rocsparse_index_base idx_base,
+                                 void*                temp_buffer);
+
 /*
  * ===========================================================================
  *    level 3 SPARSE

@@ -838,6 +838,8 @@ Function name                                                             single
 :cpp:func:`rocsparse_Xellmv() <rocsparse_sellmv>`                         x      x      x              x
 :cpp:func:`rocsparse_Xhybmv() <rocsparse_shybmv>`                         x      x      x              x
 :cpp:func:`rocsparse_Xgebsrmv() <rocsparse_sgebsrmv>`                     x      x      x              x
+:cpp:func:`rocsparse_Xgemvi_buffer_size() <rocsparse_sgemvi_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_Xgemvi() <rocsparse_sgemvi>`                         x      x      x              x
 ========================================================================= ====== ====== ============== ==============
 
 Sparse Level 3 Functions
@@ -1539,6 +1541,28 @@ rocsparse_gebsrmv()
 .. doxygenfunction:: rocsparse_cgebsrmv
   :outline:
 .. doxygenfunction:: rocsparse_zgebsrmv
+
+rocsparse_gemvi_buffer_size()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_sgemvi_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dgemvi_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cgemvi_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zgemvi_buffer_size
+
+rocsparse_gemvi()
+-----------------
+
+.. doxygenfunction:: rocsparse_sgemvi
+  :outline:
+.. doxygenfunction:: rocsparse_dgemvi
+  :outline:
+.. doxygenfunction:: rocsparse_cgemvi
+  :outline:
+.. doxygenfunction:: rocsparse_zgemvi
 
 .. _rocsparse_level3_functions_:
 

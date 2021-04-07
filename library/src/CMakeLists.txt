@@ -80,6 +80,7 @@ set(rocsparse_source
   src/level2/rocsparse_gebsrmv_template_row_block_dim_9_12.cpp
   src/level2/rocsparse_gebsrmv_template_row_block_dim_13_16.cpp
   src/level2/rocsparse_gebsrmv_template_row_block_dim_17_inf.cpp
+  src/level2/rocsparse_gemvi.cpp
 
 # Level3
   src/level3/rocsparse_gebsrmm_template_small.cpp

@@ -140,6 +140,12 @@ constexpr double gebsrmv_gbyte_count(rocsparse_int mb,
            / 1e9;
 }
 
+template <typename T, typename I>
+constexpr double gemvi_gbyte_count(I m, I nnz, bool beta = false)
+{
+    return ((nnz) * sizeof(I) + (m * nnz + nnz + m + (beta ? m : 0)) * sizeof(T)) / 1e9;
+}
+
 /*
  * ===========================================================================
  *    level 3 SPARSE

@@ -90,6 +90,12 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_sddmm_alg& p)
 }
 
 template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_index_base& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spmv_alg& p)
 {
     return rocsparse_status_invalid_value;
@@ -123,6 +129,12 @@ template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_operation& p)
 {
     p = (rocsparse_operation)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_index_base& p)
+{
+    p = (rocsparse_index_base)-1;
 }
 
 template <>

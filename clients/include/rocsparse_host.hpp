@@ -311,6 +311,18 @@ void host_gebsrmv(rocsparse_direction  dir,
                   T*                   y,
                   rocsparse_index_base base);
 
+template <typename I, typename T>
+void host_gemvi(I                    M,
+                I                    N,
+                T                    alpha,
+                const T*             A,
+                I                    lda,
+                I                    nnz,
+                const T*             x_val,
+                const I*             x_ind,
+                T                    beta,
+                T*                   y,
+                rocsparse_index_base base);
 /*
  * ===========================================================================
  *    level 3 SPARSE

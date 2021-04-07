@@ -101,4 +101,5 @@ include: test_dense_to_sparse_coo.yaml
 include: test_dense_to_sparse_csr.yaml
 include: test_dense_to_sparse_csc.yaml
 include: test_spgemm_csr.yaml
+include: test_gemvi.yaml
 include: test_sddmm.yaml
