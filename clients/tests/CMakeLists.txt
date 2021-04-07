@@ -21,7 +21,7 @@
 #
 # ########################################################################
 
-find_package(GTest REQUIRED)
+find_package(GTest 1.10.0 REQUIRED)
 
 # Download some test matrices
 set(TEST_MATRICES
