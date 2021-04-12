@@ -11,7 +11,6 @@ ARG library_dependencies="rocprim"
 # Dependencies: rocprim
 # * hcc-config.cmake: pkg-config
 # * rocsparse-test: gtest gtest-devel
-# * rocsparse-bench: boost-devel
 # * libhsakmt.so: numactl-libs
 RUN zypper refresh
 RUN zypper -n --no-gpg-checks install \
@@ -27,7 +26,6 @@ RUN zypper -n --no-gpg-checks install \
     python3-pip \
     dpkg \
     libcxxtools9 \
-    libboost_program_options1_66_0-devel \
     libnuma1 \
     rpm-build \
     wget \

@@ -468,7 +468,6 @@ Benchmarks
 ----------
 rocSPARSE offers a benchmarking tool that can be compiled with the clients package.
 The benchmark tool can perform any API exposed routine combined with time measurement.
-For `rocsparse-bench` to be compiled, the `libboost-program-options <https://www.boost.org/>`_ package is required.
 To set up a benchmark run, multiple options are available.
 
 =================== ====
