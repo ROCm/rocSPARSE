@@ -136,11 +136,11 @@ install_packages( )
   local library_dependencies_fedora=( "gcc-gfortran" "make" "cmake" "gcc-c++" "libcxx-devel" "rpm-build" "numactl-libs" )
   local library_dependencies_sles=( "gcc-fortran" "make" "cmake" "gcc-c++" "libcxxtools9" "rpm-build" )
 
-  local client_dependencies_ubuntu=( "libboost-program-options-dev" "python3" "python3-yaml" )
-  local client_dependencies_centos=( "boost-devel" "python36" "python3-pip" )
-  local client_dependencies_centos8=( "boost-devel" "python36" "python3-pip" )
-  local client_dependencies_fedora=( "boost-devel" "python36" "PyYAML" "python3-pip" )
-  local client_dependencies_sles=( "libboost_program_options1_66_0-devel" "pkg-config" "dpkg" "python3-pip" )
+  local client_dependencies_ubuntu=( "python3" "python3-yaml" )
+  local client_dependencies_centos=( "python36" "python3-pip" )
+  local client_dependencies_centos8=( "python36" "python3-pip" )
+  local client_dependencies_fedora=( "python36" "PyYAML" "python3-pip" )
+  local client_dependencies_sles=( "pkg-config" "dpkg" "python3-pip" )
 
   if [[ ( "${ID}" == "centos" ) || ( "${ID}" == "rhel" ) ]]; then
     if [[ "${VERSION_ID}" == "6" ]]; then
