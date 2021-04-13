@@ -27,6 +27,11 @@
 template <typename T>
 void testing_csrmv_managed_bad_arg(const Arguments& arg)
 {
+    if(!std::getenv("ROCSPARSE_MALLOC_MANAGED"))
+    {
+        return;
+    }
+
     static const size_t safe_size = 100;
 
     // Create rocsparse handle
@@ -280,6 +285,11 @@ void testing_csrmv_managed_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_csrmv_managed(const Arguments& arg)
 {
+    if(!std::getenv("ROCSPARSE_MALLOC_MANAGED"))
+    {
+        return;
+    }
+
     rocsparse_int        M        = arg.M;
     rocsparse_int        N        = arg.N;
     rocsparse_operation  trans    = arg.transA;
