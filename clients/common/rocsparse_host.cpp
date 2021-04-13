@@ -3944,6 +3944,116 @@ void host_csrilu0(rocsparse_int                     M,
     }
 }
 
+// Parallel Cyclic reduction based on paper "Fast Tridiagonal Solvers on the GPU" by Yao Zhang
+template <typename T>
+void host_gtsv_no_pivot(rocsparse_int         m,
+                        rocsparse_int         n,
+                        const std::vector<T>& dl,
+                        const std::vector<T>& d,
+                        const std::vector<T>& du,
+                        std::vector<T>&       B,
+                        rocsparse_int         ldb)
+{
+    rocsparse_int BLOCKSIZE = 0;
+    if((m & (m - 1)) == 0)
+    {
+        BLOCKSIZE = m;
+    }
+    else
+    {
+        BLOCKSIZE = pow(2, static_cast<rocsparse_int>(log2(m)) + 1);
+    }
+
+    for(rocsparse_int col = 0; col < n; col++)
+    {
+        rocsparse_int iter   = static_cast<rocsparse_int>(log2(BLOCKSIZE / 2));
+        rocsparse_int stride = 1;
+
+        std::vector<T> sa(BLOCKSIZE, static_cast<T>(0));
+        std::vector<T> sb(BLOCKSIZE, static_cast<T>(0));
+        std::vector<T> sc(BLOCKSIZE, static_cast<T>(0));
+        std::vector<T> srhs(BLOCKSIZE, static_cast<T>(0));
+
+        std::vector<T> a(BLOCKSIZE, static_cast<T>(0));
+        std::vector<T> b(BLOCKSIZE, static_cast<T>(0));
+        std::vector<T> c(BLOCKSIZE, static_cast<T>(0));
+        std::vector<T> rhs(BLOCKSIZE, static_cast<T>(0));
+        std::vector<T> x(BLOCKSIZE, static_cast<T>(0));
+
+        for(rocsparse_int i = 0; i < m; i++)
+        {
+            a[i]   = dl[i];
+            b[i]   = d[i];
+            c[i]   = du[i];
+            rhs[i] = B[ldb * col + i];
+        }
+
+        for(rocsparse_int j = 0; j < iter; j++)
+        {
+            for(rocsparse_int tid = 0; tid < BLOCKSIZE; tid++)
+            {
+                rocsparse_int right = tid + stride;
+                if(right >= m)
+                    right = m - 1;
+
+                rocsparse_int left = tid - stride;
+                if(left < 0)
+                    left = 0;
+
+                T k1 = a[tid] / b[left];
+                T k2 = c[tid] / b[right];
+
+                T tb   = b[tid] - c[left] * k1 - a[right] * k2;
+                T trhs = rhs[tid] - rhs[left] * k1 - rhs[right] * k2;
+                T ta   = -a[left] * k1;
+                T tc   = -c[right] * k2;
+
+                sb[tid]   = tb;
+                srhs[tid] = trhs;
+                sa[tid]   = ta;
+                sc[tid]   = tc;
+            }
+
+            for(rocsparse_int tid = 0; tid < BLOCKSIZE; tid++)
+            {
+                a[tid]   = sa[tid];
+                b[tid]   = sb[tid];
+                c[tid]   = sc[tid];
+                rhs[tid] = srhs[tid];
+            }
+
+            stride *= 2;
+        }
+
+        for(rocsparse_int tid = 0; tid < BLOCKSIZE; tid++)
+        {
+            if(tid < BLOCKSIZE / 2)
+            {
+                rocsparse_int i = tid;
+                rocsparse_int j = tid + stride;
+
+                if(j < m)
+                {
+                    // Solve 2x2 systems
+                    T det = b[j] * b[i] - c[i] * a[j];
+                    x[i]  = (b[j] * rhs[i] - c[i] * rhs[j]) / det;
+                    x[j]  = (rhs[j] * b[i] - rhs[i] * a[j]) / det;
+                }
+                else
+                {
+                    // Solve 1x1 systems
+                    x[i] = rhs[i] / b[i];
+                }
+            }
+        }
+
+        for(rocsparse_int i = 0; i < m; i++)
+        {
+            B[ldb * col + i] = x[i];
+        }
+    }
+}
+
 /*
  * ===========================================================================
  *    conversion SPARSE
@@ -5538,6 +5648,14 @@ template void host_csrilu0(rocsparse_int                     M,
                            float                             boost_tol,
                            float                             boost_val);
 
+template void host_gtsv_no_pivot(rocsparse_int             m,
+                                 rocsparse_int             n,
+                                 const std::vector<float>& dl,
+                                 const std::vector<float>& d,
+                                 const std::vector<float>& du,
+                                 std::vector<float>&       B,
+                                 rocsparse_int             ldb);
+
 /*
  * ===========================================================================
  *    conversion SPARSE
@@ -5967,6 +6085,14 @@ template void host_csrilu0(rocsparse_int                     M,
                            bool                              boost,
                            double                            boost_tol,
                            double                            boost_val);
+
+template void host_gtsv_no_pivot(rocsparse_int              m,
+                                 rocsparse_int              n,
+                                 const std::vector<double>& dl,
+                                 const std::vector<double>& d,
+                                 const std::vector<double>& du,
+                                 std::vector<double>&       B,
+                                 rocsparse_int              ldb);
 
 /*
  * ===========================================================================
@@ -6399,6 +6525,14 @@ template void host_csrilu0(rocsparse_int                          M,
                            double                                 boost_tol,
                            rocsparse_double_complex               boost_val);
 
+template void host_gtsv_no_pivot(rocsparse_int                                m,
+                                 rocsparse_int                                n,
+                                 const std::vector<rocsparse_double_complex>& dl,
+                                 const std::vector<rocsparse_double_complex>& d,
+                                 const std::vector<rocsparse_double_complex>& du,
+                                 std::vector<rocsparse_double_complex>&       B,
+                                 rocsparse_int                                ldb);
+
 /*
  * ===========================================================================
  *    conversion SPARSE
@@ -6780,6 +6914,14 @@ template void host_csrilu0(rocsparse_int                         M,
                            bool                                  boost,
                            float                                 boost_tol,
                            rocsparse_float_complex               boost_val);
+
+template void host_gtsv_no_pivot(rocsparse_int                               m,
+                                 rocsparse_int                               n,
+                                 const std::vector<rocsparse_float_complex>& dl,
+                                 const std::vector<rocsparse_float_complex>& d,
+                                 const std::vector<rocsparse_float_complex>& du,
+                                 std::vector<rocsparse_float_complex>&       B,
+                                 rocsparse_int                               ldb);
 
 /*
  * ===========================================================================
