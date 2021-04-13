@@ -64,6 +64,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_bsrilu0.cpp
 ../testings/testing_csric0.cpp
 ../testings/testing_csrilu0.cpp
+../testings/testing_gtsv_no_pivot.cpp
 ../testings/testing_csr2coo.cpp
 ../testings/testing_csr2csc.cpp
 ../testings/testing_gebsr2gebsc.cpp
