@@ -52,6 +52,7 @@ include: test_bsric0.yaml
 include: test_bsrilu0.yaml
 include: test_csric0.yaml
 include: test_csrilu0.yaml
+include: test_gtsv_no_pivot.yaml
 include: test_nnz.yaml
 include: test_dense2csr.yaml
 include: test_dense2coo.yaml

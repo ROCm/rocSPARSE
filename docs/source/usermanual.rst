@@ -875,32 +875,34 @@ Function name                                                                 si
 Preconditioner Functions
 ------------------------
 
-================================================================================= ====== ====== ============== ==============
-Function name                                                                     single double single complex double complex
-================================================================================= ====== ====== ============== ==============
-:cpp:func:`rocsparse_Xbsric0_buffer_size() <rocsparse_sbsric0_buffer_size>`       x      x      x              x
-:cpp:func:`rocsparse_Xbsric0_analysis() <rocsparse_sbsric0_analysis>`             x      x      x              x
+========================================================================================= ====== ====== ============== ==============
+Function name                                                                             single double single complex double complex
+========================================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xbsric0_buffer_size() <rocsparse_sbsric0_buffer_size>`               x      x      x              x
+:cpp:func:`rocsparse_Xbsric0_analysis() <rocsparse_sbsric0_analysis>`                     x      x      x              x
 :cpp:func:`rocsparse_bsric0_zero_pivot`
 :cpp:func:`rocsparse_bsric0_clear`
-:cpp:func:`rocsparse_Xbsric0() <rocsparse_sbsric0>`                               x      x      x              x
-:cpp:func:`rocsparse_Xbsrilu0_buffer_size() <rocsparse_sbsrilu0_buffer_size>`     x      x      x              x
-:cpp:func:`rocsparse_Xbsrilu0_analysis() <rocsparse_sbsrilu0_analysis>`           x      x      x              x
+:cpp:func:`rocsparse_Xbsric0() <rocsparse_sbsric0>`                                       x      x      x              x
+:cpp:func:`rocsparse_Xbsrilu0_buffer_size() <rocsparse_sbsrilu0_buffer_size>`             x      x      x              x
+:cpp:func:`rocsparse_Xbsrilu0_analysis() <rocsparse_sbsrilu0_analysis>`                   x      x      x              x
 :cpp:func:`rocsparse_bsrilu0_zero_pivot`
-:cpp:func:`rocsparse_Xbsrilu0_numeric_boost() <rocsparse_sbsrilu0_numeric_boost>` x      x      x              x
+:cpp:func:`rocsparse_Xbsrilu0_numeric_boost() <rocsparse_sbsrilu0_numeric_boost>`         x      x      x              x
 :cpp:func:`rocsparse_bsrilu0_clear`
-:cpp:func:`rocsparse_Xbsrilu0() <rocsparse_sbsrilu0>`                             x      x      x              x
-:cpp:func:`rocsparse_Xcsric0_buffer_size() <rocsparse_scsric0_buffer_size>`       x      x      x              x
-:cpp:func:`rocsparse_Xcsric0_analysis() <rocsparse_scsric0_analysis>`             x      x      x              x
+:cpp:func:`rocsparse_Xbsrilu0() <rocsparse_sbsrilu0>`                                     x      x      x              x
+:cpp:func:`rocsparse_Xcsric0_buffer_size() <rocsparse_scsric0_buffer_size>`               x      x      x              x
+:cpp:func:`rocsparse_Xcsric0_analysis() <rocsparse_scsric0_analysis>`                     x      x      x              x
 :cpp:func:`rocsparse_csric0_zero_pivot`
 :cpp:func:`rocsparse_csric0_clear`
-:cpp:func:`rocsparse_Xcsric0() <rocsparse_scsric0>`                               x      x      x              x
-:cpp:func:`rocsparse_Xcsrilu0_buffer_size() <rocsparse_scsrilu0_buffer_size>`     x      x      x              x
-:cpp:func:`rocsparse_Xcsrilu0_numeric_boost() <rocsparse_scsrilu0_numeric_boost>` x      x      x              x
-:cpp:func:`rocsparse_Xcsrilu0_analysis() <rocsparse_scsrilu0_analysis>`           x      x      x              x
+:cpp:func:`rocsparse_Xcsric0() <rocsparse_scsric0>`                                       x      x      x              x
+:cpp:func:`rocsparse_Xcsrilu0_buffer_size() <rocsparse_scsrilu0_buffer_size>`             x      x      x              x
+:cpp:func:`rocsparse_Xcsrilu0_numeric_boost() <rocsparse_scsrilu0_numeric_boost>`         x      x      x              x
+:cpp:func:`rocsparse_Xcsrilu0_analysis() <rocsparse_scsrilu0_analysis>`                   x      x      x              x
 :cpp:func:`rocsparse_csrilu0_zero_pivot`
 :cpp:func:`rocsparse_csrilu0_clear`
-:cpp:func:`rocsparse_Xcsrilu0() <rocsparse_scsrilu0>`                             x      x      x              x
-================================================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xcsrilu0() <rocsparse_scsrilu0>`                                     x      x      x              x
+:cpp:func:`rocsparse_Xgtsv_no_pivot_buffer_size() <rocsparse_sgtsv_no_pivot_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_Xgtsv_no_pivot() <rocsparse_sgtsv_no_pivot>`                         x      x      x              x
+========================================================================================= ====== ====== ============== ==============
 
 Conversion Functions
 --------------------
@@ -1916,6 +1918,28 @@ rocsparse_csrilu0_clear()
 -------------------------
 
 .. doxygenfunction:: rocsparse_csrilu0_clear
+
+rocsparse_gtsv_no_pivot_buffer_size()
+-------------------------------------
+
+.. doxygenfunction:: rocsparse_sgtsv_no_pivot_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dgtsv_no_pivot_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cgtsv_no_pivot_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zgtsv_no_pivot_buffer_size
+
+rocsparse_gtsv_no_pivot()
+-------------------------
+
+.. doxygenfunction:: rocsparse_sgtsv_no_pivot
+  :outline:
+.. doxygenfunction:: rocsparse_dgtsv_no_pivot
+  :outline:
+.. doxygenfunction:: rocsparse_cgtsv_no_pivot
+  :outline:
+.. doxygenfunction:: rocsparse_zgtsv_no_pivot
 
 .. _rocsparse_conversion_functions_:
 

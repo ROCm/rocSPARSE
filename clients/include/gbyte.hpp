@@ -328,6 +328,12 @@ constexpr double csrilu0_gbyte_count(rocsparse_int M, rocsparse_int nnz)
     return ((M + 1 + nnz) * sizeof(rocsparse_int) + 2.0 * nnz * sizeof(T)) / 1e9;
 }
 
+template <typename T>
+constexpr double gtsv_gbyte_count(rocsparse_int M, rocsparse_int N)
+{
+    return ((3 * M + 2 * M * N) * sizeof(T)) / 1e9;
+}
+
 /*
  * ===========================================================================
  *    conversion SPARSE

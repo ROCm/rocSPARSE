@@ -568,6 +568,15 @@ void host_csrilu0(rocsparse_int                     M,
                   U                                 boost_tol,
                   T                                 boost_val);
 
+template <typename T>
+void host_gtsv_no_pivot(rocsparse_int         m,
+                        rocsparse_int         n,
+                        const std::vector<T>& dl,
+                        const std::vector<T>& d,
+                        const std::vector<T>& du,
+                        std::vector<T>&       B,
+                        rocsparse_int         ldb);
+
 /*
  * ===========================================================================
  *    conversion SPARSE
