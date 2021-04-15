@@ -8,6 +8,8 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
     String compiler = jobName.contains('hipclang') ? 'hipcc' : 'hcc'
     String hipClangArgs = jobName.contains('hipclang') ? ' --hip-clang' : ''
     String sudo = platform.jenkinsLabel.contains('sles') ? 'sudo' : ''
+    //Temporary workaround due to bug in container
+    String centos7Workaround = platform.jenkinsLabel.contains('centos7') ? 'export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/rocm/lib64/' : ''
 
     def getDependenciesCommand = ""
     if (project.installLibraryDependenciesFromCI)
@@ -22,7 +24,9 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
                 set -x
                 cd ${project.paths.project_build_prefix}
                 ${getDependenciesCommand}
-                ${sudo} LD_LIBRARY_PATH=/opt/rocm/lib CXX=/opt/rocm/bin/${compiler} ${project.paths.build_command} ${hipClangArgs}
+                export LD_LIBRARY_PATH=/opt/rocm/lib/
+                ${centos7Workaround}
+                ${sudo} CXX=/opt/rocm/bin/${compiler} ${project.paths.build_command} ${hipClangArgs}
             """
 
     platform.runCommand(this, command)
@@ -32,11 +36,15 @@ def runCompileCommand(platform, project, jobName, boolean sameOrg=false)
 def runTestCommand (platform, project, gfilter, String dirmode = "release")
 {
     String sudo = auxiliary.sudo(platform.jenkinsLabel)
+    //Temporary workaround due to bug in container
+    String centos7Workaround = platform.jenkinsLabel.contains('centos7') ? 'export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/rocm/lib64/' : ''
 
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}/build/${dirmode}/clients/staging
-                ${sudo} LD_LIBRARY_PATH=/opt/rocm/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}-*known_bug*
+                export LD_LIBRARY_PATH=/opt/rocm/lib/
+                ${centos7Workaround}
+                ${sudo} GTEST_LISTENER=NO_PASS_LINE_IN_LOG ./rocsparse-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}-*known_bug*
             """
 
     platform.runCommand(this, command)
@@ -46,11 +54,15 @@ def runTestCommand (platform, project, gfilter, String dirmode = "release")
 def runTestWithSanitizerCommand (platform, project, gfilter, String dirmode = "release")
 {
     String sudo = auxiliary.sudo(platform.jenkinsLabel)
+    //Temporary workaround due to bug in container
+    String centos7Workaround = platform.jenkinsLabel.contains('centos7') ? 'export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/rocm/lib64/' : ''
 
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}/build/${dirmode}/clients/staging
-                ${sudo} LD_LIBRARY_PATH=/opt/rocm/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG ASAN_SYMBOLIZER_PATH=/opt/rocm/llvm/bin/llvm-symbolizer ASAN_OPTIONS=detect_leaks=1 LSAN_OPTIONS=suppressions=../../../../suppr.txt ./rocsparse-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}-*known_bug*
+                export LD_LIBRARY_PATH=/opt/rocm/lib/
+                ${centos7Workaround}
+                ${sudo} GTEST_LISTENER=NO_PASS_LINE_IN_LOG ASAN_SYMBOLIZER_PATH=/opt/rocm/llvm/bin/llvm-symbolizer ASAN_OPTIONS=detect_leaks=1 LSAN_OPTIONS=suppressions=../../../../suppr.txt ./rocsparse-test --gtest_output=xml --gtest_color=yes --gtest_filter=${gfilter}-*known_bug*
             """
 
     platform.runCommand(this, command)
@@ -60,11 +72,15 @@ def runTestWithSanitizerCommand (platform, project, gfilter, String dirmode = "r
 def runCoverageCommand (platform, project, gfilter, String dirmode = "release")
 {
     String sudo = auxiliary.sudo(platform.jenkinsLabel)
+    //Temporary workaround due to bug in container
+    String centos7Workaround = platform.jenkinsLabel.contains('centos7') ? 'export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/rocm/lib64/' : ''
 
     def command = """#!/usr/bin/env bash
                 set -x
                 cd ${project.paths.project_build_prefix}/build/${dirmode}
-                ${sudo} LD_LIBRARY_PATH=/opt/rocm/lib GTEST_LISTENER=NO_PASS_LINE_IN_LOG make coverage_cleanup coverage GTEST_FILTER=${gfilter}-*known_bug*
+                export LD_LIBRARY_PATH=/opt/rocm/lib/
+                ${centos7Workaround}
+                ${sudo} GTEST_LISTENER=NO_PASS_LINE_IN_LOG make coverage_cleanup coverage GTEST_FILTER=${gfilter}-*known_bug*
             """
 
     platform.runCommand(this, command)
