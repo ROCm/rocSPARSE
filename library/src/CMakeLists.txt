@@ -114,6 +114,7 @@ set(rocsparse_source
   src/precond/rocsparse_bsrilu0.cpp
   src/precond/rocsparse_csric0.cpp
   src/precond/rocsparse_csrilu0.cpp
+  src/precond/rocsparse_gtsv.cpp
   src/precond/rocsparse_gtsv_no_pivot.cpp
 
 # Conversion
