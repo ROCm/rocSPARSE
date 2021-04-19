@@ -66,6 +66,7 @@
 #include "testing_bsrilu0.hpp"
 #include "testing_csric0.hpp"
 #include "testing_csrilu0.hpp"
+#include "testing_gtsv.hpp"
 #include "testing_gtsv_no_pivot.hpp"
 
 // Conversion
@@ -280,7 +281,7 @@ int main(int argc, char* argv[])
         "  Level2: bsrmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, ellmv, hybmv, gebsrmv, gemvi\n"
         "  Level3: bsrmm, gebsrmm, csrmm, coomm, csrsm, gemmi, sddmm\n"
         "  Extra: csrgeam, csrgemm\n"
-        "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, gtsv_no_pivot\n"
+        "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, gtsv_no_pivot, gtsv\n"
         "  Conversion: csr2coo, csr2csc, gebsr2gebsc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
         "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2coo, prune_dense2csr, prune_dense2csr_by_percentage, dense2csc\n"
         "              csr2dense, csc2dense, coo2dense, bsr2csr, gebsr2csr, gebsr2gebsr, csr2csr_compress, prune_csr2csr, prune_csr2csr_by_percentage\n"
@@ -1069,6 +1070,17 @@ int main(int argc, char* argv[])
             testing_csrilu0<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_csrilu0<rocsparse_double_complex>(arg);
+    }
+    else if(function == "gtsv")
+    {
+        if(precision == 's')
+            testing_gtsv<float>(arg);
+        else if(precision == 'd')
+            testing_gtsv<double>(arg);
+        else if(precision == 'c')
+            testing_gtsv<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_gtsv<rocsparse_double_complex>(arg);
     }
     else if(function == "gtsv_no_pivot")
     {

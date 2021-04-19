@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,20 @@
 #define GEBSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? GEBSR_IND_R(j, bi, bj) : GEBSR_IND_C(j, bi, bj))
 #define GEBSR_IND_R(j, bi, bj) (row_bsr_dim * col_bsr_dim * (j) + (bi) * col_bsr_dim + (bj))
 #define GEBSR_IND_C(j, bi, bj) (row_bsr_dim * col_bsr_dim * (j) + (bi) + (bj) * row_bsr_dim)
+
+// find next power of 2
+__attribute__((unused)) static unsigned int fnp2(unsigned int x)
+{
+    x--;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    x++;
+
+    return x;
+}
 
 __device__ __forceinline__ float rocsparse_ldg(const float* ptr) { return __ldg(ptr); }
 __device__ __forceinline__ double rocsparse_ldg(const double* ptr) { return __ldg(ptr); }

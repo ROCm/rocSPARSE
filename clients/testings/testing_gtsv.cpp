@@ -28,37 +28,35 @@
 #include "auto_testing_bad_arg.hpp"
 
 template <typename T>
-void testing_gtsv_no_pivot_bad_arg(const Arguments& arg)
+void testing_gtsv_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
+    rocsparse_handle       handle      = local_handle;
+    rocsparse_int          m           = safe_size;
+    rocsparse_int          n           = safe_size;
+    rocsparse_int          ldb         = safe_size;
+    const T*               ddl         = (const T*)0x4;
+    const T*               dd          = (const T*)0x4;
+    const T*               ddu         = (const T*)0x4;
+    T*                     dB          = (T*)0x4;
+    void*                  temp_buffer = (void*)0x4;
+    size_t                 buffer_size;
 
-    rocsparse_handle handle      = local_handle;
-    rocsparse_int    m           = safe_size;
-    rocsparse_int    n           = safe_size;
-    rocsparse_int    ldb         = safe_size;
-    const T*         dl          = (const T*)0x4;
-    const T*         d           = (const T*)0x4;
-    const T*         du          = (const T*)0x4;
-    const T*         B1          = (const T*)0x4;
-    T*               B2          = (T*)0x4;
-    size_t*          buffer_size = (size_t*)0x4;
-    void*            temp_buffer = (void*)0x4;
+#define PARAMS_BUFFER_SIZE handle, m, n, ddl, dd, ddu, dB, ldb, &buffer_size
+#define PARAMS_SOLVE handle, m, n, ddl, dd, ddu, dB, ldb, temp_buffer
 
-#define PARAMS_BUFFER_SIZE handle, m, n, dl, d, du, B1, ldb, buffer_size
-#define PARAMS_SOLVE handle, m, n, dl, d, du, B2, ldb, temp_buffer
-
-    auto_testing_bad_arg(rocsparse_gtsv_no_pivot_buffer_size<T>, PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(rocsparse_gtsv_no_pivot<T>, PARAMS_SOLVE);
+    auto_testing_bad_arg(rocsparse_gtsv_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(rocsparse_gtsv<T>, PARAMS_SOLVE);
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_SOLVE
 }
 
 template <typename T>
-void testing_gtsv_no_pivot(const Arguments& arg)
+void testing_gtsv(const Arguments& arg)
 {
     rocsparse_int m   = arg.M;
     rocsparse_int n   = arg.N;
@@ -71,7 +69,7 @@ void testing_gtsv_no_pivot(const Arguments& arg)
 #define PARAMS_SOLVE handle, m, n, ddl, dd, ddu, dB, ldb, dbuffer
 
     // Argument sanity check before allocating invalid memory
-    if(m <= 1 || n <= 0 || ldb < m)
+    if(m <= 1 || n <= 0 || ldb < std::max(1, m))
     {
         static const size_t safe_size = 100;
 
@@ -82,12 +80,12 @@ void testing_gtsv_no_pivot(const Arguments& arg)
         device_vector<T> dB(safe_size);
         device_vector<T> dbuffer(safe_size);
 
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot_buffer_size<T>(PARAMS_BUFFER_SIZE),
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_buffer_size<T>(PARAMS_BUFFER_SIZE),
                                 (m <= 1 || n < 0 || ldb < std::max(1, m))
                                     ? rocsparse_status_invalid_size
                                     : rocsparse_status_success);
 
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_no_pivot<T>(PARAMS_SOLVE),
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv<T>(PARAMS_SOLVE),
                                 (m <= 1 || n < 0 || ldb < std::max(1, m))
                                     ? rocsparse_status_invalid_size
                                     : rocsparse_status_success);
@@ -106,12 +104,12 @@ void testing_gtsv_no_pivot(const Arguments& arg)
     for(rocsparse_int i = 0; i < m; ++i)
     {
         hdl[i] = random_generator<T>(1, 8);
-        hd[i]  = random_generator<T>(17, 32);
+        hd[i]  = random_generator<T>(10, 20);
         hdu[i] = random_generator<T>(1, 8);
     }
 
-    hdl[0]     = 0.0f;
-    hdu[m - 1] = 0.0f;
+    hdl[0]     = static_cast<T>(0);
+    hdu[m - 1] = static_cast<T>(0);
 
     // Host dense rhs
     host_vector<T> hB(ldb * n, static_cast<T>(7));
@@ -124,7 +122,7 @@ void testing_gtsv_no_pivot(const Arguments& arg)
         }
     }
 
-    host_vector<T> hB_cpu = hB;
+    host_vector<T> hB_original = hB;
 
     // Device tri-diagonal matrix
     device_vector<T> ddl(m);
@@ -142,21 +140,32 @@ void testing_gtsv_no_pivot(const Arguments& arg)
 
     // Obtain required buffer size
     size_t buffer_size;
-    CHECK_ROCSPARSE_ERROR(rocsparse_gtsv_no_pivot_buffer_size<T>(PARAMS_BUFFER_SIZE));
+    CHECK_ROCSPARSE_ERROR(rocsparse_gtsv_buffer_size<T>(PARAMS_BUFFER_SIZE));
 
     void* dbuffer;
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_gtsv_no_pivot<T>(PARAMS_SOLVE));
+        CHECK_ROCSPARSE_ERROR(rocsparse_gtsv<T>(PARAMS_SOLVE));
 
         hB.transfer_from(dB);
 
-        // CPU gtsv_no_pivot
-        host_gtsv_no_pivot<T>(m, n, hdl, hd, hdu, hB_cpu, ldb);
+        // Check
+        std::vector<T> hresult = hB_original;
+        for(rocsparse_int j = 0; j < n; j++)
+        {
+            hresult[ldb * j] = hd[0] * hB[ldb * j] + hdu[0] * hB[ldb * j + 1];
+            hresult[ldb * j + m - 1]
+                = hdl[m - 1] * hB[ldb * j + m - 2] + hd[m - 1] * hB[ldb * j + m - 1];
+            for(rocsparse_int i = 1; i < m - 1; i++)
+            {
+                hresult[ldb * j + i] = hdl[i] * hB[ldb * j + i - 1] + hd[i] * hB[ldb * j + i]
+                                       + hdu[i] * hB[ldb * j + i + 1];
+            }
+        }
 
-        near_check_general<T>(1, ldb * n, 1, hB_cpu.data(), hB.data());
+        near_check_general<T>(1, ldb * n, 1, hB_original.data(), hresult.data());
     }
 
     if(arg.timing)
@@ -167,7 +176,7 @@ void testing_gtsv_no_pivot(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_gtsv_no_pivot<T>(PARAMS_SOLVE));
+            CHECK_ROCSPARSE_ERROR(rocsparse_gtsv<T>(PARAMS_SOLVE));
         }
 
         double gpu_solve_time_used = get_time_us();
@@ -175,7 +184,7 @@ void testing_gtsv_no_pivot(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_gtsv_no_pivot<T>(PARAMS_SOLVE));
+            CHECK_ROCSPARSE_ERROR(rocsparse_gtsv<T>(PARAMS_SOLVE));
         }
 
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
@@ -188,7 +197,7 @@ void testing_gtsv_no_pivot(const Arguments& arg)
         std::cout.setf(std::ios::fixed);
         std::cout.setf(std::ios::left);
 
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "GB/s"
+        std::cout << std::setw(12) << "M" << std::setw(12) << "n" << std::setw(12) << "GB/s"
                   << std::setw(12) << "solve_msec" << std::setw(12) << "iter" << std::setw(12)
                   << "verified" << std::endl;
 
@@ -204,9 +213,9 @@ void testing_gtsv_no_pivot(const Arguments& arg)
 #undef PARAMS_SOLVE
 }
 
-#define INSTANTIATE(TYPE)                                                    \
-    template void testing_gtsv_no_pivot_bad_arg<TYPE>(const Arguments& arg); \
-    template void testing_gtsv_no_pivot<TYPE>(const Arguments& arg)
+#define INSTANTIATE(TYPE)                                           \
+    template void testing_gtsv_bad_arg<TYPE>(const Arguments& arg); \
+    template void testing_gtsv<TYPE>(const Arguments& arg)
 INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);

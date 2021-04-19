@@ -78,7 +78,9 @@ inline void rocsparse_expect_status(rocsparse_status status, rocsparse_status ex
         std::cerr << "rocSPARSE status error: Expected " << rocsparse_status_to_string(expect)
                   << ", received " << rocsparse_status_to_string(status) << std::endl;
         if(expect == rocsparse_status_success)
+        {
             exit(EXIT_FAILURE);
+        }
     }
 }
 

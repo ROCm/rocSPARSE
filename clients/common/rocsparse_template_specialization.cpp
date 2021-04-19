@@ -4764,6 +4764,119 @@ rocsparse_status rocsparse_csrilu0(rocsparse_handle          handle,
         handle, m, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info, policy, temp_buffer);
 }
 
+// gtsv
+template <>
+rocsparse_status rocsparse_gtsv_buffer_size(rocsparse_handle handle,
+                                            rocsparse_int    m,
+                                            rocsparse_int    n,
+                                            const float*     dl,
+                                            const float*     d,
+                                            const float*     du,
+                                            const float*     B,
+                                            rocsparse_int    ldb,
+                                            size_t*          buffer_size)
+{
+    return rocsparse_sgtsv_buffer_size(handle, m, n, dl, d, du, B, ldb, buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv_buffer_size(rocsparse_handle handle,
+                                            rocsparse_int    m,
+                                            rocsparse_int    n,
+                                            const double*    dl,
+                                            const double*    d,
+                                            const double*    du,
+                                            const double*    B,
+                                            rocsparse_int    ldb,
+                                            size_t*          buffer_size)
+{
+    return rocsparse_dgtsv_buffer_size(handle, m, n, dl, d, du, B, ldb, buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv_buffer_size(rocsparse_handle               handle,
+                                            rocsparse_int                  m,
+                                            rocsparse_int                  n,
+                                            const rocsparse_float_complex* dl,
+                                            const rocsparse_float_complex* d,
+                                            const rocsparse_float_complex* du,
+                                            const rocsparse_float_complex* B,
+                                            rocsparse_int                  ldb,
+                                            size_t*                        buffer_size)
+{
+    return rocsparse_cgtsv_buffer_size(handle, m, n, dl, d, du, B, ldb, buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv_buffer_size(rocsparse_handle                handle,
+                                            rocsparse_int                   m,
+                                            rocsparse_int                   n,
+                                            const rocsparse_double_complex* dl,
+                                            const rocsparse_double_complex* d,
+                                            const rocsparse_double_complex* du,
+                                            const rocsparse_double_complex* B,
+                                            rocsparse_int                   ldb,
+                                            size_t*                         buffer_size)
+{
+    return rocsparse_zgtsv_buffer_size(handle, m, n, dl, d, du, B, ldb, buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv(rocsparse_handle handle,
+                                rocsparse_int    m,
+                                rocsparse_int    n,
+                                const float*     dl,
+                                const float*     d,
+                                const float*     du,
+                                float*           B,
+                                rocsparse_int    ldb,
+                                void*            temp_buffer)
+{
+    return rocsparse_sgtsv(handle, m, n, dl, d, du, B, ldb, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv(rocsparse_handle handle,
+                                rocsparse_int    m,
+                                rocsparse_int    n,
+                                const double*    dl,
+                                const double*    d,
+                                const double*    du,
+                                double*          B,
+                                rocsparse_int    ldb,
+                                void*            temp_buffer)
+{
+    return rocsparse_dgtsv(handle, m, n, dl, d, du, B, ldb, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv(rocsparse_handle               handle,
+                                rocsparse_int                  m,
+                                rocsparse_int                  n,
+                                const rocsparse_float_complex* dl,
+                                const rocsparse_float_complex* d,
+                                const rocsparse_float_complex* du,
+                                rocsparse_float_complex*       B,
+                                rocsparse_int                  ldb,
+                                void*                          temp_buffer)
+{
+    return rocsparse_cgtsv(handle, m, n, dl, d, du, B, ldb, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv(rocsparse_handle                handle,
+                                rocsparse_int                   m,
+                                rocsparse_int                   n,
+                                const rocsparse_double_complex* dl,
+                                const rocsparse_double_complex* d,
+                                const rocsparse_double_complex* du,
+                                rocsparse_double_complex*       B,
+                                rocsparse_int                   ldb,
+                                void*                           temp_buffer)
+{
+    return rocsparse_zgtsv(handle, m, n, dl, d, du, B, ldb, temp_buffer);
+}
+
 // gtsv_no_pivot
 template <>
 rocsparse_status rocsparse_gtsv_no_pivot_buffer_size(rocsparse_handle handle,

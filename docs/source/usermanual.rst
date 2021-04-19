@@ -900,6 +900,8 @@ Function name                                                                   
 :cpp:func:`rocsparse_csrilu0_zero_pivot`
 :cpp:func:`rocsparse_csrilu0_clear`
 :cpp:func:`rocsparse_Xcsrilu0() <rocsparse_scsrilu0>`                                     x      x      x              x
+:cpp:func:`rocsparse_Xgtsv_buffer_size() <rocsparse_sgtsv_buffer_size>`                   x      x      x              x
+:cpp:func:`rocsparse_Xgtsv() <rocsparse_sgtsv>`                                           x      x      x              x
 :cpp:func:`rocsparse_Xgtsv_no_pivot_buffer_size() <rocsparse_sgtsv_no_pivot_buffer_size>` x      x      x              x
 :cpp:func:`rocsparse_Xgtsv_no_pivot() <rocsparse_sgtsv_no_pivot>`                         x      x      x              x
 ========================================================================================= ====== ====== ============== ==============
@@ -1919,6 +1921,29 @@ rocsparse_csrilu0_clear()
 
 .. doxygenfunction:: rocsparse_csrilu0_clear
 
+<<<<<<< HEAD
+rocsparse_gtsv_buffer_size()
+----------------------------
+
+.. doxygenfunction:: rocsparse_sgtsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dgtsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cgtsv_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zgtsv_buffer_size
+
+rocsparse_gtsv()
+----------------
+
+.. doxygenfunction:: rocsparse_sgtsv
+  :outline:
+.. doxygenfunction:: rocsparse_dgtsv
+  :outline:
+.. doxygenfunction:: rocsparse_cgtsv
+  :outline:
+.. doxygenfunction:: rocsparse_zgtsv
+=======
 rocsparse_gtsv_no_pivot_buffer_size()
 -------------------------------------
 
@@ -1940,6 +1965,7 @@ rocsparse_gtsv_no_pivot()
 .. doxygenfunction:: rocsparse_cgtsv_no_pivot
   :outline:
 .. doxygenfunction:: rocsparse_zgtsv_no_pivot
+>>>>>>> 3504151e5dda0423224c6d3b7f26ddfd63e021af
 
 .. _rocsparse_conversion_functions_:
 
