@@ -435,7 +435,7 @@ pushd .
 
   # Build library with AMD toolchain because of existense of device kernels
   if [[ "${build_relocatable}" == true ]]; then
-    CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF \
+    FC=gfortran CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF \
       -DCMAKE_INSTALL_PREFIX=${install_prefix} \
       -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} \
       -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" \
@@ -444,7 +444,7 @@ pushd .
       -DROCM_DISABLE_LDCONFIG=ON \
       -DROCM_PATH="${rocm_path}" ../..
   else
-    CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${install_prefix} -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} -DROCM_PATH="${rocm_path}" ../..
+    FC=gfortran CXX=${compiler} ${cmake_executable} ${cmake_common_options} ${cmake_client_options} -DCPACK_SET_DESTDIR=OFF -DCMAKE_INSTALL_PREFIX=${install_prefix} -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} -DROCM_PATH="${rocm_path}" ../..
   fi
   check_exit_code "$?"
 
