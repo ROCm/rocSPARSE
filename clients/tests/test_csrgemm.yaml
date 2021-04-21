@@ -167,11 +167,27 @@ Tests:
   baseC: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [bibd_22_8,
-             bmwcra_1,
              amazon0312,
              Chebyshev4,
+             webbase-1M]
+
+- name: csrgemm_mult_file
+  category: nightly
+  function: csrgemm
+  precision: *double_only_precisions
+  M: 1
+  N: [5239, 12942, 1492312]
+  K: 1
+  alpha_alphai: *alpha_range_nightly
+  beta: [-99.0]
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  baseB: [rocsparse_index_base_zero]
+  baseC: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [bmwcra_1,
              sme3Dc,
-             webbase-1M,
              shipsec1]
 
 - name: csrgemm_mult_file

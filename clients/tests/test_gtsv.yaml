@@ -53,9 +53,9 @@ Tests:
   category: nightly
   function: gtsv
   precision: *single_double_precisions
-  M: [172642, 239358, 534859, 865732]
+  M: [17264, 23935, 33485, 46573]
   N: [3, 5]
-  denseld: [300000, 500000, 900000]
+  denseld: [30000, 50000, 90000]
   matrix: [rocsparse_matrix_random]
 
 - name: gtsv
@@ -80,6 +80,24 @@ Tests:
   category: nightly
   function: gtsv
   precision: *single_double_precisions
+  M: [16384, 23945, 37382]
+  N: [1, 2, 3, 4, 5, 6]
+  denseld: [30000, 40000, 50000]
+  matrix: [rocsparse_matrix_random]
+
+- name: gtsv
+  category: nightly
+  function: gtsv
+  precision: *double_only_precisions
+  M: [172642, 239358, 534859, 865732]
+  N: [3, 5]
+  denseld: [300000, 500000, 900000]
+  matrix: [rocsparse_matrix_random]
+
+- name: gtsv
+  category: nightly
+  function: gtsv
+  precision: *double_only_precisions
   M: [387547, 573821, 475633, 239455]
   N: [12, 24]
   denseld: [300000, 500000, 900000]

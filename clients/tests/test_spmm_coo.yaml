@@ -132,8 +132,7 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_coo_segmented]
   order: [rocsparse_order_column]
-  filename: [rma10,
-             mc2depi,
+  filename: [mc2depi,
              ASIC_320k,
              nos1,
              nos3,
@@ -156,8 +155,7 @@ Tests:
   spmm_alg: [rocsparse_spmm_alg_coo_segmented]
   order: [rocsparse_order_row]
   filename: [bibd_22_8,
-             amazon0312,
-             sme3Dc]
+             amazon0312]
 
 - name: spmm_coo_file
   category: quick
@@ -210,6 +208,40 @@ Tests:
   spmm_alg: [rocsparse_spmm_alg_coo_segmented]
   order: [rocsparse_order_row]
   filename: [Chevron4]
+
+- name: spmm_coo_file
+  category: pre_checkin
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *double_only_precisions
+  M: 1
+  N: [7]
+  K: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented]
+  order: [rocsparse_order_column]
+  filename: [rma10]
+
+- name: spmm_coo_file
+  category: nightly
+  function: spmm_coo
+  indextype: *i32_i64
+  precision: *double_only_precisions
+  M: 1
+  N: [11]
+  K: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented]
+  order: [rocsparse_order_row]
+  filename: [sme3Dc]
 
 #######################################
 # Atomic algorithm
