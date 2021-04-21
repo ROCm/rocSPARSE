@@ -182,7 +182,14 @@ Complex precisions: &complex_precisions
   - &double_precision_complex
     { compute_type: f64_c }
 
+C precisions real: &single_only_precisions
+  - *single_precision
+
+C precisions real: &double_only_precisions
+  - *double_precision
+
 C precisions real: &single_double_precisions
+  - *single_precision
   - *double_precision
 
 C precisions complex: &single_double_precisions_complex
