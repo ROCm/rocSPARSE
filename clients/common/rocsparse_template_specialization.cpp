@@ -4990,6 +4990,129 @@ rocsparse_status rocsparse_gtsv_no_pivot(rocsparse_handle                handle,
     return rocsparse_zgtsv_no_pivot(handle, m, n, dl, d, du, B, ldb, temp_buffer);
 }
 
+// gtsv_no_pivot_strided_batch
+template <>
+rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_buffer_size(rocsparse_handle handle,
+                                                                   rocsparse_int    m,
+                                                                   const float*     dl,
+                                                                   const float*     d,
+                                                                   const float*     du,
+                                                                   const float*     x,
+                                                                   rocsparse_int    batch_count,
+                                                                   rocsparse_int    batch_stride,
+                                                                   size_t*          buffer_size)
+{
+    return rocsparse_sgtsv_no_pivot_strided_batch_buffer_size(
+        handle, m, dl, d, du, x, batch_count, batch_stride, buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_buffer_size(rocsparse_handle handle,
+                                                                   rocsparse_int    m,
+                                                                   const double*    dl,
+                                                                   const double*    d,
+                                                                   const double*    du,
+                                                                   const double*    x,
+                                                                   rocsparse_int    batch_count,
+                                                                   rocsparse_int    batch_stride,
+                                                                   size_t*          buffer_size)
+{
+    return rocsparse_dgtsv_no_pivot_strided_batch_buffer_size(
+        handle, m, dl, d, du, x, batch_count, batch_stride, buffer_size);
+}
+
+template <>
+rocsparse_status
+    rocsparse_gtsv_no_pivot_strided_batch_buffer_size(rocsparse_handle               handle,
+                                                      rocsparse_int                  m,
+                                                      const rocsparse_float_complex* dl,
+                                                      const rocsparse_float_complex* d,
+                                                      const rocsparse_float_complex* du,
+                                                      const rocsparse_float_complex* x,
+                                                      rocsparse_int                  batch_count,
+                                                      rocsparse_int                  batch_stride,
+                                                      size_t*                        buffer_size)
+{
+    return rocsparse_cgtsv_no_pivot_strided_batch_buffer_size(
+        handle, m, dl, d, du, x, batch_count, batch_stride, buffer_size);
+}
+
+template <>
+rocsparse_status
+    rocsparse_gtsv_no_pivot_strided_batch_buffer_size(rocsparse_handle                handle,
+                                                      rocsparse_int                   m,
+                                                      const rocsparse_double_complex* dl,
+                                                      const rocsparse_double_complex* d,
+                                                      const rocsparse_double_complex* du,
+                                                      const rocsparse_double_complex* x,
+                                                      rocsparse_int                   batch_count,
+                                                      rocsparse_int                   batch_stride,
+                                                      size_t*                         buffer_size)
+{
+    return rocsparse_zgtsv_no_pivot_strided_batch_buffer_size(
+        handle, m, dl, d, du, x, batch_count, batch_stride, buffer_size);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv_no_pivot_strided_batch(rocsparse_handle handle,
+                                                       rocsparse_int    m,
+                                                       const float*     dl,
+                                                       const float*     d,
+                                                       const float*     du,
+                                                       float*           x,
+                                                       rocsparse_int    batch_count,
+                                                       rocsparse_int    batch_stride,
+                                                       void*            temp_buffer)
+{
+    return rocsparse_sgtsv_no_pivot_strided_batch(
+        handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv_no_pivot_strided_batch(rocsparse_handle handle,
+                                                       rocsparse_int    m,
+                                                       const double*    dl,
+                                                       const double*    d,
+                                                       const double*    du,
+                                                       double*          x,
+                                                       rocsparse_int    batch_count,
+                                                       rocsparse_int    batch_stride,
+                                                       void*            temp_buffer)
+{
+    return rocsparse_dgtsv_no_pivot_strided_batch(
+        handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv_no_pivot_strided_batch(rocsparse_handle               handle,
+                                                       rocsparse_int                  m,
+                                                       const rocsparse_float_complex* dl,
+                                                       const rocsparse_float_complex* d,
+                                                       const rocsparse_float_complex* du,
+                                                       rocsparse_float_complex*       x,
+                                                       rocsparse_int                  batch_count,
+                                                       rocsparse_int                  batch_stride,
+                                                       void*                          temp_buffer)
+{
+    return rocsparse_cgtsv_no_pivot_strided_batch(
+        handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer);
+}
+
+template <>
+rocsparse_status rocsparse_gtsv_no_pivot_strided_batch(rocsparse_handle                handle,
+                                                       rocsparse_int                   m,
+                                                       const rocsparse_double_complex* dl,
+                                                       const rocsparse_double_complex* d,
+                                                       const rocsparse_double_complex* du,
+                                                       rocsparse_double_complex*       x,
+                                                       rocsparse_int                   batch_count,
+                                                       rocsparse_int                   batch_stride,
+                                                       void*                           temp_buffer)
+{
+    return rocsparse_zgtsv_no_pivot_strided_batch(
+        handle, m, dl, d, du, x, batch_count, batch_stride, temp_buffer);
+}
+
 /*
  * ===========================================================================
  *    conversion SPARSE

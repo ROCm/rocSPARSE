@@ -8029,6 +8029,171 @@ rocsparse_status rocsparse_zcsrilu0(rocsparse_handle          handle,
 /**@}*/
 
 /*! \ingroup precond_module
+*  \brief Tridiagonal solver with pivoting
+*
+*  \details
+*  \p rocsparse_gtsv_buffer_size returns the size of the temporary storage buffer
+*  that is required by rocsparse_sgtsv(), rocsparse_dgtsv(),
+*  rocsparse_cgtsv() and rocsparse_zgtsv(). The temporary storage buffer
+*  must be allocated by the user.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  m           size of the tri-diagonal linear system (must be >= 2).
+*  @param[in]
+*  n           number of columns in the dense matrix B.
+*  @param[in]
+*  dl          lower diagonal of tri-diagonal system. First entry must be zero.
+*  @param[in]
+*  d           main diagonal of tri-diagonal system.
+*  @param[in]
+*  du          upper diagonal of tri-diagonal system. Last entry must be zero.
+*  @param[in]
+*  B           Dense matrix of size ( \p ldb, \p n ).
+*  @param[in]
+*  ldb         Leading dimension of B. Must satisfy \p ldb >= max(1, m).
+*  @param[out]
+*  buffer_size number of bytes of the temporary storage buffer required by
+*              rocsparse_sgtsv(), rocsparse_dgtsv(), rocsparse_cgtsv()
+*              and rocsparse_zgtsv().
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_size \p m, \p n or \p ldb is invalid.
+*  \retval     rocsparse_status_invalid_pointer \p dl, \p d, \p du,
+*              \p B or \p buffer_size pointer is invalid.
+*  \retval     rocsparse_status_internal_error an internal error occurred.
+*/
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sgtsv_buffer_size(rocsparse_handle handle,
+                                             rocsparse_int    m,
+                                             rocsparse_int    n,
+                                             const float*     dl,
+                                             const float*     d,
+                                             const float*     du,
+                                             const float*     B,
+                                             rocsparse_int    ldb,
+                                             size_t*          buffer_size);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dgtsv_buffer_size(rocsparse_handle handle,
+                                             rocsparse_int    m,
+                                             rocsparse_int    n,
+                                             const double*    dl,
+                                             const double*    d,
+                                             const double*    du,
+                                             const double*    B,
+                                             rocsparse_int    ldb,
+                                             size_t*          buffer_size);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cgtsv_buffer_size(rocsparse_handle               handle,
+                                             rocsparse_int                  m,
+                                             rocsparse_int                  n,
+                                             const rocsparse_float_complex* dl,
+                                             const rocsparse_float_complex* d,
+                                             const rocsparse_float_complex* du,
+                                             const rocsparse_float_complex* B,
+                                             rocsparse_int                  ldb,
+                                             size_t*                        buffer_size);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zgtsv_buffer_size(rocsparse_handle                handle,
+                                             rocsparse_int                   m,
+                                             rocsparse_int                   n,
+                                             const rocsparse_double_complex* dl,
+                                             const rocsparse_double_complex* d,
+                                             const rocsparse_double_complex* du,
+                                             const rocsparse_double_complex* B,
+                                             rocsparse_int                   ldb,
+                                             size_t*                         buffer_size);
+/**@}*/
+
+/*! \ingroup precond_module
+*  \brief Tridiagonal solver with pivoting
+*
+*  \details
+*  \p rocsparse_gtsv solves a tridiagonal system for multiple right hand sides using pivoting.
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  m           size of the tri-diagonal linear system (must be >= 2).
+*  @param[in]
+*  n           number of columns in the dense matrix B.
+*  @param[in]
+*  dl          lower diagonal of tri-diagonal system. First entry must be zero.
+*  @param[in]
+*  d           main diagonal of tri-diagonal system.
+*  @param[in]
+*  du          upper diagonal of tri-diagonal system. Last entry must be zero.
+*  @param[inout]
+*  B           Dense matrix of size ( \p ldb, \p n ).
+*  @param[in]
+*  ldb         Leading dimension of B. Must satisfy \p ldb >= max(1, m).
+*  @param[in]
+*  temp_buffer temporary storage buffer allocated by the user.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_size \p m, \p n or \p ldb is invalid.
+*  \retval     rocsparse_status_invalid_pointer \p dl, \p d,
+*              \p du, \p B or \p temp_buffer pointer is invalid.
+*  \retval     rocsparse_status_internal_error an internal error occurred.
+*/
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sgtsv(rocsparse_handle handle,
+                                 rocsparse_int    m,
+                                 rocsparse_int    n,
+                                 const float*     dl,
+                                 const float*     d,
+                                 const float*     du,
+                                 float*           B,
+                                 rocsparse_int    ldb,
+                                 void*            temp_buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dgtsv(rocsparse_handle handle,
+                                 rocsparse_int    m,
+                                 rocsparse_int    n,
+                                 const double*    dl,
+                                 const double*    d,
+                                 const double*    du,
+                                 double*          B,
+                                 rocsparse_int    ldb,
+                                 void*            temp_buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cgtsv(rocsparse_handle               handle,
+                                 rocsparse_int                  m,
+                                 rocsparse_int                  n,
+                                 const rocsparse_float_complex* dl,
+                                 const rocsparse_float_complex* d,
+                                 const rocsparse_float_complex* du,
+                                 rocsparse_float_complex*       B,
+                                 rocsparse_int                  ldb,
+                                 void*                          temp_buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zgtsv(rocsparse_handle                handle,
+                                 rocsparse_int                   m,
+                                 rocsparse_int                   n,
+                                 const rocsparse_double_complex* dl,
+                                 const rocsparse_double_complex* d,
+                                 const rocsparse_double_complex* du,
+                                 rocsparse_double_complex*       B,
+                                 rocsparse_int                   ldb,
+                                 void*                           temp_buffer);
+/**@}*/
+
+/*! \ingroup precond_module
 *  \brief Tridiagonal solver (no pivoting)
 *
 *  \details
@@ -8194,93 +8359,95 @@ rocsparse_status rocsparse_zgtsv_no_pivot(rocsparse_handle                handle
 /**@}*/
 
 /*! \ingroup precond_module
-*  \brief Tridiagonal solver with pivoting
+*  \brief Strided Batch tridiagonal solver (no pivoting)
 *
 *  \details
-*  \p rocsparse_gtsv_buffer_size returns the size of the temporary storage buffer
-*  that is required by rocsparse_sgtsv(), rocsparse_dgtsv(),
-*  rocsparse_cgtsv() and rocsparse_zgtsv(). The temporary storage buffer
-*  must be allocated by the user.
+*  \p rocsparse_gtsv_no_pivot_strided_batch_buffer_size returns the size of the temporary storage buffer
+*  that is required by rocsparse_sgtsv_no_pivot_strided_batch(), rocsparse_dgtsv_no_pivot_strided_batch(),
+*  rocsparse_cgtsv_no_pivot_strided_batch() and rocsparse_zgtsv_no_pivot_strided_batch(). The temporary
+*  storage buffer must be allocated by the user.
 *
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
-*  m           size of the tri-diagonal linear system (must be >= 2).
+*  m           size of the tri-diagonal linear system.
 *  @param[in]
-*  n           number of columns in the dense matrix B.
+*  dl          lower diagonal of tri-diagonal system where the ith system lower diagonal starts at \p dl+batch_stride*i.
 *  @param[in]
-*  dl          lower diagonal of tri-diagonal system. First entry must be zero.
+*  d           main diagonal of tri-diagonal system where the ith system diagonal starts at \p d+batch_stride*i.
 *  @param[in]
-*  d           main diagonal of tri-diagonal system.
+*  du          upper diagonal of tri-diagonal system where the ith system upper diagonal starts at \p du+batch_stride*i.
+*  @param[inout]
+*  x           Dense array of righthand-sides where the ith righthand-side starts at \p x+batch_stride*i.
 *  @param[in]
-*  du          upper diagonal of tri-diagonal system. Last entry must be zero.
+*  batch_count The number of systems to solve.
 *  @param[in]
-*  B           Dense matrix of size ( \p ldb, \p n ).
-*  @param[in]
-*  ldb         Leading dimension of B. Must satisfy \p ldb >= max(1, m).
+*  batch_stride The number of elements that separate each system. Must satisfy \p batch_stride >= m.
 *  @param[out]
 *  buffer_size number of bytes of the temporary storage buffer required by
-*              rocsparse_sgtsv(), rocsparse_dgtsv(), rocsparse_cgtsv()
-*              and rocsparse_zgtsv().
+*              rocsparse_sgtsv_no_pivot_strided_batch(), rocsparse_dgtsv_no_pivot_strided_batch(), rocsparse_cgtsv_no_pivot_strided_batch()
+*              and rocsparse_zgtsv_no_pivot_strided_batch().
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval     rocsparse_status_invalid_size \p m, \p n or \p ldb is invalid.
+*  \retval     rocsparse_status_invalid_size \p m, \p batch_count or \p batch_stride is invalid.
 *  \retval     rocsparse_status_invalid_pointer \p dl, \p d, \p du,
-*              \p B or \p buffer_size pointer is invalid.
+*              \p x or \p buffer_size pointer is invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 */
 /**@{*/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_sgtsv_buffer_size(rocsparse_handle handle,
-                                             rocsparse_int    m,
-                                             rocsparse_int    n,
-                                             const float*     dl,
-                                             const float*     d,
-                                             const float*     du,
-                                             const float*     B,
-                                             rocsparse_int    ldb,
-                                             size_t*          buffer_size);
+rocsparse_status rocsparse_sgtsv_no_pivot_strided_batch_buffer_size(rocsparse_handle handle,
+                                                                    rocsparse_int    m,
+                                                                    const float*     dl,
+                                                                    const float*     d,
+                                                                    const float*     du,
+                                                                    const float*     x,
+                                                                    rocsparse_int    batch_count,
+                                                                    rocsparse_int    batch_stride,
+                                                                    size_t*          buffer_size);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_dgtsv_buffer_size(rocsparse_handle handle,
-                                             rocsparse_int    m,
-                                             rocsparse_int    n,
-                                             const double*    dl,
-                                             const double*    d,
-                                             const double*    du,
-                                             const double*    B,
-                                             rocsparse_int    ldb,
-                                             size_t*          buffer_size);
+rocsparse_status rocsparse_dgtsv_no_pivot_strided_batch_buffer_size(rocsparse_handle handle,
+                                                                    rocsparse_int    m,
+                                                                    const double*    dl,
+                                                                    const double*    d,
+                                                                    const double*    du,
+                                                                    const double*    x,
+                                                                    rocsparse_int    batch_count,
+                                                                    rocsparse_int    batch_stride,
+                                                                    size_t*          buffer_size);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_cgtsv_buffer_size(rocsparse_handle               handle,
-                                             rocsparse_int                  m,
-                                             rocsparse_int                  n,
-                                             const rocsparse_float_complex* dl,
-                                             const rocsparse_float_complex* d,
-                                             const rocsparse_float_complex* du,
-                                             const rocsparse_float_complex* B,
-                                             rocsparse_int                  ldb,
-                                             size_t*                        buffer_size);
+rocsparse_status
+    rocsparse_cgtsv_no_pivot_strided_batch_buffer_size(rocsparse_handle               handle,
+                                                       rocsparse_int                  m,
+                                                       const rocsparse_float_complex* dl,
+                                                       const rocsparse_float_complex* d,
+                                                       const rocsparse_float_complex* du,
+                                                       const rocsparse_float_complex* x,
+                                                       rocsparse_int                  batch_count,
+                                                       rocsparse_int                  batch_stride,
+                                                       size_t*                        buffer_size);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_zgtsv_buffer_size(rocsparse_handle                handle,
-                                             rocsparse_int                   m,
-                                             rocsparse_int                   n,
-                                             const rocsparse_double_complex* dl,
-                                             const rocsparse_double_complex* d,
-                                             const rocsparse_double_complex* du,
-                                             const rocsparse_double_complex* B,
-                                             rocsparse_int                   ldb,
-                                             size_t*                         buffer_size);
+rocsparse_status
+    rocsparse_zgtsv_no_pivot_strided_batch_buffer_size(rocsparse_handle                handle,
+                                                       rocsparse_int                   m,
+                                                       const rocsparse_double_complex* dl,
+                                                       const rocsparse_double_complex* d,
+                                                       const rocsparse_double_complex* du,
+                                                       const rocsparse_double_complex* x,
+                                                       rocsparse_int                   batch_count,
+                                                       rocsparse_int                   batch_stride,
+                                                       size_t*                         buffer_size);
 /**@}*/
 
 /*! \ingroup precond_module
-*  \brief Tridiagonal solver with pivoting
+*  \brief Strided Batch tridiagonal solver (no pivoting)
 *
 *  \details
-*  \p rocsparse_gtsv solves a tridiagonal system for multiple right hand sides using pivoting.
+*  \p rocsparse_gtsv_no_pivot_strided_batch  solves a batched tridiagonal linear system
 *
 *  \note
 *  This function is non blocking and executed asynchronously with respect to the host.
@@ -8307,55 +8474,55 @@ rocsparse_status rocsparse_zgtsv_buffer_size(rocsparse_handle                han
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
-*  \retval     rocsparse_status_invalid_size \p m, \p n or \p ldb is invalid.
+*  \retval     rocsparse_status_invalid_size \p m, \p batch_count or \p batch_stride is invalid.
 *  \retval     rocsparse_status_invalid_pointer \p dl, \p d,
-*              \p du, \p B or \p temp_buffer pointer is invalid.
+*              \p du, \p x or \p temp_buffer pointer is invalid.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
 */
 /**@{*/
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_sgtsv(rocsparse_handle handle,
-                                 rocsparse_int    m,
-                                 rocsparse_int    n,
-                                 const float*     dl,
-                                 const float*     d,
-                                 const float*     du,
-                                 float*           B,
-                                 rocsparse_int    ldb,
-                                 void*            temp_buffer);
+rocsparse_status rocsparse_sgtsv_no_pivot_strided_batch(rocsparse_handle handle,
+                                                        rocsparse_int    m,
+                                                        const float*     dl,
+                                                        const float*     d,
+                                                        const float*     du,
+                                                        float*           x,
+                                                        rocsparse_int    batch_count,
+                                                        rocsparse_int    batch_stride,
+                                                        void*            temp_buffer);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_dgtsv(rocsparse_handle handle,
-                                 rocsparse_int    m,
-                                 rocsparse_int    n,
-                                 const double*    dl,
-                                 const double*    d,
-                                 const double*    du,
-                                 double*          B,
-                                 rocsparse_int    ldb,
-                                 void*            temp_buffer);
+rocsparse_status rocsparse_dgtsv_no_pivot_strided_batch(rocsparse_handle handle,
+                                                        rocsparse_int    m,
+                                                        const double*    dl,
+                                                        const double*    d,
+                                                        const double*    du,
+                                                        double*          x,
+                                                        rocsparse_int    batch_count,
+                                                        rocsparse_int    batch_stride,
+                                                        void*            temp_buffer);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_cgtsv(rocsparse_handle               handle,
-                                 rocsparse_int                  m,
-                                 rocsparse_int                  n,
-                                 const rocsparse_float_complex* dl,
-                                 const rocsparse_float_complex* d,
-                                 const rocsparse_float_complex* du,
-                                 rocsparse_float_complex*       B,
-                                 rocsparse_int                  ldb,
-                                 void*                          temp_buffer);
+rocsparse_status rocsparse_cgtsv_no_pivot_strided_batch(rocsparse_handle               handle,
+                                                        rocsparse_int                  m,
+                                                        const rocsparse_float_complex* dl,
+                                                        const rocsparse_float_complex* d,
+                                                        const rocsparse_float_complex* du,
+                                                        rocsparse_float_complex*       x,
+                                                        rocsparse_int                  batch_count,
+                                                        rocsparse_int                  batch_stride,
+                                                        void*                          temp_buffer);
 
 ROCSPARSE_EXPORT
-rocsparse_status rocsparse_zgtsv(rocsparse_handle                handle,
-                                 rocsparse_int                   m,
-                                 rocsparse_int                   n,
-                                 const rocsparse_double_complex* dl,
-                                 const rocsparse_double_complex* d,
-                                 const rocsparse_double_complex* du,
-                                 rocsparse_double_complex*       B,
-                                 rocsparse_int                   ldb,
-                                 void*                           temp_buffer);
+rocsparse_status rocsparse_zgtsv_no_pivot_strided_batch(rocsparse_handle                handle,
+                                                        rocsparse_int                   m,
+                                                        const rocsparse_double_complex* dl,
+                                                        const rocsparse_double_complex* d,
+                                                        const rocsparse_double_complex* du,
+                                                        rocsparse_double_complex*       x,
+                                                        rocsparse_int                   batch_count,
+                                                        rocsparse_int batch_stride,
+                                                        void*         temp_buffer);
 /**@}*/
 
 /*

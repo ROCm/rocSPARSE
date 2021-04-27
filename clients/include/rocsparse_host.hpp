@@ -577,6 +577,15 @@ void host_gtsv_no_pivot(rocsparse_int         m,
                         std::vector<T>&       B,
                         rocsparse_int         ldb);
 
+template <typename T>
+void host_gtsv_no_pivot_strided_batch(rocsparse_int         m,
+                                      const std::vector<T>& dl,
+                                      const std::vector<T>& d,
+                                      const std::vector<T>& du,
+                                      std::vector<T>&       x,
+                                      rocsparse_int         batch_count,
+                                      rocsparse_int         batch_stride);
+
 /*
  * ===========================================================================
  *    conversion SPARSE
