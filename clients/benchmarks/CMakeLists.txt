@@ -64,7 +64,9 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_bsrilu0.cpp
 ../testings/testing_csric0.cpp
 ../testings/testing_csrilu0.cpp
+../testings/testing_gtsv.cpp
 ../testings/testing_gtsv_no_pivot.cpp
+../testings/testing_gtsv_no_pivot_strided_batch.cpp
 ../testings/testing_csr2coo.cpp
 ../testings/testing_csr2csc.cpp
 ../testings/testing_gebsr2gebsc.cpp
@@ -107,7 +109,6 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_dense_to_sparse_csr.cpp
 ../testings/testing_dense_to_sparse_csc.cpp
 ../testings/testing_spgemm_csr.cpp
-../testings/testing_gtsv.cpp
 ../testings/testing_gemvi.cpp
 ../testings/testing_sddmm.cpp
 )

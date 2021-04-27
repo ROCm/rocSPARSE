@@ -71,14 +71,12 @@ void testing_gtsv(const Arguments& arg)
     // Argument sanity check before allocating invalid memory
     if(m <= 1 || n <= 0 || ldb < std::max(1, m))
     {
-        static const size_t safe_size = 100;
-
-        size_t           buffer_size;
-        device_vector<T> ddl(safe_size);
-        device_vector<T> dd(safe_size);
-        device_vector<T> ddu(safe_size);
-        device_vector<T> dB(safe_size);
-        device_vector<T> dbuffer(safe_size);
+        size_t buffer_size;
+        T*     ddl     = nullptr;
+        T*     dd      = nullptr;
+        T*     ddu     = nullptr;
+        T*     dB      = nullptr;
+        void*  dbuffer = nullptr;
 
         EXPECT_ROCSPARSE_STATUS(rocsparse_gtsv_buffer_size<T>(PARAMS_BUFFER_SIZE),
                                 (m <= 1 || n < 0 || ldb < std::max(1, m))
@@ -152,12 +150,15 @@ void testing_gtsv(const Arguments& arg)
         hB.transfer_from(dB);
 
         // Check
-        std::vector<T> hresult = hB_original;
+        std::vector<T> hresult(ldb * n, static_cast<T>(7));
         for(rocsparse_int j = 0; j < n; j++)
         {
             hresult[ldb * j] = hd[0] * hB[ldb * j] + hdu[0] * hB[ldb * j + 1];
             hresult[ldb * j + m - 1]
                 = hdl[m - 1] * hB[ldb * j + m - 2] + hd[m - 1] * hB[ldb * j + m - 1];
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
             for(rocsparse_int i = 1; i < m - 1; i++)
             {
                 hresult[ldb * j + i] = hdl[i] * hB[ldb * j + i - 1] + hd[i] * hB[ldb * j + i]

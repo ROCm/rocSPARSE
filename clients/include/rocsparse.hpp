@@ -794,6 +794,29 @@ rocsparse_status rocsparse_gtsv_no_pivot(rocsparse_handle handle,
                                          rocsparse_int    ldb,
                                          void*            temp_buffer);
 
+// gtsv_no_pivot_strided_batch
+template <typename T>
+rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_buffer_size(rocsparse_handle handle,
+                                                                   rocsparse_int    m,
+                                                                   const T*         dl,
+                                                                   const T*         d,
+                                                                   const T*         du,
+                                                                   const T*         x,
+                                                                   rocsparse_int    batch_count,
+                                                                   rocsparse_int    batch_stride,
+                                                                   size_t*          buffer_size);
+
+template <typename T>
+rocsparse_status rocsparse_gtsv_no_pivot_strided_batch(rocsparse_handle handle,
+                                                       rocsparse_int    m,
+                                                       const T*         dl,
+                                                       const T*         d,
+                                                       const T*         du,
+                                                       T*               x,
+                                                       rocsparse_int    batch_count,
+                                                       rocsparse_int    batch_stride,
+                                                       void*            temp_buffer);
+
 /*
  * ===========================================================================
  *    conversion SPARSE
