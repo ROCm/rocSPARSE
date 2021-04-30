@@ -140,222 +140,63 @@
 // |0   w22 0   1||v14'|   |1|
 // clang-format on
 
-template <unsigned int BLOCKSIZE, typename T>
+template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
-    void gtsv_copy_result_array_kernel(rocsparse_int m,
-                                       rocsparse_int m_pad,
-                                       rocsparse_int ldb,
-                                       rocsparse_int block_dim,
-                                       const T* __restrict__ input,
-                                       T* __restrict__ output)
+    void gtsv_transpose_and_pad_array_kernel(rocsparse_int m,
+                                             rocsparse_int m_pad,
+                                             rocsparse_int stride,
+                                             const T* __restrict__ input,
+                                             T* __restrict__ output,
+                                             T pad_value)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidx = hipBlockIdx_x;
     rocsparse_int bidy = hipBlockIdx_y;
 
-    rocsparse_int gid = tidx + BLOCKSIZE * bidx;
+    rocsparse_int gidx = tidx + BLOCKSIZE * bidx;
 
-    if(gid < m)
+    rocsparse_int i = (gidx * BLOCKDIM) % m_pad;
+    rocsparse_int j = (gidx * BLOCKDIM) / m_pad;
+    rocsparse_int k = i + j;
+
+    if(k < m)
     {
-        output[gid + ldb * bidy] = input[gid + bidy * m_pad];
+        output[gidx + bidy * m_pad] = input[k + bidy * stride];
+    }
+    else if(k < m_pad)
+    {
+        output[gidx + bidy * m_pad] = pad_value;
     }
 }
 
-template <unsigned int BLOCKSIZE, typename T>
+template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
-    void gtsv_fill_padded_array_kernel(rocsparse_int m,
-                                       rocsparse_int m_pad,
-                                       rocsparse_int ldb,
-                                       const T* __restrict__ input,
-                                       T* __restrict__ output,
-                                       T pad_value)
+    void gtsv_transpose_back_array_kernel(rocsparse_int m,
+                                          rocsparse_int m_pad,
+                                          rocsparse_int stride,
+                                          const T* __restrict__ input,
+                                          T* __restrict__ output)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidx = hipBlockIdx_x;
     rocsparse_int bidy = hipBlockIdx_y;
 
-    rocsparse_int gid = tidx + BLOCKSIZE * bidx;
+    rocsparse_int gidx = tidx + BLOCKSIZE * bidx;
 
-    if(gid < m)
+    rocsparse_int i = (gidx * BLOCKDIM) % m_pad;
+    rocsparse_int j = (gidx * BLOCKDIM) / m_pad;
+    rocsparse_int k = i + j;
+
+    if(k < m)
     {
-        output[gid + bidy * m_pad] = input[gid + bidy * ldb];
-    }
-    else if(gid < m_pad)
-    {
-        output[gid + bidy * m_pad] = pad_value;
-    }
-}
-
-template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void gtsv_LBM_1x1_kernel(rocsparse_int m,
-                                                                 rocsparse_int n,
-                                                                 rocsparse_int ldb,
-                                                                 rocsparse_int block_dim,
-                                                                 const T* __restrict__ a,
-                                                                 const T* __restrict__ b,
-                                                                 const T* __restrict__ c,
-                                                                 T* __restrict__ rhs,
-                                                                 T* __restrict__ w,
-                                                                 T* __restrict__ v,
-                                                                 T* __restrict__ mt)
-{
-    rocsparse_int tidx = hipThreadIdx_x;
-    rocsparse_int bidx = hipBlockIdx_x;
-    rocsparse_int gid  = tidx + BLOCKSIZE * bidx;
-
-    rocsparse_int stride = gid * block_dim;
-
-    if(stride >= m)
-    {
-        return;
-    }
-
-    T bk                      = b[stride];
-    w[stride]                 = a[stride];
-    v[stride + block_dim - 1] = c[stride + block_dim - 1];
-
-    // Forward solve
-    rocsparse_int k = 0;
-    while(k < block_dim)
-    {
-        T ck   = c[k + stride];
-        T ak_1 = (k < block_dim - 1) ? a[k + 1 + stride] : static_cast<T>(0);
-        T bk_1 = (k < block_dim - 1) ? b[k + 1 + stride] : static_cast<T>(0);
-
-        T iBk = static_cast<T>(1) / bk;
-
-        bk_1 = bk_1 - ak_1 * ck * iBk;
-        ak_1 = ak_1 * iBk;
-        ck   = ck * iBk;
-
-        T rhsk = rhs[k + stride];
-        T wk   = w[k + stride];
-        T vk   = v[k + stride];
-
-        rhs[k + stride] = rhsk * iBk;
-        w[k + stride]   = wk * iBk;
-        v[k + stride]   = vk * iBk;
-        mt[k + stride]  = ck;
-
-        if(k < block_dim - 1)
-        {
-            rhs[k + 1 + stride] = rhs[k + 1 + stride] - ak_1 * rhsk;
-            w[k + 1 + stride]   = w[k + 1 + stride] - ak_1 * wk;
-        }
-
-        bk = bk_1;
-        k  = k + 1;
-    }
-
-    // backward solve
-    k = block_dim - 2;
-    while(k >= 0)
-    {
-        rhs[k + stride] = rhs[k + stride] - mt[k + stride] * rhs[k + 1 + stride];
-        v[k + stride]   = v[k + stride] - mt[k + stride] * v[k + 1 + stride];
-        w[k + stride]   = w[k + stride] - mt[k + stride] * w[k + 1 + stride];
-
-        k = k - 1;
+        output[k + bidy * stride] = input[gidx + bidy * m_pad];
     }
 }
 
-template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void gtsv_LBM_2x2_kernel(rocsparse_int m,
-                                                                 rocsparse_int n,
-                                                                 rocsparse_int ldb,
-                                                                 rocsparse_int block_dim,
-                                                                 const T* __restrict__ a,
-                                                                 const T* __restrict__ b,
-                                                                 const T* __restrict__ c,
-                                                                 T* __restrict__ rhs,
-                                                                 T* __restrict__ w,
-                                                                 T* __restrict__ v,
-                                                                 T* __restrict__ mt)
-{
-    rocsparse_int tidx = hipThreadIdx_x;
-    rocsparse_int bidx = hipBlockIdx_x;
-    rocsparse_int gid  = tidx + BLOCKSIZE * bidx;
-
-    rocsparse_int stride = gid * block_dim;
-
-    if(stride >= m)
-    {
-        return;
-    }
-
-    T bk                      = b[stride];
-    w[stride]                 = a[stride];
-    v[stride + block_dim - 1] = c[stride + block_dim - 1];
-
-    rocsparse_int k = 0;
-    while(k < block_dim)
-    {
-        T ck   = c[k + stride];
-        T ak_1 = (k < block_dim - 1) ? a[k + 1 + stride] : static_cast<T>(0);
-        T bk_1 = (k < block_dim - 1) ? b[k + 1 + stride] : static_cast<T>(0);
-        T ck_1 = (k < block_dim - 1) ? c[k + 1 + stride] : static_cast<T>(0);
-        T ak_2 = (k < block_dim - 2) ? a[k + 2 + stride] : static_cast<T>(0);
-
-        T det = bk * bk_1 - ak_1 * ck;
-        det   = static_cast<T>(1) / det;
-
-        T rhsk   = rhs[k + stride];
-        T rhsk_1 = rhs[k + 1 + stride];
-        T wk     = w[k + stride];
-        T wk_1   = w[k + 1 + stride];
-        T vk     = v[k + stride];
-        T vk_1   = v[k + 1 + stride];
-
-        rhs[k + stride] = (bk_1 * rhsk - ck * rhsk_1) * det;
-        w[k + stride]   = (bk_1 * wk - ck * wk_1) * det;
-        v[k + stride]   = (bk_1 * vk - ck * vk_1) * det;
-        mt[k + stride]  = -ck * ck_1 * det;
-
-        if(k < block_dim - 1)
-        {
-            rhs[k + 1 + stride] = (-ak_1 * rhsk + bk * rhsk_1) * det;
-            w[k + 1 + stride]   = (-ak_1 * wk + bk * wk_1) * det;
-            v[k + 1 + stride]   = (-ak_1 * vk + bk * vk_1) * det;
-            mt[k + 1 + stride]  = bk * ck_1 * det;
-        }
-
-        T bk_2 = static_cast<T>(0);
-
-        if(k < block_dim - 2)
-        {
-            rhs[k + 2 + stride]
-                = rhs[k + 2 + stride] - (-ak_1 * ak_2 * det) * rhsk - (bk * ak_2 * det) * rhsk_1;
-            w[k + 2 + stride]
-                = w[k + 2 + stride] - (-ak_1 * ak_2 * det) * wk - (bk * ak_2 * det) * wk_1;
-
-            bk_2 = b[k + 2 + stride];
-            bk_2 = bk_2 - ak_2 * bk * ck_1 * det;
-        }
-
-        bk = bk_2;
-        k  = k + 2;
-    }
-
-    // backward solve
-    k = block_dim - 4;
-    while(k >= 0)
-    {
-        rhs[k + stride]     = rhs[k + stride] - mt[k + stride] * rhs[k + 2 + stride];
-        rhs[k + 1 + stride] = rhs[k + 1 + stride] - mt[k + 1 + stride] * rhs[k + 2 + stride];
-        w[k + stride]       = w[k + stride] - mt[k + stride] * w[k + 2 + stride];
-        w[k + 1 + stride]   = w[k + 1 + stride] - mt[k + 1 + stride] * w[k + 2 + stride];
-        v[k + stride]       = v[k + stride] - mt[k + stride] * v[k + 2 + stride];
-        v[k + 1 + stride]   = v[k + 1 + stride] - mt[k + 1 + stride] * v[k + 2 + stride];
-
-        k = k - 2;
-    }
-}
-
-template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void gtsv_LBM_wv_kernel(rocsparse_int m,
+template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+__launch_bounds__(BLOCKSIZE) __global__ void gtsv_LBM_wv_kernel(rocsparse_int m_pad,
                                                                 rocsparse_int n,
                                                                 rocsparse_int ldb,
-                                                                rocsparse_int block_dim,
                                                                 const T* __restrict__ a,
                                                                 const T* __restrict__ b,
                                                                 const T* __restrict__ c,
@@ -371,26 +212,26 @@ __launch_bounds__(BLOCKSIZE) __global__ void gtsv_LBM_wv_kernel(rocsparse_int m,
     rocsparse_int bidx = hipBlockIdx_x;
     rocsparse_int gid  = tidx + BLOCKSIZE * bidx;
 
-    rocsparse_int stride = gid * block_dim;
+    rocsparse_int nblocks = m_pad / BLOCKDIM;
 
-    if(stride >= m)
+    if(gid >= nblocks)
     {
         return;
     }
 
-    T bk                      = b[stride];
-    w[stride]                 = a[stride];
-    v[stride + block_dim - 1] = c[stride + block_dim - 1];
+    T bk                              = b[gid];
+    w[gid]                            = a[gid];
+    v[gid + (BLOCKDIM - 1) * nblocks] = c[gid + (BLOCKDIM - 1) * nblocks];
 
-    // forward solve (L* B * w = w)
+    // forward solve (L* B * w = w and L* B * v = v)
     rocsparse_int k = 0;
-    while(k < block_dim)
+    while(k < m_pad)
     {
-        T ck   = c[k + stride];
-        T ak_1 = (k < block_dim - 1) ? a[k + 1 + stride] : static_cast<T>(0);
-        T bk_1 = (k < block_dim - 1) ? b[k + 1 + stride] : static_cast<T>(0);
-        T ck_1 = (k < block_dim - 1) ? c[k + 1 + stride] : static_cast<T>(0);
-        T ak_2 = (k < block_dim - 2) ? a[k + 2 + stride] : static_cast<T>(0);
+        T ck   = c[k + gid];
+        T ak_1 = (k < (BLOCKDIM - 1) * nblocks) ? a[k + nblocks + gid] : static_cast<T>(0);
+        T bk_1 = (k < (BLOCKDIM - 1) * nblocks) ? b[k + nblocks + gid] : static_cast<T>(0);
+        T ck_1 = (k < (BLOCKDIM - 1) * nblocks) ? c[k + nblocks + gid] : static_cast<T>(0);
+        T ak_2 = (k < (BLOCKDIM - 2) * nblocks) ? a[k + 2 * nblocks + gid] : static_cast<T>(0);
 
         // decide whether we should use 1x1 or 2x2 pivoting using Bunch-Kaufman
         // pivoting criteria
@@ -401,7 +242,8 @@ __launch_bounds__(BLOCKSIZE) __global__ void gtsv_LBM_wv_kernel(rocsparse_int m,
         sigma        = max(rocsparse_abs(ck_1), sigma);
 
         // 1x1 pivoting
-        if(rocsparse_abs(bk) * sigma >= kappa * rocsparse_abs(ak_1 * ck) || k == block_dim - 1)
+        if(rocsparse_abs(bk) * sigma >= kappa * rocsparse_abs(ak_1 * ck)
+           || k == (BLOCKDIM - 1) * nblocks)
         {
             T iBk = static_cast<T>(1) / bk;
 
@@ -409,21 +251,21 @@ __launch_bounds__(BLOCKSIZE) __global__ void gtsv_LBM_wv_kernel(rocsparse_int m,
             ak_1 = ak_1 * iBk;
             ck   = ck * iBk;
 
-            T wk = w[k + stride];
-            T vk = v[k + stride];
+            T wk = w[k + gid];
+            T vk = v[k + gid];
 
-            w[k + stride]     = wk * iBk;
-            v[k + stride]     = vk * iBk;
-            mt[k + stride]    = ck;
-            pivot[k + stride] = 1;
+            w[k + gid]     = wk * iBk;
+            v[k + gid]     = vk * iBk;
+            mt[k + gid]    = ck;
+            pivot[k + gid] = 1;
 
-            if(k < block_dim - 1)
+            if(k < (BLOCKDIM - 1) * nblocks)
             {
-                w[k + 1 + stride] = w[k + 1 + stride] - ak_1 * wk;
+                w[k + nblocks + gid] += -ak_1 * wk;
             }
 
             bk = bk_1;
-            k  = k + 1;
+            k += nblocks;
         }
         // 2x2 pivoting
         else
@@ -431,75 +273,77 @@ __launch_bounds__(BLOCKSIZE) __global__ void gtsv_LBM_wv_kernel(rocsparse_int m,
             T det = bk * bk_1 - ak_1 * ck;
             det   = static_cast<T>(1) / det;
 
-            T wk   = w[k + stride];
-            T wk_1 = w[k + 1 + stride];
-            T vk   = v[k + stride];
-            T vk_1 = v[k + 1 + stride];
+            T wk   = w[k + gid];
+            T wk_1 = w[k + nblocks + gid];
+            T vk   = v[k + gid];
+            T vk_1 = v[k + nblocks + gid];
 
-            w[k + stride]     = (bk_1 * wk - ck * wk_1) * det;
-            v[k + stride]     = (bk_1 * vk - ck * vk_1) * det;
-            mt[k + stride]    = -ck * ck_1 * det;
-            pivot[k + stride] = 2;
+            w[k + gid]     = (bk_1 * wk - ck * wk_1) * det;
+            v[k + gid]     = (bk_1 * vk - ck * vk_1) * det;
+            mt[k + gid]    = -ck * ck_1 * det;
+            pivot[k + gid] = 2;
 
-            if(k < block_dim - 1)
+            if(k < (BLOCKDIM - 1) * nblocks)
             {
-                w[k + 1 + stride]     = (-ak_1 * wk + bk * wk_1) * det;
-                v[k + 1 + stride]     = (-ak_1 * vk + bk * vk_1) * det;
-                mt[k + 1 + stride]    = bk * ck_1 * det;
-                pivot[k + 1 + stride] = 2;
+                w[k + nblocks + gid]     = (-ak_1 * wk + bk * wk_1) * det;
+                v[k + nblocks + gid]     = (-ak_1 * vk + bk * vk_1) * det;
+                mt[k + nblocks + gid]    = bk * ck_1 * det;
+                pivot[k + nblocks + gid] = 2;
             }
 
             T bk_2 = static_cast<T>(0);
 
-            if(k < block_dim - 2)
+            if(k < (BLOCKDIM - 2) * nblocks)
             {
-                w[k + 2 + stride]
-                    = w[k + 2 + stride] - (-ak_1 * ak_2 * det) * wk - (bk * ak_2 * det) * wk_1;
+                w[k + 2 * nblocks + gid] += -(-ak_1 * ak_2 * det) * wk - (bk * ak_2 * det) * wk_1;
 
-                bk_2 = b[k + 2 + stride];
+                bk_2 = b[k + 2 * nblocks + gid];
                 bk_2 = bk_2 - ak_2 * bk * ck_1 * det;
             }
 
             bk = bk_2;
-            k  = k + 2;
+            k += 2 * nblocks;
         }
     }
 
     __threadfence();
 
-    // at this point k = block_dim
-    k -= 1;
+    // at this point k = BLOCKDIM * nblocks
+    k -= nblocks;
 
-    k -= pivot[k + stride];
+    k -= nblocks * pivot[k + gid];
 
-    // backward solve (M^T * w = w)
+    // backward solve (M^T * w = w and M^T * v = v)
     while(k >= 0)
     {
-        if(pivot[k + stride] == 1)
+        if(pivot[k + gid] == 1)
         {
-            w[k + stride] = w[k + stride] - mt[k + stride] * w[k + 1 + stride];
-            v[k + stride] = v[k + stride] - mt[k + stride] * v[k + 1 + stride];
+            T tmp = mt[k + gid];
+            w[k + gid] += -tmp * w[k + nblocks + gid];
+            v[k + gid] += -tmp * v[k + nblocks + gid];
 
-            k -= 1;
+            k -= nblocks;
         }
         else
         {
-            w[k + stride]     = w[k + stride] - mt[k + stride] * w[k + 1 + stride];
-            w[k - 1 + stride] = w[k - 1 + stride] - mt[k - 1 + stride] * w[k + 1 + stride];
-            v[k + stride]     = v[k + stride] - mt[k + stride] * v[k + 1 + stride];
-            v[k - 1 + stride] = v[k - 1 + stride] - mt[k - 1 + stride] * v[k + 1 + stride];
+            T tmp1 = mt[k + gid];
+            T tmp2 = mt[k - nblocks + gid];
 
-            k -= 2;
+            w[k + gid] += -tmp1 * w[k + nblocks + gid];
+            w[k - nblocks + gid] += -tmp2 * w[k + nblocks + gid];
+            v[k + gid] += -tmp1 * v[k + nblocks + gid];
+            v[k - nblocks + gid] += -tmp2 * v[k + nblocks + gid];
+
+            k -= 2 * nblocks;
         }
     }
 }
 
-template <unsigned int BLOCKSIZE, typename T>
+template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, unsigned int COLS, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
-    void gtsv_LBM_rhs_kernel(rocsparse_int m,
+    void gtsv_LBM_rhs_kernel(rocsparse_int m_pad,
                              rocsparse_int n,
                              rocsparse_int ldb,
-                             rocsparse_int block_dim,
                              const T* __restrict__ a,
                              const T* __restrict__ b,
                              const T* __restrict__ c,
@@ -514,45 +358,67 @@ __launch_bounds__(BLOCKSIZE) __global__
     rocsparse_int bidy = hipBlockIdx_y;
     rocsparse_int gid  = tidx + BLOCKSIZE * bidx;
 
-    rocsparse_int stride = gid * block_dim;
+    rocsparse_int nblocks = m_pad / BLOCKDIM;
 
-    if(stride >= m)
+    if(gid >= nblocks)
     {
         return;
     }
 
-    T bk = b[stride];
+    T bk = b[gid];
 
     // forward solve (L* B * rhs = rhs)
     rocsparse_int k = 0;
-    while(k < block_dim)
+    while(k < m_pad)
     {
-        T ck   = c[k + stride];
-        T ak_1 = (k < block_dim - 1) ? a[k + 1 + stride] : static_cast<T>(0);
-        T bk_1 = (k < block_dim - 1) ? b[k + 1 + stride] : static_cast<T>(0);
-        T ck_1 = (k < block_dim - 1) ? c[k + 1 + stride] : static_cast<T>(0);
-        T ak_2 = (k < block_dim - 2) ? a[k + 2 + stride] : static_cast<T>(0);
+        T ck   = c[k + gid];
+        T ak_1 = (k < (BLOCKDIM - 1) * nblocks) ? a[k + nblocks + gid] : static_cast<T>(0);
+        T bk_1 = (k < (BLOCKDIM - 1) * nblocks) ? b[k + nblocks + gid] : static_cast<T>(0);
+        T ck_1 = (k < (BLOCKDIM - 1) * nblocks) ? c[k + nblocks + gid] : static_cast<T>(0);
+        T ak_2 = (k < (BLOCKDIM - 2) * nblocks) ? a[k + 2 * nblocks + gid] : static_cast<T>(0);
 
         // 1x1 pivoting
-        if(pivot[k + stride] == 1 || k == block_dim - 1)
+        if(pivot[k + gid] == 1 || k == (BLOCKDIM - 1) * nblocks)
         {
             T iBk = static_cast<T>(1) / bk;
 
             bk_1 = bk_1 - ak_1 * ck * iBk;
-            ak_1 = ak_1 * iBk;
-            ck   = ck * iBk;
 
-            T rhsk = rhs[k + stride + m * bidy];
-
-            rhs[k + stride + m * bidy] = rhsk * iBk;
-
-            if(k < block_dim - 1)
+            if(COLS % 4 == 0)
             {
-                rhs[k + 1 + stride + m * bidy] = rhs[k + 1 + stride + m * bidy] - ak_1 * rhsk;
+                T rhsk_col0 = rhs[k + gid + m_pad * (COLS * bidy + 0)] * iBk;
+                T rhsk_col1 = rhs[k + gid + m_pad * (COLS * bidy + 1)] * iBk;
+                T rhsk_col2 = rhs[k + gid + m_pad * (COLS * bidy + 2)] * iBk;
+                T rhsk_col3 = rhs[k + gid + m_pad * (COLS * bidy + 3)] * iBk;
+
+                rhs[k + gid + m_pad * (COLS * bidy + 0)] = rhsk_col0;
+                rhs[k + gid + m_pad * (COLS * bidy + 1)] = rhsk_col1;
+                rhs[k + gid + m_pad * (COLS * bidy + 2)] = rhsk_col2;
+                rhs[k + gid + m_pad * (COLS * bidy + 3)] = rhsk_col3;
+
+                if(k < (BLOCKDIM - 1) * nblocks)
+                {
+                    rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] += -ak_1 * rhsk_col0;
+                    rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)] += -ak_1 * rhsk_col1;
+                    rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)] += -ak_1 * rhsk_col2;
+                    rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)] += -ak_1 * rhsk_col3;
+                }
+            }
+            else
+            {
+                T rhsk_col0 = rhs[k + gid + m_pad * (COLS * bidy + 0)] * iBk;
+
+                rhs[k + gid + m_pad * (COLS * bidy + 0)] = rhsk_col0;
+
+                if(k < (BLOCKDIM - 1) * nblocks)
+                {
+                    rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] += -ak_1 * rhsk_col0;
+                }
             }
 
             bk = bk_1;
-            k  = k + 1;
+
+            k += nblocks;
         }
         // 2x2 pivoting
         else
@@ -560,71 +426,152 @@ __launch_bounds__(BLOCKSIZE) __global__
             T det = bk * bk_1 - ak_1 * ck;
             det   = static_cast<T>(1) / det;
 
-            T rhsk   = rhs[k + stride + m * bidy];
-            T rhsk_1 = rhs[k + 1 + stride + m * bidy];
-
-            rhs[k + stride + m * bidy] = (bk_1 * rhsk - ck * rhsk_1) * det;
-
-            if(k < block_dim - 1)
-            {
-                rhs[k + 1 + stride + m * bidy] = (-ak_1 * rhsk + bk * rhsk_1) * det;
-            }
-
             T bk_2 = static_cast<T>(0);
 
-            if(k < block_dim - 2)
+            if(COLS % 4 == 0)
             {
-                rhs[k + 2 + stride + m * bidy] = rhs[k + 2 + stride + m * bidy]
-                                                 - (-ak_1 * ak_2 * det) * rhsk
-                                                 - (bk * ak_2 * det) * rhsk_1;
+                T rhsk_col0 = rhs[k + gid + m_pad * (COLS * bidy + 0)] * det;
+                T rhsk_col1 = rhs[k + gid + m_pad * (COLS * bidy + 1)] * det;
+                T rhsk_col2 = rhs[k + gid + m_pad * (COLS * bidy + 2)] * det;
+                T rhsk_col3 = rhs[k + gid + m_pad * (COLS * bidy + 3)] * det;
 
-                bk_2 = b[k + 2 + stride];
-                bk_2 = bk_2 - ak_2 * bk * ck_1 * det;
+                T rhsk_1_col0 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] * det;
+                T rhsk_1_col1 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)] * det;
+                T rhsk_1_col2 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)] * det;
+                T rhsk_1_col3 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)] * det;
+
+                rhs[k + gid + m_pad * (COLS * bidy + 0)] = (bk_1 * rhsk_col0 - ck * rhsk_1_col0);
+                rhs[k + gid + m_pad * (COLS * bidy + 1)] = (bk_1 * rhsk_col1 - ck * rhsk_1_col1);
+                rhs[k + gid + m_pad * (COLS * bidy + 2)] = (bk_1 * rhsk_col2 - ck * rhsk_1_col2);
+                rhs[k + gid + m_pad * (COLS * bidy + 3)] = (bk_1 * rhsk_col3 - ck * rhsk_1_col3);
+
+                rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)]
+                    = (-ak_1 * rhsk_col0 + bk * rhsk_1_col0);
+                rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)]
+                    = (-ak_1 * rhsk_col1 + bk * rhsk_1_col1);
+                rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)]
+                    = (-ak_1 * rhsk_col2 + bk * rhsk_1_col2);
+                rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)]
+                    = (-ak_1 * rhsk_col3 + bk * rhsk_1_col3);
+
+                if(k < (BLOCKDIM - 2) * nblocks)
+                {
+                    rhs[k + 2 * nblocks + gid + m_pad * (COLS * bidy + 0)]
+                        += -(-ak_1 * ak_2) * rhsk_col0 - (bk * ak_2) * rhsk_1_col0;
+                    rhs[k + 2 * nblocks + gid + m_pad * (COLS * bidy + 1)]
+                        += -(-ak_1 * ak_2) * rhsk_col1 - (bk * ak_2) * rhsk_1_col1;
+                    rhs[k + 2 * nblocks + gid + m_pad * (COLS * bidy + 2)]
+                        += -(-ak_1 * ak_2) * rhsk_col2 - (bk * ak_2) * rhsk_1_col2;
+                    rhs[k + 2 * nblocks + gid + m_pad * (COLS * bidy + 3)]
+                        += -(-ak_1 * ak_2) * rhsk_col3 - (bk * ak_2) * rhsk_1_col3;
+
+                    bk_2 = b[k + 2 * nblocks + gid];
+                    bk_2 = bk_2 - ak_2 * bk * ck_1 * det;
+                }
+            }
+            else
+            {
+                T rhsk_col0 = rhs[k + gid + m_pad * (COLS * bidy + 0)] * det;
+
+                T rhsk_1_col0 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)] * det;
+
+                rhs[k + gid + m_pad * (COLS * bidy + 0)] = (bk_1 * rhsk_col0 - ck * rhsk_1_col0);
+
+                rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)]
+                    = (-ak_1 * rhsk_col0 + bk * rhsk_1_col0);
+
+                if(k < (BLOCKDIM - 2) * nblocks)
+                {
+                    rhs[k + 2 * nblocks + gid + m_pad * (COLS * bidy + 0)]
+                        += -(-ak_1 * ak_2) * rhsk_col0 - (bk * ak_2) * rhsk_1_col0;
+
+                    bk_2 = b[k + 2 * nblocks + gid];
+                    bk_2 = bk_2 - ak_2 * bk * ck_1 * det;
+                }
             }
 
             bk = bk_2;
-            k  = k + 2;
+
+            k += 2 * nblocks;
         }
     }
 
     __threadfence();
 
-    // at this point k = block_dim
-    k -= 1;
+    // at this point k = BLOCKDIM * nblocks
+    k -= nblocks;
 
-    k -= pivot[k + stride];
+    k -= nblocks * pivot[k + gid];
 
     // backward solve (M^T * rhs = rhs)
     while(k >= 0)
     {
-        if(pivot[k + stride] == 1)
+        if(pivot[k + gid] == 1)
         {
-            rhs[k + stride + m * bidy]
-                = rhs[k + stride + m * bidy] - mt[k + stride] * rhs[k + 1 + stride + m * bidy];
+            T mt_tmp = -mt[k + gid];
 
-            k -= 1;
+            if(COLS % 4 == 0)
+            {
+                rhs[k + gid + m_pad * (COLS * bidy + 0)]
+                    += mt_tmp * rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)];
+                rhs[k + gid + m_pad * (COLS * bidy + 1)]
+                    += mt_tmp * rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)];
+                rhs[k + gid + m_pad * (COLS * bidy + 2)]
+                    += mt_tmp * rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)];
+                rhs[k + gid + m_pad * (COLS * bidy + 3)]
+                    += mt_tmp * rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)];
+            }
+            else
+            {
+                rhs[k + gid + m_pad * (COLS * bidy + 0)]
+                    += mt_tmp * rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)];
+            }
+
+            k -= nblocks;
         }
         else
         {
-            rhs[k + stride + m * bidy]
-                = rhs[k + stride + m * bidy] - mt[k + stride] * rhs[k + 1 + stride + m * bidy];
-            rhs[k - 1 + stride + m * bidy] = rhs[k - 1 + stride + m * bidy]
-                                             - mt[k - 1 + stride] * rhs[k + 1 + stride + m * bidy];
+            T mt_tmp  = -mt[k + gid];
+            T mt_tmp1 = -mt[k - nblocks + gid];
 
-            k -= 2;
+            if(COLS % 4 == 0)
+            {
+                T tmp0 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)];
+                T tmp1 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 1)];
+                T tmp2 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 2)];
+                T tmp3 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 3)];
+
+                rhs[k + gid + m_pad * (COLS * bidy + 0)] += mt_tmp * tmp0;
+                rhs[k + gid + m_pad * (COLS * bidy + 1)] += mt_tmp * tmp1;
+                rhs[k + gid + m_pad * (COLS * bidy + 2)] += mt_tmp * tmp2;
+                rhs[k + gid + m_pad * (COLS * bidy + 3)] += mt_tmp * tmp3;
+
+                rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)] += mt_tmp1 * tmp0;
+                rhs[k - nblocks + gid + m_pad * (COLS * bidy + 1)] += mt_tmp1 * tmp1;
+                rhs[k - nblocks + gid + m_pad * (COLS * bidy + 2)] += mt_tmp1 * tmp2;
+                rhs[k - nblocks + gid + m_pad * (COLS * bidy + 3)] += mt_tmp1 * tmp3;
+            }
+            else
+            {
+                T tmp0 = rhs[k + nblocks + gid + m_pad * (COLS * bidy + 0)];
+
+                rhs[k + gid + m_pad * (COLS * bidy + 0)] += mt_tmp * tmp0;
+                rhs[k - nblocks + gid + m_pad * (COLS * bidy + 0)] += mt_tmp1 * tmp0;
+            }
+
+            k -= 2 * nblocks;
         }
     }
 }
 
-template <unsigned int BLOCKSIZE, typename T>
+template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
-    void gtsv_spike_block_level_kernel(rocsparse_int m,
+    void gtsv_spike_block_level_kernel(rocsparse_int m_pad,
                                        rocsparse_int n,
                                        rocsparse_int ldb,
-                                       rocsparse_int block_dim,
                                        T* __restrict__ rhs,
-                                       T* __restrict__ w,
-                                       T* __restrict__ v,
+                                       const T* __restrict__ w,
+                                       const T* __restrict__ v,
                                        T* __restrict__ w2,
                                        T* __restrict__ v2,
                                        T* __restrict__ rhs_scratch,
@@ -636,21 +583,21 @@ __launch_bounds__(BLOCKSIZE) __global__
     rocsparse_int bidy = hipBlockIdx_y;
     rocsparse_int gid  = tidx + BLOCKSIZE * bidx;
 
+    rocsparse_int nblocks = m_pad / BLOCKDIM;
+
     __shared__ T sw[2 * BLOCKSIZE];
     __shared__ T sv[2 * BLOCKSIZE];
     __shared__ T srhs[2 * BLOCKSIZE];
 
-    sw[tidx] = (gid * block_dim < m) ? w[gid * block_dim] : static_cast<T>(0);
-    sw[tidx + BLOCKSIZE]
-        = (gid * block_dim < m) ? w[gid * block_dim + block_dim - 1] : static_cast<T>(0);
+    sw[tidx]             = (gid < nblocks) ? w[gid] : static_cast<T>(0);
+    sw[tidx + BLOCKSIZE] = (gid < nblocks) ? w[gid + (BLOCKDIM - 1) * nblocks] : static_cast<T>(0);
 
-    sv[tidx] = (gid * block_dim < m) ? v[gid * block_dim] : static_cast<T>(0);
-    sv[tidx + BLOCKSIZE]
-        = (gid * block_dim < m) ? v[gid * block_dim + block_dim - 1] : static_cast<T>(0);
+    sv[tidx]             = (gid < nblocks) ? v[gid] : static_cast<T>(0);
+    sv[tidx + BLOCKSIZE] = (gid < nblocks) ? v[gid + (BLOCKDIM - 1) * nblocks] : static_cast<T>(0);
 
-    srhs[tidx] = (gid * block_dim < m) ? rhs[gid * block_dim + m * bidy] : static_cast<T>(0);
-    srhs[tidx + BLOCKSIZE] = (gid * block_dim < m) ? rhs[gid * block_dim + block_dim - 1 + m * bidy]
-                                                   : static_cast<T>(0);
+    srhs[tidx] = (gid < nblocks) ? rhs[gid + m_pad * bidy] : static_cast<T>(0);
+    srhs[tidx + BLOCKSIZE]
+        = (gid < nblocks) ? rhs[gid + (BLOCKDIM - 1) * nblocks + m_pad * bidy] : static_cast<T>(0);
 
     __syncthreads();
 
@@ -693,18 +640,18 @@ __launch_bounds__(BLOCKSIZE) __global__
         __syncthreads();
     }
 
-    if(gid * block_dim < m)
+    if(gid < nblocks)
     {
         if(bidy == 0)
         {
-            w2[gid * block_dim]                 = sw[tidx];
-            w2[gid * block_dim + block_dim - 1] = sw[tidx + BLOCKSIZE];
-            v2[gid * block_dim]                 = sv[tidx];
-            v2[gid * block_dim + block_dim - 1] = sv[tidx + BLOCKSIZE];
+            w2[gid]                            = sw[tidx];
+            w2[gid + (BLOCKDIM - 1) * nblocks] = sw[tidx + BLOCKSIZE];
+            v2[gid]                            = sv[tidx];
+            v2[gid + (BLOCKDIM - 1) * nblocks] = sv[tidx + BLOCKSIZE];
         }
 
-        rhs[gid * block_dim + m * bidy]                 = srhs[tidx];
-        rhs[gid * block_dim + block_dim - 1 + m * bidy] = srhs[tidx + BLOCKSIZE];
+        rhs[gid + m_pad * bidy]                            = srhs[tidx];
+        rhs[gid + (BLOCKDIM - 1) * nblocks + m_pad * bidy] = srhs[tidx + BLOCKSIZE];
     }
 
     if(tidx == 0)
@@ -725,10 +672,9 @@ __launch_bounds__(BLOCKSIZE) __global__
 
 template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
-    void gtsv_solve_spike_grid_level_kernel(rocsparse_int m,
+    void gtsv_solve_spike_grid_level_kernel(rocsparse_int m_pad,
                                             rocsparse_int n,
                                             rocsparse_int ldb,
-                                            rocsparse_int block_dim,
                                             T* __restrict__ rhs_scratch,
                                             const T* __restrict__ w_scratch,
                                             const T* __restrict__ v_scratch)
@@ -818,38 +764,36 @@ __launch_bounds__(BLOCKSIZE) __global__
     rhs_scratch[tidx + BLOCKSIZE + 2 * BLOCKSIZE * bidy] = srhs[tidx + BLOCKSIZE];
 }
 
-template <unsigned int BLOCKSIZE, typename T>
+template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
-    void gtsv_solve_spike_propagate_kernel(rocsparse_int m,
+    void gtsv_solve_spike_propagate_kernel(rocsparse_int m_pad,
                                            rocsparse_int n,
                                            rocsparse_int ldb,
-                                           rocsparse_int block_dim,
                                            T* __restrict__ rhs,
-                                           T* __restrict__ w,
-                                           T* __restrict__ v,
-                                           T* __restrict__ rhs_scratch)
+                                           const T* __restrict__ w,
+                                           const T* __restrict__ v,
+                                           const T* __restrict__ rhs_scratch)
 {
     rocsparse_int tidx = hipThreadIdx_x;
     rocsparse_int bidx = hipBlockIdx_x;
     rocsparse_int bidy = hipBlockIdx_y;
     rocsparse_int gid  = tidx + BLOCKSIZE * bidx;
 
+    rocsparse_int nblocks = m_pad / BLOCKDIM;
+
     __shared__ T sw[2 * BLOCKSIZE];
     __shared__ T sv[2 * BLOCKSIZE];
     __shared__ T srhs[2 * BLOCKSIZE + 2];
 
-    sw[tidx] = (gid * block_dim < m) ? w[gid * block_dim] : static_cast<T>(0);
-    sw[tidx + BLOCKSIZE]
-        = (gid * block_dim < m) ? w[gid * block_dim + block_dim - 1] : static_cast<T>(0);
+    sw[tidx]             = (gid < nblocks) ? w[gid] : static_cast<T>(0);
+    sw[tidx + BLOCKSIZE] = (gid < nblocks) ? w[gid + (BLOCKDIM - 1) * nblocks] : static_cast<T>(0);
 
-    sv[tidx] = (gid * block_dim < m) ? v[gid * block_dim] : static_cast<T>(0);
-    sv[tidx + BLOCKSIZE]
-        = (gid * block_dim < m) ? v[gid * block_dim + block_dim - 1] : static_cast<T>(0);
+    sv[tidx]             = (gid < nblocks) ? v[gid] : static_cast<T>(0);
+    sv[tidx + BLOCKSIZE] = (gid < nblocks) ? v[gid + (BLOCKDIM - 1) * nblocks] : static_cast<T>(0);
 
-    srhs[tidx + 1] = (gid * block_dim < m) ? rhs[gid * block_dim + block_dim - 1 + m * bidy]
-                                           : static_cast<T>(0);
-    srhs[tidx + 1 + BLOCKSIZE]
-        = (gid * block_dim < m) ? rhs[gid * block_dim + m * bidy] : static_cast<T>(0);
+    srhs[tidx + 1]
+        = (gid < nblocks) ? rhs[gid + (BLOCKDIM - 1) * nblocks + m_pad * bidy] : static_cast<T>(0);
+    srhs[tidx + 1 + BLOCKSIZE] = (gid < nblocks) ? rhs[gid + m_pad * bidy] : static_cast<T>(0);
 
     __syncthreads();
 
@@ -891,19 +835,18 @@ __launch_bounds__(BLOCKSIZE) __global__
         __syncthreads();
     }
 
-    if(gid * block_dim < m)
+    if(gid < nblocks)
     {
-        rhs[gid * block_dim + m * bidy]                 = srhs[tidx + 1 + BLOCKSIZE];
-        rhs[gid * block_dim + block_dim - 1 + m * bidy] = srhs[tidx + 1];
+        rhs[gid + m_pad * bidy]                            = srhs[tidx + 1 + BLOCKSIZE];
+        rhs[gid + (BLOCKDIM - 1) * nblocks + m_pad * bidy] = srhs[tidx + 1];
     }
 }
 
-template <unsigned int BLOCKSIZE, typename T>
+template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
 __launch_bounds__(BLOCKSIZE) __global__
-    void gtsv_spike_backward_substitution_kernel(rocsparse_int m,
+    void gtsv_spike_backward_substitution_kernel(rocsparse_int m_pad,
                                                  rocsparse_int n,
                                                  rocsparse_int ldb,
-                                                 rocsparse_int block_dim,
                                                  T* __restrict__ rhs,
                                                  const T* __restrict__ w,
                                                  const T* __restrict__ v)
@@ -913,21 +856,22 @@ __launch_bounds__(BLOCKSIZE) __global__
     rocsparse_int bidy = hipBlockIdx_y;
     rocsparse_int gid  = tidx + BLOCKSIZE * bidx;
 
-    if(gid * block_dim >= m)
+    rocsparse_int nblocks = m_pad / BLOCKDIM;
+
+    if(gid >= nblocks)
     {
         return;
     }
 
-    T tmp1 = (gid > 0) ? rhs[gid * block_dim - 1 + m * bidy] : static_cast<T>(0);
-    T tmp2 = (gid * block_dim + block_dim < m) ? rhs[gid * block_dim + block_dim + m * bidy]
-                                               : static_cast<T>(0);
+    T tmp1 = (gid > 0) ? rhs[gid - 1 + (BLOCKDIM - 1) * nblocks + m_pad * bidy] : static_cast<T>(0);
+    T tmp2 = (gid + BLOCKDIM < m_pad) ? rhs[gid + 1 + m_pad * bidy] : static_cast<T>(0);
 
-    for(rocsparse_int i = 1; i < block_dim - 1; i++)
+    for(rocsparse_int i = 1; i < BLOCKDIM - 1; i++)
     {
-        rhs[gid * block_dim + i + m * bidy]
-            = rhs[gid * block_dim + i + m * bidy] - w[gid * block_dim + i] * tmp1;
-        rhs[gid * block_dim + i + m * bidy]
-            = rhs[gid * block_dim + i + m * bidy] - v[gid * block_dim + i] * tmp2;
+        rhs[gid + i * nblocks + m_pad * bidy]
+            = rhs[gid + i * nblocks + m_pad * bidy] - w[gid + i * nblocks] * tmp1;
+        rhs[gid + i * nblocks + m_pad * bidy]
+            = rhs[gid + i * nblocks + m_pad * bidy] - v[gid + i * nblocks] * tmp2;
     }
 }
 
