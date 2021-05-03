@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Author: Nico Trost
+# Author: rocsparse-maintainer@amd.com
 
 #set -x #echo on
 
@@ -22,6 +22,8 @@ function display_help()
   echo "    [--static] build static library"
   echo "    [--sanitizer] build with address sanitizer"
   echo "    [-p|--profile] build with code coverage profiling enabled"
+  echo "    [--matrices-dir] existing client matrices directory"
+  echo "    [--matrices-dir-install] install client matrices directory"
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
@@ -250,6 +252,8 @@ install_prefix=rocsparse-install
 rocm_path=/opt/rocm
 build_relocatable=false
 build_sanitizer=false
+matrices_dir=
+matrices_dir_install=
 
 # #################################################
 # Parameter parsing
@@ -258,7 +262,7 @@ build_sanitizer=false
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,profile,sanitizer --options hicdgrpk -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,profile,sanitizer,matrices-dir:,matrices-dir-install: --options hicdgrpk -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -272,51 +276,89 @@ fi
 eval set -- "${GETOPT_PARSE}"
 
 while true; do
-  case "${1}" in
-    -h|--help)
-        display_help
-        exit 0
-        ;;
-    -i|--install)
-        install_package=true
-        shift ;;
-    -d|--dependencies)
-        install_dependencies=true
-        shift ;;
-    -c|--clients)
-        build_clients=true
-        shift ;;
-    -r|--relocatable)
-        build_relocatable=true
-        shift ;;
-    -g|--debug)
-        build_release=false
-        shift ;;
-    --hip-clang)
-        build_hip_clang=true
-        shift ;;
-    --static)
-        build_static=true
-        shift ;;
-    --sanitizer)
-        build_sanitizer=true
-        shift ;;
-    -k)
-        build_release=false
-        build_release_debug=true
-        shift ;;
-    -p|--profile)
-        build_coverage=true
-        shift ;;
-    --prefix)
-        install_prefix=${2}
-        shift 2 ;;
-    --) shift ; break ;;
-    *)  echo "Unexpected command line parameter received; aborting";
-        exit 1
-        ;;
-  esac
+    case "${1}" in
+	-h|--help)
+            display_help
+            exit 0
+            ;;
+	-i|--install)
+            install_package=true
+            shift ;;
+	-d|--dependencies)
+            install_dependencies=true
+            shift ;;
+	-c|--clients)
+            build_clients=true
+            shift ;;
+	-r|--relocatable)
+            build_relocatable=true
+            shift ;;
+	-g|--debug)
+            build_release=false
+            shift ;;
+	--hip-clang)
+            build_hip_clang=true
+            shift ;;
+	--static)
+            build_static=true
+            shift ;;
+	--sanitizer)
+            build_sanitizer=true
+            shift ;;
+	-k)
+            build_release=false
+            build_release_debug=true
+	    shift ;;
+	-p|--profile)
+            build_coverage=true
+            shift ;;
+	--matrices-dir)
+            matrices_dir=${2}
+	    if [[ "${matrices_dir}" == "" ]];then
+		echo "Missing argument from command line parameter --matrices-dir; aborting"
+		exit 1
+	    fi
+	    shift 2 ;;
+	--matrices-dir-install)
+            matrices_dir_install=${2}
+	    if [[ "${matrices_dir_install}" == "" ]];then
+		echo "Missing argument from command line parameter --matrices-dir-install; aborting"
+		exit 1
+	    fi
+            shift 2 ;;
+	--prefix)
+            install_prefix=${2}
+            shift 2 ;;
+	--) shift ; break ;;
+	*)  echo "Unexpected command line parameter received: '${1}'; aborting";
+            exit 1
+            ;;
+    esac
 done
+
+#
+# If matrices_dir_install has been set up then install matrices dir and exit.
+#
+if ! [[ "${matrices_dir_install}" == "" ]];then
+    cmake -DCMAKE_MATRICES_DIR=${matrices_dir_install} -P ./cmake/ClientMatrices.cmake
+    exit 0
+fi
+
+#
+# If matrices_dir has been set up then check if it exists and it contains expected files.
+# If it doesn't contain expected file, it will create them.
+#
+if ! [[ "${matrices_dir}" == "" ]];then
+    if ! [ -e ${matrices_dir} ];then
+	echo "Invalid dir from command line parameter --matrices-dir: ${matrices_dir}; aborting";
+	exit 1
+    fi
+
+    # Let's 'reinstall' to the specified location to check if all good
+    # Will be fast if everything already exists as expected.
+    # This is to prevent any empty directory.
+    cmake -DCMAKE_MATRICES_DIR=${matrices_dir} -P ./cmake/ClientMatrices.cmake
+fi
 
 build_dir=./build
 printf "\033[32mCreating project build directory in: \033[33m${build_dir}\033[0m\n"
@@ -397,7 +439,7 @@ pushd .
     cmake_common_options="${cmake_common_options} -DCMAKE_BUILD_TYPE=Release"
   elif [[ "${build_release_debug}" == true ]]; then
     mkdir -p ${build_dir}/release-debug/clients && cd ${build_dir}/release-debug
-    cmake_common_options="{cmake_common_options}  -DCMAKE_BUILD_TYPE=RelWithDebInfo"
+    cmake_common_options="${cmake_common_options}  -DCMAKE_BUILD_TYPE=RelWithDebInfo"
   else
     mkdir -p ${build_dir}/debug/clients && cd ${build_dir}/debug
     cmake_common_options="${cmake_common_options} -DCMAKE_BUILD_TYPE=Debug"
@@ -420,9 +462,15 @@ pushd .
 
   # clients
   if [[ "${build_clients}" == true ]]; then
-    cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_SAMPLES=ON -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON"
-  fi
+      cmake_client_options="${cmake_client_options} -DBUILD_CLIENTS_SAMPLES=ON -DBUILD_CLIENTS_TESTS=ON -DBUILD_CLIENTS_BENCHMARKS=ON"
 
+      #
+      # Add matrices_dir if exists.
+      #
+      if ! [[ "${matrices_dir}" == "" ]];then
+	  cmake_client_options="${cmake_client_options} -DCMAKE_MATRICES_DIR=${matrices_dir}"
+      fi
+  fi
 
   compiler="hcc"
   if [[ "${build_hip_clang}" == true ]]; then
