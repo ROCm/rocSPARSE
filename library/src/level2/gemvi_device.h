@@ -89,6 +89,10 @@ static __device__ void gemvi_device(I                    m,
 
     // clang-format off
     // Accumulate row sums (from different wavefronts)
+    if(WFSIZE == 32)
+    {
+        if(wid < 16) sdata[wid * WFSIZE + lid] += sdata[(wid + 16) * WFSIZE + lid]; __syncthreads();
+    }
     if(wid < 8) sdata[wid * WFSIZE + lid] += sdata[(wid + 8) * WFSIZE + lid]; __syncthreads();
     if(wid < 4) sdata[wid * WFSIZE + lid] += sdata[(wid + 4) * WFSIZE + lid]; __syncthreads();
     if(wid < 2) sdata[wid * WFSIZE + lid] += sdata[(wid + 2) * WFSIZE + lid]; __syncthreads();
