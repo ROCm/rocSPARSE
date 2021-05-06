@@ -234,7 +234,7 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/utility.cpp
   ../common/rocsparse_check.cpp
   ../common/rocsparse_parse_data.cpp
-  ../common/rocsparse_template_specialization.cpp
+  ../common/rocsparse_enum.cpp
   ../common/rocsparse_init.cpp
   ../common/rocsparse_host.cpp
 )

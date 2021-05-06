@@ -624,7 +624,7 @@ void host_prune_dense2csr_by_percentage(rocsparse_int               m,
                                         std::vector<rocsparse_int>& csr_row_ptr,
                                         std::vector<rocsparse_int>& csr_col_ind);
 
-template <rocsparse_direction DIRA, typename I, typename J, typename T>
+template <rocsparse_direction DIRA, typename T, typename I, typename J>
 void host_dense2csx(J                    m,
                     J                    n,
                     rocsparse_index_base base,
@@ -636,7 +636,7 @@ void host_dense2csx(J                    m,
                     I*                   csx_row_col_ptr,
                     J*                   csx_col_row_ind);
 
-template <rocsparse_direction DIRA, typename I, typename J, typename T>
+template <rocsparse_direction DIRA, typename T, typename I, typename J>
 void host_csx2dense(J                    m,
                     J                    n,
                     rocsparse_index_base base,

@@ -52,120 +52,72 @@ void testing_nnz_bad_arg(const Arguments& arg)
     //
     // Testing invalid handle.
     //
-    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz(nullptr,
-                                          dirA,
-                                          M,
-                                          N,
-                                          descrA,
-                                          (const T*)d_A,
-                                          LD,
-                                          d_nnzPerRowColumn,
-                                          d_nnzTotalDevHostPtr),
-                            rocsparse_status_invalid_handle);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_nnz<T>(
+            nullptr, dirA, M, N, descrA, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
+        rocsparse_status_invalid_handle);
 
     //
     // Testing invalid pointers.
     //
-    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz(handle,
-                                          dirA,
-                                          M,
-                                          N,
-                                          nullptr,
-                                          (const T*)d_A,
-                                          LD,
-                                          d_nnzPerRowColumn,
-                                          d_nnzTotalDevHostPtr),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz(handle,
-                                          dirA,
-                                          M,
-                                          N,
-                                          nullptr,
-                                          (const T*)d_A,
-                                          LD,
-                                          d_nnzPerRowColumn,
-                                          d_nnzTotalDevHostPtr),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz(handle,
-                                          dirA,
-                                          M,
-                                          N,
-                                          descrA,
-                                          (const T*)nullptr,
-                                          LD,
-                                          d_nnzPerRowColumn,
-                                          d_nnzTotalDevHostPtr),
-                            rocsparse_status_invalid_pointer);
-
     EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz(handle, dirA, M, N, descrA, (const T*)d_A, LD, nullptr, d_nnzTotalDevHostPtr),
+        rocsparse_nnz<T>(
+            handle, dirA, M, N, nullptr, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
         rocsparse_status_invalid_pointer);
 
     EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz(handle, dirA, M, N, descrA, (const T*)d_A, LD, d_nnzPerRowColumn, nullptr),
+        rocsparse_nnz<T>(
+            handle, dirA, M, N, nullptr, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
+        rocsparse_status_invalid_pointer);
+
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_nnz<T>(
+            handle, dirA, M, N, descrA, nullptr, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
+        rocsparse_status_invalid_pointer);
+
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_nnz<T>(handle, dirA, M, N, descrA, d_A, LD, nullptr, d_nnzTotalDevHostPtr),
+        rocsparse_status_invalid_pointer);
+
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_nnz<T>(handle, dirA, M, N, descrA, d_A, LD, d_nnzPerRowColumn, nullptr),
         rocsparse_status_invalid_pointer);
 
     //
     // Testing invalid direction
     //
-    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz(handle,
-                                          (rocsparse_direction)77,
-                                          -1,
-                                          -1,
-                                          descrA,
-                                          (const T*)nullptr,
-                                          -1,
-                                          nullptr,
-                                          nullptr),
-                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_nnz<T>(
+            handle, (rocsparse_direction)77, -1, -1, descrA, nullptr, -1, nullptr, nullptr),
+        rocsparse_status_invalid_value);
 
     //
     // Testing invalid size on M
     //
-    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz(handle,
-                                          dirA,
-                                          -1,
-                                          N,
-                                          descrA,
-                                          (const T*)d_A,
-                                          LD,
-                                          d_nnzPerRowColumn,
-                                          d_nnzTotalDevHostPtr),
-                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_nnz<T>(
+            handle, dirA, -1, N, descrA, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
+        rocsparse_status_invalid_size);
 
     //
     // Testing invalid size on N
     //
-    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz(handle,
-                                          dirA,
-                                          M,
-                                          -1,
-                                          descrA,
-                                          (const T*)d_A,
-                                          LD,
-                                          d_nnzPerRowColumn,
-                                          d_nnzTotalDevHostPtr),
-                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_nnz<T>(
+            handle, dirA, M, -1, descrA, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
+        rocsparse_status_invalid_size);
 
     //
     // Testing invalid size on LD
     //
     EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz(
-            handle, dirA, M, N, descrA, (const T*)d_A, 0, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
+        rocsparse_nnz<T>(
+            handle, dirA, M, N, descrA, d_A, 0, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
         rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz(handle,
-                                          dirA,
-                                          M,
-                                          N,
-                                          descrA,
-                                          (const T*)d_A,
-                                          M - 1,
-                                          d_nnzPerRowColumn,
-                                          d_nnzTotalDevHostPtr),
-                            rocsparse_status_invalid_size);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_nnz<T>(
+            handle, dirA, M, N, descrA, d_A, M - 1, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
+        rocsparse_status_invalid_size);
 }
 
 template <typename T>
@@ -189,7 +141,7 @@ void testing_nnz(const Arguments& arg)
                                                : rocsparse_status_invalid_size;
 
         EXPECT_ROCSPARSE_STATUS(
-            rocsparse_nnz(handle, dirA, M, N, descrA, (const T*)nullptr, LD, nullptr, nullptr),
+            rocsparse_nnz<T>(handle, dirA, M, N, descrA, nullptr, LD, nullptr, nullptr),
             expected_status);
 
         if(rocsparse_status_success == expected_status)
@@ -198,11 +150,11 @@ void testing_nnz(const Arguments& arg)
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
             EXPECT_ROCSPARSE_STATUS(
-                rocsparse_nnz(handle, dirA, M, N, descrA, (const T*)nullptr, LD, nullptr, nullptr),
+                rocsparse_nnz<T>(handle, dirA, M, N, descrA, nullptr, LD, nullptr, nullptr),
                 rocsparse_status_success);
 
             EXPECT_ROCSPARSE_STATUS(
-                rocsparse_nnz(handle, dirA, M, N, descrA, (const T*)nullptr, LD, nullptr, &h_nnz),
+                rocsparse_nnz<T>(handle, dirA, M, N, descrA, nullptr, LD, nullptr, &h_nnz),
                 rocsparse_status_success);
 
             EXPECT_ROCSPARSE_STATUS(0 == h_nnz ? rocsparse_status_success
@@ -217,19 +169,13 @@ void testing_nnz(const Arguments& arg)
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
             EXPECT_ROCSPARSE_STATUS(
-                rocsparse_nnz(handle, dirA, M, N, descrA, (const T*)nullptr, LD, nullptr, nullptr),
+                rocsparse_nnz<T>(handle, dirA, M, N, descrA, nullptr, LD, nullptr, nullptr),
                 rocsparse_status_success);
 
-            EXPECT_ROCSPARSE_STATUS(rocsparse_nnz(handle,
-                                                  dirA,
-                                                  M,
-                                                  N,
-                                                  descrA,
-                                                  (const T*)nullptr,
-                                                  LD,
-                                                  nullptr,
-                                                  (rocsparse_int*)d_nnz),
-                                    rocsparse_status_success);
+            EXPECT_ROCSPARSE_STATUS(
+                rocsparse_nnz<T>(
+                    handle, dirA, M, N, descrA, nullptr, LD, nullptr, (rocsparse_int*)d_nnz),
+                rocsparse_status_success);
 
             CHECK_HIP_ERROR(hipMemcpy(
                 &h_nnz, (rocsparse_int*)d_nnz, sizeof(rocsparse_int) * 1, hipMemcpyDeviceToHost));
@@ -303,21 +249,14 @@ void testing_nnz(const Arguments& arg)
         //
         // Compute the reference host first.
         //
-        host_nnz<T>(dirA, M, N, (const T*)h_A, LD, h_nnzPerRowColumn, h_nnzTotalDevHostPtr);
+        host_nnz<T>(dirA, M, N, h_A, LD, h_nnzPerRowColumn, h_nnzTotalDevHostPtr);
 
         //
         // Pointer mode device for nnz and call.
         //
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_nnz(handle,
-                                            dirA,
-                                            M,
-                                            N,
-                                            descrA,
-                                            (const T*)d_A,
-                                            LD,
-                                            d_nnzPerRowColumn,
-                                            d_nnzTotalDevHostPtr));
+        CHECK_ROCSPARSE_ERROR(rocsparse_nnz<T>(
+            handle, dirA, M, N, descrA, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr));
 
         //
         // Transfer.
@@ -342,8 +281,8 @@ void testing_nnz(const Arguments& arg)
         //
         rocsparse_int dh_nnz;
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_nnz(
-            handle, dirA, M, N, descrA, (const T*)d_A, LD, d_nnzPerRowColumn, &dh_nnz));
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_nnz<T>(handle, dirA, M, N, descrA, d_A, LD, d_nnzPerRowColumn, &dh_nnz));
 
         //
         // Transfer.
@@ -372,8 +311,8 @@ void testing_nnz(const Arguments& arg)
         rocsparse_int h_nnz;
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_nnz(
-                handle, dirA, M, N, descrA, (const T*)d_A, LD, d_nnzPerRowColumn, &h_nnz));
+            CHECK_ROCSPARSE_ERROR(
+                rocsparse_nnz<T>(handle, dirA, M, N, descrA, d_A, LD, d_nnzPerRowColumn, &h_nnz));
         }
 
         double gpu_time_used = get_time_us();
@@ -383,8 +322,8 @@ void testing_nnz(const Arguments& arg)
             //
             for(int iter = 0; iter < number_hot_calls; ++iter)
             {
-                CHECK_ROCSPARSE_ERROR(rocsparse_nnz(
-                    handle, dirA, M, N, descrA, (const T*)d_A, LD, d_nnzPerRowColumn, &h_nnz));
+                CHECK_ROCSPARSE_ERROR(rocsparse_nnz<T>(
+                    handle, dirA, M, N, descrA, d_A, LD, d_nnzPerRowColumn, &h_nnz));
             }
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

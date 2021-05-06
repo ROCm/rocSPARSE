@@ -4299,7 +4299,7 @@ void host_prune_dense2csr_by_percentage(rocsparse_int               m,
     host_prune_dense2csr<T>(m, n, A, lda, base, threshold, nnz, csr_val, csr_row_ptr, csr_col_ind);
 }
 
-template <rocsparse_direction DIRA, typename I, typename J, typename T>
+template <rocsparse_direction DIRA, typename T, typename I, typename J>
 void host_dense2csx(J                    m,
                     J                    n,
                     rocsparse_index_base base,
@@ -4384,7 +4384,7 @@ void host_dense2csx(J                    m,
     }
 }
 
-template <rocsparse_direction DIRA, typename I, typename J, typename T>
+template <rocsparse_direction DIRA, typename T, typename I, typename J>
 void host_csx2dense(J                    m,
                     J                    n,
                     rocsparse_index_base base,
@@ -7384,7 +7384,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                     rocsparse_index_base      base_D);
 
 #define INSTANTIATE4(DIR, ITYPE, JTYPE, TTYPE)                                                       \
-    template void host_dense2csx<DIR, ITYPE, JTYPE, TTYPE>(JTYPE                m,                   \
+    template void host_dense2csx<DIR, TTYPE, ITYPE, JTYPE>(JTYPE                m,                   \
                                                            JTYPE                n,                   \
                                                            rocsparse_index_base base,                \
                                                            const TTYPE*         A,                   \
@@ -7394,7 +7394,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                            TTYPE*               csx_val,             \
                                                            ITYPE*               csx_row_col_ptr,     \
                                                            JTYPE*               csx_col_row_ind);                  \
-    template void host_csx2dense<DIR, ITYPE, JTYPE, TTYPE>(JTYPE                m,                   \
+    template void host_csx2dense<DIR, TTYPE, ITYPE, JTYPE>(JTYPE                m,                   \
                                                            JTYPE                n,                   \
                                                            rocsparse_index_base base,                \
                                                            rocsparse_order      order,               \
