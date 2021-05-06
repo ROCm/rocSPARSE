@@ -50,115 +50,115 @@ void testing_dense2coo_bad_arg(const Arguments& arg)
 
     // Testing invalid handle.
     EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dense2coo(
+        rocsparse_dense2coo<T>(
             nullptr, 0, 0, nullptr, (const T*)nullptr, 0, nullptr, (T*)nullptr, nullptr, nullptr),
         rocsparse_status_invalid_handle);
 
     // Testing invalid pointers.
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo(handle,
-                                                M,
-                                                N,
-                                                nullptr,
-                                                (const T*)d_dense_val,
-                                                LD,
-                                                d_nnz_per_row_columns,
-                                                (T*)d_coo_val,
-                                                d_coo_row_ind,
-                                                d_coo_col_ind),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
+                                                   M,
+                                                   N,
+                                                   nullptr,
+                                                   d_dense_val,
+                                                   LD,
+                                                   d_nnz_per_row_columns,
+                                                   (T*)d_coo_val,
+                                                   d_coo_row_ind,
+                                                   d_coo_col_ind),
                             rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo(handle,
-                                                M,
-                                                N,
-                                                descr,
-                                                (const T*)nullptr,
-                                                LD,
-                                                d_nnz_per_row_columns,
-                                                (T*)d_coo_val,
-                                                d_coo_row_ind,
-                                                d_coo_col_ind),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
+                                                   M,
+                                                   N,
+                                                   descr,
+                                                   nullptr,
+                                                   LD,
+                                                   d_nnz_per_row_columns,
+                                                   (T*)d_coo_val,
+                                                   d_coo_row_ind,
+                                                   d_coo_col_ind),
                             rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo(handle,
-                                                M,
-                                                N,
-                                                descr,
-                                                (const T*)d_dense_val,
-                                                LD,
-                                                nullptr,
-                                                (T*)d_coo_val,
-                                                d_coo_row_ind,
-                                                d_coo_col_ind),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
+                                                   M,
+                                                   N,
+                                                   descr,
+                                                   d_dense_val,
+                                                   LD,
+                                                   nullptr,
+                                                   (T*)d_coo_val,
+                                                   d_coo_row_ind,
+                                                   d_coo_col_ind),
                             rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo(handle,
-                                                M,
-                                                N,
-                                                descr,
-                                                (const T*)d_dense_val,
-                                                LD,
-                                                d_nnz_per_row_columns,
-                                                (T*)nullptr,
-                                                d_coo_row_ind,
-                                                d_coo_col_ind),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
+                                                   M,
+                                                   N,
+                                                   descr,
+                                                   d_dense_val,
+                                                   LD,
+                                                   d_nnz_per_row_columns,
+                                                   (T*)nullptr,
+                                                   d_coo_row_ind,
+                                                   d_coo_col_ind),
                             rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo(handle,
-                                                M,
-                                                N,
-                                                descr,
-                                                (const T*)d_dense_val,
-                                                LD,
-                                                d_nnz_per_row_columns,
-                                                (T*)d_coo_val,
-                                                nullptr,
-                                                d_coo_col_ind),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
+                                                   M,
+                                                   N,
+                                                   descr,
+                                                   d_dense_val,
+                                                   LD,
+                                                   d_nnz_per_row_columns,
+                                                   (T*)d_coo_val,
+                                                   nullptr,
+                                                   d_coo_col_ind),
                             rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo(handle,
-                                                M,
-                                                N,
-                                                descr,
-                                                (const T*)d_dense_val,
-                                                LD,
-                                                d_nnz_per_row_columns,
-                                                (T*)d_coo_val,
-                                                d_coo_row_ind,
-                                                nullptr),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
+                                                   M,
+                                                   N,
+                                                   descr,
+                                                   d_dense_val,
+                                                   LD,
+                                                   d_nnz_per_row_columns,
+                                                   (T*)d_coo_val,
+                                                   d_coo_row_ind,
+                                                   nullptr),
                             rocsparse_status_invalid_pointer);
 
     // Testing invalid size on M
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo(handle,
-                                                -1,
-                                                N,
-                                                descr,
-                                                (const T*)d_dense_val,
-                                                LD,
-                                                d_nnz_per_row_columns,
-                                                (T*)d_coo_val,
-                                                d_coo_row_ind,
-                                                d_coo_col_ind),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
+                                                   -1,
+                                                   N,
+                                                   descr,
+                                                   d_dense_val,
+                                                   LD,
+                                                   d_nnz_per_row_columns,
+                                                   (T*)d_coo_val,
+                                                   d_coo_row_ind,
+                                                   d_coo_col_ind),
                             rocsparse_status_invalid_size);
 
     // Testing invalid size on N
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo(handle,
-                                                M,
-                                                -1,
-                                                descr,
-                                                (const T*)d_dense_val,
-                                                LD,
-                                                d_nnz_per_row_columns,
-                                                (T*)d_coo_val,
-                                                d_coo_row_ind,
-                                                d_coo_col_ind),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
+                                                   M,
+                                                   -1,
+                                                   descr,
+                                                   d_dense_val,
+                                                   LD,
+                                                   d_nnz_per_row_columns,
+                                                   (T*)d_coo_val,
+                                                   d_coo_row_ind,
+                                                   d_coo_col_ind),
                             rocsparse_status_invalid_size);
 
     // Testing invalid size on LD
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo(handle,
-                                                M,
-                                                N,
-                                                descr,
-                                                (const T*)d_dense_val,
-                                                M - 1,
-                                                d_nnz_per_row_columns,
-                                                (T*)d_coo_val,
-                                                d_coo_row_ind,
-                                                d_coo_col_ind),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
+                                                   M,
+                                                   N,
+                                                   descr,
+                                                   d_dense_val,
+                                                   M - 1,
+                                                   d_nnz_per_row_columns,
+                                                   (T*)d_coo_val,
+                                                   d_coo_row_ind,
+                                                   d_coo_col_ind),
                             rocsparse_status_invalid_size);
 }
 
@@ -183,7 +183,7 @@ void testing_dense2coo(const Arguments& arg)
                                                : rocsparse_status_invalid_size;
 
         EXPECT_ROCSPARSE_STATUS(
-            rocsparse_dense2coo(
+            rocsparse_dense2coo<T>(
                 handle, M, N, descr, (const T*)nullptr, LD, nullptr, (T*)nullptr, nullptr, nullptr),
             expected_status);
         return;
@@ -226,15 +226,15 @@ void testing_dense2coo(const Arguments& arg)
 
     rocsparse_int nnz;
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-    CHECK_ROCSPARSE_ERROR(rocsparse_nnz(handle,
-                                        rocsparse_direction_row,
-                                        M,
-                                        N,
-                                        descr,
-                                        (const T*)d_dense_val,
-                                        LD,
-                                        d_nnz_per_row,
-                                        &nnz));
+    CHECK_ROCSPARSE_ERROR(rocsparse_nnz<T>(handle,
+                                           rocsparse_direction_row,
+                                           M,
+                                           N,
+                                           descr,
+                                           (const T*)d_dense_val,
+                                           LD,
+                                           d_nnz_per_row,
+                                           &nnz));
 
     // Transfer.
     CHECK_HIP_ERROR(
@@ -251,16 +251,16 @@ void testing_dense2coo(const Arguments& arg)
 
     if(arg.unit_check)
     {
-        CHECK_ROCSPARSE_ERROR(rocsparse_dense2coo(handle,
-                                                  M,
-                                                  N,
-                                                  descr,
-                                                  (const T*)d_dense_val,
-                                                  LD,
-                                                  d_nnz_per_row,
-                                                  (T*)d_coo_val,
-                                                  (rocsparse_int*)d_coo_row_ind,
-                                                  (rocsparse_int*)d_coo_col_ind));
+        CHECK_ROCSPARSE_ERROR(rocsparse_dense2coo<T>(handle,
+                                                     M,
+                                                     N,
+                                                     descr,
+                                                     d_dense_val,
+                                                     LD,
+                                                     d_nnz_per_row,
+                                                     (T*)d_coo_val,
+                                                     (rocsparse_int*)d_coo_row_ind,
+                                                     (rocsparse_int*)d_coo_col_ind));
 
         host_vector<rocsparse_int> gpu_coo_row_ind(nnz);
         host_vector<T>             gpu_coo_val(nnz);
@@ -313,16 +313,16 @@ void testing_dense2coo(const Arguments& arg)
         // Warm-up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_dense2coo(handle,
-                                                      M,
-                                                      N,
-                                                      descr,
-                                                      (const T*)d_dense_val,
-                                                      LD,
-                                                      d_nnz_per_row,
-                                                      (T*)d_coo_val,
-                                                      d_coo_row_ind,
-                                                      d_coo_col_ind));
+            CHECK_ROCSPARSE_ERROR(rocsparse_dense2coo<T>(handle,
+                                                         M,
+                                                         N,
+                                                         descr,
+                                                         d_dense_val,
+                                                         LD,
+                                                         d_nnz_per_row,
+                                                         (T*)d_coo_val,
+                                                         d_coo_row_ind,
+                                                         d_coo_col_ind));
         }
 
         double gpu_time_used = get_time_us();
@@ -330,16 +330,16 @@ void testing_dense2coo(const Arguments& arg)
             // Performance run
             for(int iter = 0; iter < number_hot_calls; ++iter)
             {
-                CHECK_ROCSPARSE_ERROR(rocsparse_dense2coo(handle,
-                                                          M,
-                                                          N,
-                                                          descr,
-                                                          (const T*)d_dense_val,
-                                                          LD,
-                                                          d_nnz_per_row,
-                                                          (T*)d_coo_val,
-                                                          d_coo_row_ind,
-                                                          d_coo_col_ind));
+                CHECK_ROCSPARSE_ERROR(rocsparse_dense2coo<T>(handle,
+                                                             M,
+                                                             N,
+                                                             descr,
+                                                             d_dense_val,
+                                                             LD,
+                                                             d_nnz_per_row,
+                                                             d_coo_val,
+                                                             d_coo_row_ind,
+                                                             d_coo_col_ind));
             }
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;

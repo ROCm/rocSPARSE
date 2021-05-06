@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,53 +23,30 @@
  * ************************************************************************ */
 
 #pragma once
-#ifndef ROCSPARSE_CHECK_HPP
-#define ROCSPARSE_CHECK_HPP
+#ifndef ROCSPARSE_TRAITS_HPP
+#define ROCSPARSE_TRAITS_HPP
 
-#include <cassert>
-
-#include "rocsparse_math.hpp"
-#include "rocsparse_traits.hpp"
+#include <rocsparse-complex-types.h>
 
 template <typename T>
-struct default_tolerance;
-
-template <>
-struct default_tolerance<float>
+struct floating_traits
 {
-    static constexpr float value = 1.0e-3f;
+    using data_t = T;
 };
 
 template <>
-struct default_tolerance<double>
+struct floating_traits<rocsparse_float_complex>
 {
-    static constexpr double value = 1.0e-10;
+    using data_t = float;
 };
 
 template <>
-struct default_tolerance<rocsparse_float_complex>
+struct floating_traits<rocsparse_double_complex>
 {
-    static constexpr float value = default_tolerance<float>::value;
-};
-
-template <>
-struct default_tolerance<rocsparse_double_complex>
-{
-    static constexpr double value = default_tolerance<double>::value;
+    using data_t = double;
 };
 
 template <typename T>
-void unit_check_general(int64_t M, int64_t N, int64_t lda, const T* hCPU, const T* hGPU);
+using floating_data_t = typename floating_traits<T>::data_t;
 
-template <typename T>
-void unit_check(const T this_, const T that_);
-
-template <typename T>
-void near_check_general(rocsparse_int      M,
-                        rocsparse_int      N,
-                        rocsparse_int      lda,
-                        const T*           hCPU,
-                        const T*           hGPU,
-                        floating_data_t<T> tol = default_tolerance<T>::value);
-
-#endif // ROCSPARSE_CHECK_HPP
+#endif // ROCSPARSE_TRAITS_HPP
