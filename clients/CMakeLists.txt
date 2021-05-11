@@ -118,7 +118,7 @@ add_custom_target(rocsparse-common DEPENDS "${ROCSPARSE_COMMON}" "${ROCSPARSE_TE
 
 if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
         install(
-                DIRECTORY "${CMAKE_SOURCE_DIR}/build/release/clients/staging/"
+                DIRECTORY "${PROJECT_BINARY_DIR}/staging/"
                 DESTINATION "rocsparse/bin/"
                 COMPONENT "clients")
 endif()
