@@ -3380,7 +3380,7 @@ rocsparse_status rocsparse_zgebsrmm(rocsparse_handle                handle,
                                     const rocsparse_int*            bsr_row_ptr,
                                     const rocsparse_int*            bsr_col_ind,
                                     rocsparse_int                   row_block_dim,
-                                    rocsparse_int                   colblock_dim,
+                                    rocsparse_int                   col_block_dim,
                                     const rocsparse_double_complex* B,
                                     rocsparse_int                   ldb,
                                     const rocsparse_double_complex* beta,
@@ -8458,17 +8458,17 @@ rocsparse_status
 *  @param[in]
 *  m           size of the tri-diagonal linear system (must be >= 2).
 *  @param[in]
-*  n           number of columns in the dense matrix B.
-*  @param[in]
 *  dl          lower diagonal of tri-diagonal system. First entry must be zero.
 *  @param[in]
 *  d           main diagonal of tri-diagonal system.
 *  @param[in]
 *  du          upper diagonal of tri-diagonal system. Last entry must be zero.
 *  @param[inout]
-*  B           Dense matrix of size ( \p ldb, \p n ).
+*  x           Dense array of righthand-sides where the ith righthand-side starts at \p x+batch_stride*i.
 *  @param[in]
-*  ldb         Leading dimension of B. Must satisfy \p ldb >= max(1, m).
+*  batch_count The number of systems to solve.
+*  @param[in]
+*  batch_stride The number of elements that separate each system. Must satisfy \p batch_stride >= m.
 *  @param[in]
 *  temp_buffer temporary storage buffer allocated by the user.
 *
@@ -14081,7 +14081,7 @@ rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
 *  handle       handle to the rocsparse library context queue.
 *  @param[in]
 *  trans        matrix operation type.
-*  @paran[in]
+*  @param[in]
 *  alpha        scalar \f$\alpha\f$.
 *  @param[in]
 *  mat          matrix descriptor.
@@ -14188,7 +14188,7 @@ rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
 *  trans_A      matrix operation type.
 *  @param[in]
 *  trans_B      matrix operation type.
-*  @paran[in]
+*  @param[in]
 *  alpha        scalar \f$\alpha\f$.
 *  @param[in]
 *  mat_A        matrix descriptor.
@@ -14456,6 +14456,8 @@ rocsparse_status rocsparse_sddmm(rocsparse_handle            handle,
 *  C            sparse matrix \f$C\f$ descriptor.
 *  @param[in]
 *  compute_type floating point precision for the SDDMM computation.
+*  @param[in]
+*  alg specification of the algorithm to use.
 *  @param[out]
 *  buffer_size  number of bytes of the temporary storage buffer.
 *
@@ -14494,7 +14496,7 @@ rocsparse_status rocsparse_sddmm_buffer_size(rocsparse_handle            handle,
 *  @param[in]
 *  opB      dense matrix \f$B\f$ operation type.
 *  @param[in]
-v*  alpha        scalar \f$\alpha\f$.
+*  alpha        scalar \f$\alpha\f$.
 *  @param[in]
 *  A            dense matrix \f$A\f$ descriptor.
 *  @param[in]
@@ -14505,6 +14507,8 @@ v*  alpha        scalar \f$\alpha\f$.
 *  C            sparse matrix \f$C\f$ descriptor.
 *  @param[in]
 *  compute_type floating point precision for the SDDMM computation.
+*  @param[in]
+*  alg specification of the algorithm to use.
 *  @param[in]
 *  temp_buffer  temporary storage buffer allocated by the user.
 *  The size must be greater or equal to the size obtained with \ref rocsparse_sddmm_buffer_size.
