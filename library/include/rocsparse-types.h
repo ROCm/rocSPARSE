@@ -97,6 +97,8 @@ typedef struct _rocsparse_spmat_descr* rocsparse_spmat_descr;
 typedef struct _rocsparse_dnvec_descr* rocsparse_dnvec_descr;
 typedef struct _rocsparse_dnmat_descr* rocsparse_dnmat_descr;
 
+typedef struct _rocsparse_color_info* rocsparse_color_info;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

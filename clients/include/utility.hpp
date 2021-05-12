@@ -135,6 +135,40 @@ public:
 };
 
 /* ==================================================================================== */
+/*! \brief  local color info which is automatically created and destroyed  */
+class rocsparse_local_color_info
+{
+    rocsparse_color_info info{};
+
+public:
+    rocsparse_local_color_info()
+    {
+        rocsparse_create_color_info(&this->info);
+    }
+    ~rocsparse_local_color_info()
+    {
+        rocsparse_destroy_color_info(this->info);
+    }
+
+    // Sometimes useful to reset local info
+    void reset()
+    {
+        rocsparse_destroy_color_info(this->info);
+        rocsparse_create_color_info(&this->info);
+    }
+
+    // Allow rocsparse_local_color_info to be used anywhere rocsparse_color_info is expected
+    operator rocsparse_color_info&()
+    {
+        return this->info;
+    }
+    operator const rocsparse_color_info&() const
+    {
+        return this->info;
+    }
+};
+
+/* ==================================================================================== */
 /*! \brief  hyb matrix structure helper to access data for tests  */
 struct test_hyb
 {

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -467,6 +467,39 @@ rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info);
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info);
+
+/*! \ingroup aux_module
+ *  \brief Create a color info structure
+ *
+ *  \details
+ *  \p rocsparse_create_color_info creates a structure that holds the color info data
+ *  that is gathered during the analysis routines available. It should be destroyed
+ *  at the end using rocsparse_destroy_color_info().
+ *
+ *  @param[inout]
+ *  info    the pointer to the info structure.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p info pointer is invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_color_info(rocsparse_color_info* info);
+
+/*! \ingroup aux_module
+ *  \brief Destroy a color info structure
+ *
+ *  \details
+ *  \p rocsparse_destroy_color_info destroys a color info structure.
+ *
+ *  @param[in]
+ *  info    the info structure.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p info pointer is invalid.
+ *  \retval rocsparse_status_internal_error an internal error occurred.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_destroy_color_info(rocsparse_color_info info);
 
 // Generic API
 

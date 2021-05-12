@@ -111,6 +111,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spgemm_csr.cpp
 ../testings/testing_gemvi.cpp
 ../testings/testing_sddmm.cpp
+../testings/testing_csrcolor.cpp
 )
 
 add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})

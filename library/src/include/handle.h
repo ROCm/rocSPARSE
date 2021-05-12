@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -175,6 +175,17 @@ struct _rocsparse_mat_info
     int         use_double_prec_tol = 0;
     const void* boost_tol           = nullptr;
     const void* boost_val           = nullptr;
+};
+
+/********************************************************************************
+ * \brief rocsparse_color_info is a structure holding the color info data that is
+ * gathered during the analysis routines. It must be initialized by calling
+ * rocsparse_create_color_info() and the returned info structure must be passed
+ * to all subsequent function calls that require additional information. It
+ * should be destroyed at the end using rocsparse_destroy_color_info().
+ *******************************************************************************/
+struct _rocsparse_color_info
+{
 };
 
 /********************************************************************************

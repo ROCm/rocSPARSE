@@ -20,6 +20,7 @@ rocSPARSE is a library that contains basic linear algebra subroutines for sparse
 * :ref:`rocsparse_extra_functions_` describe operations that manipulate sparse matrices.
 * :ref:`rocsparse_precond_functions_` describe manipulations on a matrix in sparse format to obtain a preconditioner.
 * :ref:`rocsparse_conversion_functions_` describe operations on a matrix in sparse format to obtain a different matrix format.
+* :ref:`rocsparse_reordering_functions_` describe operations on a matrix in sparse format to obtain a reordering.
 
 The code is open and hosted here: https://github.com/ROCmSoftwarePlatform/rocSPARSE
 
@@ -967,6 +968,15 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xprune_csr2csr_by_percentage() <rocsparse_sprune_csr2csr_by_percentage>`                             x      x
 ========================================================================================================================= ====== ====== ============== ==============
 
+Reordering Functions
+------------------------
+
+======================================================= ====== ====== ============== ==============
+Function name                                           single double single complex double complex
+======================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xcsrcolor() <rocsparse_scsrcolor>` x      x      x              x
+======================================================= ====== ====== ============== ==============
+
 Sparse Generic Functions
 ------------------------
 
@@ -983,6 +993,7 @@ Function name                   single double single complex double complex
 :cpp:func:`rocsparse_spgemm()`  x      x      x              x
 :cpp:func:`rocsparse_sddmm()`   x      x      x              x
 =============================== ====== ====== ============== ==============
+
 
 Storage schemes and indexing base
 ---------------------------------
@@ -2425,6 +2436,28 @@ rocsparse_prune_csr2csr_by_percentage()
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_by_percentage
 
+
+.. _rocsparse_reordering_functions_:
+
+Reordering Functions
+========================
+
+This module holds all sparse reordering routines.
+
+The sparse reordering routines describe algorithm for reordering sparse matrices.
+
+rocsparse_csrcolor()
+-----------------
+
+.. doxygenfunction:: rocsparse_scsrcolor
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrcolor
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrcolor
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrcolor
+
+
 Sparse Generic Functions
 ========================
 
@@ -2476,4 +2509,3 @@ rocsparse_sddmm()
 ----------------
 
 .. doxygenfunction:: rocsparse_sddmm
-

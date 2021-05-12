@@ -1365,4 +1365,25 @@ REAL_TEMPLATE(prune_csr2csr_by_percentage,
               rocsparse_mat_info        info,
               void*                     buffer);
 
+/*
+ * ===========================================================================
+ *    reordering SPARSE
+ * ===========================================================================
+ */
+
+// csrcolor
+REAL_COMPLEX_TEMPLATE(csrcolor,
+                      rocsparse_handle          handle,
+                      rocsparse_int             m,
+                      rocsparse_int             nnz,
+                      const rocsparse_mat_descr descr,
+                      const T*                  csr_val,
+                      const rocsparse_int*      csr_row_ptr,
+                      const rocsparse_int*      csr_col_ind,
+                      const T*                  fraction_to_color,
+                      rocsparse_int*            ncolors,
+                      rocsparse_int*            coloring,
+                      rocsparse_int*            reordering,
+                      rocsparse_mat_info        info);
+
 #endif // ROCSPARSE_HPP

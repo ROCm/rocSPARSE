@@ -665,6 +665,56 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
 }
 
 /********************************************************************************
+ * \brief rocsparse_color_info is a structure holding the color info data that is
+ * gathered during the analysis routines. It must be initialized by calling
+ * rocsparse_create_color_info() and the returned info structure must be passed
+ * to all subsequent function calls that require additional information. It
+ * should be destroyed at the end using rocsparse_destroy_color_info().
+ *******************************************************************************/
+rocsparse_status rocsparse_create_color_info(rocsparse_color_info* info)
+{
+    if(info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+    else
+    {
+        *info = nullptr;
+        // Allocate
+        try
+        {
+            *info = new _rocsparse_color_info;
+        }
+        catch(const rocsparse_status& status)
+        {
+            return status;
+        }
+        return rocsparse_status_success;
+    }
+}
+
+/********************************************************************************
+ * \brief Destroy color info.
+ *******************************************************************************/
+rocsparse_status rocsparse_destroy_color_info(rocsparse_color_info info)
+{
+    if(info == nullptr)
+    {
+        return rocsparse_status_success;
+    }
+    // Destruct
+    try
+    {
+        delete info;
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
  * \brief rocsparse_create_spvec_descr creates a descriptor holding the sparse
  * vector data, sizes and properties. It must be called prior to all subsequent
  * library function calls that involve sparse vectors. It should be destroyed at
