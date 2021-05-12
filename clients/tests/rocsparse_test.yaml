@@ -106,3 +106,4 @@ include: test_dense_to_sparse_csc.yaml
 include: test_spgemm_csr.yaml
 include: test_gemvi.yaml
 include: test_sddmm.yaml
+include: test_csrcolor.yaml

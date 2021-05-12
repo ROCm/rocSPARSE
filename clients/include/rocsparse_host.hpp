@@ -39,6 +39,7 @@
 template <typename T, typename I, typename J>
 struct rocsparse_host
 {
+
     static void csrddmm(rocsparse_operation  trans_A,
                         rocsparse_operation  trans_B,
                         rocsparse_order      order_A,

@@ -107,6 +107,9 @@
 #include "testing_sparse_to_dense_csc.hpp"
 #include "testing_sparse_to_dense_csr.hpp"
 
+// Reordering
+#include "testing_csrcolor.hpp"
+
 #include <iostream>
 #include <rocsparse.h>
 #include <unordered_set>
@@ -1567,6 +1570,17 @@ int main(int argc, char* argv[])
             else if(indextype == 'd')
                 testing_sparse_to_dense_csc<int64_t, int64_t, rocsparse_double_complex>(arg);
         }
+    }
+    else if(function == "csrcolor")
+    {
+        if(precision == 's')
+            testing_csrcolor<float>(arg);
+        else if(precision == 'd')
+            testing_csrcolor<double>(arg);
+        else if(precision == 'c')
+            testing_csrcolor<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_csrcolor<rocsparse_double_complex>(arg);
     }
     else if(function == "csrsort")
     {
