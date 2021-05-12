@@ -279,15 +279,14 @@ static inline void ComputeRowBlocks(unsigned long long* rowBlocks,
     if(allocate_row_blocks)
     {
         size_t dist = std::distance(rowBlocksBase, rowBlocks);
-        assert((2 * dist) <= rowBlockSize);
+
+        assert((dist) <= rowBlockSize);
         // Update the size of rowBlocks to reflect the actual amount of memory used
-        // We're multiplying the size by two because the extended precision form of
-        // CSR-Adaptive requires more space for the final global reduction.
-        rowBlockSize = 2 * dist;
+        rowBlockSize = dist;
     }
     else
     {
-        rowBlockSize = 2 * total_row_blocks;
+        rowBlockSize = total_row_blocks;
     }
 }
 
@@ -746,7 +745,7 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
     // Run different csrmv kernels
     if(trans == rocsparse_operation_none)
     {
-        dim3 csrmvn_blocks((info->size / 2) - 1);
+        dim3 csrmvn_blocks((info->size) - 1);
         dim3 csrmvn_threads(WG_SIZE);
         hipLaunchKernelGGL((csrmvn_adaptive_kernel),
                            csrmvn_blocks,
