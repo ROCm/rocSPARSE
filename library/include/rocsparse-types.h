@@ -415,7 +415,7 @@ typedef enum rocsparse_sparse_to_dense_alg_
  *  \brief List of dense to sparse algorithms.
  *
  *  \details
- *  This is a list of supported \ref rocsparse_dense_tosparse_alg types that are used to perform
+ *  This is a list of supported \ref rocsparse_dense_to_sparse_alg types that are used to perform
  *  dense to sparse conversion.
  */
 typedef enum rocsparse_dense_to_sparse_alg_

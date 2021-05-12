@@ -980,19 +980,21 @@ Function name                                           single double single com
 Sparse Generic Functions
 ------------------------
 
-=============================== ====== ====== ============== ==============
-Function name                   single double single complex double complex
-=============================== ====== ====== ============== ==============
-:cpp:func:`rocsparse_axpby()`   x      x      x              x
-:cpp:func:`rocsparse_gather()`  x      x      x              x
-:cpp:func:`rocsparse_scatter()` x      x      x              x
-:cpp:func:`rocsparse_rot()`     x      x      x              x
-:cpp:func:`rocsparse_spvv()`    x      x      x              x
-:cpp:func:`rocsparse_spmv()`    x      x      x              x
-:cpp:func:`rocsparse_spmm()`    x      x      x              x
-:cpp:func:`rocsparse_spgemm()`  x      x      x              x
-:cpp:func:`rocsparse_sddmm()`   x      x      x              x
-=============================== ====== ====== ============== ==============
+======================================= ====== ====== ============== ==============
+Function name                           single double single complex double complex
+======================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_axpby()`           x      x      x              x
+:cpp:func:`rocsparse_gather()`          x      x      x              x
+:cpp:func:`rocsparse_scatter()`         x      x      x              x
+:cpp:func:`rocsparse_rot()`             x      x      x              x
+:cpp:func:`rocsparse_spvv()`            x      x      x              x
+:cpp:func:`rocsparse_sparse_to_dense()` x      x      x              x
+:cpp:func:`rocsparse_dense_to_sparse()` x      x      x              x
+:cpp:func:`rocsparse_spmv()`            x      x      x              x
+:cpp:func:`rocsparse_spmm()`            x      x      x              x
+:cpp:func:`rocsparse_spgemm()`          x      x      x              x
+:cpp:func:`rocsparse_sddmm()`           x      x      x              x
+======================================= ====== ====== ============== ==============
 
 
 Storage schemes and indexing base
