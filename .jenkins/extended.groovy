@@ -19,6 +19,7 @@ def runCI =
     prj.paths.build_command = './install.sh -c'
     prj.libraryDependencies = ['rocPRIM']
     prj.timeout.test = 600
+    prj.defaults.ccache = true
 
     // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(nodeDetails, jobName, prj)
