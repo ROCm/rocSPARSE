@@ -320,7 +320,7 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
                                              const T*                  csr_val,
                                              const I*                  csr_row_ptr,
                                              const J*                  csr_col_ind,
-                                             const T*                  fraction_to_color,
+                                             const floating_data_t<T>* fraction_to_color,
                                              J*                        ncolors,
                                              J*                        colors,
                                              J*                        reordering,
@@ -332,7 +332,7 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
     *ncolors           = -2;
 
     J num_uncolored     = m;
-    J max_num_uncolored = m - m * std::abs(fraction_to_color[0]);
+    J max_num_uncolored = m - m * fraction_to_color[0];
 
     //
     // Create workspace.
@@ -519,7 +519,7 @@ rocsparse_status rocsparse_csrcolor_template(rocsparse_handle          handle,
                                              const T*                  csr_val,
                                              const I*                  csr_row_ptr,
                                              const J*                  csr_col_ind,
-                                             const T*                  fraction_to_color,
+                                             const floating_data_t<T>* fraction_to_color,
                                              J*                        ncolors,
                                              J*                        coloring,
                                              J*                        reordering,
@@ -598,7 +598,7 @@ rocsparse_status rocsparse_csrcolor_template(rocsparse_handle          handle,
  *    C wrapper
  * ===========================================================================
  */
-#define C_IMPL(NAME, TYPE)                                                        \
+#define C_IMPL(NAME, TYPE, TYPE2)                                                 \
     extern "C" rocsparse_status NAME(rocsparse_handle          handle,            \
                                      rocsparse_int             m,                 \
                                      rocsparse_int             nnz,               \
@@ -606,7 +606,7 @@ rocsparse_status rocsparse_csrcolor_template(rocsparse_handle          handle,
                                      const TYPE*               csr_val,           \
                                      const rocsparse_int*      csr_row_ptr,       \
                                      const rocsparse_int*      csr_col_ind,       \
-                                     const TYPE*               fraction_to_color, \
+                                     const TYPE2*              fraction_to_color, \
                                      rocsparse_int*            ncolors,           \
                                      rocsparse_int*            coloring,          \
                                      rocsparse_int*            reordering,        \
@@ -626,9 +626,9 @@ rocsparse_status rocsparse_csrcolor_template(rocsparse_handle          handle,
                                            info);                                 \
     }
 
-C_IMPL(rocsparse_scsrcolor, float);
-C_IMPL(rocsparse_dcsrcolor, double);
-C_IMPL(rocsparse_ccsrcolor, rocsparse_float_complex);
-C_IMPL(rocsparse_zcsrcolor, rocsparse_double_complex);
+C_IMPL(rocsparse_scsrcolor, float, float);
+C_IMPL(rocsparse_dcsrcolor, double, double);
+C_IMPL(rocsparse_ccsrcolor, rocsparse_float_complex, float);
+C_IMPL(rocsparse_zcsrcolor, rocsparse_double_complex, double);
 
 #undef C_IMPL

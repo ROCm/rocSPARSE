@@ -26,7 +26,7 @@
 #ifndef ROCSPARSE_CSRCOLOR_HPP
 #define ROCSPARSE_CSRCOLOR_HPP
 
-#include "handle.h"
+#include "utility.h"
 
 template <typename T, typename I, typename J>
 rocsparse_status rocsparse_csrcolor_dispatch(J                         m,
@@ -35,7 +35,7 @@ rocsparse_status rocsparse_csrcolor_dispatch(J                         m,
                                              const T*                  csr_val,
                                              const I*                  csr_row_ptr,
                                              const J*                  csr_col_ind,
-                                             const T*                  fraction_to_color,
+                                             const floating_data_t<T>* fraction_to_color,
                                              J*                        ncolors,
                                              J*                        colors,
                                              J*                        reordering,
@@ -49,7 +49,7 @@ rocsparse_status rocsparse_csrcolor_template(rocsparse_handle          handle,
                                              const T*                  csr_val,
                                              const I*                  csr_row_ptr,
                                              const J*                  csr_col_ind,
-                                             const T*                  fraction_to_color,
+                                             const floating_data_t<T>* fraction_to_color,
                                              J*                        ncolors,
                                              J*                        coloring,
                                              J*                        reordering,
