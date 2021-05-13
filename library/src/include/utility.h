@@ -397,4 +397,25 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_analysis_policy value_)
     return true;
 };
 
+template <typename T>
+struct floating_traits
+{
+    using data_t = T;
+};
+
+template <>
+struct floating_traits<rocsparse_float_complex>
+{
+    using data_t = float;
+};
+
+template <>
+struct floating_traits<rocsparse_double_complex>
+{
+    using data_t = double;
+};
+
+template <typename T>
+using floating_data_t = typename floating_traits<T>::data_t;
+
 #endif // UTILITY_H

@@ -42,7 +42,7 @@ void testing_csrcolor_bad_arg(const Arguments& arg)
     const T*                  csr_val           = (const T*)0x4;
     const rocsparse_int*      csr_row_ptr       = (const rocsparse_int*)0x4;
     const rocsparse_int*      csr_col_ind       = (const rocsparse_int*)0x4;
-    const T*                  fraction_to_color = (const T*)0x4;
+    const floating_data_t<T>* fraction_to_color = (const floating_data_t<T>*)0x4;
     rocsparse_int*            ncolors           = (rocsparse_int*)0x4;
     rocsparse_int*            coloring          = (rocsparse_int*)0x4;
     rocsparse_int*            reordering        = nullptr;
@@ -103,9 +103,9 @@ void testing_csrcolor(const Arguments& arg)
     //
     // Get dimensions.
     //
-    rocsparse_int        M                 = arg.M;
-    rocsparse_index_base csr_base          = arg.baseA;
-    const T              fraction_to_color = static_cast<T>(arg.percentage);
+    rocsparse_int            M                 = arg.M;
+    rocsparse_index_base     csr_base          = arg.baseA;
+    const floating_data_t<T> fraction_to_color = static_cast<floating_data_t<T>>(arg.percentage);
 
     //
     // Local variables.
