@@ -203,6 +203,8 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
     if(info->size > 0)
     {
         RETURN_IF_HIP_ERROR(hipFree(info->row_blocks));
+        RETURN_IF_HIP_ERROR(hipFree(info->wg_flags));
+        RETURN_IF_HIP_ERROR(hipFree(info->wg_ids));
     }
 
     // Destruct

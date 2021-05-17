@@ -199,7 +199,9 @@ struct _rocsparse_csrmv_info
     // num row blocks
     size_t size = 0;
     // row blocks
-    unsigned long long* row_blocks = nullptr;
+    void*         row_blocks = nullptr;
+    unsigned int* wg_flags   = nullptr;
+    void*         wg_ids     = nullptr;
 
     // some data to verify correct execution
     rocsparse_operation         trans;
