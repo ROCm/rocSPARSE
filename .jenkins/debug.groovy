@@ -16,7 +16,7 @@ def runCI =
     def prj = new rocProject('rocSPARSE', 'Debug')
 
     // customize for project
-    prj.paths.build_command = './install.sh -c -g'
+    prj.paths.build_command = './install.sh --matrices-dir-install ${JENKINS_HOME_DIR}/rocsparse_matrices && ./install.sh -c -g --matrices-dir ${JENKINS_HOME_DIR}/rocsparse_matrices'
     prj.libraryDependencies = ['rocPRIM']
     prj.defaults.ccache = true
 
