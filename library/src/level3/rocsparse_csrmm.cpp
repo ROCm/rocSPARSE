@@ -27,17 +27,30 @@
 #include "csrmm_device.h"
 #include "utility.h"
 
+template <unsigned int DIM_X, unsigned int DIM_Y, typename I, typename T, typename U>
+__launch_bounds__(DIM_X* DIM_Y) __global__ void csrmm_scale(
+    I m, I n, U beta_device_host, T* __restrict__ data, I ld, rocsparse_order order)
+{
+    auto beta = load_scalar_device_host(beta_device_host);
+    if(beta != static_cast<T>(1))
+    {
+        csrmm_scale_device(m, n, beta, data, ld, order);
+    }
+}
+
 template <unsigned int BLOCKSIZE,
           unsigned int WF_SIZE,
           typename I,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void csrmmnn_kernel(J m,
-                                                            J n,
-                                                            J k,
-                                                            I nnz,
-                                                            U alpha_device_host,
+__launch_bounds__(BLOCKSIZE) __global__ void csrmmnn_kernel(rocsparse_operation trans_A,
+                                                            rocsparse_operation trans_B,
+                                                            J                   m,
+                                                            J                   n,
+                                                            J                   k,
+                                                            I                   nnz,
+                                                            U                   alpha_device_host,
                                                             const I* __restrict__ csr_row_ptr,
                                                             const J* __restrict__ csr_col_ind,
                                                             const T* __restrict__ csr_val,
@@ -57,7 +70,9 @@ __launch_bounds__(BLOCKSIZE) __global__ void csrmmnn_kernel(J m,
         return;
     }
 
-    csrmmnn_general_device<BLOCKSIZE, WF_SIZE>(m,
+    csrmmnn_general_device<BLOCKSIZE, WF_SIZE>(trans_A,
+                                               trans_B,
+                                               m,
                                                n,
                                                k,
                                                nnz,
@@ -80,13 +95,15 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void csrmmnt_kernel(J offset,
-                                                            J ncol,
-                                                            J m,
-                                                            J n,
-                                                            J k,
-                                                            I nnz,
-                                                            U alpha_device_host,
+__launch_bounds__(BLOCKSIZE) __global__ void csrmmnt_kernel(rocsparse_operation trans_A,
+                                                            rocsparse_operation trans_B,
+                                                            J                   offset,
+                                                            J                   ncol,
+                                                            J                   m,
+                                                            J                   n,
+                                                            J                   k,
+                                                            I                   nnz,
+                                                            U                   alpha_device_host,
                                                             const I* __restrict__ csr_row_ptr,
                                                             const J* __restrict__ csr_col_ind,
                                                             const T* __restrict__ csr_val,
@@ -105,8 +122,110 @@ __launch_bounds__(BLOCKSIZE) __global__ void csrmmnt_kernel(J offset,
     {
         return;
     }
-    csrmmnt_general_device<BLOCKSIZE, WF_SIZE>(offset,
+    csrmmnt_general_device<BLOCKSIZE, WF_SIZE>(trans_A,
+                                               trans_B,
+                                               offset,
                                                ncol,
+                                               m,
+                                               n,
+                                               k,
+                                               nnz,
+                                               alpha,
+                                               csr_row_ptr,
+                                               csr_col_ind,
+                                               csr_val,
+                                               B,
+                                               ldb,
+                                               beta,
+                                               C,
+                                               ldc,
+                                               order,
+                                               idx_base);
+}
+
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          typename I,
+          typename J,
+          typename T,
+          typename U>
+__launch_bounds__(BLOCKSIZE) __global__ void csrmmtn_kernel(rocsparse_operation trans_A,
+                                                            rocsparse_operation trans_B,
+                                                            J                   m,
+                                                            J                   n,
+                                                            J                   k,
+                                                            I                   nnz,
+                                                            U                   alpha_device_host,
+                                                            const I* __restrict__ csr_row_ptr,
+                                                            const J* __restrict__ csr_col_ind,
+                                                            const T* __restrict__ csr_val,
+                                                            const T* __restrict__ B,
+                                                            J ldb,
+                                                            U beta_device_host,
+                                                            T* __restrict__ C,
+                                                            J                    ldc,
+                                                            rocsparse_order      order,
+                                                            rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    auto beta  = load_scalar_device_host(beta_device_host);
+
+    if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
+    {
+        return;
+    }
+    csrmmtn_general_device<BLOCKSIZE, WF_SIZE>(trans_A,
+                                               trans_B,
+                                               m,
+                                               n,
+                                               k,
+                                               nnz,
+                                               alpha,
+                                               csr_row_ptr,
+                                               csr_col_ind,
+                                               csr_val,
+                                               B,
+                                               ldb,
+                                               beta,
+                                               C,
+                                               ldc,
+                                               order,
+                                               idx_base);
+}
+
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          typename I,
+          typename J,
+          typename T,
+          typename U>
+__launch_bounds__(BLOCKSIZE) __global__ void csrmmtt_kernel(rocsparse_operation trans_A,
+                                                            rocsparse_operation trans_B,
+                                                            J                   m,
+                                                            J                   n,
+                                                            J                   k,
+                                                            I                   nnz,
+                                                            U                   alpha_device_host,
+                                                            const I* __restrict__ csr_row_ptr,
+                                                            const J* __restrict__ csr_col_ind,
+                                                            const T* __restrict__ csr_val,
+                                                            const T* __restrict__ B,
+                                                            J ldb,
+                                                            U beta_device_host,
+                                                            T* __restrict__ C,
+                                                            J                    ldc,
+                                                            rocsparse_order      order,
+                                                            rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    auto beta  = load_scalar_device_host(beta_device_host);
+
+    if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
+    {
+        return;
+    }
+    csrmmtt_general_device<BLOCKSIZE, WF_SIZE>(trans_A,
+                                               trans_B,
                                                m,
                                                n,
                                                k,
@@ -151,7 +270,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
     if(trans_A == rocsparse_operation_none)
     {
         if((order == rocsparse_order_column && trans_B == rocsparse_operation_none)
-           || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose))
+           || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
+           || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
         {
 #define CSRMMNN_DIM 256
 #define SUB_WF_SIZE 8
@@ -163,6 +283,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                csrmmnn_threads,
                                0,
                                stream,
+                               trans_A,
+                               trans_B,
                                m,
                                n,
                                k,
@@ -182,6 +304,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
 #undef CSRMMNN_DIM
         }
         else if((order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
+                || (order == rocsparse_order_column
+                    && trans_B == rocsparse_operation_conjugate_transpose)
                 || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
             // Average nnz per row of A
@@ -211,6 +335,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                        dim3(CSRMMNT_DIM),
                                        0,
                                        stream,
+                                       trans_A,
+                                       trans_B,
                                        (J)0,
                                        main,
                                        m,
@@ -243,6 +369,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                        dim3(CSRMMNT_DIM),
                                        0,
                                        stream,
+                                       trans_A,
+                                       trans_B,
                                        (J)0,
                                        main,
                                        m,
@@ -275,6 +403,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                        dim3(CSRMMNT_DIM),
                                        0,
                                        stream,
+                                       trans_A,
+                                       trans_B,
                                        (J)0,
                                        main,
                                        m,
@@ -307,6 +437,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                        dim3(CSRMMNT_DIM),
                                        0,
                                        stream,
+                                       trans_A,
+                                       trans_B,
                                        (J)0,
                                        main,
                                        m,
@@ -341,6 +473,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                        dim3(CSRMMNT_DIM),
                                        0,
                                        stream,
+                                       trans_A,
+                                       trans_B,
                                        main,
                                        n,
                                        m,
@@ -366,6 +500,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                        dim3(CSRMMNT_DIM),
                                        0,
                                        stream,
+                                       trans_A,
+                                       trans_B,
                                        main,
                                        n,
                                        m,
@@ -391,6 +527,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                        dim3(CSRMMNT_DIM),
                                        0,
                                        stream,
+                                       trans_A,
+                                       trans_B,
                                        main,
                                        n,
                                        m,
@@ -416,6 +554,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                        dim3(CSRMMNT_DIM),
                                        0,
                                        stream,
+                                       trans_A,
+                                       trans_B,
                                        main,
                                        n,
                                        m,
@@ -448,7 +588,101 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
     }
     else
     {
-        return rocsparse_status_not_implemented;
+        if((order == rocsparse_order_column && trans_B == rocsparse_operation_none)
+           || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
+           || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
+        {
+#define CSRMMTN_DIM 256
+#define WF_SIZE 4
+
+            // Scale C with beta
+            hipLaunchKernelGGL((csrmm_scale<CSRMMTN_DIM, WF_SIZE>),
+                               dim3((m - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1),
+                               dim3(CSRMMTN_DIM, WF_SIZE),
+                               0,
+                               handle->stream,
+                               m,
+                               n,
+                               beta_device_host,
+                               C,
+                               ldc,
+                               order);
+
+            hipLaunchKernelGGL((csrmmtn_kernel<CSRMMTN_DIM, WF_SIZE>),
+                               dim3((WF_SIZE * k - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1),
+                               dim3(CSRMMTN_DIM),
+                               0,
+                               stream,
+                               trans_A,
+                               trans_B,
+                               m,
+                               n,
+                               k,
+                               nnz,
+                               alpha_device_host,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               B,
+                               ldb,
+                               beta_device_host,
+                               C,
+                               ldc,
+                               order,
+                               descr->base);
+#undef CSRMMTN_DIM
+#undef WF_SIZE
+        }
+        else if((order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
+                || (order == rocsparse_order_column
+                    && trans_B == rocsparse_operation_conjugate_transpose)
+                || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
+        {
+#define CSRMMTT_DIM 256
+#define WF_SIZE 4
+
+            // Scale C with beta
+            hipLaunchKernelGGL((csrmm_scale<CSRMMTT_DIM, WF_SIZE>),
+                               dim3((m - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1),
+                               dim3(CSRMMTT_DIM, WF_SIZE),
+                               0,
+                               handle->stream,
+                               m,
+                               n,
+                               beta_device_host,
+                               C,
+                               ldc,
+                               order);
+
+            hipLaunchKernelGGL((csrmmtt_kernel<CSRMMTT_DIM, WF_SIZE>),
+                               dim3((WF_SIZE * k - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1),
+                               dim3(CSRMMTT_DIM),
+                               0,
+                               stream,
+                               trans_A,
+                               trans_B,
+                               m,
+                               n,
+                               k,
+                               nnz,
+                               alpha_device_host,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               B,
+                               ldb,
+                               beta_device_host,
+                               C,
+                               ldc,
+                               order,
+                               descr->base);
+#undef CSRMMTT_DIM
+#undef WF_SIZE
+        }
+        else
+        {
+            return rocsparse_status_not_implemented;
+        }
     }
     return rocsparse_status_success;
 }

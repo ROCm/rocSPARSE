@@ -50,13 +50,13 @@ Tests:
   function: spmm_csr
   indextype: *i32i32_i64i32_i64i64
   precision: *single_double_precisions_complex_real
-  M: [128, 485]
+  M: [485]
   N: [647]
   K: [223]
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   spmm_alg: [rocsparse_spmm_alg_csr]
   order: [rocsparse_order_row, rocsparse_order_column]
@@ -65,12 +65,12 @@ Tests:
   category: pre_checkin
   function: spmm_csr
   indextype: *i32i32_i64i32_i64i64
-  precision: *single_double_precisions_complex_real
+  precision: *single_double_precisions
   M: [5111]
-  N: [4441]
+  N: [441]
   K: [82]
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
@@ -86,7 +86,7 @@ Tests:
   N: [293]
   K: [93]
   alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
@@ -102,7 +102,7 @@ Tests:
   N: 1
   K: 1
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -111,8 +111,7 @@ Tests:
   filename: [mac_econ_fwd500,
              nos2,
              nos4,
-             nos6,
-             scircuit]
+             nos6]
 
 - name: spmm_csr_file
   category: pre_checkin
@@ -124,6 +123,29 @@ Tests:
   K: 1
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  order: [rocsparse_order_row]
+  filename: [rma10,
+             mc2depi,
+             ASIC_320k,
+             nos1,
+             nos3,
+             nos5,
+             nos7]
+
+- name: spmm_csr_file
+  category: pre_checkin
+  function: spmm_csr
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions
+  M: 1
+  N: 1
+  K: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -160,6 +182,25 @@ Tests:
              shipsec1]
 
 - name: spmm_csr_file
+  category: nightly
+  function: spmm_csr
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions
+  M: 1
+  N: 1
+  K: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  order: [rocsparse_order_row]
+  filename: [bibd_22_8,
+             amazon0312,
+             Chebyshev4]
+
+- name: spmm_csr_file
   category: quick
   function: spmm_csr
   indextype: *i32i32_i64i32_i64i64
@@ -168,7 +209,7 @@ Tests:
   N: 1
   K: 1
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -186,7 +227,7 @@ Tests:
   N: 1
   K: 1
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -204,8 +245,8 @@ Tests:
   N: 1
   K: 1
   alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_transpose]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   spmm_alg: [rocsparse_spmm_alg_csr]

@@ -375,6 +375,8 @@ void host_gebsrmm(rocsparse_handle          handle,
 template <typename I, typename J, typename T>
 void host_csrmm(J                     M,
                 J                     N,
+                J                     K,
+                rocsparse_operation   transA,
                 rocsparse_operation   transB,
                 T                     alpha,
                 const std::vector<I>& csr_row_ptr_A,

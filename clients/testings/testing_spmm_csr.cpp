@@ -23,14 +23,16 @@
 
 #include "testing.hpp"
 
+#include "auto_testing_bad_arg.hpp"
+
 template <typename I, typename J, typename T>
 void testing_spmm_csr_bad_arg(const Arguments& arg)
 {
-    J m      = 100;
-    J n      = 100;
-    J k      = 100;
-    J ncol_B = 100;
-    I nnz    = 100;
+    J m   = 100;
+    J n   = 100;
+    J k   = 100;
+    J B_n = 100;
+    I nnz = 100;
 
     T alpha = 0.6;
     T beta  = 0.1;
@@ -52,7 +54,7 @@ void testing_spmm_csr_bad_arg(const Arguments& arg)
     device_vector<I> dcsr_row_ptr(nnz);
     device_vector<I> dcsr_col_ind(nnz);
     device_vector<T> dcsr_val(nnz);
-    device_vector<T> dB(k * ncol_B);
+    device_vector<T> dB(k * B_n);
     device_vector<T> dC(m * n);
 
     if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC)
@@ -73,7 +75,7 @@ void testing_spmm_csr_bad_arg(const Arguments& arg)
                             base,
                             ttype,
                             rocsparse_format_csr);
-    rocsparse_local_dnmat B(k, ncol_B, k, dB, ttype, rocsparse_order_column);
+    rocsparse_local_dnmat B(k, B_n, k, dB, ttype, rocsparse_order_column);
     rocsparse_local_dnmat C(m, n, m, dC, ttype, rocsparse_order_column);
 
     // Test SpMM with invalid buffer
@@ -251,23 +253,22 @@ void testing_spmm_csr(const Arguments& arg)
             // Pointer mode
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-            J nrow_A = trans_A == rocsparse_operation_none ? M : K;
-            J ncol_A = trans_A == rocsparse_operation_none ? K : M;
+            J A_m = trans_A == rocsparse_operation_none ? M : K;
+            J A_n = trans_A == rocsparse_operation_none ? K : M;
+            J B_m = trans_B == rocsparse_operation_none ? K : N;
+            J B_n = trans_B == rocsparse_operation_none ? N : K;
+            J C_m = M;
+            J C_n = N;
 
             J ldb = order == rocsparse_order_column
                         ? (trans_B == rocsparse_operation_none ? 2 * K : 2 * N)
                         : (trans_B == rocsparse_operation_none ? 2 * N : 2 * K);
 
-            J nrow_B = trans_B == rocsparse_operation_none ? K : N;
-            J ncol_B = trans_B == rocsparse_operation_none ? N : K;
-
-            J ldc    = order == rocsparse_order_column ? 2 * M : 2 * N;
-            J nrow_C = M;
-            J ncol_C = N;
+            J ldc = order == rocsparse_order_column ? 2 * M : 2 * N;
 
             // Check structures
-            rocsparse_local_spmat A(nrow_A,
-                                    ncol_A,
+            rocsparse_local_spmat A(A_m,
+                                    A_n,
                                     nnz_A,
                                     dcsr_row_ptr,
                                     dcsr_col_ind,
@@ -277,8 +278,8 @@ void testing_spmm_csr(const Arguments& arg)
                                     base,
                                     ttype,
                                     rocsparse_format_csr);
-            rocsparse_local_dnmat B(nrow_B, ncol_B, ldb, dB, ttype, order);
-            rocsparse_local_dnmat C(nrow_C, ncol_C, ldc, dC, ttype, order);
+            rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order);
+            rocsparse_local_dnmat C(C_m, C_n, ldc, dC, ttype, order);
 
             size_t buffer_size;
             EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
@@ -349,21 +350,24 @@ void testing_spmm_csr(const Arguments& arg)
                               full_rank);
 
     // Some matrix properties
-    J nrow_A = trans_A == rocsparse_operation_none ? M : K;
-    J ncol_A = trans_A == rocsparse_operation_none ? K : M;
+    J A_m = trans_A == rocsparse_operation_none ? M : K;
+    J A_n = trans_A == rocsparse_operation_none ? K : M;
+    J B_m = trans_B == rocsparse_operation_none ? K : N;
+    J B_n = trans_B == rocsparse_operation_none ? N : K;
+    J C_m = M;
+    J C_n = N;
 
     J ldb = order == rocsparse_order_column ? (trans_B == rocsparse_operation_none ? 2 * K : 2 * N)
                                             : (trans_B == rocsparse_operation_none ? 2 * N : 2 * K);
+    J ldc = order == rocsparse_order_column ? 2 * M : 2 * N;
 
-    J nrow_B = trans_B == rocsparse_operation_none ? K : N;
-    J ncol_B = trans_B == rocsparse_operation_none ? N : K;
+    J nrowB = order == rocsparse_order_column ? ldb : B_m;
+    J ncolB = order == rocsparse_order_column ? B_n : ldb;
+    J nrowC = order == rocsparse_order_column ? ldc : C_m;
+    J ncolC = order == rocsparse_order_column ? C_n : ldc;
 
-    J ldc    = order == rocsparse_order_column ? 2 * M : 2 * N;
-    J nrow_C = M;
-    J ncol_C = N;
-
-    I nnz_B = order == rocsparse_order_column ? ldb * ncol_B : nrow_B * ldb;
-    I nnz_C = order == rocsparse_order_column ? ldc * ncol_C : nrow_C * ldc;
+    I nnz_B = nrowB * ncolB;
+    I nnz_C = nrowC * ncolC;
 
     // Allocate host memory for vectors
     host_vector<T> hB(nnz_B);
@@ -379,7 +383,7 @@ void testing_spmm_csr(const Arguments& arg)
     hC_gold = hC_1;
 
     // Allocate device memory
-    device_vector<I> dcsr_row_ptr(nrow_A + 1);
+    device_vector<I> dcsr_row_ptr(A_m + 1);
     device_vector<J> dcsr_col_ind(nnz_A);
     device_vector<T> dcsr_val(nnz_A);
     device_vector<T> dB(nnz_B);
@@ -395,8 +399,8 @@ void testing_spmm_csr(const Arguments& arg)
     }
 
     // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(I) * (nrow_A + 1), hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(
+        hipMemcpy(dcsr_row_ptr, hcsr_row_ptr.data(), sizeof(I) * (A_m + 1), hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(
         hipMemcpy(dcsr_col_ind, hcsr_col_ind.data(), sizeof(J) * nnz_A, hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(dcsr_val, hcsr_val.data(), sizeof(T) * nnz_A, hipMemcpyHostToDevice));
@@ -407,8 +411,8 @@ void testing_spmm_csr(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(dbeta, &hbeta, sizeof(T), hipMemcpyHostToDevice));
 
     // Create descriptors
-    rocsparse_local_spmat A(nrow_A,
-                            ncol_A,
+    rocsparse_local_spmat A(A_m,
+                            A_n,
                             nnz_A,
                             dcsr_row_ptr,
                             dcsr_col_ind,
@@ -418,9 +422,9 @@ void testing_spmm_csr(const Arguments& arg)
                             base,
                             ttype,
                             rocsparse_format_csr);
-    rocsparse_local_dnmat B(nrow_B, ncol_B, ldb, dB, ttype, order);
-    rocsparse_local_dnmat C1(nrow_C, ncol_C, ldc, dC_1, ttype, order);
-    rocsparse_local_dnmat C2(nrow_C, ncol_C, ldc, dC_2, ttype, order);
+    rocsparse_local_dnmat B(B_m, B_n, ldb, dB, ttype, order);
+    rocsparse_local_dnmat C1(C_m, C_n, ldc, dC_1, ttype, order);
+    rocsparse_local_dnmat C2(C_m, C_n, ldc, dC_2, ttype, order);
 
     // Query SpMM buffer
     size_t buffer_size;
@@ -460,8 +464,10 @@ void testing_spmm_csr(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
 
         // CPU csrmm
-        host_csrmm(nrow_A,
-                   ncol_C,
+        host_csrmm(M,
+                   N,
+                   K,
+                   trans_A,
                    trans_B,
                    halpha,
                    hcsr_row_ptr,
@@ -524,11 +530,13 @@ void testing_spmm_csr(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gflops
-            = spmm_gflop_count(N, nnz_A, nnz_C, hbeta != static_cast<T>(0)) / gpu_time_used * 1e6;
-        double gpu_gbyte
-            = csrmm_gbyte_count<T>(nrow_A, nnz_A, nnz_B, nnz_C, hbeta != static_cast<T>(0))
-              / gpu_time_used * 1e6;
+        double gflop_count
+            = spmm_gflop_count(N, nnz_A, (I)C_m * (I)C_n, hbeta != static_cast<T>(0));
+        double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
+
+        double gbyte_count = csrmm_gbyte_count<T>(
+            A_m, nnz_A, (I)B_m * (I)B_n, (I)C_m * (I)C_n, hbeta != static_cast<T>(0));
+        double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
         std::cout.precision(2);
         std::cout.setf(std::ios::fixed);

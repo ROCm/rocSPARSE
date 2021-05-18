@@ -138,14 +138,18 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
     // CSR
     if(mat_A->format == rocsparse_format_csr)
     {
+        J m = (J)mat_C->rows;
+        J n = (J)mat_C->cols;
+        J k = trans_A == rocsparse_operation_none ? (J)mat_A->cols : (J)mat_A->rows;
+
         return rocsparse_csrmm_template(handle,
                                         trans_A,
                                         trans_B,
                                         mat_B->order,
                                         mat_C->order,
-                                        (J)mat_A->rows,
-                                        (J)mat_C->cols,
-                                        (J)mat_A->cols,
+                                        m,
+                                        n,
+                                        k,
                                         (I)mat_A->nnz,
                                         (const T*)alpha,
                                         mat_A->descr,
