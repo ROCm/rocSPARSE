@@ -3440,9 +3440,6 @@ rocsparse_status rocsparse_zgebsrmm(rocsparse_handle                handle,
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
-*  \note
-*  Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
-*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -3494,7 +3491,6 @@ rocsparse_status rocsparse_zgebsrmm(rocsparse_handle                handle,
 *              \p csr_row_ptr, \p csr_col_ind, \p B, \p beta or \p C pointer is invalid.
 *  \retval     rocsparse_status_arch_mismatch the device is not supported.
 *  \retval     rocsparse_status_not_implemented
-*              \p trans_A != \ref rocsparse_operation_none or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 *
 *  \par Example

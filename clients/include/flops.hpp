@@ -93,7 +93,7 @@ constexpr double bsrmm_gflop_count(rocsparse_int N,
                                    rocsparse_int nnz_C,
                                    bool          beta = false)
 {
-    return (3.0 * nnzb * block_dim * block_dim * N + (beta ? nnz_C : 0)) / 1e9;
+    return (2.0 * nnzb * block_dim * block_dim * N + (beta ? nnz_C : 0)) / 1e9;
 }
 
 constexpr double gebsrmm_gflop_count(rocsparse_int N,
@@ -103,13 +103,15 @@ constexpr double gebsrmm_gflop_count(rocsparse_int N,
                                      rocsparse_int nnz_C,
                                      bool          beta = false)
 {
-    return (3.0 * nnzb * row_block_dim * col_block_dim * N + (beta ? nnz_C : 0)) / 1e9;
+    return (2.0 * nnzb * row_block_dim * col_block_dim * N + (beta ? nnz_C : 0)) / 1e9;
 }
 
 template <typename I, typename J>
 constexpr double csrmm_gflop_count(J N, I nnz_A, I nnz_C, bool beta = false)
 {
-    return (3.0 * nnz_A * N + (beta ? nnz_C : 0)) / 1e9;
+    // Multiplication by 2 comes from 1 addition and 1 multiplication in product. Multiplication
+    // by alpha and beta not counted.
+    return (2.0 * nnz_A * N + (beta ? nnz_C : 0)) / 1e9;
 }
 
 template <typename I, typename J>
