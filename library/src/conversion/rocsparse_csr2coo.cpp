@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -245,6 +245,7 @@ rocsparse_status rocsparse_csr2coo_template(rocsparse_handle     handle,
 INSTANTIATE(int32_t, int32_t);
 INSTANTIATE(int64_t, int32_t);
 INSTANTIATE(int64_t, int64_t);
+#undef INSTANTIATE
 
 /*
 * ===========================================================================

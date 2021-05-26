@@ -2079,6 +2079,7 @@ INSTANTIATE(int64_t, int64_t, float);
 INSTANTIATE(int64_t, int64_t, double);
 INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
+#undef INSTANTIATE
 
 /*
  * ===========================================================================
@@ -2152,3 +2153,4 @@ C_IMPL(rocsparse_scsrgemm, float);
 C_IMPL(rocsparse_dcsrgemm, double);
 C_IMPL(rocsparse_ccsrgemm, rocsparse_float_complex);
 C_IMPL(rocsparse_zcsrgemm, rocsparse_double_complex);
+#undef C_IMPL

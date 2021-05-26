@@ -49,6 +49,7 @@ INSTANTIATE(rocsparse_direction_row, int64_t, int64_t, float);
 INSTANTIATE(rocsparse_direction_row, int64_t, int64_t, double);
 INSTANTIATE(rocsparse_direction_row, int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE(rocsparse_direction_row, int64_t, int64_t, rocsparse_double_complex);
+#undef INSTANTIATE
 
 extern "C" {
 
