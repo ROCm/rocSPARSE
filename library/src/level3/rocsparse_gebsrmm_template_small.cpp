@@ -252,5 +252,3 @@ INSTANTIATE(rocsparse_double_complex, rocsparse_double_complex);
 INSTANTIATE(rocsparse_double_complex, const rocsparse_double_complex*);
 
 #undef INSTANTIATE
-
-#undef INSTANTIATE
