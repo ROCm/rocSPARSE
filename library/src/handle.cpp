@@ -342,6 +342,10 @@ bool rocsparse_check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_inf
         ++shared;
     if(trm == info->csrsm_upper_info)
         ++shared;
+    if(trm == info->bsrsm_lower_info)
+        ++shared;
+    if(trm == info->bsrsm_upper_info)
+        ++shared;
 
     return (shared > 0) ? true : false;
 }

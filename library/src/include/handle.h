@@ -153,6 +153,10 @@ struct _rocsparse_mat_info
     rocsparse_trm_info bsrsvt_lower_info = nullptr;
     rocsparse_trm_info bsric0_info       = nullptr;
     rocsparse_trm_info bsrilu0_info      = nullptr;
+    rocsparse_trm_info bsrsm_upper_info  = nullptr;
+    rocsparse_trm_info bsrsm_lower_info  = nullptr;
+    rocsparse_trm_info bsrsmt_upper_info = nullptr;
+    rocsparse_trm_info bsrsmt_lower_info = nullptr;
 
     rocsparse_csrmv_info   csrmv_info        = nullptr;
     rocsparse_trm_info     csric0_info       = nullptr;

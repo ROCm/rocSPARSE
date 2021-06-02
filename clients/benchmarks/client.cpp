@@ -49,6 +49,7 @@
 
 // Level3
 #include "testing_bsrmm.hpp"
+#include "testing_bsrsm.hpp"
 #include "testing_csrmm.hpp"
 #include "testing_csrsm.hpp"
 #include "testing_gebsrmm.hpp"
@@ -283,7 +284,7 @@ int main(int argc, char* argv[])
         "SPARSE function to test. Options:\n"
         "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
         "  Level2: bsrmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, ellmv, hybmv, gebsrmv, gemvi\n"
-        "  Level3: bsrmm, gebsrmm, csrmm, coomm, csrsm, gemmi, sddmm\n"
+        "  Level3: bsrmm, bsrsm, gebsrmm, csrmm, coomm, csrsm, gemmi, sddmm\n"
         "  Extra: csrgeam, csrgemm\n"
         "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, gtsv, gtsv_no_pivot, gtsv_no_pivot_strided_batch\n"
         "  Conversion: csr2coo, csr2csc, gebsr2gebsc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
@@ -930,6 +931,17 @@ int main(int argc, char* argv[])
             testing_csrsm<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_csrsm<rocsparse_double_complex>(arg);
+    }
+    else if(function == "bsrsm")
+    {
+        if(precision == 's')
+            testing_bsrsm<float>(arg);
+        else if(precision == 'd')
+            testing_bsrsm<double>(arg);
+        else if(precision == 'c')
+            testing_bsrsm<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_bsrsm<rocsparse_double_complex>(arg);
     }
     else if(function == "gemmi")
     {

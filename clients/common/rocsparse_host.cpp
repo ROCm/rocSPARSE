@@ -719,93 +719,111 @@ void host_gebsrmv(rocsparse_direction  dir,
 
 template <typename T>
 static inline void host_bsr_lsolve(rocsparse_direction  dir,
+                                   rocsparse_operation  trans_X,
                                    rocsparse_int        mb,
+                                   rocsparse_int        nrhs,
                                    T                    alpha,
                                    const rocsparse_int* bsr_row_ptr,
                                    const rocsparse_int* bsr_col_ind,
                                    const T*             bsr_val,
                                    rocsparse_int        bsr_dim,
-                                   const T*             x,
-                                   T*                   y,
+                                   const T*             B,
+                                   rocsparse_int        ldb,
+                                   T*                   X,
+                                   rocsparse_int        ldx,
                                    rocsparse_diag_type  diag_type,
                                    rocsparse_index_base base,
                                    rocsparse_int*       struct_pivot,
                                    rocsparse_int*       numeric_pivot)
 {
-    // Process lower triangular part
-    for(rocsparse_int bsr_row = 0; bsr_row < mb; ++bsr_row)
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
+    for(rocsparse_int i = 0; i < nrhs; ++i)
     {
-        rocsparse_int bsr_row_begin = bsr_row_ptr[bsr_row] - base;
-        rocsparse_int bsr_row_end   = bsr_row_ptr[bsr_row + 1] - base;
-
-        // Loop over blocks rows
-        for(rocsparse_int bi = 0; bi < bsr_dim; ++bi)
+        // Process lower triangular part
+        for(rocsparse_int bsr_row = 0; bsr_row < mb; ++bsr_row)
         {
-            rocsparse_int diag      = -1;
-            rocsparse_int local_row = bsr_row * bsr_dim + bi;
+            rocsparse_int bsr_row_begin = bsr_row_ptr[bsr_row] - base;
+            rocsparse_int bsr_row_end   = bsr_row_ptr[bsr_row + 1] - base;
 
-            T sum      = alpha * x[local_row];
-            T diag_val = static_cast<T>(0);
-
-            // Loop over BSR columns
-            for(rocsparse_int j = bsr_row_begin; j < bsr_row_end; ++j)
+            // Loop over blocks rows
+            for(rocsparse_int bi = 0; bi < bsr_dim; ++bi)
             {
-                rocsparse_int bsr_col = bsr_col_ind[j] - base;
+                rocsparse_int diag      = -1;
+                rocsparse_int local_row = bsr_row * bsr_dim + bi;
 
-                // Loop over blocks columns
-                for(rocsparse_int bj = 0; bj < bsr_dim; ++bj)
+                rocsparse_int idx_B = (trans_X == rocsparse_operation_none) ? i * ldb + local_row
+                                                                            : local_row * ldb + i;
+                rocsparse_int idx_X = (trans_X == rocsparse_operation_none) ? i * ldx + local_row
+                                                                            : local_row * ldx + i;
+
+                T sum      = alpha * B[idx_B];
+                T diag_val = static_cast<T>(0);
+
+                // Loop over BSR columns
+                for(rocsparse_int j = bsr_row_begin; j < bsr_row_end; ++j)
                 {
-                    rocsparse_int local_col = bsr_col * bsr_dim + bj;
-                    T             local_val = (dir == rocsparse_direction_row)
-                                                  ? bsr_val[bsr_dim * bsr_dim * j + bi * bsr_dim + bj]
-                                                  : bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim];
+                    rocsparse_int bsr_col = bsr_col_ind[j] - base;
 
-                    if(local_val == static_cast<T>(0) && local_col == local_row
-                       && diag_type == rocsparse_diag_type_non_unit)
+                    // Loop over blocks columns
+                    for(rocsparse_int bj = 0; bj < bsr_dim; ++bj)
                     {
-                        // Numerical zero pivot found, avoid division by 0
-                        // and store index for later use.
-                        *numeric_pivot = std::min(*numeric_pivot, bsr_row + base);
-                        local_val      = static_cast<T>(1);
-                    }
+                        rocsparse_int local_col = bsr_col * bsr_dim + bj;
+                        T             local_val = (dir == rocsparse_direction_row)
+                                                      ? bsr_val[bsr_dim * bsr_dim * j + bi * bsr_dim + bj]
+                                                      : bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim];
 
-                    // Ignore all entries that are above the diagonal
-                    if(local_col > local_row)
-                    {
-                        break;
-                    }
-
-                    // Diagonal
-                    if(local_col == local_row)
-                    {
-                        // If diagonal type is non unit, do division by diagonal entry
-                        // This is not required for unit diagonal for obvious reasons
-                        if(diag_type == rocsparse_diag_type_non_unit)
+                        if(local_val == static_cast<T>(0) && local_col == local_row
+                           && diag_type == rocsparse_diag_type_non_unit)
                         {
-                            diag     = j;
-                            diag_val = static_cast<T>(1) / local_val;
+                            // Numerical zero pivot found, avoid division by 0
+                            // and store index for later use.
+                            *numeric_pivot = std::min(*numeric_pivot, bsr_row + base);
+                            local_val      = static_cast<T>(1);
                         }
 
-                        break;
+                        // Ignore all entries that are above the diagonal
+                        if(local_col > local_row)
+                        {
+                            break;
+                        }
+
+                        // Diagonal
+                        if(local_col == local_row)
+                        {
+                            // If diagonal type is non unit, do division by diagonal entry
+                            // This is not required for unit diagonal for obvious reasons
+                            if(diag_type == rocsparse_diag_type_non_unit)
+                            {
+                                diag     = j;
+                                diag_val = static_cast<T>(1) / local_val;
+                            }
+
+                            break;
+                        }
+
+                        // Lower triangular part
+                        rocsparse_int idx = (trans_X == rocsparse_operation_none)
+                                                ? i * ldx + local_col
+                                                : local_col * ldx + i;
+                        sum               = std::fma(-local_val, X[idx], sum);
+                    }
+                }
+
+                if(diag_type == rocsparse_diag_type_non_unit)
+                {
+                    if(diag == -1)
+                    {
+                        *struct_pivot = std::min(*struct_pivot, bsr_row + base);
                     }
 
-                    // Lower triangular part
-                    sum = std::fma(-local_val, y[local_col], sum);
+                    X[idx_X] = sum * diag_val;
                 }
-            }
-
-            if(diag_type == rocsparse_diag_type_non_unit)
-            {
-                if(diag == -1)
+                else
                 {
-                    *struct_pivot = std::min(*struct_pivot, bsr_row + base);
+                    X[idx_X] = sum;
                 }
-
-                y[local_row] = sum * diag_val;
-            }
-            else
-            {
-                y[local_row] = sum;
             }
         }
     }
@@ -813,87 +831,104 @@ static inline void host_bsr_lsolve(rocsparse_direction  dir,
 
 template <typename T>
 static inline void host_bsr_usolve(rocsparse_direction  dir,
+                                   rocsparse_operation  trans_X,
                                    rocsparse_int        mb,
+                                   rocsparse_int        nrhs,
                                    T                    alpha,
                                    const rocsparse_int* bsr_row_ptr,
                                    const rocsparse_int* bsr_col_ind,
                                    const T*             bsr_val,
                                    rocsparse_int        bsr_dim,
-                                   const T*             x,
-                                   T*                   y,
+                                   const T*             B,
+                                   rocsparse_int        ldb,
+                                   T*                   X,
+                                   rocsparse_int        ldx,
                                    rocsparse_diag_type  diag_type,
                                    rocsparse_index_base base,
                                    rocsparse_int*       struct_pivot,
                                    rocsparse_int*       numeric_pivot)
 {
-    // Process upper triangular part
-    for(rocsparse_int bsr_row = mb - 1; bsr_row >= 0; --bsr_row)
+#ifdef _OPENMP
+#pragma omp parallel for
+#endif
+    for(int i = 0; i < nrhs; ++i)
     {
-        rocsparse_int bsr_row_begin = bsr_row_ptr[bsr_row] - base;
-        rocsparse_int bsr_row_end   = bsr_row_ptr[bsr_row + 1] - base;
-
-        for(rocsparse_int bi = bsr_dim - 1; bi >= 0; --bi)
+        // Process upper triangular part
+        for(rocsparse_int bsr_row = mb - 1; bsr_row >= 0; --bsr_row)
         {
-            rocsparse_int local_row = bsr_row * bsr_dim + bi;
+            rocsparse_int bsr_row_begin = bsr_row_ptr[bsr_row] - base;
+            rocsparse_int bsr_row_end   = bsr_row_ptr[bsr_row + 1] - base;
 
-            T sum = alpha * x[local_row];
-
-            rocsparse_int diag     = -1;
-            T             diag_val = static_cast<T>(0);
-
-            for(rocsparse_int j = bsr_row_end - 1; j >= bsr_row_begin; --j)
+            for(rocsparse_int bi = bsr_dim - 1; bi >= 0; --bi)
             {
-                rocsparse_int bsr_col = bsr_col_ind[j] - base;
+                rocsparse_int local_row = bsr_row * bsr_dim + bi;
 
-                for(rocsparse_int bj = bsr_dim - 1; bj >= 0; --bj)
+                rocsparse_int idx_B = (trans_X == rocsparse_operation_none) ? i * ldb + local_row
+                                                                            : local_row * ldb + i;
+                rocsparse_int idx_X = (trans_X == rocsparse_operation_none) ? i * ldx + local_row
+                                                                            : local_row * ldx + i;
+                T             sum   = alpha * B[idx_B];
+
+                rocsparse_int diag     = -1;
+                T             diag_val = static_cast<T>(0);
+
+                for(rocsparse_int j = bsr_row_end - 1; j >= bsr_row_begin; --j)
                 {
-                    rocsparse_int local_col = bsr_col * bsr_dim + bj;
-                    T             local_val = dir == rocsparse_direction_row
-                                                  ? bsr_val[bsr_dim * bsr_dim * j + bi * bsr_dim + bj]
-                                                  : bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim];
+                    rocsparse_int bsr_col = bsr_col_ind[j] - base;
 
-                    // Ignore all entries that are below the diagonal
-                    if(local_col < local_row)
+                    for(rocsparse_int bj = bsr_dim - 1; bj >= 0; --bj)
                     {
-                        continue;
-                    }
+                        rocsparse_int local_col = bsr_col * bsr_dim + bj;
+                        T             local_val = dir == rocsparse_direction_row
+                                                      ? bsr_val[bsr_dim * bsr_dim * j + bi * bsr_dim + bj]
+                                                      : bsr_val[bsr_dim * bsr_dim * j + bi + bj * bsr_dim];
 
-                    // Diagonal
-                    if(local_col == local_row)
-                    {
-                        if(diag_type == rocsparse_diag_type_non_unit)
+                        // Ignore all entries that are below the diagonal
+                        if(local_col < local_row)
                         {
-                            // Check for numerical zero
-                            if(local_val == static_cast<T>(0))
-                            {
-                                *numeric_pivot = std::min(*numeric_pivot, bsr_row + base);
-                                local_val      = static_cast<T>(1);
-                            }
-
-                            diag     = j;
-                            diag_val = static_cast<T>(1) / local_val;
+                            continue;
                         }
 
-                        continue;
+                        // Diagonal
+                        if(local_col == local_row)
+                        {
+                            if(diag_type == rocsparse_diag_type_non_unit)
+                            {
+                                // Check for numerical zero
+                                if(local_val == static_cast<T>(0))
+                                {
+                                    *numeric_pivot = std::min(*numeric_pivot, bsr_row + base);
+                                    local_val      = static_cast<T>(1);
+                                }
+
+                                diag     = j;
+                                diag_val = static_cast<T>(1) / local_val;
+                            }
+
+                            continue;
+                        }
+
+                        // Upper triangular part
+                        rocsparse_int idx = (trans_X == rocsparse_operation_none)
+                                                ? i * ldx + local_col
+                                                : local_col * ldx + i;
+                        sum               = std::fma(-local_val, X[idx], sum);
+                    }
+                }
+
+                if(diag_type == rocsparse_diag_type_non_unit)
+                {
+                    if(diag == -1)
+                    {
+                        *struct_pivot = std::min(*struct_pivot, bsr_row + base);
                     }
 
-                    // Upper triangular part
-                    sum = std::fma(-local_val, y[local_col], sum);
+                    X[idx_X] = sum * diag_val;
                 }
-            }
-
-            if(diag_type == rocsparse_diag_type_non_unit)
-            {
-                if(diag == -1)
+                else
                 {
-                    *struct_pivot = std::min(*struct_pivot, bsr_row + base);
+                    X[idx_X] = sum;
                 }
-
-                y[local_row] = sum * diag_val;
-            }
-            else
-            {
-                y[local_row] = sum;
             }
         }
     }
@@ -926,14 +961,18 @@ void host_bsrsv(rocsparse_operation  trans,
         if(fill_mode == rocsparse_fill_mode_lower)
         {
             host_bsr_lsolve(dir,
+                            rocsparse_operation_none,
                             mb,
+                            1,
                             alpha,
                             bsr_row_ptr,
                             bsr_col_ind,
                             bsr_val,
                             bsr_dim,
                             x,
+                            mb * bsr_dim,
                             y,
+                            mb * bsr_dim,
                             diag_type,
                             base,
                             struct_pivot,
@@ -942,14 +981,18 @@ void host_bsrsv(rocsparse_operation  trans,
         else
         {
             host_bsr_usolve(dir,
+                            rocsparse_operation_none,
                             mb,
+                            1,
                             alpha,
                             bsr_row_ptr,
                             bsr_col_ind,
                             bsr_val,
                             bsr_dim,
                             x,
+                            mb * bsr_dim,
                             y,
+                            mb * bsr_dim,
                             diag_type,
                             base,
                             struct_pivot,
@@ -979,14 +1022,18 @@ void host_bsrsv(rocsparse_operation  trans,
         if(fill_mode == rocsparse_fill_mode_lower)
         {
             host_bsr_usolve(dir,
+                            rocsparse_operation_none,
                             mb,
+                            1,
                             alpha,
                             bsrt_row_ptr.data(),
                             bsrt_col_ind.data(),
                             bsrt_val.data(),
                             bsr_dim,
                             x,
+                            mb * bsr_dim,
                             y,
+                            mb * bsr_dim,
                             diag_type,
                             base,
                             struct_pivot,
@@ -995,14 +1042,18 @@ void host_bsrsv(rocsparse_operation  trans,
         else
         {
             host_bsr_lsolve(dir,
+                            rocsparse_operation_none,
                             mb,
+                            1,
                             alpha,
                             bsrt_row_ptr.data(),
                             bsrt_col_ind.data(),
                             bsrt_val.data(),
                             bsr_dim,
                             x,
+                            mb * bsr_dim,
                             y,
+                            mb * bsr_dim,
                             diag_type,
                             base,
                             struct_pivot,
@@ -2505,6 +2556,143 @@ void host_csrsm(rocsparse_int                     M,
 
     *struct_pivot  = (*struct_pivot == M + 1) ? -1 : *struct_pivot;
     *numeric_pivot = (*numeric_pivot == M + 1) ? -1 : *numeric_pivot;
+}
+
+template <typename T>
+void host_bsrsm(rocsparse_int        mb,
+                rocsparse_int        nrhs,
+                rocsparse_int        nnzb,
+                rocsparse_direction  dir,
+                rocsparse_operation  transA,
+                rocsparse_operation  transX,
+                T                    alpha,
+                const rocsparse_int* bsr_row_ptr,
+                const rocsparse_int* bsr_col_ind,
+                const T*             bsr_val,
+                rocsparse_int        bsr_dim,
+                const T*             B,
+                rocsparse_int        ldb,
+                T*                   X,
+                rocsparse_int        ldx,
+                rocsparse_diag_type  diag_type,
+                rocsparse_fill_mode  fill_mode,
+                rocsparse_index_base base,
+                rocsparse_int*       struct_pivot,
+                rocsparse_int*       numeric_pivot)
+{
+    // Initialize pivot
+    *struct_pivot  = mb + 1;
+    *numeric_pivot = mb + 1;
+
+    if(transA == rocsparse_operation_none)
+    {
+        if(fill_mode == rocsparse_fill_mode_lower)
+        {
+            host_bsr_lsolve(dir,
+                            transX,
+                            mb,
+                            nrhs,
+                            alpha,
+                            bsr_row_ptr,
+                            bsr_col_ind,
+                            bsr_val,
+                            bsr_dim,
+                            B,
+                            ldb,
+                            X,
+                            ldx,
+                            diag_type,
+                            base,
+                            struct_pivot,
+                            numeric_pivot);
+        }
+        else
+        {
+            host_bsr_usolve(dir,
+                            transX,
+                            mb,
+                            nrhs,
+                            alpha,
+                            bsr_row_ptr,
+                            bsr_col_ind,
+                            bsr_val,
+                            bsr_dim,
+                            B,
+                            ldb,
+                            X,
+                            ldx,
+                            diag_type,
+                            base,
+                            struct_pivot,
+                            numeric_pivot);
+        }
+    }
+    else if(transA == rocsparse_operation_transpose)
+    {
+        // Transpose matrix
+        std::vector<rocsparse_int> bsrt_row_ptr(mb + 1);
+        std::vector<rocsparse_int> bsrt_col_ind(nnzb);
+        std::vector<T>             bsrt_val(nnzb * bsr_dim * bsr_dim);
+
+        host_bsr_to_bsc(mb,
+                        mb,
+                        nnzb,
+                        bsr_dim,
+                        bsr_row_ptr,
+                        bsr_col_ind,
+                        bsr_val,
+                        bsrt_col_ind,
+                        bsrt_row_ptr,
+                        bsrt_val,
+                        base,
+                        base);
+
+        if(fill_mode == rocsparse_fill_mode_lower)
+        {
+            host_bsr_usolve(dir,
+                            transX,
+                            mb,
+                            nrhs,
+                            alpha,
+                            bsrt_row_ptr.data(),
+                            bsrt_col_ind.data(),
+                            bsrt_val.data(),
+                            bsr_dim,
+                            B,
+                            ldb,
+                            X,
+                            ldx,
+                            diag_type,
+                            base,
+                            struct_pivot,
+                            numeric_pivot);
+        }
+        else
+        {
+            host_bsr_lsolve(dir,
+                            transX,
+                            mb,
+                            nrhs,
+                            alpha,
+                            bsrt_row_ptr.data(),
+                            bsrt_col_ind.data(),
+                            bsrt_val.data(),
+                            bsr_dim,
+                            B,
+                            ldb,
+                            X,
+                            ldx,
+                            diag_type,
+                            base,
+                            struct_pivot,
+                            numeric_pivot);
+        }
+    }
+
+    *numeric_pivot = std::min(*numeric_pivot, *struct_pivot);
+
+    *struct_pivot  = (*struct_pivot == mb + 1) ? -1 : *struct_pivot;
+    *numeric_pivot = (*numeric_pivot == mb + 1) ? -1 : *numeric_pivot;
 }
 
 template <typename I, typename T>
@@ -5731,6 +5919,26 @@ template void host_csrsm(rocsparse_int                     M,
                          rocsparse_index_base              base,
                          rocsparse_int*                    struct_pivot,
                          rocsparse_int*                    numeric_pivot);
+template void host_bsrsm(rocsparse_int        mb,
+                         rocsparse_int        nrhs,
+                         rocsparse_int        nnzb,
+                         rocsparse_direction  dir,
+                         rocsparse_operation  transA,
+                         rocsparse_operation  transX,
+                         float                alpha,
+                         const rocsparse_int* bsr_row_ptr,
+                         const rocsparse_int* bsr_col_ind,
+                         const float*         bsr_val,
+                         rocsparse_int        bsr_dim,
+                         const float*         B,
+                         rocsparse_int        ldb,
+                         float*               X,
+                         rocsparse_int        ldx,
+                         rocsparse_diag_type  diag_type,
+                         rocsparse_fill_mode  fill_mode,
+                         rocsparse_index_base base,
+                         rocsparse_int*       struct_pivot,
+                         rocsparse_int*       numeric_pivot);
 template void host_gemmi(rocsparse_int        M,
                          rocsparse_int        N,
                          rocsparse_operation  transA,
@@ -6177,6 +6385,26 @@ template void host_csrsm(rocsparse_int                     M,
                          rocsparse_index_base              base,
                          rocsparse_int*                    struct_pivot,
                          rocsparse_int*                    numeric_pivot);
+template void host_bsrsm(rocsparse_int        mb,
+                         rocsparse_int        nrhs,
+                         rocsparse_int        nnzb,
+                         rocsparse_direction  dir,
+                         rocsparse_operation  transA,
+                         rocsparse_operation  transX,
+                         double               alpha,
+                         const rocsparse_int* bsr_row_ptr,
+                         const rocsparse_int* bsr_col_ind,
+                         const double*        bsr_val,
+                         rocsparse_int        bsr_dim,
+                         const double*        B,
+                         rocsparse_int        ldb,
+                         double*              X,
+                         rocsparse_int        ldx,
+                         rocsparse_diag_type  diag_type,
+                         rocsparse_fill_mode  fill_mode,
+                         rocsparse_index_base base,
+                         rocsparse_int*       struct_pivot,
+                         rocsparse_int*       numeric_pivot);
 template void host_gemmi(rocsparse_int        M,
                          rocsparse_int        N,
                          rocsparse_operation  transA,
@@ -6624,6 +6852,26 @@ template void host_csrsm(rocsparse_int                                M,
                          rocsparse_index_base                         base,
                          rocsparse_int*                               struct_pivot,
                          rocsparse_int*                               numeric_pivot);
+template void host_bsrsm(rocsparse_int                   mb,
+                         rocsparse_int                   nrhs,
+                         rocsparse_int                   nnzb,
+                         rocsparse_direction             dir,
+                         rocsparse_operation             transA,
+                         rocsparse_operation             transX,
+                         rocsparse_double_complex        alpha,
+                         const rocsparse_int*            bsr_row_ptr,
+                         const rocsparse_int*            bsr_col_ind,
+                         const rocsparse_double_complex* bsr_val,
+                         rocsparse_int                   bsr_dim,
+                         const rocsparse_double_complex* B,
+                         rocsparse_int                   ldb,
+                         rocsparse_double_complex*       X,
+                         rocsparse_int                   ldx,
+                         rocsparse_diag_type             diag_type,
+                         rocsparse_fill_mode             fill_mode,
+                         rocsparse_index_base            base,
+                         rocsparse_int*                  struct_pivot,
+                         rocsparse_int*                  numeric_pivot);
 template void host_gemmi(rocsparse_int                   M,
                          rocsparse_int                   N,
                          rocsparse_operation             transA,
@@ -7022,6 +7270,26 @@ template void host_csrsm(rocsparse_int                               M,
                          rocsparse_index_base                        base,
                          rocsparse_int*                              struct_pivot,
                          rocsparse_int*                              numeric_pivot);
+template void host_bsrsm(rocsparse_int                  mb,
+                         rocsparse_int                  nrhs,
+                         rocsparse_int                  nnzb,
+                         rocsparse_direction            dir,
+                         rocsparse_operation            transA,
+                         rocsparse_operation            transX,
+                         rocsparse_float_complex        alpha,
+                         const rocsparse_int*           bsr_row_ptr,
+                         const rocsparse_int*           bsr_col_ind,
+                         const rocsparse_float_complex* bsr_val,
+                         rocsparse_int                  bsr_dim,
+                         const rocsparse_float_complex* B,
+                         rocsparse_int                  ldb,
+                         rocsparse_float_complex*       X,
+                         rocsparse_int                  ldx,
+                         rocsparse_diag_type            diag_type,
+                         rocsparse_fill_mode            fill_mode,
+                         rocsparse_index_base           base,
+                         rocsparse_int*                 struct_pivot,
+                         rocsparse_int*                 numeric_pivot);
 template void host_gemmi(rocsparse_int                  M,
                          rocsparse_int                  N,
                          rocsparse_operation            transA,

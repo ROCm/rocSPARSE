@@ -139,6 +139,20 @@ Functions:
   rocsparse_zcsrsm_solve: { function: csrsm, <<: *double_precision_complex }
   rocsparse_csrsm_zero_pivot: {function: csrsm }
   rocsparse_csrsm_clear: {function: csrsm }
+  rocsparse_sbsrsm_buffer_size: { function: bsrsm, <<: *single_precision }
+  rocsparse_dbsrsm_buffer_size: { function: bsrsm, <<: *double_precision }
+  rocsparse_cbsrsm_buffer_size: { function: bsrsm, <<: *single_precision_complex }
+  rocsparse_zbsrsm_buffer_size: { function: bsrsm, <<: *double_precision_complex }
+  rocsparse_sbsrsm_analysis: { function: bsrsm, <<: *single_precision }
+  rocsparse_dbsrsm_analysis: { function: bsrsm, <<: *double_precision }
+  rocsparse_cbsrsm_analysis: { function: bsrsm, <<: *single_precision_complex }
+  rocsparse_zbsrsm_analysis: { function: bsrsm, <<: *double_precision_complex }
+  rocsparse_sbsrsm_solve: { function: bsrsm, <<: *single_precision }
+  rocsparse_dbsrsm_solve: { function: bsrsm, <<: *double_precision }
+  rocsparse_cbsrsm_solve: { function: bsrsm, <<: *single_precision_complex }
+  rocsparse_zbsrsm_solve: { function: bsrsm, <<: *double_precision_complex }
+  rocsparse_bsrsm_zero_pivot: {function: bsrsm }
+  rocsparse_bsrsm_clear: {function: bsrsm }
   rocsparse_sgemmi: { function: gemmi, <<: *single_precision }
   rocsparse_dgemmi: { function: gemmi, <<: *double_precision }
   rocsparse_cgemmi: { function: gemmi, <<: *single_precision_complex }

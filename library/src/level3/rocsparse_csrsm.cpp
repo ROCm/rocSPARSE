@@ -23,6 +23,7 @@
  * ************************************************************************ */
 #include "rocsparse_csrsm.hpp"
 
+#include "common.h"
 #include "definitions.h"
 #include "utility.h"
 
@@ -512,6 +513,17 @@ __launch_bounds__(BLOCKSIZE) __global__ void csrsm(rocsparse_int m,
                                            diag_type);
 }
 
+template <unsigned int DIM_X, unsigned int DIM_Y, typename T>
+__launch_bounds__(DIM_X* DIM_Y) __global__ void csrsm_transpose(rocsparse_int m,
+                                                                rocsparse_int n,
+                                                                const T* __restrict__ A,
+                                                                rocsparse_int lda,
+                                                                T* __restrict__ B,
+                                                                rocsparse_int ldb)
+{
+    dense_transpose_device<DIM_X, DIM_Y>(m, n, (T)1, A, lda, B, ldb);
+}
+
 template <typename T, typename U>
 rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle,
                                                 rocsparse_operation       trans_A,
@@ -904,7 +916,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
         dim3 csrsm_blocks((m - 1) / CSRSM_DIM_X + 1);
         dim3 csrsm_threads(CSRSM_DIM_X * CSRSM_DIM_Y);
 
-        hipLaunchKernelGGL((csrsm_transpose_back<CSRSM_DIM_X, CSRSM_DIM_Y>),
+        hipLaunchKernelGGL((dense_transpose_back<CSRSM_DIM_X, CSRSM_DIM_Y>),
                            csrsm_blocks,
                            csrsm_threads,
                            0,

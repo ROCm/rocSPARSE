@@ -28,16 +28,17 @@
 
 #include "bsrsv_device.h"
 
-#define LAUNCH_BSRSV_GTHR_DIM(bsize, wfsize, dim)                   \
-    hipLaunchKernelGGL((bsrsv_gather<wfsize, bsize / wfsize, dim>), \
-                       dim3((wfsize * nnzb - 1) / bsize + 1),       \
-                       dim3(wfsize, bsize / wfsize),                \
-                       0,                                           \
-                       stream,                                      \
-                       nnzb,                                        \
-                       bsrsv->trmt_perm,                            \
-                       bsr_val,                                     \
-                       bsrt_val,                                    \
+#define LAUNCH_BSRSV_GTHR_DIM(bsize, wfsize, dim)                 \
+    hipLaunchKernelGGL((bsr_gather<wfsize, bsize / wfsize, dim>), \
+                       dim3((wfsize * nnzb - 1) / bsize + 1),     \
+                       dim3(wfsize, bsize / wfsize),              \
+                       0,                                         \
+                       stream,                                    \
+                       dir,                                       \
+                       nnzb,                                      \
+                       bsrsv->trmt_perm,                          \
+                       bsr_val,                                   \
+                       bsrt_val,                                  \
                        bsr_dim)
 
 #define LAUNCH_BSRSV_GTHR(bsize, wfsize, dim) \

@@ -45,6 +45,7 @@ include: test_bsrmm.yaml
 include: test_gebsrmm.yaml
 include: test_csrmm.yaml
 include: test_csrsm.yaml
+include: test_bsrsm.yaml
 include: test_gemmi.yaml
 include: test_csrgeam.yaml
 include: test_csrgemm.yaml

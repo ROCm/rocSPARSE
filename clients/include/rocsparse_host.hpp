@@ -424,6 +424,29 @@ void host_csrsm(rocsparse_int                     M,
                 rocsparse_index_base              base,
                 rocsparse_int*                    struct_pivot,
                 rocsparse_int*                    numeric_pivot);
+
+template <typename T>
+void host_bsrsm(rocsparse_int       mb,
+                rocsparse_int       nrhs,
+                rocsparse_int       nnzb,
+                rocsparse_direction dir,
+                rocsparse_operation transA,
+                rocsparse_operation transX,
+                T                   alpha,
+                const rocsparse_int* __restrict__ bsr_row_ptr,
+                const rocsparse_int* __restrict__ bsr_col_ind,
+                const T* __restrict__ bsr_val,
+                rocsparse_int        bsr_dim,
+                const T*             B,
+                rocsparse_int        ldb,
+                T*                   X,
+                rocsparse_int        ldx,
+                rocsparse_diag_type  diag_type,
+                rocsparse_fill_mode  fill_mode,
+                rocsparse_index_base base,
+                rocsparse_int*       struct_pivot,
+                rocsparse_int*       numeric_pivot);
+
 template <typename T>
 void host_gemmi(rocsparse_int        M,
                 rocsparse_int        N,
