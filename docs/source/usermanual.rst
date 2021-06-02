@@ -857,6 +857,11 @@ Function name                                                             single
 :cpp:func:`rocsparse_csrsm_zero_pivot`
 :cpp:func:`rocsparse_csrsm_clear`
 :cpp:func:`rocsparse_Xcsrsm_solve() <rocsparse_scsrsm_solve>`             x      x      x              x
+:cpp:func:`rocsparse_Xbsrsm_buffer_size() <rocsparse_sbsrsm_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_Xbsrsm_analysis() <rocsparse_sbsrsm_analysis>`       x      x      x              x
+:cpp:func:`rocsparse_bsrsm_zero_pivot`
+:cpp:func:`rocsparse_bsrsm_clear`
+:cpp:func:`rocsparse_Xbsrsm_solve() <rocsparse_sbsrsm_solve>`             x      x      x              x
 :cpp:func:`rocsparse_Xgemmi() <rocsparse_sgemmi>`                         x      x      x              x
 ========================================================================= ====== ====== ============== ==============
 
@@ -1668,6 +1673,49 @@ rocsparse_csrsm_clear()
 -----------------------
 
 .. doxygenfunction:: rocsparse_csrsm_clear
+
+rocsparse_bsrsm_zero_pivot()
+----------------------------
+
+.. doxygenfunction:: rocsparse_bsrsm_zero_pivot
+
+rocsparse_bsrsm_buffer_size()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_sbsrsm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrsm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrsm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrsm_buffer_size
+
+rocsparse_bsrsm_analysis()
+--------------------------
+
+.. doxygenfunction:: rocsparse_sbsrsm_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrsm_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrsm_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrsm_analysis
+
+rocsparse_bsrsm_solve()
+-----------------------
+
+.. doxygenfunction:: rocsparse_sbsrsm_solve
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrsm_solve
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrsm_solve
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrsm_solve
+
+rocsparse_bsrsm_clear()
+-----------------------
+
+.. doxygenfunction:: rocsparse_bsrsm_clear
 
 .. _rocsparse_extra_functions_:
 

@@ -28,40 +28,6 @@
 
 #include "common.h"
 
-template <unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM, typename T>
-__launch_bounds__(WFSIZE* DIMY) __global__ void bsrsv_gather(rocsparse_int nnzb,
-                                                             const rocsparse_int* __restrict__ perm,
-                                                             const T* __restrict__ bsr_val_A,
-                                                             T* __restrict__ bsr_val_T,
-                                                             rocsparse_int bsr_dim)
-{
-    rocsparse_int lid = hipThreadIdx_x & (BSRDIM - 1);
-    rocsparse_int wid = hipThreadIdx_x / BSRDIM;
-
-    // Non-permuted nnz index
-    rocsparse_int i = hipBlockIdx_x * DIMY + hipThreadIdx_y;
-
-    // Do not exceed the number of elements
-    if(i >= nnzb)
-    {
-        return;
-    }
-
-    // Load the permuted nnz index
-    rocsparse_int j = perm[i];
-
-    // Gather values from A and store them to T with respect to the
-    // given row / column permutation
-    for(rocsparse_int bi = lid; bi < bsr_dim; bi += BSRDIM)
-    {
-        for(rocsparse_int bj = wid; bj < bsr_dim; bj += BSRDIM)
-        {
-            bsr_val_T[bsr_dim * bsr_dim * i + bi + bj * bsr_dim]
-                = bsr_val_A[bsr_dim * bsr_dim * j + bj + bi * bsr_dim];
-        }
-    }
-}
-
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
 __device__ void bsrsv_lower_general_device(rocsparse_int mb,
                                            T             alpha,

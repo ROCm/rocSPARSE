@@ -517,4 +517,121 @@ __device__ __forceinline__ rocsparse_double_complex rocsparse_wfreduce_sum(rocsp
 }
 // clang-format on
 
+// Perform dense matrix transposition
+template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
+__device__ void dense_transpose_device(
+    I m, I n, T alpha, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
+{
+    int lid = threadIdx.x & (DIMX - 1);
+    int wid = threadIdx.x / DIMX;
+
+    I row_A = blockIdx.x * DIMX + lid;
+    I row_B = blockIdx.x * DIMX + wid;
+
+    __shared__ T sdata[DIMX][DIMX];
+
+    for(I j = 0; j < n; j += DIMX)
+    {
+        __syncthreads();
+
+        I col_A = j + wid;
+
+        for(I k = 0; k < DIMX; k += DIMY)
+        {
+            if(row_A < m && col_A + k < n)
+            {
+                sdata[wid + k][lid] = A[row_A + lda * (col_A + k)];
+            }
+        }
+
+        __syncthreads();
+
+        I col_B = j + lid;
+
+        for(I k = 0; k < DIMX; k += DIMY)
+        {
+            if(col_B < n && row_B + k < m)
+            {
+                B[col_B + ldb * (row_B + k)] = alpha * sdata[lid][wid + k];
+            }
+        }
+    }
+}
+
+// Perform dense matrix back transposition
+template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
+__launch_bounds__(DIMX* DIMY) __global__
+    void dense_transpose_back(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
+{
+    int lid = hipThreadIdx_x & (DIMX - 1);
+    int wid = hipThreadIdx_x / DIMX;
+
+    I row_A = hipBlockIdx_x * DIMX + wid;
+    I row_B = hipBlockIdx_x * DIMX + lid;
+
+    __shared__ T sdata[DIMX][DIMX];
+
+    for(I j = 0; j < n; j += DIMX)
+    {
+        __syncthreads();
+
+        I col_A = j + lid;
+
+        for(I k = 0; k < DIMX; k += DIMY)
+        {
+            if(col_A < n && row_A + k < m)
+            {
+                sdata[wid + k][lid] = A[col_A + lda * (row_A + k)];
+            }
+        }
+
+        __syncthreads();
+
+        I col_B = j + wid;
+
+        for(I k = 0; k < DIMX; k += DIMY)
+        {
+            if(row_B < m && col_B + k < n)
+            {
+                B[row_B + ldb * (col_B + k)] = sdata[lid][wid + k];
+            }
+        }
+    }
+}
+
+// BSR gather functionality to permute the BSR values array
+template <unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM, typename I, typename T>
+__launch_bounds__(WFSIZE* DIMY) __global__ void bsr_gather(rocsparse_direction dir,
+                                                           I                   nnzb,
+                                                           const I* __restrict__ perm,
+                                                           const T* __restrict__ bsr_val_A,
+                                                           T* __restrict__ bsr_val_T,
+                                                           I bsr_dim)
+{
+    int lid = threadIdx.x & (BSRDIM - 1);
+    int wid = threadIdx.x / BSRDIM;
+
+    // Non-permuted nnz index
+    I j = blockIdx.x * DIMY + threadIdx.y;
+
+    // Do not exceed the number of elements
+    if(j >= nnzb)
+    {
+        return;
+    }
+
+    // Load the permuted nnz index
+    I p = perm[j];
+
+    // Gather values from A and store them to T with respect to the
+    // given row / column permutation
+    for(I bi = lid; bi < bsr_dim; bi += BSRDIM)
+    {
+        for(I bj = wid; bj < bsr_dim; bj += BSRDIM)
+        {
+            bsr_val_T[BSR_IND(j, bi, bj, dir)] = bsr_val_A[BSR_IND(p, bj, bi, dir)];
+        }
+    }
+}
+
 #endif // COMMON_H

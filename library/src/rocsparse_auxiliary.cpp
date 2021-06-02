@@ -489,9 +489,16 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
     }
 
     // Uncouple shared meta data
-    if(info->bsrsv_lower_info == info->bsrilu0_info || info->bsrsv_lower_info == info->bsric0_info)
+    if(info->bsrsv_lower_info == info->bsrilu0_info || info->bsrsv_lower_info == info->bsric0_info
+       || info->bsrsv_lower_info == info->bsrsm_lower_info)
     {
         info->bsrsv_lower_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(info->bsrsm_lower_info == info->bsrilu0_info || info->bsrsm_lower_info == info->bsric0_info)
+    {
+        info->bsrsm_lower_info = nullptr;
     }
 
     // Uncouple shared meta data
@@ -526,15 +533,33 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
     }
 
     // Uncouple shared meta data
+    if(info->bsrsv_upper_info == info->bsrsm_upper_info)
+    {
+        info->bsrsv_upper_info = nullptr;
+    }
+
+    // Uncouple shared meta data
     if(info->csrsvt_lower_info == info->csrsmt_lower_info)
     {
         info->csrsvt_lower_info = nullptr;
     }
 
     // Uncouple shared meta data
+    if(info->bsrsvt_lower_info == info->bsrsmt_lower_info)
+    {
+        info->bsrsvt_lower_info = nullptr;
+    }
+
+    // Uncouple shared meta data
     if(info->csrsvt_upper_info == info->csrsmt_upper_info)
     {
         info->csrsvt_upper_info = nullptr;
+    }
+
+    // Uncouple shared meta data
+    if(info->bsrsvt_upper_info == info->bsrsmt_upper_info)
+    {
+        info->bsrsvt_upper_info = nullptr;
     }
 
     // Clear csrmv info struct
@@ -591,6 +616,18 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsmt_lower_info));
     }
 
+    // Clear bsrsmt upper info struct
+    if(info->bsrsmt_upper_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->bsrsmt_upper_info));
+    }
+
+    // Clear bsrsmt lower info struct
+    if(info->bsrsmt_lower_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->bsrsmt_lower_info));
+    }
+
     // Clear csric0 info struct
     if(info->csric0_info != nullptr)
     {
@@ -637,6 +674,18 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info)
     if(info->csrsm_lower_info != nullptr)
     {
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->csrsm_lower_info));
+    }
+
+    // Clear bsrsm upper info struct
+    if(info->bsrsm_upper_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->bsrsm_upper_info));
+    }
+
+    // Clear bsrsm lower info struct
+    if(info->bsrsm_lower_info != nullptr)
+    {
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_destroy_trm_info(info->bsrsm_lower_info));
     }
 
     // Clear csrgemm info struct

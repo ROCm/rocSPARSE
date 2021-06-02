@@ -1,0 +1,56 @@
+/*! \file */
+/* ************************************************************************
+ * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * ************************************************************************ */
+
+#pragma once
+#ifndef BSRSM_DEVICE_H
+#define BSRSM_DEVICE_H
+
+#include "common.h"
+
+template <typename T>
+__device__ void bsrsm_copy_scale_device(rocsparse_int m,
+                                        rocsparse_int n,
+                                        T             alpha,
+                                        const T*      B,
+                                        rocsparse_int ldb,
+                                        T*            X,
+                                        rocsparse_int ldx)
+{
+    rocsparse_int row = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if(row >= m)
+    {
+        return;
+    }
+
+    for(int i = 0; i < n; ++i)
+    {
+        rocsparse_int idx_B = row * ldb + i;
+        rocsparse_int idx_X = row * ldx + i;
+
+        X[idx_X] = alpha * B[idx_B];
+    }
+}
+
+#endif // BSRSM_DEVICE_H
