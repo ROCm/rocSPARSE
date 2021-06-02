@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,8 @@ __device__ void gebsrmvn_general_device(rocsparse_direction dir,
                                         const rocsparse_int* __restrict__ bsr_row_ptr,
                                         const rocsparse_int* __restrict__ bsr_col_ind,
                                         const T* __restrict__ bsr_val,
-                                        rocsparse_int row_bsr_dim,
-                                        rocsparse_int col_bsr_dim,
+                                        rocsparse_int row_block_dim,
+                                        rocsparse_int col_block_dim,
                                         const T* __restrict__ x,
                                         T beta,
                                         T* __restrict__ y,
@@ -65,7 +65,7 @@ __device__ void gebsrmvn_general_device(rocsparse_direction dir,
 
     // Loop over the rows of the BSR block in chunks of WFSIZE, such that each
     // wavefront will process a row
-    for(rocsparse_int bi = wid; bi < row_bsr_dim; bi += BLOCKSIZE / WFSIZE)
+    for(rocsparse_int bi = wid; bi < row_block_dim; bi += BLOCKSIZE / WFSIZE)
     {
         // BSR block row accumulator
         T sum = static_cast<T>(0);
@@ -78,12 +78,12 @@ __device__ void gebsrmvn_general_device(rocsparse_direction dir,
 
             // Loop over the columns of the BSR block in chunks of WFSIZE, such that
             // each lane will process a single value of the BSR block
-            for(rocsparse_int bj = lid; bj < col_bsr_dim; bj += WFSIZE)
+            for(rocsparse_int bj = lid; bj < col_block_dim; bj += WFSIZE)
             {
                 // Each lane computes the sum of a specific entry over all BSR blocks in
                 // the current row
                 sum = rocsparse_fma(
-                    bsr_val[GEBSR_IND(j, bi, bj, dir)], x[col_bsr_dim * col + bj], sum);
+                    bsr_val[GEBSR_IND(j, bi, bj, dir)], x[col_block_dim * col + bj], sum);
             }
         }
 
@@ -95,12 +95,12 @@ __device__ void gebsrmvn_general_device(rocsparse_direction dir,
         {
             if(beta != static_cast<T>(0))
             {
-                y[row * row_bsr_dim + bi]
-                    = rocsparse_fma(beta, y[row * row_bsr_dim + bi], alpha * sum);
+                y[row * row_block_dim + bi]
+                    = rocsparse_fma(beta, y[row * row_block_dim + bi], alpha * sum);
             }
             else
             {
-                y[row * row_bsr_dim + bi] = alpha * sum;
+                y[row * row_block_dim + bi] = alpha * sum;
             }
         }
     }
@@ -143,20 +143,17 @@ __device__ void gebsrmvn_1xn_device(rocsparse_int       mb,
 
     // Loop over all BSR blocks in the current row where each lane
     // processes a BSR block
-    for(rocsparse_int j = row_begin; j < row_end; j += WFSIZE)
+    for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
     {
         // Do not exceed the row
-        if(j + lid < row_end)
-        {
-            // Column index into x vector
-            rocsparse_int col = (bsr_col_ind[j + lid] - idx_base) * COLBSRDIM;
+        // Column index into x vector
+        rocsparse_int col = (bsr_col_ind[j] - idx_base) * COLBSRDIM;
 
-            // Compute the sum of the two rows within the BSR blocks of the current
-            // BSR row
-            for(rocsparse_int k = 0; k < COLBSRDIM; k++)
-            {
-                sum = rocsparse_fma(bsr_val[COLBSRDIM * (j + lid) + k], x[col + k], sum);
-            }
+        // Compute the sum of the two rows within the BSR blocks of the current
+        // BSR row
+        for(rocsparse_int k = 0; k < COLBSRDIM; k++)
+        {
+            sum = rocsparse_fma(bsr_val[COLBSRDIM * j + k], x[col + k], sum);
         }
     }
 
@@ -218,41 +215,47 @@ __device__ void gebsrmvn_2xn_device(rocsparse_int       mb,
 
     // Loop over all BSR blocks in the current row where each lane
     // processes a BSR block
-    for(rocsparse_int j = row_begin; j < row_end; j += WFSIZE)
+    if(dir == rocsparse_direction_row)
     {
-        // Do not exceed the row
-        if(j + lid < row_end)
+        for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
         {
+            // Do not exceed the row
             // Column index into x vector
-            rocsparse_int col = (bsr_col_ind[j + lid] - idx_base);
+            rocsparse_int col = (bsr_col_ind[j] - idx_base);
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
             for(rocsparse_int k = 0; k < COLBSRDIM; k++)
             {
-                if(dir == rocsparse_direction_row)
-                {
-                    sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum0);
-                    sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + COLBSRDIM + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum1);
-                }
-                else
-                {
-                    sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + ROWBSRDIM * k],
-                                         x[COLBSRDIM * col + k],
-                                         sum0);
-                    sum1 = rocsparse_fma(
-                        bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + ROWBSRDIM * k + 1],
-                        x[COLBSRDIM * col + k],
-                        sum1);
-                }
+                sum0 = rocsparse_fma(
+                    bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
+                sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + COLBSRDIM + k],
+                                     x[COLBSRDIM * col + k],
+                                     sum1);
             }
         }
     }
+    else
+    {
+        for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
+        {
+            // Do not exceed the row
+            // Column index into x vector
+            rocsparse_int col = (bsr_col_ind[j] - idx_base);
 
+            // Compute the sum of the two rows within the BSR blocks of the current
+            // BSR row
+            for(rocsparse_int k = 0; k < COLBSRDIM; k++)
+            {
+                sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
+                                     x[COLBSRDIM * col + k],
+                                     sum0);
+                sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 1],
+                                     x[COLBSRDIM * col + k],
+                                     sum1);
+            }
+        }
+    }
     // Each wavefront accumulates its BSR block row sum
     sum0 = rocsparse_wfreduce_sum<WFSIZE>(sum0);
     sum1 = rocsparse_wfreduce_sum<WFSIZE>(sum1);
@@ -315,45 +318,50 @@ __device__ void gebsrmvn_3xn_device(rocsparse_int       mb,
 
     // Loop over all BSR blocks in the current row where each lane
     // processes a BSR block
-    for(rocsparse_int j = row_begin; j < row_end; j += WFSIZE)
+    if(dir == rocsparse_direction_row)
     {
-        // Do not exceed the row
-        if(j + lid < row_end)
+        for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
         {
+            // Do not exceed the row
             // Column index into x vector
-            rocsparse_int col = (bsr_col_ind[j + lid] - idx_base);
+            rocsparse_int col = (bsr_col_ind[j] - idx_base);
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
             for(rocsparse_int k = 0; k < COLBSRDIM; k++)
             {
-                if(dir == rocsparse_direction_row)
-                {
-                    sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum0);
-                    sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + COLBSRDIM + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum1);
-                    sum2 = rocsparse_fma(
-                        bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + 2 * COLBSRDIM + k],
-                        x[COLBSRDIM * col + k],
-                        sum2);
-                }
-                else
-                {
-                    sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + ROWBSRDIM * k],
-                                         x[COLBSRDIM * col + k],
-                                         sum0);
-                    sum1 = rocsparse_fma(
-                        bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + ROWBSRDIM * k + 1],
-                        x[COLBSRDIM * col + k],
-                        sum1);
-                    sum2 = rocsparse_fma(
-                        bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + ROWBSRDIM * k + 2],
-                        x[COLBSRDIM * col + k],
-                        sum2);
-                }
+                sum0 = rocsparse_fma(
+                    bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
+                sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + COLBSRDIM + k],
+                                     x[COLBSRDIM * col + k],
+                                     sum1);
+                sum2 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + 2 * COLBSRDIM + k],
+                                     x[COLBSRDIM * col + k],
+                                     sum2);
+            }
+        }
+    }
+    else
+    {
+        for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
+        {
+            // Do not exceed the row
+            // Column index into x vector
+            rocsparse_int col = (bsr_col_ind[j] - idx_base);
+
+            // Compute the sum of the two rows within the BSR blocks of the current
+            // BSR row
+            for(rocsparse_int k = 0; k < COLBSRDIM; k++)
+            {
+                sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
+                                     x[COLBSRDIM * col + k],
+                                     sum0);
+                sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 1],
+                                     x[COLBSRDIM * col + k],
+                                     sum1);
+                sum2 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 2],
+                                     x[COLBSRDIM * col + k],
+                                     sum2);
             }
         }
     }
@@ -424,53 +432,56 @@ __device__ void gebsrmvn_4xn_device(rocsparse_int       mb,
 
     // Loop over all BSR blocks in the current row where each lane
     // processes a BSR block
-    for(rocsparse_int j = row_begin; j < row_end; j += WFSIZE)
+    if(dir == rocsparse_direction_row)
     {
-        // Do not exceed the row
-        if(j + lid < row_end)
+        for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
         {
+            // Do not exceed the row
             // Column index into x vector
-            rocsparse_int col = (bsr_col_ind[j + lid] - idx_base);
+            rocsparse_int col = (bsr_col_ind[j] - idx_base);
 
             // Compute the sum of the two rows within the BSR blocks of the current
             // BSR row
             for(rocsparse_int k = 0; k < COLBSRDIM; k++)
             {
-                if(dir == rocsparse_direction_row)
-                {
-                    sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum0);
-                    sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + COLBSRDIM + k],
-                                         x[COLBSRDIM * col + k],
-                                         sum1);
-                    sum2 = rocsparse_fma(
-                        bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + 2 * COLBSRDIM + k],
-                        x[COLBSRDIM * col + k],
-                        sum2);
-                    sum3 = rocsparse_fma(
-                        bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + 3 * COLBSRDIM + k],
-                        x[COLBSRDIM * col + k],
-                        sum3);
-                }
-                else
-                {
-                    sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + ROWBSRDIM * k],
-                                         x[COLBSRDIM * col + k],
-                                         sum0);
-                    sum1 = rocsparse_fma(
-                        bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + ROWBSRDIM * k + 1],
-                        x[COLBSRDIM * col + k],
-                        sum1);
-                    sum2 = rocsparse_fma(
-                        bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + ROWBSRDIM * k + 2],
-                        x[COLBSRDIM * col + k],
-                        sum2);
-                    sum3 = rocsparse_fma(
-                        bsr_val[ROWBSRDIM * COLBSRDIM * (j + lid) + ROWBSRDIM * k + 3],
-                        x[COLBSRDIM * col + k],
-                        sum3);
-                }
+                sum0 = rocsparse_fma(
+                    bsr_val[ROWBSRDIM * COLBSRDIM * j + k], x[COLBSRDIM * col + k], sum0);
+                sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + COLBSRDIM + k],
+                                     x[COLBSRDIM * col + k],
+                                     sum1);
+                sum2 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + 2 * COLBSRDIM + k],
+                                     x[COLBSRDIM * col + k],
+                                     sum2);
+                sum3 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + 3 * COLBSRDIM + k],
+                                     x[COLBSRDIM * col + k],
+                                     sum3);
+            }
+        }
+    }
+    else
+    {
+        for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
+        {
+            // Do not exceed the row
+            // Column index into x vector
+            rocsparse_int col = (bsr_col_ind[j] - idx_base);
+
+            // Compute the sum of the two rows within the BSR blocks of the current
+            // BSR row
+            for(rocsparse_int k = 0; k < COLBSRDIM; k++)
+            {
+                sum0 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k],
+                                     x[COLBSRDIM * col + k],
+                                     sum0);
+                sum1 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 1],
+                                     x[COLBSRDIM * col + k],
+                                     sum1);
+                sum2 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 2],
+                                     x[COLBSRDIM * col + k],
+                                     sum2);
+                sum3 = rocsparse_fma(bsr_val[ROWBSRDIM * COLBSRDIM * j + ROWBSRDIM * k + 3],
+                                     x[COLBSRDIM * col + k],
+                                     sum3);
             }
         }
     }

@@ -40,7 +40,7 @@ rocsparse_status rocsparse_bsrmv_template_dispatch(rocsparse_handle          han
                                                    const T*                  bsr_val,
                                                    const rocsparse_int*      bsr_row_ptr,
                                                    const rocsparse_int*      bsr_col_ind,
-                                                   rocsparse_int             bsr_dim,
+                                                   rocsparse_int             block_dim,
                                                    const T*                  x,
                                                    U                         beta_device_host,
                                                    T*                        y);
@@ -57,7 +57,7 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
                                           const T*                  bsr_val,
                                           const rocsparse_int*      bsr_row_ptr,
                                           const rocsparse_int*      bsr_col_ind,
-                                          rocsparse_int             bsr_dim,
+                                          rocsparse_int             block_dim,
                                           const T*                  x,
                                           const T*                  beta_device_host,
                                           T*                        y);

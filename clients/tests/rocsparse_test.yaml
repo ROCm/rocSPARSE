@@ -33,6 +33,7 @@ include: test_rot.yaml
 include: test_roti.yaml
 include: test_sctr.yaml
 include: test_bsrmv.yaml
+include: test_bsrxmv.yaml
 include: test_bsrsv.yaml
 include: test_coomv.yaml
 include: test_csrmv.yaml

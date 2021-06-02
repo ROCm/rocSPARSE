@@ -34,12 +34,12 @@
 
 // BSR indexing macros
 #define BSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? BSR_IND_R(j, bi, bj) : BSR_IND_C(j, bi, bj))
-#define BSR_IND_R(j, bi, bj) (bsr_dim * bsr_dim * (j) + (bi) * bsr_dim + (bj))
-#define BSR_IND_C(j, bi, bj) (bsr_dim * bsr_dim * (j) + (bi) + (bj) * bsr_dim)
+#define BSR_IND_R(j, bi, bj) (block_dim * block_dim * (j) + (bi) * block_dim + (bj))
+#define BSR_IND_C(j, bi, bj) (block_dim * block_dim * (j) + (bi) + (bj) * block_dim)
 
 #define GEBSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? GEBSR_IND_R(j, bi, bj) : GEBSR_IND_C(j, bi, bj))
-#define GEBSR_IND_R(j, bi, bj) (row_bsr_dim * col_bsr_dim * (j) + (bi) * col_bsr_dim + (bj))
-#define GEBSR_IND_C(j, bi, bj) (row_bsr_dim * col_bsr_dim * (j) + (bi) + (bj) * row_bsr_dim)
+#define GEBSR_IND_R(j, bi, bj) (row_block_dim * col_block_dim * (j) + (bi) * col_block_dim + (bj))
+#define GEBSR_IND_C(j, bi, bj) (row_block_dim * col_block_dim * (j) + (bi) + (bj) * row_block_dim)
 
 // find next power of 2
 __attribute__((unused)) static unsigned int fnp2(unsigned int x)
@@ -606,7 +606,7 @@ __launch_bounds__(WFSIZE* DIMY) __global__ void bsr_gather(rocsparse_direction d
                                                            const I* __restrict__ perm,
                                                            const T* __restrict__ bsr_val_A,
                                                            T* __restrict__ bsr_val_T,
-                                                           I bsr_dim)
+                                                           I block_dim)
 {
     int lid = threadIdx.x & (BSRDIM - 1);
     int wid = threadIdx.x / BSRDIM;
@@ -625,9 +625,9 @@ __launch_bounds__(WFSIZE* DIMY) __global__ void bsr_gather(rocsparse_direction d
 
     // Gather values from A and store them to T with respect to the
     // given row / column permutation
-    for(I bi = lid; bi < bsr_dim; bi += BSRDIM)
+    for(I bi = lid; bi < block_dim; bi += BSRDIM)
     {
-        for(I bj = wid; bj < bsr_dim; bj += BSRDIM)
+        for(I bj = wid; bj < block_dim; bj += BSRDIM)
         {
             bsr_val_T[BSR_IND(j, bi, bj, dir)] = bsr_val_A[BSR_IND(p, bj, bi, dir)];
         }

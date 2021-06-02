@@ -197,6 +197,25 @@ void host_bsrmv(rocsparse_direction  dir,
                 rocsparse_index_base base);
 
 template <typename T>
+void host_bsrxmv(rocsparse_direction  dir,
+                 rocsparse_operation  trans,
+                 rocsparse_int        size_of_mask,
+                 rocsparse_int        mb,
+                 rocsparse_int        nb,
+                 rocsparse_int        nnzb,
+                 T                    alpha,
+                 const rocsparse_int* bsr_mask_ptr,
+                 const rocsparse_int* bsr_row_ptr,
+                 const rocsparse_int* bsr_end_ptr,
+                 const rocsparse_int* bsr_col_ind,
+                 const T*             bsr_val,
+                 rocsparse_int        bsr_dim,
+                 const T*             x,
+                 T                    beta,
+                 T*                   y,
+                 rocsparse_index_base base);
+
+template <typename T>
 void host_bsrsv(rocsparse_operation  trans,
                 rocsparse_direction  dir,
                 rocsparse_int        mb,

@@ -43,6 +43,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_roti.cpp
 ../testings/testing_sctr.cpp
 ../testings/testing_bsrmv.cpp
+../testings/testing_bsrxmv.cpp
 ../testings/testing_bsrsv.cpp
 ../testings/testing_coomv.cpp
 ../testings/testing_csrmv.cpp
