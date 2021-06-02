@@ -158,6 +158,27 @@ REAL_COMPLEX_TEMPLATE(bsrmv,
                       const T*                  beta,
                       T*                        y);
 
+// bsrxmv
+REAL_COMPLEX_TEMPLATE(bsrxmv,
+                      rocsparse_handle          handle,
+                      rocsparse_direction       dir,
+                      rocsparse_operation       trans,
+                      rocsparse_int             size_of_mask,
+                      rocsparse_int             mb,
+                      rocsparse_int             nb,
+                      rocsparse_int             nnzb,
+                      const T*                  alpha,
+                      const rocsparse_mat_descr descr,
+                      const T*                  bsr_val,
+                      const rocsparse_int*      bsr_mask_ptr,
+                      const rocsparse_int*      bsr_row_ptr,
+                      const rocsparse_int*      bsr_end_ptr,
+                      const rocsparse_int*      bsr_col_ind,
+                      rocsparse_int             bsr_dim,
+                      const T*                  x,
+                      const T*                  beta,
+                      T*                        y);
+
 // bsrsv
 REAL_COMPLEX_TEMPLATE(bsrsv_buffer_size,
                       rocsparse_handle          handle,

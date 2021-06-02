@@ -39,7 +39,7 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
                                                    const T*                  bsr_val,
                                                    const rocsparse_int*      bsr_row_ptr,
                                                    const rocsparse_int*      bsr_col_ind,
-                                                   rocsparse_int             bsr_dim,
+                                                   rocsparse_int             block_dim,
                                                    rocsparse_mat_info        info,
                                                    rocsparse_analysis_policy analysis,
                                                    rocsparse_solve_policy    solve,
@@ -67,7 +67,7 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
               (const void*&)bsr_val,
               (const void*&)bsr_row_ptr,
               (const void*&)bsr_col_ind,
-              bsr_dim,
+              block_dim,
               (const void*&)info,
               solve,
               analysis,
@@ -110,13 +110,13 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
     }
 
     // Check sizes
-    if(mb < 0 || nnzb < 0 || bsr_dim < 0)
+    if(mb < 0 || nnzb < 0 || block_dim < 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(mb == 0 || nnzb == 0 || bsr_dim == 0)
+    if(mb == 0 || nnzb == 0 || block_dim == 0)
     {
         return rocsparse_status_success;
     }
@@ -277,7 +277,7 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
                                      const TYPE*               bsr_val,     \
                                      const rocsparse_int*      bsr_row_ptr, \
                                      const rocsparse_int*      bsr_col_ind, \
-                                     rocsparse_int             bsr_dim,     \
+                                     rocsparse_int             block_dim,   \
                                      rocsparse_mat_info        info,        \
                                      rocsparse_analysis_policy analysis,    \
                                      rocsparse_solve_policy    solve,       \
@@ -292,7 +292,7 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
                                                  bsr_val,                   \
                                                  bsr_row_ptr,               \
                                                  bsr_col_ind,               \
-                                                 bsr_dim,                   \
+                                                 block_dim,                 \
                                                  info,                      \
                                                  analysis,                  \
                                                  solve,                     \

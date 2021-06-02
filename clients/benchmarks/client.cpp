@@ -37,6 +37,7 @@
 // Level2
 #include "testing_bsrmv.hpp"
 #include "testing_bsrsv.hpp"
+#include "testing_bsrxmv.hpp"
 #include "testing_csrmv_managed.hpp"
 #include "testing_csrsv.hpp"
 #include "testing_gebsrmv.hpp"
@@ -283,7 +284,7 @@ int main(int argc, char* argv[])
         value<std::string>(&function)->default_value("axpyi"),
         "SPARSE function to test. Options:\n"
         "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
-        "  Level2: bsrmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, ellmv, hybmv, gebsrmv, gemvi\n"
+        "  Level2: bsrmv, bsrxmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, ellmv, hybmv, gebsrmv, gemvi\n"
         "  Level3: bsrmm, bsrsm, gebsrmm, csrmm, coomm, csrsm, gemmi, sddmm\n"
         "  Extra: csrgeam, csrgemm\n"
         "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, gtsv, gtsv_no_pivot, gtsv_no_pivot_strided_batch\n"
@@ -630,6 +631,17 @@ int main(int argc, char* argv[])
             testing_bsrmv<rocsparse_float_complex>(arg);
         else if(precision == 'z')
             testing_bsrmv<rocsparse_double_complex>(arg);
+    }
+    else if(function == "bsrxmv")
+    {
+        if(precision == 's')
+            testing_bsrxmv<float>(arg);
+        else if(precision == 'd')
+            testing_bsrxmv<double>(arg);
+        else if(precision == 'c')
+            testing_bsrxmv<rocsparse_float_complex>(arg);
+        else if(precision == 'z')
+            testing_bsrxmv<rocsparse_double_complex>(arg);
     }
     else if(function == "bsrsv")
     {

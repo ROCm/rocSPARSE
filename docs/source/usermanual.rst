@@ -822,6 +822,7 @@ Sparse Level 2 Functions
 Function name                                                             single double single complex double complex
 ========================================================================= ====== ====== ============== ==============
 :cpp:func:`rocsparse_Xbsrmv() <rocsparse_sbsrmv>`                         x      x      x              x
+:cpp:func:`rocsparse_Xbsrxmv() <rocsparse_sbsrxmv>`                       x      x      x              x
 :cpp:func:`rocsparse_Xbsrsv_buffer_size() <rocsparse_sbsrsv_buffer_size>` x      x      x              x
 :cpp:func:`rocsparse_Xbsrsv_analysis() <rocsparse_sbsrsv_analysis>`       x      x      x              x
 :cpp:func:`rocsparse_bsrsv_zero_pivot`
@@ -1407,6 +1408,17 @@ rocsparse_bsrmv()
 .. doxygenfunction:: rocsparse_cbsrmv
   :outline:
 .. doxygenfunction:: rocsparse_zbsrmv
+
+rocsparse_bsrxmv()
+------------------
+
+.. doxygenfunction:: rocsparse_sbsrxmv
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrxmv
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrxmv
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrxmv
 
 rocsparse_bsrsv_zero_pivot()
 ----------------------------

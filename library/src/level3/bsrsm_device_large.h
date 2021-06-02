@@ -35,7 +35,7 @@ __launch_bounds__(BLOCKSIZE) __global__
                                   const rocsparse_int* bsr_row_ptr,
                                   const rocsparse_int* bsr_col_ind,
                                   const T*             bsr_val,
-                                  rocsparse_int        bsr_dim,
+                                  rocsparse_int        block_dim,
                                   T*                   X,
                                   rocsparse_int        ldx,
                                   int*                 done_array,
@@ -119,21 +119,21 @@ __launch_bounds__(BLOCKSIZE) __global__
         if(col_X < nrhs)
         {
             // Loop over rows of the BSR block
-            for(int bi = lid; bi < bsr_dim; bi += WFSIZE)
+            for(int bi = lid; bi < block_dim; bi += WFSIZE)
             {
                 // Local sum accumulator
                 T sum = static_cast<T>(0);
 
                 // Loop over columns of the BSR block
-                for(int bj = 0; bj < bsr_dim; ++bj)
+                for(int bj = 0; bj < block_dim; ++bj)
                 {
                     sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
-                                        X[(bsr_dim * local_col + bj) * ldx + col_X],
+                                        X[(block_dim * local_col + bj) * ldx + col_X],
                                         sum);
                 }
 
                 // Write local sum to X
-                X[(bsr_dim * row + bi) * ldx + col_X] -= sum;
+                X[(block_dim * row + bi) * ldx + col_X] -= sum;
             }
         }
     }
@@ -144,14 +144,14 @@ __launch_bounds__(BLOCKSIZE) __global__
     if(row < mb && row == local_col && col_X < nrhs)
     {
         // Loop over rows of the BSR block
-        for(int bi = bsr_dim - 1; bi >= 0; --bi)
+        for(int bi = block_dim - 1; bi >= 0; --bi)
         {
             // Load diagonal matrix entry
             T diag = (diag_type == rocsparse_diag_type_non_unit) ? bsr_val[BSR_IND(j, bi, bi, dir)]
                                                                  : static_cast<T>(1);
 
             // Load result of bi-th BSR row
-            T val = X[(bsr_dim * row + bi) * ldx + col_X];
+            T val = X[(block_dim * row + bi) * ldx + col_X];
 
             // Check for numerical pivot
             if(diag == static_cast<T>(0))
@@ -161,13 +161,13 @@ __launch_bounds__(BLOCKSIZE) __global__
             else
             {
                 // Divide result of bi-th BSR row by diagonal entry
-                X[(bsr_dim * row + bi) * ldx + col_X] = val /= diag;
+                X[(block_dim * row + bi) * ldx + col_X] = val /= diag;
             }
 
             // Update remaining non-diagonal entries
             for(int bj = lid; bj < bi; bj += WFSIZE)
             {
-                X[(bsr_dim * row + bj) * ldx + col_X] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
+                X[(block_dim * row + bj) * ldx + col_X] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
             }
         }
     }
@@ -197,7 +197,7 @@ __launch_bounds__(BLOCKSIZE) __global__
                                   const rocsparse_int* bsr_row_ptr,
                                   const rocsparse_int* bsr_col_ind,
                                   const T*             bsr_val,
-                                  rocsparse_int        bsr_dim,
+                                  rocsparse_int        block_dim,
                                   T*                   X,
                                   rocsparse_int        ldx,
                                   int*                 done_array,
@@ -281,21 +281,21 @@ __launch_bounds__(BLOCKSIZE) __global__
         if(col_X < nrhs)
         {
             // Loop over rows of the BSR block
-            for(int bi = lid; bi < bsr_dim; bi += WFSIZE)
+            for(int bi = lid; bi < block_dim; bi += WFSIZE)
             {
                 // Local sum accumulator
                 T sum = static_cast<T>(0);
 
                 // Loop over columns of the BSR block
-                for(int bj = 0; bj < bsr_dim; ++bj)
+                for(int bj = 0; bj < block_dim; ++bj)
                 {
                     sum = rocsparse_fma(bsr_val[BSR_IND(j, bi, bj, dir)],
-                                        X[(bsr_dim * local_col + bj) * ldx + col_X],
+                                        X[(block_dim * local_col + bj) * ldx + col_X],
                                         sum);
                 }
 
                 // Write local sum to X
-                X[(bsr_dim * row + bi) * ldx + col_X] -= sum;
+                X[(block_dim * row + bi) * ldx + col_X] -= sum;
             }
         }
     }
@@ -306,14 +306,14 @@ __launch_bounds__(BLOCKSIZE) __global__
     if(row < mb && row == local_col && col_X < nrhs)
     {
         // Loop over rows of the BSR block
-        for(int bi = 0; bi < bsr_dim; ++bi)
+        for(int bi = 0; bi < block_dim; ++bi)
         {
             // Load diagonal matrix entry
             T diag = (diag_type == rocsparse_diag_type_non_unit) ? bsr_val[BSR_IND(j, bi, bi, dir)]
                                                                  : static_cast<T>(1);
 
             // Load result of bi-th BSR row
-            T val = X[(bsr_dim * row + bi) * ldx + col_X];
+            T val = X[(block_dim * row + bi) * ldx + col_X];
 
             // Check for numerical pivot
             if(diag == static_cast<T>(0))
@@ -323,13 +323,13 @@ __launch_bounds__(BLOCKSIZE) __global__
             else
             {
                 // Divide result of bi-th BSR row by diagonal entry
-                X[(bsr_dim * row + bi) * ldx + col_X] = val /= diag;
+                X[(block_dim * row + bi) * ldx + col_X] = val /= diag;
             }
 
             // Update remaining non-diagonal entries
-            for(int bj = bi + lid + 1; bj < bsr_dim; bj += WFSIZE)
+            for(int bj = bi + lid + 1; bj < block_dim; bj += WFSIZE)
             {
-                X[(bsr_dim * row + bj) * ldx + col_X] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
+                X[(block_dim * row + bj) * ldx + col_X] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
             }
         }
     }
