@@ -21,7 +21,7 @@ function display_help()
   echo "    [--hip-clang] build library for amdgpu backend using hip-clang"
   echo "    [--static] build static library"
   echo "    [--sanitizer] build with address sanitizer"
-  echo "    [-p|--profile] build with code coverage profiling enabled"
+  echo "    [--codecoverage] build with code coverage profiling enabled"
   echo "    [--matrices-dir] existing client matrices directory"
   echo "    [--matrices-dir-install] install client matrices directory"
 }
@@ -247,7 +247,7 @@ build_release=true
 build_hip_clang=true
 build_static=false
 build_release_debug=false
-build_coverage=false
+build_codecoverage=false
 install_prefix=rocsparse-install
 rocm_path=/opt/rocm
 build_relocatable=false
@@ -262,7 +262,7 @@ matrices_dir_install=
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,profile,sanitizer,matrices-dir:,matrices-dir-install: --options hicdgrpk -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,sanitizer,matrices-dir:,matrices-dir-install: --options hicdgrk -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -305,12 +305,12 @@ while true; do
 	--sanitizer)
             build_sanitizer=true
             shift ;;
-	-k)
+	-k|--relwithdebinfo)
             build_release=false
             build_release_debug=true
 	    shift ;;
-	-p|--profile)
-            build_coverage=true
+	--codecoverage)
+            build_codecoverage=true
             shift ;;
 	--matrices-dir)
             matrices_dir=${2}
@@ -451,7 +451,7 @@ pushd .
   fi
 
   # code coverage
-  if [[ "${build_coverage}" == true ]]; then
+  if [[ "${build_codecoverage}" == true ]]; then
       if [[ "${build_release}" == true ]]; then
           echo "Code coverage is chosen to be not supported in Release mode, to enable code coverage select either Debug mode (-g | --debug) or RelWithDebInfo mode (-k | --relwithdebinfo); aborting";
           exit 1
