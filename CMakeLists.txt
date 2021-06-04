@@ -156,7 +156,6 @@ if(BUILD_CODE_COVERAGE)
   # Run coverage analysis
   #
   add_custom_target(coverage_analysis
-    COMMAND mkdir -p gcoverage
     COMMAND echo Coverage GTEST_FILTER=\${GTEST_FILTER}
     COMMAND ./clients/staging/rocsparse-test --gtest_filter=\"\${GTEST_FILTER}\"
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
