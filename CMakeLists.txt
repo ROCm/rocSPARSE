@@ -128,7 +128,7 @@ set(AMDGPU_TARGETS "${DEFAULT_AMDGPU_TARGETS}" CACHE STRING "List of specific ma
 find_package(rocprim REQUIRED)
 
 # Setup version
-set(VERSION_STRING "1.20.2")
+set(VERSION_STRING "1.21.1")
 rocm_setup_version(VERSION ${VERSION_STRING})
 set(rocsparse_SOVERSION 0.1)
 
