@@ -20,7 +20,7 @@ function display_help()
   echo "    [-k|--relwithdebinfo] -DCMAKE_BUILD_TYPE=RelWithDebInfo"
   echo "    [--hip-clang] build library for amdgpu backend using hip-clang"
   echo "    [--static] build static library"
-  echo "    [--sanitizer] build with address sanitizer"
+  echo "    [--address-sanitizer] build with address sanitizer"
   echo "    [--codecoverage] build with code coverage profiling enabled"
   echo "    [--matrices-dir] existing client matrices directory"
   echo "    [--matrices-dir-install] install client matrices directory"
@@ -251,7 +251,7 @@ build_codecoverage=false
 install_prefix=rocsparse-install
 rocm_path=/opt/rocm
 build_relocatable=false
-build_sanitizer=false
+build_address_sanitizer=false
 matrices_dir=
 matrices_dir_install=
 
@@ -262,7 +262,7 @@ matrices_dir_install=
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,sanitizer,matrices-dir:,matrices-dir-install: --options hicdgrk -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,address-sanitizer,matrices-dir:,matrices-dir-install: --options hicdgrk -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -302,8 +302,8 @@ while true; do
 	--static)
             build_static=true
             shift ;;
-	--sanitizer)
-            build_sanitizer=true
+	--address-sanitizer)
+            build_address_sanitizer=true
             shift ;;
 	-k|--relwithdebinfo)
             build_release=false
@@ -446,7 +446,7 @@ pushd .
   fi
 
   # address sanitizer
-  if [[ "${build_sanitizer}" == true ]]; then
+  if [[ "${build_address_sanitizer}" == true ]]; then
     cmake_common_options="${cmake_common_options} -DBUILD_ADDRESS_SANITIZER=ON"
   fi
 
