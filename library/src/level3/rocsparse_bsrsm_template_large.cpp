@@ -246,6 +246,7 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
     // Determine gcnArch and ASIC revision
     int gcnArch = handle->properties.gcnArch;
     int asicRev = handle->asic_rev;
+    int wfSize  = handle->wavefront_size;
 
     // gfx908 A0/1
     if(gcnArch == 908 && asicRev < 2)
@@ -264,7 +265,7 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
         // Select tuned kernel
         unsigned int nbsr = std::max(4U, fnp2(block_dim));
 
-        while(nbsr > 64)
+        while(nbsr > wfSize)
         {
             nbsr >>= 1;
         }
