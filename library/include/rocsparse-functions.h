@@ -14874,8 +14874,9 @@ rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
 *
 *  \note
 *  Different algorithms are available which can provide better performance for different matrices.
-*  Currently, the available algorithms are rocsparse_spmm_alg_csr for CSR matrices and
-*  rocsparse_spmm_alg_coo_segmented or rocsparse_spmm_alg_coo_atomic for COO matrices. Additionally,
+*  Currently, the available algorithms are rocsparse_spmm_alg_csr or rocsparse_spmm_alg_csr_row_split
+*  or rocsparse_spmm_alg_csr_merge for CSR matrices and rocsparse_spmm_alg_coo_segmented or
+*  rocsparse_spmm_alg_coo_atomic for COO matrices. Additionally,
 *  one can specify the algorithm to be rocsparse_spmm_alg_default. In the case of CSR matrices this will
 *  set the algorithm to be rocsparse_spmm_alg_csr and for COO matrices it will set the algorithm to be
 *  rocsparse_spmm_alg_coo_atomic.
@@ -14910,12 +14911,17 @@ rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
 *  @param[in]
 *  alg          SpMM algorithm for the SpMM computation.
 *  @param[out]
-*  buffer_size  number of bytes of the temporary storage buffer. buffer_size is set when
-*               \p temp_buffer is nullptr.
+*  buffer_size  number of bytes of the temporary storage buffer. When \p buffer_size is not nullptr
+*               and \p temp_buffer is nullptr, \p buffer_size will be set and the function returns
+*               without performing the SpMM operation. Currently only rocsparse_spmm_alg_csr_merge
+*               requires a user allocated buffer. Attempting to get the buffer size with any other
+*               algorithm will return a buffer size of 4 bytes and is not required.
 *  @param[in]
-*  temp_buffer  temporary storage buffer allocated by the user. When a nullptr is passed,
-*               the required allocation size (in bytes) is written to \p buffer_size and
-*               function returns without performing the SpMM operation.
+*  temp_buffer  temporary storage buffer allocated by the user. When \p temp_buffer is not nullptr
+*               and \p buffer_size is nullptr, \p temp_buffer will be filled with any analysis data
+*               and the function returns without performing the SpMM operation. Currently only
+*               rocsparse_spmm_alg_csr_merge requires analysis data. Attempting to perform analysis
+*               with any other algorithm does nothing and is not necessary.
 *
 *  \retval      rocsparse_status_success the operation completed successfully.
 *  \retval      rocsparse_status_invalid_handle the library context was not initialized.

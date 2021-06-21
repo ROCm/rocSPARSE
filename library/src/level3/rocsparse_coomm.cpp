@@ -860,6 +860,11 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_value;
     }
 
+    if(rocsparse_enum_utils::is_invalid(alg))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     if(order_B != order_C)
     {
         return rocsparse_status_invalid_value;

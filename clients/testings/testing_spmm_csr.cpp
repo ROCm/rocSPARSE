@@ -298,6 +298,21 @@ void testing_spmm_csr(const Arguments& arg)
 
             void* dbuffer;
             CHECK_HIP_ERROR(hipMalloc(&dbuffer, safe_size));
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
+                                                   trans_A,
+                                                   trans_B,
+                                                   &halpha,
+                                                   A,
+                                                   B,
+                                                   &hbeta,
+                                                   C,
+                                                   ttype,
+                                                   alg,
+                                                   nullptr,
+                                                   dbuffer),
+                                    rocsparse_status_success);
+
             EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
                                                    trans_A,
                                                    trans_B,
@@ -323,13 +338,6 @@ void testing_spmm_csr(const Arguments& arg)
     host_vector<T> hcsr_val;
 
     rocsparse_seedrand();
-
-    // Wavefront size
-    int dev;
-    hipGetDevice(&dev);
-
-    hipDeviceProp_t prop;
-    hipGetDeviceProperties(&prop, dev);
 
     // Sample matrix
     I nnz_A;
@@ -434,6 +442,10 @@ void testing_spmm_csr(const Arguments& arg)
     // Allocate buffer
     void* dbuffer;
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+
+    // Perform analysis
+    CHECK_ROCSPARSE_ERROR(rocsparse_spmm(
+        handle, trans_A, trans_B, &halpha, A, B, &hbeta, C1, ttype, alg, nullptr, dbuffer));
 
     if(arg.unit_check)
     {

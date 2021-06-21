@@ -2050,14 +2050,13 @@ void host_csrmm(J                     M,
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
 #endif
-        for(size_t i = 0; i < M; i++)
+        for(J i = 0; i < M; i++)
         {
+            I row_begin = csr_row_ptr_A[i] - base;
+            I row_end   = csr_row_ptr_A[i + 1] - base;
+
             for(J j = 0; j < N; ++j)
             {
-                I row_begin = csr_row_ptr_A[i] - base;
-                I row_end   = csr_row_ptr_A[i + 1] - base;
-                J idx_C     = order == rocsparse_order_column ? i + j * ldc : i * ldc + j;
-
                 T sum = static_cast<T>(0);
 
                 for(I k = row_begin; k < row_end; ++k)
@@ -2085,6 +2084,8 @@ void host_csrmm(J                     M,
                     }
                 }
 
+                J idx_C = (order == rocsparse_order_column) ? i + j * ldc : i * ldc + j;
+
                 if(beta == static_cast<T>(0))
                 {
                     C[idx_C] = alpha * sum;
@@ -2099,7 +2100,7 @@ void host_csrmm(J                     M,
     else
     {
         // scale C by beta
-        for(size_t i = 0; i < M; i++)
+        for(J i = 0; i < M; i++)
         {
             for(J j = 0; j < N; ++j)
             {
@@ -2108,13 +2109,13 @@ void host_csrmm(J                     M,
             }
         }
 
-        for(size_t i = 0; i < K; i++)
+        for(J i = 0; i < K; i++)
         {
+            I row_begin = csr_row_ptr_A[i] - base;
+            I row_end   = csr_row_ptr_A[i + 1] - base;
+
             for(J j = 0; j < N; ++j)
             {
-                I row_begin = csr_row_ptr_A[i] - base;
-                I row_end   = csr_row_ptr_A[i + 1] - base;
-
                 for(I k = row_begin; k < row_end; ++k)
                 {
                     J col = csr_col_ind_A[k] - base;
