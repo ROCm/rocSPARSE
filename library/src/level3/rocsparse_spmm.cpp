@@ -107,6 +107,62 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
         // We do not need a buffer
         *buffer_size = 4;
 
+        // Run CSR analysis step when format is CSR
+        if(mat_A->format == rocsparse_format_csr)
+        {
+            // If merge algorithm is selected a buffer is required
+            if(alg == rocsparse_spmm_alg_csr_merge)
+            {
+                J m = (J)mat_C->rows;
+                J n = (J)mat_C->cols;
+                J k = trans_A == rocsparse_operation_none ? (J)mat_A->cols : (J)mat_A->rows;
+
+                return rocsparse_csrmm_buffer_size_template(handle,
+                                                            trans_A,
+                                                            alg,
+                                                            m,
+                                                            n,
+                                                            k,
+                                                            (I)mat_A->nnz,
+                                                            mat_A->descr,
+                                                            (const T*)mat_A->val_data,
+                                                            (const I*)mat_A->row_data,
+                                                            (const J*)mat_A->col_data,
+                                                            buffer_size);
+            }
+        }
+
+        return rocsparse_status_success;
+    }
+
+    // If buffer_size is nullptr, return temp_buffer
+    if(buffer_size == nullptr)
+    {
+        // Run CSR analysis step when format is CSR
+        if(mat_A->format == rocsparse_format_csr)
+        {
+            // If merge algorithm is selected and analysis step is required
+            if(alg == rocsparse_spmm_alg_csr_merge)
+            {
+                J m = (J)mat_C->rows;
+                J n = (J)mat_C->cols;
+                J k = trans_A == rocsparse_operation_none ? (J)mat_A->cols : (J)mat_A->rows;
+
+                return rocsparse_csrmm_analysis_template(handle,
+                                                         trans_A,
+                                                         alg,
+                                                         m,
+                                                         n,
+                                                         k,
+                                                         (I)mat_A->nnz,
+                                                         mat_A->descr,
+                                                         (const T*)mat_A->val_data,
+                                                         (const I*)mat_A->row_data,
+                                                         (const J*)mat_A->col_data,
+                                                         temp_buffer);
+            }
+        }
+
         return rocsparse_status_success;
     }
 
@@ -147,6 +203,7 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
                                         trans_B,
                                         mat_B->order,
                                         mat_C->order,
+                                        algorithm,
                                         m,
                                         n,
                                         k,
@@ -160,7 +217,8 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
                                         (J)mat_B->ld,
                                         (const T*)beta,
                                         (T*)mat_C->values,
-                                        (J)mat_C->ld);
+                                        (J)mat_C->ld,
+                                        temp_buffer);
     }
 
     return rocsparse_status_not_implemented;
@@ -216,6 +274,12 @@ extern "C" rocsparse_status rocsparse_spmm(rocsparse_handle            handle,
     if(temp_buffer == nullptr)
     {
         RETURN_IF_NULLPTR(buffer_size);
+    }
+
+    // Check for valid temp_buffer pointer only if buffer_size is nullptr
+    if(buffer_size == nullptr)
+    {
+        RETURN_IF_NULLPTR(temp_buffer);
     }
 
     // Check if descriptors are initialized

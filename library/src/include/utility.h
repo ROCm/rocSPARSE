@@ -358,6 +358,24 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmm_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spmm_alg_default:
+    case rocsparse_spmm_alg_csr:
+    case rocsparse_spmm_alg_coo_segmented:
+    case rocsparse_spmm_alg_coo_atomic:
+    case rocsparse_spmm_alg_csr_row_split:
+    case rocsparse_spmm_alg_csr_merge:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_sddmm_alg value_)
 {
     switch(value_)

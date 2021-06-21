@@ -380,10 +380,14 @@ typedef enum rocsparse_spmv_alg_
 typedef enum rocsparse_spmm_alg_
 {
     rocsparse_spmm_alg_default = 0, /**< Default SpMM algorithm for the given format. */
-    rocsparse_spmm_alg_csr     = 1, /**< SpMM algorithm for CSR format. */
+    rocsparse_spmm_alg_csr
+    = 1, /**< SpMM algorithm for CSR format using row split and shared memory. */
     rocsparse_spmm_alg_coo_segmented
     = 2, /**< SpMM algorithm for COO format using segmented scan. */
-    rocsparse_spmm_alg_coo_atomic = 3 /**< SpMM algorithm for COO format using atomics. */
+    rocsparse_spmm_alg_coo_atomic = 3, /**< SpMM algorithm for COO format using atomics. */
+    rocsparse_spmm_alg_csr_row_split
+    = 4, /**< SpMM algorithm for CSR format using row split and shfl. */
+    rocsparse_spmm_alg_csr_merge = 5 /**< SpMM algorithm for CSR format using conversion to COO. */
 } rocsparse_spmm_alg;
 
 /*! \ingroup types_module

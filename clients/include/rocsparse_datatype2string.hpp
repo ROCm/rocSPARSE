@@ -278,11 +278,15 @@ constexpr auto rocsparse_spmmalg2string(rocsparse_spmm_alg alg)
     case rocsparse_spmm_alg_default:
         return "default";
     case rocsparse_spmm_alg_csr:
-        return "alg_csr";
+        return "spmm_alg_csr";
     case rocsparse_spmm_alg_coo_segmented:
-        return "alg_coo_segmented";
+        return "spmm_alg_coo_segmented";
     case rocsparse_spmm_alg_coo_atomic:
-        return "alg_coo_atomic";
+        return "spmm_alg_coo_atomic";
+    case rocsparse_spmm_alg_csr_row_split:
+        return "spmm_alg_csr_row_split";
+    case rocsparse_spmm_alg_csr_merge:
+        return "spmm_alg_csr_merge";
     default:
         return "invalid";
     }

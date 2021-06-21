@@ -28,11 +28,40 @@
 
 #include "handle.h"
 
+template <typename I, typename J, typename T>
+rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          handle,
+                                                      rocsparse_operation       trans_A,
+                                                      rocsparse_spmm_alg        alg,
+                                                      J                         m,
+                                                      J                         n,
+                                                      J                         k,
+                                                      I                         nnz,
+                                                      const rocsparse_mat_descr descr,
+                                                      const T*                  csr_val,
+                                                      const I*                  csr_row_ptr,
+                                                      const J*                  csr_col_ind,
+                                                      size_t*                   buffer_size);
+
+template <typename I, typename J, typename T>
+rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          handle,
+                                                   rocsparse_operation       trans_A,
+                                                   rocsparse_spmm_alg        alg,
+                                                   J                         m,
+                                                   J                         n,
+                                                   J                         k,
+                                                   I                         nnz,
+                                                   const rocsparse_mat_descr descr,
+                                                   const T*                  csr_val,
+                                                   const I*                  csr_row_ptr,
+                                                   const J*                  csr_col_ind,
+                                                   void*                     temp_buffer);
+
 template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_operation       trans_B,
                                                    rocsparse_order           order,
+                                                   rocsparse_spmm_alg        alg,
                                                    J                         m,
                                                    J                         n,
                                                    J                         k,
@@ -46,7 +75,8 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                    J                         ldb,
                                                    U                         beta_device_host,
                                                    T*                        C,
-                                                   J                         ldc);
+                                                   J                         ldc,
+                                                   void*                     temp_buffer);
 
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
@@ -54,6 +84,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_B,
                                           rocsparse_order           order_B,
                                           rocsparse_order           order_C,
+                                          rocsparse_spmm_alg        alg,
                                           J                         m,
                                           J                         n,
                                           J                         k,
@@ -67,6 +98,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           J                         ldb,
                                           const T*                  beta,
                                           T*                        C,
-                                          J                         ldc);
+                                          J                         ldc,
+                                          void*                     temp_buffer);
 
 #endif // ROCSPARSE_CSRMM_HPP

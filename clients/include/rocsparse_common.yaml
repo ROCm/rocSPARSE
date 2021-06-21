@@ -131,6 +131,8 @@ Datatypes:
         rocsparse_spmm_alg_csr: 1
         rocsparse_spmm_alg_coo_segmented: 2
         rocsparse_spmm_alg_coo_atomic: 3
+        rocsparse_spmm_alg_csr_row_split: 4
+        rocsparse_spmm_alg_csr_merge: 5
   - rocsparse_spgemm_alg:
       bases: [c_int ]
       attr:
@@ -191,6 +193,12 @@ C precisions real: &double_only_precisions
 C precisions real: &single_double_precisions
   - *single_precision
   - *double_precision
+
+C precisions complex: &single_only_precisions_complex
+  - *single_precision_complex
+
+C precisions complex: &double_only_precisions_complex
+  - *double_precision_complex
 
 C precisions complex: &single_double_precisions_complex
   - *single_precision_complex
