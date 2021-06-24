@@ -641,8 +641,15 @@ rocsparse_spmm_alg
 
 .. doxygenenum:: rocsparse_spmm_alg
 
+
+rocsparse_spmm_stage
+--------------------
+
+.. doxygenenum:: rocsparse_spmm_stage
+
+
 rocsparse_sddmm_alg
-------------------
+-------------------
 
 .. doxygenenum:: rocsparse_sddmm_alg
 

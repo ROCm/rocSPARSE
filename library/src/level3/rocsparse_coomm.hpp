@@ -28,12 +28,19 @@
 
 #include "handle.h"
 
+typedef enum rocsparse_coomm_alg_
+{
+    rocsparse_coomm_alg_default = 0,
+    rocsparse_coomm_alg_atomic,
+    rocsparse_coomm_alg_segmented
+} rocsparse_coomm_alg;
+
 template <typename I, typename T, typename U>
 rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_operation       trans_B,
                                                    rocsparse_order           order,
-                                                   rocsparse_spmm_alg        alg,
+                                                   rocsparse_coomm_alg       alg,
                                                    I                         m,
                                                    I                         n,
                                                    I                         k,
@@ -55,7 +62,7 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_B,
                                           rocsparse_order           order_B,
                                           rocsparse_order           order_C,
-                                          rocsparse_spmm_alg        alg,
+                                          rocsparse_coomm_alg       alg,
                                           I                         m,
                                           I                         n,
                                           I                         k,

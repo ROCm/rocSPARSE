@@ -376,6 +376,22 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmm_alg value_)
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmm_stage value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spmm_stage_auto:
+    case rocsparse_spmm_stage_buffer_size:
+    case rocsparse_spmm_stage_preprocess:
+    case rocsparse_spmm_stage_compute:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_sddmm_alg value_)
 {
     switch(value_)

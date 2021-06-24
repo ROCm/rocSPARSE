@@ -150,7 +150,7 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                  trans_A,
                                                  trans_B,
                                                  rocsparse_order_column,
-                                                 rocsparse_spmm_alg_csr,
+                                                 rocsparse_csrmm_alg_default,
                                                  m,
                                                  n,
                                                  k,

@@ -30,10 +30,25 @@
 #include "definitions.h"
 #include "utility.h"
 
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_csrmm_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_csrmm_alg_default:
+    case rocsparse_csrmm_alg_row_split:
+    case rocsparse_csrmm_alg_merge:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          handle,
                                                       rocsparse_operation       trans_A,
-                                                      rocsparse_spmm_alg        alg,
+                                                      rocsparse_csrmm_alg       alg,
                                                       J                         m,
                                                       J                         n,
                                                       J                         k,
@@ -104,22 +119,39 @@ rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          
         return rocsparse_status_invalid_pointer;
     }
 
-    if(alg == rocsparse_spmm_alg_csr_merge && trans_A == rocsparse_operation_none)
+    switch(alg)
     {
-        *buffer_size = sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
-    }
-    else
+    case rocsparse_csrmm_alg_merge:
     {
-        *buffer_size = 4;
+        switch(trans_A)
+        {
+        case rocsparse_operation_none:
+        {
+            *buffer_size = sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
+            return rocsparse_status_success;
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            *buffer_size = 4;
+            return rocsparse_status_success;
+        }
+        }
     }
 
-    return rocsparse_status_success;
+    case rocsparse_csrmm_alg_default:
+    case rocsparse_csrmm_alg_row_split:
+    {
+        *buffer_size = 4;
+        return rocsparse_status_success;
+    }
+    }
 }
 
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
-                                                   rocsparse_spmm_alg        alg,
+                                                   rocsparse_csrmm_alg       alg,
                                                    J                         m,
                                                    J                         n,
                                                    J                         k,
@@ -190,17 +222,35 @@ rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          han
         return rocsparse_status_invalid_pointer;
     }
 
-    if(alg == rocsparse_spmm_alg_csr_merge && trans_A == rocsparse_operation_none)
+    switch(alg)
     {
-        char* ptr         = reinterpret_cast<char*>(temp_buffer);
-        J*    csr_row_ind = reinterpret_cast<J*>(ptr);
-        ptr += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
-
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_csr2coo_template(handle, csr_row_ptr, nnz, m, csr_row_ind, descr->base));
+    case rocsparse_csrmm_alg_merge:
+    {
+        switch(trans_A)
+        {
+        case rocsparse_operation_none:
+        {
+            char* ptr         = reinterpret_cast<char*>(temp_buffer);
+            J*    csr_row_ind = reinterpret_cast<J*>(ptr);
+            ptr += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_csr2coo_template(handle, csr_row_ptr, nnz, m, csr_row_ind, descr->base));
+            return rocsparse_status_success;
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            return rocsparse_status_success;
+        }
+        }
     }
 
-    return rocsparse_status_success;
+    case rocsparse_csrmm_alg_default:
+    case rocsparse_csrmm_alg_row_split:
+    {
+        return rocsparse_status_success;
+    }
+    }
 }
 
 template <typename I, typename J, typename T, typename U>
@@ -269,7 +319,7 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_operation       trans_B,
                                                    rocsparse_order           order,
-                                                   rocsparse_spmm_alg        alg,
+                                                   rocsparse_csrmm_alg       alg,
                                                    J                         m,
                                                    J                         n,
                                                    J                         k,
@@ -286,7 +336,10 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                    J                         ldc,
                                                    void*                     temp_buffer)
 {
-    if(alg == rocsparse_spmm_alg_csr || trans_A != rocsparse_operation_none)
+    switch(alg)
+    {
+
+    case rocsparse_csrmm_alg_default:
     {
         return rocsparse_csrmm_template_general(handle,
                                                 trans_A,
@@ -307,9 +360,14 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                 C,
                                                 ldc);
     }
-    else if(alg == rocsparse_spmm_alg_csr_row_split)
+
+    case rocsparse_csrmm_alg_merge:
     {
-        return rocsparse_csrmm_template_row_split(handle,
+        switch(trans_A)
+        {
+        case rocsparse_operation_none:
+        {
+            return rocsparse_csrmm_template_merge(handle,
                                                   trans_A,
                                                   trans_B,
                                                   order,
@@ -326,32 +384,84 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                   ldb,
                                                   beta_device_host,
                                                   C,
-                                                  ldc);
-    }
-    else if(alg == rocsparse_spmm_alg_csr_merge)
-    {
-        return rocsparse_csrmm_template_merge(handle,
-                                              trans_A,
-                                              trans_B,
-                                              order,
-                                              m,
-                                              n,
-                                              k,
-                                              nnz,
-                                              alpha_device_host,
-                                              descr,
-                                              csr_val,
-                                              csr_row_ptr,
-                                              csr_col_ind,
-                                              B,
-                                              ldb,
-                                              beta_device_host,
-                                              C,
-                                              ldc,
-                                              temp_buffer);
+                                                  ldc,
+                                                  temp_buffer);
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            return rocsparse_csrmm_template_general(handle,
+                                                    trans_A,
+                                                    trans_B,
+                                                    order,
+                                                    m,
+                                                    n,
+                                                    k,
+                                                    nnz,
+                                                    alpha_device_host,
+                                                    descr,
+                                                    csr_val,
+                                                    csr_row_ptr,
+                                                    csr_col_ind,
+                                                    B,
+                                                    ldb,
+                                                    beta_device_host,
+                                                    C,
+                                                    ldc);
+        }
+        }
     }
 
-    return rocsparse_status_not_implemented;
+    case rocsparse_csrmm_alg_row_split:
+    {
+        switch(trans_A)
+        {
+        case rocsparse_operation_none:
+        {
+            return rocsparse_csrmm_template_row_split(handle,
+                                                      trans_A,
+                                                      trans_B,
+                                                      order,
+                                                      m,
+                                                      n,
+                                                      k,
+                                                      nnz,
+                                                      alpha_device_host,
+                                                      descr,
+                                                      csr_val,
+                                                      csr_row_ptr,
+                                                      csr_col_ind,
+                                                      B,
+                                                      ldb,
+                                                      beta_device_host,
+                                                      C,
+                                                      ldc);
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            return rocsparse_csrmm_template_general(handle,
+                                                    trans_A,
+                                                    trans_B,
+                                                    order,
+                                                    m,
+                                                    n,
+                                                    k,
+                                                    nnz,
+                                                    alpha_device_host,
+                                                    descr,
+                                                    csr_val,
+                                                    csr_row_ptr,
+                                                    csr_col_ind,
+                                                    B,
+                                                    ldb,
+                                                    beta_device_host,
+                                                    C,
+                                                    ldc);
+        }
+        }
+    }
+    }
 }
 
 template <typename I, typename J, typename T>
@@ -360,7 +470,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_B,
                                           rocsparse_order           order_B,
                                           rocsparse_order           order_C,
-                                          rocsparse_spmm_alg        alg,
+                                          rocsparse_csrmm_alg       alg,
                                           J                         m,
                                           J                         n,
                                           J                         k,
@@ -545,7 +655,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
     template rocsparse_status rocsparse_csrmm_buffer_size_template<ITYPE, JTYPE, TTYPE>( \
         rocsparse_handle          handle,                                                \
         rocsparse_operation       trans_A,                                               \
-        rocsparse_spmm_alg        alg,                                                   \
+        rocsparse_csrmm_alg       alg,                                                   \
         JTYPE                     m,                                                     \
         JTYPE                     n,                                                     \
         JTYPE                     k,                                                     \
@@ -574,7 +684,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
     template rocsparse_status rocsparse_csrmm_analysis_template<ITYPE, JTYPE, TTYPE>( \
         rocsparse_handle          handle,                                             \
         rocsparse_operation       trans_A,                                            \
-        rocsparse_spmm_alg        alg,                                                \
+        rocsparse_csrmm_alg       alg,                                                \
         JTYPE                     m,                                                  \
         JTYPE                     n,                                                  \
         JTYPE                     k,                                                  \
@@ -606,7 +716,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
         rocsparse_operation       trans_B,                                   \
         rocsparse_order           order_B,                                   \
         rocsparse_order           order_C,                                   \
-        rocsparse_spmm_alg        alg,                                       \
+        rocsparse_csrmm_alg       alg,                                       \
         JTYPE                     m,                                         \
         JTYPE                     n,                                         \
         JTYPE                     k,                                         \
@@ -667,7 +777,7 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                         trans_B,                            \
                                         rocsparse_order_column,             \
                                         rocsparse_order_column,             \
-                                        rocsparse_spmm_alg_csr,             \
+                                        rocsparse_csrmm_alg_default,        \
                                         m,                                  \
                                         n,                                  \
                                         k,                                  \

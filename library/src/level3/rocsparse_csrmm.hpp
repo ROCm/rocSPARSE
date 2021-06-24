@@ -28,10 +28,17 @@
 
 #include "handle.h"
 
+typedef enum rocsparse_csrmm_alg_
+{
+    rocsparse_csrmm_alg_default = 0,
+    rocsparse_csrmm_alg_row_split,
+    rocsparse_csrmm_alg_merge
+} rocsparse_csrmm_alg;
+
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          handle,
                                                       rocsparse_operation       trans_A,
-                                                      rocsparse_spmm_alg        alg,
+                                                      rocsparse_csrmm_alg       alg,
                                                       J                         m,
                                                       J                         n,
                                                       J                         k,
@@ -45,7 +52,7 @@ rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          
 template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
-                                                   rocsparse_spmm_alg        alg,
+                                                   rocsparse_csrmm_alg       alg,
                                                    J                         m,
                                                    J                         n,
                                                    J                         k,
@@ -61,7 +68,7 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_operation       trans_B,
                                                    rocsparse_order           order,
-                                                   rocsparse_spmm_alg        alg,
+                                                   rocsparse_csrmm_alg       alg,
                                                    J                         m,
                                                    J                         n,
                                                    J                         k,
@@ -84,7 +91,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           rocsparse_operation       trans_B,
                                           rocsparse_order           order_B,
                                           rocsparse_order           order_C,
-                                          rocsparse_spmm_alg        alg,
+                                          rocsparse_csrmm_alg       alg,
                                           J                         m,
                                           J                         n,
                                           J                         k,
