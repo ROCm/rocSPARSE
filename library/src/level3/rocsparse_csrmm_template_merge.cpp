@@ -56,7 +56,7 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                              trans_A,
                                              trans_B,
                                              order,
-                                             rocsparse_spmm_alg_coo_segmented,
+                                             rocsparse_coomm_alg_segmented,
                                              m,
                                              n,
                                              k,

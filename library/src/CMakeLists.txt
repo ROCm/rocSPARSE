@@ -97,7 +97,10 @@ set(rocsparse_source
   src/level3/rocsparse_csrmm_template_merge.cpp
   src/level3/rocsparse_csrmm.cpp
   src/level3/rocsparse_coomm.cpp
+  src/level3/rocsparse_coomm_template_atomic.cpp
+  src/level3/rocsparse_coomm_template_segmented.cpp
   src/level3/rocsparse_spmm.cpp
+  src/level3/rocsparse_spmm_ex.cpp
   src/level3/rocsparse_csrsm.cpp
   src/level3/rocsparse_bsrsm.cpp
   src/level3/rocsparse_bsrsm_buffer_size.cpp

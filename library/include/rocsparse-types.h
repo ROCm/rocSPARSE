@@ -429,6 +429,21 @@ typedef enum rocsparse_dense_to_sparse_alg_
 } rocsparse_dense_to_sparse_alg;
 
 /*! \ingroup types_module
+ *  \brief List of SpMM stages.
+ *
+ *  \details
+ *  This is a list of possible stages during SpMM computation. Typical order is
+ *  rocsparse_spmm_buffer_size, rocsparse_spmm_nnz, rocsparse_spmm_compute.
+ */
+typedef enum rocsparse_spmm_stage_
+{
+    rocsparse_spmm_stage_auto        = 0, /**< Automatic stage detection. */
+    rocsparse_spmm_stage_buffer_size = 1, /**< Returns the required buffer size. */
+    rocsparse_spmm_stage_preprocess  = 2, /**< Preprocess data. */
+    rocsparse_spmm_stage_compute     = 3 /**< Performs the actual SpMM computation. */
+} rocsparse_spmm_stage;
+
+/*! \ingroup types_module
  *  \brief List of SpGEMM stages.
  *
  *  \details
