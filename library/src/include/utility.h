@@ -368,6 +368,7 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmm_alg value_)
     case rocsparse_spmm_alg_coo_atomic:
     case rocsparse_spmm_alg_csr_row_split:
     case rocsparse_spmm_alg_csr_merge:
+    case rocsparse_spmm_alg_coo_segmented_atomic:
     {
         return false;
     }

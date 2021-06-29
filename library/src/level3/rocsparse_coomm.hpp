@@ -32,7 +32,8 @@ typedef enum rocsparse_coomm_alg_
 {
     rocsparse_coomm_alg_default = 0,
     rocsparse_coomm_alg_atomic,
-    rocsparse_coomm_alg_segmented
+    rocsparse_coomm_alg_segmented,
+    rocsparse_coomm_alg_segmented_atomic
 } rocsparse_coomm_alg;
 
 template <typename I, typename T, typename U>
