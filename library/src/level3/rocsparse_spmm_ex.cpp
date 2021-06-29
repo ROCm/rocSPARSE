@@ -55,6 +55,7 @@ rocsparse_status rocsparse_spmm_alg2csrmm_alg(rocsparse_spmm_alg   spmm_alg,
 
     case rocsparse_spmm_alg_coo_segmented:
     case rocsparse_spmm_alg_coo_atomic:
+    case rocsparse_spmm_alg_coo_segmented_atomic:
     {
         return rocsparse_status_invalid_value;
     }
@@ -81,6 +82,12 @@ rocsparse_status rocsparse_spmm_alg2coomm_alg(rocsparse_spmm_alg   spmm_alg,
     case rocsparse_spmm_alg_coo_atomic:
     {
         coomm_alg = rocsparse_coomm_alg_atomic;
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_spmm_alg_coo_segmented_atomic:
+    {
+        coomm_alg = rocsparse_coomm_alg_segmented_atomic;
         return rocsparse_status_success;
     }
 

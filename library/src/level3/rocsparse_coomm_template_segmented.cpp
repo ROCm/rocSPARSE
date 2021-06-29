@@ -27,84 +27,6 @@
 #include "definitions.h"
 #include "utility.h"
 
-// Segmented block reduction kernel
-template <unsigned int BLOCKSIZE, typename I, typename T>
-static __device__ void segmented_blockreduce(const I* rows, T* vals)
-{
-    int tid = hipThreadIdx_x;
-
-#pragma unroll
-    for(int j = 1; j < BLOCKSIZE; j <<= 1)
-    {
-        T val = static_cast<T>(0);
-        if(tid >= j)
-        {
-            if(rows[tid] == rows[tid - j])
-            {
-                val = vals[tid - j];
-            }
-        }
-        __syncthreads();
-
-        vals[tid] = vals[tid] + val;
-        __syncthreads();
-    }
-}
-
-// Do the final block reduction of the block reduction buffers back into global memory
-template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
-    void coommn_general_block_reduce(I nblocks,
-                                     const I* __restrict__ row_block_red,
-                                     const T* __restrict__ val_block_red,
-                                     T*              C,
-                                     I               ldc,
-                                     rocsparse_order order)
-{
-    int tid = hipThreadIdx_x;
-
-    // Shared memory to hold row indices and values for segmented reduction
-    __shared__ I shared_row[BLOCKSIZE];
-    __shared__ T shared_val[BLOCKSIZE];
-
-    shared_row[tid] = -1;
-    shared_val[tid] = static_cast<T>(0);
-
-    __syncthreads();
-
-    I col = hipBlockIdx_x;
-
-    for(I i = tid; i < nblocks; i += BLOCKSIZE)
-    {
-        // Copy data to reduction buffers
-        shared_row[tid] = row_block_red[i + nblocks * col];
-        shared_val[tid] = val_block_red[i + nblocks * col];
-
-        __syncthreads();
-
-        // Do segmented block reduction
-        segmented_blockreduce<BLOCKSIZE>(shared_row, shared_val);
-
-        // Add reduced sum to C if valid
-        I row   = shared_row[tid];
-        I rowp1 = (tid < BLOCKSIZE - 1) ? shared_row[tid + 1] : -1;
-
-        if(row != rowp1 && row >= 0)
-        {
-            if(order == rocsparse_order_column)
-            {
-                C[row + ldc * col] = C[row + ldc * col] + shared_val[tid];
-            }
-            else
-            {
-                C[col + ldc * row] = C[col + ldc * row] + shared_val[tid];
-            }
-        }
-
-        __syncthreads();
-    }
-}
-
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool TRANSB, typename I, typename T>
 static __device__ void coommnn_general_wf_segmented(I                    nnz,
                                                     I                    n,
@@ -234,6 +156,84 @@ static __device__ void coommnn_general_wf_segmented(I                    nnz,
     {
         rocsparse_nontemporal_store(row, row_block_red + hipBlockIdx_x + hipGridDim_x * col);
         rocsparse_nontemporal_store(val, val_block_red + hipBlockIdx_x + hipGridDim_x * col);
+    }
+}
+
+// Segmented block reduction kernel
+template <unsigned int BLOCKSIZE, typename I, typename T>
+static __device__ void segmented_blockreduce(const I* rows, T* vals)
+{
+    int tid = hipThreadIdx_x;
+
+#pragma unroll
+    for(int j = 1; j < BLOCKSIZE; j <<= 1)
+    {
+        T val = static_cast<T>(0);
+        if(tid >= j)
+        {
+            if(rows[tid] == rows[tid - j])
+            {
+                val = vals[tid - j];
+            }
+        }
+        __syncthreads();
+
+        vals[tid] = vals[tid] + val;
+        __syncthreads();
+    }
+}
+
+// Do the final block reduction of the block reduction buffers back into global memory
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__launch_bounds__(BLOCKSIZE) __global__
+    void coommn_general_block_reduce(I nblocks,
+                                     const I* __restrict__ row_block_red,
+                                     const T* __restrict__ val_block_red,
+                                     T*              C,
+                                     I               ldc,
+                                     rocsparse_order order)
+{
+    int tid = hipThreadIdx_x;
+
+    // Shared memory to hold row indices and values for segmented reduction
+    __shared__ I shared_row[BLOCKSIZE];
+    __shared__ T shared_val[BLOCKSIZE];
+
+    shared_row[tid] = -1;
+    shared_val[tid] = static_cast<T>(0);
+
+    __syncthreads();
+
+    I col = hipBlockIdx_x;
+
+    for(I i = tid; i < nblocks; i += BLOCKSIZE)
+    {
+        // Copy data to reduction buffers
+        shared_row[tid] = row_block_red[i + nblocks * col];
+        shared_val[tid] = val_block_red[i + nblocks * col];
+
+        __syncthreads();
+
+        // Do segmented block reduction
+        segmented_blockreduce<BLOCKSIZE>(shared_row, shared_val);
+
+        // Add reduced sum to C if valid
+        I row   = shared_row[tid];
+        I rowp1 = (tid < BLOCKSIZE - 1) ? shared_row[tid + 1] : -1;
+
+        if(row != rowp1 && row >= 0)
+        {
+            if(order == rocsparse_order_column)
+            {
+                C[row + ldc * col] = C[row + ldc * col] + shared_val[tid];
+            }
+            else
+            {
+                C[col + ldc * row] = C[col + ldc * row] + shared_val[tid];
+            }
+        }
+
+        __syncthreads();
     }
 }
 
