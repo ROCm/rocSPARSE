@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE testset SYSTEM "/usr/local/share/rtest.dtd">
+<testset>
+    <fileversion>0.1</fileversion>
+    <var name="COMMAND">rocsparse-test --gtest_color=yes --gtest_output=xml</var>
+    <var name="GTEST_FILTER">*</var>
+    <test sets="psdb">
+        <run name="quick_pre_checkin">{COMMAND}:output_psdb.xml --gtest_filter=*quick*:*pre_checkin*</run>
+    </test>
+    <test sets="osdb">
+        <run name="nightly">{COMMAND}:output_osdb.xml --gtest_filter=*nightly*:*pre_checkin*</run>
+    </test>
+    <test sets="custom">
+        <run name="custom_filter">{COMMAND}:output_custom.xml --gtest_filter={GTEST_FILTER}</run>
+    </test>
+    <test sets="hmm">
+        <!-- * This test suite should be run with the command: -->
+        <!-- HSA_XNACK=1 ROCSPARSE_MALLOC_MANAGED=1 rtest.py -t hmm [...] -->
+        <run name="managed_memory">{COMMAND}:output_hmm.xml --gtest_filter=*csrmv_managed*</run>
+    </test>
+</testset>
