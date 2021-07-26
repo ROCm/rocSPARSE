@@ -392,11 +392,13 @@ void testing_bsrsm(const Arguments& arg)
         // bsrsm_analysis
         CALL_ANALYSIS;
         CHECK_HIP_ERROR(hipDeviceSynchronize());
-
         // Obtain pivot information
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_zero_pivot(handle, info, analysis_pivot.val),
-                                (*analysis_pivot.val != -1) ? rocsparse_status_zero_pivot
-                                                            : rocsparse_status_success);
+        {
+            auto st = rocsparse_bsrsm_zero_pivot(handle, info, analysis_pivot.val);
+            EXPECT_ROCSPARSE_STATUS(st,
+                                    ((*analysis_pivot.val != -1) ? rocsparse_status_zero_pivot
+                                                                 : rocsparse_status_success));
+        }
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // bsrsm_solve
@@ -404,11 +406,13 @@ void testing_bsrsm(const Arguments& arg)
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // Obtain pivot information
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_zero_pivot(handle, info, solve_pivot.val),
-                                (*solve_pivot.val != -1) ? rocsparse_status_zero_pivot
-                                                         : rocsparse_status_success);
+        {
+            auto st = rocsparse_bsrsm_zero_pivot(handle, info, solve_pivot.val);
+            EXPECT_ROCSPARSE_STATUS(st,
+                                    (*solve_pivot.val != -1) ? rocsparse_status_zero_pivot
+                                                             : rocsparse_status_success);
+        }
         CHECK_HIP_ERROR(hipDeviceSynchronize());
-
         // host_bsrsm
         host_bsrsm<T>(mb,
                       nrhs,

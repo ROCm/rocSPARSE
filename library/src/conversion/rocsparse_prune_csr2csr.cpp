@@ -36,7 +36,7 @@ template <rocsparse_int BLOCK_SIZE,
           rocsparse_int WF_SIZE,
           typename T,
           typename U>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void nnz_compress_kernel(rocsparse_int        m,
                              rocsparse_index_base idx_base_A,
                              const T* __restrict__ csr_val_A,
@@ -55,7 +55,7 @@ template <rocsparse_int BLOCK_SIZE,
           rocsparse_int WF_SIZE,
           typename T,
           typename U>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void csr2csr_compress_kernel(rocsparse_int        m,
                                  rocsparse_int        n,
                                  rocsparse_index_base idx_base_A,

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include <hip/hip_runtime.h>
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void gthrz_kernel(
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void gthrz_kernel(
     rocsparse_int nnz, T* y, T* x_val, const rocsparse_int* x_ind, rocsparse_index_base idx_base)
 {
     rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;

@@ -26,6 +26,7 @@ find_package(GTest 1.10.0 REQUIRED)
 #
 # Client matrices.
 #
+
 if(NOT EXISTS "${CMAKE_MATRICES_DIR}")
   #
   # Download.
@@ -33,10 +34,10 @@ if(NOT EXISTS "${CMAKE_MATRICES_DIR}")
   set(CMAKE_MATRICES_DIR ${PROJECT_BINARY_DIR}/matrices CACHE STRING "Matrices directory.")
 
   if(NOT TARGET rocsparse)
-    set(CONVERT ${CMAKE_SOURCE_DIR}/../deps/convert CACHE STRING "Convert tool mtx2csr.")
+    set(CONVERT_SOURCE ${CMAKE_SOURCE_DIR}/../deps/convert.cpp CACHE STRING "Convert tool mtx2csr.")
     include(${CMAKE_SOURCE_DIR}/../cmake/ClientMatrices.cmake)
   else()
-    set(CONVERT ${CMAKE_SOURCE_DIR}/deps/convert CACHE STRING "Convert tool mtx2csr.")
+   set(CONVERT_SOURCE ${CMAKE_SOURCE_DIR}/deps/convert.cpp CACHE STRING "Convert tool mtx2csr.")
     include(${CMAKE_SOURCE_DIR}/cmake/ClientMatrices.cmake)
   endif()
 
@@ -259,12 +260,17 @@ target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-unused
 target_include_directories(rocsparse-test PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
 # Target link libraries
-target_link_libraries(rocsparse-test PRIVATE GTest::GTest roc::rocsparse hip::host)
+target_link_libraries(rocsparse-test PRIVATE GTest::GTest roc::rocsparse hip::host hip::device)
 
 # Add OpenMP if available
 if(OPENMP_FOUND)
-  target_link_libraries(rocsparse-test PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
+if (NOT WIN32)
+   target_link_libraries(rocsparse-test PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
+  else()
+   target_link_libraries(rocsparse-test PRIVATE libomp)
+  endif()
 endif()
+
 
 # Set test output directory
 set_target_properties(rocsparse-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
@@ -272,10 +278,25 @@ set_target_properties(rocsparse-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJ
 # Prepare testing data
 set(ROCSPARSE_TEST_DATA "${PROJECT_BINARY_DIR}/staging/rocsparse_test.data")
 add_custom_command(OUTPUT "${ROCSPARSE_TEST_DATA}"
-                   COMMAND ../common/rocsparse_gentest.py -I ../include rocsparse_test.yaml -o "${ROCSPARSE_TEST_DATA}"
+                   COMMAND ${python} ../common/rocsparse_gentest.py -I ../include rocsparse_test.yaml -o "${ROCSPARSE_TEST_DATA}"
                    DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml test_axpby.yaml test_axpyi.yaml test_doti.yaml test_dotci.yaml test_gather.yaml test_scatter.yaml test_gthr.yaml test_gthrz.yaml test_rot.yaml test_roti.yaml test_sctr.yaml test_bsrmv.yaml test_bsrxmv.yaml test_bsrsv.yaml test_coomv.yaml test_csrmv.yaml test_csrmv_managed.yaml test_csrsv.yaml test_ellmv.yaml test_hybmv.yaml test_gebsrmv.yaml test_bsrmm.yaml test_csrmm.yaml test_csrsm.yaml test_gemmi.yaml test_csrgeam.yaml test_csrgemm.yaml test_bsric0.yaml test_bsrilu0.yaml test_csric0.yaml test_csrilu0.yaml test_csr2coo.yaml test_csr2csc.yaml test_gebsr2gebsc.yaml test_csr2ell.yaml test_csr2hyb.yaml test_bsr2csr.yaml test_csr2bsr.yaml test_csr2gebsr.yaml test_coo2csr.yaml test_ell2csr.yaml test_hyb2csr.yaml test_identity.yaml test_csrsort.yaml test_cscsort.yaml test_coosort.yaml test_csricsv.yaml test_csrilusv.yaml test_nnz.yaml test_dense2csr.yaml test_dense2coo.yaml test_prune_dense2csr.yaml test_prune_dense2csr_by_percentage.yaml test_dense2csc.yaml test_csr2dense.yaml test_csc2dense.yaml test_coo2dense.yaml test_sparse_to_dense_coo.yaml test_sparse_to_dense_csr.yaml test_sparse_to_dense_csc.yaml test_dense_to_sparse_coo.yaml test_dense_to_sparse_csr.yaml test_dense_to_sparse_csc.yaml test_csr2csr_compress.yaml test_prune_csr2csr.yaml test_prune_csr2csr_by_percentage.yaml test_gebsr2gebsr.yaml test_spvec_descr.yaml test_spmat_descr.yaml test_dnvec_descr.yaml test_dnmat_descr.yaml test_spmv_coo.yaml test_spmv_coo_aos.yaml test_spmv_csr.yaml test_spmv_ell.yaml test_spmm_csr.yaml test_spmm_coo.yaml test_spvv.yaml test_spgemm_csr.yaml test_gebsrmm.yaml test_gemvi.yaml test_sddmm.yaml test_gtsv.yaml test_gtsv_no_pivot.yaml test_gtsv_no_pivot_strided_batch.yaml test_csrcolor.yaml test_bsrsm.yaml
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 add_custom_target(rocsparse-test-data
                   DEPENDS "${ROCSPARSE_TEST_DATA}" )
-
 add_dependencies(rocsparse-test rocsparse-test-data rocsparse-common)
+
+
+if (WIN32)
+  # for now adding in all .dll as dependency chain is not cmake based on win32
+  file( GLOB third_party_dlls
+    LIST_DIRECTORIES OFF
+    CONFIGURE_DEPENDS
+    ${HIP_DIR}/bin/*.dll
+    ${HIP_DIR}/bin/hipinfo.exe
+    ${CMAKE_SOURCE_DIR}/rtest.*
+    C:/Windows/System32/libomp140*.dll
+  )
+  foreach( file_i ${third_party_dlls})
+    add_custom_command( TARGET rocsparse-test POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy ${file_i} ${PROJECT_BINARY_DIR}/staging/ )
+  endforeach( file_i )
+endif()

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -651,7 +651,6 @@ void testing_gebsr2gebsr(const Arguments& arg)
     N = Nb * col_block_dim_A;
 
     rocsparse_int Mb_C = (M + row_block_dim_C - 1) / row_block_dim_C;
-    rocsparse_int Nb_C = (N + col_block_dim_C - 1) / col_block_dim_C;
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -731,7 +730,6 @@ void testing_gebsr2gebsr(const Arguments& arg)
     M    = Mb * row_block_dim_A;
     N    = Nb * col_block_dim_A;
     Mb_C = (M + row_block_dim_C - 1) / row_block_dim_C;
-    Nb_C = (N + col_block_dim_C - 1) / col_block_dim_C;
 
     // Allocate device memory for input BSR matrix
     device_vector<rocsparse_int> dbsr_row_ptr_A(Mb + 1);

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,10 @@
 
 // COO to CSR matrix conversion kernel
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__ void coosort_permute_kernel(rocsparse_int        nnz,
-                                                                    const rocsparse_int* in,
-                                                                    const rocsparse_int* perm,
-                                                                    rocsparse_int*       out)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coosort_permute_kernel(rocsparse_int        nnz,
+                                                                          const rocsparse_int* in,
+                                                                          const rocsparse_int* perm,
+                                                                          rocsparse_int*       out)
 {
     rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

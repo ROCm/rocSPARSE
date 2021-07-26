@@ -34,33 +34,33 @@
 #include "rocsparse_traits.hpp"
 #include <rocsparse.h>
 
-#define REAL_TEMPLATE(NAME_, ...)                                        \
-    template <typename T>                                                \
-    rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);                  \
-    template <>                                                          \
-    static constexpr auto rocsparse_##NAME_<float> = rocsparse_s##NAME_; \
-    template <>                                                          \
-    static constexpr auto rocsparse_##NAME_<double> = rocsparse_d##NAME_
+#define REAL_TEMPLATE(NAME_, ...)                              \
+    template <typename T>                                      \
+    rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);        \
+    template <>                                                \
+    static auto rocsparse_##NAME_<float> = rocsparse_s##NAME_; \
+    template <>                                                \
+    static auto rocsparse_##NAME_<double> = rocsparse_d##NAME_
 
-#define COMPLEX_TEMPLATE(NAME_, ...)                                                       \
-    template <typename T>                                                                  \
-    rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);                                    \
-    template <>                                                                            \
-    static constexpr auto rocsparse_##NAME_<rocsparse_float_complex> = rocsparse_c##NAME_; \
-    template <>                                                                            \
-    static constexpr auto rocsparse_##NAME_<rocsparse_double_complex> = rocsparse_z##NAME_
+#define COMPLEX_TEMPLATE(NAME_, ...)                                             \
+    template <typename T>                                                        \
+    rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);                          \
+    template <>                                                                  \
+    static auto rocsparse_##NAME_<rocsparse_float_complex> = rocsparse_c##NAME_; \
+    template <>                                                                  \
+    static auto rocsparse_##NAME_<rocsparse_double_complex> = rocsparse_z##NAME_
 
-#define REAL_COMPLEX_TEMPLATE(NAME_, ...)                                                  \
-    template <typename T>                                                                  \
-    rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);                                    \
-    template <>                                                                            \
-    static constexpr auto rocsparse_##NAME_<float> = rocsparse_s##NAME_;                   \
-    template <>                                                                            \
-    static constexpr auto rocsparse_##NAME_<double> = rocsparse_d##NAME_;                  \
-    template <>                                                                            \
-    static constexpr auto rocsparse_##NAME_<rocsparse_float_complex> = rocsparse_c##NAME_; \
-    template <>                                                                            \
-    static constexpr auto rocsparse_##NAME_<rocsparse_double_complex> = rocsparse_z##NAME_
+#define REAL_COMPLEX_TEMPLATE(NAME_, ...)                                        \
+    template <typename T>                                                        \
+    rocsparse_status (*rocsparse_##NAME_)(__VA_ARGS__);                          \
+    template <>                                                                  \
+    static auto rocsparse_##NAME_<float> = rocsparse_s##NAME_;                   \
+    template <>                                                                  \
+    static auto rocsparse_##NAME_<double> = rocsparse_d##NAME_;                  \
+    template <>                                                                  \
+    static auto rocsparse_##NAME_<rocsparse_float_complex> = rocsparse_c##NAME_; \
+    template <>                                                                  \
+    static auto rocsparse_##NAME_<rocsparse_double_complex> = rocsparse_z##NAME_
 
 /*
  * ===========================================================================

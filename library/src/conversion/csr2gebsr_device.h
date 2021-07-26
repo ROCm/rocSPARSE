@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include "common.h"
 
 template <rocsparse_int BLOCK_SIZE, rocsparse_int WF_SEGMENT_SIZE, rocsparse_int WF_SIZE>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void csr2gebsr_nnz_general_kernel(rocsparse_int        m,
                                       rocsparse_int        n,
                                       rocsparse_int        mb,
@@ -135,7 +135,7 @@ template <rocsparse_int BLOCK_SIZE,
           rocsparse_int WF_SEGMENT_SIZE,
           rocsparse_int WF_SIZE,
           typename T>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void csr2gebsr_general_kernel(rocsparse_direction        direction,
                                   rocsparse_int              m,
                                   rocsparse_int              n,
@@ -288,7 +288,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
 }
 
 template <rocsparse_int BLOCK_SIZE, rocsparse_int WF_SEGMENT_SIZE, rocsparse_int WF_SIZE>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void csr2gebsr_nnz_fast_kernel(rocsparse_int        m,
                                    rocsparse_int        n,
                                    rocsparse_int        mb,
@@ -373,7 +373,7 @@ template <rocsparse_direction DIRECTION,
           rocsparse_int       WF_SEGMENT_SIZE,
           rocsparse_int       WF_SIZE,
           typename T>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void csr2gebsr_fast_kernel(rocsparse_int              m,
                                rocsparse_int              n,
                                rocsparse_int              mb,
@@ -493,7 +493,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csr2gebsr_nnz_kernel_bm1_bn1(rocsparse_int        m,
                                       rocsparse_index_base csr_base,
                                       const rocsparse_int* __restrict__ csr_row_ptr,
@@ -515,7 +515,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csr2gebsr_nnz_kernel_bm1(rocsparse_int        m,
                                   rocsparse_index_base csr_base,
                                   const rocsparse_int* __restrict__ csr_row_ptr,
@@ -546,7 +546,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <rocsparse_int BLOCK_SIZE, typename T>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void csr2gebsr_kernel_bm1(rocsparse_int              m,
                               rocsparse_int              n,
                               rocsparse_int              mb,
@@ -600,7 +600,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csr2gebsr_nnz_kernel_bm1_bn1(rocsparse_int        m,
                                       rocsparse_index_base csr_base,
                                       const rocsparse_int* __restrict__ csr_row_ptr,
@@ -615,7 +615,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csr2gebsr_nnz_compute_nnz_total_kernel(rocsparse_int mb,
                                                 const rocsparse_int* __restrict__ bsr_row_ptr,
                                                 rocsparse_int* __restrict__ bsr_nnz)
@@ -629,7 +629,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <rocsparse_int BLOCK_SIZE, typename T>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void csr2gebsr_kernel_bm1_bn1(rocsparse_int              m,
                                   rocsparse_int              n,
                                   rocsparse_int              mb,

@@ -27,7 +27,7 @@
 
 #include <hip/hip_runtime.h>
 
-__global__ void init_kernel(){};
+ROCSPARSE_KERNEL void init_kernel(){};
 
 /*******************************************************************************
  * constructor

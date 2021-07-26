@@ -572,6 +572,15 @@ rocsparse_status rocsparse_zsctr(rocsparse_handle                handle,
                                  const rocsparse_int*            x_ind,
                                  rocsparse_double_complex*       y,
                                  rocsparse_index_base            idx_base);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_isctr(rocsparse_handle     handle,
+                                 rocsparse_int        nnz,
+                                 const rocsparse_int* x_val,
+                                 const rocsparse_int* x_ind,
+                                 rocsparse_int*       y,
+                                 rocsparse_index_base idx_base);
+
 /**@}*/
 
 /*
@@ -6945,6 +6954,20 @@ rocsparse_status rocsparse_zbsrilu0_numeric_boost(rocsparse_handle              
                                                   int                             enable_boost,
                                                   const double*                   boost_tol,
                                                   const rocsparse_double_complex* boost_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dsbsrilu0_numeric_boost(rocsparse_handle   handle,
+                                                   rocsparse_mat_info info,
+                                                   int                enable_boost,
+                                                   const double*      boost_tol,
+                                                   const float*       boost_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dcbsrilu0_numeric_boost(rocsparse_handle               handle,
+                                                   rocsparse_mat_info             info,
+                                                   int                            enable_boost,
+                                                   const double*                  boost_tol,
+                                                   const rocsparse_float_complex* boost_val);
 /**@}*/
 
 /*! \ingroup precond_module
@@ -8195,6 +8218,20 @@ rocsparse_status rocsparse_zcsrilu0_numeric_boost(rocsparse_handle              
                                                   int                             enable_boost,
                                                   const double*                   boost_tol,
                                                   const rocsparse_double_complex* boost_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dscsrilu0_numeric_boost(rocsparse_handle   handle,
+                                                   rocsparse_mat_info info,
+                                                   int                enable_boost,
+                                                   const double*      boost_tol,
+                                                   const float*       boost_val);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dccsrilu0_numeric_boost(rocsparse_handle               handle,
+                                                   rocsparse_mat_info             info,
+                                                   int                            enable_boost,
+                                                   const double*                  boost_tol,
+                                                   const rocsparse_float_complex* boost_val);
 /**@}*/
 
 /*! \ingroup precond_module

@@ -25,7 +25,7 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrcolor_kernel_count_colors(J size,
                                       const J* __restrict__ colors,
                                       J* __restrict__ workspace)
@@ -56,7 +56,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrcolor_kernel_count_colors_finalize(J* __restrict__ workspace)
 {
     __shared__ J sdata[BLOCKSIZE];
@@ -72,7 +72,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrcolor_kernel_count_uncolored(J size,
                                          const J* __restrict__ colors,
                                          J* __restrict__ workspace)
@@ -102,7 +102,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, typename J = rocsparse_int>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrcolor_kernel_count_uncolored_finalize(J* __restrict__ workspace)
 {
     __shared__ J sdata[BLOCKSIZE];
@@ -129,12 +129,13 @@ static __forceinline__ __device__ uint32_t murmur3_32(uint32_t h)
 }
 
 template <unsigned int BLOCKSIZE, typename I = rocsparse_int, typename J = rocsparse_int>
-__launch_bounds__(BLOCKSIZE) __global__ void csrcolor_kernel_jpl(J m,
-                                                                 J color,
-                                                                 const I* __restrict__ csr_row_ptr,
-                                                                 const J* __restrict__ csr_col_ind,
-                                                                 rocsparse_index_base csr_base,
-                                                                 J* __restrict__ colors)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrcolor_kernel_jpl(J m,
+                             J color,
+                             const I* __restrict__ csr_row_ptr,
+                             const J* __restrict__ csr_col_ind,
+                             rocsparse_index_base csr_base,
+                             J* __restrict__ colors)
 {
 
     //

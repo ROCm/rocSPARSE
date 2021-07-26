@@ -232,7 +232,7 @@ template <unsigned int WF_SIZE,
           typename I,
           typename T,
           typename U>
-__launch_bounds__(WF_SIZE) __global__
+__launch_bounds__(WF_SIZE) ROCSPARSE_KERNEL
     void coommnn_segmented_atomic(rocsparse_operation trans_B,
                                   I                   nnz,
                                   I                   n,

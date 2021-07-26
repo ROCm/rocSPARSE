@@ -30,7 +30,7 @@ template <rocsparse_int BSR_BLOCK_DIM,
           rocsparse_int UNROLL_SIZE_Y,
           typename T,
           typename U>
-__launch_bounds__(BSR_BLOCK_DIM* BLK_SIZE_Y) __global__
+__launch_bounds__(BSR_BLOCK_DIM* BLK_SIZE_Y) ROCSPARSE_KERNEL
     void gebsrmm_large_blockdim_kernel_ext(rocsparse_direction direction,
                                            rocsparse_operation trans_B,
                                            rocsparse_int       mb,

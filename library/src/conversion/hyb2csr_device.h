@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,15 +31,16 @@
 #include <hip/hip_runtime.h>
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__ void hyb2csr_nnz_kernel(rocsparse_int        m,
-                                                                rocsparse_int        n,
-                                                                rocsparse_int        ell_nnz,
-                                                                rocsparse_int        ell_width,
-                                                                const rocsparse_int* ell_col_ind,
-                                                                rocsparse_int        coo_nnz,
-                                                                const rocsparse_int* coo_row_ptr,
-                                                                rocsparse_int*       row_nnz,
-                                                                rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void hyb2csr_nnz_kernel(rocsparse_int        m,
+                            rocsparse_int        n,
+                            rocsparse_int        ell_nnz,
+                            rocsparse_int        ell_width,
+                            const rocsparse_int* ell_col_ind,
+                            rocsparse_int        coo_nnz,
+                            const rocsparse_int* coo_row_ptr,
+                            rocsparse_int*       row_nnz,
+                            rocsparse_index_base idx_base)
 {
     // Each thread processes one row
     rocsparse_int row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
@@ -77,20 +78,21 @@ __launch_bounds__(BLOCKSIZE) __global__ void hyb2csr_nnz_kernel(rocsparse_int   
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void hyb2csr_fill_kernel(rocsparse_int        m,
-                                                                 rocsparse_int        n,
-                                                                 rocsparse_int        ell_nnz,
-                                                                 rocsparse_int        ell_width,
-                                                                 const rocsparse_int* ell_col_ind,
-                                                                 const T*             ell_val,
-                                                                 rocsparse_int        coo_nnz,
-                                                                 const rocsparse_int* coo_row_ptr,
-                                                                 const rocsparse_int* coo_col_ind,
-                                                                 const T*             coo_val,
-                                                                 const rocsparse_int* csr_row_ptr,
-                                                                 rocsparse_int*       csr_col_ind,
-                                                                 T*                   csr_val,
-                                                                 rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void hyb2csr_fill_kernel(rocsparse_int        m,
+                             rocsparse_int        n,
+                             rocsparse_int        ell_nnz,
+                             rocsparse_int        ell_width,
+                             const rocsparse_int* ell_col_ind,
+                             const T*             ell_val,
+                             rocsparse_int        coo_nnz,
+                             const rocsparse_int* coo_row_ptr,
+                             const rocsparse_int* coo_col_ind,
+                             const T*             coo_val,
+                             const rocsparse_int* csr_row_ptr,
+                             rocsparse_int*       csr_col_ind,
+                             T*                   csr_val,
+                             rocsparse_index_base idx_base)
 {
     // Each thread processes one row
     rocsparse_int row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;

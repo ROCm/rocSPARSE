@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,33 @@
 /* =================================================================================== */
 /*! \brief  returns true if value is NaN */
 template <typename T>
-inline bool rocsparse_isnan(T arg)
+inline bool rocsparse_isnan(T arg);
+
+template <>
+inline bool rocsparse_isnan(int arg)
+{
+    return false;
+}
+
+template <>
+inline bool rocsparse_isnan(int64_t arg)
+{
+    return false;
+}
+
+template <>
+inline bool rocsparse_isnan(uint64_t arg)
+{
+    return false;
+}
+
+template <>
+inline bool rocsparse_isnan(double arg)
+{
+    return std::isnan(arg);
+}
+template <>
+inline bool rocsparse_isnan(float arg)
 {
     return std::isnan(arg);
 }

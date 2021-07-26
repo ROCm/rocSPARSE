@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void dotci_kernel_part1(
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void dotci_kernel_part1(
     I nnz, const T* x_val, const I* x_ind, const T* y, T* workspace, rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
@@ -56,7 +56,7 @@ __launch_bounds__(BLOCKSIZE) __global__ void dotci_kernel_part1(
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void dotci_kernel_part2(T* workspace, T* result)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void dotci_kernel_part2(T* workspace, T* result)
 {
     int tid = hipThreadIdx_x;
 

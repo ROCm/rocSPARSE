@@ -29,7 +29,7 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrsm_upper_large_kernel(rocsparse_int        mb,
                                   rocsparse_int        nrhs,
                                   const rocsparse_int* bsr_row_ptr,
@@ -191,7 +191,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int NCOLS, bool SLEEP, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrsm_lower_large_kernel(rocsparse_int        mb,
                                   rocsparse_int        nrhs,
                                   const rocsparse_int* bsr_row_ptr,

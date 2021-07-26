@@ -68,7 +68,7 @@ __device__ void coomm_row_scale_device(I m, I n, T beta, T* __restrict__ data, I
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void coomm_row_scale(I m, I n, U beta_device_host, T* __restrict__ data, I ld)
 {
     auto beta = load_scalar_device_host(beta_device_host);
@@ -79,7 +79,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void coomm_column_scale(I m, I n, U beta_device_host, T* __restrict__ data, I ld)
 {
     auto beta = load_scalar_device_host(beta_device_host);

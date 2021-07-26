@@ -34,6 +34,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef WIN32
+#define ROCSPARSE_KERNEL __global__ static
+#else
+#define ROCSPARSE_KERNEL __global__
+#endif
+
 /*! \ingroup types_module
  *  \brief Specifies whether int32 or int64 is used.
  */

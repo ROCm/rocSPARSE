@@ -152,7 +152,7 @@ __device__ void bsrxmvn_2x2_device(rocsparse_int       mb,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrxmvn_2x2_kernel(rocsparse_int       mb,
                             rocsparse_direction dir,
                             U                   alpha_device_host,

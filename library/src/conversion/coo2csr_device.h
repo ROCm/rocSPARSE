@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,11 +53,11 @@ static inline __device__ rocsparse_int lower_bound(const rocsparse_int* arr,
 
 // COO to CSR matrix conversion kernel
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__ void coo2csr_kernel(rocsparse_int        m,
-                                                            rocsparse_int        nnz,
-                                                            const rocsparse_int* coo_row_ind,
-                                                            rocsparse_int*       csr_row_ptr,
-                                                            rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coo2csr_kernel(rocsparse_int        m,
+                                                                  rocsparse_int        nnz,
+                                                                  const rocsparse_int* coo_row_ind,
+                                                                  rocsparse_int*       csr_row_ptr,
+                                                                  rocsparse_index_base idx_base)
 {
     rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

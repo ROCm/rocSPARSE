@@ -33,7 +33,7 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrmmnn_row_split_kernel(rocsparse_operation trans_A,
                                   rocsparse_operation trans_B,
                                   J                   offset,
@@ -88,7 +88,7 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrmmnt_row_split_main_kernel(rocsparse_operation trans_A,
                                        rocsparse_operation trans_B,
                                        J                   offset,
@@ -144,7 +144,7 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrmmnt_row_split_remainder_kernel(rocsparse_operation trans_A,
                                             rocsparse_operation trans_B,
                                             J                   offset,

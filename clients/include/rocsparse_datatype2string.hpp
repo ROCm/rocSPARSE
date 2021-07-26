@@ -27,6 +27,9 @@
 #define ROCSPARSE_DATATYPE2STRING_HPP
 
 #include <rocsparse.h>
+#include <string>
+
+#include <algorithm>
 
 typedef enum rocsparse_matrix_init_kind_
 {

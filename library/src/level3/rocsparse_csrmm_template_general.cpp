@@ -27,7 +27,7 @@
 #include "csrmm_device.h"
 
 template <unsigned int DIM_X, unsigned int DIM_Y, typename I, typename T, typename U>
-__launch_bounds__(DIM_X* DIM_Y) __global__ void csrmm_scale(
+__launch_bounds__(DIM_X* DIM_Y) ROCSPARSE_KERNEL void csrmm_scale(
     I m, I n, U beta_device_host, T* __restrict__ data, I ld, rocsparse_order order)
 {
     auto beta = load_scalar_device_host(beta_device_host);
@@ -43,7 +43,7 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrmmnn_general_kernel(rocsparse_operation trans_A,
                                 rocsparse_operation trans_B,
                                 J                   m,
@@ -96,7 +96,7 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrmmnt_general_main_kernel(rocsparse_operation trans_A,
                                      rocsparse_operation trans_B,
                                      J                   offset,
@@ -151,7 +151,7 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrmmnt_general_remainder_kernel(rocsparse_operation trans_A,
                                           rocsparse_operation trans_B,
                                           J                   offset,
@@ -206,7 +206,7 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrmmtn_general_kernel(rocsparse_operation trans_A,
                                 rocsparse_operation trans_B,
                                 J                   m,
@@ -257,7 +257,7 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrmmtt_general_kernel(rocsparse_operation trans_A,
                                 rocsparse_operation trans_B,
                                 J                   m,

@@ -256,21 +256,22 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void coommnn_atomic_main(rocsparse_operation trans_B,
-                                                                 I                   offset,
-                                                                 I                   ncol,
-                                                                 I                   nnz,
-                                                                 I                   n,
-                                                                 U alpha_device_host,
-                                                                 const I* __restrict__ coo_row_ind,
-                                                                 const I* __restrict__ coo_col_ind,
-                                                                 const T* __restrict__ coo_val,
-                                                                 const T* __restrict__ B,
-                                                                 I ldb,
-                                                                 T* __restrict__ C,
-                                                                 I                    ldc,
-                                                                 rocsparse_order      order,
-                                                                 rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void coommnn_atomic_main(rocsparse_operation trans_B,
+                             I                   offset,
+                             I                   ncol,
+                             I                   nnz,
+                             I                   n,
+                             U                   alpha_device_host,
+                             const I* __restrict__ coo_row_ind,
+                             const I* __restrict__ coo_col_ind,
+                             const T* __restrict__ coo_val,
+                             const T* __restrict__ B,
+                             I ldb,
+                             T* __restrict__ C,
+                             I                    ldc,
+                             rocsparse_order      order,
+                             rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     coommnn_atomic_main_device<BLOCKSIZE, WF_SIZE, LOOPS, NT>(trans_B,
@@ -291,7 +292,7 @@ __launch_bounds__(BLOCKSIZE) __global__ void coommnn_atomic_main(rocsparse_opera
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool NT, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void coommnn_atomic_remainder(rocsparse_operation trans_B,
                                   I                   offset,
                                   I                   nnz,
@@ -520,7 +521,6 @@ rocsparse_status rocsparse_coomm_template_atomic(rocsparse_handle          handl
     {
         return rocsparse_status_not_implemented;
     }
-
     return rocsparse_status_success;
 }
 

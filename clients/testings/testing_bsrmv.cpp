@@ -83,7 +83,6 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_bsrmv(const Arguments& arg)
 {
-
     rocsparse_int        M         = arg.M;
     rocsparse_int        N         = arg.N;
     rocsparse_direction  dir       = arg.direction;

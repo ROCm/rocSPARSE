@@ -151,7 +151,7 @@ __device__ void bsrxmvn_17_32_device(rocsparse_int       mb,
 
 // Kernels for BSR block dimensions of 17 to 32
 template <unsigned int BSRDIM, typename T, typename U>
-__launch_bounds__(BSRDIM* BSRDIM) __global__
+__launch_bounds__(BSRDIM* BSRDIM) ROCSPARSE_KERNEL
     void bsrxmvn_17_32_kernel(rocsparse_int       mb,
                               rocsparse_direction dir,
                               U                   alpha_device_host,

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -206,7 +206,7 @@ static __device__ void segmented_blockreduce(const I* rows, T* vals)
 
 // Do the final block reduction of the block reduction buffers back into global memory
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void coomvn_general_block_reduce(
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvn_general_block_reduce(
     I nnz, const I* __restrict__ row_block_red, const T* __restrict__ val_block_red, T* y)
 {
     int tid = hipThreadIdx_x;

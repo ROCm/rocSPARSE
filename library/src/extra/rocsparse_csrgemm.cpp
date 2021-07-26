@@ -37,7 +37,7 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_fill_wf_per_row_host_pointer(J m,
                                               J nk,
                                               const J* __restrict__ offset,
@@ -96,7 +96,7 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_fill_wf_per_row_device_pointer(J m,
                                                 J nk,
                                                 const J* __restrict__ offset,
@@ -156,7 +156,7 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_fill_block_per_row_host_pointer(J nk,
                                                  const J* __restrict__ offset,
                                                  const J* __restrict__ perm,
@@ -213,7 +213,7 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_fill_block_per_row_device_pointer(J nk,
                                                    const J* __restrict__ offset,
                                                    const J* __restrict__ perm,
@@ -270,7 +270,7 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_fill_block_per_row_multipass_host_pointer(J n,
                                                            const J* __restrict__ offset,
                                                            const J* __restrict__ perm,
@@ -328,7 +328,7 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_fill_block_per_row_multipass_device_pointer(J n,
                                                              const J* __restrict__ offset,
                                                              const J* __restrict__ perm,
@@ -1727,14 +1727,14 @@ static inline rocsparse_status rocsparse_csrgemm_mult_template(rocsparse_handle 
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_copy_scale_host_pointer(
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgemm_copy_scale_host_pointer(
     I size, T alpha, const T* __restrict__ in, T* __restrict__ out)
 {
     csrgemm_copy_scale_device<BLOCKSIZE>(size, alpha, in, out);
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_copy_scale_device_pointer(
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgemm_copy_scale_device_pointer(
     I size, const T* __restrict__ alpha, const T* __restrict__ in, T* __restrict__ out)
 {
     csrgemm_copy_scale_device<BLOCKSIZE>(size, *alpha, in, out);
