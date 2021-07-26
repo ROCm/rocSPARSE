@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 
 // CSR to COO matrix conversion kernel
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csr2coo_kernel(J m, const I* csr_row_ptr, J* coo_row_ind, rocsparse_index_base idx_base)
 {
     J tid = hipThreadIdx_x;

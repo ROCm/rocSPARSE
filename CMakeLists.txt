@@ -77,6 +77,7 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSPARSE with code coverage enabled" OFF)
 option(BUILD_ADDRESS_SANITIZER "Build rocSPARSE with address sanitizer enabled" OFF)
 
+#
 if(BUILD_CODE_COVERAGE)
   add_compile_options(-fprofile-arcs -ftest-coverage)
   add_link_options(--coverage)
@@ -110,9 +111,9 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
 endif()
 
 #Set the AMDGPU_TARGETS with backward compatiblity
-if(COMMAND rocm_check_target_ids)
-   rocm_check_target_ids(DEFAULT_AMDGPU_TARGETS
-       TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx1030"
+ if(COMMAND rocm_check_target_ids)
+    rocm_check_target_ids(DEFAULT_AMDGPU_TARGETS
+        TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx1030"
    )
 else()
     # Use target ID syntax if supported for AMDGPU_TARGETS
@@ -122,10 +123,14 @@ else()
         set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900;gfx906;gfx908")
     endif()
 endif()
-set(AMDGPU_TARGETS "${DEFAULT_AMDGPU_TARGETS}" CACHE STRING "List of specific machine types for library to target")
+set(AMDGPU_TARGETS "${DEFAULT_AMDGPU_TARGETS}" CACHE STRING "List of specific machine types for library to target" FORCE)
 
 # Find rocprim package
 find_package(rocprim REQUIRED)
+
+if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
+  find_package( hip REQUIRED CONFIG PATHS ${HIP_DIR} ${ROCM_PATH} /opt/rocm )
+endif( )
 
 # Setup version
 set(VERSION_STRING "1.21.1")
@@ -134,9 +139,12 @@ set(rocsparse_SOVERSION 0.1)
 
 # rocSPARSE library
 add_subdirectory(library)
+if( BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
+  set( BUILD_CLIENTS ON )
+endif()
 
 # Trigger client builds if selected
-if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
+if(BUILD_CLIENTS)
   add_subdirectory(clients)
 endif()
 

@@ -31,7 +31,7 @@
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrsv_kernel(rocsparse_int m,
                       U             alpha_device_host,
                       const rocsparse_int* __restrict__ csr_row_ptr,

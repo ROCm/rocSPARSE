@@ -87,7 +87,7 @@
                        base);
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gebsrmvn_general_kernel(rocsparse_int       mb,
                                  rocsparse_direction dir,
                                  U                   alpha_device_host,
@@ -127,7 +127,7 @@ template <unsigned int BLOCKSIZE,
           unsigned int COLBSRDIM,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gebsrmvn_mxn_kernel(rocsparse_int       mb,
                              rocsparse_direction dir,
                              U                   alpha_device_host,
@@ -158,7 +158,7 @@ template <unsigned int BLOCKSIZE,
           unsigned int COLBSRDIM,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gebsrmvn_mxn_16_kernel(rocsparse_int       mb,
                                 rocsparse_direction dir,
                                 U                   alpha_device_host,

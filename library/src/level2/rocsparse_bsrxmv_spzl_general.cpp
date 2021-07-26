@@ -115,7 +115,7 @@ __device__ void bsrxmvn_general_device(rocsparse_direction dir,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrxmvn_general_kernel(rocsparse_direction dir,
                                 U                   alpha_device_host,
                                 rocsparse_int       size_of_mask,

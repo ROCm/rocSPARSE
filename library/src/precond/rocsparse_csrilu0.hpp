@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -257,18 +257,19 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U,
           typename V>
-__launch_bounds__(BLOCKSIZE) __global__ void csrilu0_binsearch(rocsparse_int        m,
-                                                               const rocsparse_int* csr_row_ptr,
-                                                               const rocsparse_int* csr_col_ind,
-                                                               T*                   csr_val,
-                                                               const rocsparse_int* csr_diag_ind,
-                                                               int*                 done,
-                                                               const rocsparse_int* map,
-                                                               rocsparse_int*       zero_pivot,
-                                                               rocsparse_index_base idx_base,
-                                                               int                  enable_boost,
-                                                               U boost_tol_device_host,
-                                                               V boost_val_device_host)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrilu0_binsearch(rocsparse_int        m,
+                           const rocsparse_int* csr_row_ptr,
+                           const rocsparse_int* csr_col_ind,
+                           T*                   csr_val,
+                           const rocsparse_int* csr_diag_ind,
+                           int*                 done,
+                           const rocsparse_int* map,
+                           rocsparse_int*       zero_pivot,
+                           rocsparse_index_base idx_base,
+                           int                  enable_boost,
+                           U                    boost_tol_device_host,
+                           V                    boost_val_device_host)
 {
     auto boost_tol = (enable_boost) ? load_scalar_device_host(boost_tol_device_host)
                                     : zero_scalar_device_host(boost_tol_device_host);
@@ -296,18 +297,18 @@ template <unsigned int BLOCKSIZE,
           typename T,
           typename U,
           typename V>
-__launch_bounds__(BLOCKSIZE) __global__ void csrilu0_hash(rocsparse_int        m,
-                                                          const rocsparse_int* csr_row_ptr,
-                                                          const rocsparse_int* csr_col_ind,
-                                                          T*                   csr_val,
-                                                          const rocsparse_int* csr_diag_ind,
-                                                          int*                 done,
-                                                          const rocsparse_int* map,
-                                                          rocsparse_int*       zero_pivot,
-                                                          rocsparse_index_base idx_base,
-                                                          int                  enable_boost,
-                                                          U boost_tol_device_host,
-                                                          V boost_val_device_host)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrilu0_hash(rocsparse_int        m,
+                                                                const rocsparse_int* csr_row_ptr,
+                                                                const rocsparse_int* csr_col_ind,
+                                                                T*                   csr_val,
+                                                                const rocsparse_int* csr_diag_ind,
+                                                                int*                 done,
+                                                                const rocsparse_int* map,
+                                                                rocsparse_int*       zero_pivot,
+                                                                rocsparse_index_base idx_base,
+                                                                int                  enable_boost,
+                                                                U boost_tol_device_host,
+                                                                V boost_val_device_host)
 {
     auto boost_tol = (enable_boost) ? load_scalar_device_host(boost_tol_device_host)
                                     : zero_scalar_device_host(boost_tol_device_host);

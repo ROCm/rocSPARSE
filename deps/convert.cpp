@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -124,12 +124,12 @@ bool read_mtx_header(FILE* f, int& nrow, int& ncol, int& nnz, mtx_header& header
     return true;
 }
 
-double set_value(double& dst, double rsrc, double isrc)
+void set_value(double& dst, double rsrc, double isrc)
 {
     dst = rsrc;
 }
 
-std::complex<double> set_value(std::complex<double>& dst, double rsrc, double isrc)
+void set_value(std::complex<double>& dst, double rsrc, double isrc)
 {
     dst = std::complex<double>(rsrc, isrc);
 }

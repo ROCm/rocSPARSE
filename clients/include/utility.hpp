@@ -38,12 +38,56 @@
 /* ==================================================================================== */
 // Return index type
 template <typename I>
-rocsparse_indextype get_indextype(void);
+inline rocsparse_indextype get_indextype(void);
 
 /* ==================================================================================== */
 // Return data type
 template <typename T>
-rocsparse_datatype get_datatype(void);
+inline rocsparse_datatype get_datatype(void);
+
+/*! \brief  Return \ref rocsparse_indextype */
+template <>
+inline rocsparse_indextype get_indextype<uint16_t>(void)
+{
+    return rocsparse_indextype_u16;
+}
+
+template <>
+inline rocsparse_indextype get_indextype<int32_t>(void)
+{
+    return rocsparse_indextype_i32;
+}
+
+template <>
+inline rocsparse_indextype get_indextype<int64_t>(void)
+{
+    return rocsparse_indextype_i64;
+}
+
+/*! \brief  Return \ref rocsparse_datatype */
+template <>
+inline rocsparse_datatype get_datatype<float>(void)
+{
+    return rocsparse_datatype_f32_r;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<double>(void)
+{
+    return rocsparse_datatype_f64_r;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<rocsparse_float_complex>(void)
+{
+    return rocsparse_datatype_f32_c;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<rocsparse_double_complex>(void)
+{
+    return rocsparse_datatype_f64_c;
+}
 
 /* ==================================================================================== */
 /*! \brief  local handle which is automatically created and destroyed  */

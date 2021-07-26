@@ -33,7 +33,7 @@ template <rocsparse_int ROW_BLOCK_DIM,
           rocsparse_int BLK_SIZE_Y,
           typename T,
           typename U>
-__launch_bounds__(BLOCK_DIM* BLK_SIZE_Y) __global__
+__launch_bounds__(BLOCK_DIM* BLK_SIZE_Y) ROCSPARSE_KERNEL
     void gebsrmm_small_blockdim_kernel(rocsparse_direction direction,
                                        rocsparse_operation trans_B,
                                        rocsparse_int       mb,

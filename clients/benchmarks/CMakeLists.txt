@@ -125,11 +125,15 @@ target_compile_options(rocsparse-bench PRIVATE -Wno-unused-command-line-argument
 target_include_directories(rocsparse-bench PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
 # Target link libraries
-target_link_libraries(rocsparse-bench PRIVATE roc::rocsparse hip::host)
+target_link_libraries(rocsparse-bench PRIVATE roc::rocsparse hip::host hip::device)
 
 # Add OpenMP if available
 if(OPENMP_FOUND)
-  target_link_libraries(rocsparse-bench PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
+if (NOT WIN32)
+   target_link_libraries(rocsparse-bench PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
+  else()
+   target_link_libraries(rocsparse-bench PRIVATE libomp)
+  endif()
 endif()
 
 # Set benchmark output directory

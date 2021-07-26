@@ -197,7 +197,7 @@ template <unsigned int  BLOCKSIZE,
           bool          SLEEP,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrsv_lower_shared(rocsparse_int mb,
                             U             alpha_device_host,
                             const rocsparse_int* __restrict__ bsr_row_ptr,
@@ -236,7 +236,7 @@ template <unsigned int  BLOCKSIZE,
           bool          SLEEP,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrsv_upper_shared(rocsparse_int mb,
                             U             alpha_device_host,
                             const rocsparse_int* __restrict__ bsr_row_ptr,
@@ -270,7 +270,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrsv_lower_general(rocsparse_int mb,
                              U             alpha_device_host,
                              const rocsparse_int* __restrict__ bsr_row_ptr,
@@ -304,7 +304,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrsv_upper_general(rocsparse_int mb,
                              U             alpha_device_host,
                              const rocsparse_int* __restrict__ bsr_row_ptr,

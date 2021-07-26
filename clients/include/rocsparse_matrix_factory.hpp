@@ -1553,6 +1553,7 @@ public:
             std::string filename
                 = arg.timing ? arg.filename
                              : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+
             this->m_instance
                 = new rocsparse_matrix_factory_rocalution<T, I, J>(filename.c_str(), to_int);
             break;

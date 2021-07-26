@@ -21,12 +21,32 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
-#include "utility.hpp"
+#ifdef WIN32
+#include <windows.h>
+#endif
 #include "rocsparse_random.hpp"
+#include "utility.hpp"
 
+#include <chrono>
 #include <cstdlib>
-#include <sys/time.h>
+
+#ifdef WIN32
+#define strcasecmp(A, B) _stricmp(A, B)
+#endif
+
+//
+// https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
+//
+#ifdef __cpp_lib_filesystem
+#include <filesystem>
+#else
+#include <experimental/filesystem>
+
+namespace std
+{
+    namespace filesystem = experimental::filesystem;
+}
+#endif
 
 // Random number generator
 // Note: We do not use random_device to initialize the RNG, because we want
@@ -36,10 +56,63 @@ rocsparse_rng_t rocsparse_rng(69069);
 rocsparse_rng_t rocsparse_rng_nan(69069);
 rocsparse_rng_t rocsparse_seed(rocsparse_rng);
 
+void rocsparse_rng_set(rocsparse_rng_t a)
+{
+    rocsparse_rng = a;
+}
+
+void rocsparse_seed_set(rocsparse_rng_t a)
+{
+    rocsparse_seed = a;
+}
+
+void rocsparse_rng_nan_set(rocsparse_rng_t a)
+{
+    rocsparse_rng_nan = a;
+}
+
+rocsparse_rng_t& rocsparse_rng_get()
+{
+    return rocsparse_rng;
+}
+
+rocsparse_rng_t& rocsparse_seed_get()
+{
+    return rocsparse_seed;
+}
+
+rocsparse_rng_t& rocsparse_rng_nan_get()
+{
+    return rocsparse_rng_nan;
+}
+
 /* ============================================================================================ */
 // Return path of this executable
 std::string rocsparse_exepath()
 {
+
+#ifdef WIN32
+
+    std::vector<TCHAR> result(MAX_PATH + 1);
+    // Ensure result is large enough to accomodate the path
+    DWORD length = 0;
+    for(;;)
+    {
+        length = GetModuleFileNameA(nullptr, result.data(), result.size());
+        if(length < result.size() - 1)
+        {
+            result.resize(length + 1);
+            break;
+        }
+        result.resize(result.size() * 2);
+    }
+
+    std::filesystem::path exepath(result.begin(), result.end());
+    exepath = exepath.remove_filename();
+    exepath += exepath.empty() ? "" : "/";
+    return exepath.string();
+
+#else
     std::string pathstr;
     char*       path = realpath("/proc/self/exe", 0);
     if(path)
@@ -53,6 +126,7 @@ std::string rocsparse_exepath()
         free(path);
     }
     return pathstr;
+#endif
 }
 
 /* ============================================================================================ */
@@ -62,60 +136,25 @@ std::string rocsparse_exepath()
 double get_time_us(void)
 {
     hipDeviceSynchronize();
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (tv.tv_sec * 1000 * 1000) + tv.tv_usec;
+    auto now = std::chrono::steady_clock::now();
+    // struct timeval tv;
+    // gettimeofday(&tv, NULL);
+    //  return (tv.tv_sec * 1000 * 1000) + tv.tv_usec;
+    auto duration
+        = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    return (static_cast<double>(duration));
 };
 
 /*! \brief  CPU Timer(in microsecond): synchronize with given queue/stream and return wall time */
 double get_time_us_sync(hipStream_t stream)
 {
     hipStreamSynchronize(stream);
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (tv.tv_sec * 1000 * 1000) + tv.tv_usec;
+    auto now = std::chrono::steady_clock::now();
+
+    // struct timeval tv;
+    // gettimeofday(&tv, NULL);
+    // return (tv.tv_sec * 1000 * 1000) + tv.tv_usec;
+    auto duration
+        = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
+    return (static_cast<double>(duration));
 };
-
-/*! \brief  Return \ref rocsparse_indextype */
-template <>
-rocsparse_indextype get_indextype<uint16_t>(void)
-{
-    return rocsparse_indextype_u16;
-}
-
-template <>
-rocsparse_indextype get_indextype<int32_t>(void)
-{
-    return rocsparse_indextype_i32;
-}
-
-template <>
-rocsparse_indextype get_indextype<int64_t>(void)
-{
-    return rocsparse_indextype_i64;
-}
-
-/*! \brief  Return \ref rocsparse_datatype */
-template <>
-rocsparse_datatype get_datatype<float>(void)
-{
-    return rocsparse_datatype_f32_r;
-}
-
-template <>
-rocsparse_datatype get_datatype<double>(void)
-{
-    return rocsparse_datatype_f64_r;
-}
-
-template <>
-rocsparse_datatype get_datatype<rocsparse_float_complex>(void)
-{
-    return rocsparse_datatype_f32_c;
-}
-
-template <>
-rocsparse_datatype get_datatype<rocsparse_double_complex>(void)
-{
-    return rocsparse_datatype_f64_c;
-}

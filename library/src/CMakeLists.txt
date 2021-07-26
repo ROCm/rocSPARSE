@@ -22,10 +22,12 @@
 # ########################################################################
 
 # rocSPARSE Fortran source
+if (NOT WIN32)
 set(rocsparse_fortran_source
   src/rocsparse_enums.f
   src/rocsparse.f
 )
+endif()
 
 # rocSPARSE source
 set(rocsparse_source

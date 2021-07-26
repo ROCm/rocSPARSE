@@ -31,7 +31,7 @@
 #include <rocprim/rocprim.hpp>
 
 template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename T, typename U>
-__launch_bounds__(DIM_X* DIM_Y) __global__
+__launch_bounds__(DIM_X* DIM_Y) ROCSPARSE_KERNEL
     void prune_dense2csr_nnz_kernel(rocsparse_int m,
                                     rocsparse_int n,
                                     const T* __restrict__ A,
@@ -44,7 +44,7 @@ __launch_bounds__(DIM_X* DIM_Y) __global__
 }
 
 template <rocsparse_int NUMROWS_PER_BLOCK, rocsparse_int WF_SIZE, typename T, typename U>
-__launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) __global__
+__launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) ROCSPARSE_KERNEL
     void prune_dense2csr_kernel(rocsparse_index_base base,
                                 rocsparse_int        m,
                                 rocsparse_int        n,

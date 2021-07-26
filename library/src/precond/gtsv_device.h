@@ -141,7 +141,7 @@
 // clang-format on
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_transpose_and_pad_array_kernel(rocsparse_int m,
                                              rocsparse_int m_pad,
                                              rocsparse_int stride,
@@ -170,7 +170,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_transpose_back_array_kernel(rocsparse_int m,
                                           rocsparse_int m_pad,
                                           rocsparse_int stride,
@@ -194,16 +194,17 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void gtsv_LBM_wv_kernel(rocsparse_int m_pad,
-                                                                rocsparse_int n,
-                                                                rocsparse_int ldb,
-                                                                const T* __restrict__ a,
-                                                                const T* __restrict__ b,
-                                                                const T* __restrict__ c,
-                                                                T* __restrict__ w,
-                                                                T* __restrict__ v,
-                                                                T* __restrict__ mt,
-                                                                rocsparse_int* __restrict__ pivot)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void gtsv_LBM_wv_kernel(rocsparse_int m_pad,
+                            rocsparse_int n,
+                            rocsparse_int ldb,
+                            const T* __restrict__ a,
+                            const T* __restrict__ b,
+                            const T* __restrict__ c,
+                            T* __restrict__ w,
+                            T* __restrict__ v,
+                            T* __restrict__ mt,
+                            rocsparse_int* __restrict__ pivot)
 {
     // From Bunch-Kaufman pivoting criteria
     const double kappa = 0.5 * (sqrt(5.0) - 1.0);
@@ -340,7 +341,7 @@ __launch_bounds__(BLOCKSIZE) __global__ void gtsv_LBM_wv_kernel(rocsparse_int m_
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, unsigned int COLS, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_LBM_rhs_kernel(rocsparse_int m_pad,
                              rocsparse_int n,
                              rocsparse_int ldb,
@@ -565,7 +566,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_spike_block_level_kernel(rocsparse_int m_pad,
                                        rocsparse_int n,
                                        rocsparse_int ldb,
@@ -671,7 +672,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_solve_spike_grid_level_kernel(rocsparse_int m_pad,
                                             rocsparse_int n,
                                             rocsparse_int ldb,
@@ -765,7 +766,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_solve_spike_propagate_kernel(rocsparse_int m_pad,
                                            rocsparse_int n,
                                            rocsparse_int ldb,
@@ -843,7 +844,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_spike_backward_substitution_kernel(rocsparse_int m_pad,
                                                  rocsparse_int n,
                                                  rocsparse_int ldb,

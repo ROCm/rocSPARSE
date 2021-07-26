@@ -437,7 +437,7 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrmvn_general_kernel(J m,
                                U alpha_device_host,
                                const I* __restrict__ csr_row_ptr,
@@ -458,7 +458,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <typename I, typename J, typename T, typename U>
-__launch_bounds__(WG_SIZE) __global__
+__launch_bounds__(WG_SIZE) ROCSPARSE_KERNEL
     void csrmvn_adaptive_kernel(const I* __restrict__ row_blocks,
                                 unsigned int* __restrict__ wg_flags,
                                 const J* __restrict__ wg_ids,

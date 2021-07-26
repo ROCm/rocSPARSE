@@ -481,20 +481,21 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void csrsm(rocsparse_int m,
-                                                   rocsparse_int nrhs,
-                                                   U             alpha_device_host,
-                                                   const rocsparse_int* __restrict__ csr_row_ptr,
-                                                   const rocsparse_int* __restrict__ csr_col_ind,
-                                                   const T* __restrict__ csr_val,
-                                                   T* __restrict__ B,
-                                                   rocsparse_int ldb,
-                                                   int* __restrict__ done_array,
-                                                   rocsparse_int* __restrict__ map,
-                                                   rocsparse_int* __restrict__ zero_pivot,
-                                                   rocsparse_index_base idx_base,
-                                                   rocsparse_fill_mode  fill_mode,
-                                                   rocsparse_diag_type  diag_type)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrsm(rocsparse_int m,
+               rocsparse_int nrhs,
+               U             alpha_device_host,
+               const rocsparse_int* __restrict__ csr_row_ptr,
+               const rocsparse_int* __restrict__ csr_col_ind,
+               const T* __restrict__ csr_val,
+               T* __restrict__ B,
+               rocsparse_int ldb,
+               int* __restrict__ done_array,
+               rocsparse_int* __restrict__ map,
+               rocsparse_int* __restrict__ zero_pivot,
+               rocsparse_index_base idx_base,
+               rocsparse_fill_mode  fill_mode,
+               rocsparse_diag_type  diag_type)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     csrsm_device<BLOCKSIZE, WFSIZE, SLEEP>(m,
@@ -514,12 +515,12 @@ __launch_bounds__(BLOCKSIZE) __global__ void csrsm(rocsparse_int m,
 }
 
 template <unsigned int DIM_X, unsigned int DIM_Y, typename T>
-__launch_bounds__(DIM_X* DIM_Y) __global__ void csrsm_transpose(rocsparse_int m,
-                                                                rocsparse_int n,
-                                                                const T* __restrict__ A,
-                                                                rocsparse_int lda,
-                                                                T* __restrict__ B,
-                                                                rocsparse_int ldb)
+__launch_bounds__(DIM_X* DIM_Y) ROCSPARSE_KERNEL void csrsm_transpose(rocsparse_int m,
+                                                                      rocsparse_int n,
+                                                                      const T* __restrict__ A,
+                                                                      rocsparse_int lda,
+                                                                      T* __restrict__ B,
+                                                                      rocsparse_int ldb)
 {
     dense_transpose_device<DIM_X, DIM_Y>(m, n, (T)1, A, lda, B, ldb);
 }

@@ -913,7 +913,6 @@ void testing_csrsm(const Arguments& arg)
     rocsparse_operation         transA    = arg.transA;
     rocsparse_operation         transB    = arg.transB;
     rocsparse_int               M         = arg.M;
-    rocsparse_int               N         = arg.N;
     rocsparse_int               nrhs      = arg.K;
     rocsparse_diag_type         diag      = arg.diag;
     rocsparse_fill_mode         uplo      = arg.uplo;
@@ -1030,7 +1029,6 @@ void testing_csrsm(const Arguments& arg)
 
     rocsparse_int nnz  = hcsr.nnz;
     M                  = hcsr.m;
-    N                  = hcsr.n;
     rocsparse_int hB_m = (transB == rocsparse_operation_none) ? M : nrhs;
     rocsparse_int hB_n = (transB == rocsparse_operation_none) ? nrhs : M;
 

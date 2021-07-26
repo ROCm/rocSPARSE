@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "common.h"
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsric0_2_8_unrolled_kernel(rocsparse_direction direction,
                                     rocsparse_int       mb,
                                     rocsparse_int       block_dim,
@@ -420,7 +420,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsric0_2_8_kernel(rocsparse_direction direction,
                            rocsparse_int       mb,
                            rocsparse_int       block_dim,
@@ -751,7 +751,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsric0_9_16_kernel(rocsparse_direction direction,
                             rocsparse_int       mb,
                             rocsparse_int       block_dim,
@@ -1112,7 +1112,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <rocsparse_int BLOCKSIZE, rocsparse_int MAX_NNZB, rocsparse_int BSRDIM, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsric0_17_32_kernel(rocsparse_direction direction,
                              rocsparse_int       mb,
                              rocsparse_int       block_dim,
@@ -1463,7 +1463,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsric0_binsearch_kernel(rocsparse_direction direction,
                                  rocsparse_int       mb,
                                  rocsparse_int       block_dim,

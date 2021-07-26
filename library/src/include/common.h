@@ -27,7 +27,9 @@
 #define COMMON_H
 
 #include "rocsparse.h"
-
+#ifdef WIN32
+#include <intrin.h>
+#endif
 #include <hip/hip_runtime.h>
 
 // clang-format off
@@ -560,7 +562,7 @@ __device__ void dense_transpose_device(
 
 // Perform dense matrix back transposition
 template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
-__launch_bounds__(DIMX* DIMY) __global__
+__launch_bounds__(DIMX* DIMY) ROCSPARSE_KERNEL
     void dense_transpose_back(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
 {
     int lid = hipThreadIdx_x & (DIMX - 1);
@@ -601,12 +603,12 @@ __launch_bounds__(DIMX* DIMY) __global__
 
 // BSR gather functionality to permute the BSR values array
 template <unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM, typename I, typename T>
-__launch_bounds__(WFSIZE* DIMY) __global__ void bsr_gather(rocsparse_direction dir,
-                                                           I                   nnzb,
-                                                           const I* __restrict__ perm,
-                                                           const T* __restrict__ bsr_val_A,
-                                                           T* __restrict__ bsr_val_T,
-                                                           I block_dim)
+__launch_bounds__(WFSIZE* DIMY) ROCSPARSE_KERNEL void bsr_gather(rocsparse_direction dir,
+                                                                 I                   nnzb,
+                                                                 const I* __restrict__ perm,
+                                                                 const T* __restrict__ bsr_val_A,
+                                                                 T* __restrict__ bsr_val_T,
+                                                                 I block_dim)
 {
     int lid = threadIdx.x & (BSRDIM - 1);
     int wid = threadIdx.x / BSRDIM;

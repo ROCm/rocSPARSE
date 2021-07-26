@@ -35,25 +35,25 @@ template <rocsparse_int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__global__ __launch_bounds__(BLOCKSIZE, 1) void sddmm_ell_kernel(rocsparse_operation transA,
-                                                                 rocsparse_operation transB,
-                                                                 rocsparse_order     orderA,
-                                                                 rocsparse_order     orderB,
-                                                                 J                   M,
-                                                                 J                   N,
-                                                                 J                   K,
-                                                                 I                   nnz,
-                                                                 U alpha_device_host,
-                                                                 const T* __restrict__ A,
-                                                                 J lda,
-                                                                 const T* __restrict__ B,
-                                                                 J ldb,
-                                                                 U beta_device_host,
-                                                                 T* __restrict__ val,
+ROCSPARSE_KERNEL __launch_bounds__(BLOCKSIZE, 1) void sddmm_ell_kernel(rocsparse_operation transA,
+                                                                       rocsparse_operation transB,
+                                                                       rocsparse_order     orderA,
+                                                                       rocsparse_order     orderB,
+                                                                       J                   M,
+                                                                       J                   N,
+                                                                       J                   K,
+                                                                       I                   nnz,
+                                                                       U alpha_device_host,
+                                                                       const T* __restrict__ A,
+                                                                       J lda,
+                                                                       const T* __restrict__ B,
+                                                                       J ldb,
+                                                                       U beta_device_host,
+                                                                       T* __restrict__ val,
 
-                                                                 const J* __restrict__ ind,
-                                                                 rocsparse_index_base base,
-                                                                 T* __restrict__ workspace)
+                                                                       const J* __restrict__ ind,
+                                                                       rocsparse_index_base base,
+                                                                       T* __restrict__ workspace)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
@@ -102,11 +102,11 @@ __global__ __launch_bounds__(BLOCKSIZE, 1) void sddmm_ell_kernel(rocsparse_opera
 }
 
 template <rocsparse_int NB, rocsparse_int WIN, typename T, typename U>
-__global__ __launch_bounds__(NB) void ell_finalize_kernel(rocsparse_int n_sums,
-                                                          U             alpha_device_host,
-                                                          U             beta_device_host,
-                                                          T* __restrict__ in,
-                                                          T* __restrict__ out)
+ROCSPARSE_KERNEL __launch_bounds__(NB) void ell_finalize_kernel(rocsparse_int n_sums,
+                                                                U             alpha_device_host,
+                                                                U             beta_device_host,
+                                                                T* __restrict__ in,
+                                                                T* __restrict__ out)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);

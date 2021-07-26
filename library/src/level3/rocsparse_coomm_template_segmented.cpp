@@ -185,7 +185,7 @@ static __device__ void segmented_blockreduce(const I* rows, T* vals)
 
 // Do the final block reduction of the block reduction buffers back into global memory
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void coommn_general_block_reduce(I nblocks,
                                      const I* __restrict__ row_block_red,
                                      const T* __restrict__ val_block_red,
@@ -243,21 +243,22 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void coommnn_wf_segmented(I nnz,
-                                                                  I n,
-                                                                  I nloops,
-                                                                  U alpha_device_host,
-                                                                  const I* __restrict__ coo_row_ind,
-                                                                  const I* __restrict__ coo_col_ind,
-                                                                  const T* __restrict__ coo_val,
-                                                                  const T* __restrict__ B,
-                                                                  I ldb,
-                                                                  T* __restrict__ C,
-                                                                  I ldc,
-                                                                  I* __restrict__ row_block_red,
-                                                                  T* __restrict__ val_block_red,
-                                                                  rocsparse_order      order,
-                                                                  rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void coommnn_wf_segmented(I nnz,
+                              I n,
+                              I nloops,
+                              U alpha_device_host,
+                              const I* __restrict__ coo_row_ind,
+                              const I* __restrict__ coo_col_ind,
+                              const T* __restrict__ coo_val,
+                              const T* __restrict__ B,
+                              I ldb,
+                              T* __restrict__ C,
+                              I ldc,
+                              I* __restrict__ row_block_red,
+                              T* __restrict__ val_block_red,
+                              rocsparse_order      order,
+                              rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     coommnn_general_wf_segmented<BLOCKSIZE, WF_SIZE, TRANSB>(nnz,
