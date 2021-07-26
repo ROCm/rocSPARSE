@@ -98,7 +98,7 @@ include(GenerateExportHeader)
 generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse-export.h)
 
 # Force installation of .f module file
-install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse.f"
+rocm_install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse.f"
               "${CMAKE_SOURCE_DIR}/library/src/rocsparse_enums.f"
         DESTINATION "rocsparse/include"
 )
