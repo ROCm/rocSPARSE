@@ -1909,6 +1909,84 @@ rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* v
 }
 
 /********************************************************************************
+ * \brief rocsparse_spmat_get_attribute gets the sparse matrix attribute.
+ *******************************************************************************/
+rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
+                                               rocsparse_spmat_attribute attribute,
+                                               void*                     data,
+                                               size_t                    data_size)
+{
+    if(descr == nullptr || data == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    switch(attribute)
+    {
+    case rocsparse_spmat_fill_mode:
+    {
+        if(data_size != sizeof(rocsparse_spmat_fill_mode))
+        {
+            return rocsparse_status_invalid_size;
+        }
+        rocsparse_fill_mode* uplo = reinterpret_cast<rocsparse_fill_mode*>(data);
+        *uplo                     = rocsparse_get_mat_fill_mode(descr->descr);
+        return rocsparse_status_success;
+    }
+    case rocsparse_spmat_diag_type:
+    {
+        if(data_size != sizeof(rocsparse_spmat_diag_type))
+        {
+            return rocsparse_status_invalid_size;
+        }
+        rocsparse_diag_type* uplo = reinterpret_cast<rocsparse_diag_type*>(data);
+        *uplo                     = rocsparse_get_mat_diag_type(descr->descr);
+        return rocsparse_status_success;
+    }
+    }
+
+    return rocsparse_status_invalid_value;
+}
+
+/********************************************************************************
+ * \brief rocsparse_spmat_get_attribute sets the sparse matrix attribute.
+ *******************************************************************************/
+rocsparse_status rocsparse_spmat_set_attribute(rocsparse_spmat_descr     descr,
+                                               rocsparse_spmat_attribute attribute,
+                                               const void*               data,
+                                               size_t                    data_size)
+{
+    if(descr == nullptr || data == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    switch(attribute)
+    {
+    case rocsparse_spmat_fill_mode:
+    {
+        if(data_size != sizeof(rocsparse_spmat_fill_mode))
+        {
+            return rocsparse_status_invalid_size;
+        }
+        rocsparse_fill_mode uplo = *reinterpret_cast<const rocsparse_fill_mode*>(data);
+        return rocsparse_set_mat_fill_mode(descr->descr, uplo);
+    }
+    case rocsparse_spmat_diag_type:
+    {
+        if(data_size != sizeof(rocsparse_spmat_diag_type))
+        {
+            return rocsparse_status_invalid_size;
+        }
+        rocsparse_diag_type diag = *reinterpret_cast<const rocsparse_diag_type*>(data);
+        return rocsparse_set_mat_diag_type(descr->descr, diag);
+    }
+    }
+
+    return rocsparse_status_invalid_value;
+}
+
+/********************************************************************************
  * \brief rocsparse_create_dnvec_descr creates a descriptor holding the dense
  * vector data, size and properties. It must be called prior to all subsequent
  * library function calls that involve the dense vector. It should be destroyed

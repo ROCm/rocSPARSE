@@ -242,20 +242,20 @@ void testing_csrsv(const Arguments& arg)
         host_scalar<rocsparse_int> analysis_no_pivot(-1);
         host_dense_matrix<T>       hy(M, 1);
         // CPU csrsv
-        host_csrsv<T>(trans,
-                      hA.m,
-                      hA.nnz,
-                      *h_alpha,
-                      hA.ptr,
-                      hA.ind,
-                      hA.val,
-                      hx,
-                      hy,
-                      diag,
-                      uplo,
-                      base,
-                      h_analysis_pivot,
-                      h_solve_pivot);
+        host_csrsv<rocsparse_int, rocsparse_int, T>(trans,
+                                                    hA.m,
+                                                    hA.nnz,
+                                                    *h_alpha,
+                                                    hA.ptr,
+                                                    hA.ind,
+                                                    hA.val,
+                                                    hx.val,
+                                                    hy.val,
+                                                    diag,
+                                                    uplo,
+                                                    base,
+                                                    h_analysis_pivot.val,
+                                                    h_solve_pivot.val);
 
         // Pointer mode host
         {

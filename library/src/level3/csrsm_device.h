@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,44 +28,49 @@
 
 #include "common.h"
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP, typename T>
-__device__ void csrsm_device(rocsparse_int m,
-                             rocsparse_int nrhs,
-                             T             alpha,
-                             const rocsparse_int* __restrict__ csr_row_ptr,
-                             const rocsparse_int* __restrict__ csr_col_ind,
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          bool         SLEEP,
+          typename I,
+          typename J,
+          typename T>
+__device__ void csrsm_device(J m,
+                             J nrhs,
+                             T alpha,
+                             const I* __restrict__ csr_row_ptr,
+                             const J* __restrict__ csr_col_ind,
                              const T* __restrict__ csr_val,
                              T* __restrict__ B,
-                             rocsparse_int ldb,
+                             J ldb,
                              int* __restrict__ done_array,
-                             rocsparse_int* __restrict__ map,
-                             rocsparse_int* __restrict__ zero_pivot,
+                             J* __restrict__ map,
+                             J* __restrict__ zero_pivot,
                              rocsparse_index_base idx_base,
                              rocsparse_fill_mode  fill_mode,
                              rocsparse_diag_type  diag_type)
 {
     // Index into the row map
-    rocsparse_int idx = hipBlockIdx_x % m;
+    J idx = hipBlockIdx_x % m;
 
     // Shared memory to hold columns and values
-    __shared__ rocsparse_int scsr_col_ind[BLOCKSIZE];
-    __shared__ T             scsr_val[BLOCKSIZE];
+    __shared__ J scsr_col_ind[BLOCKSIZE];
+    __shared__ T scsr_val[BLOCKSIZE];
 
     // Get the row this warp will operate on
-    rocsparse_int row = map[idx];
+    J row = map[idx];
 
     // Current row entry point and exit point
-    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+    I row_begin = csr_row_ptr[row] - idx_base;
+    I row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Column index into B
-    rocsparse_int col_B = hipBlockIdx_x / m * BLOCKSIZE + hipThreadIdx_x;
+    J col_B = hipBlockIdx_x / m * BLOCKSIZE + hipThreadIdx_x;
 
     // Index into B (i,j)
-    rocsparse_int idx_B = row * ldb + col_B;
+    J idx_B = row * ldb + col_B;
 
     // Index into done array
-    rocsparse_int id = hipBlockIdx_x / m * m;
+    J id = hipBlockIdx_x / m * m;
 
     // Initialize local sum with alpha and X
     T local_sum = (col_B < nrhs) ? alpha * B[idx_B] : static_cast<T>(0);
@@ -73,10 +78,10 @@ __device__ void csrsm_device(rocsparse_int m,
     // Initialize diagonal entry
     T diagonal = static_cast<T>(1);
 
-    for(rocsparse_int j = row_begin; j < row_end; ++j)
+    for(I j = row_begin; j < row_end; ++j)
     {
         // Project j onto [0, BLOCKSIZE-1]
-        rocsparse_int k = (j - row_begin) & (BLOCKSIZE - 1);
+        J k = (j - row_begin) & (BLOCKSIZE - 1);
 
         // Preload column indices and values into shared memory
         // This happens only once for each chunk of BLOCKSIZE elements
@@ -92,7 +97,7 @@ __device__ void csrsm_device(rocsparse_int m,
         __syncthreads();
 
         // Current column this lane operates on
-        rocsparse_int local_col = scsr_col_ind[k];
+        J local_col = scsr_col_ind[k];
 
         // Local value this lane operates with
         T local_val = scsr_val[k];
@@ -190,7 +195,7 @@ __device__ void csrsm_device(rocsparse_int m,
         __threadfence();
 
         // Index into X
-        rocsparse_int idx_X = local_col * ldb + col_B;
+        J idx_X = local_col * ldb + col_B;
 
         // Local sum computation for each lane
         local_sum

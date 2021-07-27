@@ -694,6 +694,18 @@ rocsparse_status rocsparse_spmat_get_values(rocsparse_spmat_descr descr, void** 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* values);
 
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
+                                               rocsparse_spmat_attribute attribute,
+                                               void*                     data,
+                                               size_t                    data_size);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmat_set_attribute(rocsparse_spmat_descr     descr,
+                                               rocsparse_spmat_attribute attribute,
+                                               const void*               data,
+                                               size_t                    data_size);
+
 // Dense vector
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_dnvec_descr(rocsparse_dnvec_descr* descr,

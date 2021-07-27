@@ -29,14 +29,12 @@
 #include <hip/hip_runtime.h>
 
 // Compute lower bound by binary search
-static inline __device__ rocsparse_int lower_bound(const rocsparse_int* arr,
-                                                   rocsparse_int        key,
-                                                   rocsparse_int        low,
-                                                   rocsparse_int        high)
+template <typename I, typename J>
+static inline __device__ I lower_bound(const J* arr, J key, I low, I high)
 {
     while(low < high)
     {
-        rocsparse_int mid = low + ((high - low) >> 1);
+        I mid = low + ((high - low) >> 1);
 
         if(arr[mid] < key)
         {
@@ -52,14 +50,11 @@ static inline __device__ rocsparse_int lower_bound(const rocsparse_int* arr,
 }
 
 // COO to CSR matrix conversion kernel
-template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coo2csr_kernel(rocsparse_int        m,
-                                                                  rocsparse_int        nnz,
-                                                                  const rocsparse_int* coo_row_ind,
-                                                                  rocsparse_int*       csr_row_ptr,
-                                                                  rocsparse_index_base idx_base)
+template <unsigned int BLOCKSIZE, typename I, typename J>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coo2csr_kernel(
+    J m, I nnz, const J* coo_row_ind, I* csr_row_ptr, rocsparse_index_base idx_base)
 {
-    rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
     if(gid >= m)
     {
@@ -74,7 +69,7 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coo2csr_kernel(rocsparse_int 
     }
 
     // Binary search
-    csr_row_ptr[gid] = lower_bound(coo_row_ind, gid + idx_base, 0, nnz) + idx_base;
+    csr_row_ptr[gid] = lower_bound(coo_row_ind, gid + idx_base, static_cast<I>(0), nnz) + idx_base;
 }
 
 #endif // COO2CSR_DEVICE_H

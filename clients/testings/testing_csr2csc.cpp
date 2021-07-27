@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -330,17 +330,17 @@ void testing_csr2csc(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hcsc_val, dcsc_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
         // CPU csr2csc
-        host_csr_to_csc<T>(M,
-                           N,
-                           nnz,
-                           hcsr_row_ptr,
-                           hcsr_col_ind,
-                           hcsr_val,
-                           hcsc_row_ind_gold,
-                           hcsc_col_ptr_gold,
-                           hcsc_val_gold,
-                           action,
-                           base);
+        host_csr_to_csc(M,
+                        N,
+                        nnz,
+                        hcsr_row_ptr.data(),
+                        hcsr_col_ind.data(),
+                        hcsr_val.data(),
+                        hcsc_row_ind_gold,
+                        hcsc_col_ptr_gold,
+                        hcsc_val_gold,
+                        action,
+                        base);
 
         unit_check_general<rocsparse_int>(1, nnz, 1, hcsc_row_ind_gold, hcsc_row_ind);
         unit_check_general<rocsparse_int>(1, N + 1, 1, hcsc_col_ptr_gold, hcsc_col_ptr);

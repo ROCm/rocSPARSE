@@ -506,17 +506,17 @@ void testing_csrmv_managed(const Arguments& arg)
         }
 
         // CPU csrmv
-        host_csrmv<rocsparse_int, rocsparse_int, T>(M,
-                                                    nnz,
-                                                    *alpha,
-                                                    csr_row_ptr,
-                                                    csr_col_ind,
-                                                    csr_val,
-                                                    x,
-                                                    *beta,
-                                                    &y_gold[0],
-                                                    base,
-                                                    adaptive);
+        host_csrmv(M,
+                   nnz,
+                   *alpha,
+                   csr_row_ptr,
+                   csr_col_ind,
+                   csr_val,
+                   x,
+                   *beta,
+                   &y_gold[0],
+                   base,
+                   adaptive);
 
         near_check_general<T>(1, M, 1, &y_gold[0], y_1);
         near_check_general<T>(1, M, 1, &y_gold[0], y_2);

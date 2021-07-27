@@ -36,7 +36,7 @@
                        stream,                                    \
                        dir,                                       \
                        nnzb,                                      \
-                       bsrsv->trmt_perm,                          \
+                       (rocsparse_int*)bsrsv->trmt_perm,          \
                        bsr_val,                                   \
                        bsrt_val,                                  \
                        block_dim)
@@ -98,8 +98,8 @@
                        x,                                              \
                        y,                                              \
                        done_array,                                     \
-                       bsrsv->row_map,                                 \
-                       info->zero_pivot,                               \
+                       (rocsparse_int*)bsrsv->row_map,                 \
+                       (rocsparse_int*)info->zero_pivot,               \
                        descr->base,                                    \
                        descr->diag_type,                               \
                        dir)
@@ -119,8 +119,8 @@
                        x,                                              \
                        y,                                              \
                        done_array,                                     \
-                       bsrsv->row_map,                                 \
-                       info->zero_pivot,                               \
+                       (rocsparse_int*)bsrsv->row_map,                 \
+                       (rocsparse_int*)info->zero_pivot,               \
                        descr->base,                                    \
                        descr->diag_type,                               \
                        dir)
@@ -164,8 +164,8 @@
                        x,                                          \
                        y,                                          \
                        done_array,                                 \
-                       bsrsv->row_map,                             \
-                       info->zero_pivot,                           \
+                       (rocsparse_int*)bsrsv->row_map,             \
+                       (rocsparse_int*)info->zero_pivot,           \
                        descr->base,                                \
                        descr->diag_type,                           \
                        dir)
@@ -185,8 +185,8 @@
                        x,                                          \
                        y,                                          \
                        done_array,                                 \
-                       bsrsv->row_map,                             \
-                       info->zero_pivot,                           \
+                       (rocsparse_int*)bsrsv->row_map,             \
+                       (rocsparse_int*)info->zero_pivot,           \
                        descr->base,                                \
                        descr->diag_type,                           \
                        dir)
@@ -387,8 +387,11 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
     if(descr->diag_type == rocsparse_diag_type_unit)
     {
         rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            info->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync((rocsparse_int*)info->zero_pivot,
+                                           &max,
+                                           sizeof(rocsparse_int),
+                                           hipMemcpyHostToDevice,
+                                           stream));
 
         // Wait for device transfer to finish
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
@@ -410,9 +413,9 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
         // Gather transposed values
         LAUNCH_BSRSV_GTHR(256, 64, block_dim);
 
-        local_bsr_row_ptr = bsrsv->trmt_row_ptr;
-        local_bsr_col_ind = bsrsv->trmt_col_ind;
-        local_bsr_val     = bsrt_val;
+        local_bsr_row_ptr = (rocsparse_int*)bsrsv->trmt_row_ptr;
+        local_bsr_col_ind = (rocsparse_int*)bsrsv->trmt_col_ind;
+        local_bsr_val     = (T*)bsrt_val;
 
         fill_mode = (fill_mode == rocsparse_fill_mode_lower) ? rocsparse_fill_mode_upper
                                                              : rocsparse_fill_mode_lower;

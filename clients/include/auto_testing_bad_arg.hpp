@@ -72,6 +72,24 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_handle& p)
 }
 
 template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spmat_descr& p)
+{
+    return rocsparse_status_invalid_pointer;
+}
+
+template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_dnmat_descr& p)
+{
+    return rocsparse_status_invalid_pointer;
+}
+
+template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_dnvec_descr& p)
+{
+    return rocsparse_status_invalid_pointer;
+}
+
+template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_int& p)
 {
     return rocsparse_status_invalid_size;
@@ -102,6 +120,18 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spmv_alg& p)
 }
 
 template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsv_alg& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsm_alg& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_datatype& p)
 {
     return rocsparse_status_invalid_value;
@@ -126,6 +156,18 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_direction& p)
 }
 
 template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsv_stage& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsm_stage& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_operation& p)
 {
     p = (rocsparse_operation)-1;
@@ -141,6 +183,18 @@ template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_spmv_alg& p)
 {
     p = (rocsparse_spmv_alg)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_spsv_alg& p)
+{
+    p = (rocsparse_spsv_alg)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_spsm_alg& p)
+{
+    p = (rocsparse_spsm_alg)-1;
 }
 
 template <>
@@ -170,6 +224,18 @@ template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_solve_policy& p)
 {
     p = (rocsparse_solve_policy)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_spsv_stage& p)
+{
+    p = (rocsparse_spsv_stage)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_spsm_stage& p)
+{
+    p = (rocsparse_spsm_stage)-1;
 }
 
 template <typename... T>

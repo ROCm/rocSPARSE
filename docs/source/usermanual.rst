@@ -621,7 +621,7 @@ rocsparse_indextype
 .. doxygenenum:: rocsparse_indextype
 
 rocsparse_datatype
--------------------
+------------------
 
 .. doxygenenum:: rocsparse_datatype
 
@@ -635,6 +635,25 @@ rocsparse_spmv_alg
 
 .. doxygenenum:: rocsparse_spmv_alg
 
+rocsparse_spsv_alg
+------------------
+
+.. doxygenenum:: rocsparse_spsv_alg
+
+rocsparse_spsv_stage
+--------------------
+
+.. doxygenenum:: rocsparse_spsv_stage
+
+rocsparse_spsm_alg
+------------------
+
+.. doxygenenum:: rocsparse_spsm_alg
+
+rocsparse_spsm_stage
+--------------------
+
+.. doxygenenum:: rocsparse_spsm_stage
 
 rocsparse_spmm_alg
 ------------------
@@ -982,7 +1001,7 @@ Function name                                                                   
 ========================================================================================================================= ====== ====== ============== ==============
 
 Reordering Functions
-------------------------
+--------------------
 
 ======================================================= ====== ====== ============== ==============
 Function name                                           single double single complex double complex
@@ -1004,7 +1023,9 @@ Function name                           single double single complex double comp
 :cpp:func:`rocsparse_sparse_to_dense()` x      x      x              x
 :cpp:func:`rocsparse_dense_to_sparse()` x      x      x              x
 :cpp:func:`rocsparse_spmv()`            x      x      x              x
+:cpp:func:`rocsparse_spsv()`            x      x      x              x
 :cpp:func:`rocsparse_spmm()`            x      x      x              x
+:cpp:func:`rocsparse_spsm()`            x      x      x              x
 :cpp:func:`rocsparse_spgemm()`          x      x      x              x
 :cpp:func:`rocsparse_sddmm()`           x      x      x              x
 ======================================= ====== ====== ============== ==============
@@ -1809,12 +1830,12 @@ This module holds all sparse preconditioners.
 The sparse preconditioners describe manipulations on a matrix in sparse format to obtain a sparse preconditioner matrix.
 
 rocsparse_bsric0_zero_pivot()
-------------------------------
+-----------------------------
 
 .. doxygenfunction:: rocsparse_bsric0_zero_pivot
 
 rocsparse_bsric0_buffer_size()
--------------------------------
+------------------------------
 
 .. doxygenfunction:: rocsparse_sbsric0_buffer_size
   :outline:
@@ -1825,7 +1846,7 @@ rocsparse_bsric0_buffer_size()
 .. doxygenfunction:: rocsparse_zbsric0_buffer_size
 
 rocsparse_bsric0_analysis()
-----------------------------
+---------------------------
 
 .. doxygenfunction:: rocsparse_sbsric0_analysis
   :outline:
@@ -1836,7 +1857,7 @@ rocsparse_bsric0_analysis()
 .. doxygenfunction:: rocsparse_zbsric0_analysis
 
 rocsparse_bsric0()
--------------------
+------------------
 
 .. doxygenfunction:: rocsparse_sbsric0
   :outline:
@@ -1847,7 +1868,7 @@ rocsparse_bsric0()
 .. doxygenfunction:: rocsparse_zbsric0
 
 rocsparse_bsric0_clear()
--------------------------
+------------------------
 
 .. doxygenfunction:: rocsparse_bsric0_clear
 
@@ -2516,7 +2537,7 @@ This module holds all sparse reordering routines.
 The sparse reordering routines describe algorithm for reordering sparse matrices.
 
 rocsparse_csrcolor()
------------------
+--------------------
 
 .. doxygenfunction:: rocsparse_scsrcolor
   :outline:
@@ -2564,6 +2585,16 @@ rocsparse_spmv()
 
 .. doxygenfunction:: rocsparse_spmv
 
+rocsparse_spsv()
+----------------
+
+.. doxygenfunction:: rocsparse_spsv
+
+rocsparse_spsm()
+----------------
+
+.. doxygenfunction:: rocsparse_spsm
+
 rocsparse_spmm()
 ----------------
 
@@ -2575,6 +2606,6 @@ rocsparse_spgemm()
 .. doxygenfunction:: rocsparse_spgemm
 
 rocsparse_sddmm()
-----------------
+-----------------
 
 .. doxygenfunction:: rocsparse_sddmm

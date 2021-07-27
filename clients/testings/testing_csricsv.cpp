@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -222,34 +222,34 @@ void testing_csricsv(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(d_alpha, &h_alpha, sizeof(T), hipMemcpyHostToDevice));
 
     // Compute reference solution on host
-    host_csrsv<T>(rocsparse_operation_none,
-                  M,
-                  nnz,
-                  h_alpha,
-                  hcsr_row_ptr,
-                  hcsr_col_ind,
-                  hcsr_val_gold,
-                  hx,
-                  hz_gold,
-                  rocsparse_diag_type_non_unit,
-                  rocsparse_fill_mode_lower,
-                  base,
-                  h_struct_pivot_gold,
-                  h_numeric_pivot_L_gold);
-    host_csrsv<T>(rocsparse_operation_transpose,
-                  M,
-                  nnz,
-                  h_alpha,
-                  hcsr_row_ptr,
-                  hcsr_col_ind,
-                  hcsr_val_gold,
-                  hz_gold,
-                  hy_gold,
-                  rocsparse_diag_type_non_unit,
-                  rocsparse_fill_mode_lower,
-                  base,
-                  h_struct_pivot_gold,
-                  h_numeric_pivot_LT_gold);
+    host_csrsv<rocsparse_int, rocsparse_int, T>(rocsparse_operation_none,
+                                                M,
+                                                nnz,
+                                                h_alpha,
+                                                hcsr_row_ptr,
+                                                hcsr_col_ind,
+                                                hcsr_val_gold,
+                                                hx,
+                                                hz_gold,
+                                                rocsparse_diag_type_non_unit,
+                                                rocsparse_fill_mode_lower,
+                                                base,
+                                                h_struct_pivot_gold,
+                                                h_numeric_pivot_L_gold);
+    host_csrsv<rocsparse_int, rocsparse_int, T>(rocsparse_operation_transpose,
+                                                M,
+                                                nnz,
+                                                h_alpha,
+                                                hcsr_row_ptr,
+                                                hcsr_col_ind,
+                                                hcsr_val_gold,
+                                                hz_gold,
+                                                hy_gold,
+                                                rocsparse_diag_type_non_unit,
+                                                rocsparse_fill_mode_lower,
+                                                base,
+                                                h_struct_pivot_gold,
+                                                h_numeric_pivot_LT_gold);
 
     // Obtain csrsv buffer sizes
     size_t buffer_size_l;

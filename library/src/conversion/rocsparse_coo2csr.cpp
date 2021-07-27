@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,17 @@
 
 #include "utility.h"
 
+#include "rocsparse_coo2csr.hpp"
+
 #include "coo2csr_device.h"
 
-extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle     handle,
-                                              const rocsparse_int* coo_row_ind,
-                                              rocsparse_int        nnz,
-                                              rocsparse_int        m,
-                                              rocsparse_int*       csr_row_ptr,
-                                              rocsparse_index_base idx_base)
+template <typename I, typename J>
+rocsparse_status rocsparse_coo2csr_template(rocsparse_handle     handle,
+                                            const J*             coo_row_ind,
+                                            I                    nnz,
+                                            J                    m,
+                                            I*                   csr_row_ptr,
+                                            rocsparse_index_base idx_base)
 {
     // Check for valid handle
     if(handle == nullptr)
@@ -61,7 +64,7 @@ extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle     handle,
     }
 
     // Quick return if possible
-    if(nnz == 0 || m == 0)
+    if(m == 0)
     {
         return rocsparse_status_success;
     }
@@ -95,4 +98,34 @@ extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle     handle,
                        idx_base);
 #undef COO2CSR_DIM
     return rocsparse_status_success;
+}
+
+#define INSTANTIATE(ITYPE, JTYPE)                                       \
+    template rocsparse_status rocsparse_coo2csr_template<ITYPE, JTYPE>( \
+        rocsparse_handle     handle,                                    \
+        const JTYPE*         coo_row_ind,                               \
+        ITYPE                nnz,                                       \
+        JTYPE                m,                                         \
+        ITYPE*               csr_row_ptr,                               \
+        rocsparse_index_base idx_base);
+
+INSTANTIATE(int32_t, int32_t);
+INSTANTIATE(int64_t, int32_t);
+INSTANTIATE(int64_t, int64_t);
+#undef INSTANTIATE
+
+/*
+* ===========================================================================
+*    C wrapper
+* ===========================================================================
+*/
+
+extern "C" rocsparse_status rocsparse_coo2csr(rocsparse_handle     handle,
+                                              const rocsparse_int* coo_row_ind,
+                                              rocsparse_int        nnz,
+                                              rocsparse_int        m,
+                                              rocsparse_int*       csr_row_ptr,
+                                              rocsparse_index_base idx_base)
+{
+    return rocsparse_coo2csr_template(handle, coo_row_ind, nnz, m, csr_row_ptr, idx_base);
 }

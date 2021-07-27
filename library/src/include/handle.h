@@ -172,7 +172,7 @@ struct _rocsparse_mat_info
     rocsparse_csrgemm_info csrgemm_info      = nullptr;
 
     // zero pivot for csrsv, csrsm, csrilu0, csric0
-    rocsparse_int* zero_pivot = nullptr;
+    void* zero_pivot = nullptr;
 
     // numeric boost for ilu0
     int         boost_enable        = 0;
@@ -209,9 +209,9 @@ struct _rocsparse_csrmv_info
 
     // some data to verify correct execution
     rocsparse_operation         trans;
-    rocsparse_int               m;
-    rocsparse_int               n;
-    rocsparse_int               nnz;
+    int64_t                     m;
+    int64_t                     n;
+    int64_t                     nnz;
     const _rocsparse_mat_descr* descr;
     const void*                 csr_row_ptr;
     const void*                 csr_col_ind;
@@ -233,23 +233,23 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info);
 struct _rocsparse_trm_info
 {
     // maximum non-zero entries per row
-    rocsparse_int max_nnz = 0;
+    int64_t max_nnz = 0;
 
     // device array to hold row permutation
-    rocsparse_int* row_map = nullptr;
+    void* row_map = nullptr;
     // device array to hold pointer to diagonal entry
-    rocsparse_int* trm_diag_ind = nullptr;
+    void* trm_diag_ind = nullptr;
     // device pointers to hold transposed data
-    rocsparse_int* trmt_perm    = nullptr;
-    rocsparse_int* trmt_row_ptr = nullptr;
-    rocsparse_int* trmt_col_ind = nullptr;
+    void* trmt_perm    = nullptr;
+    void* trmt_row_ptr = nullptr;
+    void* trmt_col_ind = nullptr;
 
     // some data to verify correct execution
-    rocsparse_int               m;
-    rocsparse_int               nnz;
+    int64_t                     m;
+    int64_t                     nnz;
     const _rocsparse_mat_descr* descr;
-    const rocsparse_int*        trm_row_ptr;
-    const rocsparse_int*        trm_col_ind;
+    const void*                 trm_row_ptr;
+    const void*                 trm_col_ind;
 };
 
 /********************************************************************************

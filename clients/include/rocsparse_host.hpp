@@ -269,21 +269,37 @@ void host_csrmv(J                    M,
                 rocsparse_index_base base,
                 int                  algo);
 
-template <typename T>
+template <typename I, typename J, typename T>
 void host_csrsv(rocsparse_operation  trans,
-                rocsparse_int        M,
-                rocsparse_int        nnz,
+                J                    M,
+                I                    nnz,
                 T                    alpha,
-                const rocsparse_int* csr_row_ptr,
-                const rocsparse_int* csr_col_ind,
+                const I*             csr_row_ptr,
+                const J*             csr_col_ind,
                 const T*             csr_val,
                 const T*             x,
                 T*                   y,
                 rocsparse_diag_type  diag_type,
                 rocsparse_fill_mode  fill_mode,
                 rocsparse_index_base base,
-                rocsparse_int*       struct_pivot,
-                rocsparse_int*       numeric_pivot);
+                J*                   struct_pivot,
+                J*                   numeric_pivot);
+
+template <typename I, typename T>
+void host_coosv(rocsparse_operation   trans,
+                I                     M,
+                I                     nnz,
+                T                     alpha,
+                const std::vector<I>& coo_row_ind,
+                const std::vector<I>& coo_col_ind,
+                const std::vector<T>& coo_val,
+                const std::vector<T>& x,
+                std::vector<T>&       y,
+                rocsparse_diag_type   diag_type,
+                rocsparse_fill_mode   fill_mode,
+                rocsparse_index_base  base,
+                I*                    struct_pivot,
+                I*                    numeric_pivot);
 
 template <typename I, typename T>
 void host_ellmv(I                    M,
@@ -426,23 +442,41 @@ void host_coomm(rocsparse_spmm_alg    alg,
                 rocsparse_order       order,
                 rocsparse_index_base  base);
 
-template <typename T>
-void host_csrsm(rocsparse_int                     M,
-                rocsparse_int                     nrhs,
-                rocsparse_int                     nnz,
-                rocsparse_operation               transA,
-                rocsparse_operation               transB,
-                T                                 alpha,
-                const std::vector<rocsparse_int>& csr_row_ptr,
-                const std::vector<rocsparse_int>& csr_col_ind,
-                const std::vector<T>&             csr_val,
-                std::vector<T>&                   B,
-                rocsparse_int                     ldb,
-                rocsparse_diag_type               diag_type,
-                rocsparse_fill_mode               fill_mode,
-                rocsparse_index_base              base,
-                rocsparse_int*                    struct_pivot,
-                rocsparse_int*                    numeric_pivot);
+template <typename I, typename J, typename T>
+void host_csrsm(J                     M,
+                J                     nrhs,
+                I                     nnz,
+                rocsparse_operation   transA,
+                rocsparse_operation   transB,
+                T                     alpha,
+                const std::vector<I>& csr_row_ptr,
+                const std::vector<J>& csr_col_ind,
+                const std::vector<T>& csr_val,
+                std::vector<T>&       B,
+                J                     ldb,
+                rocsparse_diag_type   diag_type,
+                rocsparse_fill_mode   fill_mode,
+                rocsparse_index_base  base,
+                J*                    struct_pivot,
+                J*                    numeric_pivot);
+
+template <typename I, typename T>
+void host_coosm(I                     M,
+                I                     nrhs,
+                I                     nnz,
+                rocsparse_operation   transA,
+                rocsparse_operation   transB,
+                T                     alpha,
+                const std::vector<I>& coo_row_ind,
+                const std::vector<I>& coo_col_ind,
+                const std::vector<T>& coo_val,
+                std::vector<T>&       B,
+                I                     ldb,
+                rocsparse_diag_type   diag_type,
+                rocsparse_fill_mode   fill_mode,
+                rocsparse_index_base  base,
+                I*                    struct_pivot,
+                I*                    numeric_pivot);
 
 template <typename T>
 void host_bsrsm(rocsparse_int       mb,
@@ -731,18 +765,18 @@ void host_csr_to_coo_aos(I                     M,
                          std::vector<I>&       coo_ind,
                          rocsparse_index_base  base);
 
-template <typename T>
-void host_csr_to_csc(rocsparse_int               M,
-                     rocsparse_int               N,
-                     rocsparse_int               nnz,
-                     const rocsparse_int*        csr_row_ptr,
-                     const rocsparse_int*        csr_col_ind,
-                     const T*                    csr_val,
-                     std::vector<rocsparse_int>& csc_row_ind,
-                     std::vector<rocsparse_int>& csc_col_ptr,
-                     std::vector<T>&             csc_val,
-                     rocsparse_action            action,
-                     rocsparse_index_base        base);
+template <typename I, typename J, typename T>
+void host_csr_to_csc(J                    M,
+                     J                    N,
+                     I                    nnz,
+                     const I*             csr_row_ptr,
+                     const J*             csr_col_ind,
+                     const T*             csr_val,
+                     std::vector<J>&      csc_row_ind,
+                     std::vector<I>&      csc_col_ptr,
+                     std::vector<T>&      csc_val,
+                     rocsparse_action     action,
+                     rocsparse_index_base base);
 
 template <typename T>
 void host_gebsr_to_gebsc(rocsparse_int                     Mb,

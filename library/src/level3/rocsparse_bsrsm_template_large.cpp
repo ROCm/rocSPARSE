@@ -36,7 +36,7 @@
                        stream,                                    \
                        dir,                                       \
                        nnzb,                                      \
-                       bsrsm_info->trmt_perm,                     \
+                       (rocsparse_int*)bsrsm_info->trmt_perm,     \
                        bsr_val,                                   \
                        bsrt_val,                                  \
                        block_dim)
@@ -108,27 +108,27 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
                                                       rocsparse_int             ldx,
                                                       void*                     temp_buffer)
 {
-#define LAUNCH_LARGE_KERNEL(K_, M_, S_)              \
-    dim3 bsrsm_blocks(((nrhs - 1) / NCOL + 1) * mb); \
-    dim3 bsrsm_threads(NCOL* M_);                    \
-    hipLaunchKernelGGL((K_<NCOL * M_, NCOL, S_>),    \
-                       bsrsm_blocks,                 \
-                       bsrsm_threads,                \
-                       0,                            \
-                       stream,                       \
-                       mb,                           \
-                       nrhs,                         \
-                       local_bsr_row_ptr,            \
-                       local_bsr_col_ind,            \
-                       local_bsr_val,                \
-                       block_dim,                    \
-                       Xt,                           \
-                       ldimX,                        \
-                       done_array,                   \
-                       bsrsm_info->row_map,          \
-                       info->zero_pivot,             \
-                       descr->base,                  \
-                       descr->diag_type,             \
+#define LAUNCH_LARGE_KERNEL(K_, M_, S_)                     \
+    dim3 bsrsm_blocks(((nrhs - 1) / NCOL + 1) * mb);        \
+    dim3 bsrsm_threads(NCOL* M_);                           \
+    hipLaunchKernelGGL((K_<NCOL * M_, NCOL, S_>),           \
+                       bsrsm_blocks,                        \
+                       bsrsm_threads,                       \
+                       0,                                   \
+                       stream,                              \
+                       mb,                                  \
+                       nrhs,                                \
+                       local_bsr_row_ptr,                   \
+                       local_bsr_col_ind,                   \
+                       local_bsr_val,                       \
+                       block_dim,                           \
+                       Xt,                                  \
+                       ldimX,                               \
+                       done_array,                          \
+                       (rocsparse_int*)bsrsm_info->row_map, \
+                       (rocsparse_int*)info->zero_pivot,    \
+                       descr->base,                         \
+                       descr->diag_type,                    \
                        dir);
 
     hipStream_t stream = handle->stream;
@@ -235,9 +235,9 @@ rocsparse_status rocsparse_bsrsm_solve_template_large(rocsparse_handle          
 
         LAUNCH_BSRSM_GTHR(256, 64, block_dim);
 
-        local_bsr_row_ptr = bsrsm_info->trmt_row_ptr;
-        local_bsr_col_ind = bsrsm_info->trmt_col_ind;
-        local_bsr_val     = bsrt_val;
+        local_bsr_row_ptr = (const rocsparse_int*)bsrsm_info->trmt_row_ptr;
+        local_bsr_col_ind = (const rocsparse_int*)bsrsm_info->trmt_col_ind;
+        local_bsr_val     = (const T*)bsrt_val;
 
         fill_mode = (fill_mode == rocsparse_fill_mode_lower) ? rocsparse_fill_mode_upper
                                                              : rocsparse_fill_mode_lower;
