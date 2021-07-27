@@ -2,6 +2,10 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
+## (Unreleased) rocSPARSE 1.21.1
+### Changed
+- Packaging split into a runtime package called rocsparse and a development package called rocsparse-devel. The development package depends on runtime. The runtime package suggests the development package for all supported OSes except CentOS 7 to aid in the transition. The suggests feature in packaging is introduced as a deprecated feature and will be removed in a future rocm release.
+
 ## [rocSPARSE 1.20.2 for ROCm 4.3.0]
 ### Added
 - (batched) tridiagonal solver with and without pivoting
