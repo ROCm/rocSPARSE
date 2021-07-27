@@ -71,9 +71,11 @@ set(rocsparse_source
   src/level2/rocsparse_csrsv_analysis.cpp
   src/level2/rocsparse_csrsv_buffer_size.cpp
   src/level2/rocsparse_csrsv_solve.cpp
+  src/level2/rocsparse_coosv.cpp
   src/level2/rocsparse_ellmv.cpp
   src/level2/rocsparse_hybmv.cpp
   src/level2/rocsparse_spmv.cpp
+  src/level2/rocsparse_spsv.cpp
   src/level2/rocsparse_gebsrmv.cpp
   src/level2/rocsparse_gebsrmv_template_row_block_dim_1.cpp
   src/level2/rocsparse_gebsrmv_template_row_block_dim_2.cpp
@@ -105,6 +107,7 @@ set(rocsparse_source
   src/level3/rocsparse_spmm.cpp
   src/level3/rocsparse_spmm_ex.cpp
   src/level3/rocsparse_csrsm.cpp
+  src/level3/rocsparse_coosm.cpp
   src/level3/rocsparse_bsrsm.cpp
   src/level3/rocsparse_bsrsm_buffer_size.cpp
   src/level3/rocsparse_bsrsm_analysis.cpp
@@ -117,6 +120,7 @@ set(rocsparse_source
   src/level3/rocsparse_sddmm_csr.cpp
   src/level3/rocsparse_sddmm_csc.cpp
   src/level3/rocsparse_sddmm_ell.cpp
+  src/level3/rocsparse_spsm.cpp
 
 # Extra
   src/extra/rocsparse_csrgeam.cpp

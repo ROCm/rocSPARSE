@@ -358,6 +358,64 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsv_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spsv_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsv_stage value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spsv_stage_auto:
+    case rocsparse_spsv_stage_buffer_size:
+    case rocsparse_spsv_stage_preprocess:
+    case rocsparse_spsv_stage_compute:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsm_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spsm_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsm_stage value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spsm_stage_auto:
+    case rocsparse_spsm_stage_buffer_size:
+    case rocsparse_spsm_stage_preprocess:
+    case rocsparse_spsm_stage_compute:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmm_alg value_)
 {
     switch(value_)
@@ -398,6 +456,35 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_sddmm_alg value_)
     switch(value_)
     {
     case rocsparse_sddmm_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spgemm_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spgemm_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spgemm_stage value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spgemm_stage_auto:
+    case rocsparse_spgemm_stage_buffer_size:
+    case rocsparse_spgemm_stage_nnz:
+    case rocsparse_spgemm_stage_compute:
     {
         return false;
     }

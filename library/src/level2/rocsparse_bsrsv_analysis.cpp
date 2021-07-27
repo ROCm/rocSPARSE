@@ -192,7 +192,7 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
             bsr_row_ptr,
             bsr_col_ind,
             (trans == rocsparse_operation_none) ? info->bsrsv_upper_info : info->bsrsvt_upper_info,
-            &info->zero_pivot,
+            (rocsparse_int**)&info->zero_pivot,
             temp_buffer));
     }
     else
@@ -259,7 +259,7 @@ rocsparse_status rocsparse_bsrsv_analysis_template(rocsparse_handle          han
             bsr_row_ptr,
             bsr_col_ind,
             (trans == rocsparse_operation_none) ? info->bsrsv_lower_info : info->bsrsvt_lower_info,
-            &info->zero_pivot,
+            (rocsparse_int**)&info->zero_pivot,
             temp_buffer));
     }
 

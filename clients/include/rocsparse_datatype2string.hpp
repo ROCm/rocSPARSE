@@ -274,6 +274,26 @@ constexpr auto rocsparse_spmvalg2string(rocsparse_spmv_alg alg)
     return "invalid";
 }
 
+constexpr auto rocsparse_spsvalg2string(rocsparse_spsv_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_spsv_alg_default:
+        return "default";
+    }
+    return "invalid";
+}
+
+constexpr auto rocsparse_spsmalg2string(rocsparse_spsm_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_spsm_alg_default:
+        return "default";
+    }
+    return "invalid";
+}
+
 constexpr auto rocsparse_spmmalg2string(rocsparse_spmm_alg alg)
 {
     switch(alg)

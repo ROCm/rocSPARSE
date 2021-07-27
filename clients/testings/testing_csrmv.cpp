@@ -201,6 +201,7 @@ void testing_csrmv(const Arguments& arg)
             // CPU csrmv
             host_csrmv<rocsparse_int, rocsparse_int, T>(
                 M, hA.nnz, *h_alpha, hA.ptr, hA.ind, hA.val, hx, *h_beta, hy, base, adaptive);
+
             hy.near_check(dy, tol);
             dy.transfer_from(hy_copy);
         }

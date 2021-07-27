@@ -14868,6 +14868,188 @@ rocsparse_status rocsparse_spmv(rocsparse_handle            handle,
                                 void*                       temp_buffer);
 
 /*! \ingroup generic_module
+*  \brief Sparse triangular solve
+*
+*  \details
+*  \p rocsparse_spsv_solve solves a sparse triangular linear system of a sparse
+*  \f$m \times m\f$ matrix, defined in CSR or COO storage format, a dense solution vector
+*  \f$y\f$ and the right-hand side \f$x\f$ that is multiplied by \f$\alpha\f$, such that
+*  \f[
+*    op(A) \cdot y = \alpha \cdot x,
+*  \f]
+*  with
+*  \f[
+*    op(A) = \left\{
+*    \begin{array}{ll}
+*        A,   & \text{if trans == rocsparse_operation_none} \\
+*        A^T, & \text{if trans == rocsparse_operation_transpose} \\
+*        A^H, & \text{if trans == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*
+*  \note SpSV requires three stages to complete. The first stage
+*  \ref rocsparse_spsv_stage_buffer_size will return the size of the temporary storage buffer
+*  that is required for subsequent calls. The second stage
+*  \ref rocsparse_spsv_stage_preprocess will preprocess data that would be saved in the temporary storage buffer.
+*  In the final stage \ref rocsparse_spsv_stage_compute, the actual computation is performed.
+*  \note If \ref rocsparse_spsv_stage_auto is selected, rocSPARSE will automatically detect
+*  which stage is required based on the following indicators:
+*  If \p temp_buffer is equal to \p nullptr, the required buffer size will be returned.
+*  If \p buffer_size is equal to \p nullptr, analysis will be performed.
+*  Otherwise, the SpSV preprocess and the SpSV algorithm will be executed.
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  \note
+*  Currently, only \p trans == \ref rocsparse_operation_none and \p trans == \ref rocsparse_operation_transpose is supported.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  trans        matrix operation type.
+*  @param[in]
+*  alpha        scalar \f$\alpha\f$.
+*  @param[in]
+*  mat          matrix descriptor.
+*  @param[in]
+*  x            vector descriptor.
+*  @param[inout]
+*  y            vector descriptor.
+*  @param[in]
+*  compute_type floating point precision for the SpSV computation.
+*  @param[in]
+*  alg          SpSV algorithm for the SpSV computation.
+*  @param[in]
+*  stage        SpSV stage for the SpSV computation.
+*  @param[out]
+*  buffer_size  number of bytes of the temporary storage buffer.
+*  @param[in]
+*  temp_buffer  temporary storage buffer allocated by the user. When a nullptr is passed,
+*               the required allocation size (in bytes) is written to \p buffer_size and
+*               function returns without performing the SpSV operation.
+*
+*  \retval      rocsparse_status_success the operation completed successfully.
+*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_pointer \p alpha, \p mat, \p x, \p y, \p descr or
+*               \p buffer_size pointer is invalid.
+*  \retval      rocsparse_status_not_implemented \p trans, \p compute_type, \p stage or \p alg is
+*               currently not supported.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spsv(rocsparse_handle            handle,
+                                rocsparse_operation         trans,
+                                const void*                 alpha,
+                                const rocsparse_spmat_descr mat,
+                                const rocsparse_dnvec_descr x,
+                                const rocsparse_dnvec_descr y,
+                                rocsparse_datatype          compute_type,
+                                rocsparse_spsv_alg          alg,
+                                rocsparse_spsv_stage        stage,
+                                size_t*                     buffer_size,
+                                void*                       temp_buffer);
+
+/*! \ingroup generic_module
+*  \brief Sparse triangular system solve
+*
+*  \details
+*  \p rocsparse_spsm_solve solves a sparse triangular linear system of a sparse
+*  \f$m \times m\f$ matrix, defined in CSR or COO storage format, a dense solution matrix
+*  \f$C\f$ and the right-hand side \f$B\f$ that is multiplied by \f$\alpha\f$, such that
+*  \f[
+*    op(A) \cdot C = \alpha \cdot op(B),
+*  \f]
+*  with
+*  \f[
+*    op(A) = \left\{
+*    \begin{array}{ll}
+*        A,   & \text{if trans == rocsparse_operation_none} \\
+*        A^T, & \text{if trans == rocsparse_operation_transpose} \\
+*        A^H, & \text{if trans == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*  and
+*  \f[
+*    op(B) = \left\{
+*    \begin{array}{ll}
+*        B,   & \text{if trans_B == rocsparse_operation_none} \\
+*        B^T, & \text{if trans_B == rocsparse_operation_transpose} \\
+*        B^H, & \text{if trans_B == rocsparse_operation_conjugate_transpose}
+*    \end{array}
+*    \right.
+*  \f]
+*
+*  \note SpSM requires three stages to complete. The first stage
+*  \ref rocsparse_spsm_stage_buffer_size will return the size of the temporary storage buffer
+*  that is required for subsequent calls. The second stage
+*  \ref rocsparse_spsm_stage_preprocess will preprocess data that would be saved in the temporary storage buffer.
+*  In the final stage \ref rocsparse_spsm_stage_compute, the actual computation is performed.
+*  \note If \ref rocsparse_spsm_stage_auto is selected, rocSPARSE will automatically detect
+*  which stage is required based on the following indicators:
+*  If \p temp_buffer is equal to \p nullptr, the required buffer size will be returned.
+*  If \p buffer_size is equal to \p nullptr, analysis will be performed.
+*  Otherwise, the SpSM preprocess and the SpSM algorithm will be executed.
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  \note
+*  Currently, only \p trans_A == \ref rocsparse_operation_none and \p trans_A == \ref rocsparse_operation_transpose is supported.
+*  Currently, only \p trans_B == \ref rocsparse_operation_none and \p trans_B == \ref rocsparse_operation_transpose is supported.
+*
+*  @param[in]
+*  handle       handle to the rocsparse library context queue.
+*  @param[in]
+*  trans_A      matrix operation type for the sparse matrix A.
+*  @param[in]
+*  trans_B      matrix operation type for the dense matrix B.
+*  @param[in]
+*  alpha        scalar \f$\alpha\f$.
+*  @param[in]
+*  matA          sparse matrix descriptor.
+*  @param[in]
+*  matB          dense matrix descriptor.
+*  @param[inout]
+*  matC          dense matrix descriptor.
+*  @param[in]
+*  compute_type floating point precision for the SpSM computation.
+*  @param[in]
+*  alg          SpSM algorithm for the SpSM computation.
+*  @param[in]
+*  stage        SpSM stage for the SpSM computation.
+*  @param[out]
+*  buffer_size  number of bytes of the temporary storage buffer.
+*  @param[in]
+*  temp_buffer  temporary storage buffer allocated by the user. When a nullptr is passed,
+*               the required allocation size (in bytes) is written to \p buffer_size and
+*               function returns without performing the SpSM operation.
+*
+*  \retval      rocsparse_status_success the operation completed successfully.
+*  \retval      rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval      rocsparse_status_invalid_pointer \p alpha, \p matA, \p matB, \p matC, \p descr or
+*               \p buffer_size pointer is invalid.
+*  \retval      rocsparse_status_not_implemented \p trans_A, \p trans_B, \p compute_type, \p stage or \p alg is
+*               currently not supported.
+*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
+                                rocsparse_operation         trans_A,
+                                rocsparse_operation         trans_B,
+                                const void*                 alpha,
+                                const rocsparse_spmat_descr matA,
+                                const rocsparse_dnmat_descr matB,
+                                const rocsparse_dnmat_descr matC,
+                                rocsparse_datatype          compute_type,
+                                rocsparse_spsm_alg          alg,
+                                rocsparse_spsm_stage        stage,
+                                size_t*                     buffer_size,
+                                void*                       temp_buffer);
+
+/*! \ingroup generic_module
 *  \brief Sparse matrix dense matrix multiplication
 *
 *  \details
@@ -15043,8 +15225,8 @@ rocsparse_status rocsparse_spmm(rocsparse_handle            handle,
 *  \note SpMM requires three stages to complete. The first stage
 *  \ref rocsparse_spmm_stage_buffer_size will return the size of the temporary storage buffer
 *  that is required for subsequent calls to \ref rocsparse_spmm_ex. The second stage
-*  \ref rocsparse_spgemm_stage_preprocess will preprocess data that would be saved in the temporary storage buffer. In the final stage \ref rocsparse_spgemm_stage_compute, the actual
-*  computation is performed.
+*  \ref rocsparse_spmm_stage_preprocess will preprocess data that would be saved in the temporary storage buffer.
+*  In the final stage \ref rocsparse_spmm_stage_compute, the actual computation is performed.
 *  \note If \ref rocsparse_spgemm_stage_auto is selected, rocSPARSE will automatically detect
 *  which stage is required based on the following indicators:
 *  If \p temp_buffer is equal to \p nullptr, the required buffer size will be returned.

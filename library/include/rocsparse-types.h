@@ -361,6 +361,15 @@ typedef enum rocsparse_order_
 } rocsparse_order;
 
 /*! \ingroup types_module
+ *  \brief List of sparse matrix attributes
+ */
+typedef enum rocsparse_spmat_attribute_
+{
+    rocsparse_spmat_fill_mode = 0, /**< Fill mode attribute. */
+    rocsparse_spmat_diag_type = 1 /**< Diag type attribute. */
+} rocsparse_spmat_attribute;
+
+/*! \ingroup types_module
  *  \brief List of SpMV algorithms.
  *
  *  \details
@@ -375,6 +384,60 @@ typedef enum rocsparse_spmv_alg_
     rocsparse_spmv_alg_csr_stream   = 3, /**< CSR SpMV algorithm 2 (stream) for CSR matrices. */
     rocsparse_spmv_alg_ell          = 4 /**< ELL SpMV algorithm for ELL matrices. */
 } rocsparse_spmv_alg;
+
+/*! \ingroup types_module
+ *  \brief List of SpSV algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_spsv_alg types that are used to perform
+ *  triangular solve.
+ */
+typedef enum rocsparse_spsv_alg_
+{
+    rocsparse_spsv_alg_default = 0, /**< Default SpSV algorithm for the given format. */
+} rocsparse_spsv_alg;
+
+/*! \ingroup types_module
+ *  \brief List of SpSV stages.
+ *
+ *  \details
+ *  This is a list of possible stages during SpSV computation. Typical order is
+ *  rocsparse_spsv_buffer_size, rocsparse_spsv_preprocess, rocsparse_spsv_compute.
+ */
+typedef enum rocsparse_spsv_stage_
+{
+    rocsparse_spsv_stage_auto        = 0, /**< Automatic stage detection. */
+    rocsparse_spsv_stage_buffer_size = 1, /**< Returns the required buffer size. */
+    rocsparse_spsv_stage_preprocess  = 2, /**< Preprocess data. */
+    rocsparse_spsv_stage_compute     = 3 /**< Performs the actual SpSV computation. */
+} rocsparse_spsv_stage;
+
+/*! \ingroup types_module
+ *  \brief List of SpSM algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_spsm_alg types that are used to perform
+ *  triangular solve.
+ */
+typedef enum rocsparse_spsm_alg_
+{
+    rocsparse_spsm_alg_default = 0, /**< Default SpSM algorithm for the given format. */
+} rocsparse_spsm_alg;
+
+/*! \ingroup types_module
+ *  \brief List of SpSM stages.
+ *
+ *  \details
+ *  This is a list of possible stages during SpSM computation. Typical order is
+ *  rocsparse_spsm_buffer_size, rocsparse_spsm_preprocess, rocsparse_spsm_compute.
+ */
+typedef enum rocsparse_spsm_stage_
+{
+    rocsparse_spsm_stage_auto        = 0, /**< Automatic stage detection. */
+    rocsparse_spsm_stage_buffer_size = 1, /**< Returns the required buffer size. */
+    rocsparse_spsm_stage_preprocess  = 2, /**< Preprocess data. */
+    rocsparse_spsm_stage_compute     = 3 /**< Performs the actual SpSM computation. */
+} rocsparse_spsm_stage;
 
 /*! \ingroup types_module
 *  \brief List of SpMM algorithms.
@@ -441,7 +504,7 @@ typedef enum rocsparse_dense_to_sparse_alg_
  *
  *  \details
  *  This is a list of possible stages during SpMM computation. Typical order is
- *  rocsparse_spmm_buffer_size, rocsparse_spmm_nnz, rocsparse_spmm_compute.
+ *  rocsparse_spmm_buffer_size, rocsparse_spmm_preprocess, rocsparse_spmm_compute.
  */
 typedef enum rocsparse_spmm_stage_
 {

@@ -83,6 +83,8 @@ struct Arguments
     rocsparse_format              format;
     rocsparse_sddmm_alg           sddmm_alg;
     rocsparse_spmv_alg            spmv_alg;
+    rocsparse_spsv_alg            spsv_alg;
+    rocsparse_spsm_alg            spsm_alg;
     rocsparse_spmm_alg            spmm_alg;
     rocsparse_spgemm_alg          spgemm_alg;
     rocsparse_sparse_to_dense_alg sparse_to_dense_alg;
@@ -186,6 +188,8 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(format);
         ROCSPARSE_FORMAT_CHECK(sddmm_alg);
         ROCSPARSE_FORMAT_CHECK(spmv_alg);
+        ROCSPARSE_FORMAT_CHECK(spsv_alg);
+        ROCSPARSE_FORMAT_CHECK(spsm_alg);
         ROCSPARSE_FORMAT_CHECK(spmm_alg);
         ROCSPARSE_FORMAT_CHECK(spgemm_alg);
         ROCSPARSE_FORMAT_CHECK(sparse_to_dense_alg);
@@ -368,6 +372,8 @@ private:
         print("format", rocsparse_format2string(arg.format));
         print("sddmm_alg", rocsparse_sddmmalg2string(arg.sddmm_alg));
         print("spmv_alg", rocsparse_spmvalg2string(arg.spmv_alg));
+        print("spsv_alg", rocsparse_spsvalg2string(arg.spsv_alg));
+        print("spsm_alg", rocsparse_spsmalg2string(arg.spsm_alg));
         print("spmm_alg", rocsparse_spmmalg2string(arg.spmm_alg));
         print("spgemm_alg", rocsparse_spgemmalg2string(arg.spgemm_alg));
         print("sparse_to_dense_alg", rocsparse_sparsetodensealg2string(arg.sparse_to_dense_alg));

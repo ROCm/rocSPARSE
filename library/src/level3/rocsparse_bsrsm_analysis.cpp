@@ -167,7 +167,7 @@ rocsparse_status rocsparse_bsrsm_analysis_template(rocsparse_handle          han
                                                          (trans_A == rocsparse_operation_none)
                                                              ? info->bsrsm_upper_info
                                                              : info->bsrsmt_upper_info,
-                                                         &info->zero_pivot,
+                                                         (rocsparse_int**)&info->zero_pivot,
                                                          temp_buffer));
     }
     else
@@ -243,7 +243,7 @@ rocsparse_status rocsparse_bsrsm_analysis_template(rocsparse_handle          han
                                                          (trans_A == rocsparse_operation_none)
                                                              ? info->bsrsm_lower_info
                                                              : info->bsrsmt_lower_info,
-                                                         &info->zero_pivot,
+                                                         (rocsparse_int**)&info->zero_pivot,
                                                          temp_buffer));
     }
 

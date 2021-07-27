@@ -1153,22 +1153,22 @@ void testing_csrsm(const Arguments& arg)
             // CALL HOST CALCULATION
             //
             host_dense_matrix<T> hB_copy(hB);
-            host_csrsm<T>(M,
-                          nrhs,
-                          nnz,
-                          transA,
-                          transB,
-                          *h_alpha.val,
-                          hcsr.ptr,
-                          hcsr.ind,
-                          hcsr.val,
-                          hB.val,
-                          hB.ld,
-                          diag,
-                          uplo,
-                          base,
-                          h_analysis_pivot.val,
-                          h_solve_pivot.val);
+            host_csrsm(M,
+                       nrhs,
+                       nnz,
+                       transA,
+                       transB,
+                       *h_alpha.val,
+                       hcsr.ptr,
+                       hcsr.ind,
+                       hcsr.val,
+                       hB.val,
+                       hB.ld,
+                       diag,
+                       uplo,
+                       base,
+                       h_analysis_pivot.val.data(),
+                       h_solve_pivot.val.data());
 
             //
             // CHECK PIVOTS
