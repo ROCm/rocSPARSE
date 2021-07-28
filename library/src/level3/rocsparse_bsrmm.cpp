@@ -227,6 +227,7 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                 bsr_val,
                                                 bsr_row_ptr,
                                                 bsr_col_ind,
+
                                                 block_dim,
                                                 B,
                                                 ldb,

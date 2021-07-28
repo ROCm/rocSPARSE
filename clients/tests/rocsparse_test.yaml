@@ -102,6 +102,7 @@ include: test_spsm_csr.yaml
 include: test_spsm_coo.yaml
 include: test_spmm_csr.yaml
 include: test_spmm_coo.yaml
+include: test_spmm_bell.yaml
 include: test_spvv.yaml
 include: test_sparse_to_dense_coo.yaml
 include: test_sparse_to_dense_csr.yaml

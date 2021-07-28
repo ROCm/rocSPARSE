@@ -341,6 +341,20 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_datatype value_)
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_order value_)
+{
+    switch(value_)
+    {
+    case rocsparse_order_row:
+    case rocsparse_order_column:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
 {
     switch(value_)
@@ -427,6 +441,7 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmm_alg value_)
     case rocsparse_spmm_alg_csr_row_split:
     case rocsparse_spmm_alg_csr_merge:
     case rocsparse_spmm_alg_coo_segmented_atomic:
+    case rocsparse_spmm_alg_bell:
     {
         return false;
     }

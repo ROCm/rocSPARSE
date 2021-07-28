@@ -599,6 +599,19 @@ rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
                                             rocsparse_datatype     data_type);
 
 ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_bell_descr(rocsparse_spmat_descr* descr,
+                                             int64_t                rows,
+                                             int64_t                cols,
+                                             rocsparse_direction    ell_block_dir,
+                                             int64_t                ell_block_dim,
+                                             int64_t                ell_cols,
+                                             void*                  ell_col_ind,
+                                             void*                  ell_val,
+                                             rocsparse_indextype    idx_type,
+                                             rocsparse_index_base   idx_base,
+                                             rocsparse_datatype     data_type);
+
+ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_spmat_descr(rocsparse_spmat_descr descr);
 
 ROCSPARSE_EXPORT
@@ -647,6 +660,19 @@ rocsparse_status rocsparse_ell_get(const rocsparse_spmat_descr descr,
                                    rocsparse_indextype*        idx_type,
                                    rocsparse_index_base*       idx_base,
                                    rocsparse_datatype*         data_type);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_bell_get(const rocsparse_spmat_descr descr,
+                                    int64_t*                    rows,
+                                    int64_t*                    cols,
+                                    rocsparse_direction*        ell_block_dir,
+                                    int64_t*                    ell_block_dim,
+                                    int64_t*                    ell_cols,
+                                    void**                      ell_col_ind,
+                                    void**                      ell_val,
+                                    rocsparse_indextype*        idx_type,
+                                    rocsparse_index_base*       idx_base,
+                                    rocsparse_datatype*         data_type);
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coo_set_pointers(rocsparse_spmat_descr descr,

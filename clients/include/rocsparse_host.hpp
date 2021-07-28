@@ -425,22 +425,23 @@ void host_csrmm(J                     M,
                 rocsparse_order       order,
                 rocsparse_index_base  base);
 
-template <typename I, typename T>
-void host_coomm(rocsparse_spmm_alg    alg,
-                I                     M,
-                I                     N,
-                rocsparse_operation   transB,
-                T                     alpha,
-                const std::vector<I>& coo_row_ind_A,
-                const std::vector<I>& coo_col_ind_A,
-                const std::vector<T>& coo_val_A,
-                const std::vector<T>& B,
-                I                     ldb,
-                T                     beta,
-                std::vector<T>&       C,
-                I                     ldc,
-                rocsparse_order       order,
-                rocsparse_index_base  base);
+template <typename T, typename I>
+void host_coomm(rocsparse_spmm_alg   alg,
+                I                    M,
+                I                    N,
+                I                    nnz,
+                rocsparse_operation  transB,
+                T                    alpha,
+                const I*             coo_row_ind_A,
+                const I*             coo_col_ind_A,
+                const T*             coo_val_A,
+                const T*             B,
+                I                    ldb,
+                T                    beta,
+                T*                   C,
+                I                    ldc,
+                rocsparse_order      order,
+                rocsparse_index_base base);
 
 template <typename I, typename J, typename T>
 void host_csrsm(J                     M,

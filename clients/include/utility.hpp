@@ -383,8 +383,9 @@ public:
                                        idx_base,
                                        compute_type);
         }
-        else if(format == rocsparse_format_csc)
+        else
         {
+            assert(format == rocsparse_format_csc);
             rocsparse_create_csc_descr(&this->descr,
                                        m,
                                        n,
@@ -418,6 +419,30 @@ public:
                                 (DIRECTION_ == rocsparse_direction_row) ? rocsparse_format_csr
                                                                         : rocsparse_format_csc)
     {
+    }
+
+    rocsparse_local_spmat(int64_t              m,
+                          int64_t              n,
+                          rocsparse_direction  block_dir,
+                          int64_t              block_size,
+                          int64_t              ell_cols,
+                          void*                ell_col_ind,
+                          void*                ell_val,
+                          rocsparse_indextype  idx_type,
+                          rocsparse_index_base idx_base,
+                          rocsparse_datatype   compute_type)
+    {
+        rocsparse_create_bell_descr(&this->descr,
+                                    m,
+                                    n,
+                                    block_dir,
+                                    block_size,
+                                    ell_cols,
+                                    ell_col_ind,
+                                    ell_val,
+                                    idx_type,
+                                    idx_base,
+                                    compute_type);
     }
 
     rocsparse_local_spmat(int64_t              m,

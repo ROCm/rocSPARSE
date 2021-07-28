@@ -242,6 +242,8 @@ constexpr auto rocsparse_format2string(rocsparse_format format)
         return "csc";
     case rocsparse_format_ell:
         return "ell";
+    case rocsparse_format_bell:
+        return "bell";
     }
     return "invalid";
 }
@@ -306,15 +308,16 @@ constexpr auto rocsparse_spmmalg2string(rocsparse_spmm_alg alg)
         return "spmm_alg_coo_segmented";
     case rocsparse_spmm_alg_coo_atomic:
         return "spmm_alg_coo_atomic";
+    case rocsparse_spmm_alg_bell:
+        return "spmm_alg_bell";
     case rocsparse_spmm_alg_coo_segmented_atomic:
         return "spmm_alg_coo_segmented_atomic";
     case rocsparse_spmm_alg_csr_row_split:
         return "spmm_alg_csr_row_split";
     case rocsparse_spmm_alg_csr_merge:
         return "spmm_alg_csr_merge";
-    default:
-        return "invalid";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_spgemmalg2string(rocsparse_spgemm_alg alg)

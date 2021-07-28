@@ -142,6 +142,8 @@ Datatypes:
         rocsparse_spmm_alg_csr_row_split: 4
         rocsparse_spmm_alg_csr_merge: 5
         rocsparse_spmm_alg_coo_segmented_atomic: 6
+        rocsparse_spmm_alg_bell: 7
+
   - rocsparse_spgemm_alg:
       bases: [c_int ]
       attr:

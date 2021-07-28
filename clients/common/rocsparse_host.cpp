@@ -2192,25 +2192,24 @@ void host_csrmm(J                     M,
     }
 }
 
-template <typename I, typename T>
-void host_coomm(rocsparse_spmm_alg    alg,
-                I                     M,
-                I                     N,
-                rocsparse_operation   transB,
-                T                     alpha,
-                const std::vector<I>& coo_row_ind_A,
-                const std::vector<I>& coo_col_ind_A,
-                const std::vector<T>& coo_val_A,
-                const std::vector<T>& B,
-                I                     ldb,
-                T                     beta,
-                std::vector<T>&       C,
-                I                     ldc,
-                rocsparse_order       order,
-                rocsparse_index_base  base)
+template <typename T, typename I>
+void host_coomm(rocsparse_spmm_alg   alg,
+                I                    M,
+                I                    N,
+                I                    nnz,
+                rocsparse_operation  transB,
+                T                    alpha,
+                const I*             coo_row_ind_A,
+                const I*             coo_col_ind_A,
+                const T*             coo_val_A,
+                const T*             B,
+                I                    ldb,
+                T                    beta,
+                T*                   C,
+                I                    ldc,
+                rocsparse_order      order,
+                rocsparse_index_base base)
 {
-    I nnz = coo_val_A.size();
-
     for(I j = 0; j < N; j++)
     {
 #ifdef _OPENMP
@@ -2238,7 +2237,7 @@ void host_coomm(rocsparse_spmm_alg    alg,
 
             I idx_B = 0;
             if((transB == rocsparse_operation_none && order == rocsparse_order_column)
-               || (transB == rocsparse_operation_transpose && order == rocsparse_order_row))
+               || (transB != rocsparse_operation_none && order != rocsparse_order_column))
             {
                 idx_B = (col + j * ldb);
             }
@@ -2247,7 +2246,14 @@ void host_coomm(rocsparse_spmm_alg    alg,
                 idx_B = (j + col * ldb);
             }
 
-            C[idx_C] = std::fma(val, B[idx_B], C[idx_C]);
+            if(transB == rocsparse_operation_conjugate_transpose)
+            {
+                C[idx_C] = std::fma(val, rocsparse_conj(B[idx_B]), C[idx_C]);
+            }
+            else
+            {
+                C[idx_C] = std::fma(val, B[idx_B], C[idx_C]);
+            }
         }
     }
 }
@@ -7551,21 +7557,22 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                            rocsparse_index_base      base,                       \
                                            ITYPE*                    struct_pivot,               \
                                            ITYPE*                    numeric_pivot);                                \
-    template void host_coomm<ITYPE, TTYPE>(rocsparse_spmm_alg        alg,                        \
-                                           ITYPE                     M,                          \
-                                           ITYPE                     N,                          \
-                                           rocsparse_operation       transB,                     \
-                                           TTYPE                     alpha,                      \
-                                           const std::vector<ITYPE>& coo_row_ind_A,              \
-                                           const std::vector<ITYPE>& coo_col_ind_A,              \
-                                           const std::vector<TTYPE>& coo_val_A,                  \
-                                           const std::vector<TTYPE>& B,                          \
-                                           ITYPE                     ldb,                        \
-                                           TTYPE                     beta,                       \
-                                           std::vector<TTYPE>&       C,                          \
-                                           ITYPE                     ldc,                        \
-                                           rocsparse_order           order,                      \
-                                           rocsparse_index_base      base);                           \
+    template void host_coomm<TTYPE, ITYPE>(rocsparse_spmm_alg   alg,                             \
+                                           ITYPE                M,                               \
+                                           ITYPE                N,                               \
+                                           ITYPE                NNZ,                             \
+                                           rocsparse_operation  transB,                          \
+                                           TTYPE                alpha,                           \
+                                           const ITYPE*         coo_row_ind_A,                   \
+                                           const ITYPE*         coo_col_ind_A,                   \
+                                           const TTYPE*         coo_val_A,                       \
+                                           const TTYPE*         B,                               \
+                                           ITYPE                ldb,                             \
+                                           TTYPE                beta,                            \
+                                           TTYPE*               C,                               \
+                                           ITYPE                ldc,                             \
+                                           rocsparse_order      order,                           \
+                                           rocsparse_index_base base);                           \
     template void host_coosm<ITYPE, TTYPE>(ITYPE                     M,                          \
                                            ITYPE                     nrhs,                       \
                                            ITYPE                     nnz,                        \
@@ -7612,7 +7619,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                            TTYPE*               result,                          \
                                            rocsparse_index_base base);                           \
     template void host_sctr<ITYPE, TTYPE>(                                                       \
-        ITYPE nnz, const TTYPE* x_val, const ITYPE* x_ind, TTYPE* y, rocsparse_index_base base);
+        ITYPE nnz, const TTYPE* x_val, const ITYPE* x_ind, TTYPE* y, rocsparse_index_base base)
 
 #define INSTANTIATE3(ITYPE, JTYPE, TTYPE)                                                        \
     template void host_csr_to_csc<ITYPE, JTYPE, TTYPE>(JTYPE                M,                   \

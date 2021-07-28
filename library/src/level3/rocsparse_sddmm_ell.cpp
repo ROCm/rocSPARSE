@@ -162,11 +162,6 @@ struct rocsparse_sddmm_st<rocsparse_format_ell, rocsparse_sddmm_alg_default, I, 
                                         rocsparse_sddmm_alg  alg,
                                         size_t*              buffer_size)
     {
-        //
-        // TODO: change this weird assumption.
-        //
-        I width                 = nnz;
-        nnz                     = width * m;
         static constexpr int NB = 512;
         buffer_size[0]          = nnz * ((k - 1) / NB + 1) * sizeof(T);
         return rocsparse_status_success;
@@ -219,12 +214,6 @@ struct rocsparse_sddmm_st<rocsparse_format_ell, rocsparse_sddmm_alg_default, I, 
                                     rocsparse_sddmm_alg  alg,
                                     void*                buffer)
     {
-        //
-        // TODO: change this weird assumption.
-        //
-        I width = nnz;
-        nnz     = width * m;
-
         static constexpr int WIN          = rocsparse_reduce_WIN<T>();
         int64_t              num_blocks_y = nnz;
         static constexpr int NB           = 512;

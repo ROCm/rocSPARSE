@@ -345,6 +345,11 @@ struct _rocsparse_spmat_descr
 
     rocsparse_mat_descr descr;
     rocsparse_mat_info  info;
+
+    rocsparse_direction block_dir;
+    int64_t             block_dim;
+    int64_t             ell_cols;
+    int64_t             ell_width;
 };
 
 struct _rocsparse_dnvec_descr

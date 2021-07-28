@@ -60,6 +60,12 @@ void testing_sddmm_bad_arg(const Arguments& arg)
         testing_sddmm_dispatch<rocsparse_format_ell, I, I, T>::testing_sddmm_bad_arg(arg);
         return;
     }
+    case rocsparse_format_bell:
+    {
+        std::cerr << "rocsparse_status_not_implemented" << std::endl;
+        exit(1);
+        return;
+    }
     }
 }
 
@@ -97,6 +103,12 @@ void testing_sddmm(const Arguments& arg)
     case rocsparse_format_ell:
     {
         testing_sddmm_dispatch<rocsparse_format_ell, I, I, T>::testing_sddmm(arg);
+        return;
+    }
+    case rocsparse_format_bell:
+    {
+        std::cerr << "rocsparse_status_not_implemented" << std::endl;
+        exit(1);
         return;
     }
     }

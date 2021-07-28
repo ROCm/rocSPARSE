@@ -344,7 +344,8 @@ typedef enum rocsparse_format_
     rocsparse_format_coo_aos = 1, /**< COO AoS sparse matrix format. */
     rocsparse_format_csr     = 2, /**< CSR sparse matrix format. */
     rocsparse_format_csc     = 3, /**< CSC sparse matrix format. */
-    rocsparse_format_ell     = 4 /**< ELL sparse matrix format. */
+    rocsparse_format_ell     = 4, /**< ELL sparse matrix format. */
+    rocsparse_format_bell    = 5 /**< BLOCKED ELL sparse matrix format. */
 } rocsparse_format;
 
 /*! \ingroup types_module
@@ -449,16 +450,13 @@ typedef enum rocsparse_spsm_stage_
 typedef enum rocsparse_spmm_alg_
 {
     rocsparse_spmm_alg_default = 0, /**< Default SpMM algorithm for the given format. */
-    rocsparse_spmm_alg_csr
-    = 1, /**< SpMM algorithm for CSR format using row split and shared memory. */
-    rocsparse_spmm_alg_coo_segmented
-    = 2, /**< SpMM algorithm for COO format using segmented scan. */
-    rocsparse_spmm_alg_coo_atomic = 3, /**< SpMM algorithm for COO format using atomics. */
-    rocsparse_spmm_alg_csr_row_split
-    = 4, /**< SpMM algorithm for CSR format using row split and shfl. */
-    rocsparse_spmm_alg_csr_merge = 5, /**< SpMM algorithm for CSR format using conversion to COO. */
-    rocsparse_spmm_alg_coo_segmented_atomic
-    = 6 /**< SpMM algorithm for COO format using segmented scan and atomics. */
+    rocsparse_spmm_alg_csr, /**< SpMM algorithm for CSR format using row split and shared memory. */
+    rocsparse_spmm_alg_coo_segmented, /**< SpMM algorithm for COO format using segmented scan. */
+    rocsparse_spmm_alg_coo_atomic, /**< SpMM algorithm for COO format using atomics. */
+    rocsparse_spmm_alg_csr_row_split, /**< SpMM algorithm for CSR format using row split and shfl. */
+    rocsparse_spmm_alg_csr_merge, /**< SpMM algorithm for CSR format using conversion to COO. */
+    rocsparse_spmm_alg_coo_segmented_atomic, /**< SpMM algorithm for COO format using segmented scan and atomics. */
+    rocsparse_spmm_alg_bell /**< SpMM algorithm for Blocked ELL format. */
 } rocsparse_spmm_alg;
 
 /*! \ingroup types_module
