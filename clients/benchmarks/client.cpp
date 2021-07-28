@@ -58,6 +58,7 @@
 #include "testing_gebsrmm.hpp"
 #include "testing_gemmi.hpp"
 #include "testing_sddmm.hpp"
+#include "testing_spmm_bell.hpp"
 #include "testing_spmm_coo.hpp"
 #include "testing_spmm_csr.hpp"
 #include "testing_spsm_coo.hpp"
@@ -996,6 +997,37 @@ int main(int argc, char* argv[])
                 testing_spmm_coo<int32_t, rocsparse_double_complex>(arg);
             else if(indextype == 'd')
                 testing_spmm_coo<int64_t, rocsparse_double_complex>(arg);
+        }
+    }
+    else if(function == "bellmm")
+    {
+        if(precision == 's')
+        {
+            if(indextype == 's')
+                testing_spmm_bell<int32_t, float>(arg);
+            else if(indextype == 'd')
+                testing_spmm_bell<int64_t, float>(arg);
+        }
+        else if(precision == 'd')
+        {
+            if(indextype == 's')
+                testing_spmm_bell<int32_t, double>(arg);
+            else if(indextype == 'd')
+                testing_spmm_bell<int64_t, double>(arg);
+        }
+        else if(precision == 'c')
+        {
+            if(indextype == 's')
+                testing_spmm_bell<int32_t, rocsparse_float_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmm_bell<int64_t, rocsparse_float_complex>(arg);
+        }
+        else if(precision == 'z')
+        {
+            if(indextype == 's')
+                testing_spmm_bell<int32_t, rocsparse_double_complex>(arg);
+            else if(indextype == 'd')
+                testing_spmm_bell<int64_t, rocsparse_double_complex>(arg);
         }
     }
     else if(function == "csrsm")

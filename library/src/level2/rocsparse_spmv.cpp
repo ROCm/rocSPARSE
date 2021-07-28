@@ -142,7 +142,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
                                         mat->descr,
                                         (const T*)mat->val_data,
                                         (const I*)mat->col_data,
-                                        (I)mat->nnz,
+                                        (I)mat->ell_width,
                                         (const T*)x->values,
                                         (const T*)beta,
                                         (T*)y->values);
@@ -155,11 +155,14 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
         return rocsparse_status_not_implemented;
         // LCOV_EXCL_STOP
     }
+        // BELL
+    case rocsparse_format_bell:
+    {
+        // LCOV_EXCL_START
+        return rocsparse_status_not_implemented;
+        // LCOV_EXCL_STOP
     }
-
-    // LCOV_EXCL_START
-    return rocsparse_status_invalid_value;
-    // LCOV_EXCL_STOP
+    }
 }
 
 template <typename... Ts>
@@ -223,9 +226,6 @@ rocsparse_status rocsparse_spmv_dynamic_dispatch(rocsparse_indextype itype,
 
 #undef DATATYPE_CASE
     }
-    // LCOV_EXCL_START
-    return rocsparse_status_invalid_value;
-    // LCOV_EXCL_STOP
 }
 
 /*

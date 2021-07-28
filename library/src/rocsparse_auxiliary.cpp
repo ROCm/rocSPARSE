@@ -1319,9 +1319,9 @@ rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
 
         (*descr)->init = true;
 
-        (*descr)->rows = rows;
-        (*descr)->cols = cols;
-        (*descr)->nnz  = ell_width;
+        (*descr)->rows      = rows;
+        (*descr)->cols      = cols;
+        (*descr)->ell_width = ell_width;
 
         (*descr)->col_data = ell_col_ind;
         (*descr)->val_data = ell_val;
@@ -1332,6 +1332,93 @@ rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
 
         (*descr)->idx_base = idx_base;
         (*descr)->format   = rocsparse_format_ell;
+
+        //
+        // This is not really the number of non-zeros.
+        // TODO: refactor the descriptors and having a proper design (get_nnz and different implementation for different format).
+        // ell_width = nnz / rows.
+        //
+        (*descr)->nnz = ell_width * rows;
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(*descr)->descr));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&(*descr)->info));
+
+        // Initialize descriptor
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base((*descr)->descr, idx_base));
+    }
+    catch(const rocsparse_status& status)
+    {
+        return status;
+    }
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief rocsparse_create_bell_descr creates a descriptor holding the
+ * BLOCKED ELL matrix data, sizes and properties. It must be called prior to all
+ * subsequent library function calls that involve sparse matrices.
+ * It should be destroyed at the end using rocsparse_destroy_spmat_descr().
+ * All data pointers remain valid.
+ *******************************************************************************/
+rocsparse_status rocsparse_create_bell_descr(rocsparse_spmat_descr* descr,
+                                             int64_t                rows,
+                                             int64_t                cols,
+                                             rocsparse_direction    ell_block_dir,
+                                             int64_t                ell_block_dim,
+                                             int64_t                ell_cols,
+                                             void*                  ell_col_ind,
+                                             void*                  ell_val,
+                                             rocsparse_indextype    idx_type,
+                                             rocsparse_index_base   idx_base,
+                                             rocsparse_datatype     data_type)
+{
+    // Check for valid descriptor
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for valid sizes
+    if(rows < 0 || cols < 0 || ell_cols < 0 || ell_cols > cols || ell_block_dim <= 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(ell_block_dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check for valid pointers
+    if(rows > 0 && cols > 0 && ell_cols > 0 && (ell_col_ind == nullptr || ell_val == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    *descr = nullptr;
+    // Allocate
+    try
+    {
+        *descr = new _rocsparse_spmat_descr;
+
+        (*descr)->init = true;
+
+        (*descr)->rows = rows;
+        (*descr)->cols = cols;
+
+        (*descr)->ell_cols  = ell_cols;
+        (*descr)->block_dir = ell_block_dir;
+        (*descr)->block_dim = ell_block_dim;
+
+        (*descr)->col_data = ell_col_ind;
+        (*descr)->val_data = ell_val;
+
+        (*descr)->row_type  = idx_type;
+        (*descr)->col_type  = idx_type;
+        (*descr)->data_type = data_type;
+
+        (*descr)->idx_base = idx_base;
+        (*descr)->format   = rocsparse_format_bell;
 
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&(*descr)->descr));
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_mat_info(&(*descr)->info));
@@ -1611,7 +1698,70 @@ rocsparse_status rocsparse_ell_get(const rocsparse_spmat_descr descr,
 
     *ell_col_ind = descr->col_data;
     *ell_val     = descr->val_data;
-    *ell_width   = descr->nnz;
+    *ell_width   = descr->ell_width;
+
+    *idx_type  = descr->row_type;
+    *idx_base  = descr->idx_base;
+    *data_type = descr->data_type;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief rocsparse_bell_get returns the sparse BLOCKED ELL matrix data,
+ * sizes and properties.
+ *******************************************************************************/
+rocsparse_status rocsparse_bell_get(const rocsparse_spmat_descr descr,
+                                    int64_t*                    rows,
+                                    int64_t*                    cols,
+                                    rocsparse_direction*        ell_block_dir,
+                                    int64_t*                    ell_block_dim,
+                                    int64_t*                    ell_cols,
+                                    void**                      ell_col_ind,
+                                    void**                      ell_val,
+                                    rocsparse_indextype*        idx_type,
+                                    rocsparse_index_base*       idx_base,
+                                    rocsparse_datatype*         data_type)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid size pointers
+    if(rows == nullptr || cols == nullptr || ell_cols == nullptr || ell_block_dim == nullptr
+       || ell_block_dir == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid data pointers
+    if(ell_col_ind == nullptr || ell_val == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check for invalid property pointers
+    if(idx_type == nullptr || idx_base == nullptr || data_type == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *rows = descr->rows;
+    *cols = descr->cols;
+
+    *ell_col_ind   = descr->col_data;
+    *ell_val       = descr->val_data;
+    *ell_cols      = descr->ell_cols;
+    *ell_block_dir = descr->block_dir;
+    *ell_block_dim = descr->block_dim;
 
     *idx_type  = descr->row_type;
     *idx_base  = descr->idx_base;

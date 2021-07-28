@@ -15054,7 +15054,7 @@ rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
 *
 *  \details
 *  \p rocsparse_spmm multiplies the scalar \f$\alpha\f$ with a sparse \f$m \times k\f$
-*  matrix \f$A\f$, defined in CSR or COO storage format, and the dense \f$k \times n\f$
+*  matrix \f$A\f$, defined in CSR, COO or Blocked ELL storage format, and the dense \f$k \times n\f$
 *  matrix \f$B\f$ and adds the result to the dense \f$m \times n\f$ matrix \f$C\f$ that
 *  is multiplied by the scalar \f$\beta\f$, such that
 *  \f[
@@ -15089,16 +15089,15 @@ rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
 *  Currently, only \p trans_A == \ref rocsparse_operation_none is supported.
 *
 *  \note
-*  Currently, only CSR and COO sparse formats are supported.
+*  Currently, only CSR, COO and Blocked ELL sparse formats are supported.
 *
 *  \note
 *  Different algorithms are available which can provide better performance for different matrices.
-*  Currently, the available algorithms are rocsparse_spmm_alg_csr or rocsparse_spmm_alg_csr_row_split
-*  or rocsparse_spmm_alg_csr_merge for CSR matrices and rocsparse_spmm_alg_coo_segmented or
-*  rocsparse_spmm_alg_coo_atomic for COO matrices. Additionally,
+*  Currently, the available algorithms are rocsparse_spmm_alg_csr, rocsparse_spmm_alg_csr_row_split
+*  or rocsparse_spmm_alg_csr_merge for CSR matrices, rocsparse_spmm_alg_bell for Blocked ELL matrices and
+*  rocsparse_spmm_alg_coo_segmented or rocsparse_spmm_alg_coo_atomic for COO matrices. Additionally,
 *  one can specify the algorithm to be rocsparse_spmm_alg_default. In the case of CSR matrices this will
-*  set the algorithm to be rocsparse_spmm_alg_csr and for COO matrices it will set the algorithm to be
-*  rocsparse_spmm_alg_coo_atomic.
+*  set the algorithm to be rocsparse_spmm_alg_csr, in the case of Blocked ELL matrices this will set the algorithm to be rocsparse_spmm_alg_bell and for COO matrices it will set the algorithm to be rocsparse_spmm_alg_coo_atomic.
 *
 *  \note
 *  This function writes the required allocation size (in bytes) to \p buffer_size and

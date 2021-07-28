@@ -26,8 +26,33 @@
 #include "rocsparse.h"
 #include "utility.h"
 
+#include "rocsparse_bellmm.hpp"
 #include "rocsparse_coomm.hpp"
 #include "rocsparse_csrmm.hpp"
+
+rocsparse_status rocsparse_spmm_alg2bellmm_alg(rocsparse_spmm_alg    spmm_alg,
+                                               rocsparse_bellmm_alg& bellmm_alg)
+{
+    switch(spmm_alg)
+    {
+    case rocsparse_spmm_alg_default:
+    case rocsparse_spmm_alg_bell:
+    {
+        bellmm_alg = rocsparse_bellmm_alg_default;
+        return rocsparse_status_success;
+    }
+
+    case rocsparse_spmm_alg_csr:
+    case rocsparse_spmm_alg_csr_row_split:
+    case rocsparse_spmm_alg_csr_merge:
+    case rocsparse_spmm_alg_coo_segmented:
+    case rocsparse_spmm_alg_coo_atomic:
+    case rocsparse_spmm_alg_coo_segmented_atomic:
+    {
+        return rocsparse_status_invalid_value;
+    }
+    }
+}
 
 rocsparse_status rocsparse_spmm_alg2csrmm_alg(rocsparse_spmm_alg   spmm_alg,
                                               rocsparse_csrmm_alg& csrmm_alg)
@@ -53,6 +78,7 @@ rocsparse_status rocsparse_spmm_alg2csrmm_alg(rocsparse_spmm_alg   spmm_alg,
         return rocsparse_status_success;
     }
 
+    case rocsparse_spmm_alg_bell:
     case rocsparse_spmm_alg_coo_segmented:
     case rocsparse_spmm_alg_coo_atomic:
     case rocsparse_spmm_alg_coo_segmented_atomic:
@@ -91,6 +117,7 @@ rocsparse_status rocsparse_spmm_alg2coomm_alg(rocsparse_spmm_alg   spmm_alg,
         return rocsparse_status_success;
     }
 
+    case rocsparse_spmm_alg_bell:
     case rocsparse_spmm_alg_csr:
     case rocsparse_spmm_alg_csr_row_split:
     case rocsparse_spmm_alg_csr_merge:
@@ -307,6 +334,133 @@ rocsparse_status rocsparse_spmm_ex_template(rocsparse_handle            handle,
                                                             temp_buffer);
         }
         }
+    }
+
+    case rocsparse_format_bell:
+    {
+        rocsparse_bellmm_alg bellmm_alg;
+        status = rocsparse_spmm_alg2bellmm_alg(alg, bellmm_alg);
+        if(status != rocsparse_status_success)
+        {
+            return status;
+        }
+
+        switch(stage)
+        {
+            //
+            // STAGE BUFFER SIZE
+            //
+        case rocsparse_spmm_stage_buffer_size:
+        {
+            RETURN_IF_NULLPTR(buffer_size);
+            return rocsparse_bellmm_template_buffer_size<T, I>(
+                handle,
+                trans_A,
+                trans_B,
+                mat_B->order,
+                mat_C->order,
+                mat_A->block_dir,
+                (I)(mat_C->rows / mat_A->block_dim),
+                (I)mat_C->cols,
+
+                (trans_A == rocsparse_operation_none) ? (I)(mat_A->cols / mat_A->block_dim)
+                                                      : (I)(mat_A->rows / mat_A->block_dim),
+
+                (I)mat_A->ell_cols,
+                (I)mat_A->block_dim,
+                (const T*)alpha,
+                mat_A->descr,
+                (const I*)mat_A->col_data,
+                (const T*)mat_A->val_data,
+                (const T*)mat_B->values,
+                (I)mat_B->ld,
+                (const T*)beta,
+                (T*)mat_C->values,
+                (I)mat_C->ld,
+                buffer_size);
+        }
+
+            //
+            // STAGE PREPROCESS
+            //
+        case rocsparse_spmm_stage_preprocess:
+        {
+            return rocsparse_bellmm_template_preprocess<T, I>(
+                handle,
+                trans_A,
+                trans_B,
+                mat_B->order,
+                mat_C->order,
+                mat_A->block_dir,
+                (I)(mat_C->rows / mat_A->block_dim),
+                (I)mat_C->cols,
+
+                (trans_A == rocsparse_operation_none) ? (I)(mat_A->cols / mat_A->block_dim)
+                                                      : (I)(mat_A->rows / mat_A->block_dim),
+
+                (I)mat_A->ell_cols,
+                (I)mat_A->block_dim,
+                (const T*)alpha,
+                mat_A->descr,
+                (const I*)mat_A->col_data,
+                (const T*)mat_A->val_data,
+                (const T*)mat_B->values,
+                (I)mat_B->ld,
+                (const T*)beta,
+                (T*)mat_C->values,
+                (I)mat_C->ld,
+                temp_buffer);
+        }
+
+            //
+            // STAGE COMPUTE
+            //
+        case rocsparse_spmm_stage_compute:
+        {
+            return rocsparse_bellmm_template<T, I>(handle,
+                                                   trans_A,
+                                                   trans_B,
+                                                   mat_B->order,
+                                                   mat_C->order,
+                                                   mat_A->block_dir,
+                                                   (I)(mat_C->rows / mat_A->block_dim),
+                                                   (I)mat_C->cols,
+
+                                                   (trans_A == rocsparse_operation_none)
+                                                       ? (I)(mat_A->cols / mat_A->block_dim)
+                                                       : (I)(mat_A->rows / mat_A->block_dim),
+
+                                                   (I)mat_A->ell_cols,
+                                                   (I)mat_A->block_dim,
+                                                   (const T*)alpha,
+                                                   mat_A->descr,
+                                                   (const I*)mat_A->col_data,
+                                                   (const T*)mat_A->val_data,
+                                                   (const T*)mat_B->values,
+                                                   (I)mat_B->ld,
+                                                   (const T*)beta,
+                                                   (T*)mat_C->values,
+                                                   (I)mat_C->ld,
+                                                   temp_buffer);
+        }
+
+        case rocsparse_spmm_stage_auto:
+        {
+            return rocsparse_spmm_ex_template_auto<I, J, T>(handle,
+                                                            trans_A,
+                                                            trans_B,
+                                                            alpha,
+                                                            mat_A,
+                                                            mat_B,
+                                                            beta,
+                                                            mat_C,
+                                                            alg,
+                                                            buffer_size,
+                                                            temp_buffer);
+        }
+        }
+
+        break;
     }
 
     case rocsparse_format_coo_aos:
@@ -635,6 +789,11 @@ extern "C" rocsparse_status rocsparse_spmm_ex(rocsparse_handle            handle
     }
 
     if(rocsparse_enum_utils::is_invalid(stage))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(compute_type))
     {
         return rocsparse_status_invalid_value;
     }

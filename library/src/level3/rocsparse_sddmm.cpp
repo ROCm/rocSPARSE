@@ -76,6 +76,10 @@ rocsparse_status rocsparse_sddmm_buffer_size_dispatch_format(rocsparse_format   
     {
         return rocsparse_sddmm_buffer_size_dispatch_alg<rocsparse_format_ell, I, I, T>(alg, ts...);
     }
+    case rocsparse_format_bell:
+    {
+        return rocsparse_status_not_implemented;
+    }
     }
     return rocsparse_status_invalid_value;
 }
@@ -285,6 +289,11 @@ rocsparse_status rocsparse_sddmm_preprocess_dispatch_format(rocsparse_format    
     case rocsparse_format_ell:
     {
         return rocsparse_sddmm_preprocess_dispatch_alg<rocsparse_format_ell, I, I, T>(alg, ts...);
+    }
+
+    case rocsparse_format_bell:
+    {
+        return rocsparse_status_not_implemented;
     }
     }
     return rocsparse_status_invalid_value;
@@ -497,6 +506,11 @@ rocsparse_status
     case rocsparse_format_ell:
     {
         return rocsparse_sddmm_dispatch_alg<rocsparse_format_ell, I, I, T>(alg, ts...);
+    }
+
+    case rocsparse_format_bell:
+    {
+        return rocsparse_status_not_implemented;
     }
     }
     return rocsparse_status_invalid_value;
