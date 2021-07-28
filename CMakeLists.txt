@@ -137,11 +137,12 @@ set(VERSION_STRING "1.21.1")
 rocm_setup_version(VERSION ${VERSION_STRING})
 set(rocsparse_SOVERSION 0.1)
 
-# rocSPARSE library
-add_subdirectory(library)
 if( BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
   set( BUILD_CLIENTS ON )
 endif()
+
+# rocSPARSE library
+add_subdirectory(library)
 
 # Trigger client builds if selected
 if(BUILD_CLIENTS)
