@@ -2,6 +2,19 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
+## [rocSPARSE 1.21.1 for ROCm 4.4.0]
+### Added
+- Triangular solve for multiple right-hand sides using BSR format
+- SpMV for BSRX format
+- SpMM in CSR format enhanced to work with transposed A
+- Matrix coloring for CSR matrices
+- Added batched tridiagonal solve (gtsv\_strided\_batch)
+### Improved
+- Fixed a bug with gemvi on Navi21
+- Optimization for pivot based gtsv
+### Known Issues
+- none
+
 ## [rocSPARSE 1.20.2 for ROCm 4.3.0]
 ### Added
 - (batched) tridiagonal solver with and without pivoting
