@@ -24,8 +24,8 @@
 # rocSPARSE Fortran source
 if (NOT WIN32)
 set(rocsparse_fortran_source
-  src/rocsparse_enums.f
-  src/rocsparse.f
+  src/rocsparse_enums.f90
+  src/rocsparse.f90
 )
 endif()
 
