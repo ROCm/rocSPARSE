@@ -23,8 +23,8 @@
 
 # rocSPARSE Fortran source
 set(rocsparse_fortran_source
-  src/rocsparse_enums.f
-  src/rocsparse.f
+  src/rocsparse_enums.f90
+  src/rocsparse.f90
 )
 
 # rocSPARSE source
