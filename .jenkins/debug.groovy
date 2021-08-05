@@ -16,8 +16,9 @@ def runCI =
     def prj = new rocProject('rocSPARSE', 'Debug')
 
     // customize for project
-    prj.paths.build_command = './install.sh -c -g'
+    prj.paths.build_command = './install.sh --matrices-dir-install ${JENKINS_HOME_DIR}/rocsparse_matrices && ./install.sh -c -g --matrices-dir ${JENKINS_HOME_DIR}/rocsparse_matrices'
     prj.libraryDependencies = ['rocPRIM']
+    prj.defaults.ccache = true
 
     // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(nodeDetails, jobName, prj)
@@ -43,7 +44,7 @@ ci: {
     def propertyList = ["compute-rocm-dkms-no-npi-hipclang":[pipelineTriggers([cron('0 1 * * 6')])]]
     propertyList = auxiliary.appendPropertyList(propertyList)
     def jobNameList = ["compute-rocm-dkms-no-npi-hipclang":([ubuntu18:['any']])]
-
+    jobNameList = auxiliary.appendJobNameList(jobNameList)
 
     jobNameList.each
     {

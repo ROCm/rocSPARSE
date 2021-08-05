@@ -50,14 +50,14 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
     const T*                  bsr_val           = (const T*)0x4;
     const rocsparse_int*      bsr_row_ptr       = (const rocsparse_int*)0x4;
     const rocsparse_int*      bsr_col_ind       = (const rocsparse_int*)0x4;
-    rocsparse_int             bsr_dim           = safe_size;
+    rocsparse_int             block_dim         = safe_size;
     const T*                  x                 = (const T*)0x4;
     const T*                  beta_device_host  = (const T*)&h_beta;
     T*                        y                 = (T*)0x4;
 
 #define PARAMS                                                                                     \
     handle, dir, trans, mb, nb, nnzb, alpha_device_host, descr, bsr_val, bsr_row_ptr, bsr_col_ind, \
-        bsr_dim, x, beta_device_host, y
+        block_dim, x, beta_device_host, y
 
     auto_testing_bad_arg(rocsparse_bsrmv<T>, PARAMS);
 
@@ -83,13 +83,12 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_bsrmv(const Arguments& arg)
 {
-
-    rocsparse_int        M       = arg.M;
-    rocsparse_int        N       = arg.N;
-    rocsparse_direction  dir     = arg.direction;
-    rocsparse_operation  trans   = arg.transA;
-    rocsparse_index_base base    = arg.baseA;
-    rocsparse_int        bsr_dim = arg.block_dim;
+    rocsparse_int        M         = arg.M;
+    rocsparse_int        N         = arg.N;
+    rocsparse_direction  dir       = arg.direction;
+    rocsparse_operation  trans     = arg.transA;
+    rocsparse_index_base base      = arg.baseA;
+    rocsparse_int        block_dim = arg.block_dim;
 
     host_scalar<T> h_alpha(arg.get_alpha<T>()), h_beta(arg.get_beta<T>());
 
@@ -104,30 +103,30 @@ void testing_bsrmv(const Arguments& arg)
 
     // BSR dimensions
 
-    rocsparse_int mb = (bsr_dim > 0) ? (M + bsr_dim - 1) / bsr_dim : 0;
-    rocsparse_int nb = (bsr_dim > 0) ? (N + bsr_dim - 1) / bsr_dim : 0;
+    rocsparse_int mb = (block_dim > 0) ? (M + block_dim - 1) / block_dim : 0;
+    rocsparse_int nb = (block_dim > 0) ? (N + block_dim - 1) / block_dim : 0;
     // Argument sanity check before allocating invalid memory
 #define PARAMS(alpha_, A_, x_, beta_, y_)                                                    \
     handle, A_.block_direction, trans, A_.mb, A_.nb, A_.nnzb, alpha_, descr, A_.val, A_.ptr, \
         A_.ind, A_.row_block_dim, x_, beta_, y_
 
-    if(mb <= 0 || nb <= 0 || M <= 0 || N <= 0 || bsr_dim <= 0)
+    if(mb <= 0 || nb <= 0 || M <= 0 || N <= 0 || block_dim <= 0)
     {
         device_gebsr_matrix<T> dA;
         dA.block_direction = dir;
         dA.mb              = mb;
         dA.nb              = nb;
         dA.nnzb            = 10;
-        dA.row_block_dim   = bsr_dim;
-        dA.col_block_dim   = bsr_dim;
+        dA.row_block_dim   = block_dim;
+        dA.col_block_dim   = block_dim;
 
         device_dense_matrix<T> dx;
         device_dense_matrix<T> dy;
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
-                                (mb < 0 || nb < 0 || bsr_dim < 0) ? rocsparse_status_invalid_size
-                                                                  : rocsparse_status_success);
+                                (mb < 0 || nb < 0 || block_dim < 0) ? rocsparse_status_invalid_size
+                                                                    : rocsparse_status_success);
         return;
     }
 
@@ -138,9 +137,8 @@ void testing_bsrmv(const Arguments& arg)
     hipDeviceProp_t prop;
     hipGetDeviceProperties(&prop, dev);
 
-    bool                  type      = (prop.warpSize == 32) ? (arg.timing ? false : true) : false;
-    static constexpr bool full_rank = false;
-
+    bool                        type = (prop.warpSize == 32) ? (arg.timing ? false : true) : false;
+    static constexpr bool       full_rank = false;
     rocsparse_matrix_factory<T> matrix_factory(arg, type, full_rank);
 
     //

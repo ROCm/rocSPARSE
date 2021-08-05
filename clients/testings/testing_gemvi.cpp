@@ -160,7 +160,7 @@ void testing_gemvi(const Arguments& arg)
 
     // Initialize data on CPU
     rocsparse_seedrand();
-    rocsparse_init_index(hx_ind, nnz, 1, N);
+    rocsparse_init_index(hx_ind, nnz, 1, std::max(N, ((rocsparse_int)1)));
     rocsparse_init<T>(hx_val, 1, nnz, 1);
     rocsparse_init<T>(hy_1, 1, M, 1);
     rocsparse_init<T>(hA, M, N, lda, 1);

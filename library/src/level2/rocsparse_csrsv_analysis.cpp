@@ -23,23 +23,26 @@
  * ************************************************************************ */
 #include "rocsparse_csrsv.hpp"
 
+#include "../conversion/rocsparse_coo2csr.hpp"
+#include "../conversion/rocsparse_csr2coo.hpp"
+#include "../conversion/rocsparse_identity.hpp"
 #include "../level1/rocsparse_gthr.hpp"
 #include "csrsv_device.h"
 #include "definitions.h"
 #include "utility.h"
 #include <rocprim/rocprim.hpp>
 
-template <typename T>
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                         rocsparse_operation       trans,
-                                        rocsparse_int             m,
-                                        rocsparse_int             nnz,
+                                        J                         m,
+                                        I                         nnz,
                                         const rocsparse_mat_descr descr,
                                         const T*                  csr_val,
-                                        const rocsparse_int*      csr_row_ptr,
-                                        const rocsparse_int*      csr_col_ind,
+                                        const I*                  csr_row_ptr,
+                                        const J*                  csr_col_ind,
                                         rocsparse_trm_info        info,
-                                        rocsparse_int**           zero_pivot,
+                                        J**                       zero_pivot,
                                         void*                     temp_buffer)
 {
     // Stream
@@ -61,68 +64,81 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
         char* ptr = reinterpret_cast<char*>(temp_buffer);
 
         // work1 buffer
-        rocsparse_int* tmp_work1 = reinterpret_cast<rocsparse_int*>(ptr);
-        ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+        J* tmp_work1 = reinterpret_cast<J*>(ptr);
+        ptr += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
 
         // work2 buffer
-        rocsparse_int* tmp_work2 = reinterpret_cast<rocsparse_int*>(ptr);
-        ptr += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
+        I* tmp_work2 = reinterpret_cast<I*>(ptr);
+        ptr += sizeof(I) * ((nnz - 1) / 256 + 1) * 256;
 
         // rocprim buffer
         void* rocprim_buffer = reinterpret_cast<void*>(ptr);
 
         // Load CSR column indices into work1 buffer
         RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            tmp_work1, csr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToDevice, stream));
+            tmp_work1, csr_col_ind, sizeof(J) * nnz, hipMemcpyDeviceToDevice, stream));
 
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->trmt_perm, sizeof(rocsparse_int) * nnz));
-        RETURN_IF_HIP_ERROR(
-            hipMalloc((void**)&info->trmt_row_ptr, sizeof(rocsparse_int) * (m + 1)));
-        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->trmt_col_ind, sizeof(rocsparse_int) * nnz));
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->trmt_perm, sizeof(I) * nnz));
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->trmt_row_ptr, sizeof(I) * (m + 1)));
+        RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->trmt_col_ind, sizeof(J) * nnz));
 
-        // Create identity permutation
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_create_identity_permutation(handle, nnz, info->trmt_perm));
-
-        // Stable sort COO by columns
-        rocprim::double_buffer<rocsparse_int> keys(tmp_work1, info->trmt_col_ind);
-        rocprim::double_buffer<rocsparse_int> vals(info->trmt_perm, tmp_work2);
-
-        unsigned int startbit = 0;
-        unsigned int endbit   = rocsparse_clz(m);
-
-        size_t rocprim_size;
-
-        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
-            nullptr, rocprim_size, keys, vals, nnz, startbit, endbit, stream));
-        RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
-            rocprim_buffer, rocprim_size, keys, vals, nnz, startbit, endbit, stream));
-
-        // Copy permutation vector, if not already available
-        if(vals.current() != info->trmt_perm)
+        if(nnz > 0)
         {
-            RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->trmt_perm,
-                                               vals.current(),
-                                               sizeof(rocsparse_int) * nnz,
-                                               hipMemcpyDeviceToDevice,
-                                               stream));
+            // Create identity permutation
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_create_identity_permutation_template(handle, nnz, (I*)info->trmt_perm));
+
+            // Stable sort COO by columns
+            rocprim::double_buffer<J> keys(tmp_work1, (J*)info->trmt_col_ind);
+            rocprim::double_buffer<I> vals((I*)info->trmt_perm, tmp_work2);
+
+            unsigned int startbit = 0;
+            unsigned int endbit   = rocsparse_clz(m);
+
+            size_t rocprim_size;
+
+            RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
+                nullptr, rocprim_size, keys, vals, nnz, startbit, endbit, stream));
+            RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
+                rocprim_buffer, rocprim_size, keys, vals, nnz, startbit, endbit, stream));
+
+            // Copy permutation vector, if not already available
+            if(vals.current() != info->trmt_perm)
+            {
+                RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->trmt_perm,
+                                                   vals.current(),
+                                                   sizeof(I) * nnz,
+                                                   hipMemcpyDeviceToDevice,
+                                                   stream));
+            }
+
+            // Create column pointers
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_coo2csr_template(
+                handle, keys.current(), nnz, m, (I*)info->trmt_row_ptr, descr->base));
+
+            // Create row indices
+            RETURN_IF_ROCSPARSE_ERROR(
+                rocsparse_csr2coo_template(handle, csr_row_ptr, nnz, m, tmp_work1, descr->base));
+
+            // Permute column indices
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(handle,
+                                                              nnz,
+                                                              tmp_work1,
+                                                              (J*)info->trmt_col_ind,
+                                                              (const I*)info->trmt_perm,
+                                                              rocsparse_index_base_zero));
         }
-
-        // Create column pointers
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_coo2csr(handle, keys.current(), nnz, m, info->trmt_row_ptr, descr->base));
-
-        // Create row indices
-        RETURN_IF_ROCSPARSE_ERROR(
-            rocsparse_csr2coo(handle, csr_row_ptr, nnz, m, tmp_work1, descr->base));
-
-        // Permute column indices
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(handle,
-                                                          nnz,
-                                                          tmp_work1,
-                                                          info->trmt_col_ind,
-                                                          info->trmt_perm,
-                                                          rocsparse_index_base_zero));
+        else
+        {
+            hipLaunchKernelGGL((set_array_to_value<256, J, I>),
+                               dim3(m / 256 + 1),
+                               dim3(256),
+                               0,
+                               stream,
+                               (m + 1),
+                               (I*)info->trmt_row_ptr,
+                               static_cast<I>(descr->base));
+        }
     }
 
     // Buffer
@@ -133,7 +149,7 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     RETURN_IF_HIP_ERROR(hipMemsetAsync(ptr, 0, sizeof(char) * buffer_size, stream));
 
     // max_nnz
-    rocsparse_int* d_max_nnz = reinterpret_cast<rocsparse_int*>(ptr);
+    I* d_max_nnz = reinterpret_cast<I*>(ptr);
     ptr += 256;
 
     // done array
@@ -141,8 +157,8 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     ptr += sizeof(int) * ((m - 1) / 256 + 1) * 256;
 
     // workspace
-    rocsparse_int* workspace = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
+    J* workspace = reinterpret_cast<J*>(ptr);
+    ptr += sizeof(J) * ((m - 1) / 256 + 1) * 256;
 
     // workspace2
     int* workspace2 = reinterpret_cast<int*>(ptr);
@@ -152,18 +168,18 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     void* rocprim_buffer = reinterpret_cast<void*>(ptr);
 
     // Allocate buffer to hold diagonal entry point
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->trm_diag_ind, sizeof(rocsparse_int) * m));
+    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->trm_diag_ind, sizeof(I) * m));
 
     // Allocate buffer to hold zero pivot
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)zero_pivot, sizeof(rocsparse_int)));
+    RETURN_IF_HIP_ERROR(hipMalloc((void**)zero_pivot, sizeof(J)));
 
     // Allocate buffer to hold row map
-    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->row_map, sizeof(rocsparse_int) * m));
+    RETURN_IF_HIP_ERROR(hipMalloc((void**)&info->row_map, sizeof(J) * m));
 
     // Initialize zero pivot
-    rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
+    J max = std::numeric_limits<J>::max();
     RETURN_IF_HIP_ERROR(
-        hipMemcpyAsync(*zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
+        hipMemcpyAsync(*zero_pivot, &max, sizeof(J), hipMemcpyHostToDevice, stream));
 
     // Wait for device transfer to finish
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
@@ -192,10 +208,10 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                    m,
                                    csr_row_ptr,
                                    csr_col_ind,
-                                   info->trm_diag_ind,
+                                   (I*)info->trm_diag_ind,
                                    done_array,
                                    d_max_nnz,
-                                   *zero_pivot,
+                                   (J*)*zero_pivot,
                                    descr->base,
                                    descr->diag_type);
             }
@@ -209,10 +225,10 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                    m,
                                    csr_row_ptr,
                                    csr_col_ind,
-                                   info->trm_diag_ind,
+                                   (I*)info->trm_diag_ind,
                                    done_array,
                                    d_max_nnz,
-                                   *zero_pivot,
+                                   (J*)*zero_pivot,
                                    descr->base,
                                    descr->diag_type);
             }
@@ -233,10 +249,10 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        m,
                                        csr_row_ptr,
                                        csr_col_ind,
-                                       info->trm_diag_ind,
+                                       (I*)info->trm_diag_ind,
                                        done_array,
                                        d_max_nnz,
-                                       *zero_pivot,
+                                       (J*)*zero_pivot,
                                        descr->base,
                                        descr->diag_type);
                 }
@@ -250,10 +266,10 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        m,
                                        csr_row_ptr,
                                        csr_col_ind,
-                                       info->trm_diag_ind,
+                                       (I*)info->trm_diag_ind,
                                        done_array,
                                        d_max_nnz,
-                                       *zero_pivot,
+                                       (J*)*zero_pivot,
                                        descr->base,
                                        descr->diag_type);
                 }
@@ -272,10 +288,10 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        m,
                                        csr_row_ptr,
                                        csr_col_ind,
-                                       info->trm_diag_ind,
+                                       (I*)info->trm_diag_ind,
                                        done_array,
                                        d_max_nnz,
-                                       *zero_pivot,
+                                       (J*)*zero_pivot,
                                        descr->base,
                                        descr->diag_type);
                 }
@@ -289,10 +305,10 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        m,
                                        csr_row_ptr,
                                        csr_col_ind,
-                                       info->trm_diag_ind,
+                                       (I*)info->trm_diag_ind,
                                        done_array,
                                        d_max_nnz,
-                                       *zero_pivot,
+                                       (J*)*zero_pivot,
                                        descr->base,
                                        descr->diag_type);
                 }
@@ -312,12 +328,12 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                    0,
                                    stream,
                                    m,
-                                   info->trmt_row_ptr,
-                                   info->trmt_col_ind,
-                                   info->trm_diag_ind,
+                                   (const I*)info->trmt_row_ptr,
+                                   (const J*)info->trmt_col_ind,
+                                   (I*)info->trm_diag_ind,
                                    done_array,
                                    d_max_nnz,
-                                   *zero_pivot,
+                                   (J*)*zero_pivot,
                                    descr->base,
                                    descr->diag_type);
             }
@@ -329,12 +345,12 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                    0,
                                    stream,
                                    m,
-                                   info->trmt_row_ptr,
-                                   info->trmt_col_ind,
-                                   info->trm_diag_ind,
+                                   (const I*)info->trmt_row_ptr,
+                                   (const J*)info->trmt_col_ind,
+                                   (I*)info->trm_diag_ind,
                                    done_array,
                                    d_max_nnz,
-                                   *zero_pivot,
+                                   (J*)*zero_pivot,
                                    descr->base,
                                    descr->diag_type);
             }
@@ -353,12 +369,12 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        0,
                                        stream,
                                        m,
-                                       info->trmt_row_ptr,
-                                       info->trmt_col_ind,
-                                       info->trm_diag_ind,
+                                       (const I*)info->trmt_row_ptr,
+                                       (const J*)info->trmt_col_ind,
+                                       (I*)info->trm_diag_ind,
                                        done_array,
                                        d_max_nnz,
-                                       *zero_pivot,
+                                       (J*)*zero_pivot,
                                        descr->base,
                                        descr->diag_type);
                 }
@@ -370,12 +386,12 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        0,
                                        stream,
                                        m,
-                                       info->trmt_row_ptr,
-                                       info->trmt_col_ind,
-                                       info->trm_diag_ind,
+                                       (const I*)info->trmt_row_ptr,
+                                       (const J*)info->trmt_col_ind,
+                                       (I*)info->trm_diag_ind,
                                        done_array,
                                        d_max_nnz,
-                                       *zero_pivot,
+                                       (J*)*zero_pivot,
                                        descr->base,
                                        descr->diag_type);
                 }
@@ -392,12 +408,12 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        0,
                                        stream,
                                        m,
-                                       info->trmt_row_ptr,
-                                       info->trmt_col_ind,
-                                       info->trm_diag_ind,
+                                       (const I*)info->trmt_row_ptr,
+                                       (const J*)info->trmt_col_ind,
+                                       (I*)info->trm_diag_ind,
                                        done_array,
                                        d_max_nnz,
-                                       *zero_pivot,
+                                       (J*)*zero_pivot,
                                        descr->base,
                                        descr->diag_type);
                 }
@@ -409,12 +425,12 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
                                        0,
                                        stream,
                                        m,
-                                       info->trmt_row_ptr,
-                                       info->trmt_col_ind,
-                                       info->trm_diag_ind,
+                                       (const I*)info->trmt_row_ptr,
+                                       (const J*)info->trmt_col_ind,
+                                       (I*)info->trm_diag_ind,
                                        done_array,
                                        d_max_nnz,
-                                       *zero_pivot,
+                                       (J*)*zero_pivot,
                                        descr->base,
                                        descr->diag_type);
                 }
@@ -430,34 +446,32 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
 #undef CSRSV_DIM
 
     // Post processing
-    RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-        &info->max_nnz, d_max_nnz, sizeof(rocsparse_int), hipMemcpyDeviceToHost, stream));
+    RETURN_IF_HIP_ERROR(
+        hipMemcpyAsync(&info->max_nnz, d_max_nnz, sizeof(I), hipMemcpyDeviceToHost, stream));
 
     // Wait for host transfer to finish
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
-    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation(handle, m, workspace));
+    RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_identity_permutation_template(handle, m, workspace));
 
     size_t rocprim_size;
 
     unsigned int startbit = 0;
     unsigned int endbit   = rocsparse_clz(m);
 
-    rocprim::double_buffer<int>           keys(done_array, workspace2);
-    rocprim::double_buffer<rocsparse_int> vals(workspace, info->row_map);
+    rocprim::double_buffer<int> keys(done_array, workspace2);
+    rocprim::double_buffer<J>   vals(workspace, (J*)info->row_map);
 
     RETURN_IF_HIP_ERROR(
         rocprim::radix_sort_pairs(nullptr, rocprim_size, keys, vals, m, startbit, endbit, stream));
+
     RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
         rocprim_buffer, rocprim_size, keys, vals, m, startbit, endbit, stream));
 
     if(vals.current() != info->row_map)
     {
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(info->row_map,
-                                           vals.current(),
-                                           sizeof(rocsparse_int) * m,
-                                           hipMemcpyDeviceToDevice,
-                                           stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
+            info->row_map, vals.current(), sizeof(J) * m, hipMemcpyDeviceToDevice, stream));
     }
 
     // Store some pointers to verify correct execution
@@ -470,15 +484,15 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     return rocsparse_status_success;
 }
 
-template <typename T>
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans,
-                                                   rocsparse_int             m,
-                                                   rocsparse_int             nnz,
+                                                   J                         m,
+                                                   I                         nnz,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  csr_val,
-                                                   const rocsparse_int*      csr_row_ptr,
-                                                   const rocsparse_int*      csr_col_ind,
+                                                   const I*                  csr_row_ptr,
+                                                   const J*                  csr_col_ind,
                                                    rocsparse_mat_info        info,
                                                    rocsparse_analysis_policy analysis,
                                                    rocsparse_solve_policy    solve,
@@ -550,7 +564,7 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
     }
 
     // Quick return if possible
-    if(m == 0 || nnz == 0)
+    if(m == 0)
     {
         return rocsparse_status_success;
     }
@@ -636,7 +650,7 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
             csr_row_ptr,
             csr_col_ind,
             (trans == rocsparse_operation_none) ? info->csrsv_upper_info : info->csrsvt_upper_info,
-            &info->zero_pivot,
+            (J**)&info->zero_pivot,
             temp_buffer));
     }
     else
@@ -710,12 +724,68 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
             csr_row_ptr,
             csr_col_ind,
             (trans == rocsparse_operation_none) ? info->csrsv_lower_info : info->csrsvt_lower_info,
-            &info->zero_pivot,
+            (J**)&info->zero_pivot,
             temp_buffer));
     }
 
     return rocsparse_status_success;
 }
+
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                    \
+    template rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,      \
+                                                     rocsparse_operation       trans,       \
+                                                     JTYPE                     m,           \
+                                                     ITYPE                     nnz,         \
+                                                     const rocsparse_mat_descr descr,       \
+                                                     const TTYPE*              csr_val,     \
+                                                     const ITYPE*              csr_row_ptr, \
+                                                     const JTYPE*              csr_col_ind, \
+                                                     rocsparse_trm_info        info,        \
+                                                     JTYPE**                   zero_pivot,  \
+                                                     void*                     temp_buffer);
+
+INSTANTIATE(int32_t, int32_t, float);
+INSTANTIATE(int32_t, int32_t, double);
+INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int32_t, float);
+INSTANTIATE(int64_t, int32_t, double);
+INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int64_t, float);
+INSTANTIATE(int64_t, int64_t, double);
+INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
+#undef INSTANTIATE
+
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                         \
+    template rocsparse_status rocsparse_csrsv_analysis_template( \
+        rocsparse_handle          handle,                        \
+        rocsparse_operation       trans,                         \
+        JTYPE                     m,                             \
+        ITYPE                     nnz,                           \
+        const rocsparse_mat_descr descr,                         \
+        const TTYPE*              csr_val,                       \
+        const ITYPE*              csr_row_ptr,                   \
+        const JTYPE*              csr_col_ind,                   \
+        rocsparse_mat_info        info,                          \
+        rocsparse_analysis_policy analysis,                      \
+        rocsparse_solve_policy    solve,                         \
+        void*                     temp_buffer);
+
+INSTANTIATE(int32_t, int32_t, float);
+INSTANTIATE(int32_t, int32_t, double);
+INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int32_t, float);
+INSTANTIATE(int64_t, int32_t, double);
+INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int64_t, float);
+INSTANTIATE(int64_t, int64_t, double);
+INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
+#undef INSTANTIATE
 
 /*
  * ===========================================================================

@@ -27,6 +27,9 @@
 #define ROCSPARSE_DATATYPE2STRING_HPP
 
 #include <rocsparse.h>
+#include <string>
+
+#include <algorithm>
 
 typedef enum rocsparse_matrix_init_kind_
 {
@@ -239,6 +242,8 @@ constexpr auto rocsparse_format2string(rocsparse_format format)
         return "csc";
     case rocsparse_format_ell:
         return "ell";
+    case rocsparse_format_bell:
+        return "bell";
     }
     return "invalid";
 }
@@ -271,6 +276,26 @@ constexpr auto rocsparse_spmvalg2string(rocsparse_spmv_alg alg)
     return "invalid";
 }
 
+constexpr auto rocsparse_spsvalg2string(rocsparse_spsv_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_spsv_alg_default:
+        return "default";
+    }
+    return "invalid";
+}
+
+constexpr auto rocsparse_spsmalg2string(rocsparse_spsm_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_spsm_alg_default:
+        return "default";
+    }
+    return "invalid";
+}
+
 constexpr auto rocsparse_spmmalg2string(rocsparse_spmm_alg alg)
 {
     switch(alg)
@@ -278,14 +303,21 @@ constexpr auto rocsparse_spmmalg2string(rocsparse_spmm_alg alg)
     case rocsparse_spmm_alg_default:
         return "default";
     case rocsparse_spmm_alg_csr:
-        return "alg_csr";
+        return "spmm_alg_csr";
     case rocsparse_spmm_alg_coo_segmented:
-        return "alg_coo_segmented";
+        return "spmm_alg_coo_segmented";
     case rocsparse_spmm_alg_coo_atomic:
-        return "alg_coo_atomic";
-    default:
-        return "invalid";
+        return "spmm_alg_coo_atomic";
+    case rocsparse_spmm_alg_bell:
+        return "spmm_alg_bell";
+    case rocsparse_spmm_alg_coo_segmented_atomic:
+        return "spmm_alg_coo_segmented_atomic";
+    case rocsparse_spmm_alg_csr_row_split:
+        return "spmm_alg_csr_row_split";
+    case rocsparse_spmm_alg_csr_merge:
+        return "spmm_alg_csr_merge";
     }
+    return "invalid";
 }
 
 constexpr auto rocsparse_spgemmalg2string(rocsparse_spgemm_alg alg)

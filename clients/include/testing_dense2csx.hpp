@@ -70,8 +70,7 @@ void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
     // Testing invalid handle.
     //
     EXPECT_ROCSPARSE_STATUS(
-        dense2csx(
-            nullptr, 0, 0, nullptr, (const T*)nullptr, 0, nullptr, (T*)nullptr, nullptr, nullptr),
+        dense2csx(nullptr, 0, 0, nullptr, nullptr, 0, nullptr, (T*)nullptr, nullptr, nullptr),
         rocsparse_status_invalid_handle);
 
     //
@@ -81,7 +80,7 @@ void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
                                       M,
                                       N,
                                       nullptr,
-                                      (const T*)d_dense_val,
+                                      d_dense_val,
                                       LD,
                                       d_nnz_per_row_columns,
                                       (T*)d_csx_val,
@@ -92,7 +91,7 @@ void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
                                       M,
                                       N,
                                       descr,
-                                      (const T*)nullptr,
+                                      nullptr,
                                       LD,
                                       d_nnz_per_row_columns,
                                       (T*)d_csx_val,
@@ -103,7 +102,7 @@ void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
                                       M,
                                       N,
                                       descr,
-                                      (const T*)d_dense_val,
+                                      d_dense_val,
                                       LD,
                                       nullptr,
                                       (T*)d_csx_val,
@@ -114,7 +113,7 @@ void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
                                       M,
                                       N,
                                       descr,
-                                      (const T*)d_dense_val,
+                                      d_dense_val,
                                       LD,
                                       d_nnz_per_row_columns,
                                       (T*)nullptr,
@@ -125,7 +124,7 @@ void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
                                       M,
                                       N,
                                       descr,
-                                      (const T*)d_dense_val,
+                                      d_dense_val,
                                       LD,
                                       d_nnz_per_row_columns,
                                       (T*)d_csx_val,
@@ -136,7 +135,7 @@ void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
                                       M,
                                       N,
                                       descr,
-                                      (const T*)d_dense_val,
+                                      d_dense_val,
                                       LD,
                                       d_nnz_per_row_columns,
                                       (T*)d_csx_val,
@@ -151,7 +150,7 @@ void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
                                       -1,
                                       N,
                                       descr,
-                                      (const T*)d_dense_val,
+                                      d_dense_val,
                                       LD,
                                       d_nnz_per_row_columns,
                                       (T*)d_csx_val,
@@ -165,7 +164,7 @@ void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
                                       M,
                                       -1,
                                       descr,
-                                      (const T*)d_dense_val,
+                                      d_dense_val,
                                       LD,
                                       d_nnz_per_row_columns,
                                       (T*)d_csx_val,
@@ -179,7 +178,7 @@ void testing_dense2csx_bad_arg(const Arguments& arg, FUNC& dense2csx)
                                       M,
                                       N,
                                       descr,
-                                      (const T*)d_dense_val,
+                                      d_dense_val,
                                       M - 1,
                                       d_nnz_per_row_columns,
                                       (T*)d_csx_val,
@@ -214,8 +213,7 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
                                                : rocsparse_status_invalid_size;
 
         EXPECT_ROCSPARSE_STATUS(
-            dense2csx(
-                handle, M, N, descr, (const T*)nullptr, LD, nullptr, (T*)nullptr, nullptr, nullptr),
+            dense2csx(handle, M, N, descr, nullptr, LD, nullptr, (T*)nullptr, nullptr, nullptr),
             expected_status);
         return;
     }
@@ -274,8 +272,8 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
 
     rocsparse_int nnz;
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-    CHECK_ROCSPARSE_ERROR(rocsparse_nnz(
-        handle, direction, M, N, descr, (const T*)d_dense_val, LD, d_nnz_per_row_columns, &nnz));
+    CHECK_ROCSPARSE_ERROR(rocsparse_nnz<T>(
+        handle, direction, M, N, descr, d_dense_val, LD, d_nnz_per_row_columns, &nnz));
 
     //
     // Transfer.
@@ -309,22 +307,22 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         //
         // Compute the reference host first.
         //
-        host_dense2csx<DIRA>(M,
-                             N,
-                             rocsparse_get_mat_index_base(descr),
-                             (const T*)h_dense_val,
-                             LD,
-                             rocsparse_order_column,
-                             (const rocsparse_int*)h_nnz_per_row_columns,
-                             (T*)cpu_csx_val,
-                             (rocsparse_int*)cpu_csx_row_col_ptr,
-                             (rocsparse_int*)cpu_csx_col_row_ind);
+        host_dense2csx<DIRA, T>(M,
+                                N,
+                                rocsparse_get_mat_index_base(descr),
+                                h_dense_val,
+                                LD,
+                                rocsparse_order_column,
+                                (const rocsparse_int*)h_nnz_per_row_columns,
+                                (T*)cpu_csx_val,
+                                (rocsparse_int*)cpu_csx_row_col_ptr,
+                                (rocsparse_int*)cpu_csx_col_row_ind);
 
         CHECK_ROCSPARSE_ERROR(dense2csx(handle,
                                         M,
                                         N,
                                         descr,
-                                        (const T*)d_dense_val,
+                                        d_dense_val,
                                         LD,
                                         d_nnz_per_row_columns,
                                         (T*)d_csx_val,
@@ -369,7 +367,7 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
                                             M,
                                             N,
                                             descr,
-                                            (const T*)d_dense_val,
+                                            d_dense_val,
                                             LD,
                                             d_nnz_per_row_columns,
                                             (T*)d_csx_val,
@@ -388,7 +386,7 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
                                                 M,
                                                 N,
                                                 descr,
-                                                (const T*)d_dense_val,
+                                                d_dense_val,
                                                 LD,
                                                 d_nnz_per_row_columns,
                                                 (T*)d_csx_val,

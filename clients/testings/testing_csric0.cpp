@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -455,9 +455,12 @@ void testing_csric0(const Arguments& arg)
                                                            apol,
                                                            spol,
                                                            dbuffer));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, h_analysis_pivot_1),
-                                (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
-                                                              : rocsparse_status_success);
+        {
+            auto st = rocsparse_csric0_zero_pivot(handle, info, h_analysis_pivot_1);
+            EXPECT_ROCSPARSE_STATUS(st,
+                                    (h_analysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                                  : rocsparse_status_success);
+        }
 
         // Sync to force updated pivots
         CHECK_HIP_ERROR(hipDeviceSynchronize());
@@ -488,9 +491,12 @@ void testing_csric0(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_csric0<T>(
             handle, M, nnz, descr, dcsr_val_1, dcsr_row_ptr, dcsr_col_ind, info, spol, dbuffer));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, h_solve_pivot_1),
-                                (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
-                                                           : rocsparse_status_success);
+        {
+            auto st = rocsparse_csric0_zero_pivot(handle, info, h_solve_pivot_1);
+            EXPECT_ROCSPARSE_STATUS(st,
+                                    (h_solve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                               : rocsparse_status_success);
+        }
 
         // Sync to force updated pivots
         CHECK_HIP_ERROR(hipDeviceSynchronize());

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,6 @@ void testing_coo2csr_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_coo2csr(const Arguments& arg)
 {
-
     rocsparse_matrix_factory<T> matrix_factory(arg);
 
     rocsparse_int        M    = arg.M;
@@ -85,8 +84,11 @@ void testing_coo2csr(const Arguments& arg)
             return;
         }
 
-        EXPECT_ROCSPARSE_STATUS(rocsparse_coo2csr(handle, dcoo_row_ind, 0, M, dcsr_row_ptr, base),
-                                (M < 0) ? rocsparse_status_invalid_size : rocsparse_status_success);
+        rocsparse_int nnz = (M > 0 && N > 0) ? 0 : -1;
+
+        EXPECT_ROCSPARSE_STATUS(rocsparse_coo2csr(handle, dcoo_row_ind, nnz, M, dcsr_row_ptr, base),
+                                (M < 0 || nnz < 0) ? rocsparse_status_invalid_size
+                                                   : rocsparse_status_success);
 
         return;
     }

@@ -33,6 +33,7 @@ include: test_rot.yaml
 include: test_roti.yaml
 include: test_sctr.yaml
 include: test_bsrmv.yaml
+include: test_bsrxmv.yaml
 include: test_bsrsv.yaml
 include: test_coomv.yaml
 include: test_csrmv.yaml
@@ -45,6 +46,7 @@ include: test_bsrmm.yaml
 include: test_gebsrmm.yaml
 include: test_csrmm.yaml
 include: test_csrsm.yaml
+include: test_bsrsm.yaml
 include: test_gemmi.yaml
 include: test_csrgeam.yaml
 include: test_csrgemm.yaml
@@ -94,8 +96,13 @@ include: test_spmv_coo.yaml
 include: test_spmv_coo_aos.yaml
 include: test_spmv_csr.yaml
 include: test_spmv_ell.yaml
+include: test_spsv_csr.yaml
+include: test_spsv_coo.yaml
+include: test_spsm_csr.yaml
+include: test_spsm_coo.yaml
 include: test_spmm_csr.yaml
 include: test_spmm_coo.yaml
+include: test_spmm_bell.yaml
 include: test_spvv.yaml
 include: test_sparse_to_dense_coo.yaml
 include: test_sparse_to_dense_csr.yaml
@@ -106,3 +113,4 @@ include: test_dense_to_sparse_csc.yaml
 include: test_spgemm_csr.yaml
 include: test_gemvi.yaml
 include: test_sddmm.yaml
+include: test_csrcolor.yaml

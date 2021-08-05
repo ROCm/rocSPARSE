@@ -28,7 +28,7 @@ set(ROCSPARSE_BENCHMARK_SOURCES
 set(ROCSPARSE_CLIENTS_COMMON
   ../common/utility.cpp
   ../common/rocsparse_check.cpp
-  ../common/rocsparse_template_specialization.cpp
+  ../common/rocsparse_enum.cpp
   ../common/rocsparse_init.cpp
   ../common/rocsparse_host.cpp
 )
@@ -43,6 +43,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_roti.cpp
 ../testings/testing_sctr.cpp
 ../testings/testing_bsrmv.cpp
+../testings/testing_bsrxmv.cpp
 ../testings/testing_bsrsv.cpp
 ../testings/testing_coomv.cpp
 ../testings/testing_csrmv.cpp
@@ -56,7 +57,9 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_csrmm.cpp
 ../testings/testing_spmm_csr.cpp
 ../testings/testing_spmm_coo.cpp
+../testings/testing_spmm_bell.cpp
 ../testings/testing_csrsm.cpp
+../testings/testing_bsrsm.cpp
 ../testings/testing_gemmi.cpp
 ../testings/testing_csrgeam.cpp
 ../testings/testing_csrgemm.cpp
@@ -102,6 +105,10 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spmv_coo_aos.cpp
 ../testings/testing_spmv_csr.cpp
 ../testings/testing_spmv_ell.cpp
+../testings/testing_spsv_csr.cpp
+../testings/testing_spsv_coo.cpp
+../testings/testing_spsm_csr.cpp
+../testings/testing_spsm_coo.cpp
 ../testings/testing_sparse_to_dense_coo.cpp
 ../testings/testing_sparse_to_dense_csr.cpp
 ../testings/testing_sparse_to_dense_csc.cpp
@@ -111,6 +118,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spgemm_csr.cpp
 ../testings/testing_gemvi.cpp
 ../testings/testing_sddmm.cpp
+../testings/testing_csrcolor.cpp
 )
 
 add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})
@@ -122,11 +130,15 @@ target_compile_options(rocsparse-bench PRIVATE -Wno-unused-command-line-argument
 target_include_directories(rocsparse-bench PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
 # Target link libraries
-target_link_libraries(rocsparse-bench PRIVATE roc::rocsparse hip::host)
+target_link_libraries(rocsparse-bench PRIVATE roc::rocsparse hip::host hip::device)
 
 # Add OpenMP if available
 if(OPENMP_FOUND)
-  target_link_libraries(rocsparse-bench PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
+if (NOT WIN32)
+   target_link_libraries(rocsparse-bench PRIVATE OpenMP::OpenMP_CXX -Wl,-rpath=${HIP_CLANG_ROOT}/lib)
+  else()
+   target_link_libraries(rocsparse-bench PRIVATE libomp)
+  endif()
 endif()
 
 # Set benchmark output directory

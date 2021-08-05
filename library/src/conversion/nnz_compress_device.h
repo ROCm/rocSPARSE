@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #include "common.h"
 
 template <rocsparse_int BLOCK_SIZE>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void compute_nnz_from_row_ptr_array_kernel(rocsparse_int m,
                                                const rocsparse_int* __restrict__ csr_row_ptr,
                                                rocsparse_int* nnz)

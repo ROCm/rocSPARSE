@@ -27,19 +27,21 @@
 #define COMMON_H
 
 #include "rocsparse.h"
-
+#ifdef WIN32
+#include <intrin.h>
+#endif
 #include <hip/hip_runtime.h>
 
 // clang-format off
 
 // BSR indexing macros
 #define BSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? BSR_IND_R(j, bi, bj) : BSR_IND_C(j, bi, bj))
-#define BSR_IND_R(j, bi, bj) (bsr_dim * bsr_dim * (j) + (bi) * bsr_dim + (bj))
-#define BSR_IND_C(j, bi, bj) (bsr_dim * bsr_dim * (j) + (bi) + (bj) * bsr_dim)
+#define BSR_IND_R(j, bi, bj) (block_dim * block_dim * (j) + (bi) * block_dim + (bj))
+#define BSR_IND_C(j, bi, bj) (block_dim * block_dim * (j) + (bi) + (bj) * block_dim)
 
 #define GEBSR_IND(j, bi, bj, dir) ((dir == rocsparse_direction_row) ? GEBSR_IND_R(j, bi, bj) : GEBSR_IND_C(j, bi, bj))
-#define GEBSR_IND_R(j, bi, bj) (row_bsr_dim * col_bsr_dim * (j) + (bi) * col_bsr_dim + (bj))
-#define GEBSR_IND_C(j, bi, bj) (row_bsr_dim * col_bsr_dim * (j) + (bi) + (bj) * row_bsr_dim)
+#define GEBSR_IND_R(j, bi, bj) (row_block_dim * col_block_dim * (j) + (bi) * col_block_dim + (bj))
+#define GEBSR_IND_C(j, bi, bj) (row_block_dim * col_block_dim * (j) + (bi) + (bj) * row_block_dim)
 
 // find next power of 2
 __attribute__((unused)) static unsigned int fnp2(unsigned int x)
@@ -100,12 +102,6 @@ __device__ __forceinline__ float rocsparse_shfl(float var, int src_lane, int wid
 __device__ __forceinline__ double rocsparse_shfl(double var, int src_lane, int width = warpSize) { return __shfl(var, src_lane, width); }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_shfl(rocsparse_float_complex var, int src_lane, int width = warpSize) { return rocsparse_float_complex(__shfl(std::real(var), src_lane, width), __shfl(std::imag(var), src_lane, width)); }
 __device__ __forceinline__ rocsparse_double_complex rocsparse_shfl(rocsparse_double_complex var, int src_lane, int width = warpSize) { return rocsparse_double_complex(__shfl(std::real(var), src_lane, width), __shfl(std::imag(var), src_lane, width)); }
-
-__device__ __forceinline__ int32_t rocsparse_mul24(int32_t x, int32_t y) { return ((x << 8) >> 8) * ((y << 8) >> 8); }
-__device__ __forceinline__ int64_t rocsparse_mul24(int64_t x, int64_t y) { return ((x << 40) >> 40) * ((y << 40) >> 40); }
-
-__device__ __forceinline__ int32_t rocsparse_mad24(int32_t x, int32_t y, int32_t z) { return rocsparse_mul24(x, y) + z; }
-__device__ __forceinline__ int64_t rocsparse_mad24(int64_t x, int64_t y, int64_t z) { return rocsparse_mul24(x, y) + z; }
 
 __device__ __forceinline__ int64_t atomicMin(int64_t* ptr, int64_t val) { return atomicMin((unsigned long long*)ptr, val); }
 __device__ __forceinline__ int64_t atomicMax(int64_t* ptr, int64_t val) { return atomicMax((unsigned long long*)ptr, val); }
@@ -522,5 +518,136 @@ __device__ __forceinline__ rocsparse_double_complex rocsparse_wfreduce_sum(rocsp
                                     rocsparse_wfreduce_sum<WFSIZE>(std::imag(sum)));
 }
 // clang-format on
+
+// Perform dense matrix transposition
+template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
+__device__ void dense_transpose_device(
+    I m, I n, T alpha, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
+{
+    int lid = threadIdx.x & (DIMX - 1);
+    int wid = threadIdx.x / DIMX;
+
+    I row_A = blockIdx.x * DIMX + lid;
+    I row_B = blockIdx.x * DIMX + wid;
+
+    __shared__ T sdata[DIMX][DIMX];
+
+    for(I j = 0; j < n; j += DIMX)
+    {
+        __syncthreads();
+
+        I col_A = j + wid;
+
+        for(I k = 0; k < DIMX; k += DIMY)
+        {
+            if(row_A < m && col_A + k < n)
+            {
+                sdata[wid + k][lid] = A[row_A + lda * (col_A + k)];
+            }
+        }
+
+        __syncthreads();
+
+        I col_B = j + lid;
+
+        for(I k = 0; k < DIMX; k += DIMY)
+        {
+            if(col_B < n && row_B + k < m)
+            {
+                B[col_B + ldb * (row_B + k)] = alpha * sdata[lid][wid + k];
+            }
+        }
+    }
+}
+
+// Perform dense matrix back transposition
+template <unsigned int DIMX, unsigned int DIMY, typename I, typename T>
+__launch_bounds__(DIMX* DIMY) ROCSPARSE_KERNEL
+    void dense_transpose_back(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
+{
+    int lid = hipThreadIdx_x & (DIMX - 1);
+    int wid = hipThreadIdx_x / DIMX;
+
+    I row_A = hipBlockIdx_x * DIMX + wid;
+    I row_B = hipBlockIdx_x * DIMX + lid;
+
+    __shared__ T sdata[DIMX][DIMX];
+
+    for(I j = 0; j < n; j += DIMX)
+    {
+        __syncthreads();
+
+        I col_A = j + lid;
+
+        for(I k = 0; k < DIMX; k += DIMY)
+        {
+            if(col_A < n && row_A + k < m)
+            {
+                sdata[wid + k][lid] = A[col_A + lda * (row_A + k)];
+            }
+        }
+
+        __syncthreads();
+
+        I col_B = j + wid;
+
+        for(I k = 0; k < DIMX; k += DIMY)
+        {
+            if(row_B < m && col_B + k < n)
+            {
+                B[row_B + ldb * (col_B + k)] = sdata[lid][wid + k];
+            }
+        }
+    }
+}
+
+// BSR gather functionality to permute the BSR values array
+template <unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM, typename I, typename T>
+__launch_bounds__(WFSIZE* DIMY) ROCSPARSE_KERNEL void bsr_gather(rocsparse_direction dir,
+                                                                 I                   nnzb,
+                                                                 const I* __restrict__ perm,
+                                                                 const T* __restrict__ bsr_val_A,
+                                                                 T* __restrict__ bsr_val_T,
+                                                                 I block_dim)
+{
+    int lid = threadIdx.x & (BSRDIM - 1);
+    int wid = threadIdx.x / BSRDIM;
+
+    // Non-permuted nnz index
+    I j = blockIdx.x * DIMY + threadIdx.y;
+
+    // Do not exceed the number of elements
+    if(j >= nnzb)
+    {
+        return;
+    }
+
+    // Load the permuted nnz index
+    I p = perm[j];
+
+    // Gather values from A and store them to T with respect to the
+    // given row / column permutation
+    for(I bi = lid; bi < block_dim; bi += BSRDIM)
+    {
+        for(I bj = wid; bj < block_dim; bj += BSRDIM)
+        {
+            bsr_val_T[BSR_IND(j, bi, bj, dir)] = bsr_val_A[BSR_IND(p, bj, bi, dir)];
+        }
+    }
+}
+
+// Set array to be filled with value
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__launch_bounds__(BLOCKSIZE) __global__ void set_array_to_value(I m, T* __restrict__ array, T value)
+{
+    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+    if(idx >= m)
+    {
+        return;
+    }
+
+    array[idx] = value;
+}
 
 #endif // COMMON_H

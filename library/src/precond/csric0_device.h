@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, unsigned int HASH, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csric0_hash_kernel(rocsparse_int m,
                             const rocsparse_int* __restrict__ csr_row_ptr,
                             const rocsparse_int* __restrict__ csr_col_ind,
@@ -229,7 +229,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csric0_binsearch_kernel(rocsparse_int m,
                                  const rocsparse_int* __restrict__ csr_row_ptr,
                                  const rocsparse_int* __restrict__ csr_col_ind,

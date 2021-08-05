@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include <hip/hip_runtime.h>
 
 template <rocsparse_direction DIRECTION, rocsparse_int BLOCK_SIZE, typename T>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void bsr2csr_kernel(rocsparse_int        mb,
                         rocsparse_int        nb,
                         rocsparse_index_base bsr_base,
@@ -96,7 +96,7 @@ template <rocsparse_direction DIRECTION,
           rocsparse_int       BLOCK_SIZE,
           rocsparse_int       BSR_BLOCK_DIM,
           typename T>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void bsr2csr_unroll_kernel(rocsparse_int        mb,
                                rocsparse_int        nb,
                                rocsparse_index_base bsr_base,
@@ -374,7 +374,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
 }
 
 template <rocsparse_int BLOCK_SIZE, typename T>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void bsr2csr_block_dim_equals_one_kernel(rocsparse_int        mb,
                                              rocsparse_int        nb,
                                              rocsparse_index_base bsr_base,

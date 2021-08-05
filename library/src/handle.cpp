@@ -27,7 +27,7 @@
 
 #include <hip/hip_runtime.h>
 
-__global__ void init_kernel(){};
+ROCSPARSE_KERNEL void init_kernel(){};
 
 /*******************************************************************************
  * constructor
@@ -203,6 +203,8 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info)
     if(info->size > 0)
     {
         RETURN_IF_HIP_ERROR(hipFree(info->row_blocks));
+        RETURN_IF_HIP_ERROR(hipFree(info->wg_flags));
+        RETURN_IF_HIP_ERROR(hipFree(info->wg_ids));
     }
 
     // Destruct
@@ -339,6 +341,10 @@ bool rocsparse_check_trm_shared(const rocsparse_mat_info info, rocsparse_trm_inf
     if(trm == info->csrsm_lower_info)
         ++shared;
     if(trm == info->csrsm_upper_info)
+        ++shared;
+    if(trm == info->bsrsm_lower_info)
+        ++shared;
+    if(trm == info->bsrsm_upper_info)
         ++shared;
 
     return (shared > 0) ? true : false;

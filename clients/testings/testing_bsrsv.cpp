@@ -308,15 +308,20 @@ void testing_bsrsv(const Arguments& arg)
             // Call it twice.
             CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
             CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
-
-            EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_zero_pivot(handle, info, analysis_pivot),
-                                    (*analysis_pivot != -1) ? rocsparse_status_zero_pivot
-                                                            : rocsparse_status_success);
+            {
+                auto st = rocsparse_bsrsv_zero_pivot(handle, info, analysis_pivot);
+                EXPECT_ROCSPARSE_STATUS(st,
+                                        (*analysis_pivot != -1) ? rocsparse_status_zero_pivot
+                                                                : rocsparse_status_success);
+            }
             CHECK_HIP_ERROR(hipDeviceSynchronize());
             CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)));
-            EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_zero_pivot(handle, info, solve_pivot),
-                                    (*solve_pivot != -1) ? rocsparse_status_zero_pivot
-                                                         : rocsparse_status_success);
+            {
+                auto st = rocsparse_bsrsv_zero_pivot(handle, info, solve_pivot);
+                EXPECT_ROCSPARSE_STATUS(st,
+                                        (*solve_pivot != -1) ? rocsparse_status_zero_pivot
+                                                             : rocsparse_status_success);
+            }
             CHECK_HIP_ERROR(hipDeviceSynchronize());
             h_analysis_pivot.unit_check(analysis_pivot);
             h_solve_pivot.unit_check(solve_pivot);

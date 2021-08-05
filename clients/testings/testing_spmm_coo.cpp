@@ -207,6 +207,8 @@ void testing_spmm_coo(const Arguments& arg)
     T halpha = arg.get_alpha<T>();
     T hbeta  = arg.get_beta<T>();
 
+    auto tol = get_near_check_tol<T>(arg);
+
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
     rocsparse_datatype  ttype = get_datatype<T>();
@@ -429,21 +431,22 @@ void testing_spmm_coo(const Arguments& arg)
         host_coomm(alg,
                    nrow_A,
                    ncol_C,
+                   nnz_A,
                    trans_B,
                    halpha,
-                   hcoo_row_ind,
-                   hcoo_col_ind,
-                   hcoo_val,
-                   hB,
+                   hcoo_row_ind.data(),
+                   hcoo_col_ind.data(),
+                   hcoo_val.data(),
+                   hB.data(),
                    ldb,
                    hbeta,
-                   hC_gold,
+                   hC_gold.data(),
                    ldc,
                    order,
                    base);
 
-        near_check_general<T>(nnz_C, 1, 1, hC_gold, hC_1);
-        near_check_general<T>(nnz_C, 1, 1, hC_gold, hC_2);
+        near_check_general<T>(nnz_C, 1, 1, hC_gold, hC_1, tol);
+        near_check_general<T>(nnz_C, 1, 1, hC_gold, hC_2, tol);
     }
 
     if(arg.timing)

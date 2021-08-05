@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include "rocsparse_csrmm.hpp"
 
 template <rocsparse_int BSR_BLOCK_DIM, rocsparse_int BLK_SIZE_Y, typename T, typename U>
-__launch_bounds__(BSR_BLOCK_DIM* BLK_SIZE_Y) __global__
+__launch_bounds__(BSR_BLOCK_DIM* BLK_SIZE_Y) ROCSPARSE_KERNEL
     void bsrmm_large_blockdim_kernel(rocsparse_direction direction,
                                      rocsparse_operation trans_B,
                                      rocsparse_int       mb,

@@ -118,11 +118,12 @@ add_custom_target(rocsparse-common DEPENDS "${ROCSPARSE_COMMON}" "${ROCSPARSE_TE
 
 # Client packaging
 include(../cmake/Packaging.cmake)
-
+if(NOT WIN32)
 if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
   rocm_create_package_clients(LIB_NAME rocsparse
                               DESCRIPTION "Radeon Open Compute SPARSE library"
-                              MAINTAINER "rocSPARSE Maintainer <rocsparse-maintainer@amd.com>"
+                             MAINTAINER "rocSPARSE Maintainer <rocsparse-maintainer@amd.com>"
                               SECTION "dev"
                               VERSION ${rocsparse_VERSION})
+endif()
 endif()

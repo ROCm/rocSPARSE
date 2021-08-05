@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,14 @@
 #include <hip/hip_runtime.h>
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__ void ell2csr_index_base(rocsparse_int* __restrict__ nnz)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void ell2csr_index_base(rocsparse_int* __restrict__ nnz)
 {
     --(*nnz);
 }
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void ell2csr_nnz_per_row(rocsparse_int m,
                              rocsparse_int n,
                              rocsparse_int ell_width,
@@ -79,7 +80,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void ell2csr_fill(rocsparse_int m,
                       rocsparse_int n,
                       rocsparse_int ell_width,

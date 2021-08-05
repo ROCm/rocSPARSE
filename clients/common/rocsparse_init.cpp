@@ -246,7 +246,6 @@ void rocsparse_init_nan(T* A, size_t N)
 
 template void rocsparse_init_nan<int32_t>(int32_t* A, size_t N);
 template void rocsparse_init_nan<int64_t>(int64_t* A, size_t N);
-template void rocsparse_init_nan<char>(char* A, size_t N);
 template void rocsparse_init_nan<size_t>(size_t* A, size_t N);
 
 template <typename T>
@@ -1144,7 +1143,6 @@ void rocsparse_init_csr_rocalution(const char*          filename,
     in.read((char*)&iM, sizeof(int));
     in.read((char*)&iN, sizeof(int));
     in.read((char*)&innz, sizeof(int));
-
     M   = (J)iM;
     N   = (J)iN;
     nnz = (I)innz;

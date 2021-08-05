@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,57 @@
 
 #include <fcntl.h>
 #include <sys/types.h>
+
+#ifdef WIN32
+//
+// https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
+//
+#ifdef __cpp_lib_filesystem
+#include <filesystem>
+#else
+#include <experimental/filesystem>
+
+namespace std
+{
+    namespace filesystem = experimental::filesystem;
+}
+#endif
+#else
 #include <sys/wait.h>
 #include <unistd.h>
+#endif
 
 // Parse YAML data
 static std::string rocsparse_parse_yaml(const std::string& yaml)
 {
+#ifdef WIN32
+    // Generate "/tmp/rocsparse-XXXXXX" like file name
+    const std::string alphanum     = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv";
+    int               stringlength = alphanum.length() - 1;
+    std::string       uniquestr    = "rocsparse-";
+
+    for(int n = 0; n <= 5; ++n)
+    {
+        uniquestr += alphanum.at(rand() % stringlength);
+    }
+
+    std::filesystem::path tmpname = std::filesystem::temp_directory_path() / uniquestr;
+
+    auto exepath = rocsparse_exepath();
+    auto cmd     = exepath + "rocsparse_gentest.py --template " + exepath
+               + "rocsparse_template.yaml -o " + tmpname.string() + " " + yaml;
+    std::cerr << cmd << std::endl;
+
+    int status = std::system(cmd.c_str());
+    if(status != 0)
+    {
+        perror("system cmd failed");
+        exit(EXIT_FAILURE);
+    }
+
+    return tmpname.string(); // results to be read and removed later
+#else
+
     char tmp[] = "/tmp/rocsparse-XXXXXX";
     int  fd    = mkostemp(tmp, O_CLOEXEC);
     if(fd == -1)
@@ -49,6 +94,8 @@ static std::string rocsparse_parse_yaml(const std::string& yaml)
     if(status == -1 || !WIFEXITED(status) || WEXITSTATUS(status))
         exit(EXIT_FAILURE);
     return tmp;
+
+#endif
 }
 
 // Parse --data and --yaml command-line arguments

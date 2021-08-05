@@ -16,9 +16,10 @@ def runCI =
     def prj = new rocProject('rocSPARSE', 'Extended')
 
     // customize for project
-    prj.paths.build_command = './install.sh -c'
+    prj.paths.build_command = './install.sh --matrices-dir-install ${JENKINS_HOME_DIR}/rocsparse_matrices && ./install.sh -c --matrices-dir ${JENKINS_HOME_DIR}/rocsparse_matrices'
     prj.libraryDependencies = ['rocPRIM']
     prj.timeout.test = 600
+    prj.defaults.ccache = true
 
     // Define test architectures, optional rocm version argument is available
     def nodes = new dockerNodes(nodeDetails, jobName, prj)

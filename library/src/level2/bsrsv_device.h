@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -28,47 +28,13 @@
 
 #include "common.h"
 
-template <unsigned int WFSIZE, unsigned int DIMY, unsigned int BSRDIM, typename T>
-__launch_bounds__(WFSIZE* DIMY) __global__ void bsrsv_gather(rocsparse_int nnzb,
-                                                             const rocsparse_int* __restrict__ perm,
-                                                             const T* __restrict__ bsr_val_A,
-                                                             T* __restrict__ bsr_val_T,
-                                                             rocsparse_int bsr_dim)
-{
-    rocsparse_int lid = hipThreadIdx_x & (BSRDIM - 1);
-    rocsparse_int wid = hipThreadIdx_x / BSRDIM;
-
-    // Non-permuted nnz index
-    rocsparse_int i = hipBlockIdx_x * DIMY + hipThreadIdx_y;
-
-    // Do not exceed the number of elements
-    if(i >= nnzb)
-    {
-        return;
-    }
-
-    // Load the permuted nnz index
-    rocsparse_int j = perm[i];
-
-    // Gather values from A and store them to T with respect to the
-    // given row / column permutation
-    for(rocsparse_int bi = lid; bi < bsr_dim; bi += BSRDIM)
-    {
-        for(rocsparse_int bj = wid; bj < bsr_dim; bj += BSRDIM)
-        {
-            bsr_val_T[bsr_dim * bsr_dim * i + bi + bj * bsr_dim]
-                = bsr_val_A[bsr_dim * bsr_dim * j + bj + bi * bsr_dim];
-        }
-    }
-}
-
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
 __device__ void bsrsv_lower_general_device(rocsparse_int mb,
                                            T             alpha,
                                            const rocsparse_int* __restrict__ bsr_row_ptr,
                                            const rocsparse_int* __restrict__ bsr_col_ind,
                                            const T* __restrict__ bsr_val,
-                                           rocsparse_int bsr_dim,
+                                           rocsparse_int block_dim,
                                            const T* __restrict__ x,
                                            T* __restrict__ y,
                                            int* __restrict__ done_array,
@@ -101,9 +67,9 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
     rocsparse_int local_col = mb;
 
     // Initialize y with alpha and x
-    for(rocsparse_int bi = lid; bi < bsr_dim; bi += WFSIZE)
+    for(rocsparse_int bi = lid; bi < block_dim; bi += WFSIZE)
     {
-        y[row * bsr_dim + bi] = alpha * x[row * bsr_dim + bi];
+        y[row * block_dim + bi] = alpha * x[row * block_dim + bi];
     }
 
     // Loop over the current row
@@ -146,19 +112,19 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
         __threadfence();
 
         // Local sum computation
-        for(rocsparse_int bi = lid; bi < bsr_dim; bi += WFSIZE)
+        for(rocsparse_int bi = lid; bi < block_dim; bi += WFSIZE)
         {
             // Local sum accumulator
             T local_sum = static_cast<T>(0);
 
-            for(rocsparse_int bj = 0; bj < bsr_dim; ++bj)
+            for(rocsparse_int bj = 0; bj < block_dim; ++bj)
             {
                 local_sum = rocsparse_fma(
-                    bsr_val[BSR_IND(j, bi, bj, dir)], y[local_col * bsr_dim + bj], local_sum);
+                    bsr_val[BSR_IND(j, bi, bj, dir)], y[local_col * block_dim + bj], local_sum);
             }
 
             // Write local sum to y
-            y[row * bsr_dim + bi] -= local_sum;
+            y[row * block_dim + bi] -= local_sum;
         }
     }
 
@@ -167,15 +133,15 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
     // Process diagonal
     if(local_col == row)
     {
-        for(rocsparse_int bi = 0; bi < bsr_dim; ++bi)
+        for(rocsparse_int bi = 0; bi < block_dim; ++bi)
         {
             // Load diagonal matrix entry
             T diag = (diag_type == rocsparse_diag_type_non_unit)
-                         ? bsr_val[bsr_dim * bsr_dim * j + bi + bi * bsr_dim]
+                         ? bsr_val[block_dim * block_dim * j + bi + bi * block_dim]
                          : static_cast<T>(1);
 
             // Load result of bi-th BSR row
-            T val = y[row * bsr_dim + bi];
+            T val = y[row * block_dim + bi];
 
             // Check for numerical pivot
             if(diag == static_cast<T>(0))
@@ -185,13 +151,13 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
             else
             {
                 // Divide result of bi-th BSR row by diagonal entry
-                y[row * bsr_dim + bi] = val /= diag;
+                y[row * block_dim + bi] = val /= diag;
             }
 
             // Update remaining non-diagonal entries
-            for(rocsparse_int bj = bi + lid + 1; bj < bsr_dim; bj += WFSIZE)
+            for(rocsparse_int bj = bi + lid + 1; bj < block_dim; bj += WFSIZE)
             {
-                y[row * bsr_dim + bj] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
+                y[row * block_dim + bj] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
             }
         }
     }
@@ -217,7 +183,7 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
                                            const rocsparse_int* __restrict__ bsr_row_ptr,
                                            const rocsparse_int* __restrict__ bsr_col_ind,
                                            const T* __restrict__ bsr_val,
-                                           rocsparse_int bsr_dim,
+                                           rocsparse_int block_dim,
                                            const T* __restrict__ x,
                                            T* __restrict__ y,
                                            int* __restrict__ done_array,
@@ -250,9 +216,9 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
     rocsparse_int local_col = mb;
 
     // Initialize y with alpha and x
-    for(rocsparse_int bi = lid; bi < bsr_dim; bi += WFSIZE)
+    for(rocsparse_int bi = lid; bi < block_dim; bi += WFSIZE)
     {
-        y[row * bsr_dim + bi] = alpha * x[row * bsr_dim + bi];
+        y[row * block_dim + bi] = alpha * x[row * block_dim + bi];
     }
 
     // Loop over the current row
@@ -295,19 +261,19 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
         __threadfence();
 
         // Local sum computation
-        for(rocsparse_int bi = lid; bi < bsr_dim; bi += WFSIZE)
+        for(rocsparse_int bi = lid; bi < block_dim; bi += WFSIZE)
         {
             // Local sum accumulator
             T local_sum = static_cast<T>(0);
 
-            for(rocsparse_int bj = 0; bj < bsr_dim; ++bj)
+            for(rocsparse_int bj = 0; bj < block_dim; ++bj)
             {
                 local_sum = rocsparse_fma(
-                    bsr_val[BSR_IND(j, bi, bj, dir)], y[local_col * bsr_dim + bj], local_sum);
+                    bsr_val[BSR_IND(j, bi, bj, dir)], y[local_col * block_dim + bj], local_sum);
             }
 
             // Write local sum to y
-            y[row * bsr_dim + bi] -= local_sum;
+            y[row * block_dim + bi] -= local_sum;
         }
     }
 
@@ -316,15 +282,15 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
     // Process diagonal
     if(local_col == row)
     {
-        for(rocsparse_int bi = bsr_dim - 1; bi >= 0; --bi)
+        for(rocsparse_int bi = block_dim - 1; bi >= 0; --bi)
         {
             // Load diagonal matrix entry
             T diag = (diag_type == rocsparse_diag_type_non_unit)
-                         ? bsr_val[bsr_dim * bsr_dim * j + bi + bi * bsr_dim]
+                         ? bsr_val[block_dim * block_dim * j + bi + bi * block_dim]
                          : static_cast<T>(1);
 
             // Load result of bi-th BSR row
-            T val = y[row * bsr_dim + bi];
+            T val = y[row * block_dim + bi];
 
             // Check for numerical pivot
             if(diag == static_cast<T>(0))
@@ -334,13 +300,13 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
             else
             {
                 // Divide result of bi-th BSR row by diagonal entry
-                y[row * bsr_dim + bi] = val /= diag;
+                y[row * block_dim + bi] = val /= diag;
             }
 
             // Update remaining non-diagonal entries
             for(rocsparse_int bj = lid; bj < bi; bj += WFSIZE)
             {
-                y[row * bsr_dim + bj] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
+                y[row * block_dim + bj] -= val * bsr_val[BSR_IND(j, bj, bi, dir)];
             }
         }
     }
@@ -366,7 +332,7 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
                                           const rocsparse_int* __restrict__ bsr_row_ptr,
                                           const rocsparse_int* __restrict__ bsr_col_ind,
                                           const T* __restrict__ bsr_val,
-                                          rocsparse_int bsr_dim,
+                                          rocsparse_int block_dim,
                                           const T* __restrict__ x,
                                           T* __restrict__ y,
                                           int* __restrict__ done_array,
@@ -399,7 +365,7 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
     rocsparse_int local_col = mb;
 
     // Initialize local summation variable with alpha and x
-    T local_sum = alpha * ((lid < bsr_dim) ? x[row * bsr_dim + lid] : static_cast<T>(0));
+    T local_sum = alpha * ((lid < block_dim) ? x[row * block_dim + lid] : static_cast<T>(0));
 
     // Shared memory to hold BSR blocks and updated sums
     __shared__ T sdata1[BLOCKSIZE / WFSIZE * BSRDIM * BSRDIM];
@@ -422,7 +388,7 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
 
         for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
         {
-            bsr_values[bi + k * BSRDIM] = (bi < bsr_dim && k < bsr_dim)
+            bsr_values[bi + k * BSRDIM] = (bi < block_dim && k < block_dim)
                                               ? bsr_val[BSR_IND(j, bi, k, dir)]
                                               : static_cast<T>(0);
         }
@@ -462,13 +428,14 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
         // Load all updated dependencies into shared memory
         if(lid < BSRDIM)
         {
-            bsr_updates[lid] = (lid < bsr_dim) ? y[local_col * bsr_dim + lid] : static_cast<T>(0);
+            bsr_updates[lid]
+                = (lid < block_dim) ? y[local_col * block_dim + lid] : static_cast<T>(0);
         }
 
         __threadfence_block();
 
         // Local sum computation
-        if(lid < bsr_dim)
+        if(lid < block_dim)
         {
             for(rocsparse_int bj = 0; bj < BSRDIM; ++bj)
             {
@@ -484,7 +451,7 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
     // Process diagonal
     if(local_col == row)
     {
-        for(rocsparse_int bi = 0; bi < bsr_dim; ++bi)
+        for(rocsparse_int bi = 0; bi < block_dim; ++bi)
         {
             // Load diagonal matrix entry
             T diag = (diag_type == rocsparse_diag_type_non_unit) ? bsr_values[bi + bi * BSRDIM]
@@ -505,7 +472,7 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
             }
 
             // Update remaining non-diagonal entries
-            if(lid < bsr_dim)
+            if(lid < block_dim)
             {
                 if(bi < lid)
                 {
@@ -519,10 +486,10 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
         }
     }
 
-    if(lid < bsr_dim)
+    if(lid < block_dim)
     {
         // Store the rows results in y
-        y[row * bsr_dim + lid] = local_sum;
+        y[row * block_dim + lid] = local_sum;
     }
 
     // Make sure y is written to global memory before setting "row is done" flag
@@ -547,7 +514,7 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
                                           const rocsparse_int* __restrict__ bsr_row_ptr,
                                           const rocsparse_int* __restrict__ bsr_col_ind,
                                           const T* __restrict__ bsr_val,
-                                          rocsparse_int bsr_dim,
+                                          rocsparse_int block_dim,
                                           const T* __restrict__ x,
                                           T* __restrict__ y,
                                           int* __restrict__ done_array,
@@ -580,7 +547,7 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
     rocsparse_int local_col = mb;
 
     // Initialize local summation variable with alpha and x
-    T local_sum = alpha * ((lid < bsr_dim) ? x[row * bsr_dim + lid] : static_cast<T>(0));
+    T local_sum = alpha * ((lid < block_dim) ? x[row * block_dim + lid] : static_cast<T>(0));
 
     // Shared memory to hold BSR blocks and updated sums
     __shared__ T sdata1[BLOCKSIZE / WFSIZE * BSRDIM * BSRDIM];
@@ -603,7 +570,7 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
 
         for(rocsparse_int k = bj; k < BSRDIM; k += WFSIZE / BSRDIM)
         {
-            bsr_values[bi + k * BSRDIM] = (bi < bsr_dim && k < bsr_dim)
+            bsr_values[bi + k * BSRDIM] = (bi < block_dim && k < block_dim)
                                               ? bsr_val[BSR_IND(j, bi, k, dir)]
                                               : static_cast<T>(0);
         }
@@ -643,13 +610,14 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
         // Load all updated dependencies into shared memory
         if(lid < BSRDIM)
         {
-            bsr_updates[lid] = (lid < bsr_dim) ? y[local_col * bsr_dim + lid] : static_cast<T>(0);
+            bsr_updates[lid]
+                = (lid < block_dim) ? y[local_col * block_dim + lid] : static_cast<T>(0);
         }
 
         __threadfence_block();
 
         // Local sum computation
-        if(lid < bsr_dim)
+        if(lid < block_dim)
         {
             for(rocsparse_int bj = 0; bj < BSRDIM; ++bj)
             {
@@ -665,7 +633,7 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
     // Process diagonal
     if(local_col == row)
     {
-        for(rocsparse_int bi = bsr_dim - 1; bi >= 0; --bi)
+        for(rocsparse_int bi = block_dim - 1; bi >= 0; --bi)
         {
             // Load diagonal matrix entry
             T diag = (diag_type == rocsparse_diag_type_non_unit) ? bsr_values[bi + bi * BSRDIM]
@@ -686,7 +654,7 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
             }
 
             // Update remaining non-diagonal entries
-            if(lid < bsr_dim)
+            if(lid < block_dim)
             {
                 if(bi > lid)
                 {
@@ -700,10 +668,10 @@ __device__ void bsrsv_upper_shared_device(rocsparse_int mb,
         }
     }
 
-    if(lid < bsr_dim)
+    if(lid < block_dim)
     {
         // Store the rows results in y
-        y[row * bsr_dim + lid] = local_sum;
+        y[row * block_dim + lid] = local_sum;
     }
 
     // Make sure y is written to global memory before setting "row is done" flag

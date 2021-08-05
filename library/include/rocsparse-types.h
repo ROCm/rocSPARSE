@@ -34,6 +34,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef WIN32
+#define ROCSPARSE_KERNEL __global__ static
+#else
+#define ROCSPARSE_KERNEL __global__
+#endif
+
 /*! \ingroup types_module
  *  \brief Specifies whether int32 or int64 is used.
  */
@@ -96,6 +102,8 @@ typedef struct _rocsparse_spvec_descr* rocsparse_spvec_descr;
 typedef struct _rocsparse_spmat_descr* rocsparse_spmat_descr;
 typedef struct _rocsparse_dnvec_descr* rocsparse_dnvec_descr;
 typedef struct _rocsparse_dnmat_descr* rocsparse_dnmat_descr;
+
+typedef struct _rocsparse_color_info* rocsparse_color_info;
 
 #ifdef __cplusplus
 extern "C" {
@@ -336,7 +344,8 @@ typedef enum rocsparse_format_
     rocsparse_format_coo_aos = 1, /**< COO AoS sparse matrix format. */
     rocsparse_format_csr     = 2, /**< CSR sparse matrix format. */
     rocsparse_format_csc     = 3, /**< CSC sparse matrix format. */
-    rocsparse_format_ell     = 4 /**< ELL sparse matrix format. */
+    rocsparse_format_ell     = 4, /**< ELL sparse matrix format. */
+    rocsparse_format_bell    = 5 /**< BLOCKED ELL sparse matrix format. */
 } rocsparse_format;
 
 /*! \ingroup types_module
@@ -351,6 +360,15 @@ typedef enum rocsparse_order_
     rocsparse_order_row    = 0, /**< Row major. */
     rocsparse_order_column = 1 /**< Column major. */
 } rocsparse_order;
+
+/*! \ingroup types_module
+ *  \brief List of sparse matrix attributes
+ */
+typedef enum rocsparse_spmat_attribute_
+{
+    rocsparse_spmat_fill_mode = 0, /**< Fill mode attribute. */
+    rocsparse_spmat_diag_type = 1 /**< Diag type attribute. */
+} rocsparse_spmat_attribute;
 
 /*! \ingroup types_module
  *  \brief List of SpMV algorithms.
@@ -369,6 +387,60 @@ typedef enum rocsparse_spmv_alg_
 } rocsparse_spmv_alg;
 
 /*! \ingroup types_module
+ *  \brief List of SpSV algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_spsv_alg types that are used to perform
+ *  triangular solve.
+ */
+typedef enum rocsparse_spsv_alg_
+{
+    rocsparse_spsv_alg_default = 0, /**< Default SpSV algorithm for the given format. */
+} rocsparse_spsv_alg;
+
+/*! \ingroup types_module
+ *  \brief List of SpSV stages.
+ *
+ *  \details
+ *  This is a list of possible stages during SpSV computation. Typical order is
+ *  rocsparse_spsv_buffer_size, rocsparse_spsv_preprocess, rocsparse_spsv_compute.
+ */
+typedef enum rocsparse_spsv_stage_
+{
+    rocsparse_spsv_stage_auto        = 0, /**< Automatic stage detection. */
+    rocsparse_spsv_stage_buffer_size = 1, /**< Returns the required buffer size. */
+    rocsparse_spsv_stage_preprocess  = 2, /**< Preprocess data. */
+    rocsparse_spsv_stage_compute     = 3 /**< Performs the actual SpSV computation. */
+} rocsparse_spsv_stage;
+
+/*! \ingroup types_module
+ *  \brief List of SpSM algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_spsm_alg types that are used to perform
+ *  triangular solve.
+ */
+typedef enum rocsparse_spsm_alg_
+{
+    rocsparse_spsm_alg_default = 0, /**< Default SpSM algorithm for the given format. */
+} rocsparse_spsm_alg;
+
+/*! \ingroup types_module
+ *  \brief List of SpSM stages.
+ *
+ *  \details
+ *  This is a list of possible stages during SpSM computation. Typical order is
+ *  rocsparse_spsm_buffer_size, rocsparse_spsm_preprocess, rocsparse_spsm_compute.
+ */
+typedef enum rocsparse_spsm_stage_
+{
+    rocsparse_spsm_stage_auto        = 0, /**< Automatic stage detection. */
+    rocsparse_spsm_stage_buffer_size = 1, /**< Returns the required buffer size. */
+    rocsparse_spsm_stage_preprocess  = 2, /**< Preprocess data. */
+    rocsparse_spsm_stage_compute     = 3 /**< Performs the actual SpSM computation. */
+} rocsparse_spsm_stage;
+
+/*! \ingroup types_module
 *  \brief List of SpMM algorithms.
 *
 *  \details
@@ -378,10 +450,13 @@ typedef enum rocsparse_spmv_alg_
 typedef enum rocsparse_spmm_alg_
 {
     rocsparse_spmm_alg_default = 0, /**< Default SpMM algorithm for the given format. */
-    rocsparse_spmm_alg_csr     = 1, /**< SpMM algorithm for CSR format. */
-    rocsparse_spmm_alg_coo_segmented
-    = 2, /**< SpMM algorithm for COO format using segmented scan. */
-    rocsparse_spmm_alg_coo_atomic = 3 /**< SpMM algorithm for COO format using atomics. */
+    rocsparse_spmm_alg_csr, /**< SpMM algorithm for CSR format using row split and shared memory. */
+    rocsparse_spmm_alg_coo_segmented, /**< SpMM algorithm for COO format using segmented scan. */
+    rocsparse_spmm_alg_coo_atomic, /**< SpMM algorithm for COO format using atomics. */
+    rocsparse_spmm_alg_csr_row_split, /**< SpMM algorithm for CSR format using row split and shfl. */
+    rocsparse_spmm_alg_csr_merge, /**< SpMM algorithm for CSR format using conversion to COO. */
+    rocsparse_spmm_alg_coo_segmented_atomic, /**< SpMM algorithm for COO format using segmented scan and atomics. */
+    rocsparse_spmm_alg_bell /**< SpMM algorithm for Blocked ELL format. */
 } rocsparse_spmm_alg;
 
 /*! \ingroup types_module
@@ -413,7 +488,7 @@ typedef enum rocsparse_sparse_to_dense_alg_
  *  \brief List of dense to sparse algorithms.
  *
  *  \details
- *  This is a list of supported \ref rocsparse_dense_tosparse_alg types that are used to perform
+ *  This is a list of supported \ref rocsparse_dense_to_sparse_alg types that are used to perform
  *  dense to sparse conversion.
  */
 typedef enum rocsparse_dense_to_sparse_alg_
@@ -421,6 +496,21 @@ typedef enum rocsparse_dense_to_sparse_alg_
     rocsparse_dense_to_sparse_alg_default
     = 0, /**< Default dense to sparse algorithm for the given format. */
 } rocsparse_dense_to_sparse_alg;
+
+/*! \ingroup types_module
+ *  \brief List of SpMM stages.
+ *
+ *  \details
+ *  This is a list of possible stages during SpMM computation. Typical order is
+ *  rocsparse_spmm_buffer_size, rocsparse_spmm_preprocess, rocsparse_spmm_compute.
+ */
+typedef enum rocsparse_spmm_stage_
+{
+    rocsparse_spmm_stage_auto        = 0, /**< Automatic stage detection. */
+    rocsparse_spmm_stage_buffer_size = 1, /**< Returns the required buffer size. */
+    rocsparse_spmm_stage_preprocess  = 2, /**< Preprocess data. */
+    rocsparse_spmm_stage_compute     = 3 /**< Performs the actual SpMM computation. */
+} rocsparse_spmm_stage;
 
 /*! \ingroup types_module
  *  \brief List of SpGEMM stages.

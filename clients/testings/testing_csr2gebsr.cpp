@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -105,11 +105,11 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
     arg_direction, arg_m, arg_n, arg_csr_descr, arg_csr_val, arg_csr_row_ptr, arg_csr_col_ind, \
         arg_row_block_dim, arg_col_block_dim, arg_p_buffer_size
 
-#define CALL_BUFFER_SIZE rocsparse_csr2gebsr_buffer_size(handle, CALL_ARG_BUFFER_SIZE)
+#define CALL_BUFFER_SIZE rocsparse_csr2gebsr_buffer_size<T>(handle, CALL_ARG_BUFFER_SIZE)
 
     {
         ARGSET;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_buffer_size(nullptr, CALL_ARG_BUFFER_SIZE),
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_buffer_size<T>(nullptr, CALL_ARG_BUFFER_SIZE),
                                 rocsparse_status_invalid_handle);
     }
 
@@ -271,11 +271,11 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
         arg_bsr_descr, arg_bsr_val, arg_bsr_row_ptr, arg_bsr_col_ind, arg_row_block_dim,       \
         arg_col_block_dim, arg_p_buffer
 
-#define CALL_FUNC rocsparse_csr2gebsr(handle, CALL_ARG_FUNC)
+#define CALL_FUNC rocsparse_csr2gebsr<T>(handle, CALL_ARG_FUNC)
 
     {
         ARGSET;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr(nullptr, CALL_ARG_FUNC),
+        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr<T>(nullptr, CALL_ARG_FUNC),
                                 rocsparse_status_invalid_handle);
     }
 
@@ -529,31 +529,31 @@ void testing_csr2gebsr(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
     size_t buffer_size;
 
-    CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_buffer_size(handle,
-                                                          direction,
-                                                          M,
-                                                          N,
-                                                          csr_descr,
-                                                          (const T*)dcsr_val_C,
-                                                          dcsr_row_ptr_C,
-                                                          dcsr_col_ind_C,
-                                                          row_block_dim,
-                                                          col_block_dim,
-                                                          &buffer_size));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_buffer_size<T>(handle,
+                                                             direction,
+                                                             M,
+                                                             N,
+                                                             csr_descr,
+                                                             dcsr_val_C,
+                                                             dcsr_row_ptr_C,
+                                                             dcsr_col_ind_C,
+                                                             row_block_dim,
+                                                             col_block_dim,
+                                                             &buffer_size));
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
     device_vector<size_t> dbuffer_size(1);
-    CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_buffer_size(handle,
-                                                          direction,
-                                                          M,
-                                                          N,
-                                                          csr_descr,
-                                                          (const T*)dcsr_val_C,
-                                                          dcsr_row_ptr_C,
-                                                          dcsr_col_ind_C,
-                                                          row_block_dim,
-                                                          col_block_dim,
-                                                          dbuffer_size));
+    CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_buffer_size<T>(handle,
+                                                             direction,
+                                                             M,
+                                                             N,
+                                                             csr_descr,
+                                                             dcsr_val_C,
+                                                             dcsr_row_ptr_C,
+                                                             dcsr_col_ind_C,
+                                                             row_block_dim,
+                                                             col_block_dim,
+                                                             dbuffer_size));
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
     size_t buffer_size_copied_from_device = 0;

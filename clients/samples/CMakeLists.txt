@@ -23,21 +23,10 @@
 
 set(ROCSPARSE_CLIENTS_COMMON ../common/rocsparse_init.cpp ../common/utility.cpp)
 
-add_library(rocsparsecommon ${ROCSPARSE_CLIENTS_COMMON})
-# Include common client headers
-target_compile_options(rocsparsecommon PRIVATE -Wno-unused-command-line-argument -Wall)
-target_include_directories(rocsparsecommon PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
-
-target_link_libraries(rocsparsecommon PRIVATE roc::rocsparse hip::host)
-set_target_properties(rocsparsecommon PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
-# Linker dependencies
-#target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host rocsparsecommon)
-
-
 # Function to add rocsparse examples
 function(add_rocsparse_example EXAMPLE_SOURCE)
   get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SOURCE} NAME_WE)
-  add_executable(${EXAMPLE_TARGET} ${EXAMPLE_SOURCE}) #  ${ROCSPARSE_CLIENTS_COMMON}
+  add_executable(${EXAMPLE_TARGET} ${EXAMPLE_SOURCE} ${ROCSPARSE_CLIENTS_COMMON})
 
   # Target compile options
   target_compile_options(${EXAMPLE_TARGET} PRIVATE -Wno-unused-command-line-argument)
@@ -46,7 +35,7 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
   target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
   # Linker dependencies
-  target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host rocsparsecommon)
+  target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host hip::device)
 
   # Target properties
   set_target_properties(${EXAMPLE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
@@ -85,8 +74,10 @@ add_rocsparse_example(example_bsrmm.cpp)
 add_rocsparse_example(example_csrmm.cpp)
 add_rocsparse_example(example_spmm_csr.cpp)
 add_rocsparse_example(example_spmm_coo.cpp)
+add_rocsparse_example(example_bsrsm.cpp)
 add_rocsparse_example(example_csrsm.cpp)
 add_rocsparse_example(example_gemmi.cpp)
+add_rocsparse_example(example_gtsv.cpp)
 
 # Extra
 add_rocsparse_example(example_csrgeam.cpp)
@@ -101,17 +92,38 @@ add_rocsparse_example(example_csrsv_managed.cpp)
 if(TARGET rocsparse)
   # Compile Fortran examples only if built directly with package
   # else the Fortran module file is not generated
-  add_rocsparse_example(example_fortran_csric0.f90)
-  add_rocsparse_example(example_fortran_csrilu0.f90)
-  add_rocsparse_example(example_fortran_bsrmm.f90)
-  add_rocsparse_example(example_fortran_bsric0.f90)
-  add_rocsparse_example(example_fortran_bsrilu0.f90)
-  add_rocsparse_example(example_fortran_bsrsv.f90)
-  add_rocsparse_example(example_fortran_csrsv.f90)
-  add_rocsparse_example(example_fortran_spmv.f90)
-  add_rocsparse_example(example_fortran_csrsm.f90)
-  add_rocsparse_example(example_fortran_gemmi.f90)
-  add_rocsparse_example(example_fortran_auxiliary.f90)
-  add_rocsparse_example(example_fortran_dotci.f90)
-  add_rocsparse_example(example_fortran_roti.f90)
+  if (NOT WIN32)
+
+function(add_rocsparse_fortran_example EXAMPLE_SOURCE)
+  get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SOURCE} NAME_WE)
+  add_executable(${EXAMPLE_TARGET} ${EXAMPLE_SOURCE} ${ROCSPARSE_CLIENTS_COMMON})
+
+  # Target compile options
+  target_compile_options(${EXAMPLE_TARGET} PRIVATE -Wno-unused-command-line-argument)
+
+  # Include common client headers
+  target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
+
+  # Linker dependencies
+  target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host)
+
+  # Target properties
+  set_target_properties(${EXAMPLE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
+endfunction()
+
+  add_rocsparse_fortran_example(example_fortran_gtsv.f90)
+  add_rocsparse_fortran_example(example_fortran_csric0.f90)
+  add_rocsparse_fortran_example(example_fortran_csrilu0.f90)
+  add_rocsparse_fortran_example(example_fortran_bsrmm.f90)
+  add_rocsparse_fortran_example(example_fortran_bsric0.f90)
+  add_rocsparse_fortran_example(example_fortran_bsrilu0.f90)
+  add_rocsparse_fortran_example(example_fortran_bsrsv.f90)
+  add_rocsparse_fortran_example(example_fortran_csrsv.f90)
+  add_rocsparse_fortran_example(example_fortran_spmv.f90)
+  add_rocsparse_fortran_example(example_fortran_csrsm.f90)
+  add_rocsparse_fortran_example(example_fortran_gemmi.f90)
+  add_rocsparse_fortran_example(example_fortran_auxiliary.f90)
+  add_rocsparse_fortran_example(example_fortran_dotci.f90)
+  add_rocsparse_fortran_example(example_fortran_roti.f90)
+  endif()
 endif()

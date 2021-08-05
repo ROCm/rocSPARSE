@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -153,6 +153,10 @@ struct _rocsparse_mat_info
     rocsparse_trm_info bsrsvt_lower_info = nullptr;
     rocsparse_trm_info bsric0_info       = nullptr;
     rocsparse_trm_info bsrilu0_info      = nullptr;
+    rocsparse_trm_info bsrsm_upper_info  = nullptr;
+    rocsparse_trm_info bsrsm_lower_info  = nullptr;
+    rocsparse_trm_info bsrsmt_upper_info = nullptr;
+    rocsparse_trm_info bsrsmt_lower_info = nullptr;
 
     rocsparse_csrmv_info   csrmv_info        = nullptr;
     rocsparse_trm_info     csric0_info       = nullptr;
@@ -168,13 +172,24 @@ struct _rocsparse_mat_info
     rocsparse_csrgemm_info csrgemm_info      = nullptr;
 
     // zero pivot for csrsv, csrsm, csrilu0, csric0
-    rocsparse_int* zero_pivot = nullptr;
+    void* zero_pivot = nullptr;
 
     // numeric boost for ilu0
     int         boost_enable        = 0;
     int         use_double_prec_tol = 0;
     const void* boost_tol           = nullptr;
     const void* boost_val           = nullptr;
+};
+
+/********************************************************************************
+ * \brief rocsparse_color_info is a structure holding the color info data that is
+ * gathered during the analysis routines. It must be initialized by calling
+ * rocsparse_create_color_info() and the returned info structure must be passed
+ * to all subsequent function calls that require additional information. It
+ * should be destroyed at the end using rocsparse_destroy_color_info().
+ *******************************************************************************/
+struct _rocsparse_color_info
+{
 };
 
 /********************************************************************************
@@ -188,13 +203,15 @@ struct _rocsparse_csrmv_info
     // num row blocks
     size_t size = 0;
     // row blocks
-    unsigned long long* row_blocks = nullptr;
+    void*         row_blocks = nullptr;
+    unsigned int* wg_flags   = nullptr;
+    void*         wg_ids     = nullptr;
 
     // some data to verify correct execution
     rocsparse_operation         trans;
-    rocsparse_int               m;
-    rocsparse_int               n;
-    rocsparse_int               nnz;
+    int64_t                     m;
+    int64_t                     n;
+    int64_t                     nnz;
     const _rocsparse_mat_descr* descr;
     const void*                 csr_row_ptr;
     const void*                 csr_col_ind;
@@ -216,23 +233,23 @@ rocsparse_status rocsparse_destroy_csrmv_info(rocsparse_csrmv_info info);
 struct _rocsparse_trm_info
 {
     // maximum non-zero entries per row
-    rocsparse_int max_nnz = 0;
+    int64_t max_nnz = 0;
 
     // device array to hold row permutation
-    rocsparse_int* row_map = nullptr;
+    void* row_map = nullptr;
     // device array to hold pointer to diagonal entry
-    rocsparse_int* trm_diag_ind = nullptr;
+    void* trm_diag_ind = nullptr;
     // device pointers to hold transposed data
-    rocsparse_int* trmt_perm    = nullptr;
-    rocsparse_int* trmt_row_ptr = nullptr;
-    rocsparse_int* trmt_col_ind = nullptr;
+    void* trmt_perm    = nullptr;
+    void* trmt_row_ptr = nullptr;
+    void* trmt_col_ind = nullptr;
 
     // some data to verify correct execution
-    rocsparse_int               m;
-    rocsparse_int               nnz;
+    int64_t                     m;
+    int64_t                     nnz;
     const _rocsparse_mat_descr* descr;
-    const rocsparse_int*        trm_row_ptr;
-    const rocsparse_int*        trm_col_ind;
+    const void*                 trm_row_ptr;
+    const void*                 trm_col_ind;
 };
 
 /********************************************************************************
@@ -328,6 +345,11 @@ struct _rocsparse_spmat_descr
 
     rocsparse_mat_descr descr;
     rocsparse_mat_info  info;
+
+    rocsparse_direction block_dir;
+    int64_t             block_dim;
+    int64_t             ell_cols;
+    int64_t             ell_width;
 };
 
 struct _rocsparse_dnvec_descr

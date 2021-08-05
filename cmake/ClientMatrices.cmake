@@ -21,11 +21,6 @@
 #
 # ########################################################################
 
-
-if(NOT CMAKE_MATRICES_DIR)
-  message(FATAL_ERROR "Unspecified CMAKE_MATRICES_DIR")
-endif()
-
 set(TEST_MATRICES
   SNAP/amazon0312
   Muite/Chebyshev4
@@ -80,9 +75,16 @@ set(TEST_MD5HASH
   01e49e63fa0ac2204baef0f5f33974ad
 )
 
-if(NOT CONVERT)
-  set(CONVERT ${CMAKE_SOURCE_DIR}/deps/convert)
+if(NOT CMAKE_MATRICES_DIR)
+  message(FATAL_ERROR "Unspecified CMAKE_MATRICES_DIR")
 endif()
+
+
+if(NOT CONVERT_SOURCE)
+  set(CONVERT_SOURCE ${CMAKE_SOURCE_DIR}/deps/convert.cpp)
+endif()
+
+execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
 
 list(LENGTH TEST_MATRICES len)
 math(EXPR len1 "${len} - 1")
@@ -144,12 +146,13 @@ foreach(i RANGE 0 ${len1})
     endif()
 
     execute_process(COMMAND tar xf ${mat}.tar.gz
-                    WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
-    execute_process(COMMAND mv ${mat}/${mat}.mtx .
-                    WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
-    execute_process(COMMAND ${CONVERT} ${mat}.mtx ${mat}.csr
-                    WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
-    execute_process(COMMAND rm ${mat}.tar.gz ${mat} ${mat}.mtx -rf
-                    WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
+      WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
+
+    file(RENAME ${CMAKE_MATRICES_DIR}/${mat}/${mat}.mtx ${CMAKE_MATRICES_DIR}/${mat}.mtx)
+    execute_process(COMMAND ${PROJECT_BINARY_DIR}/mtx2csr.exe ${mat}.mtx ${mat}.csr
+      WORKING_DIRECTORY ${CMAKE_MATRICES_DIR})
+    # TODO: add 'COMMAND_ERROR_IS_FATAL ANY' once cmake supported version is 3.19
+    file(REMOVE_RECURSE ${CMAKE_MATRICES_DIR}/${mat}.tar.gz ${CMAKE_MATRICES_DIR}/${mat} ${CMAKE_MATRICES_DIR}/${mat}.mtx)
+
   endif()
 endforeach()

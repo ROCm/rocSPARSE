@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE>
-__launch_bounds__(BLOCKSIZE) __global__ void csrgeam_index_base(rocsparse_int* nnz)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgeam_index_base(rocsparse_int* nnz)
 {
     --(*nnz);
 }
@@ -38,7 +38,7 @@ __launch_bounds__(BLOCKSIZE) __global__ void csrgeam_index_base(rocsparse_int* n
 // Splitting row into several chunks such that we can use shared memory to store whether
 // a column index is populated or not.
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgeam_nnz_multipass_device(rocsparse_int m,
                                       rocsparse_int n,
                                       const rocsparse_int* __restrict__ csr_row_ptr_A,

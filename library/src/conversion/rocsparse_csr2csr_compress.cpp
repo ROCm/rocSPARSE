@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ template <rocsparse_int BLOCK_SIZE,
           rocsparse_int SEGMENT_SIZE,
           rocsparse_int WF_SIZE,
           typename T>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void csr2csr_compress_kernel(rocsparse_int        m,
                                  rocsparse_int        n,
                                  rocsparse_index_base idx_base_A,

@@ -242,20 +242,20 @@ void testing_csrsv(const Arguments& arg)
         host_scalar<rocsparse_int> analysis_no_pivot(-1);
         host_dense_matrix<T>       hy(M, 1);
         // CPU csrsv
-        host_csrsv<T>(trans,
-                      hA.m,
-                      hA.nnz,
-                      *h_alpha,
-                      hA.ptr,
-                      hA.ind,
-                      hA.val,
-                      hx,
-                      hy,
-                      diag,
-                      uplo,
-                      base,
-                      h_analysis_pivot,
-                      h_solve_pivot);
+        host_csrsv<rocsparse_int, rocsparse_int, T>(trans,
+                                                    hA.m,
+                                                    hA.nnz,
+                                                    *h_alpha,
+                                                    hA.ptr,
+                                                    hA.ind,
+                                                    hA.val,
+                                                    hx.val,
+                                                    hy.val,
+                                                    diag,
+                                                    uplo,
+                                                    base,
+                                                    h_analysis_pivot.val,
+                                                    h_solve_pivot.val);
 
         // Pointer mode host
         {
@@ -279,14 +279,21 @@ void testing_csrsv(const Arguments& arg)
             // Call it twice.
             CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
             CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(PARAMS_ANALYSIS(dA)));
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descr, info, analysis_pivot),
-                                    (*analysis_pivot != -1) ? rocsparse_status_zero_pivot
-                                                            : rocsparse_status_success);
+            {
+                auto st = rocsparse_csrsv_zero_pivot(handle, descr, info, analysis_pivot);
+                EXPECT_ROCSPARSE_STATUS(st,
+                                        (*analysis_pivot != -1) ? rocsparse_status_zero_pivot
+                                                                : rocsparse_status_success);
+            }
+
             CHECK_HIP_ERROR(hipDeviceSynchronize());
             CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_solve<T>(PARAMS_SOLVE(h_alpha, dA, dx, dy)));
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_zero_pivot(handle, descr, info, solve_pivot),
-                                    (*solve_pivot != -1) ? rocsparse_status_zero_pivot
-                                                         : rocsparse_status_success);
+            {
+                auto st = rocsparse_csrsv_zero_pivot(handle, descr, info, solve_pivot);
+                EXPECT_ROCSPARSE_STATUS(st,
+                                        (*solve_pivot != -1) ? rocsparse_status_zero_pivot
+                                                             : rocsparse_status_success);
+            }
             CHECK_HIP_ERROR(hipDeviceSynchronize());
             h_analysis_pivot.unit_check(analysis_pivot);
             h_solve_pivot.unit_check(solve_pivot);

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -160,23 +160,22 @@ extern "C" rocsparse_status
         handle, info, enable_boost, boost_tol, boost_val);
 }
 
-extern "C" rocsparse_status __attribute__((visibility("default")))
-rocsparse_dscsrilu0_numeric_boost(rocsparse_handle   handle,
-                                  rocsparse_mat_info info,
-                                  int                enable_boost,
-                                  const double*      boost_tol,
-                                  const float*       boost_val)
+extern "C" rocsparse_status rocsparse_dscsrilu0_numeric_boost(rocsparse_handle   handle,
+                                                              rocsparse_mat_info info,
+                                                              int                enable_boost,
+                                                              const double*      boost_tol,
+                                                              const float*       boost_val)
 {
     return rocsparse_csrilu0_numeric_boost_template(
         handle, info, enable_boost, boost_tol, boost_val);
 }
 
-extern "C" rocsparse_status __attribute__((visibility("default")))
-rocsparse_dccsrilu0_numeric_boost(rocsparse_handle               handle,
-                                  rocsparse_mat_info             info,
-                                  int                            enable_boost,
-                                  const double*                  boost_tol,
-                                  const rocsparse_float_complex* boost_val)
+extern "C" rocsparse_status
+    rocsparse_dccsrilu0_numeric_boost(rocsparse_handle               handle,
+                                      rocsparse_mat_info             info,
+                                      int                            enable_boost,
+                                      const double*                  boost_tol,
+                                      const rocsparse_float_complex* boost_val)
 {
     return rocsparse_csrilu0_numeric_boost_template(
         handle, info, enable_boost, boost_tol, boost_val);

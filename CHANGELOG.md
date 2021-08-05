@@ -2,6 +2,32 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
+## (Unreleased) rocSPARSE 1.22.0
+### Added
+- SpMM for BLOCKED ELL format
+- Generic routines for SpSV and SpSM
+- Enabling beta support for Windows 10
+- Additional atomic based algorithms for SpMM in COO format
+- Extended version of SpMM
+- Additional algorithm for SpMM in CSR format
+### Changed
+- Packaging split into a runtime package called rocsparse and a development package called rocsparse-devel. The development package depends on runtime. The runtime package suggests the development package for all supported OSes except CentOS 7 to aid in the transition. The suggests feature in packaging is introduced as a deprecated feature and will be removed in a future rocm release.
+### Known Issues
+- none
+
+## (Unreleased) rocSPARSE 1.21.1
+### Added
+- Triangular solve for multiple right-hand sides using BSR format
+- SpMV for BSRX format
+- SpMM in CSR format enhanced to work with transposed A
+- Matrix coloring for CSR matrices
+- Added batched tridiagonal solve (gtsv\_strided\_batch)
+### Improved
+- Fixed a bug with gemvi on Navi21
+- Optimization for pivot based gtsv
+### Known Issues
+- none
+
 ## [rocSPARSE 1.20.2 for ROCm 4.3.0]
 ### Added
 - (batched) tridiagonal solver with and without pivoting

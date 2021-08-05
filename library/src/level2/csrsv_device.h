@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,15 +30,15 @@
 
 extern "C" void __builtin_amdgcn_s_sleep(int);
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
-__launch_bounds__(BLOCKSIZE) __global__
-    void csrsv_analysis_lower_kernel(rocsparse_int m,
-                                     const rocsparse_int* __restrict__ csr_row_ptr,
-                                     const rocsparse_int* __restrict__ csr_col_ind,
-                                     rocsparse_int* __restrict__ csr_diag_ind,
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP, typename I, typename J>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrsv_analysis_lower_kernel(J m,
+                                     const I* __restrict__ csr_row_ptr,
+                                     const J* __restrict__ csr_col_ind,
+                                     I* __restrict__ csr_diag_ind,
                                      int* __restrict__ done_array,
-                                     rocsparse_int* __restrict__ max_nnz,
-                                     rocsparse_int* __restrict__ zero_pivot,
+                                     I* __restrict__ max_nnz,
+                                     J* __restrict__ zero_pivot,
                                      rocsparse_index_base idx_base,
                                      rocsparse_diag_type  diag_type)
 {
@@ -46,10 +46,10 @@ __launch_bounds__(BLOCKSIZE) __global__
     int wid = hipThreadIdx_x / WF_SIZE;
 
     // First row in this block
-    rocsparse_int first_row = hipBlockIdx_x * BLOCKSIZE / WF_SIZE;
+    J first_row = hipBlockIdx_x * BLOCKSIZE / WF_SIZE;
 
     // Row that the wavefront will process
-    rocsparse_int row = first_row + wid;
+    J row = first_row + wid;
 
     // Shared memory to set done flag for intra-block dependencies
     __shared__ int local_done_array[BLOCKSIZE / WF_SIZE];
@@ -75,13 +75,13 @@ __launch_bounds__(BLOCKSIZE) __global__
     // Local depth
     int local_max = 0;
 
-    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+    I row_begin = csr_row_ptr[row] - idx_base;
+    I row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // This wavefront operates on a single row, from its beginning to end.
     // First, we process all nodes that have dependencies outside the current block.
-    rocsparse_int local_col = -1;
-    rocsparse_int j;
+    J local_col = -1;
+    I j;
     for(j = row_begin + lid; j < row_end; j += WF_SIZE)
     {
         // local_col will tell us, for this iteration of the above for loop
@@ -184,15 +184,15 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP>
-__launch_bounds__(BLOCKSIZE) __global__
-    void csrsv_analysis_upper_kernel(rocsparse_int m,
-                                     const rocsparse_int* __restrict__ csr_row_ptr,
-                                     const rocsparse_int* __restrict__ csr_col_ind,
-                                     rocsparse_int* __restrict__ csr_diag_ind,
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP, typename I, typename J>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrsv_analysis_upper_kernel(J m,
+                                     const I* __restrict__ csr_row_ptr,
+                                     const J* __restrict__ csr_col_ind,
+                                     I* __restrict__ csr_diag_ind,
                                      int* __restrict__ done_array,
-                                     rocsparse_int* __restrict__ max_nnz,
-                                     rocsparse_int* __restrict__ zero_pivot,
+                                     I* __restrict__ max_nnz,
+                                     J* __restrict__ zero_pivot,
                                      rocsparse_index_base idx_base,
                                      rocsparse_diag_type  diag_type)
 {
@@ -200,10 +200,10 @@ __launch_bounds__(BLOCKSIZE) __global__
     int wid = hipThreadIdx_x / WF_SIZE;
 
     // Last row in this block
-    rocsparse_int last_row = m - 1 - hipBlockIdx_x * BLOCKSIZE / WF_SIZE;
+    J last_row = m - 1 - hipBlockIdx_x * BLOCKSIZE / WF_SIZE;
 
     // Row that the wavefront will process
-    rocsparse_int row = last_row - wid;
+    J row = last_row - wid;
 
     // Shared memory to set done flag for intra-block dependencies
     __shared__ int local_done_array[BLOCKSIZE / WF_SIZE];
@@ -229,13 +229,13 @@ __launch_bounds__(BLOCKSIZE) __global__
     // Local depth
     int local_max = 0;
 
-    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+    I row_begin = csr_row_ptr[row] - idx_base;
+    I row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // This wavefront operates on a single row, from its end to its begin.
     // First, we process all nodes that have dependencies outside the current block.
-    rocsparse_int local_col = -1;
-    rocsparse_int j;
+    J local_col = -1;
+    I j;
     for(j = row_end - 1 - lid; j >= row_begin; j -= WF_SIZE)
     {
         // local_col will tell us, for this iteration of the above for loop
@@ -338,18 +338,23 @@ __launch_bounds__(BLOCKSIZE) __global__
     }
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, bool SLEEP, typename T>
-__device__ void csrsv_device(rocsparse_int m,
-                             T             alpha,
-                             const rocsparse_int* __restrict__ csr_row_ptr,
-                             const rocsparse_int* __restrict__ csr_col_ind,
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          bool         SLEEP,
+          typename I,
+          typename J,
+          typename T>
+__device__ void csrsv_device(J m,
+                             T alpha,
+                             const I* __restrict__ csr_row_ptr,
+                             const J* __restrict__ csr_col_ind,
                              const T* __restrict__ csr_val,
                              const T* __restrict__ x,
                              T* __restrict__ y,
                              int* __restrict__ done_array,
-                             rocsparse_int* __restrict__ map,
-                             rocsparse_int offset,
-                             rocsparse_int* __restrict__ zero_pivot,
+                             J* __restrict__ map,
+                             int offset,
+                             J* __restrict__ zero_pivot,
                              rocsparse_index_base idx_base,
                              rocsparse_fill_mode  fill_mode,
                              rocsparse_diag_type  diag_type)
@@ -358,7 +363,7 @@ __device__ void csrsv_device(rocsparse_int m,
     int wid = hipThreadIdx_x / WF_SIZE;
 
     // Index into the row map
-    rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WF_SIZE + wid;
+    J idx = hipBlockIdx_x * BLOCKSIZE / WF_SIZE + wid;
 
     // Shared memory to hold diagonal entry
     __shared__ T diagonal[BLOCKSIZE / WF_SIZE];
@@ -370,11 +375,11 @@ __device__ void csrsv_device(rocsparse_int m,
     }
 
     // Get the row this warp will operate on
-    rocsparse_int row = map[idx + offset];
+    J row = map[idx + offset];
 
     // Current row entry point and exit point
-    rocsparse_int row_begin = csr_row_ptr[row] - idx_base;
-    rocsparse_int row_end   = csr_row_ptr[row + 1] - idx_base;
+    I row_begin = csr_row_ptr[row] - idx_base;
+    I row_end   = csr_row_ptr[row + 1] - idx_base;
 
     // Local summation variable.
     T local_sum = static_cast<T>(0);
@@ -385,10 +390,10 @@ __device__ void csrsv_device(rocsparse_int m,
         local_sum = alpha * rocsparse_nontemporal_load(x + row);
     }
 
-    for(rocsparse_int j = row_begin + lid; j < row_end; j += WF_SIZE)
+    for(I j = row_begin + lid; j < row_end; j += WF_SIZE)
     {
         // Current column this lane operates on
-        rocsparse_int local_col = rocsparse_nontemporal_load(csr_col_ind + j) - idx_base;
+        J local_col = rocsparse_nontemporal_load(csr_col_ind + j) - idx_base;
 
         // Local value this lane operates with
         T local_val = rocsparse_nontemporal_load(csr_val + j);

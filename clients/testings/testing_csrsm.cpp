@@ -913,7 +913,6 @@ void testing_csrsm(const Arguments& arg)
     rocsparse_operation         transA    = arg.transA;
     rocsparse_operation         transB    = arg.transB;
     rocsparse_int               M         = arg.M;
-    rocsparse_int               N         = arg.N;
     rocsparse_int               nrhs      = arg.K;
     rocsparse_diag_type         diag      = arg.diag;
     rocsparse_fill_mode         uplo      = arg.uplo;
@@ -1030,7 +1029,6 @@ void testing_csrsm(const Arguments& arg)
 
     rocsparse_int nnz  = hcsr.nnz;
     M                  = hcsr.m;
-    N                  = hcsr.n;
     rocsparse_int hB_m = (transB == rocsparse_operation_none) ? M : nrhs;
     rocsparse_int hB_n = (transB == rocsparse_operation_none) ? nrhs : M;
 
@@ -1155,22 +1153,22 @@ void testing_csrsm(const Arguments& arg)
             // CALL HOST CALCULATION
             //
             host_dense_matrix<T> hB_copy(hB);
-            host_csrsm<T>(M,
-                          nrhs,
-                          nnz,
-                          transA,
-                          transB,
-                          *h_alpha.val,
-                          hcsr.ptr,
-                          hcsr.ind,
-                          hcsr.val,
-                          hB.val,
-                          hB.ld,
-                          diag,
-                          uplo,
-                          base,
-                          h_analysis_pivot.val,
-                          h_solve_pivot.val);
+            host_csrsm(M,
+                       nrhs,
+                       nnz,
+                       transA,
+                       transB,
+                       *h_alpha.val,
+                       hcsr.ptr,
+                       hcsr.ind,
+                       hcsr.val,
+                       hB.val,
+                       hB.ld,
+                       diag,
+                       uplo,
+                       base,
+                       h_analysis_pivot.val.data(),
+                       h_solve_pivot.val.data());
 
             //
             // CHECK PIVOTS

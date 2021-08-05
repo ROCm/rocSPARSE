@@ -43,7 +43,7 @@
                                      const TYPE*               bsr_val,                            \
                                      const rocsparse_int*      bsr_row_ptr,                        \
                                      const rocsparse_int*      bsr_col_ind,                        \
-                                     rocsparse_int             bsr_dim,                            \
+                                     rocsparse_int             block_dim,                          \
                                      rocsparse_mat_info        info,                               \
                                      size_t*                   buffer_size)                        \
     {                                                                                              \
@@ -58,7 +58,7 @@
         }                                                                                          \
                                                                                                    \
         /* Check sizes that are not checked by csrsv */                                            \
-        if(bsr_dim < 0)                                                                            \
+        if(block_dim < 0)                                                                          \
         {                                                                                          \
             return rocsparse_status_invalid_size;                                                  \
         }                                                                                          \
@@ -73,7 +73,7 @@
             *buffer_size -= sizeof(TYPE) * ((nnzb - 1) / 256 + 1) * 256;                           \
                                                                                                    \
             /* Add BSR buffer instead */                                                           \
-            *buffer_size += sizeof(TYPE) * ((nnzb * bsr_dim * bsr_dim - 1) / 256 + 1) * 256;       \
+            *buffer_size += sizeof(TYPE) * ((nnzb * block_dim * block_dim - 1) / 256 + 1) * 256;   \
         }                                                                                          \
                                                                                                    \
         return stat;                                                                               \

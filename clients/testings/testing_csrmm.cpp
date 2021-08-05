@@ -62,20 +62,6 @@ void testing_csrmm_bad_arg(const Arguments& arg)
 
     auto_testing_bad_arg(rocsparse_csrmm<T>, PARAMS);
 
-    {
-        auto tmp = trans_A;
-        trans_A  = rocsparse_operation_transpose;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(PARAMS), rocsparse_status_not_implemented);
-        trans_A = tmp;
-    }
-
-    {
-        auto tmp = trans_B;
-        trans_B  = rocsparse_operation_conjugate_transpose;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(PARAMS), rocsparse_status_not_implemented);
-        trans_B = tmp;
-    }
-
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_symmetric));
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrmm<T>(PARAMS), rocsparse_status_not_implemented);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
@@ -91,6 +77,7 @@ void testing_csrmm(const Arguments& arg)
     rocsparse_operation  transA = arg.transA;
     rocsparse_operation  transB = arg.transB;
     rocsparse_index_base base   = arg.baseA;
+    rocsparse_order      order  = rocsparse_order_column;
 
     host_scalar<T> h_alpha, h_beta;
 
@@ -151,20 +138,30 @@ void testing_csrmm(const Arguments& arg)
                             (transA == rocsparse_operation_none ? K : M));
 
     // Some matrix properties
-    rocsparse_int B_m
-        = (transB == rocsparse_operation_none) ? (transA == rocsparse_operation_none ? K : M) : N;
+    rocsparse_int A_m = (transA == rocsparse_operation_none ? M : K);
+    // rocsparse_int A_n = (transA == rocsparse_operation_none ? K : M);
+    rocsparse_int B_m = (transB == rocsparse_operation_none ? K : N);
     rocsparse_int B_n = (transB == rocsparse_operation_none ? N : K);
-    rocsparse_int C_m = (transA == rocsparse_operation_none) ? M : K;
+    rocsparse_int C_m = M;
     rocsparse_int C_n = N;
+    rocsparse_int ldb = order == rocsparse_order_column
+                            ? (transB == rocsparse_operation_none ? 2 * K : 2 * N)
+                            : (transB == rocsparse_operation_none ? 2 * N : 2 * K);
+    rocsparse_int ldc = order == rocsparse_order_column ? 2 * M : 2 * N;
 
-    host_dense_matrix<T> hB(B_m, B_n), hC(C_m, C_n);
+    rocsparse_int nrowB = order == rocsparse_order_column ? ldb : B_m;
+    rocsparse_int ncolB = order == rocsparse_order_column ? B_n : ldb;
+    rocsparse_int nrowC = order == rocsparse_order_column ? ldc : C_m;
+    rocsparse_int ncolC = order == rocsparse_order_column ? C_n : ldc;
+
+    host_dense_matrix<T> hB(nrowB, ncolB), hC(nrowC, ncolC);
 
     rocsparse_matrix_utils::init(hB);
     rocsparse_matrix_utils::init(hC);
 
     device_csr_matrix<T>   dA(hA);
-    device_dense_matrix<T> dC(hC);
     device_dense_matrix<T> dB(hB);
+    device_dense_matrix<T> dC(hC);
 
     // Copy data from CPU to device
 #define PARAMS(alpha_, A_, B_, beta_, C_)                                                       \
@@ -177,12 +174,16 @@ void testing_csrmm(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmm<T>(PARAMS(h_alpha, dA, dB, h_beta, dC)));
 
+        host_dense_matrix<T> hC_gpu(dC);
+
         { // Copy data from CPU to device
             host_dense_matrix<T> hC_copy(hC);
 
             // CPU csrmm
-            host_csrmm(hC.m,
-                       hC.n,
+            host_csrmm(M,
+                       N,
+                       K,
+                       transA,
                        transB,
                        *h_alpha.val,
                        hA.ptr,
@@ -193,10 +194,11 @@ void testing_csrmm(const Arguments& arg)
                        *h_beta.val,
                        hC.val,
                        hC.ld,
-                       rocsparse_order_column,
+                       order,
                        base);
 
-            hC.unit_check(dC);
+            hC.near_check(dC);
+
             dC.transfer_from(hC_copy);
         }
 
@@ -205,7 +207,8 @@ void testing_csrmm(const Arguments& arg)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmm<T>(PARAMS(d_alpha, dA, dB, d_beta, dC)));
-        hC.unit_check(dC);
+
+        hC.near_check(dC);
     }
 
     if(arg.timing)
@@ -232,10 +235,10 @@ void testing_csrmm(const Arguments& arg)
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
         double gflop_count = csrmm_gflop_count<rocsparse_int, rocsparse_int>(
-            N, dA.nnz, dC.m * dC.n, *h_beta.val != static_cast<T>(0));
+            N, dA.nnz, C_m * C_n, *h_beta.val != static_cast<T>(0));
         double gpu_gflops  = get_gpu_gflops(gpu_time_used, gflop_count);
         double gbyte_count = csrmm_gbyte_count<T, rocsparse_int, rocsparse_int>(
-            M, dA.nnz, dB.m * dB.n, dC.m * dC.n, *h_beta.val != static_cast<T>(0));
+            A_m, dA.nnz, B_m * B_n, C_m * C_n, *h_beta.val != static_cast<T>(0));
         double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
         display_timing_info("M",

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ void testing_hyb2csr_bad_arg(const Arguments& arg)
     device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
     device_vector<rocsparse_int> dcsr_col_ind(safe_size);
     device_vector<T>             dcsr_val(safe_size);
-    device_vector<char>          dbuffer(safe_size);
+    device_vector<rocsparse_int> dbuffer(safe_size);
 
     if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dbuffer)
     {
@@ -136,7 +136,7 @@ void testing_hyb2csr(const Arguments& arg)
         device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
         device_vector<rocsparse_int> dcsr_col_ind(safe_size);
         device_vector<T>             dcsr_val(safe_size);
-        device_vector<char>          dbuffer(safe_size);
+        device_vector<rocsparse_int> dbuffer(safe_size);
 
         if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dbuffer)
         {

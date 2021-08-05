@@ -20,6 +20,7 @@ rocSPARSE is a library that contains basic linear algebra subroutines for sparse
 * :ref:`rocsparse_extra_functions_` describe operations that manipulate sparse matrices.
 * :ref:`rocsparse_precond_functions_` describe manipulations on a matrix in sparse format to obtain a preconditioner.
 * :ref:`rocsparse_conversion_functions_` describe operations on a matrix in sparse format to obtain a different matrix format.
+* :ref:`rocsparse_reordering_functions_` describe operations on a matrix in sparse format to obtain a reordering.
 
 The code is open and hosted here: https://github.com/ROCmSoftwarePlatform/rocSPARSE
 
@@ -620,7 +621,7 @@ rocsparse_indextype
 .. doxygenenum:: rocsparse_indextype
 
 rocsparse_datatype
--------------------
+------------------
 
 .. doxygenenum:: rocsparse_datatype
 
@@ -634,14 +635,40 @@ rocsparse_spmv_alg
 
 .. doxygenenum:: rocsparse_spmv_alg
 
+rocsparse_spsv_alg
+------------------
+
+.. doxygenenum:: rocsparse_spsv_alg
+
+rocsparse_spsv_stage
+--------------------
+
+.. doxygenenum:: rocsparse_spsv_stage
+
+rocsparse_spsm_alg
+------------------
+
+.. doxygenenum:: rocsparse_spsm_alg
+
+rocsparse_spsm_stage
+--------------------
+
+.. doxygenenum:: rocsparse_spsm_stage
 
 rocsparse_spmm_alg
 ------------------
 
 .. doxygenenum:: rocsparse_spmm_alg
 
+
+rocsparse_spmm_stage
+--------------------
+
+.. doxygenenum:: rocsparse_spmm_stage
+
+
 rocsparse_sddmm_alg
-------------------
+-------------------
 
 .. doxygenenum:: rocsparse_sddmm_alg
 
@@ -821,6 +848,7 @@ Sparse Level 2 Functions
 Function name                                                             single double single complex double complex
 ========================================================================= ====== ====== ============== ==============
 :cpp:func:`rocsparse_Xbsrmv() <rocsparse_sbsrmv>`                         x      x      x              x
+:cpp:func:`rocsparse_Xbsrxmv() <rocsparse_sbsrxmv>`                       x      x      x              x
 :cpp:func:`rocsparse_Xbsrsv_buffer_size() <rocsparse_sbsrsv_buffer_size>` x      x      x              x
 :cpp:func:`rocsparse_Xbsrsv_analysis() <rocsparse_sbsrsv_analysis>`       x      x      x              x
 :cpp:func:`rocsparse_bsrsv_zero_pivot`
@@ -856,6 +884,11 @@ Function name                                                             single
 :cpp:func:`rocsparse_csrsm_zero_pivot`
 :cpp:func:`rocsparse_csrsm_clear`
 :cpp:func:`rocsparse_Xcsrsm_solve() <rocsparse_scsrsm_solve>`             x      x      x              x
+:cpp:func:`rocsparse_Xbsrsm_buffer_size() <rocsparse_sbsrsm_buffer_size>` x      x      x              x
+:cpp:func:`rocsparse_Xbsrsm_analysis() <rocsparse_sbsrsm_analysis>`       x      x      x              x
+:cpp:func:`rocsparse_bsrsm_zero_pivot`
+:cpp:func:`rocsparse_bsrsm_clear`
+:cpp:func:`rocsparse_Xbsrsm_solve() <rocsparse_sbsrsm_solve>`             x      x      x              x
 :cpp:func:`rocsparse_Xgemmi() <rocsparse_sgemmi>`                         x      x      x              x
 ========================================================================= ====== ====== ============== ==============
 
@@ -967,22 +1000,36 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xprune_csr2csr_by_percentage() <rocsparse_sprune_csr2csr_by_percentage>`                             x      x
 ========================================================================================================================= ====== ====== ============== ==============
 
+Reordering Functions
+--------------------
+
+======================================================= ====== ====== ============== ==============
+Function name                                           single double single complex double complex
+======================================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_Xcsrcolor() <rocsparse_scsrcolor>` x      x      x              x
+======================================================= ====== ====== ============== ==============
+
 Sparse Generic Functions
 ------------------------
 
-=============================== ====== ====== ============== ==============
-Function name                   single double single complex double complex
-=============================== ====== ====== ============== ==============
-:cpp:func:`rocsparse_axpby()`   x      x      x              x
-:cpp:func:`rocsparse_gather()`  x      x      x              x
-:cpp:func:`rocsparse_scatter()` x      x      x              x
-:cpp:func:`rocsparse_rot()`     x      x      x              x
-:cpp:func:`rocsparse_spvv()`    x      x      x              x
-:cpp:func:`rocsparse_spmv()`    x      x      x              x
-:cpp:func:`rocsparse_spmm()`    x      x      x              x
-:cpp:func:`rocsparse_spgemm()`  x      x      x              x
-:cpp:func:`rocsparse_sddmm()`   x      x      x              x
-=============================== ====== ====== ============== ==============
+======================================= ====== ====== ============== ==============
+Function name                           single double single complex double complex
+======================================= ====== ====== ============== ==============
+:cpp:func:`rocsparse_axpby()`           x      x      x              x
+:cpp:func:`rocsparse_gather()`          x      x      x              x
+:cpp:func:`rocsparse_scatter()`         x      x      x              x
+:cpp:func:`rocsparse_rot()`             x      x      x              x
+:cpp:func:`rocsparse_spvv()`            x      x      x              x
+:cpp:func:`rocsparse_sparse_to_dense()` x      x      x              x
+:cpp:func:`rocsparse_dense_to_sparse()` x      x      x              x
+:cpp:func:`rocsparse_spmv()`            x      x      x              x
+:cpp:func:`rocsparse_spsv()`            x      x      x              x
+:cpp:func:`rocsparse_spmm()`            x      x      x              x
+:cpp:func:`rocsparse_spsm()`            x      x      x              x
+:cpp:func:`rocsparse_spgemm()`          x      x      x              x
+:cpp:func:`rocsparse_sddmm()`           x      x      x              x
+======================================= ====== ====== ============== ==============
+
 
 Storage schemes and indexing base
 ---------------------------------
@@ -1390,6 +1437,17 @@ rocsparse_bsrmv()
   :outline:
 .. doxygenfunction:: rocsparse_zbsrmv
 
+rocsparse_bsrxmv()
+------------------
+
+.. doxygenfunction:: rocsparse_sbsrxmv
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrxmv
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrxmv
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrxmv
+
 rocsparse_bsrsv_zero_pivot()
 ----------------------------
 
@@ -1656,6 +1714,49 @@ rocsparse_csrsm_clear()
 
 .. doxygenfunction:: rocsparse_csrsm_clear
 
+rocsparse_bsrsm_zero_pivot()
+----------------------------
+
+.. doxygenfunction:: rocsparse_bsrsm_zero_pivot
+
+rocsparse_bsrsm_buffer_size()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_sbsrsm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrsm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrsm_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrsm_buffer_size
+
+rocsparse_bsrsm_analysis()
+--------------------------
+
+.. doxygenfunction:: rocsparse_sbsrsm_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrsm_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrsm_analysis
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrsm_analysis
+
+rocsparse_bsrsm_solve()
+-----------------------
+
+.. doxygenfunction:: rocsparse_sbsrsm_solve
+  :outline:
+.. doxygenfunction:: rocsparse_dbsrsm_solve
+  :outline:
+.. doxygenfunction:: rocsparse_cbsrsm_solve
+  :outline:
+.. doxygenfunction:: rocsparse_zbsrsm_solve
+
+rocsparse_bsrsm_clear()
+-----------------------
+
+.. doxygenfunction:: rocsparse_bsrsm_clear
+
 .. _rocsparse_extra_functions_:
 
 rocsparse_gemmi()
@@ -1729,12 +1830,12 @@ This module holds all sparse preconditioners.
 The sparse preconditioners describe manipulations on a matrix in sparse format to obtain a sparse preconditioner matrix.
 
 rocsparse_bsric0_zero_pivot()
-------------------------------
+-----------------------------
 
 .. doxygenfunction:: rocsparse_bsric0_zero_pivot
 
 rocsparse_bsric0_buffer_size()
--------------------------------
+------------------------------
 
 .. doxygenfunction:: rocsparse_sbsric0_buffer_size
   :outline:
@@ -1745,7 +1846,7 @@ rocsparse_bsric0_buffer_size()
 .. doxygenfunction:: rocsparse_zbsric0_buffer_size
 
 rocsparse_bsric0_analysis()
-----------------------------
+---------------------------
 
 .. doxygenfunction:: rocsparse_sbsric0_analysis
   :outline:
@@ -1756,7 +1857,7 @@ rocsparse_bsric0_analysis()
 .. doxygenfunction:: rocsparse_zbsric0_analysis
 
 rocsparse_bsric0()
--------------------
+------------------
 
 .. doxygenfunction:: rocsparse_sbsric0
   :outline:
@@ -1767,7 +1868,7 @@ rocsparse_bsric0()
 .. doxygenfunction:: rocsparse_zbsric0
 
 rocsparse_bsric0_clear()
--------------------------
+------------------------
 
 .. doxygenfunction:: rocsparse_bsric0_clear
 
@@ -2425,6 +2526,28 @@ rocsparse_prune_csr2csr_by_percentage()
   :outline:
 .. doxygenfunction:: rocsparse_dprune_csr2csr_by_percentage
 
+
+.. _rocsparse_reordering_functions_:
+
+Reordering Functions
+========================
+
+This module holds all sparse reordering routines.
+
+The sparse reordering routines describe algorithm for reordering sparse matrices.
+
+rocsparse_csrcolor()
+--------------------
+
+.. doxygenfunction:: rocsparse_scsrcolor
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrcolor
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrcolor
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrcolor
+
+
 Sparse Generic Functions
 ========================
 
@@ -2462,6 +2585,16 @@ rocsparse_spmv()
 
 .. doxygenfunction:: rocsparse_spmv
 
+rocsparse_spsv()
+----------------
+
+.. doxygenfunction:: rocsparse_spsv
+
+rocsparse_spsm()
+----------------
+
+.. doxygenfunction:: rocsparse_spsm
+
 rocsparse_spmm()
 ----------------
 
@@ -2473,7 +2606,6 @@ rocsparse_spgemm()
 .. doxygenfunction:: rocsparse_spgemm
 
 rocsparse_sddmm()
-----------------
+-----------------
 
 .. doxygenfunction:: rocsparse_sddmm
-

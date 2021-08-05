@@ -33,14 +33,28 @@
 
 /* ==================================================================================== */
 // Random number generator
+
 using rocsparse_rng_t = std::mt19937;
-extern rocsparse_rng_t rocsparse_rng, rocsparse_seed, rocsparse_rng_nan;
+
+void rocsparse_rng_set(rocsparse_rng_t a);
+
+void rocsparse_seed_set(rocsparse_rng_t a);
+
+void rocsparse_rng_nan_set(rocsparse_rng_t a);
+
+rocsparse_rng_t& rocsparse_rng_get();
+
+rocsparse_rng_t& rocsparse_seed_get();
+
+rocsparse_rng_t& rocsparse_rng_nan_get();
+
+// extern  rocsparse_rng_t rocsparse_rng, rocsparse_seed, rocsparse_rng_nan;
 
 // Reset the seed (mainly to ensure repeatability of failures in a given suite)
 inline void rocsparse_seedrand()
 {
-    rocsparse_rng     = rocsparse_seed;
-    rocsparse_rng_nan = rocsparse_seed;
+    rocsparse_rng_set(rocsparse_seed_get());
+    rocsparse_rng_nan_set(rocsparse_seed_get());
 }
 
 /* ==================================================================================== */
@@ -59,7 +73,7 @@ class rocsparse_nan_rng
             T      fp;
         } x;
         do
-            x.u = std::uniform_int_distribution<UINT_T>{}(rocsparse_rng_nan);
+            x.u = std::uniform_int_distribution<UINT_T>{}(rocsparse_rng_nan_get());
         while(!(x.u & (((UINT_T)1 << SIG) - 1))); // Reject Inf (mantissa == 0)
         x.u |= (((UINT_T)1 << EXP) - 1) << SIG; // Exponent = all 1's
         return x.fp; // NaN with random bits
@@ -70,7 +84,7 @@ public:
     template <typename T, typename std::enable_if<std::is_integral<T>{}, int>::type = 0>
     explicit operator T()
     {
-        return std::uniform_int_distribution<T>{}(rocsparse_rng_nan);
+        return std::uniform_int_distribution<T>{}(rocsparse_rng_nan_get());
     }
 
     // Random NaN double
@@ -104,7 +118,7 @@ public:
 template <typename T>
 inline T random_generator_exact(int a = 1, int b = 10)
 {
-    return std::uniform_int_distribution<int>(a, b)(rocsparse_rng);
+    return std::uniform_int_distribution<int>(a, b)(rocsparse_rng_get());
 }
 
 template <>
@@ -130,7 +144,7 @@ inline T random_generator(T a = static_cast<T>(1), T b = static_cast<T>(10))
 template <typename T, typename std::enable_if_t<!std::is_integral<T>::value, bool> = true>
 inline T random_generator(T a = static_cast<T>(0), T b = static_cast<T>(1))
 {
-    return std::uniform_real_distribution<T>(a, b)(rocsparse_rng);
+    return std::uniform_real_distribution<T>(a, b)(rocsparse_rng_get());
 }
 
 template <>
@@ -154,7 +168,7 @@ inline rocsparse_double_complex
 template <typename T>
 inline T random_generator_normal()
 {
-    return std::normal_distribution<T>(0.0, 1.0)(rocsparse_rng);
+    return std::normal_distribution<T>(0.0, 1.0)(rocsparse_rng_get());
 }
 
 #endif // ROCSPARSE_RANDOM_HPP
