@@ -23,6 +23,7 @@
  * ************************************************************************ */
 #include "rocsparse_csrsm.hpp"
 
+#include "common.h"
 #include "definitions.h"
 #include "utility.h"
 
@@ -31,20 +32,20 @@
 #include "csrsm_device.h"
 #include <rocprim/rocprim.hpp>
 
-template <typename T>
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          handle,
                                                       rocsparse_operation       trans_A,
                                                       rocsparse_operation       trans_B,
-                                                      rocsparse_int             m,
-                                                      rocsparse_int             nrhs,
-                                                      rocsparse_int             nnz,
+                                                      J                         m,
+                                                      J                         nrhs,
+                                                      I                         nnz,
                                                       const T*                  alpha,
                                                       const rocsparse_mat_descr descr,
                                                       const T*                  csr_val,
-                                                      const rocsparse_int*      csr_row_ptr,
-                                                      const rocsparse_int*      csr_col_ind,
+                                                      const I*                  csr_row_ptr,
+                                                      const J*                  csr_col_ind,
                                                       const T*                  B,
-                                                      rocsparse_int             ldb,
+                                                      J                         ldb,
                                                       rocsparse_mat_info        info,
                                                       rocsparse_solve_policy    policy,
                                                       size_t*                   buffer_size)
@@ -129,7 +130,7 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     }
 
     // Quick return if possible
-    if(m == 0 || nrhs == 0 || nnz == 0)
+    if(m == 0 || nrhs == 0)
     {
         // Do not return 0 as buffer size
         *buffer_size = 4;
@@ -161,7 +162,7 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     // Stream
     hipStream_t stream = handle->stream;
 
-    // rocsparse_int max_nnz
+    // max_nnz
     *buffer_size = 256;
 
     // Each thread block performs at most blockdim columns of the
@@ -181,18 +182,18 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     // int done_array
     *buffer_size += sizeof(int) * ((m * narrays - 1) / 256 + 1) * 256;
 
-    // rocsparse_int workspace
-    *buffer_size += sizeof(rocsparse_int) * ((m - 1) / 256 + 1) * 256;
+    // workspace
+    *buffer_size += sizeof(J) * ((m - 1) / 256 + 1) * 256;
 
     // int workspace2
     *buffer_size += sizeof(int) * ((m - 1) / 256 + 1) * 256;
 
-    size_t         rocprim_size;
-    rocsparse_int* ptr  = reinterpret_cast<rocsparse_int*>(buffer_size);
-    int*           ptr2 = reinterpret_cast<int*>(buffer_size);
+    size_t rocprim_size;
+    J*     ptr  = reinterpret_cast<J*>(buffer_size);
+    int*   ptr2 = reinterpret_cast<int*>(buffer_size);
 
-    rocprim::double_buffer<rocsparse_int> dummy(ptr, ptr);
-    rocprim::double_buffer<int>           dummy2(ptr2, ptr2);
+    rocprim::double_buffer<J>   dummy(ptr, ptr);
+    rocprim::double_buffer<int> dummy2(ptr2, ptr2);
 
     RETURN_IF_HIP_ERROR(
         rocprim::radix_sort_pairs(nullptr, rocprim_size, dummy2, dummy, m, 0, 32, stream));
@@ -216,8 +217,8 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
             rocprim::radix_sort_pairs(nullptr, transpose_size, dummy, dummy, nnz, 0, 32, stream));
 
         // rocPRIM does not support in-place sorting, so we need an additional buffer
-        transpose_size += sizeof(rocsparse_int) * ((nnz - 1) / 256 + 1) * 256;
-        transpose_size += sizeof(T) * ((nnz - 1) / 256 + 1) * 256;
+        transpose_size += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
+        transpose_size += std::max(sizeof(I), sizeof(T)) * ((nnz - 1) / 256 + 1) * 256;
 
         *buffer_size += transpose_size;
     }
@@ -225,20 +226,20 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     return rocsparse_status_success;
 }
 
-template <typename T>
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          handle,
                                                    rocsparse_operation       trans_A,
                                                    rocsparse_operation       trans_B,
-                                                   rocsparse_int             m,
-                                                   rocsparse_int             nrhs,
-                                                   rocsparse_int             nnz,
+                                                   J                         m,
+                                                   J                         nrhs,
+                                                   I                         nnz,
                                                    const T*                  alpha,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  csr_val,
-                                                   const rocsparse_int*      csr_row_ptr,
-                                                   const rocsparse_int*      csr_col_ind,
+                                                   const I*                  csr_row_ptr,
+                                                   const J*                  csr_col_ind,
                                                    const T*                  B,
-                                                   rocsparse_int             ldb,
+                                                   J                         ldb,
                                                    rocsparse_mat_info        info,
                                                    rocsparse_analysis_policy analysis,
                                                    rocsparse_solve_policy    solve,
@@ -322,7 +323,7 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
     }
 
     // Quick return if possible
-    if(m == 0 || nrhs == 0 || nnz == 0)
+    if(m == 0 || nrhs == 0)
     {
         return rocsparse_status_success;
     }
@@ -396,7 +397,7 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
                                                          (trans_A == rocsparse_operation_none)
                                                              ? info->csrsm_upper_info
                                                              : info->csrsmt_upper_info,
-                                                         &info->zero_pivot,
+                                                         (J**)&info->zero_pivot,
                                                          temp_buffer));
     }
     else
@@ -472,28 +473,34 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
                                                          (trans_A == rocsparse_operation_none)
                                                              ? info->csrsm_lower_info
                                                              : info->csrsmt_lower_info,
-                                                         &info->zero_pivot,
+                                                         (J**)&info->zero_pivot,
                                                          temp_buffer));
     }
 
     return rocsparse_status_success;
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void csrsm(rocsparse_int m,
-                                                   rocsparse_int nrhs,
-                                                   U             alpha_device_host,
-                                                   const rocsparse_int* __restrict__ csr_row_ptr,
-                                                   const rocsparse_int* __restrict__ csr_col_ind,
-                                                   const T* __restrict__ csr_val,
-                                                   T* __restrict__ B,
-                                                   rocsparse_int ldb,
-                                                   int* __restrict__ done_array,
-                                                   rocsparse_int* __restrict__ map,
-                                                   rocsparse_int* __restrict__ zero_pivot,
-                                                   rocsparse_index_base idx_base,
-                                                   rocsparse_fill_mode  fill_mode,
-                                                   rocsparse_diag_type  diag_type)
+template <unsigned int BLOCKSIZE,
+          unsigned int WFSIZE,
+          bool         SLEEP,
+          typename I,
+          typename J,
+          typename T,
+          typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrsm(J m,
+                                                         J nrhs,
+                                                         U alpha_device_host,
+                                                         const I* __restrict__ csr_row_ptr,
+                                                         const J* __restrict__ csr_col_ind,
+                                                         const T* __restrict__ csr_val,
+                                                         T* __restrict__ B,
+                                                         J ldb,
+                                                         int* __restrict__ done_array,
+                                                         J* __restrict__ map,
+                                                         J* __restrict__ zero_pivot,
+                                                         rocsparse_index_base idx_base,
+                                                         rocsparse_fill_mode  fill_mode,
+                                                         rocsparse_diag_type  diag_type)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     csrsm_device<BLOCKSIZE, WFSIZE, SLEEP>(m,
@@ -512,20 +519,27 @@ __launch_bounds__(BLOCKSIZE) __global__ void csrsm(rocsparse_int m,
                                            diag_type);
 }
 
-template <typename T, typename U>
+template <unsigned int DIM_X, unsigned int DIM_Y, typename I, typename T>
+__launch_bounds__(DIM_X* DIM_Y) ROCSPARSE_KERNEL
+    void csrsm_transpose(I m, I n, const T* __restrict__ A, I lda, T* __restrict__ B, I ldb)
+{
+    dense_transpose_device<DIM_X, DIM_Y>(m, n, (T)1, A, lda, B, ldb);
+}
+
+template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle,
                                                 rocsparse_operation       trans_A,
                                                 rocsparse_operation       trans_B,
-                                                rocsparse_int             m,
-                                                rocsparse_int             nrhs,
-                                                rocsparse_int             nnz,
+                                                J                         m,
+                                                J                         nrhs,
+                                                I                         nnz,
                                                 U                         alpha_device_host,
                                                 const rocsparse_mat_descr descr,
                                                 const T*                  csr_val,
-                                                const rocsparse_int*      csr_row_ptr,
-                                                const rocsparse_int*      csr_col_ind,
+                                                const I*                  csr_row_ptr,
+                                                const J*                  csr_col_ind,
                                                 T*                        B,
-                                                rocsparse_int             ldb,
+                                                J                         ldb,
                                                 rocsparse_mat_info        info,
                                                 rocsparse_solve_policy    policy,
                                                 void*                     temp_buffer)
@@ -585,16 +599,16 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
     // If diag type is unit, re-initialize zero pivot to remove structural zeros
     if(descr->diag_type == rocsparse_diag_type_unit)
     {
-        rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            info->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
+        J max = std::numeric_limits<J>::max();
+        RETURN_IF_HIP_ERROR(
+            hipMemcpyAsync(info->zero_pivot, &max, sizeof(J), hipMemcpyHostToDevice, stream));
 
         // Wait for device transfer to finish
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
     }
 
     // Leading dimension
-    rocsparse_int ldimB = ldb;
+    J ldimB = ldb;
 
     // Transpose B if B is not transposed yet to improve performance
     if(trans_B == rocsparse_operation_none)
@@ -623,9 +637,9 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
     }
 
     // Pointers to differentiate between transpose mode
-    const rocsparse_int* local_csr_row_ptr = csr_row_ptr;
-    const rocsparse_int* local_csr_col_ind = csr_col_ind;
-    const T*             local_csr_val     = csr_val;
+    const I* local_csr_row_ptr = csr_row_ptr;
+    const J* local_csr_col_ind = csr_col_ind;
+    const T* local_csr_val     = csr_val;
 
     rocsparse_fill_mode fill_mode = descr->fill_mode;
 
@@ -636,12 +650,16 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
         T* csrt_val = At;
 
         // Gather values
-        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(
-            handle, nnz, csr_val, csrt_val, csrsm_info->trmt_perm, rocsparse_index_base_zero));
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(handle,
+                                                          nnz,
+                                                          csr_val,
+                                                          csrt_val,
+                                                          (const I*)csrsm_info->trmt_perm,
+                                                          rocsparse_index_base_zero));
 
-        local_csr_row_ptr = csrsm_info->trmt_row_ptr;
-        local_csr_col_ind = csrsm_info->trmt_col_ind;
-        local_csr_val     = csrt_val;
+        local_csr_row_ptr = (const I*)csrsm_info->trmt_row_ptr;
+        local_csr_col_ind = (const J*)csrsm_info->trmt_col_ind;
+        local_csr_val     = (const T*)csrt_val;
 
         fill_mode = (fill_mode == rocsparse_fill_mode_lower) ? rocsparse_fill_mode_upper
                                                              : rocsparse_fill_mode_lower;
@@ -674,8 +692,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                Bt,
                                ldimB,
                                done_array,
-                               csrsm_info->row_map,
-                               info->zero_pivot,
+                               (J*)csrsm_info->row_map,
+                               (J*)info->zero_pivot,
                                descr->base,
                                fill_mode,
                                descr->diag_type);
@@ -696,8 +714,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                Bt,
                                ldimB,
                                done_array,
-                               csrsm_info->row_map,
-                               info->zero_pivot,
+                               (J*)csrsm_info->row_map,
+                               (J*)info->zero_pivot,
                                descr->base,
                                fill_mode,
                                descr->diag_type);
@@ -721,8 +739,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                Bt,
                                ldimB,
                                done_array,
-                               csrsm_info->row_map,
-                               info->zero_pivot,
+                               (J*)csrsm_info->row_map,
+                               (J*)info->zero_pivot,
                                descr->base,
                                fill_mode,
                                descr->diag_type);
@@ -743,8 +761,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                Bt,
                                ldimB,
                                done_array,
-                               csrsm_info->row_map,
-                               info->zero_pivot,
+                               (J*)csrsm_info->row_map,
+                               (J*)info->zero_pivot,
                                descr->base,
                                fill_mode,
                                descr->diag_type);
@@ -768,8 +786,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                Bt,
                                ldimB,
                                done_array,
-                               csrsm_info->row_map,
-                               info->zero_pivot,
+                               (J*)csrsm_info->row_map,
+                               (J*)info->zero_pivot,
                                descr->base,
                                fill_mode,
                                descr->diag_type);
@@ -790,8 +808,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                Bt,
                                ldimB,
                                done_array,
-                               csrsm_info->row_map,
-                               info->zero_pivot,
+                               (J*)csrsm_info->row_map,
+                               (J*)info->zero_pivot,
                                descr->base,
                                fill_mode,
                                descr->diag_type);
@@ -815,8 +833,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                Bt,
                                ldimB,
                                done_array,
-                               csrsm_info->row_map,
-                               info->zero_pivot,
+                               (J*)csrsm_info->row_map,
+                               (J*)info->zero_pivot,
                                descr->base,
                                fill_mode,
                                descr->diag_type);
@@ -837,8 +855,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                Bt,
                                ldimB,
                                done_array,
-                               csrsm_info->row_map,
-                               info->zero_pivot,
+                               (J*)csrsm_info->row_map,
+                               (J*)info->zero_pivot,
                                descr->base,
                                fill_mode,
                                descr->diag_type);
@@ -862,8 +880,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                Bt,
                                ldimB,
                                done_array,
-                               csrsm_info->row_map,
-                               info->zero_pivot,
+                               (J*)csrsm_info->row_map,
+                               (J*)info->zero_pivot,
                                descr->base,
                                fill_mode,
                                descr->diag_type);
@@ -884,8 +902,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                Bt,
                                ldimB,
                                done_array,
-                               csrsm_info->row_map,
-                               info->zero_pivot,
+                               (J*)csrsm_info->row_map,
+                               (J*)info->zero_pivot,
                                descr->base,
                                fill_mode,
                                descr->diag_type);
@@ -904,7 +922,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
         dim3 csrsm_blocks((m - 1) / CSRSM_DIM_X + 1);
         dim3 csrsm_threads(CSRSM_DIM_X * CSRSM_DIM_Y);
 
-        hipLaunchKernelGGL((csrsm_transpose_back<CSRSM_DIM_X, CSRSM_DIM_Y>),
+        hipLaunchKernelGGL((dense_transpose_back<CSRSM_DIM_X, CSRSM_DIM_Y>),
                            csrsm_blocks,
                            csrsm_threads,
                            0,
@@ -922,20 +940,20 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
     return rocsparse_status_success;
 }
 
-template <typename T>
+template <typename I, typename J, typename T>
 rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle,
                                                 rocsparse_operation       trans_A,
                                                 rocsparse_operation       trans_B,
-                                                rocsparse_int             m,
-                                                rocsparse_int             nrhs,
-                                                rocsparse_int             nnz,
+                                                J                         m,
+                                                J                         nrhs,
+                                                I                         nnz,
                                                 const T*                  alpha_device_host,
                                                 const rocsparse_mat_descr descr,
                                                 const T*                  csr_val,
-                                                const rocsparse_int*      csr_row_ptr,
-                                                const rocsparse_int*      csr_col_ind,
+                                                const I*                  csr_row_ptr,
+                                                const J*                  csr_col_ind,
                                                 T*                        B,
-                                                rocsparse_int             ldb,
+                                                J                         ldb,
                                                 rocsparse_mat_info        info,
                                                 rocsparse_solve_policy    policy,
                                                 void*                     temp_buffer)
@@ -999,7 +1017,7 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
     }
 
     // Quick return if possible
-    if(m == 0 || nrhs == 0 || nnz == 0)
+    if(m == 0 || nrhs == 0)
     {
         return rocsparse_status_success;
     }
@@ -1177,23 +1195,58 @@ extern "C" rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsp
     return rocsparse_status_success;
 }
 
-//
-// rocsparse_xcsrsm_buffer_size
-//
-#define C_IMPL(NAME, TYPE)                                                  \
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                            \
+    template rocsparse_status rocsparse_csrsm_buffer_size_template( \
+        rocsparse_handle          handle,                           \
+        rocsparse_operation       trans_A,                          \
+        rocsparse_operation       trans_B,                          \
+        JTYPE                     m,                                \
+        JTYPE                     nrhs,                             \
+        ITYPE                     nnz,                              \
+        const TTYPE*              alpha,                            \
+        const rocsparse_mat_descr descr,                            \
+        const TTYPE*              csr_val,                          \
+        const ITYPE*              csr_row_ptr,                      \
+        const JTYPE*              csr_col_ind,                      \
+        const TTYPE*              B,                                \
+        JTYPE                     ldb,                              \
+        rocsparse_mat_info        info,                             \
+        rocsparse_solve_policy    policy,                           \
+        size_t*                   buffer_size);
+
+INSTANTIATE(int32_t, int32_t, float);
+INSTANTIATE(int32_t, int32_t, double);
+INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int32_t, float);
+INSTANTIATE(int64_t, int32_t, double);
+INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int64_t, float);
+INSTANTIATE(int64_t, int64_t, double);
+INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
+#undef INSTANTIATE
+
+/*
+ * ===========================================================================
+ *    C wrapper
+ * ===========================================================================
+ */
+#define C_IMPL(NAME, ITYPE, JTYPE, TTYPE)                                   \
     extern "C" rocsparse_status NAME(rocsparse_handle          handle,      \
                                      rocsparse_operation       trans_A,     \
                                      rocsparse_operation       trans_B,     \
-                                     rocsparse_int             m,           \
-                                     rocsparse_int             nrhs,        \
-                                     rocsparse_int             nnz,         \
-                                     const TYPE*               alpha,       \
+                                     JTYPE                     m,           \
+                                     JTYPE                     nrhs,        \
+                                     ITYPE                     nnz,         \
+                                     const TTYPE*              alpha,       \
                                      const rocsparse_mat_descr descr,       \
-                                     const TYPE*               csr_val,     \
-                                     const rocsparse_int*      csr_row_ptr, \
-                                     const rocsparse_int*      csr_col_ind, \
-                                     const TYPE*               B,           \
-                                     rocsparse_int             ldb,         \
+                                     const TTYPE*              csr_val,     \
+                                     const ITYPE*              csr_row_ptr, \
+                                     const JTYPE*              csr_col_ind, \
+                                     const TTYPE*              B,           \
+                                     JTYPE                     ldb,         \
                                      rocsparse_mat_info        info,        \
                                      rocsparse_solve_policy    policy,      \
                                      size_t*                   buffer_size) \
@@ -1216,30 +1269,66 @@ extern "C" rocsparse_status rocsparse_csrsm_clear(rocsparse_handle handle, rocsp
                                                     buffer_size);           \
     }
 
-C_IMPL(rocsparse_scsrsm_buffer_size, float);
-C_IMPL(rocsparse_dcsrsm_buffer_size, double);
-C_IMPL(rocsparse_ccsrsm_buffer_size, rocsparse_float_complex);
-C_IMPL(rocsparse_zcsrsm_buffer_size, rocsparse_double_complex);
+C_IMPL(rocsparse_scsrsm_buffer_size, int32_t, int32_t, float);
+C_IMPL(rocsparse_dcsrsm_buffer_size, int32_t, int32_t, double);
+C_IMPL(rocsparse_ccsrsm_buffer_size, int32_t, int32_t, rocsparse_float_complex);
+C_IMPL(rocsparse_zcsrsm_buffer_size, int32_t, int32_t, rocsparse_double_complex);
 
 #undef C_IMPL
 
-//
-// rocsparse_xcsrsm_analysis
-//
-#define C_IMPL(NAME, TYPE)                                                  \
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                         \
+    template rocsparse_status rocsparse_csrsm_analysis_template( \
+        rocsparse_handle          handle,                        \
+        rocsparse_operation       trans_A,                       \
+        rocsparse_operation       trans_B,                       \
+        JTYPE                     m,                             \
+        JTYPE                     nrhs,                          \
+        ITYPE                     nnz,                           \
+        const TTYPE*              alpha,                         \
+        const rocsparse_mat_descr descr,                         \
+        const TTYPE*              csr_val,                       \
+        const ITYPE*              csr_row_ptr,                   \
+        const JTYPE*              csr_col_ind,                   \
+        const TTYPE*              B,                             \
+        JTYPE                     ldb,                           \
+        rocsparse_mat_info        info,                          \
+        rocsparse_analysis_policy analysis,                      \
+        rocsparse_solve_policy    solve,                         \
+        void*                     temp_buffer);
+
+INSTANTIATE(int32_t, int32_t, float);
+INSTANTIATE(int32_t, int32_t, double);
+INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int32_t, float);
+INSTANTIATE(int64_t, int32_t, double);
+INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int64_t, float);
+INSTANTIATE(int64_t, int64_t, double);
+INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
+#undef INSTANTIATE
+
+/*
+ * ===========================================================================
+ *    C wrapper
+ * ===========================================================================
+ */
+#define C_IMPL(NAME, ITYPE, JTYPE, TTYPE)                                   \
     extern "C" rocsparse_status NAME(rocsparse_handle          handle,      \
                                      rocsparse_operation       trans_A,     \
                                      rocsparse_operation       trans_B,     \
-                                     rocsparse_int             m,           \
-                                     rocsparse_int             nrhs,        \
-                                     rocsparse_int             nnz,         \
-                                     const TYPE*               alpha,       \
+                                     JTYPE                     m,           \
+                                     JTYPE                     nrhs,        \
+                                     ITYPE                     nnz,         \
+                                     const TTYPE*              alpha,       \
                                      const rocsparse_mat_descr descr,       \
-                                     const TYPE*               csr_val,     \
-                                     const rocsparse_int*      csr_row_ptr, \
-                                     const rocsparse_int*      csr_col_ind, \
-                                     const TYPE*               B,           \
-                                     rocsparse_int             ldb,         \
+                                     const TTYPE*              csr_val,     \
+                                     const ITYPE*              csr_row_ptr, \
+                                     const JTYPE*              csr_col_ind, \
+                                     const TTYPE*              B,           \
+                                     JTYPE                     ldb,         \
                                      rocsparse_mat_info        info,        \
                                      rocsparse_analysis_policy analysis,    \
                                      rocsparse_solve_policy    solve,       \
@@ -1264,30 +1353,64 @@ C_IMPL(rocsparse_zcsrsm_buffer_size, rocsparse_double_complex);
                                                  temp_buffer);              \
     }
 
-C_IMPL(rocsparse_scsrsm_analysis, float);
-C_IMPL(rocsparse_dcsrsm_analysis, double);
-C_IMPL(rocsparse_ccsrsm_analysis, rocsparse_float_complex);
-C_IMPL(rocsparse_zcsrsm_analysis, rocsparse_double_complex);
+C_IMPL(rocsparse_scsrsm_analysis, int32_t, int32_t, float);
+C_IMPL(rocsparse_dcsrsm_analysis, int32_t, int32_t, double);
+C_IMPL(rocsparse_ccsrsm_analysis, int32_t, int32_t, rocsparse_float_complex);
+C_IMPL(rocsparse_zcsrsm_analysis, int32_t, int32_t, rocsparse_double_complex);
 
 #undef C_IMPL
 
-//
-// rocsparse_xcsrsm_solve
-//
-#define C_IMPL(NAME, TYPE)                                                  \
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                            \
+    template rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle,      \
+                                                             rocsparse_operation       trans_A,     \
+                                                             rocsparse_operation       trans_B,     \
+                                                             JTYPE                     m,           \
+                                                             JTYPE                     nrhs,        \
+                                                             ITYPE                     nnz,         \
+                                                             const TTYPE*              alpha,       \
+                                                             const rocsparse_mat_descr descr,       \
+                                                             const TTYPE*              csr_val,     \
+                                                             const ITYPE*              csr_row_ptr, \
+                                                             const JTYPE*              csr_col_ind, \
+                                                             TTYPE*                    B,           \
+                                                             JTYPE                     ldb,         \
+                                                             rocsparse_mat_info        info,        \
+                                                             rocsparse_solve_policy    policy,      \
+                                                             void*                     temp_buffer);
+
+INSTANTIATE(int32_t, int32_t, float);
+INSTANTIATE(int32_t, int32_t, double);
+INSTANTIATE(int32_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int32_t, float);
+INSTANTIATE(int64_t, int32_t, double);
+INSTANTIATE(int64_t, int32_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, int64_t, float);
+INSTANTIATE(int64_t, int64_t, double);
+INSTANTIATE(int64_t, int64_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
+#undef INSTANTIATE
+
+/*
+ * ===========================================================================
+ *    C wrapper
+ * ===========================================================================
+ */
+#define C_IMPL(NAME, ITYPE, JTYPE, TTYPE)                                   \
     extern "C" rocsparse_status NAME(rocsparse_handle          handle,      \
                                      rocsparse_operation       trans_A,     \
                                      rocsparse_operation       trans_B,     \
-                                     rocsparse_int             m,           \
-                                     rocsparse_int             nrhs,        \
-                                     rocsparse_int             nnz,         \
-                                     const TYPE*               alpha,       \
+                                     JTYPE                     m,           \
+                                     JTYPE                     nrhs,        \
+                                     ITYPE                     nnz,         \
+                                     const TTYPE*              alpha,       \
                                      const rocsparse_mat_descr descr,       \
-                                     const TYPE*               csr_val,     \
-                                     const rocsparse_int*      csr_row_ptr, \
-                                     const rocsparse_int*      csr_col_ind, \
-                                     TYPE*                     B,           \
-                                     rocsparse_int             ldb,         \
+                                     const TTYPE*              csr_val,     \
+                                     const ITYPE*              csr_row_ptr, \
+                                     const JTYPE*              csr_col_ind, \
+                                     TTYPE*                    B,           \
+                                     JTYPE                     ldb,         \
                                      rocsparse_mat_info        info,        \
                                      rocsparse_solve_policy    policy,      \
                                      void*                     temp_buffer) \
@@ -1310,9 +1433,9 @@ C_IMPL(rocsparse_zcsrsm_analysis, rocsparse_double_complex);
                                               temp_buffer);                 \
     }
 
-C_IMPL(rocsparse_scsrsm_solve, float);
-C_IMPL(rocsparse_dcsrsm_solve, double);
-C_IMPL(rocsparse_ccsrsm_solve, rocsparse_float_complex);
-C_IMPL(rocsparse_zcsrsm_solve, rocsparse_double_complex);
+C_IMPL(rocsparse_scsrsm_solve, int32_t, int32_t, float);
+C_IMPL(rocsparse_dcsrsm_solve, int32_t, int32_t, double);
+C_IMPL(rocsparse_ccsrsm_solve, int32_t, int32_t, rocsparse_float_complex);
+C_IMPL(rocsparse_zcsrsm_solve, int32_t, int32_t, rocsparse_double_complex);
 
 #undef C_IMPL

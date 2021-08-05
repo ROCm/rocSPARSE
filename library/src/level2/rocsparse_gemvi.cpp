@@ -29,7 +29,8 @@
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void gemvi_scale_kernel(I m, U scalar_device_host, T* x)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void gemvi_scale_kernel(I m, U scalar_device_host, T* x)
 {
     auto scalar = load_scalar_device_host(scalar_device_host);
 
@@ -40,17 +41,17 @@ __launch_bounds__(BLOCKSIZE) __global__ void gemvi_scale_kernel(I m, U scalar_de
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void gemvi_kernel(I m,
-                                                          I n,
-                                                          U alpha_device_host,
-                                                          const T* __restrict__ A,
-                                                          I lda,
-                                                          I nnz,
-                                                          const T* __restrict__ x_val,
-                                                          const I* __restrict__ x_ind,
-                                                          U beta_device_host,
-                                                          T* __restrict__ y,
-                                                          rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void gemvi_kernel(I m,
+                                                                I n,
+                                                                U alpha_device_host,
+                                                                const T* __restrict__ A,
+                                                                I lda,
+                                                                I nnz,
+                                                                const T* __restrict__ x_val,
+                                                                const I* __restrict__ x_ind,
+                                                                U beta_device_host,
+                                                                T* __restrict__ y,
+                                                                rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);

@@ -63,7 +63,7 @@ __forceinline__ __device__ void nnz_device_reduce<0, int64_t>(rocsparse_int tx, 
 //! @param nnz_per_column   The array storing the results of the nnz per column.
 //!
 template <rocsparse_int NB_X, typename I, typename J, typename T>
-__launch_bounds__(NB_X) __global__ void nnz_kernel_col(
+__launch_bounds__(NB_X) ROCSPARSE_KERNEL void nnz_kernel_col(
     rocsparse_order order, J m, J n, const T* __restrict__ A, I lda, I* __restrict__ nnz_per_column)
 {
     static constexpr T s_zero = {};
@@ -136,7 +136,7 @@ __launch_bounds__(NB_X) __global__ void nnz_kernel_col(
 //! @param nnz_per_row      The array storing the results of the nnz per row.
 //!
 template <rocsparse_int DIM_X, rocsparse_int DIM_Y, typename I, typename J, typename T>
-__launch_bounds__(DIM_X* DIM_Y) __global__ void nnz_kernel_row(
+__launch_bounds__(DIM_X* DIM_Y) ROCSPARSE_KERNEL void nnz_kernel_row(
     rocsparse_order order, J m, J n, const T* __restrict__ A, I lda, I* __restrict__ nnz_per_row)
 {
     static constexpr T s_zero = {};

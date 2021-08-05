@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 #include <rocprim/rocprim.hpp>
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgeam_fill_multipass_kernel(rocsparse_int m,
                                        rocsparse_int n,
                                        U             alpha_device_host,

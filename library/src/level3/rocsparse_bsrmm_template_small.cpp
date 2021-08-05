@@ -30,7 +30,7 @@ template <rocsparse_int BLOCKSIZE,
           rocsparse_int BSR_BLOCK_DIM,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrmmnn_small_blockdim_kernel(rocsparse_direction direction,
                                        rocsparse_int       mb,
                                        rocsparse_int       n,
@@ -62,7 +62,7 @@ template <rocsparse_int BLOCKSIZE,
           rocsparse_int BSR_BLOCK_DIM,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrmmnt_small_blockdim_kernel(rocsparse_direction direction,
                                        rocsparse_int       mb,
                                        rocsparse_int       n,

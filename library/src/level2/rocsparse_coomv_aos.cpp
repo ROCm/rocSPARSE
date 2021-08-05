@@ -29,7 +29,7 @@
 #include "coomv_device.h"
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void coomv_scale(I size, U beta_device_host, T* __restrict__ data)
 {
     auto beta = load_scalar_device_host(beta_device_host);
@@ -40,16 +40,16 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void coomvn_aos_wf(I nnz,
-                                                           I loops,
-                                                           U alpha_device_host,
-                                                           const I* __restrict__ coo_ind,
-                                                           const T* __restrict__ coo_val,
-                                                           const T* __restrict__ x,
-                                                           T* __restrict__ y,
-                                                           I* __restrict__ row_block_red,
-                                                           T* __restrict__ val_block_red,
-                                                           rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvn_aos_wf(I nnz,
+                                                                 I loops,
+                                                                 U alpha_device_host,
+                                                                 const I* __restrict__ coo_ind,
+                                                                 const T* __restrict__ coo_val,
+                                                                 const T* __restrict__ x,
+                                                                 T* __restrict__ y,
+                                                                 I* __restrict__ row_block_red,
+                                                                 T* __restrict__ val_block_red,
+                                                                 rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     coomvn_aos_general_wf_reduce<BLOCKSIZE, WF_SIZE>(
@@ -335,3 +335,4 @@ INSTANTIATE(int64_t, float)
 INSTANTIATE(int64_t, double)
 INSTANTIATE(int64_t, rocsparse_float_complex)
 INSTANTIATE(int64_t, rocsparse_double_complex)
+#undef INSTANTIATE

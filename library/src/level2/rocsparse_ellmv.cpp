@@ -29,16 +29,16 @@
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void ellmvn_kernel(I m,
-                                                           I n,
-                                                           I ell_width,
-                                                           U alpha_device_host,
-                                                           const I* __restrict__ ell_col_ind,
-                                                           const T* __restrict__ ell_val,
-                                                           const T* __restrict__ x,
-                                                           U beta_device_host,
-                                                           T* __restrict__ y,
-                                                           rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void ellmvn_kernel(I m,
+                                                                 I n,
+                                                                 I ell_width,
+                                                                 U alpha_device_host,
+                                                                 const I* __restrict__ ell_col_ind,
+                                                                 const T* __restrict__ ell_val,
+                                                                 const T* __restrict__ x,
+                                                                 U beta_device_host,
+                                                                 T* __restrict__ y,
+                                                                 rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
@@ -251,6 +251,7 @@ INSTANTIATE(int64_t, float)
 INSTANTIATE(int64_t, double)
 INSTANTIATE(int64_t, rocsparse_float_complex)
 INSTANTIATE(int64_t, rocsparse_double_complex)
+#undef INSTANTIATE
 
 /*
  * ===========================================================================

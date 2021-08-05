@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -468,6 +468,39 @@ rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info);
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info);
 
+/*! \ingroup aux_module
+ *  \brief Create a color info structure
+ *
+ *  \details
+ *  \p rocsparse_create_color_info creates a structure that holds the color info data
+ *  that is gathered during the analysis routines available. It should be destroyed
+ *  at the end using rocsparse_destroy_color_info().
+ *
+ *  @param[inout]
+ *  info    the pointer to the info structure.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p info pointer is invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_color_info(rocsparse_color_info* info);
+
+/*! \ingroup aux_module
+ *  \brief Destroy a color info structure
+ *
+ *  \details
+ *  \p rocsparse_destroy_color_info destroys a color info structure.
+ *
+ *  @param[in]
+ *  info    the info structure.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p info pointer is invalid.
+ *  \retval rocsparse_status_internal_error an internal error occurred.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_destroy_color_info(rocsparse_color_info info);
+
 // Generic API
 
 // SpVec
@@ -566,6 +599,19 @@ rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
                                             rocsparse_datatype     data_type);
 
 ROCSPARSE_EXPORT
+rocsparse_status rocsparse_create_bell_descr(rocsparse_spmat_descr* descr,
+                                             int64_t                rows,
+                                             int64_t                cols,
+                                             rocsparse_direction    ell_block_dir,
+                                             int64_t                ell_block_dim,
+                                             int64_t                ell_cols,
+                                             void*                  ell_col_ind,
+                                             void*                  ell_val,
+                                             rocsparse_indextype    idx_type,
+                                             rocsparse_index_base   idx_base,
+                                             rocsparse_datatype     data_type);
+
+ROCSPARSE_EXPORT
 rocsparse_status rocsparse_destroy_spmat_descr(rocsparse_spmat_descr descr);
 
 ROCSPARSE_EXPORT
@@ -616,6 +662,19 @@ rocsparse_status rocsparse_ell_get(const rocsparse_spmat_descr descr,
                                    rocsparse_datatype*         data_type);
 
 ROCSPARSE_EXPORT
+rocsparse_status rocsparse_bell_get(const rocsparse_spmat_descr descr,
+                                    int64_t*                    rows,
+                                    int64_t*                    cols,
+                                    rocsparse_direction*        ell_block_dir,
+                                    int64_t*                    ell_block_dim,
+                                    int64_t*                    ell_cols,
+                                    void**                      ell_col_ind,
+                                    void**                      ell_val,
+                                    rocsparse_indextype*        idx_type,
+                                    rocsparse_index_base*       idx_base,
+                                    rocsparse_datatype*         data_type);
+
+ROCSPARSE_EXPORT
 rocsparse_status rocsparse_coo_set_pointers(rocsparse_spmat_descr descr,
                                             void*                 coo_row_ind,
                                             void*                 coo_col_ind,
@@ -660,6 +719,18 @@ rocsparse_status rocsparse_spmat_get_values(rocsparse_spmat_descr descr, void** 
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* values);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
+                                               rocsparse_spmat_attribute attribute,
+                                               void*                     data,
+                                               size_t                    data_size);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmat_set_attribute(rocsparse_spmat_descr     descr,
+                                               rocsparse_spmat_attribute attribute,
+                                               const void*               data,
+                                               size_t                    data_size);
 
 // Dense vector
 ROCSPARSE_EXPORT

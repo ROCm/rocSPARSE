@@ -341,6 +341,20 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_datatype value_)
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_order value_)
+{
+    switch(value_)
+    {
+    case rocsparse_order_row:
+    case rocsparse_order_column:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
 {
     switch(value_)
@@ -358,11 +372,134 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmv_alg value_)
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsv_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spsv_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsv_stage value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spsv_stage_auto:
+    case rocsparse_spsv_stage_buffer_size:
+    case rocsparse_spsv_stage_preprocess:
+    case rocsparse_spsv_stage_compute:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsm_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spsm_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spsm_stage value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spsm_stage_auto:
+    case rocsparse_spsm_stage_buffer_size:
+    case rocsparse_spsm_stage_preprocess:
+    case rocsparse_spsm_stage_compute:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmm_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spmm_alg_default:
+    case rocsparse_spmm_alg_csr:
+    case rocsparse_spmm_alg_coo_segmented:
+    case rocsparse_spmm_alg_coo_atomic:
+    case rocsparse_spmm_alg_csr_row_split:
+    case rocsparse_spmm_alg_csr_merge:
+    case rocsparse_spmm_alg_coo_segmented_atomic:
+    case rocsparse_spmm_alg_bell:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spmm_stage value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spmm_stage_auto:
+    case rocsparse_spmm_stage_buffer_size:
+    case rocsparse_spmm_stage_preprocess:
+    case rocsparse_spmm_stage_compute:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_sddmm_alg value_)
 {
     switch(value_)
     {
     case rocsparse_sddmm_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spgemm_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spgemm_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_spgemm_stage value_)
+{
+    switch(value_)
+    {
+    case rocsparse_spgemm_stage_auto:
+    case rocsparse_spgemm_stage_buffer_size:
+    case rocsparse_spgemm_stage_nnz:
+    case rocsparse_spgemm_stage_compute:
     {
         return false;
     }
@@ -396,5 +533,26 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_analysis_policy value_)
     }
     return true;
 };
+
+template <typename T>
+struct floating_traits
+{
+    using data_t = T;
+};
+
+template <>
+struct floating_traits<rocsparse_float_complex>
+{
+    using data_t = float;
+};
+
+template <>
+struct floating_traits<rocsparse_double_complex>
+{
+    using data_t = double;
+};
+
+template <typename T>
+using floating_data_t = typename floating_traits<T>::data_t;
 
 #endif // UTILITY_H

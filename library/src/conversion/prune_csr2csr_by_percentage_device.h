@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "handle.h"
 
 template <rocsparse_int BLOCK_SIZE, typename T>
-static __launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void abs_kernel(rocsparse_int nnz_A, const T* csr_val_A, T* output)
 {
     rocsparse_int thread_id = hipThreadIdx_x + hipBlockIdx_x * BLOCK_SIZE;

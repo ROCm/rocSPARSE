@@ -28,17 +28,18 @@
 
 #include "bsrsv_device.h"
 
-#define LAUNCH_BSRSV_GTHR_DIM(bsize, wfsize, dim)                   \
-    hipLaunchKernelGGL((bsrsv_gather<wfsize, bsize / wfsize, dim>), \
-                       dim3((wfsize * nnzb - 1) / bsize + 1),       \
-                       dim3(wfsize, bsize / wfsize),                \
-                       0,                                           \
-                       stream,                                      \
-                       nnzb,                                        \
-                       bsrsv->trmt_perm,                            \
-                       bsr_val,                                     \
-                       bsrt_val,                                    \
-                       bsr_dim)
+#define LAUNCH_BSRSV_GTHR_DIM(bsize, wfsize, dim)                 \
+    hipLaunchKernelGGL((bsr_gather<wfsize, bsize / wfsize, dim>), \
+                       dim3((wfsize * nnzb - 1) / bsize + 1),     \
+                       dim3(wfsize, bsize / wfsize),              \
+                       0,                                         \
+                       stream,                                    \
+                       dir,                                       \
+                       nnzb,                                      \
+                       (rocsparse_int*)bsrsv->trmt_perm,          \
+                       bsr_val,                                   \
+                       bsrt_val,                                  \
+                       block_dim)
 
 #define LAUNCH_BSRSV_GTHR(bsize, wfsize, dim) \
     if(dim <= 2)                              \
@@ -93,12 +94,12 @@
                        local_bsr_row_ptr,                              \
                        local_bsr_col_ind,                              \
                        local_bsr_val,                                  \
-                       bsr_dim,                                        \
+                       block_dim,                                      \
                        x,                                              \
                        y,                                              \
                        done_array,                                     \
-                       bsrsv->row_map,                                 \
-                       info->zero_pivot,                               \
+                       (rocsparse_int*)bsrsv->row_map,                 \
+                       (rocsparse_int*)info->zero_pivot,               \
                        descr->base,                                    \
                        descr->diag_type,                               \
                        dir)
@@ -114,12 +115,12 @@
                        local_bsr_row_ptr,                              \
                        local_bsr_col_ind,                              \
                        local_bsr_val,                                  \
-                       bsr_dim,                                        \
+                       block_dim,                                      \
                        x,                                              \
                        y,                                              \
                        done_array,                                     \
-                       bsrsv->row_map,                                 \
-                       info->zero_pivot,                               \
+                       (rocsparse_int*)bsrsv->row_map,                 \
+                       (rocsparse_int*)info->zero_pivot,               \
                        descr->base,                                    \
                        descr->diag_type,                               \
                        dir)
@@ -159,12 +160,12 @@
                        local_bsr_row_ptr,                          \
                        local_bsr_col_ind,                          \
                        local_bsr_val,                              \
-                       bsr_dim,                                    \
+                       block_dim,                                  \
                        x,                                          \
                        y,                                          \
                        done_array,                                 \
-                       bsrsv->row_map,                             \
-                       info->zero_pivot,                           \
+                       (rocsparse_int*)bsrsv->row_map,             \
+                       (rocsparse_int*)info->zero_pivot,           \
                        descr->base,                                \
                        descr->diag_type,                           \
                        dir)
@@ -180,12 +181,12 @@
                        local_bsr_row_ptr,                          \
                        local_bsr_col_ind,                          \
                        local_bsr_val,                              \
-                       bsr_dim,                                    \
+                       block_dim,                                  \
                        x,                                          \
                        y,                                          \
                        done_array,                                 \
-                       bsrsv->row_map,                             \
-                       info->zero_pivot,                           \
+                       (rocsparse_int*)bsrsv->row_map,             \
+                       (rocsparse_int*)info->zero_pivot,           \
                        descr->base,                                \
                        descr->diag_type,                           \
                        dir)
@@ -196,13 +197,13 @@ template <unsigned int  BLOCKSIZE,
           bool          SLEEP,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrsv_lower_shared(rocsparse_int mb,
                             U             alpha_device_host,
                             const rocsparse_int* __restrict__ bsr_row_ptr,
                             const rocsparse_int* __restrict__ bsr_col_ind,
                             const T* __restrict__ bsr_val,
-                            rocsparse_int bsr_dim,
+                            rocsparse_int block_dim,
                             const T* __restrict__ x,
                             T* __restrict__ y,
                             int* __restrict__ done_array,
@@ -218,7 +219,7 @@ __launch_bounds__(BLOCKSIZE) __global__
                                                                 bsr_row_ptr,
                                                                 bsr_col_ind,
                                                                 bsr_val,
-                                                                bsr_dim,
+                                                                block_dim,
                                                                 x,
                                                                 y,
                                                                 done_array,
@@ -235,13 +236,13 @@ template <unsigned int  BLOCKSIZE,
           bool          SLEEP,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrsv_upper_shared(rocsparse_int mb,
                             U             alpha_device_host,
                             const rocsparse_int* __restrict__ bsr_row_ptr,
                             const rocsparse_int* __restrict__ bsr_col_ind,
                             const T* __restrict__ bsr_val,
-                            rocsparse_int bsr_dim,
+                            rocsparse_int block_dim,
                             const T* __restrict__ x,
                             T* __restrict__ y,
                             int* __restrict__ done_array,
@@ -257,7 +258,7 @@ __launch_bounds__(BLOCKSIZE) __global__
                                                                 bsr_row_ptr,
                                                                 bsr_col_ind,
                                                                 bsr_val,
-                                                                bsr_dim,
+                                                                block_dim,
                                                                 x,
                                                                 y,
                                                                 done_array,
@@ -269,13 +270,13 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrsv_lower_general(rocsparse_int mb,
                              U             alpha_device_host,
                              const rocsparse_int* __restrict__ bsr_row_ptr,
                              const rocsparse_int* __restrict__ bsr_col_ind,
                              const T* __restrict__ bsr_val,
-                             rocsparse_int bsr_dim,
+                             rocsparse_int block_dim,
                              const T* __restrict__ x,
                              T* __restrict__ y,
                              int* __restrict__ done_array,
@@ -291,7 +292,7 @@ __launch_bounds__(BLOCKSIZE) __global__
                                                          bsr_row_ptr,
                                                          bsr_col_ind,
                                                          bsr_val,
-                                                         bsr_dim,
+                                                         block_dim,
                                                          x,
                                                          y,
                                                          done_array,
@@ -303,13 +304,13 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void bsrsv_upper_general(rocsparse_int mb,
                              U             alpha_device_host,
                              const rocsparse_int* __restrict__ bsr_row_ptr,
                              const rocsparse_int* __restrict__ bsr_col_ind,
                              const T* __restrict__ bsr_val,
-                             rocsparse_int bsr_dim,
+                             rocsparse_int block_dim,
                              const T* __restrict__ x,
                              T* __restrict__ y,
                              int* __restrict__ done_array,
@@ -325,7 +326,7 @@ __launch_bounds__(BLOCKSIZE) __global__
                                                          bsr_row_ptr,
                                                          bsr_col_ind,
                                                          bsr_val,
-                                                         bsr_dim,
+                                                         block_dim,
                                                          x,
                                                          y,
                                                          done_array,
@@ -347,7 +348,7 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
                                                 const T*                  bsr_val,
                                                 const rocsparse_int*      bsr_row_ptr,
                                                 const rocsparse_int*      bsr_col_ind,
-                                                rocsparse_int             bsr_dim,
+                                                rocsparse_int             block_dim,
                                                 rocsparse_mat_info        info,
                                                 const T*                  x,
                                                 T*                        y,
@@ -386,8 +387,11 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
     if(descr->diag_type == rocsparse_diag_type_unit)
     {
         rocsparse_int max = std::numeric_limits<rocsparse_int>::max();
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            info->zero_pivot, &max, sizeof(rocsparse_int), hipMemcpyHostToDevice, stream));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync((rocsparse_int*)info->zero_pivot,
+                                           &max,
+                                           sizeof(rocsparse_int),
+                                           hipMemcpyHostToDevice,
+                                           stream));
 
         // Wait for device transfer to finish
         RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
@@ -407,11 +411,11 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
         T* bsrt_val = reinterpret_cast<T*>(ptr);
 
         // Gather transposed values
-        LAUNCH_BSRSV_GTHR(256, 64, bsr_dim);
+        LAUNCH_BSRSV_GTHR(256, 64, block_dim);
 
-        local_bsr_row_ptr = bsrsv->trmt_row_ptr;
-        local_bsr_col_ind = bsrsv->trmt_col_ind;
-        local_bsr_val     = bsrt_val;
+        local_bsr_row_ptr = (rocsparse_int*)bsrsv->trmt_row_ptr;
+        local_bsr_col_ind = (rocsparse_int*)bsrsv->trmt_col_ind;
+        local_bsr_val     = (T*)bsrt_val;
 
         fill_mode = (fill_mode == rocsparse_fill_mode_lower) ? rocsparse_fill_mode_upper
                                                              : rocsparse_fill_mode_lower;
@@ -423,17 +427,17 @@ rocsparse_status rocsparse_bsrsv_solve_dispatch(rocsparse_handle          handle
 
     if(handle->wavefront_size == 64)
     {
-        if(bsr_dim <= 8)
+        if(block_dim <= 8)
         {
             // Launch shared memory based kernel for small BSR block dimensions
             LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 8, gcnArch, asicRev);
         }
-        else if(bsr_dim <= 16)
+        else if(block_dim <= 16)
         {
             // Launch shared memory based kernel for small BSR block dimensions
             LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 16, gcnArch, asicRev);
         }
-        else if(bsr_dim <= 32)
+        else if(block_dim <= 32)
         {
             // Launch shared memory based kernel for small BSR block dimensions
             LAUNCH_BSRSV_SHARED(fill_mode, handle->pointer_mode, 128, 64, 32, gcnArch, asicRev);
@@ -471,7 +475,7 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
                                                 const T*                  bsr_val,
                                                 const rocsparse_int*      bsr_row_ptr,
                                                 const rocsparse_int*      bsr_col_ind,
-                                                rocsparse_int             bsr_dim,
+                                                rocsparse_int             block_dim,
                                                 rocsparse_mat_info        info,
                                                 const T*                  x,
                                                 T*                        y,
@@ -501,7 +505,7 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
               (const void*&)bsr_val,
               (const void*&)bsr_row_ptr,
               (const void*&)bsr_col_ind,
-              bsr_dim,
+              block_dim,
               (const void*&)info,
               (const void*&)x,
               (const void*&)y,
@@ -513,7 +517,7 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
               replaceX<T>("X"),
               "--mtx <matrix.mtx> ",
               "--blockdim",
-              bsr_dim,
+              block_dim,
               "--alpha",
               LOG_BENCH_SCALAR_VALUE(handle, alpha_device_host));
 
@@ -545,13 +549,13 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
     }
 
     // Check sizes
-    if(mb < 0 || nnzb < 0 || bsr_dim < 0)
+    if(mb < 0 || nnzb < 0 || block_dim < 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(mb == 0 || nnzb == 0 || bsr_dim == 0)
+    if(mb == 0 || nnzb == 0 || block_dim == 0)
     {
         return rocsparse_status_success;
     }
@@ -575,7 +579,7 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
                                               bsr_val,
                                               bsr_row_ptr,
                                               bsr_col_ind,
-                                              bsr_dim,
+                                              block_dim,
                                               info,
                                               x,
                                               y,
@@ -594,7 +598,7 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
                                               bsr_val,
                                               bsr_row_ptr,
                                               bsr_col_ind,
-                                              bsr_dim,
+                                              block_dim,
                                               info,
                                               x,
                                               y,
@@ -616,7 +620,7 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
                                      const TYPE*               bsr_val,     \
                                      const rocsparse_int*      bsr_row_ptr, \
                                      const rocsparse_int*      bsr_col_ind, \
-                                     rocsparse_int             bsr_dim,     \
+                                     rocsparse_int             block_dim,   \
                                      rocsparse_mat_info        info,        \
                                      const TYPE*               x,           \
                                      TYPE*                     y,           \
@@ -633,7 +637,7 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
                                               bsr_val,                      \
                                               bsr_row_ptr,                  \
                                               bsr_col_ind,                  \
-                                              bsr_dim,                      \
+                                              block_dim,                    \
                                               info,                         \
                                               x,                            \
                                               y,                            \

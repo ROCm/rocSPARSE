@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ template <rocsparse_direction DIRECTION,
           rocsparse_int       BLOCK_SIZE,
           rocsparse_int       WF_SIZE,
           typename T>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void gebsr2csr_kernel(rocsparse_int        mb,
                           rocsparse_int        nb,
                           rocsparse_index_base bsr_base,
@@ -99,7 +99,7 @@ __launch_bounds__(BLOCK_SIZE) __global__
 }
 
 template <rocsparse_direction DIRECTION, rocsparse_int BLOCK_SIZE, rocsparse_int WF_SIZE>
-__launch_bounds__(BLOCK_SIZE) __global__
+__launch_bounds__(BLOCK_SIZE) ROCSPARSE_KERNEL
     void gebsr2csr_nnz_kernel(rocsparse_int        mb,
                               rocsparse_int        nb,
                               rocsparse_index_base bsr_base,

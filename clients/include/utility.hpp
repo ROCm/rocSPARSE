@@ -38,12 +38,56 @@
 /* ==================================================================================== */
 // Return index type
 template <typename I>
-rocsparse_indextype get_indextype(void);
+inline rocsparse_indextype get_indextype(void);
 
 /* ==================================================================================== */
 // Return data type
 template <typename T>
-rocsparse_datatype get_datatype(void);
+inline rocsparse_datatype get_datatype(void);
+
+/*! \brief  Return \ref rocsparse_indextype */
+template <>
+inline rocsparse_indextype get_indextype<uint16_t>(void)
+{
+    return rocsparse_indextype_u16;
+}
+
+template <>
+inline rocsparse_indextype get_indextype<int32_t>(void)
+{
+    return rocsparse_indextype_i32;
+}
+
+template <>
+inline rocsparse_indextype get_indextype<int64_t>(void)
+{
+    return rocsparse_indextype_i64;
+}
+
+/*! \brief  Return \ref rocsparse_datatype */
+template <>
+inline rocsparse_datatype get_datatype<float>(void)
+{
+    return rocsparse_datatype_f32_r;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<double>(void)
+{
+    return rocsparse_datatype_f64_r;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<rocsparse_float_complex>(void)
+{
+    return rocsparse_datatype_f32_c;
+}
+
+template <>
+inline rocsparse_datatype get_datatype<rocsparse_double_complex>(void)
+{
+    return rocsparse_datatype_f64_c;
+}
 
 /* ==================================================================================== */
 /*! \brief  local handle which is automatically created and destroyed  */
@@ -129,6 +173,40 @@ public:
         return this->info;
     }
     operator const rocsparse_mat_info&() const
+    {
+        return this->info;
+    }
+};
+
+/* ==================================================================================== */
+/*! \brief  local color info which is automatically created and destroyed  */
+class rocsparse_local_color_info
+{
+    rocsparse_color_info info{};
+
+public:
+    rocsparse_local_color_info()
+    {
+        rocsparse_create_color_info(&this->info);
+    }
+    ~rocsparse_local_color_info()
+    {
+        rocsparse_destroy_color_info(this->info);
+    }
+
+    // Sometimes useful to reset local info
+    void reset()
+    {
+        rocsparse_destroy_color_info(this->info);
+        rocsparse_create_color_info(&this->info);
+    }
+
+    // Allow rocsparse_local_color_info to be used anywhere rocsparse_color_info is expected
+    operator rocsparse_color_info&()
+    {
+        return this->info;
+    }
+    operator const rocsparse_color_info&() const
     {
         return this->info;
     }
@@ -305,8 +383,9 @@ public:
                                        idx_base,
                                        compute_type);
         }
-        else if(format == rocsparse_format_csc)
+        else
         {
+            assert(format == rocsparse_format_csc);
             rocsparse_create_csc_descr(&this->descr,
                                        m,
                                        n,
@@ -340,6 +419,30 @@ public:
                                 (DIRECTION_ == rocsparse_direction_row) ? rocsparse_format_csr
                                                                         : rocsparse_format_csc)
     {
+    }
+
+    rocsparse_local_spmat(int64_t              m,
+                          int64_t              n,
+                          rocsparse_direction  block_dir,
+                          int64_t              block_size,
+                          int64_t              ell_cols,
+                          void*                ell_col_ind,
+                          void*                ell_val,
+                          rocsparse_indextype  idx_type,
+                          rocsparse_index_base idx_base,
+                          rocsparse_datatype   compute_type)
+    {
+        rocsparse_create_bell_descr(&this->descr,
+                                    m,
+                                    n,
+                                    block_dir,
+                                    block_size,
+                                    ell_cols,
+                                    ell_col_ind,
+                                    ell_val,
+                                    idx_type,
+                                    idx_base,
+                                    compute_type);
     }
 
     rocsparse_local_spmat(int64_t              m,

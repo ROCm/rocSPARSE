@@ -29,16 +29,16 @@
 #include <hip/hip_runtime.h>
 
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void coo2dense_kernel(I                    m,
-                                                              I                    n,
-                                                              I                    nnz,
-                                                              I                    lda,
-                                                              rocsparse_index_base base,
-                                                              const T*             coo_val,
-                                                              const I*             coo_row_ind,
-                                                              const I*             coo_col_ind,
-                                                              T*                   A,
-                                                              rocsparse_order      order)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coo2dense_kernel(I                    m,
+                                                                    I                    n,
+                                                                    I                    nnz,
+                                                                    I                    lda,
+                                                                    rocsparse_index_base base,
+                                                                    const T*             coo_val,
+                                                                    const I*        coo_row_ind,
+                                                                    const I*        coo_col_ind,
+                                                                    T*              A,
+                                                                    rocsparse_order order)
 {
     rocsparse_int gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 

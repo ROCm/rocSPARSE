@@ -71,9 +71,16 @@ constexpr double spmv_gflop_count(J M, I nnz, bool beta = false)
     return (2.0 * nnz + (beta ? M : 0)) / 1e9;
 }
 
-constexpr double csrsv_gflop_count(rocsparse_int M, rocsparse_int nnz, rocsparse_diag_type diag)
+template <typename I, typename J>
+constexpr double csrsv_gflop_count(J M, I nnz, rocsparse_diag_type diag)
 {
     return (2.0 * nnz + M + (diag == rocsparse_diag_type_non_unit ? M : 0)) / 1e9;
+}
+
+template <typename I, typename J>
+constexpr double spsv_gflop_count(J M, I nnz, rocsparse_diag_type diag)
+{
+    return csrsv_gflop_count(M, nnz, diag);
 }
 
 template <typename I>
@@ -93,7 +100,7 @@ constexpr double bsrmm_gflop_count(rocsparse_int N,
                                    rocsparse_int nnz_C,
                                    bool          beta = false)
 {
-    return (3.0 * nnzb * block_dim * block_dim * N + (beta ? nnz_C : 0)) / 1e9;
+    return (2.0 * nnzb * block_dim * block_dim * N + (beta ? nnz_C : 0)) / 1e9;
 }
 
 constexpr double gebsrmm_gflop_count(rocsparse_int N,
@@ -103,13 +110,15 @@ constexpr double gebsrmm_gflop_count(rocsparse_int N,
                                      rocsparse_int nnz_C,
                                      bool          beta = false)
 {
-    return (3.0 * nnzb * row_block_dim * col_block_dim * N + (beta ? nnz_C : 0)) / 1e9;
+    return (2.0 * nnzb * row_block_dim * col_block_dim * N + (beta ? nnz_C : 0)) / 1e9;
 }
 
 template <typename I, typename J>
 constexpr double csrmm_gflop_count(J N, I nnz_A, I nnz_C, bool beta = false)
 {
-    return (3.0 * nnz_A * N + (beta ? nnz_C : 0)) / 1e9;
+    // Multiplication by 2 comes from 1 addition and 1 multiplication in product. Multiplication
+    // by alpha and beta not counted.
+    return (2.0 * nnz_A * N + (beta ? nnz_C : 0)) / 1e9;
 }
 
 template <typename I, typename J>

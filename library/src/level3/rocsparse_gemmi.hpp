@@ -31,7 +31,7 @@
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gemmi_scale_kernel(rocsparse_int size, U alpha_device_host, T* __restrict__ data)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -39,7 +39,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gemmit_kernel(rocsparse_int m,
                        U             alpha_device_host,
                        const T* __restrict__ A,

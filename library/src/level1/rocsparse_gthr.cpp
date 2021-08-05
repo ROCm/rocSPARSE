@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -114,7 +114,9 @@ rocsparse_status rocsparse_gthr_template(rocsparse_handle     handle,
         const ITYPE*         x_ind,                                  \
         rocsparse_index_base idx_base);
 
-INSTANTIATE(rocsparse_int, rocsparse_int)
+INSTANTIATE(int32_t, int32_t)
+INSTANTIATE(int64_t, int32_t)
+INSTANTIATE(int64_t, int64_t)
 INSTANTIATE(int32_t, float)
 INSTANTIATE(int32_t, double)
 INSTANTIATE(int32_t, rocsparse_float_complex)
@@ -123,6 +125,7 @@ INSTANTIATE(int64_t, float)
 INSTANTIATE(int64_t, double)
 INSTANTIATE(int64_t, rocsparse_float_complex)
 INSTANTIATE(int64_t, rocsparse_double_complex)
+#undef INSTANTIATE
 
 /*
  * ===========================================================================

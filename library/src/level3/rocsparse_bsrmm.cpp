@@ -145,10 +145,12 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
         rocsparse_int nnz = nnzb * block_dim;
         rocsparse_int m   = mb * block_dim;
         rocsparse_int k   = kb * block_dim;
+
         return rocsparse_csrmm_template_dispatch(handle,
                                                  trans_A,
                                                  trans_B,
                                                  rocsparse_order_column,
+                                                 rocsparse_csrmm_alg_default,
                                                  m,
                                                  n,
                                                  k,
@@ -162,7 +164,8 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                  ldb,
                                                  beta,
                                                  C,
-                                                 ldc);
+                                                 ldc,
+                                                 nullptr);
     }
 
     if(block_dim == 2)
@@ -224,6 +227,7 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                 bsr_val,
                                                 bsr_row_ptr,
                                                 bsr_col_ind,
+
                                                 block_dim,
                                                 B,
                                                 ldb,

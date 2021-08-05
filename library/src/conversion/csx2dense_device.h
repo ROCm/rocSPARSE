@@ -33,7 +33,7 @@ template <rocsparse_int NUMROWS_PER_BLOCK,
           typename I,
           typename J,
           typename T>
-__launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) __global__
+__launch_bounds__(WF_SIZE* NUMROWS_PER_BLOCK) ROCSPARSE_KERNEL
     void csr2dense_kernel(rocsparse_int base,
                           J             m,
                           J             n,
@@ -78,7 +78,7 @@ template <rocsparse_int NUMCOLUMNS_PER_BLOCK,
           typename I,
           typename J,
           typename T>
-__launch_bounds__(WF_SIZE* NUMCOLUMNS_PER_BLOCK) __global__
+__launch_bounds__(WF_SIZE* NUMCOLUMNS_PER_BLOCK) ROCSPARSE_KERNEL
     void csc2dense_kernel(rocsparse_int base,
                           J             m,
                           J             n,

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,13 +93,13 @@ static inline __device__ T sum2_reduce(T cur_sum, T* partial, int lid, I max_siz
 template <rocsparse_int BLOCKSIZE,
           rocsparse_int BLOCK_MULTIPLIER,
           rocsparse_int ROWS_FOR_VECTOR,
-          rocsparse_int WG_BITS,
-          rocsparse_int ROW_BITS,
           rocsparse_int WG_SIZE,
           typename I,
           typename J,
           typename T>
-__device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
+__device__ void csrmvn_adaptive_device(const I*             row_blocks,
+                                       unsigned int*        wg_flags,
+                                       const J*             wg_ids,
                                        T                    alpha,
                                        const I*             csr_row_ptr,
                                        const J*             csr_col_ind,
@@ -112,41 +112,35 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
     __shared__ T partialSums[BLOCKSIZE];
 
     int lid = hipThreadIdx_x;
-    J   gid = hipBlockIdx_x;
+    int gid = hipBlockIdx_x;
 
-    // The row blocks buffer holds a packed set of information used to inform each
+    // The row blocks buffer holds information used to inform each
     // workgroup about how to do its work:
     //
-    // |6666 5555 5555 5544 4444 4444 3333 3333|3322 2222|2222 1111 1111 1100 0000 0000|
-    // |3210 9876 5432 1098 7654 3210 9876 5432|1098 7654|3210 9876 5432 1098 7654 3210|
-    // |------------Row Information------------|--------^|---WG ID within a long row---|
-    // |                                       |    flag/|or # reduce threads for short|
-    //
-    // The upper 32 bits of each rowBlock entry tell the workgroup the ID of the first
+    // The rowBlock entry tell the workgroup the ID of the first
     // row it will be working on. When one workgroup calculates multiple rows, this
     // rowBlock entry and the next one tell it the range of rows to work on.
-    // The lower 24 bits are used whenever multiple workgroups calculate a single long
+    // The wg_ids are used whenever multiple workgroups calculate a single long
     // row. This tells each workgroup its ID within that row, so it knows which
     // part of the row to operate on.
-    // Alternately, on short row blocks, the lower bits are used to communicate
+    // Alternately, on short row blocks, wg_ids are used to communicate
     // the number of threads that should be used for the reduction. Pre-calculating
     // this on the CPU-side results in a noticable performance uplift on many matrices.
-    // Bit 24 is a flag bit used so that the multiple WGs calculating a long row can
+    // wg_flags contains the flag bit used so that the multiple WGs calculating a long row can
     // know when the first workgroup for that row has finished initializing the output
     // value. While this bit is the same as the first workgroup's flag bit, this
     // workgroup will spin-loop.
-    J row      = ((row_blocks[gid] >> (64 - ROW_BITS)) & ((1ULL << ROW_BITS) - 1ULL));
-    J stop_row = ((row_blocks[gid + 1] >> (64 - ROW_BITS)) & ((1ULL << ROW_BITS) - 1ULL));
+    I row      = row_blocks[gid];
+    I stop_row = row_blocks[gid + 1];
     J num_rows = stop_row - row;
 
-    // Get the workgroup within this long row ID out of the bottom bits of the row block.
-    J wg = row_blocks[gid] & ((1 << WG_BITS) - 1);
+    // Get the workgroup within this long row ID
+    J wg = wg_ids[gid];
 
     // Any workgroup only calculates, at most, BLOCK_MULTIPLIER*BLOCKSIZE items in a row.
     // If there are more items in this row, we assign more workgroups.
-    I vecStart
-        = rocsparse_mad24((I)wg, (I)BLOCK_MULTIPLIER * BLOCKSIZE, csr_row_ptr[row] - idx_base);
-    I vecEnd = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
+    I vecStart = (I)wg * (I)BLOCK_MULTIPLIER * BLOCKSIZE + csr_row_ptr[row] - idx_base;
+    I vecEnd   = min(csr_row_ptr[row + 1] - idx_base, vecStart + BLOCK_MULTIPLIER * BLOCKSIZE);
 
     T temp_sum = static_cast<T>(0);
 
@@ -221,9 +215,9 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
             // {numThreadsForRed} adjacent threads all work on the same row, so their
             // start and end values are the same.
             // numThreadsForRed guaranteed to be a power of two, so the clz code below
-            // avoids an integer divide. ~2% perf gain in EXTRA_PRECISION.
+            // avoids an integer divide.
             // size_t st = lid/numThreadsForRed;
-            J local_row       = row + (lid >> (31 - __clz(numThreadsForRed)));
+            I local_row       = row + (lid >> (31 - __clz(numThreadsForRed)));
             J local_first_val = csr_row_ptr[local_row] - csr_row_ptr[row];
             J local_last_val  = csr_row_ptr[local_row + 1] - csr_row_ptr[row];
             J threadInBlock   = lid & (numThreadsForRed - 1);
@@ -277,7 +271,7 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
             // However, this reduction is also much faster than CSR-Scalar, because local memory
             // is designed for scatter-gather operations.
             // We need a while loop because there may be more rows than threads in the WG.
-            J local_row = row + lid;
+            I local_row = row + lid;
             while(local_row < stop_row)
             {
                 J local_first_val = (csr_row_ptr[local_row] - csr_row_ptr[row]);
@@ -364,34 +358,33 @@ __device__ void csrmvn_adaptive_device(unsigned long long*  row_blocks,
         // properly initaizlie the output vector. All the other workgroups working on this
         // row will spin-loop until that workgroup finishes its work.
 
-        // First, figure out which workgroup you are in the row. Bottom 24 bits.
+        // First, figure out which workgroup you are in the row.
         // You can use that to find the global ID for the first workgroup calculating
         // this long row.
-        J first_wg_in_row = gid - (row_blocks[gid] & ((1ULL << WG_BITS) - 1ULL));
-        J compare_value   = row_blocks[gid] & (1ULL << WG_BITS);
+        J             first_wg_in_row = gid - wg_ids[gid];
+        unsigned long compare_value   = wg_flags[gid];
 
-        // Bit 24 in the first workgroup is the flag that everyone waits on.
+        // wg_flags[first_wg_in_row] in the first workgroup is the flag that everyone waits on.
         if(gid == first_wg_in_row && lid == 0)
         {
             // The first workgroup handles the output initialization.
             T out_val = y[row];
             temp_sum  = (beta - static_cast<T>(1)) * out_val;
-            atomicXor(&row_blocks[first_wg_in_row], (1ULL << WG_BITS)); // Release other workgroups.
+            atomicXor(&wg_flags[first_wg_in_row], 1U); // Release other workgroups.
         }
-        // For every other workgroup, bit 24 holds the value they wait on.
-        // If your bit 24 == first_wg's bit 24, you spin loop.
-        // The first workgroup will eventually flip this bit, and you can move forward.
+        // For every other workgroup, wg_flags[first_wg_in_row] holds the value they wait on.
+        // If your flag == first_wg's flag, you spin loop.
+        // The first workgroup will eventually flip this flag, and you can move forward.
         __syncthreads();
         while(gid != first_wg_in_row && lid == 0
-              && ((atomicMax(&row_blocks[first_wg_in_row], 0ULL) & (1ULL << WG_BITS))
-                  == compare_value))
+              && ((atomicMax(&wg_flags[first_wg_in_row], 0U)) == compare_value))
             ;
         __syncthreads();
 
         // After you've passed the barrier, update your local flag to make sure that
         // the next time through, you know what to wait on.
         if(gid != first_wg_in_row && lid == 0)
-            row_blocks[gid] ^= (1ULL << WG_BITS);
+            wg_flags[gid] ^= 1U;
 
         // All but the final workgroup in a long-row collaboration have the same start_row
         // and stop_row. They only run for one iteration.

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,10 +43,10 @@
                        bsr_row_ptr,                                                       \
                        bsr_col_ind,                                                       \
                        bsr_val,                                                           \
-                       info->bsric0_info->trm_diag_ind,                                   \
+                       (rocsparse_int*)info->bsric0_info->trm_diag_ind,                   \
                        done_array,                                                        \
-                       info->bsric0_info->row_map,                                        \
-                       info->zero_pivot,                                                  \
+                       (rocsparse_int*)info->bsric0_info->row_map,                        \
+                       (rocsparse_int*)info->zero_pivot,                                  \
                        base);
 
 #define LAUNCH_BSRIC_2_8(T, block_size, maz_nnzb, bsr_block_dim)                 \
@@ -61,10 +61,10 @@
                        bsr_row_ptr,                                              \
                        bsr_col_ind,                                              \
                        bsr_val,                                                  \
-                       info->bsric0_info->trm_diag_ind,                          \
+                       (rocsparse_int*)info->bsric0_info->trm_diag_ind,          \
                        done_array,                                               \
-                       info->bsric0_info->row_map,                               \
-                       info->zero_pivot,                                         \
+                       (rocsparse_int*)info->bsric0_info->row_map,               \
+                       (rocsparse_int*)info->zero_pivot,                         \
                        base);
 
 #define LAUNCH_BSRIC_9_16(T, block_size, maz_nnzb, bsr_block_dim)                 \
@@ -79,10 +79,10 @@
                        bsr_row_ptr,                                               \
                        bsr_col_ind,                                               \
                        bsr_val,                                                   \
-                       info->bsric0_info->trm_diag_ind,                           \
+                       (rocsparse_int*)info->bsric0_info->trm_diag_ind,           \
                        done_array,                                                \
-                       info->bsric0_info->row_map,                                \
-                       info->zero_pivot,                                          \
+                       (rocsparse_int*)info->bsric0_info->row_map,                \
+                       (rocsparse_int*)info->zero_pivot,                          \
                        base);
 
 #define LAUNCH_BSRIC_17_32(T, block_size, maz_nnzb, bsr_block_dim)                 \
@@ -97,10 +97,10 @@
                        bsr_row_ptr,                                                \
                        bsr_col_ind,                                                \
                        bsr_val,                                                    \
-                       info->bsric0_info->trm_diag_ind,                            \
+                       (rocsparse_int*)info->bsric0_info->trm_diag_ind,            \
                        done_array,                                                 \
-                       info->bsric0_info->row_map,                                 \
-                       info->zero_pivot,                                           \
+                       (rocsparse_int*)info->bsric0_info->row_map,                 \
+                       (rocsparse_int*)info->zero_pivot,                           \
                        base);
 
 #define LAUNCH_BSRIC_33_inf(T, block_size, wf_size, sleep)                    \
@@ -115,10 +115,10 @@
                        bsr_row_ptr,                                           \
                        bsr_col_ind,                                           \
                        bsr_val,                                               \
-                       info->bsric0_info->trm_diag_ind,                       \
+                       (rocsparse_int*)info->bsric0_info->trm_diag_ind,       \
                        done_array,                                            \
-                       info->bsric0_info->row_map,                            \
-                       info->zero_pivot,                                      \
+                       (rocsparse_int*)info->bsric0_info->row_map,            \
+                       (rocsparse_int*)info->zero_pivot,                      \
                        base);
 
 template <typename T>
@@ -273,7 +273,7 @@ rocsparse_status rocsparse_bsric0_analysis_template(rocsparse_handle          ha
                                                      bsr_row_ptr,
                                                      bsr_col_ind,
                                                      info->bsric0_info,
-                                                     &info->zero_pivot,
+                                                     (rocsparse_int**)&info->zero_pivot,
                                                      temp_buffer));
 
     return rocsparse_status_success;

@@ -30,13 +30,13 @@
 #include "roti_device.h"
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void roti_kernel(I                    nnz,
-                                                         T*                   x_val,
-                                                         const I*             x_ind,
-                                                         T*                   y,
-                                                         U                    c_device_host,
-                                                         U                    s_device_host,
-                                                         rocsparse_index_base idx_base)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void roti_kernel(I                    nnz,
+                                                               T*                   x_val,
+                                                               const I*             x_ind,
+                                                               T*                   y,
+                                                               U                    c_device_host,
+                                                               U                    s_device_host,
+                                                               rocsparse_index_base idx_base)
 {
     auto c = load_scalar_device_host(c_device_host);
     auto s = load_scalar_device_host(s_device_host);

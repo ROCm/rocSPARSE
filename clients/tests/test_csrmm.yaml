@@ -27,6 +27,7 @@ include: known_bugs.yaml
 
 Definitions:
   - &alpha_beta_range_quick
+    - { alpha:   1.0, beta: 0.0, alphai:  0.0, betai: 0.0 }
     - { alpha:   1.0, beta: -1.0, alphai:  1.0, betai: -0.5 }
     - { alpha:  -0.5, beta:  0.5, alphai: -0.5, betai:  1.0 }
 
@@ -63,10 +64,10 @@ Tests:
   N: [-1, 0, 1, 8, 32]
   K: [-1, 0, 1, 32]
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_zero]
-  matrix_init_kind: [rocsparse_matrix_init_kind_default, rocsparse_matrix_init_kind_tunedavg]
+  matrix_init_kind: [rocsparse_matrix_init_kind_default]
   matrix: [rocsparse_matrix_random]
 
 - name: csrmm
@@ -79,6 +80,20 @@ Tests:
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix_init_kind: [rocsparse_matrix_init_kind_tunedavg]
+  matrix: [rocsparse_matrix_random]
+
+- name: csrmm
+  category: pre_checkin
+  function: csrmm
+  precision: *double_only_precisions
+  M: [32, 64, 512]
+  N: [32, 64, 123]
+  K: [32, 64, 512]
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
+  transB: [rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_one]
   matrix_init_kind: [rocsparse_matrix_init_kind_default, rocsparse_matrix_init_kind_tunedavg]
   matrix: [rocsparse_matrix_random]
@@ -103,12 +118,41 @@ Tests:
 - name: csrmm_file
   category: pre_checkin
   function: csrmm
+  precision: *single_double_precisions
+  M: 1
+  N: [33, 62]
+  K: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [nos5,
+             nos7]
+
+- name: csrmm_file
+  category: pre_checkin
+  function: csrmm
   precision: *single_double_precisions_complex
   M: 1
   N: [16]
   K: 1
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [mplate]
+
+- name: csrmm_file
+  category: pre_checkin
+  function: csrmm
+  precision: *double_only_precisions
+  M: 1
+  N: [5]
+  K: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
@@ -128,7 +172,7 @@ Tests:
   N: [7, 143]
   K: [50, 73]
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
@@ -143,7 +187,24 @@ Tests:
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [nos2,
+             nos4,
+             nos6,
+             mplate]
+
+- name: csrmm_file
+  category: quick
+  function: csrmm
+  precision: *double_only_precisions
+  M: 1
+  N: [4, 19]
+  K: 1
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_transpose]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [nos2,
              nos4,
@@ -158,8 +219,8 @@ Tests:
   N: [3, 21]
   K: 1
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
+  transB: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron2,
@@ -179,12 +240,25 @@ Tests:
   category: nightly
   function: csrmm
   precision: *single_double_precisions_complex_real
-  M: [3943, 94912]
-  N: [2, 27, 49]
-  K: [4134, 73291]
+  M: [4912]
+  N: [27]
+  K: [3291]
   alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
+  transB: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_random]
+
+- name: csrmm
+  category: nightly
+  function: csrmm
+  precision: *single_double_precisions_complex_real
+  M: [3943]
+  N: [4]
+  K: [3291]
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
+  transB: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
@@ -194,7 +268,7 @@ Tests:
   function: csrmm
   precision: *single_double_precisions
   M: 1
-  N: [16, 22, 38]
+  N: [38]
   K: 1
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
@@ -212,12 +286,43 @@ Tests:
 - name: csrmm_file
   category: nightly
   function: csrmm
+  precision: *double_only_precisions
+  M: 1
+  N: [22]
+  K: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_transpose]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [scircuit,
+             mac_econ_fwd500,
+             amazon0312,
+             Chebyshev4]
+
+- name: csrmm_file
+  category: nightly
+  function: csrmm
   precision: *single_double_precisions_complex
   M: 1
-  N: [12, 31, 40]
+  N: [21]
   K: 1
   alpha_beta: *alpha_beta_range_nightly
   transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_conjugate_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [Chevron4]
+
+- name: csrmm_file
+  category: nightly
+  function: csrmm
+  precision: *single_double_precisions_complex
+  M: 1
+  N: [17]
+  K: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_transpose]
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]

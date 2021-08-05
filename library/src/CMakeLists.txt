@@ -22,10 +22,12 @@
 # ########################################################################
 
 # rocSPARSE Fortran source
+if (NOT WIN32)
 set(rocsparse_fortran_source
   src/rocsparse_enums.f90
   src/rocsparse.f90
 )
+endif()
 
 # rocSPARSE source
 set(rocsparse_source
@@ -49,14 +51,15 @@ set(rocsparse_source
 
 # Level2
   src/level2/rocsparse_bsrmv.cpp
-  src/level2/rocsparse_bsrmv_spzl_2x2.cpp
-  src/level2/rocsparse_bsrmv_spzl_3x3.cpp
-  src/level2/rocsparse_bsrmv_spzl_4x4.cpp
-  src/level2/rocsparse_bsrmv_spzl_5x5.cpp
-  src/level2/rocsparse_bsrmv_spzl_8x8.cpp
-  src/level2/rocsparse_bsrmv_spzl_16x16.cpp
-  src/level2/rocsparse_bsrmv_spzl_17_32.cpp
-  src/level2/rocsparse_bsrmv_spzl_general.cpp
+  src/level2/rocsparse_bsrxmv.cpp
+  src/level2/rocsparse_bsrxmv_spzl_2x2.cpp
+  src/level2/rocsparse_bsrxmv_spzl_3x3.cpp
+  src/level2/rocsparse_bsrxmv_spzl_4x4.cpp
+  src/level2/rocsparse_bsrxmv_spzl_5x5.cpp
+  src/level2/rocsparse_bsrxmv_spzl_8x8.cpp
+  src/level2/rocsparse_bsrxmv_spzl_16x16.cpp
+  src/level2/rocsparse_bsrxmv_spzl_17_32.cpp
+  src/level2/rocsparse_bsrxmv_spzl_general.cpp
   src/level2/rocsparse_bsrsv.cpp
   src/level2/rocsparse_bsrsv_analysis.cpp
   src/level2/rocsparse_bsrsv_buffer_size.cpp
@@ -68,9 +71,11 @@ set(rocsparse_source
   src/level2/rocsparse_csrsv_analysis.cpp
   src/level2/rocsparse_csrsv_buffer_size.cpp
   src/level2/rocsparse_csrsv_solve.cpp
+  src/level2/rocsparse_coosv.cpp
   src/level2/rocsparse_ellmv.cpp
   src/level2/rocsparse_hybmv.cpp
   src/level2/rocsparse_spmv.cpp
+  src/level2/rocsparse_spsv.cpp
   src/level2/rocsparse_gebsrmv.cpp
   src/level2/rocsparse_gebsrmv_template_row_block_dim_1.cpp
   src/level2/rocsparse_gebsrmv_template_row_block_dim_2.cpp
@@ -91,10 +96,25 @@ set(rocsparse_source
   src/level3/rocsparse_bsrmm_template_large_ext.cpp
   src/level3/rocsparse_bsrmm_template_general.cpp
   src/level3/rocsparse_bsrmm.cpp
+  src/level3/rocsparse_bellmm.cpp
+  src/level3/rocsparse_bellmm_template_general.cpp
+  src/level3/rocsparse_csrmm_template_general.cpp
+  src/level3/rocsparse_csrmm_template_row_split.cpp
+  src/level3/rocsparse_csrmm_template_merge.cpp
   src/level3/rocsparse_csrmm.cpp
   src/level3/rocsparse_coomm.cpp
+  src/level3/rocsparse_coomm_template_atomic.cpp
+  src/level3/rocsparse_coomm_template_segmented.cpp
+  src/level3/rocsparse_coomm_template_segmented_atomic.cpp
   src/level3/rocsparse_spmm.cpp
+  src/level3/rocsparse_spmm_ex.cpp
   src/level3/rocsparse_csrsm.cpp
+  src/level3/rocsparse_coosm.cpp
+  src/level3/rocsparse_bsrsm.cpp
+  src/level3/rocsparse_bsrsm_buffer_size.cpp
+  src/level3/rocsparse_bsrsm_analysis.cpp
+  src/level3/rocsparse_bsrsm_solve.cpp
+  src/level3/rocsparse_bsrsm_template_large.cpp
   src/level3/rocsparse_gemmi.cpp
   src/level3/rocsparse_sddmm.cpp
   src/level3/rocsparse_sddmm_coo.cpp
@@ -102,6 +122,7 @@ set(rocsparse_source
   src/level3/rocsparse_sddmm_csr.cpp
   src/level3/rocsparse_sddmm_csc.cpp
   src/level3/rocsparse_sddmm_ell.cpp
+  src/level3/rocsparse_spsm.cpp
 
 # Extra
   src/extra/rocsparse_csrgeam.cpp
@@ -151,4 +172,9 @@ set(rocsparse_source
   src/conversion/rocsparse_coosort.cpp
   src/conversion/rocsparse_sparse_to_dense.cpp
   src/conversion/rocsparse_dense_to_sparse.cpp
+
+# Reordering
+  src/reordering/rocsparse_csrcolor.cpp
+
+
 )

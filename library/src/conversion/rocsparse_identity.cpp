@@ -77,6 +77,7 @@ rocsparse_status rocsparse_create_identity_permutation_template(rocsparse_handle
 
 INSTANTIATE(int32_t);
 INSTANTIATE(int64_t);
+#undef INSTANTIATE
 
 /*
  * ===========================================================================

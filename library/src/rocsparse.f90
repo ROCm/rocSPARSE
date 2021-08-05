@@ -4053,6 +4053,444 @@ module rocsparse
             type(c_ptr), value :: temp_buffer
         end function rocsparse_zcsrilu0
 
+!       rocsparse_gtsv_buffer_size
+        function rocsparse_sgtsv_buffer_size(handle, m, n, dl, d, du, &
+                B, ldb, buffer_size) &
+                bind(c, name = 'rocsparse_sgtsv_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgtsv_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_sgtsv_buffer_size
+
+        function rocsparse_dgtsv_buffer_size(handle, m, n, dl, d, du, &
+                B, ldb, buffer_size) &
+                bind(c, name = 'rocsparse_dgtsv_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgtsv_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_dgtsv_buffer_size
+
+        function rocsparse_cgtsv_buffer_size(handle, m, n, dl, d, du, &
+                B, ldb, buffer_size) &
+                bind(c, name = 'rocsparse_cgtsv_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgtsv_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_cgtsv_buffer_size
+
+        function rocsparse_zgtsv_buffer_size(handle, m, n, dl, d, du, &
+                B, ldb, buffer_size) &
+                bind(c, name = 'rocsparse_zgtsv_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgtsv_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_zgtsv_buffer_size
+
+!       rocsparse_gtsv
+        function rocsparse_sgtsv(handle, m, n, dl, d, du, &
+                B, ldb, temp_buffer) &
+                bind(c, name = 'rocsparse_sgtsv')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgtsv
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sgtsv
+
+        function rocsparse_dgtsv(handle, m, n, dl, d, du, &
+                B, ldb, temp_buffer) &
+                bind(c, name = 'rocsparse_dgtsv')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgtsv
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dgtsv
+
+        function rocsparse_cgtsv(handle, m, n, dl, d, du, &
+                B, ldb, temp_buffer) &
+                bind(c, name = 'rocsparse_cgtsv')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgtsv
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_cgtsv
+
+        function rocsparse_zgtsv(handle, m, n, dl, d, du, &
+                B, ldb, temp_buffer) &
+                bind(c, name = 'rocsparse_zgtsv')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgtsv
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_zgtsv
+
+!       rocsparse_gtsv_no_pivot_buffer_size
+        function rocsparse_sgtsv_no_pivot_buffer_size(handle, m, n, dl, d, du, &
+                B, ldb, buffer_size) &
+                bind(c, name = 'rocsparse_sgtsv_no_pivot_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgtsv_no_pivot_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_sgtsv_no_pivot_buffer_size
+
+        function rocsparse_dgtsv_no_pivot_buffer_size(handle, m, n, dl, d, du, &
+                B, ldb, buffer_size) &
+                bind(c, name = 'rocsparse_dgtsv_no_pivot_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgtsv_no_pivot_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_dgtsv_no_pivot_buffer_size
+
+        function rocsparse_cgtsv_no_pivot_buffer_size(handle, m, n, dl, d, du, &
+                B, ldb, buffer_size) &
+                bind(c, name = 'rocsparse_cgtsv_no_pivot_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgtsv_no_pivot_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_cgtsv_no_pivot_buffer_size
+
+        function rocsparse_zgtsv_no_pivot_buffer_size(handle, m, n, dl, d, du, &
+                B, ldb, buffer_size) &
+                bind(c, name = 'rocsparse_zgtsv_no_pivot_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgtsv_no_pivot_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_zgtsv_no_pivot_buffer_size
+
+!       rocsparse_gtsv_no_pivot
+        function rocsparse_sgtsv_no_pivot(handle, m, n, dl, d, du, &
+                B, ldb, temp_buffer) &
+                bind(c, name = 'rocsparse_sgtsv_no_pivot')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgtsv_no_pivot
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sgtsv_no_pivot
+
+        function rocsparse_dgtsv_no_pivot(handle, m, n, dl, d, du, &
+                B, ldb, temp_buffer) &
+                bind(c, name = 'rocsparse_dgtsv_no_pivot')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgtsv_no_pivot
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dgtsv_no_pivot
+
+        function rocsparse_cgtsv_no_pivot(handle, m, n, dl, d, du, &
+                B, ldb, temp_buffer) &
+                bind(c, name = 'rocsparse_cgtsv_no_pivot')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgtsv_no_pivot
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_cgtsv_no_pivot
+
+        function rocsparse_zgtsv_no_pivot(handle, m, n, dl, d, du, &
+                B, ldb, temp_buffer) &
+                bind(c, name = 'rocsparse_zgtsv_no_pivot')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgtsv_no_pivot
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            integer(c_int), value :: n
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: B
+            integer(c_int), value :: ldb
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_zgtsv_no_pivot
+
+!       rocsparse_gtsv_no_pivot_strided_batch_buffer_size
+        function rocsparse_sgtsv_no_pivot_strided_batch_buffer_size(handle, m, dl, d, du, &
+                x, batch_count, batch_stride, buffer_size) &
+                bind(c, name = 'rocsparse_sgtsv_no_pivot_strided_batch_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgtsv_no_pivot_strided_batch_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: x
+            integer(c_int), value :: batch_count
+            integer(c_int), value :: batch_stride
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_sgtsv_no_pivot_strided_batch_buffer_size
+
+        function rocsparse_dgtsv_no_pivot_strided_batch_buffer_size(handle, m, dl, d, du, &
+                x, batch_count, batch_stride, buffer_size) &
+                bind(c, name = 'rocsparse_dgtsv_no_pivot_strided_batch_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgtsv_no_pivot_strided_batch_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: x
+            integer(c_int), value :: batch_count
+            integer(c_int), value :: batch_stride
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_dgtsv_no_pivot_strided_batch_buffer_size
+
+        function rocsparse_cgtsv_no_pivot_strided_batch_buffer_size(handle, m, dl, d, du, &
+                x, batch_count, batch_stride, buffer_size) &
+                bind(c, name = 'rocsparse_cgtsv_no_pivot_strided_batch_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgtsv_no_pivot_strided_batch_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: x
+            integer(c_int), value :: batch_count
+            integer(c_int), value :: batch_stride
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_cgtsv_no_pivot_strided_batch_buffer_size
+
+        function rocsparse_zgtsv_no_pivot_strided_batch_buffer_size(handle, m, dl, d, du, &
+                x, batch_count, batch_stride, buffer_size) &
+                bind(c, name = 'rocsparse_zgtsv_no_pivot_strided_batch_buffer_size')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgtsv_no_pivot_strided_batch_buffer_size
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), intent(in), value :: x
+            integer(c_int), value :: batch_count
+            integer(c_int), value :: batch_stride
+            type(c_ptr), value :: buffer_size
+        end function rocsparse_zgtsv_no_pivot_strided_batch_buffer_size
+
+!       rocsparse_gtsv_no_pivot_strided_batch
+        function rocsparse_sgtsv_no_pivot_strided_batch(handle, m, dl, d, du, &
+                x, batch_count, batch_stride, temp_buffer) &
+                bind(c, name = 'rocsparse_sgtsv_no_pivot_strided_batch')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_sgtsv_no_pivot_strided_batch
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: x
+            integer(c_int), value :: batch_count
+            integer(c_int), value :: batch_stride
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_sgtsv_no_pivot_strided_batch
+
+        function rocsparse_dgtsv_no_pivot_strided_batch(handle, m, dl, d, du, &
+                x, batch_count, batch_stride, temp_buffer) &
+                bind(c, name = 'rocsparse_dgtsv_no_pivot_strided_batch')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_dgtsv_no_pivot_strided_batch
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: x
+            integer(c_int), value :: batch_count
+            integer(c_int), value :: batch_stride
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_dgtsv_no_pivot_strided_batch
+
+        function rocsparse_cgtsv_no_pivot_strided_batch(handle, m, dl, d, du, &
+                x, batch_count, batch_stride, temp_buffer) &
+                bind(c, name = 'rocsparse_cgtsv_no_pivot_strided_batch')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_cgtsv_no_pivot_strided_batch
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: x
+            integer(c_int), value :: batch_count
+            integer(c_int), value :: batch_stride
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_cgtsv_no_pivot_strided_batch
+
+        function rocsparse_zgtsv_no_pivot_strided_batch(handle, m, dl, d, du, &
+                x, batch_count, batch_stride, temp_buffer) &
+                bind(c, name = 'rocsparse_zgtsv_no_pivot_strided_batch')
+            use rocsparse_enums
+            use iso_c_binding
+            implicit none
+            integer(kind(rocsparse_status_success)) :: rocsparse_zgtsv_no_pivot_strided_batch
+            type(c_ptr), value :: handle
+            integer(c_int), value :: m
+            type(c_ptr), intent(in), value :: dl
+            type(c_ptr), intent(in), value :: d
+            type(c_ptr), intent(in), value :: du
+            type(c_ptr), value :: x
+            integer(c_int), value :: batch_count
+            integer(c_int), value :: batch_stride
+            type(c_ptr), value :: temp_buffer
+        end function rocsparse_zgtsv_no_pivot_strided_batch
+
 ! ===========================================================================
 !   conversion SPARSE
 ! ===========================================================================

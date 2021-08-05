@@ -27,7 +27,7 @@
 #include "utility.h"
 
 template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
-__launch_bounds__(BLOCKSIZE) __global__ void axpyi_kernel(
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void axpyi_kernel(
     I nnz, U alpha_device_host, const T* x_val, const I* x_ind, T* y, rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
@@ -164,6 +164,7 @@ INSTANTIATE(int64_t, float);
 INSTANTIATE(int64_t, double);
 INSTANTIATE(int64_t, rocsparse_float_complex);
 INSTANTIATE(int64_t, rocsparse_double_complex);
+#undef INSTANTIATE
 
 /*
  * ===========================================================================

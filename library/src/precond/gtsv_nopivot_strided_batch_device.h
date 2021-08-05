@@ -44,7 +44,7 @@
 
 // Cyclic reduction algorithm using shared memory
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_nopivot_strided_batch_cr_pow2_shared_kernel(rocsparse_int m,
                                                           rocsparse_int batch_count,
                                                           rocsparse_int batch_stride,
@@ -156,7 +156,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 
 // Parallel cyclic reduction algorithm using shared memory
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_nopivot_strided_batch_pcr_pow2_shared_kernel(rocsparse_int m,
                                                            rocsparse_int batch_count,
                                                            rocsparse_int batch_stride,
@@ -236,7 +236,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 
 // Combined Parallel cyclic reduction and cyclic reduction algorithm using shared memory
 template <unsigned int BLOCKSIZE, unsigned int PCR_SIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_nopivot_strided_batch_crpcr_pow2_shared_kernel(rocsparse_int m,
                                                              rocsparse_int batch_count,
                                                              rocsparse_int batch_stride,
@@ -418,7 +418,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 
 // Parallel cyclic reduction algorithm
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_nopivot_strided_batch_pcr_shared_kernel(rocsparse_int m,
                                                       rocsparse_int batch_count,
                                                       rocsparse_int batch_stride,
@@ -511,7 +511,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 // Parallel cyclic reduction algorithm using global memory for partitioning large matrices into
 // multiple small ones that can be solved in parallel in stage 2
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_nopivot_strided_batch_pcr_pow2_stage1_kernel(rocsparse_int stride,
                                                            rocsparse_int m,
                                                            rocsparse_int batch_count,
@@ -584,7 +584,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 // Cyclic reduction algorithm using shared memory to solve multiple small matrices produced from
 // stage 1 above in parallel
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_nopivot_strided_batch_cr_pow2_stage2_kernel(rocsparse_int m,
                                                           rocsparse_int batch_count,
                                                           rocsparse_int batch_stride,
@@ -713,7 +713,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 // Parallel cyclic reduction algorithm using global memory for partitioning large matrices into
 // multiple small ones that can be solved in parallel in stage 2
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_nopivot_strided_batch_pcr_stage1_kernel(rocsparse_int stride,
                                                       rocsparse_int m,
                                                       rocsparse_int batch_count,
@@ -771,7 +771,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 // Parallel cyclic reduction algorithm using shared memory to solve multiple small matrices produced from
 // stage 1 above in parallel
 template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void gtsv_nopivot_strided_batch_pcr_stage2_kernel(rocsparse_int m,
                                                       rocsparse_int batch_count,
                                                       rocsparse_int batch_stride,

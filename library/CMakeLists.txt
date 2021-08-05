@@ -56,6 +56,7 @@ set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
 # Include sources
 include(src/CMakeLists.txt)
 
+if (NOT WIN32)
 # Set Fortran module output directory
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 
@@ -64,6 +65,7 @@ add_library(rocsparse_fortran OBJECT ${rocsparse_fortran_source})
 
 # Target compile options
 target_compile_options(rocsparse_fortran PRIVATE -std=f2003 -ffree-form -cpp)
+endif()
 
 # Create rocSPARSE library
 add_library(rocsparse ${rocsparse_source} ${rocsparse_headers_public})
@@ -71,10 +73,6 @@ add_library(roc::rocsparse ALIAS rocsparse)
 
 # Target compile options
 target_compile_options(rocsparse PRIVATE -Wno-unused-command-line-argument -Wall)
-
-foreach(target ${AMDGPU_TARGETS})
-  target_compile_options(rocsparse PRIVATE --amdgpu-target=${target})
-endforeach()
 
 # Target include directories
 target_include_directories(rocsparse
@@ -85,13 +83,19 @@ target_include_directories(rocsparse
 )
 
 # Target link libraries
-target_link_libraries(rocsparse PRIVATE roc::rocprim)
-
+target_link_libraries(rocsparse PRIVATE roc::rocprim hip::device)
 # Target properties
 rocm_set_soversion(rocsparse ${rocsparse_SOVERSION})
 set_target_properties(rocsparse PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN ON)
 set_target_properties(rocsparse PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")
+
+if (WIN32 AND BUILD_CLIENTS)
+  add_custom_command( TARGET rocsparse POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/staging/$<TARGET_FILE_NAME:rocsparse> ${PROJECT_BINARY_DIR}/clients/staging/$<TARGET_FILE_NAME:rocsparse> )
+  if( ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+    add_custom_command( TARGET rocsparse POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/staging/rocsparse.pdb ${PROJECT_BINARY_DIR}/clients/staging/rocsparse.pdb )
+  endif()
+endif()
 
 # Generate export header
 include(GenerateExportHeader)
@@ -126,10 +130,20 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip-rocclr (>= 3.5.0)")
 set(CPACK_RPM_PACKAGE_REQUIRES "hip-rocclr >= 3.5.0")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.md")
 
-if(NOT CPACK_PACKAGING_INSTALL_PREFIX)
-  set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+if(WIN32)
+  set(CPACK_SOURCE_GENERATOR "ZIP")
+  set(CPACK_GENERATOR "ZIP")
+  set(CMAKE_INSTALL_PREFIX "C:/hipSDK" CACHE PATH "Install path" FORCE)
+  set(INSTALL_PREFIX "C:/hipSDK")
+  set(CPACK_SET_DESTDIR OFF)
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "C:/hipSDK")
+  set(CPACK_PACKAGING_INSTALL_PREFIX "")
+  set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+else()
+  if(NOT CPACK_PACKAGING_INSTALL_PREFIX)
+    set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+  endif()
 endif()
-
 set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include")
 
 # Package name

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -361,11 +361,9 @@ void testing_bsric0(const Arguments& arg)
         = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
 
     rocsparse_int Mb = -1;
-    rocsparse_int Nb = -1;
     if(block_dim > 0)
     {
         Mb = (M + block_dim - 1) / block_dim;
-        Nb = (N + block_dim - 1) / block_dim;
     }
 
     // Create rocsparse handle
@@ -459,7 +457,6 @@ void testing_bsric0(const Arguments& arg)
 
     // M and N can be modified by rocsparse_init_csr_matrix if reading from a file
     Mb = (M + block_dim - 1) / block_dim;
-    Nb = (N + block_dim - 1) / block_dim;
 
     // // Allocate device memory for original CSR matrix
     device_vector<rocsparse_int> dcsr_row_ptr_orig(M + 1);
@@ -629,9 +626,12 @@ void testing_bsric0(const Arguments& arg)
                                                            apol,
                                                            spol,
                                                            dbuffer));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0_zero_pivot(handle, info, hanalysis_pivot_1),
-                                (hanalysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
-                                                             : rocsparse_status_success);
+        {
+            auto st = rocsparse_bsric0_zero_pivot(handle, info, hanalysis_pivot_1);
+            EXPECT_ROCSPARSE_STATUS(st,
+                                    (hanalysis_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                                 : rocsparse_status_success);
+        }
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
@@ -668,9 +668,12 @@ void testing_bsric0(const Arguments& arg)
                                                   info,
                                                   spol,
                                                   dbuffer));
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0_zero_pivot(handle, info, hsolve_pivot_1),
-                                (hsolve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
-                                                          : rocsparse_status_success);
+        {
+            auto st = rocsparse_bsric0_zero_pivot(handle, info, hsolve_pivot_1);
+            EXPECT_ROCSPARSE_STATUS(st,
+                                    (hsolve_pivot_1[0] != -1) ? rocsparse_status_zero_pivot
+                                                              : rocsparse_status_success);
+        }
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));

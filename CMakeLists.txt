@@ -77,9 +77,10 @@ option(BUILD_VERBOSE "Output additional build information" OFF)
 option(BUILD_CODE_COVERAGE "Build rocSPARSE with code coverage enabled" OFF)
 option(BUILD_ADDRESS_SANITIZER "Build rocSPARSE with address sanitizer enabled" OFF)
 
+#
 if(BUILD_CODE_COVERAGE)
-  add_compile_options(-g -fprofile-arcs -ftest-coverage)
-  add_link_options(-g --coverage)
+  add_compile_options(-fprofile-arcs -ftest-coverage)
+  add_link_options(--coverage)
 endif()
 
 if(BUILD_ADDRESS_SANITIZER)
@@ -110,9 +111,9 @@ if( CMAKE_CXX_COMPILER MATCHES ".*/hipcc$" )
 endif()
 
 #Set the AMDGPU_TARGETS with backward compatiblity
-if(COMMAND rocm_check_target_ids)
-   rocm_check_target_ids(DEFAULT_AMDGPU_TARGETS
-       TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx1030"
+ if(COMMAND rocm_check_target_ids)
+    rocm_check_target_ids(DEFAULT_AMDGPU_TARGETS
+        TARGETS "gfx803;gfx900:xnack-;gfx906:xnack-;gfx908:xnack-;gfx90a:xnack-;gfx90a:xnack+;gfx1030"
    )
 else()
     # Use target ID syntax if supported for AMDGPU_TARGETS
@@ -122,50 +123,61 @@ else()
         set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900;gfx906;gfx908")
     endif()
 endif()
-set(AMDGPU_TARGETS "${DEFAULT_AMDGPU_TARGETS}" CACHE STRING "List of specific machine types for library to target")
+set(AMDGPU_TARGETS "${DEFAULT_AMDGPU_TARGETS}" CACHE STRING "List of specific machine types for library to target" FORCE)
 
 # Find rocprim package
 find_package(rocprim REQUIRED)
 
+if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
+  find_package( hip REQUIRED CONFIG PATHS ${HIP_DIR} ${ROCM_PATH} /opt/rocm )
+endif( )
+
 # Setup version
-set(VERSION_STRING "1.20.2")
+set(VERSION_STRING "1.22.1")
 rocm_setup_version(VERSION ${VERSION_STRING})
 set(rocsparse_SOVERSION 0.1)
+
+if( BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
+  set( BUILD_CLIENTS ON )
+endif()
 
 # rocSPARSE library
 add_subdirectory(library)
 
 # Trigger client builds if selected
-if(BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_BENCHMARKS OR BUILD_CLIENTS_TESTS)
+if(BUILD_CLIENTS)
   add_subdirectory(clients)
 endif()
 
 #
 # ADDITIONAL TARGETS FOR CODE COVERAGE
 #
-# > make coverage GTEST_FILTER=<>
-# will run:
-#  > make coverage_analysis (analyze tests)
-#  > make coverage_output (generate html documentation)
-#  > make coverage_cleanup (clean coverage related files.)
-#
+if(BUILD_CODE_COVERAGE)
+  #
+  # > make coverage_cleanup (clean coverage related files.)
+  # > make coverage GTEST_FILTER=<>
+  # will run:
+  #  > make coverage_analysis GTEST_FILTER=<> (analyze tests)
+  #  > make coverage_output (generate html documentation)
+  #
 
-#
-# Run coverage analysis
-#
-add_custom_target(coverage_analysis
-   COMMAND mkdir -p gcoverage
-   COMMAND echo Coverage GTEST_FILTER=\${GTEST_FILTER}
-   COMMAND ./clients/staging/rocsparse-test --gtest_filter=\"\${GTEST_FILTER}\"
-   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
- )
+  #
+  # Run coverage analysis
+  #
+  add_custom_target(coverage_analysis
+    COMMAND echo Coverage GTEST_FILTER=\${GTEST_FILTER}
+    COMMAND ./clients/staging/rocsparse-test --gtest_filter=\"\${GTEST_FILTER}\"
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
 
-add_dependencies(coverage_analysis rocsparse)
+  add_dependencies(coverage_analysis rocsparse)
 
-#
-# Prepare coverage output
-#
-add_custom_target(coverage_output
+  #
+  # Prepare coverage output
+  # This little script is generated because the option '--gcov-tool <program name>' of lcov cannot take arguments.
+  #
+  add_custom_target(coverage_output
+    DEPENDS coverage_analysis
     COMMAND mkdir -p lcoverage
     COMMAND echo "\\#!/bin/bash" > llvm-gcov.sh
     COMMAND echo "\\# THIS FILE HAS BEEN GENERATED" >> llvm-gcov.sh
@@ -173,21 +185,22 @@ add_custom_target(coverage_output
     COMMAND chmod +x llvm-gcov.sh
     )
 
-#
-# Generate coverage output.
-#
-add_custom_command(TARGET coverage_output
-  COMMAND lcov --directory . --base-directory . --gcov-tool ${CMAKE_BINARY_DIR}/llvm-gcov.sh --capture -o lcoverage/raw_main_coverage.info
-  COMMAND lcov --remove lcoverage/raw_main_coverage.info "'/opt/*'" "'/usr/*'" -o lcoverage/main_coverage.info
-  COMMAND genhtml lcoverage/main_coverage.info --output-directory lcoverage
+  #
+  # Generate coverage output.
+  #
+  add_custom_command(TARGET coverage_output
+    COMMAND lcov --directory . --base-directory . --gcov-tool ${CMAKE_BINARY_DIR}/llvm-gcov.sh --capture -o lcoverage/raw_main_coverage.info
+    COMMAND lcov --remove lcoverage/raw_main_coverage.info "'/opt/*'" "'/usr/*'" -o lcoverage/main_coverage.info
+    COMMAND genhtml lcoverage/main_coverage.info --output-directory lcoverage
     )
 
-add_custom_target(coverage DEPENDS coverage_analysis coverage_output)
+  add_custom_target(coverage DEPENDS coverage_output)
 
-#
-# Coverage cleanup
-#
-add_custom_target(coverage_cleanup
-    COMMAND rm -f `find ${CMAKE_BINARY_DIR} -name *.gcda`
+  #
+  # Coverage cleanup
+  #
+  add_custom_target(coverage_cleanup
+    COMMAND find ${CMAKE_BINARY_DIR} -name *.gcda -delete
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     )
+endif()

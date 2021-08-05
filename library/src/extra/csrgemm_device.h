@@ -30,18 +30,18 @@
 
 // Decrement
 template <unsigned int BLOCKSIZE, typename I>
-__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_index_base(I* nnz)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgemm_index_base(I* nnz)
 {
     --(*nnz);
 }
 
 // Copy an array
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_copy(I size,
-                                                          const J* __restrict__ in,
-                                                          J* __restrict__ out,
-                                                          rocsparse_index_base idx_base_in,
-                                                          rocsparse_index_base idx_base_out)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgemm_copy(I size,
+                                                                const J* __restrict__ in,
+                                                                J* __restrict__ out,
+                                                                rocsparse_index_base idx_base_in,
+                                                                rocsparse_index_base idx_base_out)
 {
     I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
 
@@ -69,7 +69,7 @@ __device__ void csrgemm_copy_scale_device(I size, T alpha, const T* in, T* out)
 
 // Compute number of intermediate products of each row
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_intermediate_products(J m,
                                        const I* __restrict__ csr_row_ptr_A,
                                        const J* __restrict__ csr_col_ind_A,
@@ -148,7 +148,7 @@ static __device__ __forceinline__ void csrgemm_group_reduce(int tid, I* __restri
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_group_reduce_part1(J m, I* __restrict__ int_prod, J* __restrict__ group_size)
 {
     J row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
@@ -195,7 +195,7 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS, bool CPLX, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_group_reduce_part2(
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrgemm_group_reduce_part2(
     J m, const I* __restrict__ csr_row_ptr, J* __restrict__ group_size, int* __restrict__ workspace)
 {
     J row = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
@@ -244,7 +244,8 @@ __launch_bounds__(BLOCKSIZE) __global__ void csrgemm_group_reduce_part2(
 }
 
 template <unsigned int BLOCKSIZE, unsigned int GROUPS, typename I>
-__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_group_reduce_part3(I* __restrict__ group_size)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrgemm_group_reduce_part3(I* __restrict__ group_size)
 {
     // Shared memory for block reduction
     __shared__ I sdata[BLOCKSIZE * GROUPS];
@@ -269,7 +270,7 @@ __launch_bounds__(BLOCKSIZE) __global__ void csrgemm_group_reduce_part3(I* __res
 }
 
 template <unsigned int BLOCKSIZE, typename I, typename J>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_max_row_nnz_part1(J m,
                                    const I* __restrict__ csr_row_ptr,
                                    J* __restrict__ workspace)
@@ -306,7 +307,8 @@ __launch_bounds__(BLOCKSIZE) __global__
 }
 
 template <unsigned int BLOCKSIZE, typename I>
-__launch_bounds__(BLOCKSIZE) __global__ void csrgemm_max_row_nnz_part2(I* __restrict__ workspace)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrgemm_max_row_nnz_part2(I* __restrict__ workspace)
 {
     // Shared memory for block reduction
     __shared__ I sdata[BLOCKSIZE];
@@ -404,7 +406,7 @@ template <unsigned int BLOCKSIZE,
           unsigned int HASHVAL,
           typename I,
           typename J>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_nnz_wf_per_row(J m,
                                 const J* __restrict__ offset,
                                 const J* __restrict__ perm,
@@ -514,7 +516,7 @@ template <unsigned int BLOCKSIZE,
           unsigned int HASHVAL,
           typename I,
           typename J>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_nnz_block_per_row(const J* __restrict__ offset,
                                    const J* __restrict__ perm,
                                    const I* __restrict__ csr_row_ptr_A,
@@ -631,7 +633,7 @@ template <unsigned int BLOCKSIZE,
           unsigned int CHUNKSIZE,
           typename I,
           typename J>
-__launch_bounds__(BLOCKSIZE) __global__
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     void csrgemm_nnz_block_per_row_multipass(J n,
                                              const J* __restrict__ offset,
                                              const J* __restrict__ perm,

@@ -263,6 +263,21 @@ extern "C" rocsparse_status rocsparse_spgemm(rocsparse_handle            handle,
         return rocsparse_status_invalid_pointer;
     }
 
+    if(rocsparse_enum_utils::is_invalid(compute_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(alg))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(stage))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check for valid buffer_size pointer only if temp_buffer is nullptr
     if(temp_buffer == nullptr)
     {

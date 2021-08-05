@@ -52,7 +52,7 @@ static inline const double* get_boost_tol(const rocsparse_double_complex* tol)
 }
 
 //
-// @brief Utility methods fro matrices..
+// @brief Utility methods for matrices..
 //
 struct rocsparse_matrix_utils
 {
@@ -681,6 +681,207 @@ struct rocsparse_matrix_utils
         }
         }
         CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+    }
+
+    template <typename T, typename I, typename J>
+    static rocsparse_status host_csrsym(const host_csr_matrix<T, I, J>& A,
+                                        host_csr_matrix<T, I, J>&       symA)
+    {
+        const auto M    = A.m;
+        const auto NNZ  = A.nnz;
+        const auto base = A.base;
+
+        if(M != A.n)
+        {
+            return rocsparse_status_invalid_value;
+        }
+
+        //
+        // Compute transpose.
+        //
+        host_csr_matrix<T, I, J> trA(M, M, NNZ, base);
+        {
+            for(J i = 0; i <= M; ++i)
+            {
+                trA.ptr[i] = static_cast<I>(0);
+            }
+
+            for(J i = 0; i < M; ++i)
+            {
+                for(I k = A.ptr[i] - base; k < A.ptr[i + 1] - base; ++k)
+                {
+                    const J j = A.ind[k] - base;
+                    trA.ptr[j + 1] += 1;
+                }
+            }
+
+            for(J i = 2; i <= M; ++i)
+            {
+                trA.ptr[i] += trA.ptr[i - 1];
+            }
+
+            for(J i = 0; i < M; ++i)
+            {
+                for(I k = A.ptr[i] - base; k < A.ptr[i + 1] - base; ++k)
+                {
+                    const J j           = A.ind[k] - base;
+                    trA.ind[trA.ptr[j]] = i;
+                    trA.val[trA.ptr[j]] = A.val[k];
+                    ++trA.ptr[j];
+                }
+            }
+
+            for(J i = M; i > 0; --i)
+            {
+                trA.ptr[i] = trA.ptr[i - 1];
+            }
+            trA.ptr[0] = 0;
+
+            if(rocsparse_index_base_one == base)
+            {
+                for(J i = 0; i <= M; ++i)
+                {
+                    trA.ptr[i] += base;
+                }
+
+                for(I i = 0; i < NNZ; ++i)
+                {
+                    trA.ind[i] += base;
+                }
+            }
+        }
+        //
+        // Compute transpose done.
+        //
+
+        //
+        // Compute (A + A^T) / 2
+        //
+        J* blank = (J*)calloc(M, sizeof(J));
+        if(!blank)
+        {
+            return rocsparse_status_memory_error;
+        }
+
+        J* select = (J*)malloc(M * sizeof(J));
+        if(!select)
+        {
+            return rocsparse_status_memory_error;
+        }
+
+        symA.define(M, M, 0, base);
+
+        for(J i = 0; i <= M; ++i)
+        {
+            symA.ptr[i] = 0;
+        }
+
+        for(J i = 0; i < M; ++i)
+        {
+            //
+            // Load row from A.
+            //
+            J select_n = 0;
+            for(I k = A.ptr[i] - base; k < A.ptr[i + 1] - base; ++k)
+            {
+                J j = A.ind[k] - base;
+                if(!blank[j])
+                {
+                    select[select_n] = j;
+                    blank[j]         = ++select_n;
+                }
+            }
+
+            //
+            // Load row from A^T
+            //
+            for(I k = trA.ptr[i] - trA.base; k < trA.ptr[i + 1] - trA.base; ++k)
+            {
+                J j = trA.ind[k] - trA.base;
+                if(!blank[j])
+                {
+                    select[select_n] = j;
+                    blank[j]         = ++select_n;
+                }
+            }
+
+            //
+            // Reset blank.
+            //
+            for(J k = 0; k < select_n; ++k)
+            {
+                blank[select[k]] = 0;
+            }
+
+            symA.ptr[i + 1] = select_n;
+        }
+
+        for(J i = 2; i <= M; ++i)
+        {
+            symA.ptr[i] += symA.ptr[i - 1];
+        }
+
+        symA.define(M, M, symA.ptr[M], base);
+
+        for(J i = 0; i < M; ++i)
+        {
+            //
+            // Load row from A.
+            //
+            J select_n = 0;
+            for(I k = A.ptr[i] - base; k < A.ptr[i + 1] - base; ++k)
+            {
+                J j = A.ind[k] - base;
+                if(!blank[j])
+                {
+                    select[select_n] = j;
+                    blank[j]         = ++select_n;
+                }
+            }
+
+            //
+            // Load row from A^T
+            //
+            for(I k = trA.ptr[i] - trA.base; k < trA.ptr[i + 1] - base; ++k)
+            {
+                J j = trA.ind[k] - trA.base;
+                if(!blank[j])
+                {
+                    select[select_n] = j;
+                    blank[j]         = ++select_n;
+                }
+            }
+
+            std::sort(select, select + select_n);
+
+            for(J k = 0; k < select_n; ++k)
+            {
+                blank[select[k]] = 0;
+            }
+
+            for(J k = 0; k < select_n; ++k)
+            {
+                symA.ind[symA.ptr[i] + k] = select[k];
+            }
+        }
+
+        if(rocsparse_index_base_one == base)
+        {
+            for(J i = 0; i <= M; ++i)
+            {
+                symA.ptr[i] += base;
+            }
+
+            for(I i = 0; i < symA.nnz; ++i)
+            {
+                symA.ind[i] += base;
+            }
+        }
+
+        free(select);
+        free(blank);
+
+        return rocsparse_status_success;
     }
 };
 
@@ -1352,6 +1553,7 @@ public:
             std::string filename
                 = arg.timing ? arg.filename
                              : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+
             this->m_instance
                 = new rocsparse_matrix_factory_rocalution<T, I, J>(filename.c_str(), to_int);
             break;
