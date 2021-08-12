@@ -408,20 +408,7 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle          hand
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
         {
-#define CSRMMNN_DIM 256
-            if(handle->wavefront_size == 32)
-            {
-                LAUNCH_CSRMMNN_GENERAL_KERNEL(CSRMMNN_DIM, 32);
-            }
-            else if(handle->wavefront_size == 64)
-            {
-                LAUNCH_CSRMMNN_GENERAL_KERNEL(CSRMMNN_DIM, 64);
-            }
-            else
-            {
-                return rocsparse_status_arch_mismatch;
-            }
-#undef CSRMMNN_DIM
+            LAUNCH_CSRMMNN_GENERAL_KERNEL(256, 8);
         }
         else if((order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
                 || (order == rocsparse_order_column
