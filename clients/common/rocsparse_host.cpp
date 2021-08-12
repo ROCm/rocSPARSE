@@ -1722,7 +1722,8 @@ void host_csrsv(rocsparse_operation  trans,
                             numeric_pivot);
         }
     }
-    else if(trans == rocsparse_operation_transpose)
+    else if(trans == rocsparse_operation_transpose
+            || trans == rocsparse_operation_conjugate_transpose)
     {
         // Transpose matrix
         std::vector<I> csrt_row_ptr(M + 1);
@@ -1740,6 +1741,14 @@ void host_csrsv(rocsparse_operation  trans,
                         csrt_val,
                         rocsparse_action_numeric,
                         base);
+
+        if(trans == rocsparse_operation_conjugate_transpose)
+        {
+            for(size_t i = 0; i < csrt_val.size(); i++)
+            {
+                csrt_val[i] = rocsparse_conj(csrt_val[i]);
+            }
+        }
 
         if(fill_mode == rocsparse_fill_mode_lower)
         {
@@ -2283,7 +2292,15 @@ static inline void host_lssolve(J                     M,
         {
             J idx_B = (transB == rocsparse_operation_none) ? i * ldb + row : row * ldb + i;
 
-            T sum = alpha * B[idx_B];
+            T sum = static_cast<T>(0);
+            if(transB == rocsparse_operation_conjugate_transpose)
+            {
+                sum = alpha * rocsparse_conj(B[idx_B]);
+            }
+            else
+            {
+                sum = alpha * B[idx_B];
+            }
 
             I diag      = -1;
             I row_begin = csr_row_ptr[row] - base;
@@ -2328,7 +2345,15 @@ static inline void host_lssolve(J                     M,
                 // Lower triangular part
                 J idx = (transB == rocsparse_operation_none) ? i * ldb + local_col
                                                              : local_col * ldb + i;
-                sum   = std::fma(-local_val, B[idx], sum);
+
+                if(transB == rocsparse_operation_conjugate_transpose)
+                {
+                    sum = std::fma(-local_val, rocsparse_conj(B[idx]), sum);
+                }
+                else
+                {
+                    sum = std::fma(-local_val, B[idx], sum);
+                }
             }
 
             if(diag_type == rocsparse_diag_type_non_unit)
@@ -2373,7 +2398,15 @@ static inline void host_ussolve(J                     M,
         {
             J idx_B = (transB == rocsparse_operation_none) ? i * ldb + row : row * ldb + i;
 
-            T sum = alpha * B[idx_B];
+            T sum = static_cast<T>(0);
+            if(transB == rocsparse_operation_conjugate_transpose)
+            {
+                sum = alpha * rocsparse_conj(B[idx_B]);
+            }
+            else
+            {
+                sum = alpha * B[idx_B];
+            }
 
             I diag      = -1;
             I row_begin = csr_row_ptr[row] - base;
@@ -2415,7 +2448,14 @@ static inline void host_ussolve(J                     M,
                 J idx = (transB == rocsparse_operation_none) ? i * ldb + local_col
                                                              : local_col * ldb + i;
 
-                sum = std::fma(-local_val, B[idx], sum);
+                if(transB == rocsparse_operation_conjugate_transpose)
+                {
+                    sum = std::fma(-local_val, rocsparse_conj(B[idx]), sum);
+                }
+                else
+                {
+                    sum = std::fma(-local_val, B[idx], sum);
+                }
             }
 
             if(diag_type == rocsparse_diag_type_non_unit)
@@ -2492,7 +2532,8 @@ void host_csrsm(J                     M,
                          numeric_pivot);
         }
     }
-    else if(transA == rocsparse_operation_transpose)
+    else if(transA == rocsparse_operation_transpose
+            || transA == rocsparse_operation_conjugate_transpose)
     {
         // Transpose matrix
         std::vector<I> csrt_row_ptr(M + 1);
@@ -2510,6 +2551,14 @@ void host_csrsm(J                     M,
                                  csrt_val,
                                  rocsparse_action_numeric,
                                  base);
+
+        if(transA == rocsparse_operation_conjugate_transpose)
+        {
+            for(size_t i = 0; i < csrt_val.size(); i++)
+            {
+                csrt_val[i] = rocsparse_conj(csrt_val[i]);
+            }
+        }
 
         if(fill_mode == rocsparse_fill_mode_lower)
         {

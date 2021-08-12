@@ -30,7 +30,7 @@ template <rocsparse_int BELL_BLOCK_DIM,
           typename T,
           typename U,
           typename I>
-__launch_bounds__(BELL_BLOCK_DIM* BLK_SIZE_Y) __global__
+__launch_bounds__(BELL_BLOCK_DIM* BLK_SIZE_Y) ROCSPARSE_KERNEL
     void bellmm_general_blockdim_kernel(rocsparse_operation trans_A,
                                         rocsparse_operation trans_B,
                                         rocsparse_order     order_B,

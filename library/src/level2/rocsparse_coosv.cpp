@@ -80,12 +80,6 @@ rocsparse_status rocsparse_coosv_buffer_size_template(rocsparse_handle          
         return rocsparse_status_not_implemented;
     }
 
-    // Check operation type
-    if(trans != rocsparse_operation_none && trans != rocsparse_operation_transpose)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
     // Check sizes
     if(m < 0)
     {
@@ -211,12 +205,6 @@ rocsparse_status rocsparse_coosv_analysis_template(rocsparse_handle          han
     if(rocsparse_enum_utils::is_invalid(solve))
     {
         return rocsparse_status_invalid_value;
-    }
-
-    // Check operation type
-    if(trans != rocsparse_operation_none && trans != rocsparse_operation_transpose)
-    {
-        return rocsparse_status_not_implemented;
     }
 
     // Check matrix type
@@ -378,12 +366,6 @@ rocsparse_status rocsparse_coosv_solve_template(rocsparse_handle          handle
     if(rocsparse_enum_utils::is_invalid(policy))
     {
         return rocsparse_status_invalid_value;
-    }
-
-    // Check operation type
-    if(trans != rocsparse_operation_none && trans != rocsparse_operation_transpose)
-    {
-        return rocsparse_status_not_implemented;
     }
 
     if(descr->type != rocsparse_matrix_type_general)

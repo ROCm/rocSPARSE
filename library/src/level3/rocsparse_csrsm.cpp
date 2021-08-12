@@ -91,13 +91,19 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     }
 
     // Check operation type
-    if(trans_A != rocsparse_operation_none && trans_A != rocsparse_operation_transpose)
+    if(rocsparse_enum_utils::is_invalid(trans_A))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
-    if(trans_B != rocsparse_operation_none && trans_B != rocsparse_operation_transpose)
+
+    if(rocsparse_enum_utils::is_invalid(trans_B))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(policy))
+    {
+        return rocsparse_status_invalid_value;
     }
 
     // Check sizes
@@ -118,7 +124,9 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
     {
         return rocsparse_status_invalid_size;
     }
-    else if(trans_B == rocsparse_operation_transpose && ldb < nrhs)
+    else if((trans_B == rocsparse_operation_transpose
+             || trans_B == rocsparse_operation_conjugate_transpose)
+            && ldb < nrhs)
     {
         return rocsparse_status_invalid_size;
     }
@@ -207,8 +215,9 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
         *buffer_size += sizeof(T) * ((m * nrhs - 1) / 256 + 1) * 256;
     }
 
-    // Additional buffer to store transpose A, if transA == rocsparse_operation_transpose
-    if(trans_A == rocsparse_operation_transpose)
+    // Additional buffer to store transpose A, if transA != rocsparse_operation_none
+    if(trans_A == rocsparse_operation_transpose
+       || trans_A == rocsparse_operation_conjugate_transpose)
     {
         size_t transpose_size;
 
@@ -280,13 +289,24 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
               (const void*&)temp_buffer);
 
     // Check operation type
-    if(trans_A != rocsparse_operation_none && trans_A != rocsparse_operation_transpose)
+    if(rocsparse_enum_utils::is_invalid(trans_A))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
-    if(trans_B != rocsparse_operation_none && trans_B != rocsparse_operation_transpose)
+
+    if(rocsparse_enum_utils::is_invalid(trans_B))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(analysis))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(solve))
+    {
+        return rocsparse_status_invalid_value;
     }
 
     // Check matrix type
@@ -318,6 +338,17 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
         return rocsparse_status_invalid_size;
     }
     else if(nnz < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    if(trans_B == rocsparse_operation_none && ldb < m)
+    {
+        return rocsparse_status_invalid_size;
+    }
+    else if((trans_B == rocsparse_operation_transpose
+             || trans_B == rocsparse_operation_conjugate_transpose)
+            && ldb < nrhs)
     {
         return rocsparse_status_invalid_size;
     }
@@ -354,6 +385,11 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
             {
                 return rocsparse_status_success;
             }
+            else if(trans_A == rocsparse_operation_conjugate_transpose
+                    && info->csrsmt_upper_info != nullptr)
+            {
+                return rocsparse_status_success;
+            }
 
             // Check for other upper analysis meta data
 
@@ -365,6 +401,14 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
             }
 
             if(trans_A == rocsparse_operation_transpose && info->csrsvt_upper_info != nullptr)
+            {
+                // csrsv meta data
+                info->csrsmt_upper_info = info->csrsvt_upper_info;
+                return rocsparse_status_success;
+            }
+
+            if(trans_A == rocsparse_operation_conjugate_transpose
+               && info->csrsvt_upper_info != nullptr)
             {
                 // csrsv meta data
                 info->csrsmt_upper_info = info->csrsvt_upper_info;
@@ -418,6 +462,11 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
             {
                 return rocsparse_status_success;
             }
+            else if(trans_A == rocsparse_operation_conjugate_transpose
+                    && info->csrsmt_lower_info != nullptr)
+            {
+                return rocsparse_status_success;
+            }
 
             // Check for other lower analysis meta data
 
@@ -441,6 +490,14 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
             }
 
             if(trans_A == rocsparse_operation_transpose && info->csrsvt_lower_info != nullptr)
+            {
+                // csrsv meta data
+                info->csrsm_upper_info = info->csrsvt_lower_info;
+                return rocsparse_status_success;
+            }
+
+            if(trans_A == rocsparse_operation_conjugate_transpose
+               && info->csrsvt_lower_info != nullptr)
             {
                 // csrsv meta data
                 info->csrsm_upper_info = info->csrsvt_lower_info;
@@ -487,9 +544,10 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T,
           typename U>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrsm(J m,
-                                                         J nrhs,
-                                                         U alpha_device_host,
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrsm(rocsparse_operation transB,
+                                                         J                   m,
+                                                         J                   nrhs,
+                                                         U                   alpha_device_host,
                                                          const I* __restrict__ csr_row_ptr,
                                                          const J* __restrict__ csr_col_ind,
                                                          const T* __restrict__ csr_val,
@@ -503,7 +561,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void csrsm(J m,
                                                          rocsparse_diag_type  diag_type)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
-    csrsm_device<BLOCKSIZE, WFSIZE, SLEEP>(m,
+    csrsm_device<BLOCKSIZE, WFSIZE, SLEEP>(transB,
+                                           m,
                                            nrhs,
                                            alpha,
                                            csr_row_ptr,
@@ -581,7 +640,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
 
     // Temporary array to store transpose of A
     T* At = nullptr;
-    if(trans_A == rocsparse_operation_transpose)
+    if(trans_A == rocsparse_operation_transpose
+       || trans_A == rocsparse_operation_conjugate_transpose)
     {
         At = reinterpret_cast<T*>(ptr);
     }
@@ -645,7 +705,8 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
 
     // When computing transposed triangular solve, we first need to update the
     // transposed matrix values
-    if(trans_A == rocsparse_operation_transpose)
+    if(trans_A == rocsparse_operation_transpose
+       || trans_A == rocsparse_operation_conjugate_transpose)
     {
         T* csrt_val = At;
 
@@ -656,6 +717,18 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                                           csrt_val,
                                                           (const I*)csrsm_info->trmt_perm,
                                                           rocsparse_index_base_zero));
+
+        if(trans_A == rocsparse_operation_conjugate_transpose)
+        {
+            // conjugate csrt_val
+            hipLaunchKernelGGL((conjugate<256, I, T>),
+                               dim3((nnz - 1) / 256 + 1),
+                               dim3(256),
+                               0,
+                               stream,
+                               nnz,
+                               csrt_val);
+        }
 
         local_csr_row_ptr = (const I*)csrsm_info->trmt_row_ptr;
         local_csr_col_ind = (const J*)csrsm_info->trmt_col_ind;
@@ -683,6 +756,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                csrsm_threads,
                                0,
                                stream,
+                               trans_B,
                                m,
                                nrhs,
                                alpha_device_host,
@@ -705,6 +779,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                csrsm_threads,
                                0,
                                stream,
+                               trans_B,
                                m,
                                nrhs,
                                alpha_device_host,
@@ -730,6 +805,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                csrsm_threads,
                                0,
                                stream,
+                               trans_B,
                                m,
                                nrhs,
                                alpha_device_host,
@@ -752,6 +828,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                csrsm_threads,
                                0,
                                stream,
+                               trans_B,
                                m,
                                nrhs,
                                alpha_device_host,
@@ -777,6 +854,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                csrsm_threads,
                                0,
                                stream,
+                               trans_B,
                                m,
                                nrhs,
                                alpha_device_host,
@@ -799,6 +877,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                csrsm_threads,
                                0,
                                stream,
+                               trans_B,
                                m,
                                nrhs,
                                alpha_device_host,
@@ -824,6 +903,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                csrsm_threads,
                                0,
                                stream,
+                               trans_B,
                                m,
                                nrhs,
                                alpha_device_host,
@@ -846,6 +926,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                csrsm_threads,
                                0,
                                stream,
+                               trans_B,
                                m,
                                nrhs,
                                alpha_device_host,
@@ -871,6 +952,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                csrsm_threads,
                                0,
                                stream,
+                               trans_B,
                                m,
                                nrhs,
                                alpha_device_host,
@@ -893,6 +975,7 @@ rocsparse_status rocsparse_csrsm_solve_dispatch(rocsparse_handle          handle
                                csrsm_threads,
                                0,
                                stream,
+                               trans_B,
                                m,
                                nrhs,
                                alpha_device_host,
@@ -995,13 +1078,19 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
               LOG_BENCH_SCALAR_VALUE(handle, alpha_device_host));
 
     // Check operation type
-    if(trans_A != rocsparse_operation_none && trans_A != rocsparse_operation_transpose)
+    if(rocsparse_enum_utils::is_invalid(trans_A))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
-    if(trans_B != rocsparse_operation_none && trans_B != rocsparse_operation_transpose)
+
+    if(rocsparse_enum_utils::is_invalid(trans_B))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(policy))
+    {
+        return rocsparse_status_invalid_value;
     }
 
     if(descr->type != rocsparse_matrix_type_general)
@@ -1012,6 +1101,17 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
 
     // Check sizes
     if(m < 0 || nrhs < 0 || nnz < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    if(trans_B == rocsparse_operation_none && ldb < m)
+    {
+        return rocsparse_status_invalid_size;
+    }
+    else if((trans_B == rocsparse_operation_transpose
+             || trans_B == rocsparse_operation_conjugate_transpose)
+            && ldb < nrhs)
     {
         return rocsparse_status_invalid_size;
     }

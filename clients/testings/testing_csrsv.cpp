@@ -21,7 +21,6 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
@@ -75,27 +74,6 @@ void testing_csrsv_bad_arg(const Arguments& arg)
     auto_testing_bad_arg(rocsparse_csrsv_buffer_size<T>, PARAMS_BUFFER_SIZE);
     auto_testing_bad_arg(rocsparse_csrsv_analysis<T>, PARAMS_ANALYSIS);
     auto_testing_bad_arg(rocsparse_csrsv_solve<T>, PARAMS_SOLVE);
-
-    //
-    // Not implemented cases.
-    //
-    for(auto operation : rocsparse_operation_t::values)
-    {
-        if(operation != rocsparse_operation_none && operation != rocsparse_operation_transpose)
-        {
-            {
-                auto tmp = trans;
-                trans    = operation;
-                EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_buffer_size<T>(PARAMS_BUFFER_SIZE),
-                                        rocsparse_status_not_implemented);
-                EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_analysis<T>(PARAMS_ANALYSIS),
-                                        rocsparse_status_not_implemented);
-                EXPECT_ROCSPARSE_STATUS(rocsparse_csrsv_solve<T>(PARAMS_SOLVE),
-                                        rocsparse_status_not_implemented);
-                trans = tmp;
-            }
-        }
-    }
 
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {

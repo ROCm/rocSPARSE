@@ -77,12 +77,6 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
         return rocsparse_status_not_implemented;
     }
 
-    // Check operation type
-    if(trans != rocsparse_operation_none && trans != rocsparse_operation_transpose)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
     // Check sizes
     if(m < 0)
     {
@@ -150,7 +144,7 @@ rocsparse_status rocsparse_csrsv_buffer_size_template(rocsparse_handle          
     *buffer_size += rocprim_size;
 
     // On transposed case, we might need more temporary storage for transposing
-    if(trans == rocsparse_operation_transpose)
+    if(trans == rocsparse_operation_transpose || trans == rocsparse_operation_conjugate_transpose)
     {
         size_t transpose_size;
 

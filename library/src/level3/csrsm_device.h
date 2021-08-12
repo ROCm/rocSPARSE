@@ -34,9 +34,10 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__device__ void csrsm_device(J m,
-                             J nrhs,
-                             T alpha,
+__device__ void csrsm_device(rocsparse_operation transB,
+                             J                   m,
+                             J                   nrhs,
+                             T                   alpha,
                              const I* __restrict__ csr_row_ptr,
                              const J* __restrict__ csr_col_ind,
                              const T* __restrict__ csr_val,
@@ -73,7 +74,15 @@ __device__ void csrsm_device(J m,
     J id = hipBlockIdx_x / m * m;
 
     // Initialize local sum with alpha and X
-    T local_sum = (col_B < nrhs) ? alpha * B[idx_B] : static_cast<T>(0);
+    T local_sum = static_cast<T>(0);
+    if(transB == rocsparse_operation_conjugate_transpose)
+    {
+        local_sum = (col_B < nrhs) ? alpha * rocsparse_conj(B[idx_B]) : static_cast<T>(0);
+    }
+    else
+    {
+        local_sum = (col_B < nrhs) ? alpha * B[idx_B] : static_cast<T>(0);
+    }
 
     // Initialize diagonal entry
     T diagonal = static_cast<T>(1);
@@ -198,8 +207,17 @@ __device__ void csrsm_device(J m,
         J idx_X = local_col * ldb + col_B;
 
         // Local sum computation for each lane
-        local_sum
-            = (col_B < nrhs) ? rocsparse_fma(-local_val, B[idx_X], local_sum) : static_cast<T>(0);
+        if(transB == rocsparse_operation_conjugate_transpose)
+        {
+            local_sum = (col_B < nrhs)
+                            ? rocsparse_fma(-local_val, rocsparse_conj(B[idx_X]), local_sum)
+                            : static_cast<T>(0);
+        }
+        else
+        {
+            local_sum = (col_B < nrhs) ? rocsparse_fma(-local_val, B[idx_X], local_sum)
+                                       : static_cast<T>(0);
+        }
     }
 
     // If we have non unit diagonal, take the diagonal into account
