@@ -132,13 +132,25 @@ rocsparse_status rocsparse_csrsv_solve_dispatch(rocsparse_handle          handle
 
     // When computing transposed triangular solve, we first need to update the
     // transposed matrix values
-    if(trans == rocsparse_operation_transpose)
+    if(trans == rocsparse_operation_transpose || trans == rocsparse_operation_conjugate_transpose)
     {
         T* csrt_val = reinterpret_cast<T*>(ptr);
 
         // Gather values
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_gthr_template(
             handle, nnz, csr_val, csrt_val, (const I*)csrsv->trmt_perm, rocsparse_index_base_zero));
+
+        if(trans == rocsparse_operation_conjugate_transpose)
+        {
+            // conjugate csrt_val
+            hipLaunchKernelGGL((conjugate<256, I, T>),
+                               dim3((nnz - 1) / 256 + 1),
+                               dim3(256),
+                               0,
+                               stream,
+                               nnz,
+                               csrt_val);
+        }
 
         local_csr_row_ptr = (const I*)csrsv->trmt_row_ptr;
         local_csr_col_ind = (const J*)csrsv->trmt_col_ind;
@@ -299,12 +311,6 @@ rocsparse_status rocsparse_csrsv_solve_template(rocsparse_handle          handle
     if(rocsparse_enum_utils::is_invalid(policy))
     {
         return rocsparse_status_invalid_value;
-    }
-
-    // Check operation type
-    if(trans != rocsparse_operation_none && trans != rocsparse_operation_transpose)
-    {
-        return rocsparse_status_not_implemented;
     }
 
     if(descr->type != rocsparse_matrix_type_general)

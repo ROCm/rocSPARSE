@@ -88,13 +88,14 @@ rocsparse_status rocsparse_coosm_buffer_size_template(rocsparse_handle          
     }
 
     // Check operation type
-    if(trans_A != rocsparse_operation_none && trans_A != rocsparse_operation_transpose)
+    if(rocsparse_enum_utils::is_invalid(trans_A))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
-    if(trans_B != rocsparse_operation_none && trans_B != rocsparse_operation_transpose)
+
+    if(rocsparse_enum_utils::is_invalid(trans_B))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
 
     // Check sizes
@@ -115,7 +116,9 @@ rocsparse_status rocsparse_coosm_buffer_size_template(rocsparse_handle          
     {
         return rocsparse_status_invalid_size;
     }
-    else if(trans_B == rocsparse_operation_transpose && ldb < nrhs)
+    else if((trans_B == rocsparse_operation_transpose
+             || trans_B == rocsparse_operation_conjugate_transpose)
+            && ldb < nrhs)
     {
         return rocsparse_status_invalid_size;
     }
@@ -234,13 +237,14 @@ rocsparse_status rocsparse_coosm_analysis_template(rocsparse_handle          han
               (const void*&)temp_buffer);
 
     // Check operation type
-    if(trans_A != rocsparse_operation_none && trans_A != rocsparse_operation_transpose)
+    if(rocsparse_enum_utils::is_invalid(trans_A))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
-    if(trans_B != rocsparse_operation_none && trans_B != rocsparse_operation_transpose)
+
+    if(rocsparse_enum_utils::is_invalid(trans_B))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
 
     // Check matrix type
@@ -380,13 +384,14 @@ rocsparse_status rocsparse_coosm_solve_template(rocsparse_handle          handle
               LOG_BENCH_SCALAR_VALUE(handle, alpha_device_host));
 
     // Check operation type
-    if(trans_A != rocsparse_operation_none && trans_A != rocsparse_operation_transpose)
+    if(rocsparse_enum_utils::is_invalid(trans_A))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
-    if(trans_B != rocsparse_operation_none && trans_B != rocsparse_operation_transpose)
+
+    if(rocsparse_enum_utils::is_invalid(trans_B))
     {
-        return rocsparse_status_not_implemented;
+        return rocsparse_status_invalid_value;
     }
 
     if(descr->type != rocsparse_matrix_type_general)

@@ -638,7 +638,8 @@ __launch_bounds__(WFSIZE* DIMY) ROCSPARSE_KERNEL void bsr_gather(rocsparse_direc
 
 // Set array to be filled with value
 template <unsigned int BLOCKSIZE, typename I, typename T>
-__launch_bounds__(BLOCKSIZE) __global__ void set_array_to_value(I m, T* __restrict__ array, T value)
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void set_array_to_value(I m, T* __restrict__ array, T value)
 {
     I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
 
@@ -648,6 +649,20 @@ __launch_bounds__(BLOCKSIZE) __global__ void set_array_to_value(I m, T* __restri
     }
 
     array[idx] = value;
+}
+
+// conjugate values in array
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void conjugate(I m, T* __restrict__ array)
+{
+    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+    if(idx >= m)
+    {
+        return;
+    }
+
+    array[idx] = rocsparse_conj(array[idx]);
 }
 
 #endif // COMMON_H

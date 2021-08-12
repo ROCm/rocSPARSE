@@ -49,7 +49,7 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     hipStream_t stream = handle->stream;
 
     // If analyzing transposed, allocate some info memory to hold the transposed matrix
-    if(trans == rocsparse_operation_transpose)
+    if(trans == rocsparse_operation_transpose || trans == rocsparse_operation_conjugate_transpose)
     {
         // TODO: this need to be changed.
         // LCOV_EXCL_START
@@ -315,7 +315,8 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
             }
         }
     }
-    else if(trans == rocsparse_operation_transpose)
+    else if(trans == rocsparse_operation_transpose
+            || trans == rocsparse_operation_conjugate_transpose)
     {
         if(gcnArch == 908 && asicRev < 2)
         {
@@ -540,12 +541,6 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
         return rocsparse_status_invalid_value;
     }
 
-    // Check operation type
-    if(trans != rocsparse_operation_none && trans != rocsparse_operation_transpose)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
@@ -606,6 +601,11 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
             {
                 return rocsparse_status_success;
             }
+            else if(trans == rocsparse_operation_conjugate_transpose
+                    && info->csrsvt_upper_info != nullptr)
+            {
+                return rocsparse_status_success;
+            }
 
             // Check for other lower analysis meta data
 
@@ -617,6 +617,14 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
             }
 
             if(trans == rocsparse_operation_transpose && info->csrsmt_upper_info != nullptr)
+            {
+                // csrsv meta data
+                info->csrsvt_upper_info = info->csrsmt_upper_info;
+                return rocsparse_status_success;
+            }
+
+            if(trans == rocsparse_operation_conjugate_transpose
+               && info->csrsmt_upper_info != nullptr)
             {
                 // csrsv meta data
                 info->csrsvt_upper_info = info->csrsmt_upper_info;
@@ -671,6 +679,11 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
             {
                 return rocsparse_status_success;
             }
+            else if(trans == rocsparse_operation_conjugate_transpose
+                    && info->csrsvt_lower_info != nullptr)
+            {
+                return rocsparse_status_success;
+            }
 
             // Check for other lower analysis meta data
 
@@ -693,6 +706,13 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
                 return rocsparse_status_success;
             }
             else if(trans == rocsparse_operation_transpose && info->csrsmt_lower_info != nullptr)
+            {
+                // csrsm meta data
+                info->csrsvt_lower_info = info->csrsmt_lower_info;
+                return rocsparse_status_success;
+            }
+            else if(trans == rocsparse_operation_conjugate_transpose
+                    && info->csrsmt_lower_info != nullptr)
             {
                 // csrsm meta data
                 info->csrsvt_lower_info = info->csrsmt_lower_info;
