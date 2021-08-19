@@ -107,6 +107,10 @@ function(add_rocsparse_fortran_example EXAMPLE_SOURCE)
   # Linker dependencies
   target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host)
 
+  if (BUILD_CODE_COVERAGE)
+    target_link_libraries(${EXAMPLE_TARGET} PRIVATE -lgcov)
+  endif()
+
   # Target properties
   set_target_properties(${EXAMPLE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 endfunction()
