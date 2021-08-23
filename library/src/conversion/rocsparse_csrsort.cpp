@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,29 +53,18 @@ extern "C" rocsparse_status rocsparse_csrsort_buffer_size(rocsparse_handle     h
               (const void*&)buffer_size);
 
     // Check sizes
-    if(m < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(n < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnz < 0)
+    if(m < 0 || n < 0 || nnz < 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Check pointer arguments
-    if(csr_row_ptr == nullptr)
+    if(csr_row_ptr == nullptr || buffer_size == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(buffer_size == nullptr)
+
+    if(nnz != 0 && csr_col_ind == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -146,29 +135,18 @@ extern "C" rocsparse_status rocsparse_csrsort(rocsparse_handle          handle,
     log_bench(handle, "./rocsparse-bench -f csrsort", "--mtx <matrix.mtx>");
 
     // Check sizes
-    if(m < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(n < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnz < 0)
+    if(m < 0 || n < 0 || nnz < 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Check pointer arguments
-    if(csr_row_ptr == nullptr)
+    if(csr_row_ptr == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(temp_buffer == nullptr)
+
+    if(nnz != 0 && csr_col_ind == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

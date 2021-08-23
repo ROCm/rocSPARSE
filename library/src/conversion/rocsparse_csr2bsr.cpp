@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -116,7 +116,7 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
     log_bench(handle, "./rocsparse-bench -f csr2bsr -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
     // Check direction
-    if(direction != rocsparse_direction_row && direction != rocsparse_direction_column)
+    if(rocsparse_enum_utils::is_invalid(direction))
     {
         return rocsparse_status_invalid_value;
     }
@@ -134,45 +134,71 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
     }
 
     // Check pointer arguments
-    if(csr_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(bsr_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(bsr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(bsr_col_ind == nullptr)
+    if(csr_row_ptr == nullptr || bsr_row_ptr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
-    // Stream
-    hipStream_t stream = handle->stream;
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val == nullptr && csr_col_ind != nullptr)
+       || (csr_val != nullptr && csr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((bsr_val == nullptr && bsr_col_ind != nullptr)
+       || (bsr_val != nullptr && bsr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(csr_val == nullptr && csr_col_ind == nullptr)
+    {
+        rocsparse_int start = 0;
+        rocsparse_int end   = 0;
+
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&end, &csr_row_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&start, &csr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        rocsparse_int nnz = (end - start);
+
+        if(nnz != 0)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+    }
 
     rocsparse_int mb = (m + block_dim - 1) / block_dim;
     rocsparse_int nb = (n + block_dim - 1) / block_dim;
 
-    rocsparse_int hstart = 0;
-    rocsparse_int hend   = 0;
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(&hend, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(&hstart, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    rocsparse_int start = 0;
+    rocsparse_int end   = 0;
 
-    hipMemset(bsr_val, 0, (hend - hstart) * block_dim * block_dim * sizeof(T));
+    RETURN_IF_HIP_ERROR(
+        hipMemcpy(&end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    RETURN_IF_HIP_ERROR(
+        hipMemcpy(&start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+    rocsparse_int nnzb = (end - start);
+
+    if(bsr_val == nullptr && bsr_col_ind == nullptr)
+    {
+        if(nnzb != 0)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+    }
+
+    if(bsr_val != nullptr)
+    {
+        hipMemset(bsr_val, 0, nnzb * block_dim * block_dim * sizeof(T));
+    }
+
+    // Stream
+    hipStream_t stream = handle->stream;
 
     if(block_dim == 1)
     {
@@ -438,7 +464,7 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
     log_bench(handle, "./rocsparse-bench -f csr2bsr_nnz", "--mtx <matrix.mtx>");
 
     // Check direction
-    if(direction != rocsparse_direction_row && direction != rocsparse_direction_column)
+    if(rocsparse_enum_utils::is_invalid(direction))
     {
         return rocsparse_status_invalid_value;
     }
@@ -469,25 +495,31 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
     }
 
     // Check pointer arguments
-    if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(bsr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(bsr_nnz == nullptr)
+    if(csr_row_ptr == nullptr || bsr_row_ptr == nullptr || bsr_nnz == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
     rocsparse_int mb = (m + block_dim - 1) / block_dim;
     rocsparse_int nb = (n + block_dim - 1) / block_dim;
+
+    if(csr_col_ind == nullptr)
+    {
+        rocsparse_int start = 0;
+        rocsparse_int end   = 0;
+
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&end, &csr_row_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&start, &csr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        rocsparse_int nnz = (end - start);
+
+        if(nnz != 0)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+    }
 
     // If block dimension is one then BSR is equal to CSR
     if(block_dim == 1)
@@ -521,13 +553,13 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
                                bsr_descr->base,
                                bsr_row_ptr);
 
-            rocsparse_int hstart = 0;
-            rocsparse_int hend   = 0;
+            rocsparse_int start = 0;
+            rocsparse_int end   = 0;
             RETURN_IF_HIP_ERROR(
-                hipMemcpy(&hend, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+                hipMemcpy(&end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
             RETURN_IF_HIP_ERROR(
-                hipMemcpy(&hstart, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-            *bsr_nnz = hend - hstart;
+                hipMemcpy(&start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            *bsr_nnz = end - start;
         }
 
         return rocsparse_status_success;
@@ -685,13 +717,13 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
     }
     else
     {
-        rocsparse_int hstart = 0;
-        rocsparse_int hend   = 0;
+        rocsparse_int start = 0;
+        rocsparse_int end   = 0;
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&hend, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            hipMemcpy(&end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
         RETURN_IF_HIP_ERROR(
-            hipMemcpy(&hstart, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-        *bsr_nnz = hend - hstart;
+            hipMemcpy(&start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        *bsr_nnz = end - start;
     }
 
     return rocsparse_status_success;

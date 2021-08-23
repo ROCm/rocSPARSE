@@ -200,6 +200,37 @@ void testing_csr2csc_bad_arg(const Arguments& arg)
                                                  rocsparse_index_base_zero,
                                                  nullptr),
                             rocsparse_status_invalid_pointer);
+
+    // Additional tests for invalid zero matrices
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2csc<T>(handle,
+                                                 safe_size,
+                                                 safe_size,
+                                                 safe_size,
+                                                 nullptr,
+                                                 dcsr_row_ptr,
+                                                 nullptr,
+                                                 dcsc_val,
+                                                 dcsc_row_ind,
+                                                 dcsc_col_ptr,
+                                                 rocsparse_action_numeric,
+                                                 rocsparse_index_base_zero,
+                                                 dbuffer),
+                            rocsparse_status_invalid_pointer);
+
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2csc<T>(handle,
+                                                 safe_size,
+                                                 safe_size,
+                                                 safe_size,
+                                                 dcsr_val,
+                                                 dcsr_row_ptr,
+                                                 dcsr_col_ind,
+                                                 nullptr,
+                                                 nullptr,
+                                                 dcsc_col_ptr,
+                                                 rocsparse_action_numeric,
+                                                 rocsparse_index_base_zero,
+                                                 dbuffer),
+                            rocsparse_status_invalid_pointer);
 }
 
 template <typename T>

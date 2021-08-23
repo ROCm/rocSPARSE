@@ -35,6 +35,17 @@ Tests:
   category: quick
   function: prune_csr2csr_by_percentage
   precision: *single_double_precisions
+  M: [325]
+  N: [435]
+  threshold: [-0.001, 0.1, -0.5]
+  baseA: [rocsparse_index_base_zero]
+  baseB: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_zero]
+
+- name: prune_csr2csr_by_percentage
+  category: quick
+  function: prune_csr2csr_by_percentage
+  precision: *single_double_precisions
   M: [-1, 0, 1, 10, 325, 1107]
   N: [-1, 0, 1, 33, 435, 1089]
   threshold: [-0.001, 0.1, -0.5]

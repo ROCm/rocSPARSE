@@ -171,6 +171,63 @@ void testing_bsrsm_bad_arg(const Arguments& arg)
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_ANALYSIS
 #undef PARAMS_SOLVE
+
+    // Additional tests for invalid zero matrices
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_buffer_size<T>(handle,
+                                                           dir,
+                                                           trans_A,
+                                                           trans_X,
+                                                           mb,
+                                                           nrhs,
+                                                           nnzb,
+                                                           descr,
+                                                           nullptr,
+                                                           bsr_row_ptr,
+                                                           nullptr,
+                                                           block_dim,
+                                                           info,
+                                                           buffer_size),
+                            rocsparse_status_invalid_pointer);
+
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_analysis<T>(handle,
+                                                        dir,
+                                                        trans_A,
+                                                        trans_X,
+                                                        mb,
+                                                        nrhs,
+                                                        nnzb,
+                                                        descr,
+                                                        nullptr,
+                                                        bsr_row_ptr,
+                                                        nullptr,
+                                                        block_dim,
+                                                        info,
+                                                        analysis,
+                                                        solve,
+                                                        temp_buffer),
+                            rocsparse_status_invalid_pointer);
+
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_solve<T>(handle,
+                                                     dir,
+                                                     trans_A,
+                                                     trans_X,
+                                                     mb,
+                                                     nrhs,
+                                                     nnzb,
+                                                     alpha,
+                                                     descr,
+                                                     nullptr,
+                                                     bsr_row_ptr,
+                                                     nullptr,
+                                                     block_dim,
+                                                     info,
+                                                     B,
+                                                     ldb,
+                                                     X,
+                                                     ldx,
+                                                     solve,
+                                                     temp_buffer),
+                            rocsparse_status_invalid_pointer);
 }
 
 template <typename T>

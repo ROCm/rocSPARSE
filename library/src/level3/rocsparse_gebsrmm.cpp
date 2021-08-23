@@ -336,8 +336,20 @@ rocsparse_status rocsparse_gebsrmm_template(rocsparse_handle          handle,
     }
 
     // Check pointer arguments
-    if(bsr_val == nullptr || bsr_row_ptr == nullptr || bsr_col_ind == nullptr || B == nullptr
-       || C == nullptr || alpha == nullptr || beta == nullptr)
+    if(bsr_row_ptr == nullptr || B == nullptr || C == nullptr || alpha == nullptr
+       || beta == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((bsr_val == nullptr && bsr_col_ind != nullptr)
+       || (bsr_val != nullptr && bsr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnzb != 0 && (bsr_val == nullptr && bsr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

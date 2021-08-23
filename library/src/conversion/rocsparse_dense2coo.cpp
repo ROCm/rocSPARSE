@@ -66,6 +66,12 @@ rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle,
 
     log_bench(handle, "./rocsparse-bench -f dense2coo -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
+    // Check order
+    if(rocsparse_enum_utils::is_invalid(order))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check matrix descriptor
     if(descr == nullptr)
     {
@@ -85,8 +91,14 @@ rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle,
     }
 
     // Check pointer arguments
-    if(A == nullptr || nnz_per_rows == nullptr || coo_val == nullptr || coo_row_ind == nullptr
-       || coo_col_ind == nullptr)
+    if(A == nullptr || nnz_per_rows == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value, row, and column arrays must all be null (zero matrix) or none null
+    if(!(coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr)
+       && !(coo_val != nullptr && coo_row_ind != nullptr && coo_col_ind != nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -103,6 +115,7 @@ rocsparse_status rocsparse_dense2coo_template(rocsparse_handle          handle,
     RETURN_IF_HIP_ERROR(hipMemcpy(&end, &row_ptr[m], sizeof(I), hipMemcpyDeviceToHost));
 
     I nnz = end - start;
+
     RETURN_IF_ROCSPARSE_ERROR(
         rocsparse_csr2coo_template(handle, row_ptr, nnz, m, coo_row_ind, descr->base));
 

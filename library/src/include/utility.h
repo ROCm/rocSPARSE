@@ -310,6 +310,20 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_direction value_)
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_action value_)
+{
+    switch(value_)
+    {
+    case rocsparse_action_symbolic:
+    case rocsparse_action_numeric:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_operation value_)
 {
     switch(value_)
@@ -527,6 +541,21 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_analysis_policy value_)
     {
     case rocsparse_analysis_policy_reuse:
     case rocsparse_analysis_policy_force:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_hyb_partition value_)
+{
+    switch(value_)
+    {
+    case rocsparse_hyb_partition_auto:
+    case rocsparse_hyb_partition_user:
+    case rocsparse_hyb_partition_max:
     {
         return false;
     }

@@ -51,6 +51,21 @@ Tests:
   category: quick
   function: bsrmm
   precision: *single_double_precisions_complex_real
+  M: [275]
+  N: [128]
+  K: [173]
+  block_dim: [5]
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none, rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  direction: [rocsparse_direction_row]
+  matrix: [rocsparse_matrix_zero]
+
+- name: bsrmm
+  category: quick
+  function: bsrmm
+  precision: *single_double_precisions_complex_real
   M: [275, 708]
   N: [128, 628]
   K: [173, 747]

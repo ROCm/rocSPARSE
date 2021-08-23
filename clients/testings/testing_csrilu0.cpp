@@ -320,6 +320,43 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
                             rocsparse_status_invalid_handle);
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_clear(handle, nullptr),
                             rocsparse_status_invalid_pointer);
+
+    // Additional tests for invalid zero matrices
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_buffer_size<T>(handle,
+                                                             safe_size,
+                                                             safe_size,
+                                                             descr,
+                                                             nullptr,
+                                                             dcsr_row_ptr,
+                                                             nullptr,
+                                                             info,
+                                                             &buffer_size),
+                            rocsparse_status_invalid_pointer);
+
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_analysis<T>(handle,
+                                                          safe_size,
+                                                          safe_size,
+                                                          descr,
+                                                          nullptr,
+                                                          dcsr_row_ptr,
+                                                          nullptr,
+                                                          info,
+                                                          rocsparse_analysis_policy_reuse,
+                                                          rocsparse_solve_policy_auto,
+                                                          dbuffer),
+                            rocsparse_status_invalid_pointer);
+
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0<T>(handle,
+                                                 safe_size,
+                                                 safe_size,
+                                                 descr,
+                                                 nullptr,
+                                                 dcsr_row_ptr,
+                                                 nullptr,
+                                                 info,
+                                                 rocsparse_solve_policy_auto,
+                                                 dbuffer),
+                            rocsparse_status_invalid_pointer);
 }
 
 template <typename T>

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -687,30 +687,6 @@ void testing_prune_csr2csr_by_percentage(const Arguments& arg)
     // Generate uncompressed CSR matrix on host (or read from file)
     rocsparse_int nnz_A = 0;
     matrix_factory.init_csr(h_csr_row_ptr_A, h_csr_col_ind_A, h_csr_val_A, M, N, nnz_A, csr_base_A);
-
-    // Argument sanity check before allocating invalid memory
-    if(nnz_A <= 0)
-    {
-        EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                         M,
-                                                                         N,
-                                                                         nnz_A,
-                                                                         csr_descr_A,
-                                                                         nullptr,
-                                                                         nullptr,
-                                                                         nullptr,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         nullptr,
-                                                                         nullptr,
-                                                                         nullptr,
-                                                                         info,
-                                                                         nullptr),
-                                (nnz_A < 0) ? rocsparse_status_invalid_size
-                                            : rocsparse_status_success);
-
-        return;
-    }
 
     // Allocate device memory for input CSR matrix
     device_vector<rocsparse_int> d_nnz_total_dev_host_ptr(1);

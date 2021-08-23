@@ -255,7 +255,7 @@ rocsparse_status rocsparse_coosm_analysis_template(rocsparse_handle          han
     }
 
     // Check analysis policy
-    if(analysis != rocsparse_analysis_policy_reuse && analysis != rocsparse_analysis_policy_force)
+    if(rocsparse_enum_utils::is_invalid(analysis))
     {
         return rocsparse_status_invalid_value;
     }

@@ -246,7 +246,18 @@ rocsparse_status rocsparse_coomv_aos_template(rocsparse_handle          handle,
     }
 
     // Check the rest of the pointer arguments
-    if(coo_val == nullptr || coo_ind == nullptr || x == nullptr || y == nullptr)
+    if(x == nullptr || y == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((coo_val == nullptr && coo_ind != nullptr) || (coo_val != nullptr && coo_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz != 0 && (coo_val == nullptr && coo_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

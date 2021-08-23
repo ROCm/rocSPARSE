@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,18 +89,6 @@ void testing_csr2bsr_bad_arg(const Arguments& arg)
                                                   csr_descr,
                                                   nullptr,
                                                   dcsr_col_ind,
-                                                  safe_size,
-                                                  bsr_descr,
-                                                  dbsr_row_ptr,
-                                                  &hbsr_nnzb),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2bsr_nnz(handle,
-                                                  rocsparse_direction_row,
-                                                  safe_size,
-                                                  safe_size,
-                                                  csr_descr,
-                                                  dcsr_row_ptr,
-                                                  nullptr,
                                                   safe_size,
                                                   bsr_descr,
                                                   dbsr_row_ptr,

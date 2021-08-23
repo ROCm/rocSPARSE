@@ -127,9 +127,26 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
     }
 
     // Check pointer arguments
-    if(csr_val_A == nullptr || csr_col_ind_A == nullptr || csr_row_ptr_A == nullptr
-       || nnz_per_row == nullptr || csr_val_C == nullptr || csr_col_ind_C == nullptr
-       || csr_row_ptr_C == nullptr)
+    if(csr_row_ptr_A == nullptr || csr_row_ptr_C == nullptr || nnz_per_row == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_A == nullptr && csr_col_ind_A != nullptr)
+       || (csr_val_A != nullptr && csr_col_ind_A == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_C == nullptr && csr_col_ind_C != nullptr)
+       || (csr_val_C != nullptr && csr_col_ind_C == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz_A != 0 && (csr_val_A == nullptr && csr_col_ind_A == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -181,6 +198,24 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
     if(temp_alloc)
     {
         RETURN_IF_HIP_ERROR(hipFree(temp_storage_ptr));
+    }
+
+    if(csr_val_C == nullptr && csr_col_ind_C == nullptr)
+    {
+        rocsparse_int start = 0;
+        rocsparse_int end   = 0;
+
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&end, &csr_row_ptr_C[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&start, &csr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        rocsparse_int nnz_C = (end - start);
+
+        if(nnz_C != 0)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
     }
 
     // Mean number of elements per row in the input CSR matrix

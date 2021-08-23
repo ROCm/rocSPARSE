@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,12 +63,6 @@ rocsparse_status rocsparse_hyb2csr_template(rocsparse_handle          handle,
               (const void*&)temp_buffer);
 
     log_bench(handle, "./rocsparse-bench -f hyb2csr -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
-
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
 
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
@@ -224,12 +218,6 @@ extern "C" rocsparse_status rocsparse_hyb2csr_buffer_size(rocsparse_handle      
               (const void*&)hyb,
               (const void*&)csr_row_ptr,
               (const void*&)buffer_size);
-
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
 
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)

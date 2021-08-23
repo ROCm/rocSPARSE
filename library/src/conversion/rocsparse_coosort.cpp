@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,31 +52,9 @@ extern "C" rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle     h
               (const void*&)buffer_size);
 
     // Check sizes
-    if(m < 0)
+    if(m < 0 || n < 0 || nnz < 0)
     {
         return rocsparse_status_invalid_size;
-    }
-    else if(n < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check pointer arguments
-    if(coo_row_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(coo_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(buffer_size == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     // Quick return if possible
@@ -85,6 +63,12 @@ extern "C" rocsparse_status rocsparse_coosort_buffer_size(rocsparse_handle     h
         // Do not return 0 as buffer size
         *buffer_size = 4;
         return rocsparse_status_success;
+    }
+
+    // Check pointer arguments
+    if(coo_row_ind == nullptr || coo_col_ind == nullptr || buffer_size == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
     }
 
     // Stream
@@ -155,37 +139,21 @@ extern "C" rocsparse_status rocsparse_coosort_by_row(rocsparse_handle handle,
     log_bench(handle, "./rocsparse-bench -f coosort", "--mtx <matrix.mtx>");
 
     // Check sizes
-    if(m < 0)
+    if(m < 0 || n < 0 || nnz < 0)
     {
         return rocsparse_status_invalid_size;
-    }
-    else if(n < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-
-    // Check pointer arguments
-    if(coo_row_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(coo_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(temp_buffer == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
     }
 
     // Quick return if possible
     if(m == 0 || n == 0 || nnz == 0)
     {
         return rocsparse_status_success;
+    }
+
+    // Check pointer arguments
+    if(coo_row_ind == nullptr || coo_col_ind == nullptr || temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
     }
 
     // Stream

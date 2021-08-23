@@ -77,14 +77,25 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle,
     }
 
     // Quick return if possible
-    if(m == 0 || n == 0 || nnz == 0)
+    if(m == 0 || n == 0)
     {
-
         return rocsparse_status_success;
     }
 
     // Check pointer arguments
-    if(coo_val == nullptr || coo_row_ind == nullptr || coo_col_ind == nullptr || A == nullptr)
+    if(A == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // All must be null (zero matrix) or none null
+    if(!(coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr)
+       && !(coo_val != nullptr && coo_row_ind != nullptr && coo_col_ind != nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz != 0 && (coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

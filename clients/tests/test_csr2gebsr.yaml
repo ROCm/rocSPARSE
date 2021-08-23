@@ -35,6 +35,19 @@ Tests:
   category: quick
   function: csr2gebsr
   precision: *single_double_precisions_complex_real
+  M: [325]
+  N: [435]
+  row_block_dimA: [8]
+  col_block_dimA: [4]
+  baseA: [rocsparse_index_base_zero]
+  baseB: [rocsparse_index_base_one]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
+  matrix: [rocsparse_matrix_zero]
+
+- name: csr2gebsr
+  category: quick
+  function: csr2gebsr
+  precision: *single_double_precisions_complex_real
   M: [-1, 0, 1, 10, 325, 1107]
   N: [-1, 0, 1, 33, 435, 1089]
   row_block_dimA: [0, 1, 2, 8, 37]

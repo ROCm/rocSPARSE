@@ -52,30 +52,28 @@ rocsparse_status rocsparse_csr2coo_template(rocsparse_handle     handle,
 
     log_bench(handle, "./rocsparse-bench -f csr2coo ", "--mtx <matrix.mtx>");
 
-    // Check sizes
-    if(nnz < 0)
+    // Check index base
+    if(rocsparse_enum_utils::is_invalid(idx_base))
     {
-        return rocsparse_status_invalid_size;
-    }
-    else if(m < 0)
-    {
-        return rocsparse_status_invalid_size;
+        return rocsparse_status_invalid_value;
     }
 
-    // Check pointer arguments
-    if(csr_row_ptr == nullptr)
+    // Check sizes
+    if(nnz < 0 || m < 0)
     {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(coo_row_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
     if(nnz == 0 || m == 0)
     {
         return rocsparse_status_success;
+    }
+
+    // Check pointer arguments
+    if(csr_row_ptr == nullptr || coo_row_ind == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
     }
 
     // Stream

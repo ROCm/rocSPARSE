@@ -651,6 +651,37 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     array[idx] = value;
 }
 
+// Scale array by value
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void scale_array(I m, T* __restrict__ array, T value)
+{
+    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+    if(idx >= m)
+    {
+        return;
+    }
+
+    array[idx] *= value;
+}
+
+template <unsigned int BLOCKSIZE, typename I, typename T>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void scale_array(I m, T* __restrict__ array, const T* value)
+{
+    I idx = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+    if(idx >= m)
+    {
+        return;
+    }
+
+    if(*value != static_cast<T>(1))
+    {
+        array[idx] *= (*value);
+    }
+}
+
 // conjugate values in array
 template <unsigned int BLOCKSIZE, typename I, typename T>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void conjugate(I m, T* __restrict__ array)

@@ -555,14 +555,26 @@ rocsparse_status rocsparse_bsrsv_solve_template(rocsparse_handle          handle
     }
 
     // Quick return if possible
-    if(mb == 0 || nnzb == 0 || block_dim == 0)
+    if(mb == 0 || block_dim == 0)
     {
         return rocsparse_status_success;
     }
 
     // Check pointer arguments
-    if(bsr_val == nullptr || bsr_row_ptr == nullptr || bsr_col_ind == nullptr
-       || alpha_device_host == nullptr || x == nullptr || y == nullptr || temp_buffer == nullptr)
+    if(bsr_row_ptr == nullptr || alpha_device_host == nullptr || x == nullptr || y == nullptr
+       || temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((bsr_val == nullptr && bsr_col_ind != nullptr)
+       || (bsr_val != nullptr && bsr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnzb != 0 && (bsr_val == nullptr && bsr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

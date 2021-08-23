@@ -168,7 +168,7 @@ rocsparse_status
     // Quick return if possible
     if(m == 0 || n == 0)
     {
-        if(nullptr != nnz_total_dev_host_ptr)
+        if(nnz_total_dev_host_ptr != nullptr && csr_row_ptr != nullptr)
         {
             rocsparse_pointer_mode mode;
             rocsparse_status       status = rocsparse_get_pointer_mode(handle, &mode);
@@ -406,10 +406,34 @@ rocsparse_status rocsparse_prune_dense2csr_by_percentage_template(rocsparse_hand
     }
 
     // Check pointer arguments
-    if(A == nullptr || csr_val == nullptr || csr_row_ptr == nullptr || csr_col_ind == nullptr
-       || temp_buffer == nullptr)
+    if(A == nullptr || csr_row_ptr == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val == nullptr && csr_col_ind != nullptr)
+       || (csr_val != nullptr && csr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(csr_val == nullptr && csr_col_ind == nullptr)
+    {
+        rocsparse_int start = 0;
+        rocsparse_int end   = 0;
+
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&end, &csr_row_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&start, &csr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        rocsparse_int nnz = (end - start);
+
+        if(nnz != 0)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
     }
 
     // Stream

@@ -113,8 +113,23 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
     }
 
     // Check pointer arguments
-    if(csr_val_A == nullptr || csr_row_ptr_A == nullptr || nnz_per_row == nullptr
-       || nnz_C == nullptr)
+    if(csr_row_ptr_A == nullptr || nnz_per_row == nullptr || nnz_C == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Find number of non-zeros in input CSR matrix on host
+    rocsparse_int nnz_A;
+    RETURN_IF_HIP_ERROR(
+        hipMemcpy(&nnz_A, &csr_row_ptr_A[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+    if(nnz_A < 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // CSR values array can be nullptr if nnz_A is zero
+    if(nnz_A != 0 && csr_val_A == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -123,11 +138,6 @@ rocsparse_status rocsparse_nnz_compress_template(rocsparse_handle          handl
     hipStream_t stream = handle->stream;
 
     constexpr rocsparse_int block_size = 1024;
-
-    // Find number of non-zeros in input CSR matrix on host
-    rocsparse_int nnz_A;
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(&nnz_A, &csr_row_ptr_A[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
     // Mean number of elements per row in the input CSR matrix
     rocsparse_int mean_nnz_per_row = nnz_A / m;

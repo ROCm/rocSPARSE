@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_gebsr2gebsc.hpp"
+#include "common.h"
 #include "definitions.h"
 #include "utility.h"
 
@@ -74,13 +75,12 @@ rocsparse_status rocsparse_gebsr2gebsc_template(rocsparse_handle     handle,
         handle, "./rocsparse-bench -f gebsr2gebsc -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
     // Check rocsparse_action
-    if(copy_values != rocsparse_action_symbolic && copy_values != rocsparse_action_numeric)
+    if(rocsparse_enum_utils::is_invalid(copy_values))
     {
         return rocsparse_status_invalid_value;
     }
 
-    // Check index base
-    if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)
+    if(rocsparse_enum_utils::is_invalid(idx_base))
     {
         return rocsparse_status_invalid_value;
     }
@@ -92,21 +92,67 @@ rocsparse_status rocsparse_gebsr2gebsc_template(rocsparse_handle     handle,
     }
 
     // Quick return if possible
-    if(mb == 0 || nb == 0 || nnzb == 0 || row_block_dim == 0 || col_block_dim == 0)
+    if(mb == 0 || nb == 0 || row_block_dim == 0 || col_block_dim == 0)
     {
         return rocsparse_status_success;
     }
 
     // Check pointer arguments
-    if((bsr_val == nullptr && copy_values == rocsparse_action_numeric) || bsr_row_ptr == nullptr
-       || bsr_col_ind == nullptr || (bsc_val == nullptr && copy_values == rocsparse_action_numeric)
-       || bsc_row_ind == nullptr || bsc_col_ptr == nullptr || temp_buffer == nullptr)
+    if(bsr_row_ptr == nullptr || bsc_col_ptr == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
+    if(copy_values == rocsparse_action_numeric)
+    {
+        // value arrays and column indices arrays must both be null (zero matrix) or both not null
+        if((bsr_val == nullptr && bsr_col_ind != nullptr)
+           || (bsr_val != nullptr && bsr_col_ind == nullptr))
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        if((bsc_val == nullptr && bsc_row_ind != nullptr)
+           || (bsc_val != nullptr && bsc_row_ind == nullptr))
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        if(nnzb != 0 && (bsr_val == nullptr && bsr_col_ind == nullptr))
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        if(nnzb != 0 && (bsc_val == nullptr && bsc_row_ind == nullptr))
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+    }
+    else
+    {
+        // if copying symbolically, then column/row indices arrays can only be null if the zero matrix
+        if(nnzb != 0 && (bsr_col_ind == nullptr || bsc_row_ind == nullptr))
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+    }
+
     // Stream
     hipStream_t stream = handle->stream;
+
+    if(nnzb == 0)
+    {
+        hipLaunchKernelGGL((set_array_to_value<256>),
+                           dim3(nb / 256 + 1),
+                           dim3(256),
+                           0,
+                           stream,
+                           (nb + 1),
+                           bsc_col_ptr,
+                           static_cast<rocsparse_int>(idx_base));
+
+        return rocsparse_status_success;
+    }
 
     unsigned int startbit = 0;
     unsigned int endbit   = rocsparse_clz(nb);
@@ -248,19 +294,17 @@ rocsparse_status rocsparse_gebsr2gebsc_buffer_size_template(rocsparse_handle    
     // Check sizes
     if(mb < 0 || nb < 0 || nnzb < 0 || row_block_dim < 0 || col_block_dim < 0)
     {
-        //      std::cout << "return invalid size "  << rocsparse_status_invalid_size << std::endl;
         return rocsparse_status_invalid_size;
     }
 
     // Check buffer size argument
     if(p_buffer_size == nullptr)
     {
-        //      std::cout << "invalid pointer "<<std::endl;
         return rocsparse_status_invalid_pointer;
     }
 
     // Quick return if possible
-    if(mb == 0 || nb == 0 || nnzb == 0 || row_block_dim == 0 || col_block_dim == 0)
+    if(mb == 0 || nb == 0 || row_block_dim == 0 || col_block_dim == 0)
     {
         // Do not return 0 as buffer size
         *p_buffer_size = 4;
@@ -268,15 +312,19 @@ rocsparse_status rocsparse_gebsr2gebsc_buffer_size_template(rocsparse_handle    
     }
 
     // Check pointer arguments
-    if(bsr_val == nullptr)
+    if(bsr_row_ptr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(bsr_row_ptr == nullptr)
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((bsr_val == nullptr && bsr_col_ind != nullptr)
+       || (bsr_val != nullptr && bsr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(bsr_col_ind == nullptr)
+
+    if(nnzb != 0 && (bsr_val == nullptr && bsr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

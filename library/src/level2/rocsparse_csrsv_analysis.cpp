@@ -549,11 +549,7 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
     }
 
     // Check sizes
-    if(m < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnz < 0)
+    if(m < 0 || nnz < 0)
     {
         return rocsparse_status_invalid_size;
     }
@@ -565,19 +561,19 @@ rocsparse_status rocsparse_csrsv_analysis_template(rocsparse_handle          han
     }
 
     // Check pointer arguments
-    if(csr_row_ptr == nullptr)
+    if(csr_row_ptr == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(csr_col_ind == nullptr)
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val == nullptr && csr_col_ind != nullptr)
+       || (csr_val != nullptr && csr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(csr_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(temp_buffer == nullptr)
+
+    if(nnz != 0 && (csr_col_ind == nullptr && csr_val == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

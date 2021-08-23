@@ -1479,32 +1479,73 @@ static inline rocsparse_status rocsparse_csrgemm_multadd_template(rocsparse_hand
     }
 
     // Check valid pointers
-    if(descr_A == nullptr || csr_val_A == nullptr || csr_row_ptr_A == nullptr
-       || csr_col_ind_A == nullptr || descr_B == nullptr || csr_val_B == nullptr
-       || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr || descr_D == nullptr
-       || csr_val_D == nullptr || csr_row_ptr_D == nullptr || csr_col_ind_D == nullptr
-       || descr_C == nullptr || csr_val_C == nullptr || csr_row_ptr_C == nullptr
-       || csr_col_ind_C == nullptr || temp_buffer == nullptr || alpha == nullptr || beta == nullptr)
+    if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
+       || csr_row_ptr_B == nullptr || descr_D == nullptr || csr_row_ptr_D == nullptr
+       || descr_C == nullptr || csr_row_ptr_C == nullptr || temp_buffer == nullptr
+       || alpha == nullptr || beta == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
-    // Check index base
-    if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_A == nullptr && csr_col_ind_A != nullptr)
+       || (csr_val_A != nullptr && csr_col_ind_A == nullptr))
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_B->base != rocsparse_index_base_zero && descr_B->base != rocsparse_index_base_one)
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_B == nullptr && csr_col_ind_B != nullptr)
+       || (csr_val_B != nullptr && csr_col_ind_B == nullptr))
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_C == nullptr && csr_col_ind_C != nullptr)
+       || (csr_val_C != nullptr && csr_col_ind_C == nullptr))
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_C->base != rocsparse_index_base_zero && descr_C->base != rocsparse_index_base_one)
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_D == nullptr && csr_col_ind_D != nullptr)
+       || (csr_val_D != nullptr && csr_col_ind_D == nullptr))
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz_A != 0 && (csr_col_ind_A == nullptr && csr_val_A == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz_B != 0 && (csr_col_ind_B == nullptr && csr_val_B == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz_D != 0 && (csr_col_ind_D == nullptr && csr_val_D == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(csr_val_C == nullptr && csr_col_ind_C == nullptr)
+    {
+        rocsparse_int start = 0;
+        rocsparse_int end   = 0;
+
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&end, &csr_row_ptr_C[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&start, &csr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        rocsparse_int nnz = (end - start);
+
+        if(nnz != 0)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
     }
 
     // Check matrix type
@@ -1651,27 +1692,60 @@ static inline rocsparse_status rocsparse_csrgemm_mult_template(rocsparse_handle 
     }
 
     // Check valid pointers
-    if(descr_A == nullptr || csr_val_A == nullptr || csr_row_ptr_A == nullptr
-       || csr_col_ind_A == nullptr || descr_B == nullptr || csr_val_B == nullptr
-       || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr || descr_C == nullptr
-       || csr_val_C == nullptr || csr_row_ptr_C == nullptr || csr_col_ind_C == nullptr
+    if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
+       || csr_row_ptr_B == nullptr || descr_C == nullptr || csr_row_ptr_C == nullptr
        || temp_buffer == nullptr || alpha == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
-    // Check index base
-    if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_A == nullptr && csr_col_ind_A != nullptr)
+       || (csr_val_A != nullptr && csr_col_ind_A == nullptr))
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_B->base != rocsparse_index_base_zero && descr_B->base != rocsparse_index_base_one)
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_B == nullptr && csr_col_ind_B != nullptr)
+       || (csr_val_B != nullptr && csr_col_ind_B == nullptr))
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_C->base != rocsparse_index_base_zero && descr_C->base != rocsparse_index_base_one)
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_C == nullptr && csr_col_ind_C != nullptr)
+       || (csr_val_C != nullptr && csr_col_ind_C == nullptr))
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz_A != 0 && (csr_col_ind_A == nullptr && csr_val_A == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz_B != 0 && (csr_col_ind_B == nullptr && csr_val_B == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(csr_val_C == nullptr && csr_col_ind_C == nullptr)
+    {
+        rocsparse_int start = 0;
+        rocsparse_int end   = 0;
+
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&end, &csr_row_ptr_C[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&start, &csr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        rocsparse_int nnz = (end - start);
+
+        if(nnz != 0)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
     }
 
     // Check matrix type
@@ -1770,22 +1844,47 @@ static inline rocsparse_status rocsparse_csrgemm_scal_template(rocsparse_handle 
     }
 
     // Check valid pointers
-    if(descr_D == nullptr || csr_val_D == nullptr || csr_row_ptr_D == nullptr
-       || csr_col_ind_D == nullptr || descr_C == nullptr || csr_val_C == nullptr
-       || csr_row_ptr_C == nullptr || csr_col_ind_C == nullptr || temp_buffer == nullptr
-       || beta == nullptr)
+    if(descr_D == nullptr || csr_row_ptr_D == nullptr || descr_C == nullptr
+       || csr_row_ptr_C == nullptr || temp_buffer == nullptr || beta == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
-    // Check index base
-    if(descr_C->base != rocsparse_index_base_zero && descr_C->base != rocsparse_index_base_one)
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_C == nullptr && csr_col_ind_C != nullptr)
+       || (csr_val_C != nullptr && csr_col_ind_C == nullptr))
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_D == nullptr && csr_col_ind_D != nullptr)
+       || (csr_val_D != nullptr && csr_col_ind_D == nullptr))
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz_D != 0 && (csr_col_ind_D == nullptr && csr_val_D == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(csr_val_C == nullptr && csr_col_ind_C == nullptr)
+    {
+        rocsparse_int start = 0;
+        rocsparse_int end   = 0;
+
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&end, &csr_row_ptr_C[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&start, &csr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        rocsparse_int nnz = (end - start);
+
+        if(nnz != 0)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
     }
 
     // Check matrix type

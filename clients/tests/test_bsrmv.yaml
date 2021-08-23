@@ -147,6 +147,19 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
+- name: bsrmv
+  category: quick
+  function: bsrmv
+  precision: *single_double_precisions_complex_real
+  M: [10]
+  N: [33]
+  block_dim: [2]
+  alpha_beta: *alpha_beta_range_quick
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_zero]
+
 - name: bsrmv_file
   category: quick
   function: bsrmv

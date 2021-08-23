@@ -3635,11 +3635,6 @@ void host_bsric0(rocsparse_direction               direction,
     *struct_pivot  = -1;
     *numeric_pivot = -1;
 
-    if(bsr_col_ind.size() == 0 && bsr_val.size() == 0)
-    {
-        return;
-    }
-
     // pointer of upper part of each row
     std::vector<rocsparse_int> diag_block_offset(Mb);
     std::vector<rocsparse_int> diag_offset(M, -1);
@@ -5628,7 +5623,7 @@ void host_prune_csr_to_csr_by_percentage(rocsparse_int                     M,
 
     std::sort(sorted_A.begin(), sorted_A.end());
 
-    T threshold = sorted_A[pos];
+    T threshold = nnz_A != 0 ? sorted_A[pos] : static_cast<T>(0);
 
     host_prune_csr_to_csr<T>(M,
                              N,

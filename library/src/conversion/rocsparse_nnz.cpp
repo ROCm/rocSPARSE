@@ -160,7 +160,7 @@ rocsparse_status rocsparse_nnz_impl(rocsparse_handle          handle,
     //
     // Check validity of the direction.
     //
-    if(rocsparse_direction_row != dir && rocsparse_direction_column != dir)
+    if(rocsparse_enum_utils::is_invalid(dir))
     {
         return rocsparse_status_invalid_value;
     }
