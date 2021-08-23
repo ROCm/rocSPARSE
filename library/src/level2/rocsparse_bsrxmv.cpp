@@ -45,16 +45,6 @@ rocsparse_status rocsparse_bsrxmv_template_dispatch(rocsparse_handle          ha
                                                     U                         beta_device_host,
                                                     T*                        y)
 {
-    if(trans != rocsparse_operation_none)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
-    if(block_dim == 1)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
     // LCOV_EXCL_START
     // Run different bsrxmv kernels
     if(handle->wavefront_size == 32)
@@ -304,6 +294,16 @@ rocsparse_status rocsparse_bsrxmv_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_value;
     }
 
+    if(trans != rocsparse_operation_none)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
+    if(block_dim == 1)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     if(descr->type != rocsparse_matrix_type_general)
     {
         //
@@ -323,7 +323,7 @@ rocsparse_status rocsparse_bsrxmv_template(rocsparse_handle          handle,
     //
     // Quick return if possible
     //
-    if(mb == 0 || nb == 0 || nnzb == 0 || block_dim == 0 || size_of_mask == 0)
+    if(mb == 0 || nb == 0 || block_dim == 0 || size_of_mask == 0)
     {
         return rocsparse_status_success;
     }
@@ -348,8 +348,20 @@ rocsparse_status rocsparse_bsrxmv_template(rocsparse_handle          handle,
     //
     // Check the rest of pointer arguments
     //
-    if(bsr_val == nullptr || bsr_mask_ptr == nullptr || bsr_row_ptr == nullptr
-       || bsr_end_ptr == nullptr || bsr_col_ind == nullptr || x == nullptr || y == nullptr)
+    if(bsr_mask_ptr == nullptr || bsr_row_ptr == nullptr || bsr_end_ptr == nullptr || x == nullptr
+       || y == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((bsr_val == nullptr && bsr_col_ind != nullptr)
+       || (bsr_val != nullptr && bsr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnzb != 0 && (bsr_val == nullptr && bsr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

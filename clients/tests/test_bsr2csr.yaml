@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,18 @@ Tests:
   category: pre_checkin
   function: bsr2csr_bad_arg
   precision: *single_double_precisions_complex_real
+
+- name: bsr2csr
+  category: quick
+  function: bsr2csr
+  precision: *single_double_precisions_complex_real
+  M: [99]
+  N: [89]
+  block_dim: [3]
+  baseA: [rocsparse_index_base_zero]
+  baseB: [rocsparse_index_base_one]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
+  matrix: [rocsparse_matrix_zero]
 
 - name: bsr2csr
   category: quick

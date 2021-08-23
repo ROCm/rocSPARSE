@@ -54,11 +54,7 @@ rocsparse_status rocsparse_coo2csr_template(rocsparse_handle     handle,
     log_bench(handle, "./rocsparse-bench -f coo2csr", "--mtx <matrix.mtx>");
 
     // Check sizes
-    if(nnz < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(m < 0)
+    if(nnz < 0 || m < 0)
     {
         return rocsparse_status_invalid_size;
     }
@@ -69,12 +65,12 @@ rocsparse_status rocsparse_coo2csr_template(rocsparse_handle     handle,
         return rocsparse_status_success;
     }
 
-    // Check pointer arguments
-    if(coo_row_ind == nullptr)
+    if(csr_row_ptr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(csr_row_ptr == nullptr)
+
+    if(nnz != 0 && coo_row_ind == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

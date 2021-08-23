@@ -1493,6 +1493,61 @@ public:
 };
 
 template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
+struct rocsparse_matrix_factory_zero : public rocsparse_matrix_factory_base<T, I, J>
+{
+public:
+    rocsparse_matrix_factory_zero(){};
+
+    virtual void init_csr(std::vector<I>&      csr_row_ptr,
+                          std::vector<J>&      csr_col_ind,
+                          std::vector<T>&      csr_val,
+                          J&                   M,
+                          J&                   N,
+                          I&                   nnz,
+                          rocsparse_index_base base)
+    {
+        csr_row_ptr.resize(M + 1, static_cast<I>(base));
+        csr_col_ind.resize(0);
+        csr_val.resize(0);
+
+        nnz = 0;
+    }
+
+    virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
+                            std::vector<J>&      bsr_col_ind,
+                            std::vector<T>&      bsr_val,
+                            rocsparse_direction  dirb,
+                            J&                   Mb,
+                            J&                   Nb,
+                            I&                   nnzb,
+                            J&                   row_block_dim,
+                            J&                   col_block_dim,
+                            rocsparse_index_base base)
+    {
+        bsr_row_ptr.resize(Mb + 1, static_cast<I>(base));
+        bsr_col_ind.resize(0);
+        bsr_val.resize(0);
+
+        nnzb = 0;
+    }
+
+    virtual void init_coo(std::vector<I>&      coo_row_ind,
+                          std::vector<I>&      coo_col_ind,
+                          std::vector<T>&      coo_val,
+                          I&                   M,
+                          I&                   N,
+                          I&                   nnz,
+                          rocsparse_index_base base)
+    {
+        coo_row_ind.resize(0);
+        coo_col_ind.resize(0);
+        coo_val.resize(0);
+
+        nnz = 0;
+    }
+};
+
+template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
 struct rocsparse_matrix_factory : public rocsparse_matrix_factory_base<T, I, J>
 {
 private:
@@ -1565,6 +1620,12 @@ public:
                 = arg.timing ? arg.filename
                              : rocsparse_exepath() + "../matrices/" + arg.filename + ".mtx";
             this->m_instance = new rocsparse_matrix_factory_mtx<T, I, J>(filename.c_str());
+            break;
+        }
+
+        case rocsparse_matrix_zero:
+        {
+            this->m_instance = new rocsparse_matrix_factory_zero<T, I, J>();
             break;
         }
 

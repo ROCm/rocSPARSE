@@ -373,6 +373,16 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_value;
     }
 
+    if(rocsparse_enum_utils::is_invalid(order_B))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(order_C))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     if(order_B != order_C)
     {
         return rocsparse_status_invalid_value;
@@ -403,8 +413,19 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
     }
 
     // Check the rest of pointer arguments
-    if(coo_val == nullptr || coo_row_ind == nullptr || coo_col_ind == nullptr || B == nullptr
-       || C == nullptr)
+    if(B == nullptr || C == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // All must be null (zero matrix) or none null
+    if(!(coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr)
+       && !(coo_val != nullptr && coo_row_ind != nullptr && coo_col_ind != nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz != 0 && (coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

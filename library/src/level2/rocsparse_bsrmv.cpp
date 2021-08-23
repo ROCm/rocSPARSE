@@ -323,6 +323,11 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_value;
     }
 
+    if(trans != rocsparse_operation_none)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     if(descr->type != rocsparse_matrix_type_general)
     {
         //
@@ -342,7 +347,7 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
     //
     // Quick return if possible
     //
-    if(mb == 0 || nb == 0 || nnzb == 0 || block_dim == 0)
+    if(mb == 0 || nb == 0 || block_dim == 0)
     {
         return rocsparse_status_success;
     }
@@ -367,9 +372,19 @@ rocsparse_status rocsparse_bsrmv_template(rocsparse_handle          handle,
     //
     // Check the rest of pointer arguments
     //
+    if(bsr_row_ptr == nullptr || x == nullptr || y == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
 
-    if(bsr_val == nullptr || bsr_row_ptr == nullptr || bsr_col_ind == nullptr || x == nullptr
-       || y == nullptr)
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((bsr_val == nullptr && bsr_col_ind != nullptr)
+       || (bsr_val != nullptr && bsr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnzb != 0 && (bsr_val == nullptr && bsr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

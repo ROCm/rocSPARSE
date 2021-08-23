@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,31 +72,21 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
 
     log_bench(handle, "./rocsparse-bench -f csr2hyb -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO
         return rocsparse_status_not_implemented;
     }
+
     // Check partition type
-    if(partition_type != rocsparse_hyb_partition_max
-       && partition_type != rocsparse_hyb_partition_user
-       && partition_type != rocsparse_hyb_partition_auto)
+    if(rocsparse_enum_utils::is_invalid(partition_type))
     {
         return rocsparse_status_invalid_value;
     }
 
     // Check sizes
-    if(m < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(n < 0)
+    if(m < 0 || n < 0)
     {
         return rocsparse_status_invalid_size;
     }

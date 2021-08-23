@@ -791,7 +791,7 @@ rocsparse_status rocsparse_create_spvec_descr(rocsparse_spvec_descr* descr,
     }
 
     // Check for valid pointers
-    if(nnz > 0 && (indices == nullptr || values == nullptr))
+    if(nnz != 0 && (indices == nullptr || values == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -1157,7 +1157,7 @@ rocsparse_status rocsparse_create_csr_descr(rocsparse_spmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
-    if(nnz > 0 && (csr_col_ind == nullptr || csr_val == nullptr))
+    if(nnz != 0 && (csr_col_ind == nullptr || csr_val == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -1235,7 +1235,7 @@ rocsparse_status rocsparse_create_csc_descr(rocsparse_spmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
-    if(nnz > 0 && (csc_row_ind == nullptr || csc_val == nullptr))
+    if(nnz != 0 && (csc_row_ind == nullptr || csc_val == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

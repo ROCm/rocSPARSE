@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,16 +71,6 @@ rocsparse_status rocsparse_ell2csr_template(rocsparse_handle          handle,
               (const void*&)csr_col_ind);
 
     log_bench(handle, "./rocsparse-bench -f ell2csr -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
-
-    // Check index base
-    if(ell_descr->base != rocsparse_index_base_zero && ell_descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(csr_descr->base != rocsparse_index_base_zero && csr_descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
 
     // Check matrix type
     if(ell_descr->type != rocsparse_matrix_type_general)

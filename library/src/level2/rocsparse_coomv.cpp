@@ -262,6 +262,11 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_value;
     }
 
+    if(trans != rocsparse_operation_none)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
@@ -294,8 +299,19 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
     }
 
     // Check the rest of the pointer arguments
-    if(coo_val == nullptr || coo_row_ind == nullptr || coo_col_ind == nullptr || x == nullptr
-       || y == nullptr)
+    if(x == nullptr || y == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // All must be null (zero matrix) or none null
+    if(!(coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr)
+       && !(coo_val != nullptr && coo_row_ind != nullptr && coo_col_ind != nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz != 0 && (coo_val == nullptr && coo_row_ind == nullptr && coo_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

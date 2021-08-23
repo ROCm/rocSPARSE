@@ -122,11 +122,6 @@ rocsparse_status rocsparse_csrilu0_analysis_template(rocsparse_handle          h
               solve,
               analysis);
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO
@@ -134,47 +129,48 @@ rocsparse_status rocsparse_csrilu0_analysis_template(rocsparse_handle          h
     }
 
     // Check analysis policy
-    if(analysis != rocsparse_analysis_policy_reuse && analysis != rocsparse_analysis_policy_force)
+    if(rocsparse_enum_utils::is_invalid(analysis))
     {
         return rocsparse_status_invalid_value;
     }
 
     // Check solve policy
+    if(rocsparse_enum_utils::is_invalid(solve))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     if(solve != rocsparse_solve_policy_auto)
     {
         return rocsparse_status_invalid_value;
     }
 
     // Check sizes
-    if(m < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnz < 0)
+    if(m < 0 || nnz < 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(m == 0 || nnz == 0)
+    if(m == 0)
     {
         return rocsparse_status_success;
     }
 
     // Check pointer arguments
-    if(csr_row_ptr == nullptr)
+    if(csr_row_ptr == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(csr_col_ind == nullptr)
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val == nullptr && csr_col_ind != nullptr)
+       || (csr_val != nullptr && csr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(csr_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(temp_buffer == nullptr)
+
+    if(nnz != 0 && (csr_val == nullptr && csr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -688,11 +684,12 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
 
     log_bench(handle, "./rocsparse-bench -f csrilu0 -r", replaceX<T>("X"), "--mtx <matrix.mtx> ");
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
+    // Check solve policy
+    if(rocsparse_enum_utils::is_invalid(policy))
     {
         return rocsparse_status_invalid_value;
     }
+
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO
@@ -700,35 +697,31 @@ rocsparse_status rocsparse_csrilu0_template(rocsparse_handle          handle,
     }
 
     // Check sizes
-    if(m < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnz < 0)
+    if(m < 0 || nnz < 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(m == 0 || nnz == 0)
+    if(m == 0)
     {
         return rocsparse_status_success;
     }
 
     // Check pointer arguments
-    if(csr_val == nullptr)
+    if(csr_row_ptr == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(csr_row_ptr == nullptr)
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val == nullptr && csr_col_ind != nullptr)
+       || (csr_val != nullptr && csr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(temp_buffer == nullptr)
+
+    if(nnz != 0 && (csr_val == nullptr && csr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

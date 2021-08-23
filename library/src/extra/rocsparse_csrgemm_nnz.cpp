@@ -76,26 +76,26 @@ static inline rocsparse_status
     }
 
     // Check valid pointers
-    if(descr_A == nullptr || csr_row_ptr_A == nullptr || csr_col_ind_A == nullptr
-       || descr_B == nullptr || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr
-       || descr_D == nullptr || csr_row_ptr_D == nullptr || csr_col_ind_D == nullptr
+    if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
+       || csr_row_ptr_B == nullptr || descr_D == nullptr || csr_row_ptr_D == nullptr
        || buffer_size == nullptr || alpha == nullptr || beta == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
-    // Check index base
-    if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
+    if(nnz_A != 0 && csr_col_ind_A == nullptr)
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_B->base != rocsparse_index_base_zero && descr_B->base != rocsparse_index_base_one)
+
+    if(nnz_B != 0 && csr_col_ind_B == nullptr)
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
+
+    if(nnz_D != 0 && csr_col_ind_D == nullptr)
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
 
     // Check matrix type
@@ -230,21 +230,20 @@ static inline rocsparse_status
     }
 
     // Check valid pointers
-    if(descr_A == nullptr || csr_row_ptr_A == nullptr || csr_col_ind_A == nullptr
-       || descr_B == nullptr || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr
-       || buffer_size == nullptr || alpha == nullptr)
+    if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
+       || csr_row_ptr_B == nullptr || buffer_size == nullptr || alpha == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
-    // Check index base
-    if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
+    if(nnz_A != 0 && csr_col_ind_A == nullptr)
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_B->base != rocsparse_index_base_zero && descr_B->base != rocsparse_index_base_one)
+
+    if(nnz_B != 0 && csr_col_ind_B == nullptr)
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
 
     // Check matrix type
@@ -339,16 +338,14 @@ static inline rocsparse_status
     }
 
     // Check valid pointers
-    if(descr_D == nullptr || csr_row_ptr_D == nullptr || csr_col_ind_D == nullptr
-       || buffer_size == nullptr || beta == nullptr)
+    if(descr_D == nullptr || csr_row_ptr_D == nullptr || buffer_size == nullptr || beta == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
-    // Check index base
-    if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
+    if(nnz_D != 0 && csr_col_ind_D == nullptr)
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
 
     // Check matrix type
@@ -417,6 +414,17 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
               (const void*&)csr_col_ind_D,
               (const void*&)info_C,
               (const void*&)buffer_size);
+
+    // Check operation
+    if(rocsparse_enum_utils::is_invalid(trans_A))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(trans_B))
+    {
+        return rocsparse_status_invalid_value;
+    }
 
     // Check for valid rocsparse_mat_info
     if(info_C == nullptr)
@@ -524,21 +532,15 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_scal(rocsparse_handle      
     }
 
     // Check valid pointers
-    if(descr_D == nullptr || csr_row_ptr_D == nullptr || csr_col_ind_D == nullptr
-       || descr_C == nullptr || csr_row_ptr_C == nullptr || nnz_C == nullptr
-       || temp_buffer == nullptr)
+    if(descr_D == nullptr || csr_row_ptr_D == nullptr || descr_C == nullptr
+       || csr_row_ptr_C == nullptr || nnz_C == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
-    // Check index base
-    if(descr_C->base != rocsparse_index_base_zero && descr_C->base != rocsparse_index_base_one)
+    if(nnz_D != 0 && csr_col_ind_D == nullptr)
     {
-        return rocsparse_status_invalid_value;
-    }
-    if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
 
     // Check matrix type
@@ -555,7 +557,7 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_scal(rocsparse_handle      
     hipStream_t stream = handle->stream;
 
     // Quick return if possible
-    if(m == 0 || n == 0 || nnz_D == 0)
+    if(m == 0 || n == 0)
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
@@ -1148,31 +1150,27 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_multadd(rocsparse_handle   
     }
 
     // Check valid pointers
-    if(descr_A == nullptr || csr_row_ptr_A == nullptr || csr_col_ind_A == nullptr
-       || descr_B == nullptr || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr
-       || descr_D == nullptr || csr_row_ptr_D == nullptr || csr_col_ind_D == nullptr
+    if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
+       || csr_row_ptr_B == nullptr || descr_D == nullptr || csr_row_ptr_D == nullptr
        || descr_C == nullptr || csr_row_ptr_C == nullptr || nnz_C == nullptr
        || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
-    // Check index base
-    if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
+    if(nnz_A != 0 && csr_col_ind_A == nullptr)
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_B->base != rocsparse_index_base_zero && descr_B->base != rocsparse_index_base_one)
+
+    if(nnz_B != 0 && csr_col_ind_B == nullptr)
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_D->base != rocsparse_index_base_zero && descr_D->base != rocsparse_index_base_one)
+
+    if(nnz_D != 0 && csr_col_ind_D == nullptr)
     {
-        return rocsparse_status_invalid_value;
-    }
-    if(descr_C->base != rocsparse_index_base_zero && descr_C->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
 
     // Check matrix type
@@ -1314,26 +1312,21 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_mult(rocsparse_handle      
     }
 
     // Check valid pointers
-    if(descr_A == nullptr || csr_row_ptr_A == nullptr || csr_col_ind_A == nullptr
-       || descr_B == nullptr || csr_row_ptr_B == nullptr || csr_col_ind_B == nullptr
-       || descr_C == nullptr || csr_row_ptr_C == nullptr || nnz_C == nullptr
-       || temp_buffer == nullptr)
+    if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
+       || csr_row_ptr_B == nullptr || descr_C == nullptr || csr_row_ptr_C == nullptr
+       || nnz_C == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
-    // Check index base
-    if(descr_A->base != rocsparse_index_base_zero && descr_A->base != rocsparse_index_base_one)
+    if(nnz_A != 0 && csr_col_ind_A == nullptr)
     {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
-    if(descr_B->base != rocsparse_index_base_zero && descr_B->base != rocsparse_index_base_one)
+
+    if(nnz_B != 0 && csr_col_ind_B == nullptr)
     {
-        return rocsparse_status_invalid_value;
-    }
-    if(descr_C->base != rocsparse_index_base_zero && descr_C->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
+        return rocsparse_status_invalid_pointer;
     }
 
     // Check matrix type
@@ -1354,7 +1347,7 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_mult(rocsparse_handle      
     hipStream_t stream = handle->stream;
 
     // Quick return if possible
-    if(m == 0 || n == 0 || k == 0 || nnz_A == 0 || nnz_B == 0)
+    if(m == 0 || n == 0 || k == 0)
     {
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {

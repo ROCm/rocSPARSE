@@ -63,6 +63,19 @@ Tests:
   category: quick
   function: csrgeam
   precision: *single_double_precisions_complex_real
+  M: [582]
+  N: [243]
+  alpha_alphai: *alpha_range_quick
+  beta_betai: *beta_range_quick
+  baseA: [rocsparse_index_base_one]
+  baseB: [rocsparse_index_base_zero]
+  baseC: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_zero]
+
+- name: csrgeam
+  category: quick
+  function: csrgeam
+  precision: *single_double_precisions_complex_real
   M: [8, 582]
   N: [12, 243]
   alpha_alphai: *alpha_range_quick

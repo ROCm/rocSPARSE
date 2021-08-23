@@ -271,6 +271,20 @@ Tests:
   M: [10]
   N: [33]
   row_block_dimA: [17]
+  col_block_dimA: [8]
+  alpha_beta: *alpha_beta_range_quick
+  direction: [rocsparse_direction_row]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_zero]
+
+- name: gebsrmv
+  category: quick
+  function: gebsrmv
+  precision: *single_double_precisions_complex
+  M: [10]
+  N: [33]
+  row_block_dimA: [17]
   col_block_dimA: [8, 12]
   alpha_beta: *alpha_beta_range_quick
   direction: [rocsparse_direction_row]

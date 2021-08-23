@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,15 +69,6 @@ rocsparse_status rocsparse_csr2ell_template(rocsparse_handle          handle,
 
     log_bench(handle, "./rocsparse-bench -f csr2ell -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
-    // Check index base
-    if(csr_descr->base != rocsparse_index_base_zero && csr_descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(ell_descr->base != rocsparse_index_base_zero && ell_descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
     // Check matrix type
     if(csr_descr->type != rocsparse_matrix_type_general)
     {
@@ -185,15 +176,6 @@ extern "C" rocsparse_status rocsparse_csr2ell_width(rocsparse_handle          ha
               (const void*&)ell_descr,
               (const void*&)ell_width);
 
-    // Check index base
-    if(csr_descr->base != rocsparse_index_base_zero && csr_descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
-    if(ell_descr->base != rocsparse_index_base_zero && ell_descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
     // Check matrix type
     if(csr_descr->type != rocsparse_matrix_type_general)
     {

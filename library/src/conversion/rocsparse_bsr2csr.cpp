@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -90,7 +90,7 @@ rocsparse_status rocsparse_bsr2csr_template(rocsparse_handle          handle,
     log_bench(handle, "./rocsparse-bench -f bsr2csr -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
     // Check direction
-    if(direction != rocsparse_direction_row && direction != rocsparse_direction_column)
+    if(rocsparse_enum_utils::is_invalid(direction))
     {
         return rocsparse_status_invalid_value;
     }
@@ -114,11 +114,41 @@ rocsparse_status rocsparse_bsr2csr_template(rocsparse_handle          handle,
     }
 
     // Check pointer arguments
-    if(bsr_val == nullptr || bsr_row_ptr == nullptr || bsr_col_ind == nullptr || csr_val == nullptr
-       || csr_row_ptr == nullptr || csr_col_ind == nullptr || bsr_descr == nullptr
-       || csr_descr == nullptr)
+    if(bsr_row_ptr == nullptr || csr_row_ptr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((bsr_val == nullptr && bsr_col_ind != nullptr)
+       || (bsr_val != nullptr && bsr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val == nullptr && csr_col_ind != nullptr)
+       || (csr_val != nullptr && csr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(bsr_val == nullptr && bsr_col_ind == nullptr)
+    {
+        rocsparse_int start = 0;
+        rocsparse_int end   = 0;
+
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&end, &bsr_row_ptr[mb], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        rocsparse_int nnzb = (end - start);
+
+        if(nnzb != 0)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
     }
 
     // Check the description type of the matrix.

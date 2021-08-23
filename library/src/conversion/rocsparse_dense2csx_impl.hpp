@@ -87,6 +87,12 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
               "--indexbaseA",
               descr_A->base);
 
+    // Check order
+    if(rocsparse_enum_utils::is_invalid(order))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     //
     // Check sizes
     //
@@ -106,8 +112,14 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
     //
     // Check invalid pointers.
     //
-    if(nullptr == nnz_per_row_column || nullptr == A || nullptr == csx_row_col_ptr_A
-       || nullptr == csx_col_row_ind_A || nullptr == csx_val_A)
+    if(nullptr == nnz_per_row_column || nullptr == A || nullptr == csx_row_col_ptr_A)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column/row indices arrays must both be null (zero matrix) or both not null
+    if((csx_col_row_ind_A == nullptr && csx_val_A != nullptr)
+       || (csx_col_row_ind_A != nullptr && csx_val_A == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -173,6 +185,34 @@ rocsparse_status rocsparse_dense2csx_impl(rocsparse_handle          handle,
         if(d_temp_alloc == true)
         {
             RETURN_IF_HIP_ERROR(hipFree(d_temp_storage));
+        }
+    }
+
+    if(csx_col_row_ind_A == nullptr && csx_val_A == nullptr)
+    {
+        rocsparse_int start = 0;
+        rocsparse_int end   = 0;
+
+        if(is_row_oriented)
+        {
+            RETURN_IF_HIP_ERROR(hipMemcpy(
+                &end, &csx_row_col_ptr_A[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            RETURN_IF_HIP_ERROR(hipMemcpy(
+                &start, &csx_row_col_ptr_A[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        }
+        else
+        {
+            RETURN_IF_HIP_ERROR(hipMemcpy(
+                &end, &csx_row_col_ptr_A[n], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+            RETURN_IF_HIP_ERROR(hipMemcpy(
+                &start, &csx_row_col_ptr_A[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        }
+
+        rocsparse_int nnz = (end - start);
+
+        if(nnz != 0)
+        {
+            return rocsparse_status_invalid_pointer;
         }
     }
 

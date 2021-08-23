@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_csr2csc.hpp"
+#include "common.h"
 #include "definitions.h"
 #include "utility.h"
 
@@ -68,8 +69,14 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
 
     log_bench(handle, "./rocsparse-bench -f csr2csc -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
+    // Check action
+    if(rocsparse_enum_utils::is_invalid(copy_values))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check index base
-    if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)
+    if(rocsparse_enum_utils::is_invalid(idx_base))
     {
         return rocsparse_status_invalid_value;
     }
@@ -81,43 +88,67 @@ rocsparse_status rocsparse_csr2csc_template(rocsparse_handle     handle,
     }
 
     // Quick return if possible
-    if(m == 0 || n == 0 || nnz == 0)
+    if(m == 0 || n == 0)
     {
         return rocsparse_status_success;
     }
 
     // Check pointer arguments
-    if(csr_val == nullptr && copy_values == rocsparse_action_numeric)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csc_val == nullptr && copy_values == rocsparse_action_numeric)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csc_row_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csc_col_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(temp_buffer == nullptr)
+    if(csr_row_ptr == nullptr || csc_col_ptr == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
 
+    if(copy_values == rocsparse_action_numeric)
+    {
+        // value arrays and column indices arrays must both be null (zero matrix) or both not null
+        if((csr_val == nullptr && csr_col_ind != nullptr)
+           || (csr_val != nullptr && csr_col_ind == nullptr))
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        if((csc_val == nullptr && csc_row_ind != nullptr)
+           || (csc_val != nullptr && csc_row_ind == nullptr))
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        if(nnz != 0 && (csr_val == nullptr && csr_col_ind == nullptr))
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+
+        if(nnz != 0 && (csc_val == nullptr && csc_row_ind == nullptr))
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+    }
+    else
+    {
+        // if copying symbolically, then column/row indices arrays can only be null if the zero matrix
+        if(nnz != 0 && (csr_col_ind == nullptr || csc_row_ind == nullptr))
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+    }
+
     // Stream
     hipStream_t stream = handle->stream;
+
+    if(nnz == 0)
+    {
+        hipLaunchKernelGGL((set_array_to_value<256>),
+                           dim3(n / 256 + 1),
+                           dim3(256),
+                           0,
+                           stream,
+                           (n + 1),
+                           csc_col_ptr,
+                           static_cast<rocsparse_int>(idx_base));
+
+        return rocsparse_status_success;
+    }
 
     unsigned int startbit = 0;
     unsigned int endbit   = rocsparse_clz(n);
@@ -256,16 +287,14 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle     h
               copy_values,
               (const void*&)buffer_size);
 
+    // Check action
+    if(rocsparse_enum_utils::is_invalid(copy_values))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check sizes
-    if(m < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(n < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnz < 0)
+    if(m < 0 || n < 0 || nnz < 0)
     {
         return rocsparse_status_invalid_size;
     }
@@ -285,11 +314,7 @@ extern "C" rocsparse_status rocsparse_csr2csc_buffer_size(rocsparse_handle     h
     }
 
     // Check pointer arguments
-    if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind == nullptr)
+    if(csr_row_ptr == nullptr || csr_col_ind == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

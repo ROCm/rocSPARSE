@@ -223,12 +223,6 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
 
     {
         ARGSET;
-        arg_csr_col_ind = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
         arg_bsr_descr = nullptr;
         EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_pointer);
     }
@@ -592,11 +586,6 @@ void testing_csr2gebsr(const Arguments& arg)
                                                       (void*)dbuffer));
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-
-        // CHECK_HIP_ERROR(hipMemcpy(
-        // hbsr_row_ptr, dbsr_row_ptr, sizeof(rocsparse_int) * (Mb + 1), hipMemcpyDeviceToHost));
-        // std::cout << "disp " << std::endl;
-        // for (int i=0;i<10;++i) std::cout << hbsr_row_ptr[i] << std::endl;
 
 #if 0
         device_vector<rocsparse_int> dbsr_nnzb(1);

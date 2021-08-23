@@ -106,7 +106,7 @@ rocsparse_status rocsparse_gebsr2gebsr_buffer_size_template(rocsparse_handle    
               "--mtx <matrix.mtx>");
 
     // Check direction
-    if(dir != rocsparse_direction_row && dir != rocsparse_direction_column)
+    if(rocsparse_enum_utils::is_invalid(dir))
     {
         return rocsparse_status_invalid_value;
     }
@@ -124,8 +124,18 @@ rocsparse_status rocsparse_gebsr2gebsr_buffer_size_template(rocsparse_handle    
     }
 
     // Check pointer arguments
-    if(bsr_val_A == nullptr || bsr_row_ptr_A == nullptr || bsr_col_ind_A == nullptr
-       || descr_A == nullptr || buffer_size == nullptr)
+    if(bsr_row_ptr_A == nullptr || buffer_size == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if((bsr_val_A == nullptr && bsr_col_ind_A != nullptr)
+       || (bsr_val_A != nullptr && bsr_col_ind_A == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnzb != 0 && (bsr_val_A == nullptr && bsr_col_ind_A == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -209,7 +219,7 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
         handle, "./rocsparse-bench -f gebsr2gebsr -r", replaceX<T>("X"), "--mtx <matrix.mtx>");
 
     // Check direction
-    if(dir != rocsparse_direction_row && dir != rocsparse_direction_column)
+    if(rocsparse_enum_utils::is_invalid(dir))
     {
         return rocsparse_status_invalid_value;
     }
@@ -227,18 +237,54 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
     }
 
     // Quick return if possible
-    if(mb == 0 || nb == 0 || nnzb == 0)
+    if(mb == 0 || nb == 0)
     {
         return rocsparse_status_success;
     }
 
     // Check pointer arguments
-    if(bsr_val_A == nullptr || bsr_row_ptr_A == nullptr || bsr_col_ind_A == nullptr
-       || bsr_val_C == nullptr || bsr_row_ptr_C == nullptr || bsr_col_ind_C == nullptr
-       || descr_A == nullptr || descr_C == nullptr || temp_buffer == nullptr)
+    if(bsr_row_ptr_A == nullptr || bsr_row_ptr_C == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
+
+    if((bsr_val_A == nullptr && bsr_col_ind_A != nullptr)
+       || (bsr_val_A != nullptr && bsr_col_ind_A == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if((bsr_val_C == nullptr && bsr_col_ind_C != nullptr)
+       || (bsr_val_C != nullptr && bsr_col_ind_C == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnzb != 0 && (bsr_val_A == nullptr && bsr_col_ind_A == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    rocsparse_int m    = mb * row_block_dim_A;
+    rocsparse_int n    = nb * col_block_dim_A;
+    rocsparse_int mb_c = (m + row_block_dim_C - 1) / row_block_dim_C;
+    rocsparse_int nb_c = (n + col_block_dim_C - 1) / col_block_dim_C;
+
+    rocsparse_int start = 0;
+    rocsparse_int end   = 0;
+    RETURN_IF_HIP_ERROR(
+        hipMemcpy(&end, &bsr_row_ptr_C[mb_c], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+    RETURN_IF_HIP_ERROR(
+        hipMemcpy(&start, &bsr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+    rocsparse_int nnzb_C = end - start;
+
+    if(nnzb_C != 0 && (bsr_val_C == nullptr && bsr_col_ind_C == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    hipMemset(bsr_val_C, 0, nnzb_C * row_block_dim_C * col_block_dim_C * sizeof(T));
 
     // Check the description type of the matrix.
     if(rocsparse_matrix_type_general != descr_A->type
@@ -249,20 +295,6 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
 
     // Stream
     hipStream_t stream = handle->stream;
-
-    rocsparse_int m    = mb * row_block_dim_A;
-    rocsparse_int n    = nb * col_block_dim_A;
-    rocsparse_int mb_c = (m + row_block_dim_C - 1) / row_block_dim_C;
-    rocsparse_int nb_c = (n + col_block_dim_C - 1) / col_block_dim_C;
-
-    rocsparse_int hstart = 0;
-    rocsparse_int hend   = 0;
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(&hend, &bsr_row_ptr_C[mb_c], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-    RETURN_IF_HIP_ERROR(
-        hipMemcpy(&hstart, &bsr_row_ptr_C[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
-
-    hipMemset(bsr_val_C, 0, (hend - hstart) * row_block_dim_C * col_block_dim_C * sizeof(T));
 
     // Common case where BSR block dimension is small
     if(row_block_dim_C <= 32)
@@ -452,7 +484,7 @@ extern "C" rocsparse_status rocsparse_gebsr2csr_nnz(rocsparse_handle          ha
     }
 
     // Check direction
-    if(direction != rocsparse_direction_row && direction != rocsparse_direction_column)
+    if(rocsparse_enum_utils::is_invalid(direction))
     {
         return rocsparse_status_invalid_value;
     }
@@ -476,25 +508,27 @@ extern "C" rocsparse_status rocsparse_gebsr2csr_nnz(rocsparse_handle          ha
     }
 
     // Check pointer arguments
-    if(bsr_row_ptr == nullptr)
+    if(bsr_row_ptr == nullptr || csr_row_ptr == nullptr || csr_col_ind == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(bsr_col_ind == nullptr)
+
+    if(bsr_col_ind == nullptr)
     {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_row_ptr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(csr_col_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(bsr_descr == nullptr || csr_descr == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
+        rocsparse_int start = 0;
+        rocsparse_int end   = 0;
+
+        RETURN_IF_HIP_ERROR(hipMemcpy(
+            &end, &bsr_row_ptr[mb * row_block_dim], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(&start, &bsr_row_ptr[0], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+
+        rocsparse_int nnzb = (end - start);
+
+        if(nnzb != 0)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
     }
 
     // Check the description type of the matrix.
@@ -649,7 +683,7 @@ extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          
               (const void*&)temp_buffer);
 
     // Check direction
-    if(dir != rocsparse_direction_row && dir != rocsparse_direction_column)
+    if(rocsparse_enum_utils::is_invalid(dir))
     {
         return rocsparse_status_invalid_value;
     }

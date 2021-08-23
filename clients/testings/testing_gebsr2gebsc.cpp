@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -415,6 +415,53 @@ void testing_gebsr2gebsc_bad_arg(const Arguments& arg)
                                                      rocsparse_index_base_zero,
                                                      nullptr),
                             rocsparse_status_invalid_pointer);
+
+    // Additional tests for invalid zero matrices
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
+                                                                 safe_size,
+                                                                 safe_size,
+                                                                 safe_size,
+                                                                 nullptr,
+                                                                 dbsr_row_ptr,
+                                                                 nullptr,
+                                                                 safe_size,
+                                                                 safe_size,
+                                                                 &buffer_size),
+                            rocsparse_status_invalid_pointer);
+
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
+                                                     safe_size,
+                                                     safe_size,
+                                                     safe_size,
+                                                     nullptr,
+                                                     dbsr_row_ptr,
+                                                     nullptr,
+                                                     safe_size,
+                                                     safe_size,
+                                                     dbsc_val,
+                                                     dbsc_row_ind,
+                                                     dbsc_col_ptr,
+                                                     rocsparse_action_numeric,
+                                                     rocsparse_index_base_zero,
+                                                     dbuffer),
+                            rocsparse_status_invalid_pointer);
+
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
+                                                     safe_size,
+                                                     safe_size,
+                                                     safe_size,
+                                                     dbsr_val,
+                                                     dbsr_row_ptr,
+                                                     dbsr_col_ind,
+                                                     safe_size,
+                                                     safe_size,
+                                                     nullptr,
+                                                     nullptr,
+                                                     dbsc_col_ptr,
+                                                     rocsparse_action_numeric,
+                                                     rocsparse_index_base_zero,
+                                                     dbuffer),
+                            rocsparse_status_invalid_pointer);
 }
 
 template <typename T>
@@ -493,42 +540,6 @@ void testing_gebsr2gebsc(const Arguments& arg)
     //
     host_gebsr_matrix<T> hbsr;
     factory.init_gebsr(hbsr);
-
-    //
-    // nnzb could be zero (random)
-    //
-    if(hbsr.nnzb == 0)
-    {
-        size_t buffer_size;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                                     hbsr.mb,
-                                                                     hbsr.nb,
-                                                                     hbsr.nnzb,
-                                                                     hbsr.val,
-                                                                     hbsr.ptr,
-                                                                     hbsr.ind,
-                                                                     hbsr.row_block_dim,
-                                                                     hbsr.col_block_dim,
-                                                                     &buffer_size),
-                                rocsparse_status_success);
-        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                         hbsr.mb,
-                                                         hbsr.nb,
-                                                         hbsr.nnzb,
-                                                         hbsr.val,
-                                                         hbsr.ptr,
-                                                         hbsr.ind,
-                                                         hbsr.row_block_dim,
-                                                         hbsr.col_block_dim,
-                                                         (T*)nullptr,
-                                                         nullptr,
-                                                         nullptr,
-                                                         action,
-                                                         hbsr.base,
-                                                         nullptr),
-                                rocsparse_status_success);
-        return;
-    }
 
     //
     // Allocate and transfer to device.

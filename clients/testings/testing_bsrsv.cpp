@@ -48,8 +48,8 @@ void testing_bsrsv_bad_arg(const Arguments& arg)
     rocsparse_handle          handle      = local_handle;
     rocsparse_direction       dir         = rocsparse_direction_row;
     rocsparse_operation       trans       = rocsparse_operation_none;
-    rocsparse_int             m           = safe_size;
-    rocsparse_int             nnz         = safe_size;
+    rocsparse_int             mb          = safe_size;
+    rocsparse_int             nnzb        = safe_size;
     const T*                  alpha       = &h_alpha;
     const rocsparse_mat_descr descr       = local_descr;
     const T*                  bsr_val     = (const T*)0x4;
@@ -65,17 +65,17 @@ void testing_bsrsv_bad_arg(const Arguments& arg)
     size_t*                   p_buffer_size = &buffer_size;
     void*                     temp_buffer   = (void*)0x4;
 
-#define PARAMS_BUFFER_SIZE                                                                 \
-    handle, dir, trans, m, nnz, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, \
+#define PARAMS_BUFFER_SIZE                                                                   \
+    handle, dir, trans, mb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, \
         p_buffer_size
 
-#define PARAMS_ANALYSIS                                                                    \
-    handle, dir, trans, m, nnz, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, \
+#define PARAMS_ANALYSIS                                                                      \
+    handle, dir, trans, mb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, \
         analysis, solve, temp_buffer
 
-#define PARAMS_SOLVE                                                                              \
-    handle, dir, trans, m, nnz, alpha, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, \
-        x, y, solve, temp_buffer
+#define PARAMS_SOLVE                                                                          \
+    handle, dir, trans, mb, nnzb, alpha, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, \
+        info, x, y, solve, temp_buffer
 
     //
     // Call solve before analysis
@@ -132,6 +132,25 @@ void testing_bsrsv_bad_arg(const Arguments& arg)
     // Test rocsparse_bsrsv_clear()
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_clear(nullptr, info), rocsparse_status_invalid_handle);
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_clear(handle, nullptr),
+                            rocsparse_status_invalid_pointer);
+
+    // Additional tests for invalid zero matrices
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsv_solve<T>(handle,
+                                                     dir,
+                                                     trans,
+                                                     mb,
+                                                     nnzb,
+                                                     alpha,
+                                                     descr,
+                                                     nullptr,
+                                                     bsr_row_ptr,
+                                                     nullptr,
+                                                     block_dim,
+                                                     info,
+                                                     x,
+                                                     y,
+                                                     solve,
+                                                     temp_buffer),
                             rocsparse_status_invalid_pointer);
 }
 

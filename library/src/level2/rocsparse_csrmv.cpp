@@ -23,6 +23,7 @@
  * ************************************************************************ */
 
 #include "rocsparse_csrmv.hpp"
+#include "common.h"
 #include "definitions.h"
 #include "utility.h"
 
@@ -346,13 +347,25 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
     }
 
     // Quick return if possible
-    if(m == 0 || n == 0 || nnz == 0)
+    if(m == 0 || n == 0)
     {
         return rocsparse_status_success;
     }
 
     // Check pointer arguments
-    if(csr_row_ptr == nullptr || csr_col_ind == nullptr || csr_val == nullptr)
+    if(csr_row_ptr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val == nullptr && csr_col_ind != nullptr)
+       || (csr_val != nullptr && csr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz != 0 && (csr_col_ind == nullptr && csr_val == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -863,7 +876,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
     }
 
     // Quick return if possible
-    if(m == 0 || n == 0 || nnz == 0)
+    if(m == 0 || n == 0)
     {
         return rocsparse_status_success;
     }
@@ -874,22 +887,57 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    //
     // Another quick return.
-    //
     if(handle->pointer_mode == rocsparse_pointer_mode_host
        && *alpha_device_host == static_cast<T>(0) && *beta_device_host == static_cast<T>(1))
     {
         return rocsparse_status_success;
     }
 
-    //
     // Check the rest of pointer arguments
-    //
-    if(csr_val == nullptr || csr_row_ptr == nullptr || csr_col_ind == nullptr || x == nullptr
-       || y == nullptr)
+    if(csr_row_ptr == nullptr || x == nullptr || y == nullptr)
     {
         return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val == nullptr && csr_col_ind != nullptr)
+       || (csr_val != nullptr && csr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz != 0 && (csr_col_ind == nullptr && csr_val == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz == 0)
+    {
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            hipLaunchKernelGGL((scale_array<256>),
+                               dim3((m - 1) / 256 + 1),
+                               dim3(256),
+                               0,
+                               handle->stream,
+                               m,
+                               y,
+                               beta_device_host);
+        }
+        else
+        {
+            hipLaunchKernelGGL((scale_array<256>),
+                               dim3((m - 1) / 256 + 1),
+                               dim3(256),
+                               0,
+                               handle->stream,
+                               m,
+                               y,
+                               *beta_device_host);
+        }
+
+        return rocsparse_status_success;
     }
 
     if(info == nullptr || info->csrmv_info == nullptr)

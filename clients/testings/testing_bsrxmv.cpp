@@ -88,6 +88,28 @@ void testing_bsrxmv_bad_arg(const Arguments& arg)
     }
 
 #undef PARAMS
+
+    // Additional tests for invalid zero matrices
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrxmv<T>(handle,
+                                                dir,
+                                                trans,
+                                                size_of_mask,
+                                                mb,
+                                                nb,
+                                                nnzb,
+                                                alpha_device_host,
+                                                descr,
+                                                nullptr,
+                                                bsr_mask_ptr,
+                                                bsr_row_ptr,
+                                                bsr_end_ptr,
+                                                nullptr,
+                                                block_dim,
+                                                x,
+                                                beta_device_host,
+                                                y),
+                            rocsparse_status_invalid_pointer);
 }
 
 template <typename T>

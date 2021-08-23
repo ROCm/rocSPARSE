@@ -113,7 +113,6 @@ void testing_coomv(const Arguments& arg)
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0)
     {
-
         static const size_t safe_size = 100;
 
         device_coo_matrix<T> dA;

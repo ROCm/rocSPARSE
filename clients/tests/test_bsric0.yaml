@@ -52,6 +52,19 @@ Tests:
   function: bsric0
   precision: *single_double_precisions_complex_real
   M_N: *M_N_range_quick
+  block_dim: [4]
+  transA: [rocsparse_operation_none]
+  apol: [rocsparse_analysis_policy_reuse]
+  spol: [rocsparse_solve_policy_auto]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
+  matrix: [rocsparse_matrix_zero]
+
+- name: bsric0
+  category: quick
+  function: bsric0
+  precision: *single_double_precisions_complex_real
+  M_N: *M_N_range_quick
   block_dim: [1, 4, 9]
   transA: [rocsparse_operation_none]
   apol: [rocsparse_analysis_policy_reuse]

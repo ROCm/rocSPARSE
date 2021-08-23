@@ -63,6 +63,22 @@ Tests:
   category: quick
   function: csrgemm
   precision: *single_double_precisions_complex_real
+  M: [50]
+  N: [13]
+  K: [50]
+  alpha_alphai: *alpha_range_quick
+  beta: [-99.0]
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseB: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_zero]
+
+- name: csrgemm_mult
+  category: quick
+  function: csrgemm
+  precision: *single_double_precisions_complex_real
   M: [50, 647]
   N: [13, 523]
   K: [50, 254]
@@ -244,6 +260,19 @@ Tests:
   filename: [Chevron4]
 
 # C = beta * D
+- name: csrgemm_scale
+  category: quick
+  function: csrgemm
+  precision: *single_double_precisions_complex_real
+  M: [582]
+  N: [243]
+  K: 1
+  alpha: [-99.0]
+  beta_betai: *beta_range_quick
+  baseC: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  baseD: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_zero]
+
 - name: csrgemm_scale
   category: quick
   function: csrgemm

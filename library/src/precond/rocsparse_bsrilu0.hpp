@@ -210,62 +210,60 @@ rocsparse_status rocsparse_bsrilu0_analysis_template(rocsparse_handle          h
               solve,
               analysis);
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
     if(descr->type != rocsparse_matrix_type_general)
     {
         return rocsparse_status_not_implemented;
     }
 
+    // Check direction
+    if(rocsparse_enum_utils::is_invalid(dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check analysis policy
-    if(analysis != rocsparse_analysis_policy_reuse && analysis != rocsparse_analysis_policy_force)
+    if(rocsparse_enum_utils::is_invalid(analysis))
     {
         return rocsparse_status_invalid_value;
     }
 
     // Check solve policy
+    if(rocsparse_enum_utils::is_invalid(solve))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     if(solve != rocsparse_solve_policy_auto)
     {
         return rocsparse_status_invalid_value;
     }
 
     // Check sizes
-    if(mb < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(nnzb < 0)
-    {
-        return rocsparse_status_invalid_size;
-    }
-    else if(block_dim <= 0)
+    if(mb < 0 || nnzb < 0 || block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
     }
 
     // Quick return if possible
-    if(mb == 0 || nnzb == 0)
+    if(mb == 0)
     {
         return rocsparse_status_success;
     }
 
     // Check pointer arguments
-    if(bsr_row_ptr == nullptr)
+    if(bsr_row_ptr == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(bsr_col_ind == nullptr)
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((bsr_val == nullptr && bsr_col_ind != nullptr)
+       || (bsr_val != nullptr && bsr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(bsr_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(temp_buffer == nullptr)
+
+    if(nnzb != 0 && (bsr_val == nullptr && bsr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -639,11 +637,18 @@ rocsparse_status rocsparse_bsrilu0_template(rocsparse_handle          handle,
 
     log_bench(handle, "./rocsparse-bench -f bsrilu0 -r", replaceX<T>("X"), "--mtx <matrix.mtx> ");
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
+    // Check direction
+    if(rocsparse_enum_utils::is_invalid(dir))
     {
         return rocsparse_status_invalid_value;
     }
+
+    // Check solve policy
+    if(rocsparse_enum_utils::is_invalid(policy))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     if(descr->type != rocsparse_matrix_type_general)
     {
         return rocsparse_status_not_implemented;
@@ -656,14 +661,25 @@ rocsparse_status rocsparse_bsrilu0_template(rocsparse_handle          handle,
     }
 
     // Quick return if possible
-    if(mb == 0 || nnzb == 0)
+    if(mb == 0)
     {
         return rocsparse_status_success;
     }
 
     // Check pointer arguments
-    if(bsr_val == nullptr || bsr_row_ptr == nullptr || bsr_col_ind == nullptr
-       || temp_buffer == nullptr)
+    if(bsr_row_ptr == nullptr || temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((bsr_val == nullptr && bsr_col_ind != nullptr)
+       || (bsr_val != nullptr && bsr_col_ind == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnzb != 0 && (bsr_val == nullptr && bsr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }
