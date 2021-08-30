@@ -24,15 +24,12 @@
 #include "rocsparse_init.hpp"
 
 template <typename I, typename J>
-void host_coo_to_csr(J                     M,
-                     const std::vector<J>& coo_row_ind,
-                     std::vector<I>&       csr_row_ptr,
-                     rocsparse_index_base  base)
+void host_coo_to_csr(
+    J M, I nnz, const J* coo_row_ind, std::vector<I>& csr_row_ptr, rocsparse_index_base base)
 {
     // Resize and initialize csr_row_ptr with zeros
     csr_row_ptr.resize(M + 1, 0);
-
-    for(size_t i = 0; i < coo_row_ind.size(); ++i)
+    for(size_t i = 0; i < nnz; ++i)
     {
         ++csr_row_ptr[coo_row_ind[i] + 1 - base];
     }
@@ -163,15 +160,10 @@ void host_csr_to_ell(J                     M,
 // for complex number, the real/imag part would be initialized with the same value
 
 // Initialize vector with random values
+
 template <typename T>
-void rocsparse_init_exact(std::vector<T>& A,
-                          size_t          M,
-                          size_t          N,
-                          size_t          lda,
-                          size_t          stride,
-                          size_t          batch_count,
-                          int             a,
-                          int             b)
+void rocsparse_init_exact(
+    T* A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count, int a, int b)
 {
     for(size_t i_batch = 0; i_batch < batch_count; i_batch++)
         for(size_t j = 0; j < N; ++j)
@@ -183,7 +175,7 @@ void rocsparse_init_exact(std::vector<T>& A,
 
 template <typename T>
 void rocsparse_init(
-    std::vector<T>& A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count, T a, T b)
+    T* A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count, T a, T b)
 {
     for(size_t i_batch = 0; i_batch < batch_count; i_batch++)
         for(size_t j = 0; j < N; ++j)
@@ -191,6 +183,26 @@ void rocsparse_init(
             {
                 A[i + j * lda + i_batch * stride] = random_generator<T>(a, b);
             }
+}
+
+template <typename T>
+void rocsparse_init_exact(std::vector<T>& A,
+                          size_t          M,
+                          size_t          N,
+                          size_t          lda,
+                          size_t          stride,
+                          size_t          batch_count,
+                          int             a,
+                          int             b)
+{
+    rocsparse_init_exact(A.data(), M, N, lda, stride, batch_count, a, b);
+}
+
+template <typename T>
+void rocsparse_init(
+    std::vector<T>& A, size_t M, size_t N, size_t lda, size_t stride, size_t batch_count, T a, T b)
+{
+    rocsparse_init(A.data(), M, N, lda, stride, batch_count, a, b);
 }
 
 // Initializes sparse index vector with nnz entries ranging from start to end
@@ -969,7 +981,7 @@ void rocsparse_init_csr_mtx(const char*          filename,
     csr_row_ptr.resize(M + 1);
     csr_col_ind.resize(nnz);
 
-    host_coo_to_csr(coo_M, coo_row_ind, csr_row_ptr, base);
+    host_coo_to_csr(coo_M, nnz, coo_row_ind.data(), csr_row_ptr, base);
 
     for(I i = 0; i < nnz; ++i)
     {
@@ -1249,7 +1261,7 @@ void rocsparse_init_csr_random(std::vector<I>&      csr_row_ptr,
         coo_row_ind, csr_col_ind, csr_val, M, N, nnz, base, full_rank, to_int);
 
     // Convert to CSR
-    host_coo_to_csr(M, coo_row_ind, csr_row_ptr, base);
+    host_coo_to_csr(M, nnz, coo_row_ind.data(), csr_row_ptr, base);
 }
 
 /* ==================================================================================== */
@@ -1414,6 +1426,22 @@ void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
         std::vector<TYPE> & x, size_t nnz, size_t start, size_t end);
 
 #define INSTANTIATE(TYPE)                                                                          \
+    template void rocsparse_init<TYPE>(TYPE * A,                                                   \
+                                       size_t M,                                                   \
+                                       size_t N,                                                   \
+                                       size_t lda,                                                 \
+                                       size_t stride,                                              \
+                                       size_t batch_count = 1,                                     \
+                                       TYPE   a           = static_cast<TYPE>(0),                  \
+                                       TYPE   b           = static_cast<TYPE>(1));                             \
+    template void rocsparse_init_exact<TYPE>(TYPE * A,                                             \
+                                             size_t M,                                             \
+                                             size_t N,                                             \
+                                             size_t lda,                                           \
+                                             size_t stride,                                        \
+                                             size_t batch_count,                                   \
+                                             int    a = 1,                                         \
+                                             int    b = 10);                                          \
     template void rocsparse_init<TYPE>(std::vector<TYPE> & A,                                      \
                                        size_t M,                                                   \
                                        size_t N,                                                   \
@@ -1456,10 +1484,11 @@ void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
                                                 const std::vector<ITYPE>& csr_row_ptr, \
                                                 std::vector<JTYPE>&       coo_row_ind, \
                                                 rocsparse_index_base      base);            \
-    template void host_coo_to_csr<ITYPE, JTYPE>(JTYPE                     M,           \
-                                                const std::vector<JTYPE>& coo_row_ind, \
-                                                std::vector<ITYPE>&       csr_row_ptr, \
-                                                rocsparse_index_base      base);
+    template void host_coo_to_csr<ITYPE, JTYPE>(JTYPE                M,                \
+                                                ITYPE                NNZ,              \
+                                                const JTYPE*         coo_row_ind,      \
+                                                std::vector<ITYPE>&  csr_row_ptr,      \
+                                                rocsparse_index_base base);
 
 #define INSTANTIATE2(ITYPE, TTYPE)                                                           \
     template void rocsparse_init_coo_laplace2d<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,   \

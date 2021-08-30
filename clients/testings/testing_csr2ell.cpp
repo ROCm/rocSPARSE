@@ -208,9 +208,9 @@ void testing_csr2ell(const Arguments& arg)
                         baseA,
                         baseB);
 
-        unit_check_general<rocsparse_int>(1, 1, 1, &ell_width_gold, &ell_width);
-        unit_check_general<rocsparse_int>(1, ell_nnz, 1, hell_col_ind_gold, hell_col_ind);
-        unit_check_general<T>(1, ell_nnz, 1, hell_val_gold, hell_val);
+        unit_check_scalar(ell_width_gold, ell_width);
+        hell_col_ind_gold.unit_check(hell_col_ind);
+        hell_val_gold.unit_check(hell_val);
     }
 
     if(arg.timing)

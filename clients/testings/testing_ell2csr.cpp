@@ -233,10 +233,10 @@ void testing_ell2csr(const Arguments& arg)
                            baseA,
                            baseB);
 
-        unit_check_general<rocsparse_int>(1, 1, 1, &csr_nnz_gold, &csr_nnz);
-        unit_check_general<rocsparse_int>(1, M + 1, 1, hcsr_row_ptr_gold, hcsr_row_ptr);
-        unit_check_general<rocsparse_int>(1, csr_nnz, 1, hcsr_col_ind_gold, hcsr_col_ind);
-        unit_check_general<T>(1, csr_nnz, 1, hcsr_val_gold, hcsr_val);
+        unit_check_scalar(csr_nnz_gold, csr_nnz);
+        hcsr_row_ptr_gold.unit_check(hcsr_row_ptr);
+        hcsr_col_ind_gold.unit_check(hcsr_col_ind);
+        hcsr_val_gold.unit_check(hcsr_val);
     }
 
     if(arg.timing)

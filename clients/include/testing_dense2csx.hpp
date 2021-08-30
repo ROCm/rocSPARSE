@@ -335,18 +335,18 @@ void testing_dense2csx(const Arguments& arg, FUNC& dense2csx)
         // Transfer and check results.
         //
         CHECK_HIP_ERROR(hipMemcpy(buffer, d_csx_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
-        unit_check_general(1, nnz, 1, (T*)cpu_csx_val, (T*)buffer);
+        unit_check_segments(nnz, (T*)cpu_csx_val, (T*)buffer);
         CHECK_HIP_ERROR(hipMemcpy(
             buffer, d_csx_col_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
-        unit_check_general(1, nnz, 1, (rocsparse_int*)cpu_csx_col_row_ind, (rocsparse_int*)buffer);
+        unit_check_segments(nnz, (rocsparse_int*)cpu_csx_col_row_ind, (rocsparse_int*)buffer);
 
         CHECK_HIP_ERROR(hipMemcpy(buffer,
                                   d_csx_row_col_ptr,
                                   sizeof(rocsparse_int) * (DIMDIR + 1),
                                   hipMemcpyDeviceToHost));
 
-        unit_check_general(
-            1, (DIMDIR + 1), 1, (rocsparse_int*)cpu_csx_row_col_ptr, (rocsparse_int*)buffer);
+        unit_check_segments(
+            (DIMDIR + 1), (rocsparse_int*)cpu_csx_row_col_ptr, (rocsparse_int*)buffer);
 
         free(buffer);
         buffer = nullptr;

@@ -203,7 +203,7 @@ void testing_gebsr2csr(const Arguments& arg)
         for(rocsparse_int i = 0; i < nnzb * row_block_dim * col_block_dim; ++i)
         {
             T ref = static_cast<T>(i + 1);
-            unit_check_general<T>(1, 1, 1, &hcsr_val_ref[i], &ref);
+            unit_check_scalar(hcsr_val_ref[i], ref);
         }
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
@@ -232,9 +232,9 @@ void testing_gebsr2csr(const Arguments& arg)
             hcsr_ptr, dcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hcsr_val, dcsr_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
-        unit_check_general<rocsparse_int>(1, hcsr_ptr.size(), 1, hcsr_ptr, hcsr_ptr_ref);
-        unit_check_general<rocsparse_int>(1, hcsr_ind.size(), 1, hcsr_ind, hcsr_ind_ref);
-        unit_check_general<T>(1, hcsr_val.size(), 1, hcsr_val, hcsr_val_ref);
+        hcsr_ptr.unit_check(hcsr_ptr_ref);
+        hcsr_ind.unit_check(hcsr_ind_ref);
+        hcsr_val.unit_check(hcsr_val_ref);
     }
 
     if(arg.timing)

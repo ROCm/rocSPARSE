@@ -80,7 +80,7 @@ option(BUILD_ADDRESS_SANITIZER "Build rocSPARSE with address sanitizer enabled" 
 #
 if(BUILD_CODE_COVERAGE)
   add_compile_options(-fprofile-arcs -ftest-coverage)
-  add_link_options(--coverage)
+  add_link_options(--coverage -lgcov)
 endif()
 
 if(BUILD_ADDRESS_SANITIZER)

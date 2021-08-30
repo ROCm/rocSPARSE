@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -102,7 +102,7 @@ void testing_identity(const Arguments& arg)
             hp_gold[i] = i;
         }
 
-        unit_check_general<rocsparse_int>(1, N, 1, hp_gold, hp);
+        hp_gold.unit_check(hp);
     }
 
     if(arg.timing)

@@ -203,7 +203,7 @@ void testing_bsrmv(const Arguments& arg)
                           base);
 
             hy.near_check(dy);
-            dy.transfer_from(hy_copy);
+            dy = hy_copy;
         }
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
@@ -252,9 +252,9 @@ void testing_bsrmv(const Arguments& arg)
                             "dir",
                             rocsparse_direction2string(dA.block_direction),
                             "alpha",
-                            *h_alpha.val,
+                            *h_alpha,
                             "beta",
-                            *h_beta.val,
+                            *h_beta,
                             "GFlop/s",
                             gpu_gflops,
                             "GB/s",

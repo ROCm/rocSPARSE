@@ -269,7 +269,7 @@ void testing_csr2gebsr(const Arguments& arg)
         &buffer_size_copied_from_device, dbuffer_size, sizeof(size_t), hipMemcpyDeviceToHost));
 
     // Confirm that nnzb is the same regardless of whether we use host or device pointers
-    unit_check_general<size_t>(1, 1, 1, &buffer_size, &buffer_size_copied_from_device);
+    unit_check_scalar<size_t>(buffer_size, buffer_size_copied_from_device);
 
     device_vector<T> dbuffer(buffer_size);
 
@@ -301,21 +301,20 @@ void testing_csr2gebsr(const Arguments& arg)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
 
-#if 0
         device_vector<rocsparse_int> dbsr_nnzb(1);
         CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_nnz(handle,
-                                                    direction,
-                                                    M,
-                                                    N,
-                                                    csr_descr,
-						      dcsr_row_ptr_C,
-						      dcsr_col_ind_C,
-						      bsr_descr,
-						      dbsr_row_ptr,
-						      row_block_dim,
-						      col_block_dim,
-						      dbsr_nnzb,
-						      (void*)dbuffer));
+                                                      direction,
+                                                      M,
+                                                      N,
+                                                      csr_descr,
+                                                      dcsr_row_ptr_C,
+                                                      dcsr_col_ind_C,
+                                                      bsr_descr,
+                                                      dbsr_row_ptr,
+                                                      row_block_dim,
+                                                      col_block_dim,
+                                                      dbsr_nnzb,
+                                                      (void*)dbuffer));
 
         rocsparse_int hbsr_nnzb_copied_from_device = 0;
         CHECK_HIP_ERROR(hipMemcpy(&hbsr_nnzb_copied_from_device,
@@ -324,10 +323,10 @@ void testing_csr2gebsr(const Arguments& arg)
                                   hipMemcpyDeviceToHost));
 
         // Confirm that nnzb is the same regardless of whether we use host or device pointers
-        unit_check_general<rocsparse_int>(1, 1, 1, &hbsr_nnzb, &hbsr_nnzb_copied_from_device);
+        unit_check_scalar<rocsparse_int>(hbsr_nnzb, hbsr_nnzb_copied_from_device);
 
         // Allocate device memory for BSR col indices and values array
-#endif
+
         device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
         device_vector<T>             dbsr_val(hbsr_nnzb * row_block_dim * col_block_dim);
 
@@ -467,11 +466,10 @@ void testing_csr2gebsr(const Arguments& arg)
         // Compare with the original compressed CSR matrix. Note: The compressed CSR matrix we found when converting
         // from BSR back to CSR format may contain extra rows that are zero. Therefore just compare the rows found
         // in the original CSR matrix
-        unit_check_general<rocsparse_int>(
-            1, hcsr_row_ptr_C.size(), 1, hcsr_row_ptr_gold_C, hcsr_row_ptr_C);
-        // for (int i=0;i<nnz_C;++i) std::cout << hcsr_col_ind_gold_C[i] << " " << hcsr_col_ind_C[i] << std::endl;
-        unit_check_general<rocsparse_int>(1, nnz_C, 1, hcsr_col_ind_gold_C, hcsr_col_ind_C);
-        // unit_check_general<T>(1, nnz_C, 1, hcsr_val_gold_C, hcsr_val_C);
+        unit_check_segments<rocsparse_int>(
+            hcsr_row_ptr_C.size(), hcsr_row_ptr_gold_C, hcsr_row_ptr_C);
+        unit_check_segments<rocsparse_int>(
+            hcsr_col_ind_C.size(), hcsr_col_ind_gold_C, hcsr_col_ind_C);
     }
 
     if(arg.timing)

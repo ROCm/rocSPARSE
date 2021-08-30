@@ -156,7 +156,7 @@ void testing_coomv(const Arguments& arg)
             host_coomv<rocsparse_int, T>(
                 hA.m, hA.nnz, *h_alpha, hA.row_ind, hA.col_ind, hA.val, hx, *h_beta, hy, hA.base);
             hy.near_check(dy);
-            dy.transfer_from(hy_copy);
+            dy = hy_copy;
         }
 
         // Pointer mode device

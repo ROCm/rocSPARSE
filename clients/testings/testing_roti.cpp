@@ -178,10 +178,10 @@ void testing_roti(const Arguments& arg)
         // CPU roti
         host_roti<rocsparse_int, T>(nnz, hx_val_gold, hx_ind, hy_gold, hc, hs, base);
 
-        unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_1);
-        unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_2);
-        unit_check_general<T>(1, M, 1, hy_gold, hy_1);
-        unit_check_general<T>(1, M, 1, hy_gold, hy_2);
+        hx_val_gold.unit_check(hx_val_1);
+        hx_val_gold.unit_check(hx_val_2);
+        hy_gold.unit_check(hy_1);
+        hy_gold.unit_check(hy_2);
     }
 
     if(arg.timing)

@@ -167,7 +167,7 @@ void testing_ellmv(const Arguments& arg)
             host_ellmv<rocsparse_int, T>(
                 hA.m, hA.n, *h_alpha, hA.ind, hA.val, hA.width, hx, *h_beta, hy, hA.base);
             hy.near_check(dy);
-            dy.transfer_from(hy_copy);
+            dy = hy_copy;
         }
 
         // Pointer mode device

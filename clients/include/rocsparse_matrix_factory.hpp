@@ -68,7 +68,7 @@ struct rocsparse_matrix_utils
         {
         case rocsparse_order_column:
         {
-            rocsparse_init(that.val, that.m, that.n, that.ld);
+            rocsparse_init<T>(that, that.m, that.n, that.ld);
             break;
         }
 
@@ -78,7 +78,7 @@ struct rocsparse_matrix_utils
             // Little trick but the resulting matrix is the transpose of the matrix obtained from rocsparse_order_column.
             // If this poses a problem, we need to refactor rocsparse_init.
             //
-            rocsparse_init(that.val, that.n, that.m, that.ld);
+            rocsparse_init<T>(that, that.n, that.m, that.ld);
             break;
         }
         }
@@ -95,7 +95,7 @@ struct rocsparse_matrix_utils
         {
         case rocsparse_order_column:
         {
-            rocsparse_init_exact(that.val, that.m, that.n, that.ld);
+            rocsparse_init_exact<T>(that, that.m, that.n, that.ld);
             break;
         }
 
@@ -105,7 +105,7 @@ struct rocsparse_matrix_utils
             // Little trick but the resulting matrix is the transpose of the matrix obtained from rocsparse_order_column.
             // If this poses a problem, we need to refactor rocsparse_init_exact.
             //
-            rocsparse_init_exact(that.val, that.n, that.m, that.ld);
+            rocsparse_init_exact<T>(that, that.n, that.m, that.ld);
             break;
         }
         }
@@ -1014,7 +1014,7 @@ public:
                 row_ind, csr_col_ind, csr_val, M, N, nnz, base, this->m_fullrank, this->m_to_int);
 
             // Convert to CSR
-            host_coo_to_csr(M, row_ind, csr_row_ptr, base);
+            host_coo_to_csr(M, nnz, row_ind.data(), csr_row_ptr, base);
             break;
         }
 
@@ -1042,7 +1042,7 @@ public:
                 row_ind, csr_col_ind, csr_val, M, N, nnz, base, this->m_fullrank, this->m_to_int);
 
             // Convert to CSR
-            host_coo_to_csr(M, row_ind, csr_row_ptr, base);
+            host_coo_to_csr(M, nnz, row_ind.data(), csr_row_ptr, base);
             break;
         }
         }

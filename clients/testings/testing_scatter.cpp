@@ -148,7 +148,7 @@ void testing_scatter(const Arguments& arg)
         // CPU scatter
         host_sctr<I, T>(nnz, hx_val, hx_ind, hy_gold, base);
 
-        unit_check_general<T>(1, size, 1, hy_gold, hy);
+        hy_gold.unit_check(hy);
     }
 
     if(arg.timing)

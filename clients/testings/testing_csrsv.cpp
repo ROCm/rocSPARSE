@@ -226,13 +226,13 @@ void testing_csrsv(const Arguments& arg)
                                                     hA.ptr,
                                                     hA.ind,
                                                     hA.val,
-                                                    hx.val,
-                                                    hy.val,
+                                                    hx,
+                                                    hy,
                                                     diag,
                                                     uplo,
                                                     base,
-                                                    h_analysis_pivot.val,
-                                                    h_solve_pivot.val);
+                                                    h_analysis_pivot,
+                                                    h_solve_pivot);
 
         // Pointer mode host
         {
@@ -438,7 +438,7 @@ void testing_csrsv(const Arguments& arg)
                                                               dA.val,
                                                               dA.ptr,
                                                               dA.ind,
-                                                              dx.val,
+                                                              dx,
                                                               dA.m,
                                                               info,
                                                               apol,
@@ -487,7 +487,7 @@ void testing_csrsv(const Arguments& arg)
                                                               dA.val,
                                                               dA.ptr,
                                                               dA.ind,
-                                                              dx.val,
+                                                              dx,
                                                               dA.m,
                                                               info,
                                                               apol,

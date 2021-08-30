@@ -141,8 +141,8 @@ void testing_csrilusv(const Arguments& arg)
         h_struct_pivot_2, d_struct_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
     // Check pivot results
-    unit_check_general<rocsparse_int>(1, 1, 1, h_struct_pivot_gold, h_struct_pivot_1);
-    unit_check_general<rocsparse_int>(1, 1, 1, h_struct_pivot_gold, h_struct_pivot_2);
+    h_struct_pivot_gold.unit_check(h_struct_pivot_1);
+    h_struct_pivot_gold.unit_check(h_struct_pivot_2);
 
     // If structural pivot has been found, we are done
     if(h_struct_pivot_gold[0] != -1)
@@ -174,8 +174,8 @@ void testing_csrilusv(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(hcsr_val, dcsr_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
     // Check pivot results
-    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_gold, h_numeric_pivot_1);
-    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_gold, h_numeric_pivot_2);
+    h_numeric_pivot_gold.unit_check(h_numeric_pivot_1);
+    h_numeric_pivot_gold.unit_check(h_numeric_pivot_2);
 
     // If numerical pivot has been found, we are done
     if(h_numeric_pivot_gold[0] != -1)
@@ -184,7 +184,7 @@ void testing_csrilusv(const Arguments& arg)
     }
 
     // Check ILU factorization
-    near_check_general<T>(1, nnz, 1, hcsr_val_gold, hcsr_val);
+    hcsr_val_gold.near_check(hcsr_val);
 
     // Create matrix descriptors for csrsv
     rocsparse_local_mat_descr descrL;
@@ -282,8 +282,8 @@ void testing_csrilusv(const Arguments& arg)
                                                          &buffer_size_u));
 
     // Buffer sizes should match with csrilu0 buffer size
-    unit_check_general<size_t>(1, 1, 1, &buffer_size, &buffer_size_l);
-    unit_check_general<size_t>(1, 1, 1, &buffer_size, &buffer_size_u);
+    unit_check_scalar(buffer_size, buffer_size_l);
+    unit_check_scalar(buffer_size, buffer_size_u);
 
     // csrsv analysis
     CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_analysis<T>(handle,
@@ -330,8 +330,8 @@ void testing_csrilusv(const Arguments& arg)
         h_struct_pivot_2, d_struct_pivot_2, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
     // Check pivots
-    unit_check_general<rocsparse_int>(1, 1, 1, h_struct_pivot_gold, h_struct_pivot_1);
-    unit_check_general<rocsparse_int>(1, 1, 1, h_struct_pivot_gold, h_struct_pivot_2);
+    h_struct_pivot_gold.unit_check(h_struct_pivot_1);
+    h_struct_pivot_gold.unit_check(h_struct_pivot_2);
 
     // If structural pivot has been found, we are done
     if(h_struct_pivot_gold[0] != -1)
@@ -392,8 +392,8 @@ void testing_csrilusv(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(hz_2, dz_2, sizeof(T) * M, hipMemcpyDeviceToHost));
 
     // Check pivot results
-    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_L_gold, h_numeric_pivot_L_1);
-    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_L_gold, h_numeric_pivot_L_2);
+    h_numeric_pivot_L_gold.unit_check(h_numeric_pivot_L_1);
+    h_numeric_pivot_L_gold.unit_check(h_numeric_pivot_L_2);
 
     // If numerical pivot has been found, we are done
     if(h_numeric_pivot_L_gold[0] != -1)
@@ -402,8 +402,8 @@ void testing_csrilusv(const Arguments& arg)
     }
 
     // Check z
-    near_check_general<T>(1, M, 1, hz_gold, hz_1);
-    near_check_general<T>(1, M, 1, hz_gold, hz_2);
+    hz_gold.near_check(hz_1);
+    hz_gold.near_check(hz_2);
 
     // Solve Uy = z
 
@@ -458,8 +458,8 @@ void testing_csrilusv(const Arguments& arg)
     CHECK_HIP_ERROR(hipMemcpy(hy_2, dy_2, sizeof(T) * M, hipMemcpyDeviceToHost));
 
     // Check pivot and y
-    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_U_gold, h_numeric_pivot_U_1);
-    unit_check_general<rocsparse_int>(1, 1, 1, h_numeric_pivot_U_gold, h_numeric_pivot_U_2);
+    h_numeric_pivot_U_gold.unit_check(h_numeric_pivot_U_1);
+    h_numeric_pivot_U_gold.unit_check(h_numeric_pivot_U_2);
 
     // If numerical pivot has been found, we are done
     if(h_numeric_pivot_U_gold[0] != -1)
@@ -468,8 +468,8 @@ void testing_csrilusv(const Arguments& arg)
     }
 
     // Check y
-    near_check_general<T>(1, M, 1, hy_gold, hy_1);
-    near_check_general<T>(1, M, 1, hy_gold, hy_2);
+    hy_gold.near_check(hy_1);
+    hy_gold.near_check(hy_2);
 
     // Clear csrsv meta data
     CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_clear(handle, descrL, info));

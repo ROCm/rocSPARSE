@@ -196,8 +196,8 @@ void testing_coosort(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(
             hcoo_col_ind, dcoo_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
 
-        unit_check_general<rocsparse_int>(1, nnz, 1, hcoo_row_ind_gold, hcoo_row_ind);
-        unit_check_general<rocsparse_int>(1, nnz, 1, hcoo_col_ind_gold, hcoo_col_ind);
+        hcoo_row_ind_gold.unit_check(hcoo_row_ind);
+        hcoo_col_ind_gold.unit_check(hcoo_col_ind);
 
         // Permute, copy and check values, if requested
         if(permute)
@@ -215,7 +215,7 @@ void testing_coosort(const Arguments& arg)
             CHECK_HIP_ERROR(
                 hipMemcpy(hcoo_val, dcoo_val_sorted, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
-            unit_check_general<T>(1, nnz, 1, hcoo_val_gold, hcoo_val);
+            hcoo_val_gold.unit_check(hcoo_val);
         }
     }
 

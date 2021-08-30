@@ -279,7 +279,7 @@ void testing_csr2bsr(const Arguments& arg)
                                   hipMemcpyDeviceToHost));
 
         // Confirm that nnzb is the same regardless of whether we use host or device pointers
-        unit_check_general<rocsparse_int>(1, 1, 1, &hbsr_nnzb, &hbsr_nnzb_copied_from_device);
+        unit_check_scalar(hbsr_nnzb, hbsr_nnzb_copied_from_device);
 
         // Allocate device memory for BSR col indices and values array
         device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
@@ -415,10 +415,11 @@ void testing_csr2bsr(const Arguments& arg)
         // Compare with the original compressed CSR matrix. Note: The compressed CSR matrix we found when converting
         // from BSR back to CSR format may contain extra rows that are zero. Therefore just compare the rows found
         // in the original CSR matrix
-        unit_check_general<rocsparse_int>(
-            1, hcsr_row_ptr_C.size(), 1, hcsr_row_ptr_gold_C, hcsr_row_ptr_C);
-        unit_check_general<rocsparse_int>(1, nnz_C, 1, hcsr_col_ind_gold_C, hcsr_col_ind_C);
-        unit_check_general<T>(1, nnz_C, 1, hcsr_val_gold_C, hcsr_val_C);
+        unit_check_segments<rocsparse_int>(
+            hcsr_row_ptr_C.size(), hcsr_row_ptr_gold_C, hcsr_row_ptr_C);
+        unit_check_segments<rocsparse_int>(
+            hcsr_col_ind_C.size(), hcsr_col_ind_gold_C, hcsr_col_ind_C);
+        unit_check_segments<T>(hcsr_val_C.size(), hcsr_val_gold_C, hcsr_val_C);
     }
 
     if(arg.timing)

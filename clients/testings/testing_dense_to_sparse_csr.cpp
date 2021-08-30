@@ -289,9 +289,9 @@ void testing_dense_to_sparse_csr(const Arguments& arg)
                                                 h_csr_row_ptr_cpu.data(),
                                                 h_csr_col_ind_cpu.data());
 
-        unit_check_general(1, m + 1, 1, (I*)h_csr_row_ptr_cpu, (I*)h_csr_row_ptr_gpu);
-        unit_check_general(1, nnz, 1, (J*)h_csr_col_ind_cpu, (J*)h_csr_col_ind_gpu);
-        unit_check_general(1, nnz, 1, (T*)h_csr_val_cpu, (T*)h_csr_val_gpu);
+        h_csr_row_ptr_cpu.unit_check(h_csr_row_ptr_gpu);
+        h_csr_col_ind_cpu.unit_check(h_csr_col_ind_gpu);
+        h_csr_val_cpu.unit_check(h_csr_val_gpu);
     }
 
     if(arg.timing)

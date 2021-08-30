@@ -75,8 +75,8 @@ void testing_spmm_bell(const Arguments& arg)
 
     host_scalar<T> h_alpha, h_beta;
 
-    *h_alpha.val = arg.get_alpha<T>();
-    *h_beta.val  = arg.get_beta<T>();
+    *h_alpha = arg.get_alpha<T>();
+    *h_beta  = arg.get_beta<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -202,9 +202,9 @@ void testing_spmm_bell(const Arguments& arg)
                             ttype);
 
     rocsparse_local_dnmat B(
-        dB.m, dB.n, (order == rocsparse_order_column) ? dB.m : dB.n, dB.val, ttype, order);
+        dB.m, dB.n, (order == rocsparse_order_column) ? dB.m : dB.n, dB, ttype, order);
     rocsparse_local_dnmat C(
-        dC.m, dC.n, (order == rocsparse_order_column) ? dC.m : dC.n, dC.val, ttype, order);
+        dC.m, dC.n, (order == rocsparse_order_column) ? dC.m : dC.n, dC, ttype, order);
 
     // Query SpMM buffer
     size_t buffer_size;
@@ -334,7 +334,7 @@ void testing_spmm_bell(const Arguments& arg)
             {
                 hC.near_check(dC);
             }
-            dC.transfer_from(hC_copy);
+            dC = hC_copy;
         }
 
         // Pointer mode device

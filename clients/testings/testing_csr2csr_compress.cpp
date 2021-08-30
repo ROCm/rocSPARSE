@@ -194,7 +194,7 @@ void testing_csr2csr_compress(const Arguments& arg)
             &hnnz_C_copied_from_device, dnnz_C, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
         // Confirm that nnz is the same regardless of whether we use host or device pointers
-        unit_check_general<rocsparse_int>(1, 1, 1, &hnnz_C, &hnnz_C_copied_from_device);
+        unit_check_scalar(hnnz_C, hnnz_C_copied_from_device);
 
         // Allocate device memory for compressed CSR col indices and values array
         device_vector<rocsparse_int> dcsr_col_ind_C(hnnz_C);
@@ -247,9 +247,9 @@ void testing_csr2csr_compress(const Arguments& arg)
                                     base,
                                     tol);
 
-        unit_check_general<rocsparse_int>(1, M + 1, 1, hcsr_row_ptr_C_gold, hcsr_row_ptr_C);
-        unit_check_general<rocsparse_int>(1, hnnz_C, 1, hcsr_col_ind_C_gold, hcsr_col_ind_C);
-        unit_check_general<T>(1, hnnz_C, 1, hcsr_val_C_gold, hcsr_val_C);
+        hcsr_row_ptr_C_gold.unit_check(hcsr_row_ptr_C);
+        hcsr_col_ind_C_gold.unit_check(hcsr_col_ind_C);
+        hcsr_val_C_gold.unit_check(hcsr_val_C);
     }
 
     if(arg.timing)

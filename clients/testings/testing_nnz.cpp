@@ -204,8 +204,8 @@ void testing_nnz(const Arguments& arg)
         //
         // Check results.
         //
-        unit_check_general<rocsparse_int>(1, MN, 1, hd_nnzPerRowColumn, h_nnzPerRowColumn);
-        unit_check_general<rocsparse_int>(1, 1, 1, hd_nnzTotalDevHostPtr, h_nnzTotalDevHostPtr);
+        hd_nnzPerRowColumn.unit_check(h_nnzPerRowColumn);
+        hd_nnzTotalDevHostPtr.unit_check(h_nnzTotalDevHostPtr);
 
         //
         // Pointer mode host for nnz and call.
@@ -226,8 +226,8 @@ void testing_nnz(const Arguments& arg)
         //
         // Check results.
         //
-        unit_check_general<rocsparse_int>(1, MN, 1, hd_nnzPerRowColumn, h_nnzPerRowColumn);
-        unit_check_general<rocsparse_int>(1, 1, 1, &dh_nnz, h_nnzTotalDevHostPtr);
+        hd_nnzPerRowColumn.unit_check(h_nnzPerRowColumn);
+        unit_check_scalar(dh_nnz, h_nnzTotalDevHostPtr[0]);
     }
 
     if(arg.timing)

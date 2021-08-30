@@ -118,9 +118,8 @@ void testing_coo2csr(const Arguments& arg)
             hcsr_row_ptr, dcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyDeviceToHost));
 
         // CPU coo2csr
-        host_coo_to_csr(M, hcoo_row_ind, hcsr_row_ptr_gold, base);
-
-        unit_check_general<rocsparse_int>(1, M + 1, 1, hcsr_row_ptr_gold, hcsr_row_ptr);
+        host_coo_to_csr(M, nnz, hcoo_row_ind.data(), hcsr_row_ptr_gold, base);
+        hcsr_row_ptr_gold.unit_check(hcsr_row_ptr);
     }
 
     if(arg.timing)

@@ -59,17 +59,46 @@ struct default_tolerance<rocsparse_double_complex>
 };
 
 template <typename T>
-void unit_check_general(int64_t M, int64_t N, int64_t lda, const T* hCPU, const T* hGPU);
+void unit_check_general(int64_t m, int64_t n, const T* a, int64_t lda, const T* b, int64_t ldb);
 
 template <typename T>
-void unit_check(const T this_, const T that_);
+void unit_check_enum(const T a, const T b);
 
 template <typename T>
-void near_check_general(rocsparse_int      M,
-                        rocsparse_int      N,
+inline void unit_check_scalar(const T a, const T b)
+{
+    unit_check_general(1, 1, &a, 1, &b, 1);
+}
+
+template <typename T>
+inline void unit_check_segments(size_t n, const T* a, const T* b)
+{
+    unit_check_general(1, n, a, 1, b, 1);
+}
+
+template <typename T>
+void near_check_general(rocsparse_int      m,
+                        rocsparse_int      n,
+                        const T*           a,
                         rocsparse_int      lda,
-                        const T*           hCPU,
-                        const T*           hGPU,
+                        const T*           b,
+                        rocsparse_int      ldb,
                         floating_data_t<T> tol = default_tolerance<T>::value);
+
+template <typename T>
+inline void
+    near_check_scalar(const T* a, const T* b, floating_data_t<T> tol = default_tolerance<T>::value)
+{
+    near_check_general(1, 1, a, 1, b, 1, tol);
+}
+
+template <typename T>
+inline void near_check_segments(rocsparse_int      n,
+                                const T*           a,
+                                const T*           b,
+                                floating_data_t<T> tol = default_tolerance<T>::value)
+{
+    near_check_general(1, n, a, 1, b, 1, tol);
+}
 
 #endif // ROCSPARSE_CHECK_HPP

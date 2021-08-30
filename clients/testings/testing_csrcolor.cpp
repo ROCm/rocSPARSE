@@ -261,7 +261,7 @@ void testing_csrcolor(const Arguments& arg)
             //
             // Compare the number of colors.
             //
-            unit_check_general<rocsparse_int>(1, 1, 1, &max_value, &ncolor);
+            unit_check_scalar(max_value, ncolor);
         }
 
         if(dreordering)

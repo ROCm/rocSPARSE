@@ -266,9 +266,9 @@ void testing_dense_to_sparse_coo(const Arguments& arg)
                           h_coo_row_ind_cpu,
                           h_coo_col_ind_cpu);
 
-        unit_check_general(1, nnz, 1, (I*)h_coo_row_ind_cpu, (I*)h_coo_row_ind_gpu);
-        unit_check_general(1, nnz, 1, (I*)h_coo_col_ind_cpu, (I*)h_coo_col_ind_gpu);
-        unit_check_general(1, nnz, 1, (T*)h_coo_val_cpu, (T*)h_coo_val_gpu);
+        h_coo_row_ind_cpu.unit_check(h_coo_row_ind_gpu);
+        h_coo_col_ind_cpu.unit_check(h_coo_col_ind_gpu);
+        h_coo_val_cpu.unit_check(h_coo_val_gpu);
     }
 
     if(arg.timing)

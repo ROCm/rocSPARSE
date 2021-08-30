@@ -139,8 +139,8 @@ void testing_axpyi(const Arguments& arg)
         // CPU axpyi
         host_axpby<rocsparse_int, T>(M, nnz, h_alpha, hx_val, hx_ind, 1.0, hy_gold, base);
 
-        unit_check_general<T>(1, M, 1, hy_gold, hy_1);
-        unit_check_general<T>(1, M, 1, hy_gold, hy_2);
+        unit_check_segments<T>(M, hy_gold, hy_1);
+        unit_check_segments<T>(M, hy_gold, hy_2);
     }
 
     if(arg.timing)

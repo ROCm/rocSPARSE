@@ -442,10 +442,11 @@ void testing_bsr2csr(const Arguments& arg)
         // Note: We may have added rows to the compressed output CSR matrix, but these extra
         // rows will be zeros. Therefore only check rows up to the the size of the original
         // compressed CSR matrix.
-        unit_check_general<rocsparse_int>(
-            1, hcsr_row_ptr_orig.size(), 1, hcsr_row_ptr_C, hcsr_row_ptr_orig);
-        unit_check_general<rocsparse_int>(1, hnnz_C, 1, hcsr_col_ind_C, hcsr_col_ind_orig);
-        unit_check_general<T>(1, hnnz_C, 1, hcsr_val_C, hcsr_val_orig);
+        unit_check_segments<rocsparse_int>(
+            hcsr_row_ptr_orig.size(), hcsr_row_ptr_orig, hcsr_row_ptr_C);
+        unit_check_segments<rocsparse_int>(
+            hcsr_col_ind_orig.size(), hcsr_col_ind_orig, hcsr_col_ind_C);
+        unit_check_segments<T>(hcsr_val_orig.size(), hcsr_val_orig, hcsr_val_C);
     }
 
     if(arg.timing)

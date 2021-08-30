@@ -234,7 +234,7 @@ void testing_gebsrmv(const Arguments& arg)
                             hy,
                             base);
             hy.near_check(dy, tol);
-            dy.transfer_from(hy_copy);
+            dy = hy_copy;
         }
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));

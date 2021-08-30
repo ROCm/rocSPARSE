@@ -168,7 +168,7 @@ void testing_gtsv_no_pivot(const Arguments& arg)
             }
         }
 
-        near_check_general<T>(1, ldb * n, 1, hB_original.data(), hresult.data());
+        near_check_segments<T>(ldb * n, hB_original.data(), hresult.data());
     }
 
     if(arg.timing)

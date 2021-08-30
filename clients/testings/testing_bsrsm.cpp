@@ -251,7 +251,7 @@ void testing_bsrsm(const Arguments& arg)
     // Scalar
     host_scalar<T> h_alpha;
 
-    *h_alpha.val = arg.get_alpha<T>();
+    *h_alpha = arg.get_alpha<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -324,7 +324,7 @@ void testing_bsrsm(const Arguments& arg)
                                                          mb,
                                                          nrhs,
                                                          safe_size,
-                                                         h_alpha.val,
+                                                         h_alpha,
                                                          descr,
                                                          nullptr,
                                                          nullptr,
@@ -416,16 +416,16 @@ void testing_bsrsm(const Arguments& arg)
                                                    mb,        \
                                                    nrhs,      \
                                                    dA.nnzb,   \
-                                                   alpha.val, \
+                                                   alpha,     \
                                                    descr,     \
                                                    dA.val,    \
                                                    dA.ptr,    \
                                                    dA.ind,    \
                                                    block_dim, \
                                                    info,      \
-                                                   dB.val,    \
+                                                   dB,        \
                                                    dB.ld,     \
-                                                   dX.val,    \
+                                                   dX,        \
                                                    dX.ld,     \
                                                    spol,      \
                                                    dbuffer))
@@ -451,10 +451,10 @@ void testing_bsrsm(const Arguments& arg)
         CHECK_HIP_ERROR(hipDeviceSynchronize());
         // Obtain pivot information
         {
-            auto st = rocsparse_bsrsm_zero_pivot(handle, info, analysis_pivot.val);
-            EXPECT_ROCSPARSE_STATUS(st,
-                                    ((*analysis_pivot.val != -1) ? rocsparse_status_zero_pivot
-                                                                 : rocsparse_status_success));
+            auto st = rocsparse_bsrsm_zero_pivot(handle, info, analysis_pivot);
+            EXPECT_ROCSPARSE_STATUS(
+                st,
+                ((*analysis_pivot != -1) ? rocsparse_status_zero_pivot : rocsparse_status_success));
         }
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
@@ -464,10 +464,9 @@ void testing_bsrsm(const Arguments& arg)
 
         // Obtain pivot information
         {
-            auto st = rocsparse_bsrsm_zero_pivot(handle, info, solve_pivot.val);
-            EXPECT_ROCSPARSE_STATUS(st,
-                                    (*solve_pivot.val != -1) ? rocsparse_status_zero_pivot
-                                                             : rocsparse_status_success);
+            auto st = rocsparse_bsrsm_zero_pivot(handle, info, solve_pivot);
+            EXPECT_ROCSPARSE_STATUS(
+                st, (*solve_pivot != -1) ? rocsparse_status_zero_pivot : rocsparse_status_success);
         }
         CHECK_HIP_ERROR(hipDeviceSynchronize());
         // host_bsrsm
@@ -477,14 +476,14 @@ void testing_bsrsm(const Arguments& arg)
                       dir,
                       trans_A,
                       trans_X,
-                      *h_alpha.val,
+                      *h_alpha,
                       hA.ptr,
                       hA.ind,
                       hA.val,
                       block_dim,
-                      hB.val,
+                      hB,
                       hB.ld,
-                      hX_gold.val,
+                      hX_gold,
                       hX_gold.ld,
                       diag,
                       uplo,
@@ -497,7 +496,7 @@ void testing_bsrsm(const Arguments& arg)
         solve_pivot_gold.unit_check(solve_pivot);
 
         // Check solution matrix if no pivot has been found
-        if(*analysis_pivot_gold.val == -1 && *solve_pivot_gold.val == -1)
+        if(*analysis_pivot_gold == -1 && *solve_pivot_gold == -1)
         {
             hX_gold.near_check(dX);
         }
@@ -513,7 +512,7 @@ void testing_bsrsm(const Arguments& arg)
 
         size_t buffer_size_gold = buffer_size;
         CALL_BUFFER_SIZE;
-        unit_check_general<size_t>(1, 1, 1, &buffer_size, &buffer_size_gold);
+        unit_check_scalar(buffer_size, buffer_size_gold);
 
         // bsrsm_analysis
         CALL_ANALYSIS;
@@ -521,9 +520,9 @@ void testing_bsrsm(const Arguments& arg)
 
         // Obtain pivot information
         device_scalar<rocsparse_int> d_analysis_pivot;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_zero_pivot(handle, info, d_analysis_pivot.val),
-                                (*analysis_pivot_gold.val != -1) ? rocsparse_status_zero_pivot
-                                                                 : rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_zero_pivot(handle, info, d_analysis_pivot),
+                                (*analysis_pivot_gold != -1) ? rocsparse_status_zero_pivot
+                                                             : rocsparse_status_success);
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // bsrsm_solve
@@ -532,9 +531,9 @@ void testing_bsrsm(const Arguments& arg)
 
         // Obtain pivot information
         device_scalar<rocsparse_int> d_solve_pivot;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_zero_pivot(handle, info, d_solve_pivot.val),
-                                (*solve_pivot_gold.val != -1) ? rocsparse_status_zero_pivot
-                                                              : rocsparse_status_success);
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_zero_pivot(handle, info, d_solve_pivot),
+                                (*solve_pivot_gold != -1) ? rocsparse_status_zero_pivot
+                                                          : rocsparse_status_success);
         CHECK_HIP_ERROR(hipDeviceSynchronize());
 
         // Check pivots
@@ -542,7 +541,7 @@ void testing_bsrsm(const Arguments& arg)
         solve_pivot_gold.unit_check(d_solve_pivot);
 
         // Check solution matrix if no pivot has been found
-        if(*analysis_pivot_gold.val == -1 && *solve_pivot_gold.val == -1)
+        if(*analysis_pivot_gold == -1 && *solve_pivot_gold == -1)
         {
             hX_gold.near_check(dX);
         }
@@ -569,7 +568,7 @@ void testing_bsrsm(const Arguments& arg)
 
         gpu_analysis_time_used = get_time_us() - gpu_analysis_time_used;
 
-        rocsparse_bsrsm_zero_pivot(handle, info, analysis_pivot_gold.val);
+        rocsparse_bsrsm_zero_pivot(handle, info, analysis_pivot_gold);
 
         double gpu_solve_time_used = get_time_us();
 
@@ -581,7 +580,7 @@ void testing_bsrsm(const Arguments& arg)
 
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
 
-        rocsparse_bsrsm_zero_pivot(handle, info, solve_pivot_gold.val);
+        rocsparse_bsrsm_zero_pivot(handle, info, solve_pivot_gold);
 
         double gflop_count = csrsv_gflop_count(m, dA.nnzb * block_dim * block_dim, diag) * nrhs;
         double gbyte_count = bsrsv_gbyte_count<T>(mb, dA.nnzb, block_dim) * nrhs;
@@ -589,9 +588,9 @@ void testing_bsrsm(const Arguments& arg)
         double gpu_gflops = get_gpu_gflops(gpu_solve_time_used, gflop_count);
         double gpu_gbyte  = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
 
-        rocsparse_int pivot = (*analysis_pivot_gold.val != -1 && *solve_pivot_gold.val != -1)
-                                  ? std::min(*analysis_pivot_gold.val, *solve_pivot_gold.val)
-                                  : std::max(*analysis_pivot_gold.val, *solve_pivot_gold.val);
+        rocsparse_int pivot = (*analysis_pivot_gold != -1 && *solve_pivot_gold != -1)
+                                  ? std::min(*analysis_pivot_gold, *solve_pivot_gold)
+                                  : std::max(*analysis_pivot_gold, *solve_pivot_gold);
 
         display_timing_info("M",
                             m,

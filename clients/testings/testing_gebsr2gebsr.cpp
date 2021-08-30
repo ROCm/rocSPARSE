@@ -281,7 +281,7 @@ void testing_gebsr2gebsr(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(
             hnnzb_C_copied_from_device, dnnzb_C, sizeof(rocsparse_int), hipMemcpyDeviceToHost));
 
-        unit_check_general<rocsparse_int>(1, 1, 1, hnnzb_C, hnnzb_C_copied_from_device);
+        hnnzb_C.unit_check(hnnzb_C_copied_from_device);
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_gebsr2gebsr<T>(handle,
@@ -346,10 +346,10 @@ void testing_gebsr2gebsr(const Arguments& arg)
 
         hnnzb_cpu[0] = hbsr_col_ind_cpu.size();
 
-        unit_check_general<rocsparse_int>(1, 1, 1, hnnzb_cpu, hnnzb_C);
-        unit_check_general<rocsparse_int>(1, (Mb_C + 1), 1, hbsr_row_ptr_cpu, hbsr_row_ptr_C);
-        unit_check_general<rocsparse_int>(1, hnnzb_C[0], 1, hbsr_col_ind_cpu, hbsr_col_ind_C);
-        unit_check_general<T>(1, hnnzb_C[0], 1, hbsr_val_cpu, hbsr_val_C);
+        hnnzb_cpu.unit_check(hnnzb_C);
+        hbsr_row_ptr_cpu.unit_check(hbsr_row_ptr_C);
+        hbsr_col_ind_cpu.unit_check(hbsr_col_ind_C);
+        hbsr_val_cpu.unit_check(hbsr_val_C);
     }
 
     if(arg.timing)

@@ -380,8 +380,8 @@ void testing_spsv_csr(const Arguments& arg)
 
         if(analysis_pivot == -1 && solve_pivot == -1)
         {
-            near_check_general<T>(M, 1, 1, hy_gold, hy_1);
-            near_check_general<T>(M, 1, 1, hy_gold, hy_2);
+            hy_gold.near_check(hy_1);
+            hy_gold.near_check(hy_2);
         }
     }
 

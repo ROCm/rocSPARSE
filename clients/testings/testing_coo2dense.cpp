@@ -193,8 +193,8 @@ void testing_coo2dense(const Arguments& arg)
                           LD,
                           rocsparse_order_column);
 
-        unit_check_general(M, N, LD, (T*)h_dense_val, (T*)cpu_dense_val);
-        unit_check_general(M, N, LD, (T*)h_dense_val, (T*)gpu_dense_val);
+        h_dense_val.unit_check(cpu_dense_val);
+        h_dense_val.unit_check(gpu_dense_val);
     }
 
     if(arg.timing)

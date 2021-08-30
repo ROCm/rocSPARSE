@@ -129,16 +129,13 @@ struct coo_aos_matrix
             case memory_mode::managed:
             case memory_mode::host:
             {
-                unit_check_general<I>(1, 1, 1, &this->m, &that_.m);
-                unit_check_general<I>(1, 1, 1, &this->n, &that_.n);
-                unit_check_general<I>(1, 1, 1, &this->nnz, &that_.nnz);
-                {
-                    I a = (I)this->base;
-                    I b = (I)that_.base;
-                    unit_check_general<I>(1, 1, 1, &a, &b);
-                }
-                unit_check_general<I>(1, that_.nnz * 2, 1, this->ind, that_.ind);
-                near_check_general<T>(1, that_.nnz, 1, this->val, that_.val, tol);
+                unit_check_scalar(this->m, that_.m);
+                unit_check_scalar(this->n, that_.n);
+                unit_check_scalar(this->nnz, that_.nnz);
+                unit_check_enum(this->base, that_.base);
+
+                this->ind.unit_check(that_.ind);
+                this->val.near_check(that_.val, tol);
                 break;
             }
             case memory_mode::device:

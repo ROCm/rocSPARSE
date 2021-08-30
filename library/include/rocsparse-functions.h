@@ -3146,16 +3146,18 @@ rocsparse_status rocsparse_zgemvi(rocsparse_handle                handle,
  *  @param[in]
  *  block_dim   size of the blocks in the sparse BSR matrix.
  *  @param[in]
- *  B           array of dimension \f$ldb \times n\f$ (\f$op(B) == B\f$) or
- *              \f$ldb \times k\f$ (\f$op(B) == B^T\f$).
+ *  B           array of dimension \f$ldb \times n\f$ (\f$op(B) == B\f$),
+ *              \f$ldb \times k\f$ otherwise.
  *  @param[in]
- *  ldb         leading dimension of \f$B\f$, must be at least \f$\max{(1, k)}\f$ where \f$k = block\_dim \times kb\f$.
+ *  ldb         leading dimension of \f$B\f$, must be at least \f$\max{(1, k)}\f$ (\f$ op(B) == B\f$) where \f$k = block\_dim \times kb\f$,
+ *  \f$\max{(1, n)}\f$ otherwise.
  *  @param[in]
  *  beta        scalar \f$\beta\f$.
  *  @param[inout]
  *  C           array of dimension \f$ldc \times n\f$.
  *  @param[in]
- *  ldc         leading dimension of \f$C\f$, must be at least \f$\max{(1, m)}\f$ where \f$m = block\_dim \times mb\f$.
+ *  ldc         leading dimension of \f$C\f$, must be at least \f$\max{(1, m)}\f$ (\f$ op(A) == A\f$) where \f$m = block\_dim \times mb\f$,
+ *  \f$\max{(1, k)}\f$ where \f$k = block\_dim \times kb\f$ otherwise.
  *
  *  \retval     rocsparse_status_success the operation completed successfully.
  *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -3392,16 +3394,18 @@ rocsparse_status rocsparse_zbsrmm(rocsparse_handle                handle,
  *  @param[in]
  *  col_block_dim   column size of the blocks in the sparse GEneral BSR matrix.
  *  @param[in]
- *  B           array of dimension \f$ldb \times n\f$ (\f$op(B) == B\f$) or
- *              \f$ldb \times k\f$ (\f$op(B) == B^T\f$).
+ *  B           array of dimension \f$ldb \times n\f$ (\f$op(B) == B\f$),
+ *              \f$ldb \times k\f$ otherwise.
  *  @param[in]
- *  ldb         leading dimension of \f$B\f$, must be at least \f$\max{(1, k)}\f$ where \f$k = col_block\_dim \times kb\f$.
+ *  ldb         leading dimension of \f$B\f$, must be at least \f$\max{(1, k)}\f$ (\f$ op(B) == B\f$) where \f$k = col\_block\_dim \times kb\f$,
+ *  \f$\max{(1, n)}\f$ otherwise.
  *  @param[in]
  *  beta        scalar \f$\beta\f$.
  *  @param[inout]
  *  C           array of dimension \f$ldc \times n\f$.
  *  @param[in]
- *  ldc         leading dimension of \f$C\f$, must be at least \f$\max{(1, m)}\f$ where \f$m = row_block\_dim \times mb\f$.
+ *  ldc         leading dimension of \f$C\f$, must be at least \f$\max{(1, m)}\f$ (\f$ op(A) == A\f$) where \f$m = row\_block\_dim \times mb\f$,
+ *  \f$\max{(1, k)}\f$ where \f$k = col\_block\_dim \times kb\f$ otherwise.
  *
  *  \retval     rocsparse_status_success the operation completed successfully.
  *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -3652,20 +3656,18 @@ rocsparse_status rocsparse_zgebsrmm(rocsparse_handle                handle,
 *  csr_col_ind array of \p nnz elements containing the column indices of the sparse
 *              CSR matrix \f$A\f$.
 *  @param[in]
-*  B           array of dimension \f$ldb \times n\f$ (\f$op(B) == B\f$) or
-*              \f$ldb \times k\f$ (\f$op(B) == B^T\f$ or \f$op(B) == B^H\f$).
+*  B           array of dimension \f$ldb \times n\f$ (\f$op(B) == B\f$),
+*              \f$ldb \times k\f$ otherwise.
 *  @param[in]
 *  ldb         leading dimension of \f$B\f$, must be at least \f$\max{(1, k)}\f$
-*              (\f$op(A) == A\f$) or \f$\max{(1, m)}\f$ (\f$op(A) == A^T\f$ or
-*              \f$op(A) == A^H\f$).
+*              (\f$op(B) == B\f$), \f$\max{(1, n)}\f$ otherwise.
 *  @param[in]
 *  beta        scalar \f$\beta\f$.
 *  @param[inout]
 *  C           array of dimension \f$ldc \times n\f$.
 *  @param[in]
 *  ldc         leading dimension of \f$C\f$, must be at least \f$\max{(1, m)}\f$
-*              (\f$op(A) == A\f$) or \f$\max{(1, k)}\f$ (\f$op(A) == A^T\f$ or
-*              \f$op(A) == A^H\f$).
+*              (\f$op(A) == A\f$), \f$\max{(1, k)}\f$ otherwise.
 *
 *  \retval     rocsparse_status_success the operation completed successfully.
 *  \retval     rocsparse_status_invalid_handle the library context was not initialized.
@@ -6288,7 +6290,7 @@ rocsparse_status rocsparse_bsric0_zero_pivot(rocsparse_handle   handle,
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
- *  dir 	    direction that specifies whether to count nonzero elements by \ref rocsparse_direction_row or by
+ *  dir             direction that specifies whether to count nonzero elements by \ref rocsparse_direction_row or by
  *              \ref rocsparse_direction_row.
  *  @param[in]
  *  mb          number of block rows in the sparse BSR matrix.
@@ -6409,7 +6411,7 @@ rocsparse_status rocsparse_zbsric0_buffer_size(rocsparse_handle                h
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
- *  dir 	    direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by
+ *  dir             direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by
  *              \ref rocsparse_direction_row.
  *  @param[in]
  *  mb          number of block rows in the sparse BSR matrix.
@@ -6564,7 +6566,7 @@ rocsparse_status rocsparse_bsric0_clear(rocsparse_handle handle, rocsparse_mat_i
  *  @param[in]
  *  handle      handle to the rocsparse library context queue.
  *  @param[in]
- *  dir 	    direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by
+ *  dir             direction that specified whether to count nonzero elements by \ref rocsparse_direction_row or by
  *              \ref rocsparse_direction_row.
  *  @param[in]
  *  mb          number of block rows in the sparse BSR matrix.
@@ -15611,11 +15613,11 @@ rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle            handle,
 *  @param[in]
 *  fraction_to_color  fraction of nodes to be colored, which should be in the interval [0.0,1.0], for example 0.8 implies that 80 percent of nodes will be colored.
 *  @param[out]
-*  ncolors     	resulting number of distinct colors.
+*  ncolors      resulting number of distinct colors.
 *  @param[out]
 *  coloring     resulting mapping of colors.
 *  @param[out]
-*  reordering 	optional resulting reordering permutation if \p reordering is a non-null pointer.
+*  reordering   optional resulting reordering permutation if \p reordering is a non-null pointer.
 *  @param[inout]
 *  info    structure that holds the information collected during the coloring algorithm.
 *
