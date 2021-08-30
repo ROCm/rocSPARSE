@@ -21,48 +21,27 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
+template <typename I, typename T>
 void testing_spvec_descr_bad_arg(const Arguments& arg)
 {
-    int64_t size = 100;
-    int64_t nnz  = 100;
+    static const size_t safe_size = 100;
 
-    rocsparse_indextype  itype = rocsparse_indextype_i32;
-    rocsparse_datatype   ttype = rocsparse_datatype_f32_r;
-    rocsparse_index_base base  = rocsparse_index_base_zero;
+    rocsparse_spvec_descr x{};
+    int64_t               size     = safe_size;
+    int64_t               nnz      = safe_size;
+    void*                 val_data = (void*)0x4;
+    void*                 idx_data = (void*)0x4;
+    rocsparse_index_base  base     = rocsparse_index_base_zero;
 
-    // Allocate memory on device
-    device_vector<int>   idx_data(100);
-    device_vector<float> val_data(100);
+    rocsparse_indextype itype = get_indextype<I>();
+    rocsparse_datatype  ttype = get_datatype<T>();
 
-    if(!idx_data || !val_data)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    rocsparse_spvec_descr x;
-
-    // rocsparse_create_spvec_descr
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_spvec_descr(nullptr, size, nnz, idx_data, val_data, itype, base, ttype),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_spvec_descr(&x, -1, nnz, idx_data, val_data, itype, base, ttype),
-        rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_spvec_descr(&x, size, -1, idx_data, val_data, itype, base, ttype),
-        rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_spvec_descr(&x, size, nnz, nullptr, val_data, itype, base, ttype),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_spvec_descr(&x, size, nnz, idx_data, nullptr, itype, base, ttype),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_spvec_descr(&x, 100, 200, idx_data, val_data, itype, base, ttype),
-        rocsparse_status_invalid_size);
+#define PARAMS_CREATE &x, size, nnz, idx_data, val_data, itype, base, ttype
+    auto_testing_bad_arg(rocsparse_create_spvec_descr, PARAMS_CREATE);
+#undef PARAMS_CREATE
 
     // rocsparse_destroy_spvec_descr
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(nullptr),
@@ -83,37 +62,12 @@ void testing_spvec_descr_bad_arg(const Arguments& arg)
         rocsparse_create_spvec_descr(&x, size, nnz, idx_data, val_data, itype, base, ttype),
         rocsparse_status_success);
 
-    // rocsparse_spvec_get
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvec_get(
-            nullptr, &size, &nnz, (void**)&idx_data, (void**)&val_data, &itype, &base, &ttype),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvec_get(
-            x, nullptr, &nnz, (void**)&idx_data, (void**)&val_data, &itype, &base, &ttype),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvec_get(
-            x, &size, nullptr, (void**)&idx_data, (void**)&val_data, &itype, &base, &ttype),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvec_get(x, &size, &nnz, nullptr, (void**)&val_data, &itype, &base, &ttype),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvec_get(x, &size, &nnz, (void**)&idx_data, nullptr, &itype, &base, &ttype),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvec_get(
-            x, &size, &nnz, (void**)&idx_data, (void**)&val_data, nullptr, &base, &ttype),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvec_get(
-            x, &size, &nnz, (void**)&idx_data, (void**)&val_data, &itype, nullptr, &ttype),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvec_get(
-            x, &size, &nnz, (void**)&idx_data, (void**)&val_data, &itype, &base, nullptr),
-        rocsparse_status_invalid_pointer);
+    void** val_data_ptr = (void**)0x4;
+    void** idx_data_ptr = (void**)0x4;
+
+#define PARAMS_GET x, &size, &nnz, idx_data_ptr, val_data_ptr, &itype, &base, &ttype
+    auto_testing_bad_arg(rocsparse_spvec_get, PARAMS_GET);
+#undef PARAMS_GET
 
     // rocsparse_spvec_get_index_base
     EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_index_base(nullptr, &base),
@@ -122,7 +76,7 @@ void testing_spvec_descr_bad_arg(const Arguments& arg)
                             rocsparse_status_invalid_pointer);
 
     // rocsparse_spvec_get_values
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_values(nullptr, (void**)&val_data),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_values(nullptr, val_data_ptr),
                             rocsparse_status_invalid_pointer);
     EXPECT_ROCSPARSE_STATUS(rocsparse_spvec_get_values(x, nullptr),
                             rocsparse_status_invalid_pointer);
@@ -136,3 +90,15 @@ void testing_spvec_descr_bad_arg(const Arguments& arg)
     // Destroy valid descriptors
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(x), rocsparse_status_success);
 }
+
+#define INSTANTIATE(ITYPE, TTYPE) \
+    template void testing_spvec_descr_bad_arg<ITYPE, TTYPE>(const Arguments& arg);
+
+INSTANTIATE(int32_t, float);
+INSTANTIATE(int32_t, double);
+INSTANTIATE(int32_t, rocsparse_float_complex);
+INSTANTIATE(int32_t, rocsparse_double_complex);
+INSTANTIATE(int64_t, float);
+INSTANTIATE(int64_t, double);
+INSTANTIATE(int64_t, rocsparse_float_complex);
+INSTANTIATE(int64_t, rocsparse_double_complex);

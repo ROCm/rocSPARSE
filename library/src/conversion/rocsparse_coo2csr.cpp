@@ -53,6 +53,11 @@ rocsparse_status rocsparse_coo2csr_template(rocsparse_handle     handle,
 
     log_bench(handle, "./rocsparse-bench -f coo2csr", "--mtx <matrix.mtx>");
 
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check sizes
     if(nnz < 0 || m < 0)
     {

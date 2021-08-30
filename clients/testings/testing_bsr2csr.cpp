@@ -24,6 +24,8 @@
 
 #include "testing.hpp"
 
+#include "auto_testing_bad_arg.hpp"
+
 template <typename T>
 inline void rocsparse_init_csr_and_bsr_matrix(const Arguments&            arg,
                                               std::vector<rocsparse_int>& csr_row_ptr,
@@ -207,229 +209,42 @@ void testing_bsr2csr_bad_arg(const Arguments& arg)
     static const size_t safe_size = 100;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dbsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dbsr_col_ind(safe_size);
-    device_vector<T>             dbsr_val(safe_size);
-    device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dcsr_col_ind(safe_size);
-    device_vector<T>             dcsr_val(safe_size);
+    // Create rocsparse decriptors
+    rocsparse_local_mat_descr local_bsr_descr;
+    rocsparse_local_mat_descr local_csr_descr;
 
-    if(!dbsr_row_ptr || !dbsr_col_ind || !dbsr_val || !dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    rocsparse_handle          handle      = local_handle;
+    rocsparse_direction       dir         = rocsparse_direction_row;
+    rocsparse_int             mb          = safe_size;
+    rocsparse_int             nb          = safe_size;
+    const rocsparse_mat_descr bsr_descr   = local_bsr_descr;
+    const T*                  bsr_val     = (const T*)0x4;
+    const rocsparse_int*      bsr_row_ptr = (const rocsparse_int*)0x4;
+    const rocsparse_int*      bsr_col_ind = (const rocsparse_int*)0x4;
+    rocsparse_int             block_dim   = safe_size;
+    const rocsparse_mat_descr csr_descr   = local_csr_descr;
+    T*                        csr_val     = (T*)0x4;
+    rocsparse_int*            csr_row_ptr = (rocsparse_int*)0x4;
+    rocsparse_int*            csr_col_ind = (rocsparse_int*)0x4;
 
-    rocsparse_local_mat_descr bsr_descr;
-    rocsparse_local_mat_descr csr_descr;
+#define PARAMS                                                                               \
+    handle, dir, mb, nb, bsr_descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, csr_descr, \
+        csr_val, csr_row_ptr, csr_col_ind
 
-    rocsparse_set_mat_index_base(bsr_descr, rocsparse_index_base_zero);
-    rocsparse_set_mat_index_base(csr_descr, rocsparse_index_base_zero);
+    auto_testing_bad_arg(rocsparse_bsr2csr<T>, PARAMS);
 
-    // Test invalid handle
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(nullptr,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 bsr_descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 csr_descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_handle);
-
-    // Test invalid descriptors
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 nullptr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 csr_descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 bsr_descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 nullptr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_pointer);
-
-    // Test invalid pointers
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 bsr_descr,
-                                                 nullptr,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 csr_descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 bsr_descr,
-                                                 dbsr_val,
-                                                 nullptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 csr_descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 bsr_descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 nullptr,
-                                                 safe_size,
-                                                 csr_descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 bsr_descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 csr_descr,
-                                                 nullptr,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 bsr_descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 csr_descr,
-                                                 dcsr_val,
-                                                 nullptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 bsr_descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 csr_descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Test invalid direction
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 (rocsparse_direction)2,
-                                                 safe_size,
-                                                 safe_size,
-                                                 bsr_descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 csr_descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_value);
-
-    // Test invalid Mb
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 -1,
-                                                 safe_size,
-                                                 bsr_descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 csr_descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_size);
-
-    // Test invalid Nb
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 -1,
-                                                 bsr_descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 csr_descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_size);
-
-    // Test invalid block dimension
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 bsr_descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 0,
-                                                 csr_descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind),
-                            rocsparse_status_invalid_size);
+#undef PARAMS
 }
 
 template <typename T>
 void testing_bsr2csr(const Arguments& arg)
 {
+    static constexpr bool       toint     = false;
+    static constexpr bool       full_rank = true;
+    rocsparse_matrix_factory<T> matrix_factory(arg, toint, full_rank);
+
     rocsparse_int        M         = arg.M;
     rocsparse_int        N         = arg.N;
     rocsparse_index_base bsr_base  = arg.baseA;
@@ -704,3 +519,4 @@ INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);
 INSTANTIATE(rocsparse_double_complex);
+#undef INSTANTIATE

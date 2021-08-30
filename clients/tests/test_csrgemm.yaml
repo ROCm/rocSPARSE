@@ -65,7 +65,7 @@ Tests:
   precision: *single_double_precisions_complex_real
   M: [50]
   N: [13]
-  K: [50]
+  K: [-1, 50]
   alpha_alphai: *alpha_range_quick
   beta: [-99.0]
   transA: [rocsparse_operation_none]

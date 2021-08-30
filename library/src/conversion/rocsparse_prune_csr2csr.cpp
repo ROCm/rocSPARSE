@@ -247,7 +247,26 @@ rocsparse_status rocsparse_prune_csr2csr_buffer_size_template(rocsparse_handle  
     }
 
     // Check pointer arguments
-    if(buffer_size == nullptr)
+    if(csr_row_ptr_A == nullptr || csr_row_ptr_C == nullptr || buffer_size == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_A == nullptr && csr_col_ind_A != nullptr)
+       || (csr_val_A != nullptr && csr_col_ind_A == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_C == nullptr && csr_col_ind_C != nullptr)
+       || (csr_val_C != nullptr && csr_col_ind_C == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz_A != 0 && (csr_val_A == nullptr && csr_col_ind_A == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

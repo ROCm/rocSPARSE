@@ -50,8 +50,8 @@ void testing_spsv_coo_bad_arg(const Arguments& arg)
     rocsparse_local_dnvec local_x(m, (void*)0x4, ttype);
     rocsparse_local_dnvec local_y(m, (void*)0x4, ttype);
 
-    int nargs_to_exclude   = 2;
-    int args_to_exclude[2] = {9, 10};
+    int       nargs_to_exclude   = 2;
+    const int args_to_exclude[2] = {9, 10};
 
     rocsparse_handle      handle = local_handle;
     rocsparse_spmat_descr A      = local_A;
@@ -73,12 +73,9 @@ void testing_spsv_coo_bad_arg(const Arguments& arg)
     handle, trans_A, &alpha, A, x, y, ttype, alg, rocsparse_spsv_stage_compute, &buffer_size, \
         temp_buffer
 
-    auto_testing_bad_arg(
-        rocsparse_spsv, nargs_to_exclude, (const int*)&args_to_exclude[0], PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(
-        rocsparse_spsv, nargs_to_exclude, (const int*)&args_to_exclude[0], PARAMS_ANALYSIS);
-    auto_testing_bad_arg(
-        rocsparse_spsv, nargs_to_exclude, (const int*)&args_to_exclude[0], PARAMS_SOLVE);
+    auto_testing_bad_arg(rocsparse_spsv, nargs_to_exclude, args_to_exclude, PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(rocsparse_spsv, nargs_to_exclude, args_to_exclude, PARAMS_ANALYSIS);
+    auto_testing_bad_arg(rocsparse_spsv, nargs_to_exclude, args_to_exclude, PARAMS_SOLVE);
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_ANALYSIS

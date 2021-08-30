@@ -23,143 +23,33 @@
  * ************************************************************************ */
 #include "testing.hpp"
 
+#include "auto_testing_bad_arg.hpp"
+
 template <typename T>
 void testing_dense2coo_bad_arg(const Arguments& arg)
 {
+    static const size_t safe_size = 100;
 
-    static constexpr size_t        safe_size = 100;
-    static constexpr rocsparse_int M         = 10;
-    static constexpr rocsparse_int N         = 10;
-    static constexpr rocsparse_int LD        = M;
-    rocsparse_local_handle         handle;
+    // Create rocsparse handle
+    rocsparse_local_handle local_handle;
 
-    device_vector<T>             d_dense_val(safe_size);
-    device_vector<rocsparse_int> d_nnz_per_row_columns(2);
-    device_vector<rocsparse_int> d_coo_row_ind(2);
-    device_vector<rocsparse_int> d_coo_col_ind(2);
-    device_vector<T>             d_coo_val(2);
+    // Create matrix descriptor
+    rocsparse_local_mat_descr local_descr;
 
-    if(!d_dense_val || !d_nnz_per_row_columns || !d_coo_row_ind || !d_coo_col_ind || !d_coo_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    rocsparse_handle          handle       = local_handle;
+    rocsparse_int             m            = safe_size;
+    rocsparse_int             n            = safe_size;
+    const rocsparse_mat_descr descr        = local_descr;
+    const T*                  A            = (const T*)0x4;
+    rocsparse_int             ld           = safe_size;
+    const rocsparse_int*      nnz_per_rows = (const rocsparse_int*)0x4;
+    T*                        coo_val      = (T*)0x4;
+    rocsparse_int*            coo_row_ind  = (rocsparse_int*)0x4;
+    rocsparse_int*            coo_col_ind  = (rocsparse_int*)0x4;
 
-    rocsparse_local_mat_descr descr;
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, rocsparse_index_base_zero));
-
-    // Testing invalid handle.
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dense2coo<T>(
-            nullptr, 0, 0, nullptr, (const T*)nullptr, 0, nullptr, (T*)nullptr, nullptr, nullptr),
-        rocsparse_status_invalid_handle);
-
-    // Testing invalid pointers.
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
-                                                   M,
-                                                   N,
-                                                   nullptr,
-                                                   d_dense_val,
-                                                   LD,
-                                                   d_nnz_per_row_columns,
-                                                   (T*)d_coo_val,
-                                                   d_coo_row_ind,
-                                                   d_coo_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
-                                                   M,
-                                                   N,
-                                                   descr,
-                                                   nullptr,
-                                                   LD,
-                                                   d_nnz_per_row_columns,
-                                                   (T*)d_coo_val,
-                                                   d_coo_row_ind,
-                                                   d_coo_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
-                                                   M,
-                                                   N,
-                                                   descr,
-                                                   d_dense_val,
-                                                   LD,
-                                                   nullptr,
-                                                   (T*)d_coo_val,
-                                                   d_coo_row_ind,
-                                                   d_coo_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
-                                                   M,
-                                                   N,
-                                                   descr,
-                                                   d_dense_val,
-                                                   LD,
-                                                   d_nnz_per_row_columns,
-                                                   (T*)nullptr,
-                                                   d_coo_row_ind,
-                                                   d_coo_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
-                                                   M,
-                                                   N,
-                                                   descr,
-                                                   d_dense_val,
-                                                   LD,
-                                                   d_nnz_per_row_columns,
-                                                   (T*)d_coo_val,
-                                                   nullptr,
-                                                   d_coo_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
-                                                   M,
-                                                   N,
-                                                   descr,
-                                                   d_dense_val,
-                                                   LD,
-                                                   d_nnz_per_row_columns,
-                                                   (T*)d_coo_val,
-                                                   d_coo_row_ind,
-                                                   nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Testing invalid size on M
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
-                                                   -1,
-                                                   N,
-                                                   descr,
-                                                   d_dense_val,
-                                                   LD,
-                                                   d_nnz_per_row_columns,
-                                                   (T*)d_coo_val,
-                                                   d_coo_row_ind,
-                                                   d_coo_col_ind),
-                            rocsparse_status_invalid_size);
-
-    // Testing invalid size on N
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
-                                                   M,
-                                                   -1,
-                                                   descr,
-                                                   d_dense_val,
-                                                   LD,
-                                                   d_nnz_per_row_columns,
-                                                   (T*)d_coo_val,
-                                                   d_coo_row_ind,
-                                                   d_coo_col_ind),
-                            rocsparse_status_invalid_size);
-
-    // Testing invalid size on LD
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(handle,
-                                                   M,
-                                                   N,
-                                                   descr,
-                                                   d_dense_val,
-                                                   M - 1,
-                                                   d_nnz_per_row_columns,
-                                                   (T*)d_coo_val,
-                                                   d_coo_row_ind,
-                                                   d_coo_col_ind),
-                            rocsparse_status_invalid_size);
+#define PARAMS handle, m, n, descr, A, ld, nnz_per_rows, coo_val, coo_row_ind, coo_col_ind
+    auto_testing_bad_arg(rocsparse_dense2coo<T>, PARAMS);
+#undef PARAMS
 }
 
 template <typename T>

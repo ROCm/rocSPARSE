@@ -1992,6 +1992,12 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_handle;
     }
 
+    // Check for valid rocsparse_mat_info
+    if(info_C == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xcsrgemm"),
@@ -2033,10 +2039,21 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle          handle,
               "--beta",
               LOG_BENCH_SCALAR_VALUE(handle, beta));
 
-    // Check for valid rocsparse_mat_info
-    if(info_C == nullptr)
+    // Check operation
+    if(rocsparse_enum_utils::is_invalid(trans_A))
     {
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(trans_B))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check valid sizes
+    if(m < 0 || n < 0 || k < 0)
+    {
+        return rocsparse_status_invalid_size;
     }
 
     // Check for valid rocsparse_csrgemm_info

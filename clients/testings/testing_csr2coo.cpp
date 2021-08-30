@@ -24,37 +24,30 @@
 
 #include "testing.hpp"
 
+#include "auto_testing_bad_arg.hpp"
+
 template <typename T>
 void testing_csr2coo_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dcoo_row_ind(safe_size);
+    // Create matrix descriptors
+    rocsparse_local_mat_descr local_csr_descr;
+    rocsparse_local_mat_descr local_bsr_descr;
 
-    if(!dcsr_row_ptr || !dcoo_row_ind)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    rocsparse_handle     handle      = local_handle;
+    const rocsparse_int* csr_row_ptr = (const rocsparse_int*)0x4;
+    rocsparse_int        nnz         = safe_size;
+    rocsparse_int        m           = safe_size;
+    rocsparse_int*       coo_row_ind = (rocsparse_int*)0x4;
+    rocsparse_index_base base        = rocsparse_index_base_zero;
 
-    // Test rocsparse_csr2coo()
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr2coo(
-            nullptr, dcsr_row_ptr, safe_size, safe_size, dcoo_row_ind, rocsparse_index_base_zero),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr2coo(
-            handle, nullptr, safe_size, safe_size, dcoo_row_ind, rocsparse_index_base_zero),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr2coo(
-            handle, dcsr_row_ptr, safe_size, safe_size, nullptr, rocsparse_index_base_zero),
-        rocsparse_status_invalid_pointer);
+#define PARAMS handle, csr_row_ptr, nnz, m, coo_row_ind, base
+    auto_testing_bad_arg(rocsparse_csr2coo, PARAMS);
+#undef PARAMS
 }
 
 template <typename T>

@@ -24,342 +24,56 @@
 
 #include "testing.hpp"
 
+#include "auto_testing_bad_arg.hpp"
+
 template <typename T>
 void testing_csr2gebsr_bad_arg(const Arguments& arg)
 {
-
     static const size_t safe_size = 100;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dcsr_col_ind(safe_size);
-    device_vector<T>             dcsr_val(safe_size);
-    device_vector<rocsparse_int> dbsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dbsr_col_ind(safe_size);
-    device_vector<T>             dbsr_val(safe_size);
-    device_vector<T>             dbuffer(safe_size);
+    // Create descriptors
+    rocsparse_local_mat_descr local_csr_descr;
+    rocsparse_local_mat_descr local_bsr_descr;
 
-    rocsparse_int hbsr_nnzb;
-    size_t        buffer_size;
+    rocsparse_handle          handle          = local_handle;
+    rocsparse_direction       dir             = rocsparse_direction_row;
+    rocsparse_int             m               = safe_size;
+    rocsparse_int             n               = safe_size;
+    const rocsparse_mat_descr csr_descr       = local_csr_descr;
+    const T*                  csr_val         = (const T*)0x4;
+    const rocsparse_int*      csr_row_ptr     = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_col_ind     = (const rocsparse_int*)0x4;
+    const rocsparse_mat_descr bsr_descr       = local_bsr_descr;
+    T*                        bsr_val         = (T*)0x4;
+    rocsparse_int*            bsr_row_ptr     = (rocsparse_int*)0x4;
+    rocsparse_int*            bsr_col_ind     = (rocsparse_int*)0x4;
+    rocsparse_int             row_block_dim   = safe_size;
+    rocsparse_int             col_block_dim   = safe_size;
+    rocsparse_int*            bsr_nnz_devhost = (rocsparse_int*)0x4;
+    size_t*                   buffer_size     = (size_t*)0x4;
+    void*                     temp_buffer     = (void*)0x4;
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dbsr_row_ptr || !dbsr_col_ind || !dbsr_val
-       || !dbuffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    int       nargs_to_exclude   = 1;
+    const int args_to_exclude[1] = {6};
 
-    rocsparse_local_mat_descr csr_descr;
-    rocsparse_local_mat_descr bsr_descr;
-
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-    //
-    // Declaration of arguments.
-    //
-    rocsparse_direction  arg_direction;
-    rocsparse_int        arg_m;
-    rocsparse_int        arg_n;
-    rocsparse_mat_descr  arg_csr_descr;
-    const T*             arg_csr_val;
-    const rocsparse_int* arg_csr_row_ptr;
-    const rocsparse_int* arg_csr_col_ind;
-    rocsparse_mat_descr  arg_bsr_descr;
-    T*                   arg_bsr_val;
-    rocsparse_int*       arg_bsr_row_ptr;
-    rocsparse_int*       arg_bsr_col_ind;
-    rocsparse_int        arg_row_block_dim;
-    rocsparse_int        arg_col_block_dim;
-    void*                arg_p_buffer;
-    rocsparse_int*       arg_bsr_nnz_devhost;
-    size_t*              arg_p_buffer_size;
-
-    //
-    // Macro to set arguments.
-    //
-#define ARGSET                                     \
-    arg_direction       = rocsparse_direction_row; \
-    arg_m               = safe_size;               \
-    arg_n               = safe_size;               \
-    arg_csr_descr       = csr_descr;               \
-    arg_csr_val         = (T*)dcsr_val;            \
-    arg_csr_row_ptr     = dcsr_row_ptr;            \
-    arg_csr_col_ind     = dcsr_col_ind;            \
-    arg_bsr_descr       = bsr_descr;               \
-    arg_bsr_val         = (T*)dbsr_val;            \
-    arg_bsr_row_ptr     = dbsr_row_ptr;            \
-    arg_bsr_col_ind     = dbsr_col_ind;            \
-    arg_row_block_dim   = safe_size;               \
-    arg_col_block_dim   = safe_size;               \
-    arg_p_buffer        = (void*)((T*)dbuffer);    \
-    arg_bsr_nnz_devhost = &hbsr_nnzb;              \
-    arg_p_buffer_size   = &buffer_size
-
-    //
-    // BUFFER_SIZE ############
-    //
-#define CALL_ARG_BUFFER_SIZE                                                                   \
-    arg_direction, arg_m, arg_n, arg_csr_descr, arg_csr_val, arg_csr_row_ptr, arg_csr_col_ind, \
-        arg_row_block_dim, arg_col_block_dim, arg_p_buffer_size
-
-#define CALL_BUFFER_SIZE rocsparse_csr2gebsr_buffer_size<T>(handle, CALL_ARG_BUFFER_SIZE)
-
-    {
-        ARGSET;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_buffer_size<T>(nullptr, CALL_ARG_BUFFER_SIZE),
-                                rocsparse_status_invalid_handle);
-    }
-
-    {
-        ARGSET;
-        arg_direction = (rocsparse_direction)2;
-        EXPECT_ROCSPARSE_STATUS(CALL_BUFFER_SIZE, rocsparse_status_invalid_value);
-    }
-
-    {
-        ARGSET;
-        arg_m = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_BUFFER_SIZE, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_n = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_BUFFER_SIZE, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_csr_descr = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_BUFFER_SIZE, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_csr_val = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_BUFFER_SIZE, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_csr_row_ptr = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_BUFFER_SIZE, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_csr_col_ind = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_BUFFER_SIZE, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_row_block_dim = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_BUFFER_SIZE, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_col_block_dim = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_BUFFER_SIZE, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_p_buffer_size = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_BUFFER_SIZE, rocsparse_status_invalid_pointer);
-    }
-
-#undef CALL_ARG_BUFFER_SIZE
-#undef CALL_BUFFER_SIZE
-
-    //
-    // NNZ ############
-    //
-#define CALL_ARG_NNZ                                                                             \
-    arg_direction, arg_m, arg_n, arg_csr_descr, arg_csr_row_ptr, arg_csr_col_ind, arg_bsr_descr, \
-        arg_bsr_row_ptr, arg_row_block_dim, arg_col_block_dim, arg_bsr_nnz_devhost, arg_p_buffer
-
-#define CALL_NNZ rocsparse_csr2gebsr_nnz(handle, CALL_ARG_NNZ)
-
-    {
-        ARGSET;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_nnz(nullptr, CALL_ARG_NNZ),
-                                rocsparse_status_invalid_handle);
-    }
-
-    {
-        ARGSET;
-        arg_direction = (rocsparse_direction)2;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_value);
-    }
-
-    {
-        ARGSET;
-        arg_m = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_n = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_csr_descr = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_csr_row_ptr = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_bsr_descr = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_bsr_row_ptr = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_row_block_dim = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_col_block_dim = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_bsr_nnz_devhost = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_p_buffer = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_NNZ, rocsparse_status_invalid_pointer);
-    }
-
-#undef CALL_NNZ
-#undef CALL_ARG_NNZ
-
-#define CALL_ARG_FUNC                                                                          \
-    arg_direction, arg_m, arg_n, arg_csr_descr, arg_csr_val, arg_csr_row_ptr, arg_csr_col_ind, \
-        arg_bsr_descr, arg_bsr_val, arg_bsr_row_ptr, arg_bsr_col_ind, arg_row_block_dim,       \
-        arg_col_block_dim, arg_p_buffer
-
-#define CALL_FUNC rocsparse_csr2gebsr<T>(handle, CALL_ARG_FUNC)
-
-    {
-        ARGSET;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr<T>(nullptr, CALL_ARG_FUNC),
-                                rocsparse_status_invalid_handle);
-    }
-
-    {
-        ARGSET;
-        arg_direction = (rocsparse_direction)2;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_value);
-    }
-
-    {
-        ARGSET;
-        arg_m = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_n = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_csr_descr = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_csr_val = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_csr_row_ptr = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_csr_col_ind = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_bsr_descr = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_bsr_val = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_bsr_row_ptr = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_pointer);
-    }
-    {
-        ARGSET;
-        arg_bsr_col_ind = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_pointer);
-    }
-
-    {
-        ARGSET;
-        arg_row_block_dim = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_col_block_dim = -1;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_size);
-    }
-
-    {
-        ARGSET;
-        arg_p_buffer = nullptr;
-        EXPECT_ROCSPARSE_STATUS(CALL_FUNC, rocsparse_status_invalid_pointer);
-    }
-
-#undef CALL_FUNC
-#undef CALL_ARG_FUNC
-
-#undef ARGSET
+#define PARAMS_BUFFER_SIZE                                                                         \
+    handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, csr_col_ind, row_block_dim, col_block_dim, \
+        buffer_size
+#define PARAMS_NNZ                                                                                 \
+    handle, dir, m, n, csr_descr, csr_row_ptr, csr_col_ind, bsr_descr, bsr_row_ptr, row_block_dim, \
+        col_block_dim, bsr_nnz_devhost, temp_buffer
+#define PARAMS                                                                           \
+    handle, dir, m, n, csr_descr, csr_val, csr_row_ptr, csr_col_ind, bsr_descr, bsr_val, \
+        bsr_row_ptr, bsr_col_ind, row_block_dim, col_block_dim, temp_buffer
+    auto_testing_bad_arg(rocsparse_csr2gebsr_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(rocsparse_csr2gebsr_nnz, nargs_to_exclude, args_to_exclude, PARAMS_NNZ);
+    auto_testing_bad_arg(rocsparse_csr2gebsr<T>, PARAMS);
+#undef PARAMS
+#undef PARAMS_NNZ
+#undef PARAMS_BUFFER_SIZE
 }
 
 template <typename T>

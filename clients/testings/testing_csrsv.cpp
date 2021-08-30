@@ -29,7 +29,6 @@
 template <typename T>
 void testing_csrsv_bad_arg(const Arguments& arg)
 {
-
     static const size_t safe_size = 100;
 
     const T h_alpha = static_cast<T>(1);

@@ -22,609 +22,69 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename T>
 void testing_prune_csr2csr_by_percentage_bad_arg(const Arguments& arg)
 {
-    static constexpr size_t safe_size              = 100;
-    static constexpr T      percentage             = static_cast<T>(1);
-    static rocsparse_int    nnz_total_dev_host_ptr = 100;
-    static size_t           buffer_size            = 100;
+    static const size_t  safe_size                = 100;
+    static rocsparse_int h_nnz_total_dev_host_ptr = 100;
+    static size_t        h_buffer_size            = 100;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dcsr_row_ptr_A(safe_size);
-    device_vector<rocsparse_int> dcsr_col_ind_A(safe_size);
-    device_vector<T>             dcsr_val_A(safe_size);
-    device_vector<rocsparse_int> dcsr_row_ptr_C(safe_size);
-    device_vector<rocsparse_int> dcsr_col_ind_C(safe_size);
-    device_vector<T>             dcsr_val_C(safe_size);
-    device_vector<T>             dtemp_buffer(safe_size);
+    // Create descriptors
+    rocsparse_local_mat_descr local_csr_descr_A;
+    rocsparse_local_mat_descr local_csr_descr_C;
 
-    if(!dcsr_row_ptr_A || !dcsr_col_ind_A || !dcsr_val_A || !dcsr_row_ptr_C || !dcsr_col_ind_C
-       || !dcsr_val_C || !dtemp_buffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    // Create info
+    rocsparse_local_mat_info local_info;
 
-    rocsparse_local_mat_descr csr_descr_A;
-    rocsparse_local_mat_descr csr_descr_C;
+    rocsparse_handle          handle                 = local_handle;
+    rocsparse_int             m                      = safe_size;
+    rocsparse_int             n                      = safe_size;
+    rocsparse_int             nnz_A                  = safe_size;
+    const rocsparse_mat_descr csr_descr_A            = local_csr_descr_A;
+    const T*                  csr_val_A              = (const T*)0x4;
+    const rocsparse_int*      csr_row_ptr_A          = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_col_ind_A          = (const rocsparse_int*)0x4;
+    const rocsparse_mat_descr csr_descr_C            = local_csr_descr_C;
+    T*                        csr_val_C              = (T*)0x4;
+    rocsparse_int*            csr_row_ptr_C          = (rocsparse_int*)0x4;
+    rocsparse_int*            csr_col_ind_C          = (rocsparse_int*)0x4;
+    rocsparse_int*            nnz_total_dev_host_ptr = &h_nnz_total_dev_host_ptr;
+    rocsparse_mat_info        info                   = local_info;
+    size_t*                   buffer_size            = &h_buffer_size;
+    void*                     temp_buffer            = (void*)0x4;
 
-    rocsparse_local_mat_info info;
+    int       nargs_to_exclude   = 1;
+    const int args_to_exclude[1] = {8};
+    T         percentage         = static_cast<T>(1);
 
-    rocsparse_set_mat_index_base(csr_descr_A, rocsparse_index_base_zero);
-    rocsparse_set_mat_index_base(csr_descr_C, rocsparse_index_base_zero);
-
-    // Test rocsparse_prune_csr2csr_by_percentage_buffer_size
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage_buffer_size<T>(nullptr,
-                                                                                 safe_size,
-                                                                                 safe_size,
-                                                                                 safe_size,
-                                                                                 csr_descr_A,
-                                                                                 dcsr_val_A,
-                                                                                 dcsr_row_ptr_A,
-                                                                                 dcsr_col_ind_A,
-                                                                                 percentage,
-                                                                                 csr_descr_C,
-                                                                                 dcsr_val_C,
-                                                                                 dcsr_row_ptr_C,
-                                                                                 dcsr_col_ind_C,
-                                                                                 info,
-                                                                                 &buffer_size),
-                            rocsparse_status_invalid_handle);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage_buffer_size<T>(handle,
-                                                                                 -1,
-                                                                                 safe_size,
-                                                                                 safe_size,
-                                                                                 csr_descr_A,
-                                                                                 dcsr_val_A,
-                                                                                 dcsr_row_ptr_A,
-                                                                                 dcsr_col_ind_A,
-                                                                                 percentage,
-                                                                                 csr_descr_C,
-                                                                                 dcsr_val_C,
-                                                                                 dcsr_row_ptr_C,
-                                                                                 dcsr_col_ind_C,
-                                                                                 info,
-                                                                                 &buffer_size),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage_buffer_size<T>(handle,
-                                                                                 safe_size,
-                                                                                 -1,
-                                                                                 safe_size,
-                                                                                 csr_descr_A,
-                                                                                 dcsr_val_A,
-                                                                                 dcsr_row_ptr_A,
-                                                                                 dcsr_col_ind_A,
-                                                                                 percentage,
-                                                                                 csr_descr_C,
-                                                                                 dcsr_val_C,
-                                                                                 dcsr_row_ptr_C,
-                                                                                 dcsr_col_ind_C,
-                                                                                 info,
-                                                                                 &buffer_size),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage_buffer_size<T>(handle,
-                                                                                 safe_size,
-                                                                                 safe_size,
-                                                                                 -1,
-                                                                                 csr_descr_A,
-                                                                                 dcsr_val_A,
-                                                                                 dcsr_row_ptr_A,
-                                                                                 dcsr_col_ind_A,
-                                                                                 percentage,
-                                                                                 csr_descr_C,
-                                                                                 dcsr_val_C,
-                                                                                 dcsr_row_ptr_C,
-                                                                                 dcsr_col_ind_C,
-                                                                                 info,
-                                                                                 &buffer_size),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage_buffer_size<T>(handle,
-                                                                                 safe_size,
-                                                                                 safe_size,
-                                                                                 safe_size,
-                                                                                 csr_descr_A,
-                                                                                 dcsr_val_A,
-                                                                                 dcsr_row_ptr_A,
-                                                                                 dcsr_col_ind_A,
-                                                                                 percentage,
-                                                                                 csr_descr_C,
-                                                                                 dcsr_val_C,
-                                                                                 dcsr_row_ptr_C,
-                                                                                 dcsr_col_ind_C,
-                                                                                 info,
-                                                                                 nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_prune_csr2csr_nnz_by_percentage
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(nullptr,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_handle);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         -1,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         -1,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         -1,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         -1.0,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         101.0,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         nullptr,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         (const T*)nullptr,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         nullptr,
-                                                                         dcsr_col_ind_A,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         nullptr,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         percentage,
-                                                                         nullptr,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         nullptr,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         nullptr,
-                                                                         info,
-                                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         safe_size,
-                                                                         csr_descr_A,
-                                                                         dcsr_val_A,
-                                                                         dcsr_row_ptr_A,
-                                                                         dcsr_col_ind_A,
-                                                                         percentage,
-                                                                         csr_descr_C,
-                                                                         dcsr_row_ptr_C,
-                                                                         &nnz_total_dev_host_ptr,
-                                                                         info,
-                                                                         nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_prune_csr2csr_by_percentage
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(nullptr,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_handle);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     -1,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     -1,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     -1,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     -1.0,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     101.0,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     nullptr,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     (const T*)nullptr,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     nullptr,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     nullptr,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     nullptr,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     (T*)nullptr,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     nullptr,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     nullptr,
-                                                                     info,
-                                                                     dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(handle,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     safe_size,
-                                                                     csr_descr_A,
-                                                                     dcsr_val_A,
-                                                                     dcsr_row_ptr_A,
-                                                                     dcsr_col_ind_A,
-                                                                     percentage,
-                                                                     csr_descr_C,
-                                                                     dcsr_val_C,
-                                                                     dcsr_row_ptr_C,
-                                                                     dcsr_col_ind_C,
-                                                                     info,
-                                                                     nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_BUFFER_SIZE                                                                 \
+    handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, percentage, \
+        csr_descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, info, buffer_size
+#define PARAMS_NNZ                                                                         \
+    handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, percentage, \
+        csr_descr_C, csr_row_ptr_C, nnz_total_dev_host_ptr, info, temp_buffer
+#define PARAMS                                                                             \
+    handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, percentage, \
+        csr_descr_C, csr_val_C, csr_row_ptr_C, nnz_total_dev_host_ptr, info, temp_buffer
+    auto_testing_bad_arg(rocsparse_prune_csr2csr_by_percentage_buffer_size<T>,
+                         nargs_to_exclude,
+                         args_to_exclude,
+                         PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(rocsparse_prune_csr2csr_nnz_by_percentage<T>,
+                         nargs_to_exclude,
+                         args_to_exclude,
+                         PARAMS_NNZ);
+    auto_testing_bad_arg(
+        rocsparse_prune_csr2csr_by_percentage<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+#undef PARAMS
+#undef PARAMS_NNZ
+#undef PARAMS_BUFFER_SIZE
 }
 
 template <typename T>
@@ -715,13 +175,13 @@ void testing_prune_csr2csr_by_percentage(const Arguments& arg)
                                                                                N,
                                                                                nnz_A,
                                                                                csr_descr_A,
-                                                                               nullptr,
+                                                                               d_csr_val_A,
                                                                                d_csr_row_ptr_A,
-                                                                               nullptr,
+                                                                               d_csr_col_ind_A,
                                                                                percentage,
                                                                                csr_descr_C,
                                                                                nullptr,
-                                                                               nullptr,
+                                                                               d_csr_row_ptr_C,
                                                                                nullptr,
                                                                                info,
                                                                                &buffer_size));

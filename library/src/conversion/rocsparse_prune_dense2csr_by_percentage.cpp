@@ -81,6 +81,11 @@ rocsparse_status
         return rocsparse_status_invalid_handle;
     }
 
+    if(descr == nullptr || info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xprune_dense2csr_by_percentage_buffer_size"),
@@ -101,7 +106,22 @@ rocsparse_status
               replaceX<T>("X"),
               "--mtx <matrix.mtx>");
 
-    if(buffer_size == nullptr)
+    // Check sizes
+    if(m < 0 || n < 0 || lda < m || percentage < static_cast<T>(0.0)
+       || percentage > static_cast<T>(100.0))
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    // Check pointer arguments
+    if(A == nullptr || csr_row_ptr == nullptr || buffer_size == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val == nullptr && csr_col_ind != nullptr)
+       || (csr_val != nullptr && csr_col_ind == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

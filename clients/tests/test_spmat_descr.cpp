@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,21 @@
 
 namespace
 {
-    template <typename T>
-    struct spmat_descr_testing
+    // By default, this test does not apply to any types.
+    // The unnamed second parameter is used for enable_if below.
+    template <typename T, typename I = int32_t, typename J = int32_t, typename = void>
+    struct spmat_descr_testing : rocsparse_test_invalid
+    {
+    };
+
+    template <typename I, typename J, typename T>
+    struct spmat_descr_testing<
+        I,
+        J,
+        T,
+        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
+                                || std::is_same<T, rocsparse_float_complex>{}
+                                || std::is_same<T, rocsparse_double_complex>{}>::type>
     {
         explicit operator bool()
         {
@@ -40,7 +53,7 @@ namespace
         void operator()(const Arguments& arg)
         {
             if(!strcmp(arg.function, "spmat_descr_bad_arg"))
-                testing_spmat_descr_bad_arg(arg);
+                testing_spmat_descr_bad_arg<I, J, T>(arg);
             else
                 FAIL() << "Internal error: Test called with unknown function: " << arg.function;
         }
@@ -51,7 +64,7 @@ namespace
         // Filter for which types apply to this suite
         static bool type_filter(const Arguments& arg)
         {
-            return rocsparse_simple_dispatch<type_filter_functor>(arg);
+            return rocsparse_ijt_dispatch<type_filter_functor>(arg);
         }
 
         // Filter for which functions apply to this suite
@@ -64,13 +77,16 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            return RocSPARSE_TestName<spmat_descr>{} << "bad_arg";
+            return RocSPARSE_TestName<spmat_descr>{}
+                   << rocsparse_indextype2string(arg.index_type_I) << '_'
+                   << rocsparse_indextype2string(arg.index_type_J) << '_'
+                   << rocsparse_datatype2string(arg.compute_type);
         }
     };
 
     TEST_P(spmat_descr, auxiliary)
     {
-        rocsparse_simple_dispatch<spmat_descr_testing>(GetParam());
+        rocsparse_ijt_dispatch<spmat_descr_testing>(GetParam());
     }
     INSTANTIATE_TEST_CATEGORIES(spmat_descr);
 

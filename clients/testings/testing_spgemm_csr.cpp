@@ -21,6 +21,7 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
@@ -33,294 +34,222 @@ rocsparse_status rocsparse_csr_set_pointers(rocsparse_spmat_descr       descr,
 template <typename I, typename J, typename T>
 void testing_spgemm_csr_bad_arg(const Arguments& arg)
 {
-    J m     = 100;
-    J n     = 100;
-    J k     = 100;
-    I nnz_A = 100;
-    I nnz_B = 100;
-    I nnz_C = 100;
-    I nnz_D = 100;
+    static const size_t safe_size = 100;
 
-    I safe_size = 100;
+    // Create rocsparse handle
+    rocsparse_local_handle local_handle;
 
-    T alpha = 0.6;
-    T beta  = 0.1;
+    rocsparse_handle handle = local_handle;
+    J                m      = safe_size;
+    J                n      = safe_size;
+    J                k      = safe_size;
+    I                nnz_A  = safe_size;
+    I                nnz_B  = safe_size;
+    I                nnz_C  = safe_size;
+    I                nnz_D  = safe_size;
 
-    rocsparse_operation    trans = rocsparse_operation_none;
-    rocsparse_index_base   base  = rocsparse_index_base_zero;
-    rocsparse_spgemm_alg   alg   = rocsparse_spgemm_alg_default;
-    rocsparse_spgemm_stage stage = rocsparse_spgemm_stage_auto;
+    void* csr_row_ptr_A = (void*)0x4;
+    void* csr_col_ind_A = (void*)0x4;
+    void* csr_val_A     = (void*)0x4;
+    void* csr_row_ptr_B = (void*)0x4;
+    void* csr_col_ind_B = (void*)0x4;
+    void* csr_val_B     = (void*)0x4;
+    void* csr_row_ptr_C = (void*)0x4;
+    void* csr_col_ind_C = (void*)0x4;
+    void* csr_val_C     = (void*)0x4;
+    void* csr_row_ptr_D = (void*)0x4;
+    void* csr_col_ind_D = (void*)0x4;
+    void* csr_val_D     = (void*)0x4;
+
+    rocsparse_operation    trans_A = rocsparse_operation_none;
+    rocsparse_operation    trans_B = rocsparse_operation_none;
+    rocsparse_index_base   base    = rocsparse_index_base_zero;
+    rocsparse_spgemm_alg   alg     = rocsparse_spgemm_alg_default;
+    rocsparse_spgemm_stage stage   = rocsparse_spgemm_stage_auto;
 
     // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
     rocsparse_indextype jtype = get_indextype<J>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
-    // Create rocsparse handle
-    rocsparse_local_handle handle;
+    // SpGEMM structures
+    rocsparse_local_spmat local_mat_A(m,
+                                      k,
+                                      nnz_A,
+                                      csr_row_ptr_A,
+                                      csr_col_ind_A,
+                                      csr_val_A,
+                                      itype,
+                                      jtype,
+                                      base,
+                                      ttype,
+                                      rocsparse_format_csr);
+    rocsparse_local_spmat local_mat_B(k,
+                                      n,
+                                      nnz_B,
+                                      csr_row_ptr_B,
+                                      csr_col_ind_B,
+                                      csr_val_B,
+                                      itype,
+                                      jtype,
+                                      base,
+                                      ttype,
+                                      rocsparse_format_csr);
+    rocsparse_local_spmat local_mat_C(m,
+                                      n,
+                                      nnz_C,
+                                      csr_row_ptr_C,
+                                      csr_col_ind_C,
+                                      csr_val_C,
+                                      itype,
+                                      jtype,
+                                      base,
+                                      ttype,
+                                      rocsparse_format_csr);
+    rocsparse_local_spmat local_mat_D(m,
+                                      n,
+                                      nnz_D,
+                                      csr_row_ptr_D,
+                                      csr_col_ind_D,
+                                      csr_val_D,
+                                      itype,
+                                      jtype,
+                                      base,
+                                      ttype,
+                                      rocsparse_format_csr);
 
-    // Allocate memory on device
-    device_vector<I> dcsr_row_ptr_A(m + 1);
-    device_vector<J> dcsr_col_ind_A(nnz_A);
-    device_vector<T> dcsr_val_A(nnz_A);
-    device_vector<I> dcsr_row_ptr_B(k + 1);
-    device_vector<J> dcsr_col_ind_B(nnz_B);
-    device_vector<T> dcsr_val_B(nnz_B);
-    device_vector<I> dcsr_row_ptr_D(m + 1);
-    device_vector<I> dcsr_row_ptr_C(m + 1);
-    device_vector<J> dcsr_col_ind_C(safe_size);
-    device_vector<T> dcsr_val_C(safe_size);
-    device_vector<J> dcsr_col_ind_D(nnz_D);
-    device_vector<T> dcsr_val_D(nnz_D);
+    rocsparse_spmat_descr mat_A = local_mat_A;
+    rocsparse_spmat_descr mat_B = local_mat_B;
+    rocsparse_spmat_descr mat_C = local_mat_C;
+    rocsparse_spmat_descr mat_D = local_mat_D;
 
-    if(!dcsr_row_ptr_A || !dcsr_col_ind_A || !dcsr_val_A || !dcsr_row_ptr_B || !dcsr_col_ind_B
-       || !dcsr_val_B || !dcsr_row_ptr_C || !dcsr_col_ind_C || !dcsr_val_C || !dcsr_row_ptr_D
-       || !dcsr_col_ind_D || !dcsr_val_D)
+    int       nargs_to_exclude   = 4;
+    const int args_to_exclude[4] = {3, 6, 12, 13};
+
+    // 4 Scenarios need to be tested:
+
+    // Scenario 1: alpha == nullptr && beta == nullptr
+    // Scenario 2: alpha != nullptr && beta == nullptr
+    // Scenario 3: alpha == nullptr && beta != nullptr
+    // Scenario 4: alpha != nullptr && beta != nullptr
+
+#define PARAMS                                                                            \
+    handle, trans_A, trans_B, alpha, mat_A, mat_B, beta, mat_D, mat_C, ttype, alg, stage, \
+        buffer_size, temp_buffer
+    // ###############################################
+    // Scenario 1: alpha == nullptr && beta == nullptr
+    // ###############################################
     {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
+        const T* alpha = (const T*)nullptr;
+        const T* beta  = (const T*)nullptr;
+
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+
+        buffer_size = (size_t*)0x4;
+        temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+
+        buffer_size = nullptr;
+        temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+
+        buffer_size = nullptr;
+        temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
-    // SpGEMM structures
-    rocsparse_local_spmat A(m,
-                            k,
-                            nnz_A,
-                            dcsr_row_ptr_A,
-                            dcsr_col_ind_A,
-                            dcsr_val_A,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
-    rocsparse_local_spmat B(k,
-                            n,
-                            nnz_B,
-                            dcsr_row_ptr_B,
-                            dcsr_col_ind_B,
-                            dcsr_val_B,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
-    rocsparse_local_spmat C(m,
-                            n,
-                            nnz_C,
-                            dcsr_row_ptr_C,
-                            dcsr_col_ind_C,
-                            dcsr_val_C,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
-    rocsparse_local_spmat D(m,
-                            n,
-                            nnz_D,
-                            dcsr_row_ptr_D,
-                            dcsr_col_ind_D,
-                            dcsr_val_D,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
+    // ###############################################
+    // Scenario 2: alpha != nullptr && beta == nullptr
+    // ###############################################
+    {
+        const T* alpha = (const T*)0x4;
+        const T* beta  = (const T*)nullptr;
 
-    // Test SpMV with invalid buffer
-    size_t buffer_size;
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(nullptr,
-                                             trans,
-                                             trans,
-                                             &alpha,
-                                             A,
-                                             B,
-                                             &beta,
-                                             D,
-                                             C,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             nullptr),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(handle,
-                                             trans,
-                                             trans,
-                                             &alpha,
-                                             nullptr,
-                                             B,
-                                             &beta,
-                                             D,
-                                             C,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(handle,
-                                             trans,
-                                             trans,
-                                             &alpha,
-                                             A,
-                                             nullptr,
-                                             &beta,
-                                             D,
-                                             C,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(handle,
-                                             trans,
-                                             trans,
-                                             &alpha,
-                                             A,
-                                             B,
-                                             &beta,
-                                             nullptr,
-                                             C,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(handle,
-                                             trans,
-                                             trans,
-                                             &alpha,
-                                             A,
-                                             B,
-                                             &beta,
-                                             D,
-                                             nullptr,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spgemm(
-            handle, trans, trans, &alpha, A, B, &beta, D, C, ttype, alg, stage, nullptr, nullptr),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(handle,
-                                             trans,
-                                             trans,
-                                             nullptr,
-                                             A,
-                                             B,
-                                             nullptr,
-                                             D,
-                                             C,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             nullptr),
-                            rocsparse_status_invalid_pointer);
+        buffer_size = (size_t*)0x4;
+        temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
-    // Test SpGEMM with valid buffer
-    void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, 100));
+        buffer_size = nullptr;
+        temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
 
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(nullptr,
-                                             trans,
-                                             trans,
-                                             &alpha,
-                                             A,
-                                             B,
-                                             &beta,
-                                             D,
-                                             C,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             dbuffer),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(handle,
-                                             trans,
-                                             trans,
-                                             &alpha,
-                                             nullptr,
-                                             B,
-                                             &beta,
-                                             D,
-                                             C,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(handle,
-                                             trans,
-                                             trans,
-                                             &alpha,
-                                             A,
-                                             nullptr,
-                                             &beta,
-                                             D,
-                                             C,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(handle,
-                                             trans,
-                                             trans,
-                                             &alpha,
-                                             A,
-                                             B,
-                                             &beta,
-                                             nullptr,
-                                             C,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(handle,
-                                             trans,
-                                             trans,
-                                             &alpha,
-                                             A,
-                                             B,
-                                             &beta,
-                                             D,
-                                             nullptr,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(handle,
-                                             trans,
-                                             trans,
-                                             nullptr,
-                                             A,
-                                             B,
-                                             nullptr,
-                                             D,
-                                             C,
-                                             ttype,
-                                             alg,
-                                             stage,
-                                             &buffer_size,
-                                             dbuffer),
-                            rocsparse_status_invalid_pointer);
+        buffer_size = nullptr;
+        temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
-    CHECK_HIP_ERROR(hipFree(dbuffer));
+    // ###############################################
+    // Scenario 3: alpha == nullptr && beta != nullptr
+    // ###############################################
+    {
+        const T* alpha = (const T*)nullptr;
+        const T* beta  = (const T*)0x4;
+
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+
+        buffer_size = (size_t*)0x4;
+        temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+
+        buffer_size = nullptr;
+        temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+
+        buffer_size = nullptr;
+        temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
+
+    // ###############################################
+    // Scenario 4: alpha != nullptr && beta != nullptr
+    // ###############################################
+    {
+        const T* alpha = (const T*)0x4;
+        const T* beta  = (const T*)0x4;
+
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+
+        buffer_size = (size_t*)0x4;
+        temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+
+        buffer_size = nullptr;
+        temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+
+        buffer_size = nullptr;
+        temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spgemm, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
+#undef PARAMS
+
+    const T* alpha = (const T*)0x4;
+    const T* beta  = (const T*)0x4;
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spgemm(handle,
+                                             trans_A,
+                                             trans_B,
+                                             alpha,
+                                             mat_A,
+                                             mat_B,
+                                             beta,
+                                             mat_D,
+                                             mat_C,
+                                             ttype,
+                                             alg,
+                                             stage,
+                                             nullptr,
+                                             nullptr),
+                            rocsparse_status_invalid_pointer);
 }
 
 template <typename I, typename J, typename T>

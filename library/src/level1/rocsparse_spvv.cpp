@@ -140,6 +140,18 @@ extern "C" rocsparse_status rocsparse_spvv(rocsparse_handle            handle,
               (const void*&)buffer_size,
               (const void*&)temp_buffer);
 
+    // Check operation
+    if(rocsparse_enum_utils::is_invalid(trans))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check compute type
+    if(rocsparse_enum_utils::is_invalid(compute_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check for invalid descriptors
     RETURN_IF_NULLPTR(x);
     RETURN_IF_NULLPTR(y);

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,55 +21,41 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
+template <typename T>
 void testing_dnvec_descr_bad_arg(const Arguments& arg)
 {
-    int64_t size = 100;
+    static const size_t safe_size = 100;
 
-    rocsparse_datatype type = rocsparse_datatype_f32_r;
+    rocsparse_dnvec_descr x{};
+    int64_t               size   = safe_size;
+    void*                 values = (void*)0x4;
+    rocsparse_datatype    ttype  = get_datatype<T>();
 
-    // Allocate memory on device
-    device_vector<float> values(size);
-
-    if(!values)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    rocsparse_dnvec_descr x;
-
-    // rocsparse_create_dnvec_descr
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnvec_descr(nullptr, size, values, type),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnvec_descr(&x, -1, values, type),
-                            rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnvec_descr(&x, size, nullptr, type),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_CREATE &x, size, values, ttype
+    auto_testing_bad_arg(rocsparse_create_dnvec_descr, PARAMS_CREATE);
+#undef PARAMS_CREATE
 
     // rocsparse_destroy_dnvec_descr
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(nullptr),
                             rocsparse_status_invalid_pointer);
 
     // Check valid descriptor creations
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnvec_descr(&x, 0, nullptr, type),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnvec_descr(&x, 0, nullptr, ttype),
                             rocsparse_status_success);
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(x), rocsparse_status_success);
 
     // Create valid descriptor
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnvec_descr(&x, size, values, type),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnvec_descr(&x, size, values, ttype),
                             rocsparse_status_success);
 
-    // rocsparse_dnvec_get
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnvec_get(nullptr, &size, (void**)&values, &type),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnvec_get(x, nullptr, (void**)&values, &type),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnvec_get(x, &size, nullptr, &type),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnvec_get(x, &size, (void**)&values, nullptr),
-                            rocsparse_status_invalid_pointer);
+    void** values_ptr = (void**)0x4;
+
+#define PARAMS_GET x, &size, values_ptr, &ttype
+    auto_testing_bad_arg(rocsparse_dnvec_get, PARAMS_GET);
+#undef PARAMS_GET
 
     // rocsparse_dnvec_get_values
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnvec_get_values(nullptr, (void**)&values),
@@ -86,3 +72,10 @@ void testing_dnvec_descr_bad_arg(const Arguments& arg)
     // Destroy valid descriptor
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnvec_descr(x), rocsparse_status_success);
 }
+
+#define INSTANTIATE(TTYPE) template void testing_dnvec_descr_bad_arg<TTYPE>(const Arguments& arg);
+
+INSTANTIATE(float);
+INSTANTIATE(double);
+INSTANTIATE(rocsparse_float_complex);
+INSTANTIATE(rocsparse_double_complex);

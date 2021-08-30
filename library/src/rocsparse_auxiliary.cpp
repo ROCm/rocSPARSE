@@ -784,6 +784,21 @@ rocsparse_status rocsparse_create_spvec_descr(rocsparse_spvec_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    if(rocsparse_enum_utils::is_invalid(idx_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check for valid sizes
     if(size < 0 || nnz < 0 || size < nnz)
     {
@@ -1000,6 +1015,21 @@ rocsparse_status rocsparse_create_coo_descr(rocsparse_spmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    if(rocsparse_enum_utils::is_invalid(idx_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check for valid sizes
     if(rows < 0 || cols < 0 || nnz < 0 || nnz > rows * cols)
     {
@@ -1073,6 +1103,21 @@ rocsparse_status rocsparse_create_coo_aos_descr(rocsparse_spmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    if(rocsparse_enum_utils::is_invalid(idx_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check for valid sizes
     if(rows < 0 || cols < 0 || nnz < 0 || nnz > rows * cols)
     {
@@ -1143,6 +1188,26 @@ rocsparse_status rocsparse_create_csr_descr(rocsparse_spmat_descr* descr,
     if(descr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(row_ptr_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(col_ind_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
     }
 
     // Check for valid sizes
@@ -1223,6 +1288,26 @@ rocsparse_status rocsparse_create_csc_descr(rocsparse_spmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    if(rocsparse_enum_utils::is_invalid(col_ptr_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(row_ind_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check for valid sizes
     if(rows < 0 || cols < 0 || nnz < 0 || nnz > rows * cols)
     {
@@ -1297,6 +1382,21 @@ rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
     if(descr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
     }
 
     // Check for valid sizes
@@ -1378,15 +1478,30 @@ rocsparse_status rocsparse_create_bell_descr(rocsparse_spmat_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    if(rocsparse_enum_utils::is_invalid(ell_block_dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(idx_base))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check for valid sizes
     if(rows < 0 || cols < 0 || ell_cols < 0 || ell_cols > cols || ell_block_dim <= 0)
     {
         return rocsparse_status_invalid_size;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(ell_block_dir))
-    {
-        return rocsparse_status_invalid_value;
     }
 
     // Check for valid pointers
@@ -2154,6 +2269,11 @@ rocsparse_status rocsparse_create_dnvec_descr(rocsparse_dnvec_descr* descr,
         return rocsparse_status_invalid_pointer;
     }
 
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check for valid size
     if(size < 0)
     {
@@ -2299,6 +2419,16 @@ rocsparse_status rocsparse_create_dnmat_descr(rocsparse_dnmat_descr* descr,
     if(descr == nullptr)
     {
         return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(data_type))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(order))
+    {
+        return rocsparse_status_invalid_value;
     }
 
     // Check for valid size

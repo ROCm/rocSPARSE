@@ -21,77 +21,69 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename I, typename T>
 void testing_spvv_bad_arg(const Arguments& arg)
 {
-    I size = 100;
-    I nnz  = 100;
+    static const size_t safe_size = 100;
 
-    T result;
+    // Create rocsparse handle
+    rocsparse_local_handle local_handle;
 
-    rocsparse_operation  trans = rocsparse_operation_none;
-    rocsparse_index_base base  = rocsparse_index_base_zero;
+    rocsparse_handle     handle = local_handle;
+    I                    size   = safe_size;
+    I                    nnz    = safe_size;
+    void*                x_ind  = (void*)0x4;
+    void*                x_val  = (void*)0x4;
+    void*                y      = (void*)0x4;
+    void*                result = (void*)0x4;
+    rocsparse_operation  trans  = rocsparse_operation_none;
+    rocsparse_index_base base   = rocsparse_index_base_zero;
 
-    // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
-    // Create rocsparse handle
-    rocsparse_local_handle handle;
+    // Structures
+    rocsparse_local_spvec local_vec_x(size, nnz, x_ind, x_val, itype, base, ttype);
+    rocsparse_local_dnvec local_vec_y(size, y, ttype);
 
-    // Allocate memory on device
-    device_vector<I> dx_ind(nnz);
-    device_vector<T> dx_val(nnz);
-    device_vector<T> dy(size);
+    rocsparse_spvec_descr vec_x = local_vec_x;
+    rocsparse_dnvec_descr vec_y = local_vec_y;
 
-    if(!dx_ind || !dx_val || !dy)
+    int       nargs_to_exclude   = 2;
+    const int args_to_exclude[2] = {6, 7};
+
+#define PARAMS handle, trans, vec_x, vec_y, result, ttype, buffer_size, temp_buffer
     {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
-    // Structures
-    rocsparse_local_spvec x(size, nnz, dx_ind, dx_val, itype, base, ttype);
-    rocsparse_local_dnvec y(size, dy, ttype);
+    {
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
-    // Test SpVV with invalid buffer
-    size_t buffer_size;
+    {
+        size_t* buffer_size = nullptr;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvv(nullptr, trans, x, y, &result, ttype, &buffer_size, nullptr),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvv(handle, trans, nullptr, y, &result, ttype, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvv(handle, trans, x, nullptr, &result, ttype, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvv(handle, trans, x, y, nullptr, ttype, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spvv(handle, trans, x, y, &result, ttype, nullptr, nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Test SpVV with valid buffer
-    void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, 100));
+    {
+        size_t* buffer_size = nullptr;
+        void*   temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spvv, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
+#undef PARAMS
 
     EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvv(nullptr, trans, x, y, &result, ttype, &buffer_size, dbuffer),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvv(handle, trans, nullptr, y, &result, ttype, &buffer_size, dbuffer),
+        rocsparse_spvv(handle, trans, vec_x, vec_y, result, ttype, nullptr, nullptr),
         rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvv(handle, trans, x, nullptr, &result, ttype, &buffer_size, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spvv(handle, trans, x, y, nullptr, ttype, &buffer_size, dbuffer),
-        rocsparse_status_invalid_pointer);
-
-    CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
 template <typename I, typename T>

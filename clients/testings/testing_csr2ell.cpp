@@ -24,140 +24,42 @@
 
 #include "testing.hpp"
 
+#include "auto_testing_bad_arg.hpp"
+
 template <typename T>
 void testing_csr2ell_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
     // Create matrix descriptor for CSR matrix
-    rocsparse_local_mat_descr descrA;
+    rocsparse_local_mat_descr local_csr_descr;
 
     // Create matrix descriptor for ELL matrix
-    rocsparse_local_mat_descr descrB;
+    rocsparse_local_mat_descr local_ell_descr;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dcsr_col_ind(safe_size);
-    device_vector<T>             dcsr_val(safe_size);
-    device_vector<rocsparse_int> dell_col_ind(safe_size);
-    device_vector<T>             dell_val(safe_size);
+    rocsparse_handle          handle        = local_handle;
+    rocsparse_int             m             = safe_size;
+    const rocsparse_mat_descr csr_descr     = local_csr_descr;
+    const T*                  csr_val       = (const T*)0x4;
+    const rocsparse_int*      csr_row_ptr   = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_col_ind   = (const rocsparse_int*)0x4;
+    const rocsparse_mat_descr ell_descr     = local_ell_descr;
+    rocsparse_int*            ell_width_ptr = (rocsparse_int*)0x4;
+    rocsparse_int             ell_width     = safe_size;
+    T*                        ell_val       = (T*)0x4;
+    rocsparse_int*            ell_col_ind   = (rocsparse_int*)0x4;
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dell_col_ind || !dell_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Test rocsparse_csr2ell_width()
-    rocsparse_int ell_width;
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr2ell_width(nullptr, safe_size, descrA, dcsr_row_ptr, descrB, &ell_width),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr2ell_width(handle, safe_size, nullptr, dcsr_row_ptr, descrB, &ell_width),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr2ell_width(handle, safe_size, descrA, nullptr, descrB, &ell_width),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr2ell_width(handle, safe_size, descrA, dcsr_row_ptr, nullptr, &ell_width),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_csr2ell_width(handle, safe_size, descrA, dcsr_row_ptr, descrB, nullptr),
-        rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_csr2ell()
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(nullptr,
-                                                 safe_size,
-                                                 descrA,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind,
-                                                 descrB,
-                                                 safe_size,
-                                                 dell_val,
-                                                 dell_col_ind),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
-                                                 safe_size,
-                                                 nullptr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind,
-                                                 descrB,
-                                                 safe_size,
-                                                 dell_val,
-                                                 dell_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
-                                                 safe_size,
-                                                 descrA,
-                                                 nullptr,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind,
-                                                 descrB,
-                                                 safe_size,
-                                                 dell_val,
-                                                 dell_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
-                                                 safe_size,
-                                                 descrA,
-                                                 dcsr_val,
-                                                 nullptr,
-                                                 dcsr_col_ind,
-                                                 descrB,
-                                                 safe_size,
-                                                 dell_val,
-                                                 dell_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
-                                                 safe_size,
-                                                 descrA,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 nullptr,
-                                                 descrB,
-                                                 safe_size,
-                                                 dell_val,
-                                                 dell_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
-                                                 safe_size,
-                                                 descrA,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind,
-                                                 nullptr,
-                                                 safe_size,
-                                                 dell_val,
-                                                 dell_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
-                                                 safe_size,
-                                                 descrA,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind,
-                                                 descrB,
-                                                 safe_size,
-                                                 nullptr,
-                                                 dell_col_ind),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2ell<T>(handle,
-                                                 safe_size,
-                                                 descrA,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind,
-                                                 descrB,
-                                                 safe_size,
-                                                 dell_val,
-                                                 nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_WIDTH handle, m, csr_descr, csr_row_ptr, ell_descr, ell_width_ptr
+#define PARAMS                                                                              \
+    handle, m, csr_descr, csr_val, csr_row_ptr, csr_col_ind, ell_descr, ell_width, ell_val, \
+        ell_col_ind
+    auto_testing_bad_arg(rocsparse_csr2ell_width, PARAMS_WIDTH);
+    auto_testing_bad_arg(rocsparse_csr2ell<T>, PARAMS);
+#undef PARAMS
+#undef PARAMS_WIDTH
 }
 
 template <typename T>

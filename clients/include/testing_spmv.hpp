@@ -349,10 +349,6 @@ public:
         rocsparse_index_base base  = arg.baseA;
         rocsparse_spmv_alg   alg   = arg.spmv_alg;
 
-        std::string filename = arg.timing
-                                   ? arg.filename
-                                   : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
-
         bool               adaptive = (alg == rocsparse_spmv_alg_csr_stream) ? false : true;
         rocsparse_datatype ttype    = get_datatype<T>();
 

@@ -22,399 +22,44 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename T>
 void testing_gebsr2gebsc_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
+
     // Create rocsparse handle
-    rocsparse_local_handle handle;
-    // Allocate memory on device
-    device_vector<rocsparse_int> dbsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dbsr_col_ind(safe_size);
-    device_vector<T>             dbsr_val(safe_size);
-    device_vector<rocsparse_int> dbsc_row_ind(safe_size);
-    device_vector<rocsparse_int> dbsc_col_ptr(safe_size);
-    device_vector<T>             dbsc_val(safe_size);
-    device_vector<T>             dbuffer(safe_size);
+    rocsparse_local_handle local_handle;
 
-    if(!dbsr_row_ptr || !dbsr_col_ind || !dbsr_val || !dbsc_row_ind || !dbsc_col_ptr || !dbsc_val
-       || !dbuffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    rocsparse_handle     handle        = local_handle;
+    rocsparse_int        mb            = safe_size;
+    rocsparse_int        nb            = safe_size;
+    rocsparse_int        nnzb          = safe_size;
+    const T*             bsr_val       = (const T*)0x4;
+    const rocsparse_int* bsr_row_ptr   = (const rocsparse_int*)0x4;
+    const rocsparse_int* bsr_col_ind   = (const rocsparse_int*)0x4;
+    rocsparse_int        row_block_dim = safe_size;
+    rocsparse_int        col_block_dim = safe_size;
+    T*                   bsc_val       = (T*)0x4;
+    rocsparse_int*       bsc_row_ind   = (rocsparse_int*)0x4;
+    rocsparse_int*       bsc_col_ptr   = (rocsparse_int*)0x4;
+    rocsparse_action     copy_values   = rocsparse_action_numeric;
+    rocsparse_index_base idx_base      = rocsparse_index_base_zero;
+    size_t*              buffer_size   = (size_t*)0x4;
+    void*                temp_buffer   = (void*)0x4;
 
-    size_t buffer_size;
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(nullptr,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 dbsr_val,
-                                                                 dbsr_row_ptr,
-                                                                 dbsr_col_ind,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 &buffer_size),
-                            rocsparse_status_invalid_handle);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                                 -1,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 dbsr_val,
-                                                                 dbsr_row_ptr,
-                                                                 dbsr_col_ind,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 &buffer_size),
-                            rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                                 safe_size,
-                                                                 -1,
-                                                                 safe_size,
-                                                                 dbsr_val,
-                                                                 dbsr_row_ptr,
-                                                                 dbsr_col_ind,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 &buffer_size),
-                            rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 -1,
-                                                                 dbsr_val,
-                                                                 dbsr_row_ptr,
-                                                                 dbsr_col_ind,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 &buffer_size),
-                            rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 nullptr,
-                                                                 dbsr_row_ptr,
-                                                                 dbsr_col_ind,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 &buffer_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 dbsr_val,
-                                                                 nullptr,
-                                                                 dbsr_col_ind,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 &buffer_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 dbsr_val,
-                                                                 dbsr_row_ptr,
-                                                                 nullptr,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 &buffer_size),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 dbsr_val,
-                                                                 dbsr_row_ptr,
-                                                                 dbsr_col_ind,
-                                                                 -1,
-                                                                 safe_size,
-                                                                 &buffer_size),
-                            rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 dbsr_val,
-                                                                 dbsr_row_ptr,
-                                                                 dbsr_col_ind,
-                                                                 safe_size,
-                                                                 -1,
-                                                                 &buffer_size),
-                            rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 dbsr_val,
-                                                                 dbsr_row_ptr,
-                                                                 dbsr_col_ind,
-                                                                 safe_size,
-                                                                 safe_size,
-                                                                 nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_gebsr2gebsc()
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(nullptr,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_handle);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     -1,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     -1,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     -1,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     nullptr,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     nullptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     nullptr,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     -1,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     -1,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     nullptr,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     nullptr,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     nullptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     (rocsparse_action)-2,
-                                                     rocsparse_index_base_zero,
-                                                     dbuffer),
-                            rocsparse_status_invalid_value);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     (rocsparse_index_base)-2,
-                                                     dbuffer),
-                            rocsparse_status_invalid_value);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
-                                                     safe_size,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
-                                                     safe_size,
-                                                     safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
-                                                     rocsparse_action_numeric,
-                                                     rocsparse_index_base_zero,
-                                                     nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_BUFFER_SIZE                                                                 \
+    handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, bsr_col_ind, row_block_dim, col_block_dim, \
+        buffer_size
+#define PARAMS                                                                             \
+    handle, mb, nb, nnzb, bsr_val, bsr_row_ptr, bsr_col_ind, row_block_dim, col_block_dim, \
+        bsc_val, bsc_row_ind, bsc_col_ptr, copy_values, idx_base, temp_buffer
+    auto_testing_bad_arg(rocsparse_gebsr2gebsc_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(rocsparse_gebsr2gebsc<T>, PARAMS);
+#undef PARAMS
+#undef PARAMS_BUFFER_SIZE
 
     // Additional tests for invalid zero matrices
     EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc_buffer_size<T>(handle,
@@ -422,11 +67,11 @@ void testing_gebsr2gebsc_bad_arg(const Arguments& arg)
                                                                  safe_size,
                                                                  safe_size,
                                                                  nullptr,
-                                                                 dbsr_row_ptr,
+                                                                 bsr_row_ptr,
                                                                  nullptr,
                                                                  safe_size,
                                                                  safe_size,
-                                                                 &buffer_size),
+                                                                 buffer_size),
                             rocsparse_status_invalid_pointer);
 
     EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
@@ -434,33 +79,33 @@ void testing_gebsr2gebsc_bad_arg(const Arguments& arg)
                                                      safe_size,
                                                      safe_size,
                                                      nullptr,
-                                                     dbsr_row_ptr,
+                                                     bsr_row_ptr,
                                                      nullptr,
                                                      safe_size,
                                                      safe_size,
-                                                     dbsc_val,
-                                                     dbsc_row_ind,
-                                                     dbsc_col_ptr,
+                                                     bsc_val,
+                                                     bsc_row_ind,
+                                                     bsc_col_ptr,
                                                      rocsparse_action_numeric,
                                                      rocsparse_index_base_zero,
-                                                     dbuffer),
+                                                     temp_buffer),
                             rocsparse_status_invalid_pointer);
 
     EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsc<T>(handle,
                                                      safe_size,
                                                      safe_size,
                                                      safe_size,
-                                                     dbsr_val,
-                                                     dbsr_row_ptr,
-                                                     dbsr_col_ind,
+                                                     bsr_val,
+                                                     bsr_row_ptr,
+                                                     bsr_col_ind,
                                                      safe_size,
                                                      safe_size,
                                                      nullptr,
                                                      nullptr,
-                                                     dbsc_col_ptr,
+                                                     bsc_col_ptr,
                                                      rocsparse_action_numeric,
                                                      rocsparse_index_base_zero,
-                                                     dbuffer),
+                                                     temp_buffer),
                             rocsparse_status_invalid_pointer);
 }
 

@@ -22,7 +22,10 @@
  *
  * ************************************************************************ */
 
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
+
+#include "auto_testing_bad_arg.hpp"
 
 template <typename T>
 void testing_csrmv_managed_bad_arg(const Arguments& arg)
@@ -34,252 +37,63 @@ void testing_csrmv_managed_bad_arg(const Arguments& arg)
 
     static const size_t safe_size = 100;
 
+    const T h_alpha = static_cast<T>(1);
+    const T h_beta  = static_cast<T>(1);
+
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
     // Create matrix descriptor
-    rocsparse_local_mat_descr descr;
+    rocsparse_local_mat_descr local_descr;
 
     // Create matrix info
-    rocsparse_local_mat_info info;
+    rocsparse_local_mat_info local_info;
 
-    // Allocate managed memory
-    rocsparse_int* csr_row_ptr;
-    rocsparse_int* csr_col_ind;
-    T*             csr_val;
-    T*             x;
-    T*             y;
-    T*             alpha;
-    T*             beta;
+    rocsparse_handle          handle            = local_handle;
+    rocsparse_operation       trans             = rocsparse_operation_none;
+    rocsparse_int             m                 = safe_size;
+    rocsparse_int             n                 = safe_size;
+    rocsparse_int             nnz               = safe_size;
+    const T*                  alpha_device_host = &h_alpha;
+    const rocsparse_mat_descr descr             = local_descr;
+    const T*                  csr_val           = (const T*)0x4;
+    const rocsparse_int*      csr_row_ptr       = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_col_ind       = (const rocsparse_int*)0x4;
+    rocsparse_mat_info        info              = local_info;
+    const T*                  x                 = (const T*)0x4;
+    const T*                  beta_device_host  = &h_beta;
+    T*                        y                 = (T*)0x4;
 
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&csr_row_ptr, safe_size * sizeof(rocsparse_int)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&csr_col_ind, safe_size * sizeof(rocsparse_int)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&csr_val, safe_size * sizeof(T)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&x, safe_size * sizeof(T)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&y, safe_size * sizeof(T)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&alpha, sizeof(T)));
-    CHECK_HIP_ERROR(hipMallocManaged((void**)&beta, sizeof(T)));
+#define PARAMS_ANALYSIS handle, trans, m, n, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info
+    auto_testing_bad_arg(rocsparse_csrmv_analysis<T>, PARAMS_ANALYSIS);
 
-    *alpha = 0.6;
-    *beta  = 1.0;
+#define PARAMS                                                                                   \
+    handle, trans, m, n, nnz, alpha_device_host, descr, csr_val, csr_row_ptr, csr_col_ind, info, \
+        x, beta_device_host, y
 
-    // Test rocsparse_csrmv_analysis()
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(nullptr,
-                                                        rocsparse_operation_none,
-                                                        safe_size,
-                                                        safe_size,
-                                                        safe_size,
-                                                        descr,
-                                                        csr_val,
-                                                        csr_row_ptr,
-                                                        csr_col_ind,
-                                                        info),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(handle,
-                                                        rocsparse_operation_none,
-                                                        safe_size,
-                                                        safe_size,
-                                                        safe_size,
-                                                        nullptr,
-                                                        csr_val,
-                                                        csr_row_ptr,
-                                                        csr_col_ind,
-                                                        info),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(handle,
-                                                        rocsparse_operation_none,
-                                                        safe_size,
-                                                        safe_size,
-                                                        safe_size,
-                                                        descr,
-                                                        nullptr,
-                                                        csr_row_ptr,
-                                                        csr_col_ind,
-                                                        info),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(handle,
-                                                        rocsparse_operation_none,
-                                                        safe_size,
-                                                        safe_size,
-                                                        safe_size,
-                                                        descr,
-                                                        csr_val,
-                                                        nullptr,
-                                                        csr_col_ind,
-                                                        info),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(handle,
-                                                        rocsparse_operation_none,
-                                                        safe_size,
-                                                        safe_size,
-                                                        safe_size,
-                                                        descr,
-                                                        csr_val,
-                                                        csr_row_ptr,
-                                                        nullptr,
-                                                        info),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(handle,
-                                                        rocsparse_operation_none,
-                                                        safe_size,
-                                                        safe_size,
-                                                        safe_size,
-                                                        descr,
-                                                        csr_val,
-                                                        csr_row_ptr,
-                                                        csr_col_ind,
-                                                        nullptr),
-                            rocsparse_status_invalid_pointer);
+    {
+        static constexpr int num_exclusions  = 1;
+        static constexpr int exclude_args[1] = {10};
+        auto_testing_bad_arg(rocsparse_csrmv<T>, num_exclusions, exclude_args, PARAMS);
+    }
 
-    // Test rocsparse_csrmv()
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(nullptr,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               safe_size,
-                                               alpha,
-                                               descr,
-                                               csr_val,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               info,
-                                               x,
-                                               beta,
-                                               y),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               safe_size,
-                                               nullptr,
-                                               descr,
-                                               csr_val,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               info,
-                                               x,
-                                               beta,
-                                               y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               safe_size,
-                                               alpha,
-                                               nullptr,
-                                               csr_val,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               info,
-                                               x,
-                                               beta,
-                                               y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               safe_size,
-                                               alpha,
-                                               descr,
-                                               nullptr,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               info,
-                                               x,
-                                               beta,
-                                               y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               safe_size,
-                                               alpha,
-                                               descr,
-                                               csr_val,
-                                               nullptr,
-                                               csr_col_ind,
-                                               info,
-                                               x,
-                                               beta,
-                                               y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               safe_size,
-                                               alpha,
-                                               descr,
-                                               csr_val,
-                                               csr_row_ptr,
-                                               nullptr,
-                                               info,
-                                               x,
-                                               beta,
-                                               y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               safe_size,
-                                               alpha,
-                                               descr,
-                                               csr_val,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               info,
-                                               nullptr,
-                                               beta,
-                                               y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               safe_size,
-                                               alpha,
-                                               descr,
-                                               csr_val,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               info,
-                                               x,
-                                               nullptr,
-                                               y),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(handle,
-                                               rocsparse_operation_none,
-                                               safe_size,
-                                               safe_size,
-                                               safe_size,
-                                               alpha,
-                                               descr,
-                                               csr_val,
-                                               csr_row_ptr,
-                                               csr_col_ind,
-                                               info,
-                                               x,
-                                               beta,
-                                               nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_csrmv_clear()
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_clear(nullptr, info), rocsparse_status_invalid_handle);
     EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_clear(handle, nullptr),
                             rocsparse_status_invalid_pointer);
 
-    CHECK_HIP_ERROR(hipFree(csr_row_ptr));
-    CHECK_HIP_ERROR(hipFree(csr_col_ind));
-    CHECK_HIP_ERROR(hipFree(csr_val));
-    CHECK_HIP_ERROR(hipFree(x));
-    CHECK_HIP_ERROR(hipFree(y));
-    CHECK_HIP_ERROR(hipFree(alpha));
-    CHECK_HIP_ERROR(hipFree(beta));
+    for(auto matrix_type : rocsparse_matrix_type_t::values)
+    {
+        if(matrix_type != rocsparse_matrix_type_general)
+        {
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, matrix_type));
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(PARAMS_ANALYSIS),
+                                    rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(PARAMS), rocsparse_status_not_implemented);
+        }
+    }
+
+#undef PARAMS_ANALYSIS
+#undef PARAMS
 }
 
 template <typename T>

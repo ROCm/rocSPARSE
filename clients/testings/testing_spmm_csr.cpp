@@ -28,192 +28,109 @@
 template <typename I, typename J, typename T>
 void testing_spmm_csr_bad_arg(const Arguments& arg)
 {
-    J m   = 100;
-    J n   = 100;
-    J k   = 100;
-    J B_n = 100;
-    I nnz = 100;
+    static const size_t safe_size = 100;
 
-    T alpha = 0.6;
-    T beta  = 0.1;
+    // Create rocsparse handle
+    rocsparse_local_handle local_handle;
 
-    rocsparse_operation  trans_A = rocsparse_operation_none;
-    rocsparse_operation  trans_B = rocsparse_operation_none;
-    rocsparse_index_base base    = rocsparse_index_base_zero;
-    rocsparse_spmm_alg   alg     = rocsparse_spmm_alg_csr;
+    rocsparse_handle     handle      = local_handle;
+    J                    m           = safe_size;
+    J                    n           = safe_size;
+    J                    k           = safe_size;
+    J                    ncol_B      = safe_size;
+    I                    nnz         = safe_size;
+    const T*             alpha       = (const T*)0x4;
+    const T*             beta        = (const T*)0x4;
+    void*                csr_val     = (void*)0x4;
+    void*                csr_row_ptr = (void*)0x4;
+    void*                csr_col_ind = (void*)0x4;
+    void*                B           = (void*)0x4;
+    void*                C           = (void*)0x4;
+    rocsparse_operation  trans_A     = rocsparse_operation_none;
+    rocsparse_operation  trans_B     = rocsparse_operation_none;
+    rocsparse_index_base base        = rocsparse_index_base_zero;
+    rocsparse_order      order       = rocsparse_order_column;
+    rocsparse_spmm_alg   alg         = rocsparse_spmm_alg_default;
 
-    // Index and data type
     rocsparse_indextype itype = get_indextype<I>();
     rocsparse_indextype jtype = get_indextype<J>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
-    // Create rocsparse handle
-    rocsparse_local_handle handle;
+    // SpMM structures
+    rocsparse_local_spmat local_mat_A(m,
+                                      n,
+                                      nnz,
+                                      csr_row_ptr,
+                                      csr_col_ind,
+                                      csr_val,
+                                      itype,
+                                      jtype,
+                                      base,
+                                      ttype,
+                                      rocsparse_format_csr);
+    rocsparse_local_dnmat local_mat_B(k, ncol_B, k, B, ttype, order);
+    rocsparse_local_dnmat local_mat_C(m, n, m, C, ttype, order);
 
-    // Allocate memory on device
-    device_vector<I> dcsr_row_ptr(nnz);
-    device_vector<I> dcsr_col_ind(nnz);
-    device_vector<T> dcsr_val(nnz);
-    device_vector<T> dB(k * B_n);
-    device_vector<T> dC(m * n);
+    rocsparse_spmat_descr mat_A = local_mat_A;
+    rocsparse_dnmat_descr mat_B = local_mat_B;
+    rocsparse_dnmat_descr mat_C = local_mat_C;
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC)
+    int       nargs_to_exclude   = 2;
+    const int args_to_exclude[2] = {10, 11};
+
+#define PARAMS \
+    handle, trans_A, trans_B, alpha, mat_A, mat_B, beta, mat_C, ttype, alg, buffer_size, temp_buffer
     {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
-    // SpMM structures
-    rocsparse_local_spmat A(m,
-                            n,
-                            nnz,
-                            dcsr_row_ptr,
-                            dcsr_col_ind,
-                            dcsr_val,
-                            itype,
-                            jtype,
-                            base,
-                            ttype,
-                            rocsparse_format_csr);
-    rocsparse_local_dnmat B(k, B_n, k, dB, ttype, rocsparse_order_column);
-    rocsparse_local_dnmat C(m, n, m, dC, ttype, rocsparse_order_column);
+    {
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
-    // Test SpMM with invalid buffer
-    size_t buffer_size;
+    {
+        size_t* buffer_size = nullptr;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmm(
-            nullptr, trans_A, trans_B, &alpha, A, B, &beta, C, ttype, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmm(
-            handle, trans_A, trans_B, nullptr, A, B, &beta, C, ttype, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
+    {
+        size_t* buffer_size = nullptr;
+        void*   temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_spmm, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
+#undef PARAMS
+
     EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
                                            trans_A,
                                            trans_B,
-                                           &alpha,
-                                           nullptr,
-                                           B,
-                                           &beta,
-                                           C,
+                                           alpha,
+                                           mat_A,
+                                           mat_B,
+                                           beta,
+                                           mat_C,
                                            ttype,
                                            alg,
-                                           &buffer_size,
+                                           nullptr,
                                            nullptr),
                             rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                           trans_A,
-                                           trans_B,
-                                           &alpha,
-                                           A,
-                                           nullptr,
-                                           &beta,
-                                           C,
-                                           ttype,
-                                           alg,
-                                           &buffer_size,
-                                           nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmm(
-            handle, trans_A, trans_B, &alpha, A, B, nullptr, C, ttype, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                           trans_A,
-                                           trans_B,
-                                           &alpha,
-                                           A,
-                                           B,
-                                           &beta,
-                                           nullptr,
-                                           ttype,
-                                           alg,
-                                           &buffer_size,
-                                           nullptr),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmm(
-            handle, trans_A, trans_B, &alpha, A, B, &beta, C, ttype, alg, nullptr, nullptr),
-        rocsparse_status_invalid_pointer);
-
-    // Test SpMM with valid buffer
-    void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, 100));
-
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmm(
-            nullptr, trans_A, trans_B, &alpha, A, B, &beta, C, ttype, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmm(
-            handle, trans_A, trans_B, nullptr, A, B, &beta, C, ttype, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                           trans_A,
-                                           trans_B,
-                                           &alpha,
-                                           nullptr,
-                                           B,
-                                           &beta,
-                                           C,
-                                           ttype,
-                                           alg,
-                                           &buffer_size,
-                                           dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                           trans_A,
-                                           trans_B,
-                                           &alpha,
-                                           A,
-                                           nullptr,
-                                           &beta,
-                                           C,
-                                           ttype,
-                                           alg,
-                                           &buffer_size,
-                                           dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_spmm(
-            handle, trans_A, trans_B, &alpha, A, B, nullptr, C, ttype, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
-                                           trans_A,
-                                           trans_B,
-                                           &alpha,
-                                           A,
-                                           B,
-                                           &beta,
-                                           nullptr,
-                                           ttype,
-                                           alg,
-                                           &buffer_size,
-                                           dbuffer),
-                            rocsparse_status_invalid_pointer);
-
-    CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
 template <typename I, typename J, typename T>
 void testing_spmm_csr(const Arguments& arg)
 {
-    J                     M         = arg.M;
-    J                     N         = arg.N;
-    J                     K         = arg.K;
-    int32_t               dim_x     = arg.dimx;
-    int32_t               dim_y     = arg.dimy;
-    int32_t               dim_z     = arg.dimz;
-    rocsparse_operation   trans_A   = arg.transA;
-    rocsparse_operation   trans_B   = arg.transB;
-    rocsparse_index_base  base      = arg.baseA;
-    rocsparse_spmm_alg    alg       = arg.spmm_alg;
-    rocsparse_order       order     = arg.order;
-    rocsparse_matrix_init mat       = arg.matrix;
-    bool                  full_rank = false;
-    std::string           filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+    J                    M       = arg.M;
+    J                    N       = arg.N;
+    J                    K       = arg.K;
+    rocsparse_operation  trans_A = arg.transA;
+    rocsparse_operation  trans_B = arg.transB;
+    rocsparse_index_base base    = arg.baseA;
+    rocsparse_spmm_alg   alg     = arg.spmm_alg;
+    rocsparse_order      order   = arg.order;
 
     T halpha = arg.get_alpha<T>();
     T hbeta  = arg.get_beta<T>();
@@ -324,25 +241,17 @@ void testing_spmm_csr(const Arguments& arg)
     host_vector<J> hcsr_col_ind;
     host_vector<T> hcsr_val;
 
-    rocsparse_seedrand();
+    // Allocate host memory for matrix
+    rocsparse_matrix_factory<T, I, J> matrix_factory(arg);
 
-    // Sample matrix
     I nnz_A;
-    rocsparse_init_csr_matrix(hcsr_row_ptr,
-                              hcsr_col_ind,
-                              hcsr_val,
-                              trans_A == rocsparse_operation_none ? M : K,
-                              trans_A == rocsparse_operation_none ? K : M,
-                              N,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              nnz_A,
-                              base,
-                              mat,
-                              filename.c_str(),
-                              false,
-                              full_rank);
+    matrix_factory.init_csr(hcsr_row_ptr,
+                            hcsr_col_ind,
+                            hcsr_val,
+                            trans_A == rocsparse_operation_none ? M : K,
+                            trans_A == rocsparse_operation_none ? K : M,
+                            nnz_A,
+                            base);
 
     // Some matrix properties
     J A_m = trans_A == rocsparse_operation_none ? M : K;

@@ -310,12 +310,13 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_direction value_)
 };
 
 template <>
-inline bool rocsparse_enum_utils::is_invalid(rocsparse_action value_)
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_operation value_)
 {
     switch(value_)
     {
-    case rocsparse_action_symbolic:
-    case rocsparse_action_numeric:
+    case rocsparse_operation_none:
+    case rocsparse_operation_transpose:
+    case rocsparse_operation_conjugate_transpose:
     {
         return false;
     }
@@ -324,13 +325,13 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_action value_)
 };
 
 template <>
-inline bool rocsparse_enum_utils::is_invalid(rocsparse_operation value_)
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_indextype value_)
 {
     switch(value_)
     {
-    case rocsparse_operation_none:
-    case rocsparse_operation_transpose:
-    case rocsparse_operation_conjugate_transpose:
+    case rocsparse_indextype_u16:
+    case rocsparse_indextype_i32:
+    case rocsparse_indextype_i64:
     {
         return false;
     }
@@ -361,6 +362,61 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_order value_)
     {
     case rocsparse_order_row:
     case rocsparse_order_column:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_action value)
+{
+    switch(value)
+    {
+    case rocsparse_action_numeric:
+    case rocsparse_action_symbolic:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_hyb_partition value)
+{
+    switch(value)
+    {
+    case rocsparse_hyb_partition_auto:
+    case rocsparse_hyb_partition_user:
+    case rocsparse_hyb_partition_max:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_sparse_to_dense_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_sparse_to_dense_alg_default:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_dense_to_sparse_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_dense_to_sparse_alg_default:
     {
         return false;
     }
@@ -541,21 +597,6 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_analysis_policy value_)
     {
     case rocsparse_analysis_policy_reuse:
     case rocsparse_analysis_policy_force:
-    {
-        return false;
-    }
-    }
-    return true;
-};
-
-template <>
-inline bool rocsparse_enum_utils::is_invalid(rocsparse_hyb_partition value_)
-{
-    switch(value_)
-    {
-    case rocsparse_hyb_partition_auto:
-    case rocsparse_hyb_partition_user:
-    case rocsparse_hyb_partition_max:
     {
         return false;
     }
