@@ -332,8 +332,8 @@ void testing_csrmv_managed(const Arguments& arg)
                    base,
                    adaptive);
 
-        near_check_general<T>(1, M, 1, &y_gold[0], y_1);
-        near_check_general<T>(1, M, 1, &y_gold[0], y_2);
+        near_check_segments<T>(M, &y_gold[0], y_1);
+        near_check_segments<T>(M, &y_gold[0], y_2);
     }
 
     if(arg.timing)

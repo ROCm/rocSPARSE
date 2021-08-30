@@ -188,9 +188,9 @@ void testing_hyb2csr(const Arguments& arg)
             hcsr_col_ind, dcsr_col_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
         CHECK_HIP_ERROR(hipMemcpy(hcsr_val, dcsr_val, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
-        unit_check_general<rocsparse_int>(1, M + 1, 1, hcsr_row_ptr_gold, hcsr_row_ptr);
-        unit_check_general<rocsparse_int>(1, nnz, 1, hcsr_col_ind_gold, hcsr_col_ind);
-        unit_check_general<T>(1, nnz, 1, hcsr_val_gold, hcsr_val);
+        hcsr_row_ptr_gold.unit_check(hcsr_row_ptr);
+        hcsr_col_ind_gold.unit_check(hcsr_col_ind);
+        hcsr_val_gold.unit_check(hcsr_val);
     }
 
     if(arg.timing)

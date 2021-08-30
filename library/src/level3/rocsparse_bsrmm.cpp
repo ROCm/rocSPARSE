@@ -353,26 +353,71 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Check leading dimension of B
-    if(trans_B == rocsparse_operation_none)
+    static constexpr rocsparse_int s_one = static_cast<rocsparse_int>(1);
+    switch(trans_A)
     {
-        if(ldb < kb * block_dim)
+    case rocsparse_operation_none:
+    {
+        // Check leading dimension of C
+        if(ldc < std::max(s_one, mb * block_dim))
         {
             return rocsparse_status_invalid_size;
         }
-    }
-    else
-    {
-        if(ldb < n)
-        {
-            return rocsparse_status_invalid_size;
-        }
-    }
 
-    // Check leading dimension of C
-    if(ldc < mb * block_dim)
+        // Check leading dimension of B
+        switch(trans_B)
+        {
+        case rocsparse_operation_none:
+        {
+            if(ldb < std::max(s_one, kb * block_dim))
+            {
+                return rocsparse_status_invalid_size;
+            }
+            break;
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            if(ldb < std::max(s_one, n))
+            {
+                return rocsparse_status_invalid_size;
+            }
+            break;
+        }
+        }
+        break;
+    }
+    case rocsparse_operation_transpose:
+    case rocsparse_operation_conjugate_transpose:
     {
-        return rocsparse_status_invalid_size;
+        // Check leading dimension of C
+        if(ldc < std::max(s_one, kb * block_dim))
+        {
+            return rocsparse_status_invalid_size;
+        }
+
+        switch(trans_B)
+        {
+        case rocsparse_operation_none:
+        {
+            if(ldb < std::max(s_one, mb * block_dim))
+            {
+                return rocsparse_status_invalid_size;
+            }
+            break;
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            if(ldb < std::max(s_one, n))
+            {
+                return rocsparse_status_invalid_size;
+            }
+            break;
+        }
+        }
+        break;
+    }
     }
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)

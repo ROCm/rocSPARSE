@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -146,10 +146,11 @@ void testing_gthrz(const Arguments& arg)
         // CPU gthrz
         host_gthrz<T>(nnz, hy_gold, hx_val_gold, hx_ind, base);
 
-        unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_1);
-        unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_2);
-        unit_check_general<T>(1, M, 1, hy_gold, hy_1);
-        unit_check_general<T>(1, M, 1, hy_gold, hy_2);
+        hx_val_gold.unit_check(hx_val_1);
+        hx_val_gold.unit_check(hx_val_2);
+
+        hy_gold.unit_check(hy_1);
+        hy_gold.unit_check(hy_2);
     }
 
     if(arg.timing)

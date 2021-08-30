@@ -77,6 +77,37 @@ struct csx_matrix
         }
     }
 
+    rocsparse_status scale()
+    {
+        switch(MODE)
+        {
+        case memory_mode::host:
+        case memory_mode::managed:
+        {
+            const I nsequences = (DIRECTION == rocsparse_direction_row) ? this->m : this->n;
+            for(I i = 0; i < nsequences; ++i)
+            {
+                const I            end = this->ptr[i + 1] - this->base;
+                floating_data_t<T> mx  = static_cast<floating_data_t<T>>(0);
+                for(I k = this->ptr[i] - this->base; k < end; ++k)
+                {
+                    mx = std::max(mx, std::abs(this->val[k]));
+                }
+
+                for(I k = this->ptr[i] - this->base; k < end; ++k)
+                {
+                    this->val[k] /= mx;
+                }
+            }
+            return rocsparse_status_success;
+        }
+        case memory_mode::device:
+        {
+            return rocsparse_status_not_implemented;
+        }
+        }
+    }
+
     void define(J m_, J n_, I nnz_, rocsparse_index_base base_)
     {
         if(m_ != this->m)
@@ -236,31 +267,15 @@ struct csx_matrix
             case memory_mode::managed:
             case memory_mode::host:
             {
-                unit_check_general<J>(1, 1, 1, &this->m, &that_.m);
-                unit_check_general<J>(1, 1, 1, &this->n, &that_.n);
-                unit_check_general<I>(1, 1, 1, &this->nnz, &that_.nnz);
-                {
-                    I a = (I)this->base;
-                    I b = (I)that_.base;
-                    unit_check_general<I>(1, 1, 1, &a, &b);
-                }
+                unit_check_scalar(this->m, that_.m);
+                unit_check_scalar(this->n, that_.n);
+                unit_check_scalar(this->nnz, that_.nnz);
+                unit_check_enum(this->base, that_.base);
 
-                switch(DIRECTION)
-                {
-                case rocsparse_direction_row:
-                {
-                    unit_check_general<I>(1, this->m + 1, 1, this->ptr, that_.ptr);
-                    break;
-                }
-                case rocsparse_direction_column:
-                {
-                    unit_check_general<I>(1, this->n + 1, 1, this->ptr, that_.ptr);
-                    break;
-                }
-                }
+                this->ptr.unit_check(that_.ptr);
+                this->ind.unit_check(that_.ind);
+                this->val.unit_check(that_.val);
 
-                unit_check_general<J>(1, that_.nnz, 1, this->ind, that_.ind);
-                unit_check_general<T>(1, that_.nnz, 1, this->val, that_.val);
                 break;
             }
             case memory_mode::device:
@@ -296,31 +311,15 @@ struct csx_matrix
             case memory_mode::managed:
             case memory_mode::host:
             {
-                unit_check_general<J>(1, 1, 1, &this->m, &that_.m);
-                unit_check_general<J>(1, 1, 1, &this->n, &that_.n);
-                unit_check_general<I>(1, 1, 1, &this->nnz, &that_.nnz);
-                {
-                    I a = (I)this->base;
-                    I b = (I)that_.base;
-                    unit_check_general<I>(1, 1, 1, &a, &b);
-                }
+                unit_check_scalar(this->m, that_.m);
+                unit_check_scalar(this->n, that_.n);
+                unit_check_scalar(this->nnz, that_.nnz);
+                unit_check_enum(this->base, that_.base);
 
-                switch(DIRECTION)
-                {
-                case rocsparse_direction_row:
-                {
-                    unit_check_general<I>(1, this->m + 1, 1, this->ptr, that_.ptr);
-                    break;
-                }
-                case rocsparse_direction_column:
-                {
-                    unit_check_general<I>(1, this->n + 1, 1, this->ptr, that_.ptr);
-                    break;
-                }
-                }
+                this->ptr.unit_check(that_.ptr);
+                this->ind.unit_check(that_.ind);
+                this->val.near_check(that_.val, tol);
 
-                unit_check_general<J>(1, that_.nnz, 1, this->ind, that_.ind);
-                near_check_general<T>(1, that_.nnz, 1, this->val, that_.val, tol);
                 break;
             }
             case memory_mode::device:

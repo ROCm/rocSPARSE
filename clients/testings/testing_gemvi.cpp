@@ -244,8 +244,8 @@ void testing_gemvi(const Arguments& arg)
         host_gemvi<rocsparse_int, T>(
             M, N, h_alpha, hA, lda, nnz, hx_val, hx_ind, h_beta, hy_gold, base);
 
-        near_check_general<T>(1, M, 1, hy_gold, hy_1);
-        near_check_general<T>(1, M, 1, hy_gold, hy_2);
+        hy_gold.near_check(hy_1);
+        hy_gold.near_check(hy_2);
     }
 
     if(arg.timing)

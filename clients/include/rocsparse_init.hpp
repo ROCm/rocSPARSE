@@ -38,6 +38,27 @@
 
 // Initialize vector with random values
 template <typename T>
+void rocsparse_init(T*     A,
+                    size_t M,
+                    size_t N,
+                    size_t lda,
+                    size_t stride      = 0,
+                    size_t batch_count = 1,
+                    T      a           = static_cast<T>(0),
+                    T      b           = static_cast<T>(1));
+
+// Initialize vector with random integer values
+template <typename T>
+void rocsparse_init_exact(T*     A,
+                          size_t M,
+                          size_t N,
+                          size_t lda,
+                          size_t stride      = 0,
+                          size_t batch_count = 1,
+                          int    a           = 1,
+                          int    b           = 10);
+
+template <typename T>
 void rocsparse_init(std::vector<T>& A,
                     size_t          M,
                     size_t          N,
@@ -356,7 +377,7 @@ public:
         rocsparse_init_coo_matrix(row_ind, csr_col_ind, csr_val, M, N, nnz, base, this->m_fullrank);
 
         // Convert to CSR
-        host_coo_to_csr(M, row_ind, csr_row_ptr, base);
+        host_coo_to_csr(M, nnz, row_ind.data(), csr_row_ptr, base);
     };
 
     virtual void init_coo(std::vector<rocsparse_int>& coo_row_ind,

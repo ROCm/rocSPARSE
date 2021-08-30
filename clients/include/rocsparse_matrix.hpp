@@ -44,7 +44,8 @@ struct host_scalar : public host_dense_matrix<T>
     host_scalar(const T& value)
         : host_dense_matrix<T>(1, 1)
     {
-        this->val[0] = value;
+        T* p = *this;
+        p[0] = value;
     };
 
     host_scalar(const device_scalar<T>& that)
@@ -61,7 +62,8 @@ struct host_scalar : public host_dense_matrix<T>
 
     inline host_scalar<T>& operator=(const T& that)
     {
-        *this->val = that;
+        T* p = *this;
+        p[0] = that;
     };
 };
 

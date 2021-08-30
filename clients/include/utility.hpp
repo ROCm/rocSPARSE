@@ -496,7 +496,7 @@ public:
 
     template <memory_mode::value_t MODE, typename T>
     rocsparse_local_dnvec(dense_matrix<MODE, T>& h)
-        : rocsparse_local_dnvec(h.m, h.val, get_datatype<T>())
+        : rocsparse_local_dnvec(h.m, (T*)h, get_datatype<T>())
     {
     }
 
@@ -536,7 +536,7 @@ public:
 
     template <memory_mode::value_t MODE, typename T>
     rocsparse_local_dnmat(dense_matrix<MODE, T>& h)
-        : rocsparse_local_dnmat(h.m, h.n, h.ld, h.val, get_datatype<T>(), h.order)
+        : rocsparse_local_dnmat(h.m, h.n, h.ld, (T*)h, get_datatype<T>(), h.order)
     {
     }
 

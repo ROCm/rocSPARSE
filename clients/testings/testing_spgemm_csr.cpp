@@ -345,7 +345,7 @@ void testing_spgemm_csr(const Arguments& arg)
             int64_t                  nnz_C;
             static constexpr int64_t zero = 0;
             CHECK_ROCSPARSE_ERROR(rocsparse_spmat_get_size(C, &rows_C, &cols_C, &nnz_C));
-            unit_check_general(1, 1, 1, &zero, &nnz_C);
+            unit_check_scalar(zero, nnz_C);
         }
 
         CHECK_HIP_ERROR(hipFree(dbuffer));

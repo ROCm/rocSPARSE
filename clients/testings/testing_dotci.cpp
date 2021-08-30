@@ -132,8 +132,10 @@ void testing_dotci(const Arguments& arg)
         // CPU dotci
         host_dotci<rocsparse_int, T>(nnz, hx_val, hx_ind, hy, hdot_gold, base);
 
-        unit_check_general<T>(1, 1, 1, hdot_gold, hdot_1);
-        unit_check_general<T>(1, 1, 1, hdot_gold, hdot_2);
+        hdot_gold.unit_check(hdot_1);
+        hdot_gold.unit_check(hdot_2);
+        //        unit_check_general<T>(1, 1, 1, hdot_gold, hdot_1);
+        //        unit_check_general<T>(1, 1, 1, hdot_gold, hdot_2);
     }
 
     if(arg.timing)

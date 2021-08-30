@@ -297,12 +297,14 @@ void testing_csrgeam(const Arguments& arg)
                             baseC);
 
         // Check nnz of C
-        unit_check_general(1, 1, 1, &hnnz_C_gold, &hnnz_C_1);
-        unit_check_general(1, 1, 1, &hnnz_C_gold, &hnnz_C_2);
+
+        unit_check_scalar(hnnz_C_gold, hnnz_C_1);
+        unit_check_scalar(hnnz_C_gold, hnnz_C_2);
 
         // Check row pointers of C
-        unit_check_general<rocsparse_int>(1, M + 1, 1, hcsr_row_ptr_C_gold, hcsr_row_ptr_C_1);
-        unit_check_general<rocsparse_int>(1, M + 1, 1, hcsr_row_ptr_C_gold, hcsr_row_ptr_C_2);
+
+        unit_check_segments<rocsparse_int>(M + 1, hcsr_row_ptr_C_gold, hcsr_row_ptr_C_1);
+        unit_check_segments<rocsparse_int>(M + 1, hcsr_row_ptr_C_gold, hcsr_row_ptr_C_2);
 
         // Allocate device memory for C
         device_vector<rocsparse_int> dcsr_col_ind_C_1(hnnz_C_1);
@@ -402,10 +404,11 @@ void testing_csrgeam(const Arguments& arg)
                         baseC);
 
         // Check C
-        unit_check_general<rocsparse_int>(1, hnnz_C_gold, 1, hcsr_col_ind_C_gold, hcsr_col_ind_C_1);
-        unit_check_general<rocsparse_int>(1, hnnz_C_gold, 1, hcsr_col_ind_C_gold, hcsr_col_ind_C_2);
-        near_check_general<T>(1, hnnz_C_gold, 1, hcsr_val_C_gold, hcsr_val_C_1);
-        near_check_general<T>(1, hnnz_C_gold, 1, hcsr_val_C_gold, hcsr_val_C_2);
+        unit_check_segments<rocsparse_int>(hnnz_C_gold, hcsr_col_ind_C_gold, hcsr_col_ind_C_1);
+        unit_check_segments<rocsparse_int>(hnnz_C_gold, hcsr_col_ind_C_gold, hcsr_col_ind_C_2);
+
+        near_check_segments<T>(hnnz_C_gold, hcsr_val_C_gold, hcsr_val_C_1);
+        near_check_segments<T>(hnnz_C_gold, hcsr_val_C_gold, hcsr_val_C_2);
     }
 
     if(arg.timing)

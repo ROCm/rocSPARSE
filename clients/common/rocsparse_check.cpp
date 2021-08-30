@@ -34,7 +34,7 @@
 #define ASSERT_TRUE(cond)                                      \
     do                                                         \
     {                                                          \
-        if(!cond)                                              \
+        if(!(cond))                                            \
         {                                                      \
             std::cerr << "ASSERT_TRUE() failed." << std::endl; \
             exit(EXIT_FAILURE);                                \
@@ -70,69 +70,93 @@
         ASSERT_DOUBLE_EQ(std::imag(a), std::imag(b)); \
     } while(0)
 
-#define UNIT_CHECK(M, N, lda, hCPU, hGPU, UNIT_ASSERT_EQ)                 \
-    do                                                                    \
-    {                                                                     \
-        for(rocsparse_int j = 0; j < N; ++j)                              \
-            for(rocsparse_int i = 0; i < M; ++i)                          \
-                if(rocsparse_isnan(hCPU[i + j * lda]))                    \
-                {                                                         \
-                    ASSERT_TRUE(rocsparse_isnan(hGPU[i + j * lda]));      \
-                }                                                         \
-                else                                                      \
-                {                                                         \
-                    UNIT_ASSERT_EQ(hCPU[i + j * lda], hGPU[i + j * lda]); \
-                }                                                         \
+#define ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, UNIT_ASSERT_EQ)  \
+    do                                                              \
+    {                                                               \
+        for(rocsparse_int j = 0; j < N; ++j)                        \
+            for(rocsparse_int i = 0; i < M; ++i)                    \
+                if(rocsparse_isnan(A[i + j * LDA]))                 \
+                {                                                   \
+                    ASSERT_TRUE(rocsparse_isnan(B[i + j * LDB]));   \
+                }                                                   \
+                else                                                \
+                {                                                   \
+                    UNIT_ASSERT_EQ(A[i + j * LDA], B[i + j * LDB]); \
+                }                                                   \
     } while(0)
 
 template <>
-void unit_check_general(int64_t M, int64_t N, int64_t lda, const float* hCPU, const float* hGPU)
+void unit_check_general(
+    int64_t M, int64_t N, const float* A, int64_t LDA, const float* B, int64_t LDB)
 {
-    UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_FLOAT_EQ);
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_FLOAT_EQ);
 }
 
 template <>
-void unit_check_general(int64_t M, int64_t N, int64_t lda, const double* hCPU, const double* hGPU)
+void unit_check_general(
+    int64_t M, int64_t N, const double* A, int64_t LDA, const double* B, int64_t LDB)
 {
-    UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_DOUBLE_EQ);
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_DOUBLE_EQ);
 }
 
 template <>
 void unit_check_general(int64_t                        M,
                         int64_t                        N,
-                        int64_t                        lda,
-                        const rocsparse_float_complex* hCPU,
-                        const rocsparse_float_complex* hGPU)
+                        const rocsparse_float_complex* A,
+                        int64_t                        LDA,
+                        const rocsparse_float_complex* B,
+                        int64_t                        LDB)
 {
-    UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_FLOAT_COMPLEX_EQ);
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_FLOAT_COMPLEX_EQ);
 }
 
 template <>
 void unit_check_general(int64_t                         M,
                         int64_t                         N,
-                        int64_t                         lda,
-                        const rocsparse_double_complex* hCPU,
-                        const rocsparse_double_complex* hGPU)
+                        const rocsparse_double_complex* A,
+                        int64_t                         LDA,
+                        const rocsparse_double_complex* B,
+                        int64_t                         LDB)
 {
-    UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_DOUBLE_COMPLEX_EQ);
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_DOUBLE_COMPLEX_EQ);
 }
 
 template <>
-void unit_check_general(int64_t M, int64_t N, int64_t lda, const int32_t* hCPU, const int32_t* hGPU)
+void unit_check_general(
+    int64_t M, int64_t N, const int32_t* A, int64_t LDA, const int32_t* B, int64_t LDB)
 {
-    UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_EQ);
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_EQ);
 }
 
 template <>
-void unit_check_general(int64_t M, int64_t N, int64_t lda, const int64_t* hCPU, const int64_t* hGPU)
+void unit_check_general(
+    int64_t M, int64_t N, const int64_t* A, int64_t LDA, const int64_t* B, int64_t LDB)
 {
-    UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_EQ);
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_EQ);
+}
+template <>
+void unit_check_general(
+    int64_t M, int64_t N, const size_t* A, int64_t LDA, const size_t* B, int64_t LDB)
+{
+    ROCSPARSE_UNIT_CHECK(M, N, A, LDA, B, LDB, ASSERT_EQ);
 }
 
 template <>
-void unit_check_general(int64_t M, int64_t N, int64_t lda, const size_t* hCPU, const size_t* hGPU)
+void unit_check_enum(const rocsparse_index_base a, const rocsparse_index_base b)
 {
-    UNIT_CHECK(M, N, lda, hCPU, hGPU, ASSERT_EQ);
+    ASSERT_TRUE(a == b);
+}
+
+template <>
+void unit_check_enum(const rocsparse_order a, const rocsparse_order b)
+{
+    ASSERT_TRUE(a == b);
+}
+
+template <>
+void unit_check_enum(const rocsparse_direction a, const rocsparse_direction b)
+{
+    ASSERT_TRUE(a == b);
 }
 
 #define MAX_TOL_MULTIPLIER 4
@@ -140,9 +164,10 @@ void unit_check_general(int64_t M, int64_t N, int64_t lda, const size_t* hCPU, c
 template <typename T>
 void near_check_general_template(rocsparse_int      M,
                                  rocsparse_int      N,
-                                 rocsparse_int      lda,
-                                 const T*           hCPU,
-                                 const T*           hGPU,
+                                 const T*           A,
+                                 rocsparse_int      LDA,
+                                 const T*           B,
+                                 rocsparse_int      LDB,
                                  floating_data_t<T> tol = default_tolerance<T>::value)
 {
     int tolm = 1;
@@ -150,23 +175,23 @@ void near_check_general_template(rocsparse_int      M,
     {
         for(rocsparse_int i = 0; i < M; ++i)
         {
-            T compare_val = std::max(std::abs(hCPU[i + j * lda] * tol),
-                                     10 * std::numeric_limits<T>::epsilon());
+            T compare_val
+                = std::max(std::abs(A[i + j * LDA] * tol), 10 * std::numeric_limits<T>::epsilon());
 #ifdef GOOGLE_TEST
-            if(rocsparse_isnan(hCPU[i + j * lda]))
+            if(rocsparse_isnan(A[i + j * LDA]))
             {
-                ASSERT_TRUE(rocsparse_isnan(hGPU[i + j * lda]));
+                ASSERT_TRUE(rocsparse_isnan(B[i + j * LDB]));
             }
-            else if(rocsparse_isinf(hCPU[i + j * lda]))
+            else if(rocsparse_isinf(A[i + j * LDA]))
             {
-                ASSERT_TRUE(rocsparse_isinf(hGPU[i + j * lda]));
+                ASSERT_TRUE(rocsparse_isinf(B[i + j * LDB]));
             }
             else
             {
                 int k;
                 for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
                 {
-                    if(std::abs(hCPU[i + j * lda] - hGPU[i + j * lda]) <= compare_val * k)
+                    if(std::abs(A[i + j * LDA] - B[i + j * LDB]) <= compare_val * k)
                     {
                         break;
                     }
@@ -174,7 +199,7 @@ void near_check_general_template(rocsparse_int      M,
 
                 if(k > MAX_TOL_MULTIPLIER)
                 {
-                    ASSERT_NEAR(hCPU[i + j * lda], hGPU[i + j * lda], compare_val);
+                    ASSERT_NEAR(A[i + j * LDA], B[i + j * LDB], compare_val);
                 }
                 tolm = std::max(tolm, k);
             }
@@ -183,7 +208,7 @@ void near_check_general_template(rocsparse_int      M,
             int k;
             for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
             {
-                if(std::abs(hCPU[i + j * lda] - hGPU[i + j * lda]) <= compare_val * k)
+                if(std::abs(A[i + j * LDA] - B[i + j * LDB]) <= compare_val * k)
                 {
                     break;
                 }
@@ -192,8 +217,8 @@ void near_check_general_template(rocsparse_int      M,
             if(k > MAX_TOL_MULTIPLIER)
             {
                 std::cerr.precision(12);
-                std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
-                          << ") failed: " << std::abs(hCPU[i + j * lda] - hGPU[i + j * lda])
+                std::cerr << "ASSERT_NEAR(" << A[i + j * LDA] << ", " << B[i + j * LDB]
+                          << ") failed: " << std::abs(A[i + j * LDA] - B[i + j * LDB])
                           << " exceeds permissive range [" << compare_val << ","
                           << compare_val * MAX_TOL_MULTIPLIER << " ]" << std::endl;
                 exit(EXIT_FAILURE);
@@ -213,9 +238,10 @@ void near_check_general_template(rocsparse_int      M,
 template <>
 void near_check_general_template(rocsparse_int                  M,
                                  rocsparse_int                  N,
-                                 rocsparse_int                  lda,
-                                 const rocsparse_float_complex* hCPU,
-                                 const rocsparse_float_complex* hGPU,
+                                 const rocsparse_float_complex* A,
+                                 rocsparse_int                  LDA,
+                                 const rocsparse_float_complex* B,
+                                 rocsparse_int                  LDB,
                                  float                          tol)
 {
     int tolm = 1;
@@ -224,27 +250,27 @@ void near_check_general_template(rocsparse_int                  M,
         for(rocsparse_int i = 0; i < M; ++i)
         {
             rocsparse_float_complex compare_val
-                = rocsparse_float_complex(std::max(std::abs(std::real(hCPU[i + j * lda]) * tol),
+                = rocsparse_float_complex(std::max(std::abs(std::real(A[i + j * LDA]) * tol),
                                                    10 * std::numeric_limits<float>::epsilon()),
-                                          std::max(std::abs(std::imag(hCPU[i + j * lda]) * tol),
+                                          std::max(std::abs(std::imag(A[i + j * LDA]) * tol),
                                                    10 * std::numeric_limits<float>::epsilon()));
 #ifdef GOOGLE_TEST
-            if(rocsparse_isnan(hCPU[i + j * lda]))
+            if(rocsparse_isnan(A[i + j * LDA]))
             {
-                ASSERT_TRUE(rocsparse_isnan(hGPU[i + j * lda]));
+                ASSERT_TRUE(rocsparse_isnan(B[i + j * LDB]));
             }
-            else if(rocsparse_isinf(hCPU[i + j * lda]))
+            else if(rocsparse_isinf(A[i + j * LDA]))
             {
-                ASSERT_TRUE(rocsparse_isinf(hGPU[i + j * lda]));
+                ASSERT_TRUE(rocsparse_isinf(B[i + j * LDB]));
             }
             else
             {
                 int k;
                 for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
                 {
-                    if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
+                    if(std::abs(std::real(A[i + j * LDA]) - std::real(B[i + j * LDB]))
                            <= std::real(compare_val) * k
-                       && std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
+                       && std::abs(std::imag(A[i + j * LDA]) - std::imag(B[i + j * LDB]))
                               <= std::imag(compare_val) * k)
                     {
                         break;
@@ -253,11 +279,11 @@ void near_check_general_template(rocsparse_int                  M,
 
                 if(k > MAX_TOL_MULTIPLIER)
                 {
-                    ASSERT_NEAR(std::real(hCPU[i + j * lda]),
-                                std::real(hGPU[i + j * lda]),
+                    ASSERT_NEAR(std::real(A[i + j * LDA]),
+                                std::real(B[i + j * LDB]),
                                 std::real(compare_val));
-                    ASSERT_NEAR(std::imag(hCPU[i + j * lda]),
-                                std::imag(hGPU[i + j * lda]),
+                    ASSERT_NEAR(std::imag(A[i + j * LDA]),
+                                std::imag(B[i + j * LDB]),
                                 std::imag(compare_val));
                 }
                 tolm = std::max(tolm, k);
@@ -267,9 +293,9 @@ void near_check_general_template(rocsparse_int                  M,
             int k;
             for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
             {
-                if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
+                if(std::abs(std::real(A[i + j * LDA]) - std::real(B[i + j * LDB]))
                        <= std::real(compare_val) * k
-                   && std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
+                   && std::abs(std::imag(A[i + j * LDA]) - std::imag(B[i + j * LDB]))
                           <= std::imag(compare_val) * k)
                 {
                     break;
@@ -279,8 +305,8 @@ void near_check_general_template(rocsparse_int                  M,
             if(k > MAX_TOL_MULTIPLIER)
             {
                 std::cerr.precision(16);
-                std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
-                          << ") failed: " << std::abs(hCPU[i + j * lda] - hGPU[i + j * lda])
+                std::cerr << "ASSERT_NEAR(" << A[i + j * LDA] << ", " << B[i + j * LDB]
+                          << ") failed: " << std::abs(A[i + j * LDA] - B[i + j * LDB])
                           << " exceeds permissive range [" << compare_val << ","
                           << compare_val * MAX_TOL_MULTIPLIER << " ]" << std::endl;
                 exit(EXIT_FAILURE);
@@ -300,9 +326,10 @@ void near_check_general_template(rocsparse_int                  M,
 template <>
 void near_check_general_template(rocsparse_int                   M,
                                  rocsparse_int                   N,
-                                 rocsparse_int                   lda,
-                                 const rocsparse_double_complex* hCPU,
-                                 const rocsparse_double_complex* hGPU,
+                                 const rocsparse_double_complex* A,
+                                 rocsparse_int                   LDA,
+                                 const rocsparse_double_complex* B,
+                                 rocsparse_int                   LDB,
                                  double                          tol)
 {
     int tolm = 1;
@@ -311,27 +338,27 @@ void near_check_general_template(rocsparse_int                   M,
         for(rocsparse_int i = 0; i < M; ++i)
         {
             rocsparse_double_complex compare_val
-                = rocsparse_double_complex(std::max(std::abs(std::real(hCPU[i + j * lda]) * tol),
+                = rocsparse_double_complex(std::max(std::abs(std::real(A[i + j * LDA]) * tol),
                                                     10 * std::numeric_limits<double>::epsilon()),
-                                           std::max(std::abs(std::imag(hCPU[i + j * lda]) * tol),
+                                           std::max(std::abs(std::imag(A[i + j * LDA]) * tol),
                                                     10 * std::numeric_limits<double>::epsilon()));
 #ifdef GOOGLE_TEST
-            if(rocsparse_isnan(hCPU[i + j * lda]))
+            if(rocsparse_isnan(A[i + j * LDA]))
             {
-                ASSERT_TRUE(rocsparse_isnan(hGPU[i + j * lda]));
+                ASSERT_TRUE(rocsparse_isnan(B[i + j * LDB]));
             }
-            else if(rocsparse_isinf(hCPU[i + j * lda]))
+            else if(rocsparse_isinf(A[i + j * LDA]))
             {
-                ASSERT_TRUE(rocsparse_isinf(hGPU[i + j * lda]));
+                ASSERT_TRUE(rocsparse_isinf(B[i + j * LDB]));
             }
             else
             {
                 int k;
                 for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
                 {
-                    if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
+                    if(std::abs(std::real(A[i + j * LDA]) - std::real(B[i + j * LDB]))
                            <= std::real(compare_val) * k
-                       && std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
+                       && std::abs(std::imag(A[i + j * LDA]) - std::imag(B[i + j * LDB]))
                               <= std::imag(compare_val) * k)
                     {
                         break;
@@ -340,11 +367,11 @@ void near_check_general_template(rocsparse_int                   M,
 
                 if(k > MAX_TOL_MULTIPLIER)
                 {
-                    ASSERT_NEAR(std::real(hCPU[i + j * lda]),
-                                std::real(hGPU[i + j * lda]),
+                    ASSERT_NEAR(std::real(A[i + j * LDA]),
+                                std::real(B[i + j * LDB]),
                                 std::real(compare_val));
-                    ASSERT_NEAR(std::imag(hCPU[i + j * lda]),
-                                std::imag(hGPU[i + j * lda]),
+                    ASSERT_NEAR(std::imag(A[i + j * LDA]),
+                                std::imag(B[i + j * LDB]),
                                 std::imag(compare_val));
                 }
                 tolm = std::max(tolm, k);
@@ -354,9 +381,9 @@ void near_check_general_template(rocsparse_int                   M,
             int k;
             for(k = 1; k <= MAX_TOL_MULTIPLIER; ++k)
             {
-                if(std::abs(std::real(hCPU[i + j * lda]) - std::real(hGPU[i + j * lda]))
+                if(std::abs(std::real(A[i + j * LDA]) - std::real(B[i + j * LDB]))
                        <= std::real(compare_val) * k
-                   && std::abs(std::imag(hCPU[i + j * lda]) - std::imag(hGPU[i + j * lda]))
+                   && std::abs(std::imag(A[i + j * LDA]) - std::imag(B[i + j * LDB]))
                           <= std::imag(compare_val) * k)
                 {
                     break;
@@ -366,8 +393,8 @@ void near_check_general_template(rocsparse_int                   M,
             if(k > MAX_TOL_MULTIPLIER)
             {
                 std::cerr.precision(16);
-                std::cerr << "ASSERT_NEAR(" << hCPU[i + j * lda] << ", " << hGPU[i + j * lda]
-                          << ") failed: " << std::abs(hCPU[i + j * lda] - hGPU[i + j * lda])
+                std::cerr << "ASSERT_NEAR(" << A[i + j * LDA] << ", " << B[i + j * LDB]
+                          << ") failed: " << std::abs(A[i + j * LDA] - B[i + j * LDB])
                           << " exceeds permissive range [" << compare_val << ","
                           << compare_val * MAX_TOL_MULTIPLIER << " ]" << std::endl;
                 exit(EXIT_FAILURE);
@@ -387,20 +414,22 @@ void near_check_general_template(rocsparse_int                   M,
 template <typename T>
 void near_check_general(rocsparse_int      M,
                         rocsparse_int      N,
-                        rocsparse_int      lda,
-                        const T*           hCPU,
-                        const T*           hGPU,
+                        const T*           A,
+                        rocsparse_int      LDA,
+                        const T*           B,
+                        rocsparse_int      LDB,
                         floating_data_t<T> tol)
 {
-    near_check_general_template(M, N, lda, hCPU, hGPU, tol);
+    near_check_general_template(M, N, A, LDA, B, LDB, tol);
 }
 
-#define INSTANTIATE(TYPE)                                        \
-    template void near_check_general(rocsparse_int         M,    \
-                                     rocsparse_int         N,    \
-                                     rocsparse_int         lda,  \
-                                     const TYPE*           hCPU, \
-                                     const TYPE*           hGPU, \
+#define INSTANTIATE(TYPE)                                       \
+    template void near_check_general(rocsparse_int         M,   \
+                                     rocsparse_int         N,   \
+                                     const TYPE*           A,   \
+                                     rocsparse_int         LDA, \
+                                     const TYPE*           B,   \
+                                     rocsparse_int         LDB, \
                                      floating_data_t<TYPE> tol)
 
 INSTANTIATE(float);

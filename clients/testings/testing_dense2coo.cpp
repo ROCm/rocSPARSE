@@ -188,11 +188,9 @@ void testing_dense2coo(const Arguments& arg)
                           cpu_coo_row_ind,
                           cpu_coo_col_ind);
 
-        unit_check_general(
-            1, nnz, 1, (rocsparse_int*)cpu_coo_row_ind, (rocsparse_int*)gpu_coo_row_ind);
-        unit_check_general(
-            1, nnz, 1, (rocsparse_int*)cpu_coo_col_ind, (rocsparse_int*)gpu_coo_col_ind);
-        unit_check_general(1, nnz, 1, (T*)cpu_coo_val, (T*)gpu_coo_val);
+        cpu_coo_row_ind.unit_check(gpu_coo_row_ind);
+        cpu_coo_col_ind.unit_check(gpu_coo_col_ind);
+        cpu_coo_val.unit_check(gpu_coo_val);
     }
 
     if(arg.timing)

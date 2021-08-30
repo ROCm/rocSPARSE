@@ -444,7 +444,7 @@ static __device__ void csrmmtn_general_device(rocsparse_operation trans_A,
 
     J row = gid / WF_SIZE;
 
-    if(row >= K)
+    if(row >= M)
     {
         return;
     }
@@ -453,7 +453,6 @@ static __device__ void csrmmtn_general_device(rocsparse_operation trans_A,
     J colB = cid * ldb;
 
     __shared__ T shared_B[BLOCKSIZE / WF_SIZE][WF_SIZE];
-
     if(trans_B == rocsparse_operation_conjugate_transpose)
     {
         shared_B[wid][lid] = (cid < N) ? rocsparse_conj(B[row + colB]) : static_cast<T>(0);
@@ -464,7 +463,6 @@ static __device__ void csrmmtn_general_device(rocsparse_operation trans_A,
     }
 
     __threadfence_block();
-
     I row_start = csr_row_ptr[row] - idx_base;
     I row_end   = csr_row_ptr[row + 1] - idx_base;
 
@@ -472,7 +470,6 @@ static __device__ void csrmmtn_general_device(rocsparse_operation trans_A,
     {
         J col = csr_col_ind[j] - idx_base;
         T val;
-
         if(trans_A == rocsparse_operation_conjugate_transpose)
         {
             val = alpha * rocsparse_conj(csr_val[j]);
@@ -481,7 +478,6 @@ static __device__ void csrmmtn_general_device(rocsparse_operation trans_A,
         {
             val = alpha * csr_val[j];
         }
-
         if(order == rocsparse_order_column)
         {
             for(J i = 0; i < WF_SIZE && (i + hipBlockIdx_y * WF_SIZE) < N; ++i)
@@ -529,7 +525,7 @@ static __device__ void csrmmtt_general_device(rocsparse_operation trans_A,
     J row = gid / WF_SIZE;
     J cid = lid + hipBlockIdx_y * WF_SIZE;
 
-    if(row >= K)
+    if(row >= M)
     {
         return;
     }
@@ -546,7 +542,6 @@ static __device__ void csrmmtt_general_device(rocsparse_operation trans_A,
     }
 
     __threadfence_block();
-
     I row_start = csr_row_ptr[row] - idx_base;
     I row_end   = csr_row_ptr[row + 1] - idx_base;
 

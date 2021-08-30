@@ -281,8 +281,8 @@ void testing_sparse_to_dense_coo(const Arguments& arg)
         host_coo_to_dense(
             m, n, (I)nnz, base, h_coo_val, h_coo_row_ind, h_coo_col_ind, cpu_dense_val, ld, order);
 
-        unit_check_general(mn, nm, ld, (T*)h_dense_val, (T*)cpu_dense_val);
-        unit_check_general(mn, nm, ld, (T*)h_dense_val, (T*)gpu_dense_val);
+        h_dense_val.unit_check(cpu_dense_val);
+        h_dense_val.unit_check(gpu_dense_val);
     }
 
     if(arg.timing)

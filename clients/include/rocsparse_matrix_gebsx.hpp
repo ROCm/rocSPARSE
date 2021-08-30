@@ -106,22 +106,17 @@ struct gebsx_matrix
                     bool                                                  check_values = true)
     {
 
-        {
-            J dirb1 = (J)this->block_direction;
-            J dirb2 = (J)that.block_direction;
-            unit_check_general<J>(1, 1, 1, &dirb1, &dirb2);
-        }
-        unit_check_general<J>(1, 1, 1, &this->mb, &that.mb);
-        unit_check_general<J>(1, 1, 1, &this->nb, &that.nb);
-        unit_check_general<I>(1, 1, 1, &this->nnzb, &that.nnzb);
-        unit_check_general<J>(1, 1, 1, &this->row_block_dim, &that.row_block_dim);
-        unit_check_general<J>(1, 1, 1, &this->col_block_dim, &that.col_block_dim);
-        unit_check_general<J>(1, this->nnzb, 1, this->ind, that.ind);
-        unit_check_general<I>(1, this->nb + 1, 1, this->ptr, that.ptr);
+        unit_check_enum(this->block_direction, that.block_direction);
+        unit_check_scalar<J>(this->mb, that.mb);
+        unit_check_scalar<J>(this->nb, that.nb);
+        unit_check_scalar<I>(this->nnzb, that.nnzb);
+        unit_check_scalar<J>(this->row_block_dim, that.row_block_dim);
+        unit_check_scalar<J>(this->col_block_dim, that.col_block_dim);
+        this->ind.unit_check(that.ind);
+        this->ptr.unit_check(that.ptr);
         if(check_values)
         {
-            unit_check_general<T>(
-                1, this->nnzb * this->row_block_dim * this->col_block_dim, 1, this->val, that.val);
+            this->val.unit_check(that.val);
         }
     }
 

@@ -205,8 +205,7 @@ void testing_prune_dense2csr(const Arguments& arg)
                                   sizeof(rocsparse_int),
                                   hipMemcpyDeviceToHost));
 
-        unit_check_general<rocsparse_int>(
-            1, 1, 1, h_nnz_total_dev_host_ptr, h_nnz_total_copied_from_device);
+        h_nnz_total_dev_host_ptr.unit_check(h_nnz_total_copied_from_device);
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
@@ -253,11 +252,10 @@ void testing_prune_dense2csr(const Arguments& arg)
                              h_csr_row_ptr_cpu,
                              h_csr_col_ind_cpu);
 
-        unit_check_general<rocsparse_int>(1, 1, 1, h_nnz_cpu, h_nnz_total_dev_host_ptr);
-        unit_check_general<rocsparse_int>(1, (M + 1), 1, h_csr_row_ptr_cpu, h_csr_row_ptr);
-        unit_check_general<rocsparse_int>(
-            1, h_nnz_total_dev_host_ptr[0], 1, h_csr_col_ind_cpu, h_csr_col_ind);
-        unit_check_general<T>(1, h_nnz_total_dev_host_ptr[0], 1, h_csr_val_cpu, h_csr_val);
+        h_nnz_cpu.unit_check(h_nnz_total_dev_host_ptr);
+        h_csr_row_ptr_cpu.unit_check(h_csr_row_ptr);
+        h_csr_col_ind_cpu.unit_check(h_csr_col_ind);
+        h_csr_val_cpu.unit_check(h_csr_val);
     }
 
     if(arg.timing)

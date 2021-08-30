@@ -621,27 +621,71 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Check leading dimension of B
-    J one = 1;
-    if(trans_B == rocsparse_operation_none)
+    static constexpr J s_one = static_cast<J>(1);
+    switch(trans_A)
     {
-        if(ldb < std::max(one, order_B == rocsparse_order_column ? k : n))
+    case rocsparse_operation_none:
+    {
+        // Check leading dimension of C
+        if(ldc < std::max(s_one, ((order_C == rocsparse_order_column) ? m : n)))
         {
             return rocsparse_status_invalid_size;
         }
-    }
-    else
-    {
-        if(ldb < std::max(one, order_B == rocsparse_order_column ? n : k))
-        {
-            return rocsparse_status_invalid_size;
-        }
-    }
 
-    // Check leading dimension of C
-    if(ldc < std::max(one, order_C == rocsparse_order_column ? m : n))
+        // Check leading dimension of B
+        switch(trans_B)
+        {
+        case rocsparse_operation_none:
+        {
+            if(ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? k : n)))
+            {
+                return rocsparse_status_invalid_size;
+            }
+            break;
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            if(ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? n : k)))
+            {
+                return rocsparse_status_invalid_size;
+            }
+            break;
+        }
+        }
+        break;
+    }
+    case rocsparse_operation_transpose:
+    case rocsparse_operation_conjugate_transpose:
     {
-        return rocsparse_status_invalid_size;
+        // Check leading dimension of C
+        if(ldc < std::max(s_one, ((order_C == rocsparse_order_column) ? k : n)))
+        {
+            return rocsparse_status_invalid_size;
+        }
+
+        switch(trans_B)
+        {
+        case rocsparse_operation_none:
+        {
+            if(ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? m : n)))
+            {
+                return rocsparse_status_invalid_size;
+            }
+            break;
+        }
+        case rocsparse_operation_transpose:
+        case rocsparse_operation_conjugate_transpose:
+        {
+            if(ldb < std::max(s_one, ((order_B == rocsparse_order_column) ? n : m)))
+            {
+                return rocsparse_status_invalid_size;
+            }
+            break;
+        }
+        }
+        break;
+    }
     }
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)

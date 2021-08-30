@@ -340,16 +340,16 @@ void testing_csric0(const Arguments& arg)
                        h_solve_pivot_gold);
 
         // Check pivots
-        unit_check_general<rocsparse_int>(1, 1, 1, h_analysis_pivot_gold, h_analysis_pivot_1);
-        unit_check_general<rocsparse_int>(1, 1, 1, h_analysis_pivot_gold, h_analysis_pivot_2);
-        unit_check_general<rocsparse_int>(1, 1, 1, h_solve_pivot_gold, h_solve_pivot_1);
-        unit_check_general<rocsparse_int>(1, 1, 1, h_solve_pivot_gold, h_solve_pivot_2);
+        h_analysis_pivot_gold.unit_check(h_analysis_pivot_1);
+        h_analysis_pivot_gold.unit_check(h_analysis_pivot_2);
+        h_solve_pivot_gold.unit_check(h_solve_pivot_1);
+        h_solve_pivot_gold.unit_check(h_solve_pivot_2);
 
         // Check solution vector if no pivot has been found
         if(h_analysis_pivot_gold[0] == -1 && h_solve_pivot_gold[0] == -1)
         {
-            near_check_general<T>(1, nnz, 1, hcsr_val_gold, hcsr_val_1);
-            near_check_general<T>(1, nnz, 1, hcsr_val_gold, hcsr_val_2);
+            hcsr_val_gold.near_check(hcsr_val_1);
+            hcsr_val_gold.near_check(hcsr_val_2);
         }
     }
 

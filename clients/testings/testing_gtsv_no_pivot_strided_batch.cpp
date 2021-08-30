@@ -175,7 +175,7 @@ void testing_gtsv_no_pivot_strided_batch(const Arguments& arg)
             }
         }
 
-        near_check_general<T>(1, batch_stride * batch_count, 1, hx_original.data(), hresult.data());
+        near_check_segments<T>(batch_stride * batch_count, hx_original.data(), hresult.data());
     }
 
     if(arg.timing)

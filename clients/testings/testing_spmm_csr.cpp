@@ -368,25 +368,25 @@ void testing_spmm_csr(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
 
         // CPU csrmm
-        host_csrmm(M,
-                   N,
-                   K,
-                   trans_A,
-                   trans_B,
-                   halpha,
-                   hcsr_row_ptr,
-                   hcsr_col_ind,
-                   hcsr_val,
-                   hB,
-                   ldb,
-                   hbeta,
-                   hC_gold,
-                   ldc,
-                   order,
-                   base);
+        host_csrmm<T, I, J>(M,
+                            N,
+                            K,
+                            trans_A,
+                            trans_B,
+                            halpha,
+                            hcsr_row_ptr,
+                            hcsr_col_ind,
+                            hcsr_val,
+                            hB,
+                            ldb,
+                            hbeta,
+                            hC_gold,
+                            ldc,
+                            order,
+                            base);
 
-        near_check_general<T>(nnz_C, 1, 1, hC_gold, hC_1);
-        near_check_general<T>(nnz_C, 1, 1, hC_gold, hC_2);
+        hC_gold.near_check(hC_1);
+        hC_gold.near_check(hC_2);
     }
 
     if(arg.timing)

@@ -190,7 +190,7 @@ void testing_cscsort(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(
             hcsc_row_ind, dcsc_row_ind, sizeof(rocsparse_int) * nnz, hipMemcpyDeviceToHost));
 
-        unit_check_general<rocsparse_int>(1, nnz, 1, hcsc_row_ind_gold, hcsc_row_ind);
+        hcsc_row_ind_gold.unit_check(hcsc_row_ind);
 
         // Permute, copy and check values, if requested
         if(permute)
@@ -208,7 +208,7 @@ void testing_cscsort(const Arguments& arg)
             CHECK_HIP_ERROR(
                 hipMemcpy(hcsc_val, dcsc_val_sorted, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
-            unit_check_general<T>(1, nnz, 1, hcsc_val_gold, hcsc_val);
+            hcsc_val_gold.unit_check(hcsc_val);
         }
     }
 

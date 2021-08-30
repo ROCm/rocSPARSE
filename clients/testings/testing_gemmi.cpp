@@ -89,8 +89,8 @@ void testing_gemmi(const Arguments& arg)
 
     host_scalar<T> h_alpha;
     host_scalar<T> h_beta;
-    *h_alpha.val = arg.get_alpha<T>();
-    *h_beta.val  = arg.get_beta<T>();
+    *h_alpha = arg.get_alpha<T>();
+    *h_beta  = arg.get_beta<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -152,14 +152,14 @@ void testing_gemmi(const Arguments& arg)
                        (_ta == rocsparse_operation_none) ? _da.n : _da.m, \
                        _db.nnz,                                           \
                        _a,                                                \
-                       _da.val,                                           \
+                       _da,                                               \
                        _da.ld,                                            \
                        descr,                                             \
                        _db.val,                                           \
                        _db.ptr,                                           \
                        _db.ind,                                           \
                        _b,                                                \
-                       _dc.val,                                           \
+                       _dc,                                               \
                        _dc.ld)
 
     //
@@ -169,7 +169,7 @@ void testing_gemmi(const Arguments& arg)
     {
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, h_alpha.val, dA, dB, h_beta.val, dC));
+        CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, h_alpha, dA, dB, h_beta, dC));
 
         {
             host_dense_matrix<T> hC_copy(hC);
@@ -177,25 +177,25 @@ void testing_gemmi(const Arguments& arg)
                           N,
                           transA,
                           transB,
-                          *h_alpha.val,
-                          hA.val,
+                          *h_alpha,
+                          hA,
                           hA.ld,
                           hB.ptr,
                           hB.ind,
                           hB.val,
-                          *h_beta.val,
-                          hC.val,
+                          *h_beta,
+                          hC,
                           hC.ld,
                           base);
             hC.unit_check(dC);
-            dC.transfer_from(hC_copy);
+            dC = hC_copy;
         }
 
         // Pointer mode device
         device_scalar<T> d_alpha(h_alpha);
         device_scalar<T> d_beta(h_beta);
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, d_alpha.val, dA, dB, d_beta.val, dC));
+        CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, d_alpha, dA, dB, d_beta, dC));
         hC.unit_check(dC);
     }
 
@@ -213,7 +213,7 @@ void testing_gemmi(const Arguments& arg)
         // Warm up
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, h_alpha.val, dA, dB, h_beta.val, dC));
+            CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, h_alpha, dA, dB, h_beta, dC));
         }
 
         double gpu_time_used = get_time_us();
@@ -221,7 +221,7 @@ void testing_gemmi(const Arguments& arg)
         // Performance run
         for(int iter = 0; iter < number_hot_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, h_alpha.val, dA, dB, h_beta.val, dC));
+            CHECK_ROCSPARSE_ERROR(GEMMI(transA, transB, h_alpha, dA, dB, h_beta, dC));
         }
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
@@ -231,14 +231,14 @@ void testing_gemmi(const Arguments& arg)
                                            M,
                                            hB.nnz,
                                            nnz_C,
-                                           *h_beta.val != static_cast<T>(0));
+                                           *h_beta != static_cast<T>(0));
         double gpu_gbyte  = get_gpu_gbyte(gpu_time_used,
                                          csrmm_gbyte_count<T, rocsparse_int, rocsparse_int>,
                                          hB.m,
                                          hB.nnz,
                                          nnz_A,
                                          nnz_C,
-                                         *h_beta.val != static_cast<T>(0));
+                                         *h_beta != static_cast<T>(0));
 
         display_timing_info("M",
                             M,
@@ -257,9 +257,9 @@ void testing_gemmi(const Arguments& arg)
                             "nnz_C",
                             nnz_C,
                             "alpha",
-                            *h_alpha.val,
+                            *h_alpha,
                             "beta",
-                            *h_beta.val,
+                            *h_beta,
                             "GFlop/s",
                             gpu_gflops,
                             "GB/s",

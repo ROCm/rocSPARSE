@@ -620,19 +620,22 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle          hand
     }
     else
     {
+
         if((order == rocsparse_order_column && trans_B == rocsparse_operation_none)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
         {
+
 #define CSRMMTN_DIM 256
 #define WF_SIZE 4
+
             // Scale C with beta
             hipLaunchKernelGGL((csrmm_scale<CSRMMTN_DIM, WF_SIZE>),
-                               dim3((m - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1),
+                               dim3((k - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1),
                                dim3(CSRMMTN_DIM, WF_SIZE),
                                0,
                                handle->stream,
-                               m,
+                               k,
                                n,
                                beta_device_host,
                                C,
@@ -640,7 +643,7 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle          hand
                                order);
 
             hipLaunchKernelGGL((csrmmtn_general_kernel<CSRMMTN_DIM, WF_SIZE>),
-                               dim3((WF_SIZE * k - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1),
+                               dim3((WF_SIZE * m - 1) / CSRMMTN_DIM + 1, (n - 1) / WF_SIZE + 1),
                                dim3(CSRMMTN_DIM),
                                0,
                                stream,
@@ -661,6 +664,7 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle          hand
                                ldc,
                                order,
                                descr->base);
+
 #undef CSRMMTN_DIM
 #undef WF_SIZE
         }
@@ -669,16 +673,16 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle          hand
                     && trans_B == rocsparse_operation_conjugate_transpose)
                 || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
+
 #define CSRMMTT_DIM 256
 #define WF_SIZE 4
-
             // Scale C with beta
             hipLaunchKernelGGL((csrmm_scale<CSRMMTT_DIM, WF_SIZE>),
-                               dim3((m - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1),
+                               dim3((k - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1),
                                dim3(CSRMMTT_DIM, WF_SIZE),
                                0,
                                handle->stream,
-                               m,
+                               k,
                                n,
                                beta_device_host,
                                C,
@@ -686,7 +690,7 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle          hand
                                order);
 
             hipLaunchKernelGGL((csrmmtt_general_kernel<CSRMMTT_DIM, WF_SIZE>),
-                               dim3((WF_SIZE * k - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1),
+                               dim3((WF_SIZE * m - 1) / CSRMMTT_DIM + 1, (n - 1) / WF_SIZE + 1),
                                dim3(CSRMMTT_DIM),
                                0,
                                stream,
@@ -707,6 +711,7 @@ rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle          hand
                                ldc,
                                order,
                                descr->base);
+
 #undef CSRMMTT_DIM
 #undef WF_SIZE
         }

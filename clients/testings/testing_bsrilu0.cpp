@@ -458,16 +458,16 @@ void testing_bsrilu0(const Arguments& arg)
         }
 
         // Check pivots
-        unit_check_general<rocsparse_int>(1, 1, 1, hanalysis_pivot_gold, hanalysis_pivot_1);
-        unit_check_general<rocsparse_int>(1, 1, 1, hanalysis_pivot_gold, hanalysis_pivot_2);
-        unit_check_general<rocsparse_int>(1, 1, 1, hsolve_pivot_gold, hsolve_pivot_1);
-        unit_check_general<rocsparse_int>(1, 1, 1, hsolve_pivot_gold, hsolve_pivot_2);
+        hanalysis_pivot_gold.unit_check(hanalysis_pivot_1);
+        hanalysis_pivot_gold.unit_check(hanalysis_pivot_2);
+        hsolve_pivot_gold.unit_check(hsolve_pivot_1);
+        hsolve_pivot_gold.unit_check(hsolve_pivot_2);
 
         // Check solution vector if no pivot has been found
         if(hanalysis_pivot_gold[0] == -1 && hsolve_pivot_gold[0] == -1)
         {
-            near_check_general<T>(1, nnzb * block_dim * block_dim, 1, hbsr_val_gold, hbsr_val_1);
-            near_check_general<T>(1, nnzb * block_dim * block_dim, 1, hbsr_val_gold, hbsr_val_2);
+            hbsr_val_gold.near_check(hbsr_val_1);
+            hbsr_val_gold.near_check(hbsr_val_2);
         }
     }
 

@@ -26,6 +26,13 @@ include: rocsparse_common.yaml
 include: known_bugs.yaml
 
 Definitions:
+
+
+  - &all_operation
+    - { transA: rocsparse_operation_none }
+    - { transA: rocsparse_operation_none }
+    - { transA: rocsparse_transA_row }
+
   - &alpha_beta_range_quick
     - { alpha:   1.0, beta: 0.0, alphai:  0.0, betai: 0.0 }
     - { alpha:   1.0, beta: -1.0, alphai:  1.0, betai: -0.5 }
@@ -41,6 +48,7 @@ Definitions:
     - { alpha:   2.0, beta:  0.67, alphai:  0.0, betai:  1.5 }
     - { alpha:   3.0, beta:  1.0,  alphai:  1.5, betai:  0.0 }
     - { alpha:  -0.5, beta:  0.5,  alphai:  1.0, betai: -0.5 }
+
 
 Tests:
 # ########################################################################
@@ -69,6 +77,7 @@ Tests:
   baseA: [rocsparse_index_base_zero]
   matrix_init_kind: [rocsparse_matrix_init_kind_default]
   matrix: [rocsparse_matrix_random]
+  order: [rocsparse_order_row, rocsparse_order_column]
 
 - name: csrmm
   category: pre_checkin
@@ -158,8 +167,6 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mplate]
 
-
-
 # ########################################################################
 # QUICK
 # ########################################################################
@@ -239,15 +246,9 @@ Tests:
   filename: [Chevron2,
              qc2534]
 
-
-
-
 # ########################################################################
 # NIGHTLY
 # ########################################################################
-
-
-
 
 - name: csrmm
   category: nightly

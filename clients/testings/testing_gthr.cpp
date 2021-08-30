@@ -93,8 +93,6 @@ void testing_gthr(const Arguments& arg)
 
     // Allocate host memory
     host_vector<rocsparse_int> hx_ind(nnz);
-    host_vector<T>             hx_val_1(nnz);
-    host_vector<T>             hx_val_2(nnz);
     host_vector<T>             hx_val_gold(nnz);
     host_vector<T>             hy(M);
 
@@ -130,14 +128,12 @@ void testing_gthr(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_gthr<T>(handle, nnz, dy, dx_val_2, dx_ind, base));
 
         // Copy output to host
-        CHECK_HIP_ERROR(hipMemcpy(hx_val_1, dx_val_1, sizeof(T) * nnz, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(hx_val_2, dx_val_2, sizeof(T) * nnz, hipMemcpyDeviceToHost));
 
         // CPU gthr
         host_gthr<rocsparse_int, T>(nnz, hy, hx_val_gold, hx_ind, base);
 
-        unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_1);
-        unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_2);
+        hx_val_gold.unit_check(dx_val_1);
+        hx_val_gold.unit_check(dx_val_2);
     }
 
     if(arg.timing)

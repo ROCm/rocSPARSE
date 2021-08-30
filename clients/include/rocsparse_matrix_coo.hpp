@@ -132,17 +132,15 @@ struct coo_matrix
             case memory_mode::managed:
             case memory_mode::host:
             {
-                unit_check_general<I>(1, 1, 1, &this->m, &that_.m);
-                unit_check_general<I>(1, 1, 1, &this->n, &that_.n);
-                unit_check_general<I>(1, 1, 1, &this->nnz, &that_.nnz);
-                {
-                    I a = (I)this->base;
-                    I b = (I)that_.base;
-                    unit_check_general<I>(1, 1, 1, &a, &b);
-                }
-                unit_check_general<I>(1, that_.nnz, 1, this->row_ind, that_.row_ind);
-                unit_check_general<I>(1, that_.nnz, 1, this->col_ind, that_.col_ind);
-                unit_check_general<T>(1, that_.nnz, 1, this->val, that_.val);
+                unit_check_scalar(this->m, that_.m);
+                unit_check_scalar(this->n, that_.n);
+                unit_check_scalar(this->nnz, that_.nnz);
+                unit_check_enum(this->base, that_.base);
+
+                this->row_ind.unit_check(that_.row_ind);
+                this->col_ind.unit_check(that_.col_ind);
+                this->val.unit_check(that_.val);
+
                 break;
             }
             case memory_mode::device:
@@ -178,17 +176,14 @@ struct coo_matrix
             case memory_mode::managed:
             case memory_mode::host:
             {
-                unit_check_general<I>(1, 1, 1, &this->m, &that_.m);
-                unit_check_general<I>(1, 1, 1, &this->n, &that_.n);
-                unit_check_general<I>(1, 1, 1, &this->nnz, &that_.nnz);
-                {
-                    I a = (I)this->base;
-                    I b = (I)that_.base;
-                    unit_check_general<I>(1, 1, 1, &a, &b);
-                }
-                unit_check_general<I>(1, that_.nnz, 1, this->row_ind, that_.row_ind);
-                unit_check_general<I>(1, that_.nnz, 1, this->col_ind, that_.col_ind);
-                near_check_general<T>(1, that_.nnz, 1, this->val, that_.val, tol);
+                unit_check_scalar(this->m, that_.m);
+                unit_check_scalar(this->n, that_.n);
+                unit_check_scalar(this->nnz, that_.nnz);
+                unit_check_enum(this->base, that_.base);
+
+                this->row_ind.unit_check(that_.row_ind);
+                this->col_ind.unit_check(that_.col_ind);
+                this->val.near_check(that_.val, tol);
                 break;
             }
             case memory_mode::device:

@@ -184,10 +184,10 @@ void testing_rot(const Arguments& arg)
         // CPU rot
         host_roti<I, T>(nnz, hx_val_gold, hx_ind, hy_gold, hc, hs, base);
 
-        unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_1);
-        unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val_2);
-        unit_check_general<T>(1, size, 1, hy_gold, hy_1);
-        unit_check_general<T>(1, size, 1, hy_gold, hy_2);
+        hx_val_gold.unit_check(hx_val_1);
+        hx_val_gold.unit_check(hx_val_2);
+        hy_gold.unit_check(hy_1);
+        hy_gold.unit_check(hy_2);
     }
 
     if(arg.timing)

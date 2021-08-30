@@ -119,7 +119,7 @@ void testing_csr2coo(const Arguments& arg)
         // CPU csr2coo
         host_csr_to_coo(M, nnz, hcsr_row_ptr, hcoo_row_ind_gold, base);
 
-        unit_check_general<rocsparse_int>(1, nnz, 1, hcoo_row_ind_gold, hcoo_row_ind);
+        hcoo_row_ind_gold.unit_check(hcoo_row_ind);
     }
 
     if(arg.timing)

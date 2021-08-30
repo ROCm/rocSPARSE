@@ -114,36 +114,159 @@ void testing_bsrmm_bad_arg(const Arguments& arg)
         block_dim = tmp;
     }
 
+    //
+    // Testing wrong leading dimensions.
+    //
     {
-        auto tmp = ldb;
-        ldb      = safe_size / 2;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
-        ldb = tmp;
-    }
-
-    {
-        auto tmp = ldb;
-        ldb      = safe_size / 2;
-        trans_B  = rocsparse_operation_transpose;
-        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+        //
+        // op(A) = A, op(B) = B
+        //
+        mb      = 3;
+        n       = 14;
+        kb      = 32;
+        trans_A = rocsparse_operation_none;
         trans_B = rocsparse_operation_none;
-        ldb     = tmp;
+
+        //  ldb < k
+        ldb = kb * block_dim - 1;
+        ldc = mb * block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < m
+        ldb = kb * block_dim;
+        ldc = mb * block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
     }
 
     {
-        auto tmp = ldb;
-        ldb      = safe_size / 2;
-        trans_B  = rocsparse_operation_transpose;
+        //
+        // op(A) = A, op(B) = B^T
+        //
+        mb      = 3;
+        n       = 14;
+        kb      = 32;
+        trans_A = rocsparse_operation_none;
+        trans_B = rocsparse_operation_transpose;
+
+        //  ldb < n
+        ldb = n - 1;
+        ldc = mb * block_dim;
         EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
-        ldb = tmp;
+
+        //  ldc < m
+        ldb = n;
+        ldc = mb * block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+#ifdef ROCSPARSE_BSRMM_CONJUGATE_TRANSPOSE_B_SUPPORTED
+        trans_B = rocsparse_operation_conjugate_transpose;
+        //  ldb < n
+        ldb = n - 1;
+        ldc = mb * block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < m
+        ldb = n;
+        ldc = mb * block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+#endif
+    }
+
+#ifdef ROCSPARSE_BSRMM_TRANSPOSE_A_SUPPORTED
+    {
+        //
+        // op(A) = A^T, op(B) = B
+        //
+        mb      = 3;
+        n       = 14;
+        kb      = 32;
+        trans_A = rocsparse_operation_transpose;
+        trans_B = rocsparse_operation_none;
+
+        //  ldb < m
+        ldb = mb * block_dim - 1;
+        ldc = kb * block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < k
+        ldb = mb * block_dim;
+        ldc = kb * block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+#ifdef ROCSPARSE_BSRMM_CONJUGATE_TRANSPOSE_A_SUPPORTED
+        trans_A = rocsparse_operation_conjugate_transpose;
+        //  ldb < m
+        ldb = mb * block_dim - 1;
+        ldc = kb * block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < k
+        ldb = mb * block_dim;
+        ldc = kb * block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+#endif
     }
 
     {
-        auto tmp = ldc;
-        ldc      = safe_size / 2;
+        //
+        // op(A) = A^T, op(B) = B^T
+        //
+        mb      = 3;
+        n       = 14;
+        kb      = 32;
+        trans_A = rocsparse_operation_transpose;
+        trans_B = rocsparse_operation_transpose;
+
+        //  ldb < n
+        ldb = n - 1;
+        ldc = kb * block_dim;
         EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
-        ldc = tmp;
+
+        //  ldc < k
+        ldb = n;
+        ldc = kb * block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+#ifdef ROCSPARSE_BSRMM_CONJUGATE_TRANSPOSE_A_SUPPORTED
+        trans_A = rocsparse_operation_conjugate_transpose;
+        //  ldb < n
+        ldb = n - 1;
+        ldc = kb * block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < k
+        ldb = n;
+        ldc = kb * block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+#endif
+
+#ifdef ROCSPARSE_BSRMM_CONJUGATE_TRANSPOSE_B_SUPPORTED
+        trans_A = rocsparse_operation_transpose;
+        trans_B = rocsparse_operation_conjugate_transpose;
+
+        //  ldb < n
+        ldb = n - 1;
+        ldc = kb * block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < k
+        ldb = n;
+        ldc = kb * block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        trans_A = rocsparse_operation_conjugate_transpose;
+        //  ldb < n
+        ldb = n - 1;
+        ldc = kb * block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < k
+        ldb = n;
+        ldc = kb * block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+#endif
     }
+#endif
 
 #undef PARAMS
 
@@ -192,8 +315,8 @@ void testing_bsrmm(const Arguments& arg)
 
     host_scalar<T> h_alpha, h_beta;
 
-    *h_alpha.val = arg.get_alpha<T>();
-    *h_beta.val  = arg.get_beta<T>();
+    *h_alpha = arg.get_alpha<T>();
+    *h_beta  = arg.get_beta<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -217,7 +340,7 @@ void testing_bsrmm(const Arguments& arg)
                                                    N,
                                                    Kb,
                                                    safe_size,
-                                                   h_alpha.val,
+                                                   h_alpha,
                                                    descr,
                                                    nullptr,
                                                    nullptr,
@@ -225,7 +348,7 @@ void testing_bsrmm(const Arguments& arg)
                                                    block_dim,
                                                    nullptr,
                                                    safe_size,
-                                                   h_beta.val,
+                                                   h_beta,
                                                    nullptr,
                                                    safe_size),
                                 (Mb < 0 || N < 0 || Kb < 0 || block_dim <= 0)
@@ -265,9 +388,9 @@ void testing_bsrmm(const Arguments& arg)
     rocsparse_matrix_utils::init(hC);
     device_dense_matrix<T> dC(hC);
 
-#define PARAMS(alpha_, dA_, dB_, beta_, dC_)                                                     \
-    handle, direction, transA, transB, Mb, N, Kb, dA_.nnzb, alpha_.val, descr, dA_.val, dA_.ptr, \
-        dA_.ind, dA_.row_block_dim, dB_.val, dB_.ld, beta_.val, dC_.val, dC_.ld
+#define PARAMS(alpha_, dA_, dB_, beta_, dC_)                                                 \
+    handle, direction, transA, transB, Mb, N, Kb, dA_.nnzb, alpha_, descr, dA_.val, dA_.ptr, \
+        dA_.ind, dA_.row_block_dim, dB_, dB_.ld, beta_, dC_, dC_.ld
 
     if(arg.unit_check)
     {
@@ -284,7 +407,7 @@ void testing_bsrmm(const Arguments& arg)
             host_dense_matrix<T> hC_copy(hC);
             host_bsrmm<T>(PARAMS(h_alpha, hA, hB, h_beta, hC));
             hC.near_check(dC);
-            dC.transfer_from(hC_copy);
+            dC = hC_copy;
         }
 
         //
@@ -320,10 +443,10 @@ void testing_bsrmm(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gflop_count = bsrmm_gflop_count(
-            N, dA.nnzb, block_dim, dC.m * dC.n, *h_beta.val != static_cast<T>(0));
+        double gflop_count
+            = bsrmm_gflop_count(N, dA.nnzb, block_dim, dC.m * dC.n, *h_beta != static_cast<T>(0));
         double gbyte_count = bsrmm_gbyte_count<T>(
-            Mb, dA.nnzb, block_dim, dB.m * dB.n, dC.m * dC.n, *h_beta.val != static_cast<T>(0));
+            Mb, dA.nnzb, block_dim, dB.m * dB.n, dC.m * dC.n, *h_beta != static_cast<T>(0));
 
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
         double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
@@ -349,9 +472,9 @@ void testing_bsrmm(const Arguments& arg)
                             "nnz_C",
                             dC.m * dC.n,
                             "alpha",
-                            *h_alpha.val,
+                            *h_alpha,
                             "beta",
-                            *h_beta.val,
+                            *h_beta,
                             "GFlop/s",
                             gpu_gflops,
                             "GB/s",

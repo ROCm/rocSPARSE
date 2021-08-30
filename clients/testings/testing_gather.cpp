@@ -143,7 +143,7 @@ void testing_gather(const Arguments& arg)
         // CPU coomv
         host_gthr<I, T>(nnz, hy, hx_val_gold, hx_ind, base);
 
-        unit_check_general<T>(1, nnz, 1, hx_val_gold, hx_val);
+        hx_val_gold.unit_check(hx_val);
     }
 
     if(arg.timing)

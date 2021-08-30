@@ -315,8 +315,8 @@ void testing_sparse_to_dense_csc(const Arguments& arg)
                                                    cpu_dense_val.data(),
                                                    ld);
 
-        unit_check_general(mn, nm, ld, (T*)h_dense_val, (T*)cpu_dense_val);
-        unit_check_general(mn, nm, ld, (T*)h_dense_val, (T*)gpu_dense_val);
+        h_dense_val.unit_check(cpu_dense_val);
+        h_dense_val.unit_check(gpu_dense_val);
     }
 
     if(arg.timing)

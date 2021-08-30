@@ -103,38 +103,158 @@ void testing_gebsrmm_bad_arg(const Arguments& arg)
     }
 
     //
-    // CHECK INVALID SIZES
+    // Testing wrong leading dimensions.
     //
     {
+        //
+        // op(A) = A, op(B) = B
+        //
+        mb      = 3;
+        n       = 14;
+        kb      = 32;
+        trans_A = rocsparse_operation_none;
+        trans_B = rocsparse_operation_none;
+
+        //  ldb < k
+        ldb = kb * col_block_dim - 1;
+        ldc = mb * row_block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < m
+        ldb = kb * col_block_dim;
+        ldc = mb * row_block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+    }
+
+    {
+        //
+        // op(A) = A, op(B) = B^T
+        //
+        mb      = 3;
+        n       = 14;
+        kb      = 32;
+        trans_A = rocsparse_operation_none;
         trans_B = rocsparse_operation_transpose;
-        mb      = 32;
-        n       = 256;
-        kb      = 33;
-        nnzb    = 35;
-        ldb     = 256 - 1;
+
+        //  ldb < n
+        ldb = n - 1;
+        ldc = mb * row_block_dim;
         EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < m
+        ldb = n;
+        ldc = mb * row_block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+#ifdef ROCSPARSE_GEBSRMM_CONJUGATE_TRANSPOSE_B_SUPPORTED
+        trans_B = rocsparse_operation_conjugate_transpose;
+        //  ldb < n
+        ldb = n - 1;
+        ldc = mb * row_block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < m
+        ldb = n;
+        ldc = mb * row_block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+#endif
     }
-    //
+
+#ifdef ROCSPARSE_GEBSRMM_TRANSPOSE_A_SUPPORTED
     {
+        //
+        // op(A) = A^T, op(B) = B
+        //
+        mb      = 3;
+        n       = 14;
+        kb      = 32;
+        trans_A = rocsparse_operation_transpose;
         trans_B = rocsparse_operation_none;
-        mb      = 32;
-        n       = 33;
-        kb      = 256;
-        nnzb    = 35;
-        ldb     = 256 - 1;
+
+        //  ldb < m
+        ldb = mb * row_block_dim - 1;
+        ldc = kb * col_block_dim;
         EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < k
+        ldb = mb * row_block_dim;
+        ldc = kb * col_block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+#ifdef ROCSPARSE_GEBSRMM_CONJUGATE_TRANSPOSE_A_SUPPORTED
+        trans_A = rocsparse_operation_conjugate_transpose;
+        //  ldb < m
+        ldb = mb * row_block_dim - 1;
+        ldc = kb * col_block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < k
+        ldb = mb * row_block_dim;
+        ldc = kb * col_block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+#endif
     }
-    //
+
     {
-        trans_B = rocsparse_operation_none;
-        mb      = 256;
-        n       = 33;
-        kb      = 34;
-        nnzb    = 35;
-        ldb     = 34;
-        ldc     = 256 - 1;
+        //
+        // op(A) = A^T, op(B) = B^T
+        //
+        mb      = 3;
+        n       = 14;
+        kb      = 32;
+        trans_A = rocsparse_operation_transpose;
+        trans_B = rocsparse_operation_transpose;
+
+        //  ldb < n
+        ldb = n - 1;
+        ldc = kb * col_block_dim;
         EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < k
+        ldb = n;
+        ldc = kb * col_block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+#ifdef ROCSPARSE_GEBSRMM_CONJUGATE_TRANSPOSE_A_SUPPORTED
+        trans_A = rocsparse_operation_conjugate_transpose;
+        //  ldb < n
+        ldb = n - 1;
+        ldc = kb * col_block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < k
+        ldb = n;
+        ldc = kb * col_block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+#endif
+
+#ifdef ROCSPARSE_GEBSRMM_CONJUGATE_TRANSPOSE_B_SUPPORTED
+        trans_A = rocsparse_operation_transpose;
+        trans_B = rocsparse_operation_conjugate_transpose;
+
+        //  ldb < n
+        ldb = n - 1;
+        ldc = kb * col_block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < k
+        ldb = n;
+        ldc = kb * col_block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        trans_A = rocsparse_operation_conjugate_transpose;
+        //  ldb < n
+        ldb = n - 1;
+        ldc = kb * col_block_dim;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+
+        //  ldc < k
+        ldb = n;
+        ldc = kb * col_block_dim - 1;
+        EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_invalid_size);
+#endif
     }
+#endif
 
 #undef PARAMS
 
@@ -185,8 +305,8 @@ void testing_gebsrmm(const Arguments& arg)
     }
 
     host_scalar<T> h_alpha, h_beta;
-    *h_alpha.val = arg.get_alpha<T>();
-    *h_beta.val  = arg.get_beta<T>();
+    *h_alpha = arg.get_alpha<T>();
+    *h_beta  = arg.get_beta<T>();
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -217,7 +337,7 @@ void testing_gebsrmm(const Arguments& arg)
                                  N,
                                  Kb,
                                  safe_size,
-                                 h_alpha.val,
+                                 h_alpha,
                                  descr,
                                  dbsr_val,
                                  dbsr_row_ptr,
@@ -226,7 +346,7 @@ void testing_gebsrmm(const Arguments& arg)
                                  col_block_dim,
                                  dB,
                                  safe_size,
-                                 h_beta.val,
+                                 h_beta,
                                  dC,
                                  safe_size),
             (Mb < 0 || N < 0 || Kb < 0 || row_block_dim <= 0 || col_block_dim <= 0)
@@ -235,9 +355,9 @@ void testing_gebsrmm(const Arguments& arg)
         return;
     }
 
-#define PARAMS(alpha, A, B, beta, C)                                                             \
-    handle, A.block_direction, transA, transB, A.mb, C.n, A.nb, A.nnzb, alpha.val, descr, A.val, \
-        A.ptr, A.ind, A.row_block_dim, A.col_block_dim, B.val, B.ld, beta.val, C.val, C.ld
+#define PARAMS(alpha, A, B, beta, C)                                                         \
+    handle, A.block_direction, transA, transB, A.mb, C.n, A.nb, A.nnzb, alpha, descr, A.val, \
+        A.ptr, A.ind, A.row_block_dim, A.col_block_dim, B, B.ld, beta, C, C.ld
 
     host_gebsr_matrix<T>        hA;
     rocsparse_matrix_factory<T> matrix_factory(arg);
@@ -272,7 +392,7 @@ void testing_gebsrmm(const Arguments& arg)
             host_dense_matrix<T> hC_copy(hC);
             host_gebsrmm<T>(PARAMS(h_alpha, hA, hB, h_beta, hC));
             hC.near_check(dC);
-            dC.transfer_from(hC_copy);
+            dC = hC_copy;
         }
 
         // Copy data from CPU to device
@@ -313,7 +433,7 @@ void testing_gebsrmm(const Arguments& arg)
                                                  dA.row_block_dim,
                                                  dA.col_block_dim,
                                                  dC.m * dC.n,
-                                                 *h_beta.val != static_cast<T>(0));
+                                                 *h_beta != static_cast<T>(0));
 
         double gbyte_count = gebsrmm_gbyte_count<T>(dA.mb,
                                                     dA.nnzb,
@@ -321,7 +441,7 @@ void testing_gebsrmm(const Arguments& arg)
                                                     dA.col_block_dim,
                                                     dB.m * dB.n,
                                                     dC.m * dC.n,
-                                                    *h_beta.val != static_cast<T>(0));
+                                                    *h_beta != static_cast<T>(0));
 
         double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
 
@@ -350,9 +470,9 @@ void testing_gebsrmm(const Arguments& arg)
                             "nnz_C",
                             dC.m * dC.n,
                             "alpha",
-                            *h_alpha.val,
+                            *h_alpha,
                             "beta",
-                            *h_beta.val,
+                            *h_beta,
                             "GFlop/s",
                             gpu_gflops,
                             "GB/s",

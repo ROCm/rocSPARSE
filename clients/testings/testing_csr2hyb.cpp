@@ -261,16 +261,16 @@ void testing_csr2hyb(const Arguments& arg)
                            part,
                            base);
 
-        unit_check_general<rocsparse_int>(1, 1, 1, &M, &dhyb->m);
-        unit_check_general<rocsparse_int>(1, 1, 1, &N, &dhyb->n);
-        unit_check_general<rocsparse_int>(1, 1, 1, &ell_width_gold, &dhyb->ell_width);
-        unit_check_general<rocsparse_int>(1, 1, 1, &ell_nnz_gold, &dhyb->ell_nnz);
-        unit_check_general<rocsparse_int>(1, 1, 1, &coo_nnz_gold, &dhyb->coo_nnz);
-        unit_check_general<rocsparse_int>(1, ell_nnz, 1, hhyb_ell_col_ind_gold, hhyb_ell_col_ind);
-        unit_check_general<T>(1, ell_nnz, 1, hhyb_ell_val_gold, hhyb_ell_val);
-        unit_check_general<rocsparse_int>(1, coo_nnz, 1, hhyb_coo_row_ind_gold, hhyb_coo_row_ind);
-        unit_check_general<rocsparse_int>(1, coo_nnz, 1, hhyb_coo_col_ind_gold, hhyb_coo_col_ind);
-        unit_check_general<T>(1, coo_nnz, 1, hhyb_coo_val_gold, hhyb_coo_val);
+        unit_check_scalar<rocsparse_int>(M, dhyb->m);
+        unit_check_scalar<rocsparse_int>(N, dhyb->n);
+        unit_check_scalar<rocsparse_int>(ell_width_gold, dhyb->ell_width);
+        unit_check_scalar<rocsparse_int>(ell_nnz_gold, dhyb->ell_nnz);
+        unit_check_scalar<rocsparse_int>(coo_nnz_gold, dhyb->coo_nnz);
+        hhyb_ell_col_ind_gold.unit_check(hhyb_ell_col_ind);
+        hhyb_ell_val_gold.unit_check(hhyb_ell_val);
+        hhyb_coo_row_ind_gold.unit_check(hhyb_coo_row_ind);
+        hhyb_coo_col_ind_gold.unit_check(hhyb_coo_col_ind);
+        hhyb_coo_val_gold.unit_check(hhyb_coo_val);
     }
 
     if(arg.timing)

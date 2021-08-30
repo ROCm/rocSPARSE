@@ -199,12 +199,12 @@ void testing_csr2csc(const Arguments& arg)
                         action,
                         base);
 
-        unit_check_general<rocsparse_int>(1, nnz, 1, hcsc_row_ind_gold, hcsc_row_ind);
-        unit_check_general<rocsparse_int>(1, N + 1, 1, hcsc_col_ptr_gold, hcsc_col_ptr);
+        hcsc_row_ind_gold.unit_check(hcsc_row_ind);
+        hcsc_col_ptr_gold.unit_check(hcsc_col_ptr);
 
         if(action == rocsparse_action_numeric)
         {
-            unit_check_general<T>(1, nnz, 1, hcsc_val_gold, hcsc_val);
+            hcsc_val_gold.unit_check(hcsc_val);
         }
     }
 

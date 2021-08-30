@@ -320,8 +320,8 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
 
         void* buffer = malloc(sizeof(T) * LD * N);
         CHECK_HIP_ERROR(hipMemcpy(buffer, d_dense_val, sizeof(T) * LD * N, hipMemcpyDeviceToHost));
-        unit_check_general(M, N, LD, (T*)h_dense_val, (T*)buffer);
-        unit_check_general(M, N, LD, (T*)h_dense_val, (T*)h_dense_val_ref);
+        unit_check_general(M, N, (T*)h_dense_val, LD, (T*)buffer, LD);
+        unit_check_general(M, N, (T*)h_dense_val, LD, (T*)h_dense_val_ref, LD);
         free(buffer);
         buffer = nullptr;
     }

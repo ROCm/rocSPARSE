@@ -383,27 +383,27 @@ void testing_spsm_coo(const Arguments& arg)
         // CPU coosm
         I analysis_pivot = -1;
         I solve_pivot    = -1;
-        host_coosm(M,
-                   K,
-                   nnz_A,
-                   trans_A,
-                   trans_B,
-                   halpha,
-                   hcoo_row_ind,
-                   hcoo_col_ind,
-                   hcoo_val,
-                   hC_gold.val,
-                   ldc,
-                   diag,
-                   uplo,
-                   base,
-                   &analysis_pivot,
-                   &solve_pivot);
+        host_coosm<I, T>(M,
+                         K,
+                         nnz_A,
+                         trans_A,
+                         trans_B,
+                         halpha,
+                         hcoo_row_ind,
+                         hcoo_col_ind,
+                         hcoo_val,
+                         hC_gold,
+                         ldc,
+                         diag,
+                         uplo,
+                         base,
+                         &analysis_pivot,
+                         &solve_pivot);
 
         if(analysis_pivot == -1 && solve_pivot == -1)
         {
-            near_check_general<T>(C_m, C_n, ldc, hC_gold, hC_1);
-            near_check_general<T>(C_m, C_n, ldc, hC_gold, hC_2);
+            hC_gold.near_check(hC_1);
+            hC_gold.near_check(hC_2);
         }
     }
 

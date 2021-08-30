@@ -356,8 +356,8 @@ void testing_spmm_coo(const Arguments& arg)
                    order,
                    base);
 
-        near_check_general<T>(nnz_C, 1, 1, hC_gold, hC_1, tol);
-        near_check_general<T>(nnz_C, 1, 1, hC_gold, hC_2, tol);
+        hC_gold.near_check(hC_1, tol);
+        hC_gold.near_check(hC_2, tol);
     }
 
     if(arg.timing)
