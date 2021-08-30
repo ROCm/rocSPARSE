@@ -409,7 +409,7 @@ void dense_vector_t<MODE, T>::near_check(const dense_vector_t<THAT_MODE, T>& tha
         case memory_mode::device:
         {
             host_dense_vector<T> that(that_);
-            this->near_check(that_, tol_);
+            this->near_check(that, tol_);
             break;
         }
         }
