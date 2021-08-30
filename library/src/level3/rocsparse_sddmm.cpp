@@ -183,17 +183,6 @@ extern "C" rocsparse_status rocsparse_sddmm_buffer_size(rocsparse_handle        
               alg,
               (const void*&)buffer_size);
 
-    RETURN_IF_NULLPTR(buffer_size);
-
-    // Check for invalid descriptors
-    RETURN_IF_NULLPTR(mat_A);
-    RETURN_IF_NULLPTR(mat_B);
-    RETURN_IF_NULLPTR(mat_C);
-
-    // Check for valid pointers
-    RETURN_IF_NULLPTR(alpha);
-    RETURN_IF_NULLPTR(beta);
-
     if(rocsparse_enum_utils::is_invalid(trans_A))
     {
         return rocsparse_status_invalid_value;
@@ -210,6 +199,17 @@ extern "C" rocsparse_status rocsparse_sddmm_buffer_size(rocsparse_handle        
     {
         return rocsparse_status_invalid_value;
     }
+
+    RETURN_IF_NULLPTR(buffer_size);
+
+    // Check for invalid descriptors
+    RETURN_IF_NULLPTR(mat_A);
+    RETURN_IF_NULLPTR(mat_B);
+    RETURN_IF_NULLPTR(mat_C);
+
+    // Check for valid pointers
+    RETURN_IF_NULLPTR(alpha);
+    RETURN_IF_NULLPTR(beta);
 
     // Check if descriptors are initialized
     if(mat_A->init == false || mat_B->init == false || mat_C->init == false)

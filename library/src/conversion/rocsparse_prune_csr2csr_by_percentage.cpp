@@ -215,6 +215,11 @@ rocsparse_status rocsparse_prune_csr2csr_by_percentage_buffer_size_template(
         return rocsparse_status_invalid_handle;
     }
 
+    if(csr_descr_A == nullptr || csr_descr_C == nullptr || info == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xprune_csr2csr_by_percentage_buffer_size"),
@@ -239,13 +244,33 @@ rocsparse_status rocsparse_prune_csr2csr_by_percentage_buffer_size_template(
               "--mtx <matrix.mtx>");
 
     // Check sizes
-    if(m < 0 || n < 0 || nnz_A < 0)
+    if(m < 0 || n < 0 || nnz_A < 0 || percentage < static_cast<T>(0)
+       || percentage > static_cast<T>(100))
     {
         return rocsparse_status_invalid_size;
     }
 
     // Check pointer arguments
-    if(buffer_size == nullptr)
+    if(csr_row_ptr_A == nullptr || csr_row_ptr_C == nullptr || buffer_size == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_A == nullptr && csr_col_ind_A != nullptr)
+       || (csr_val_A != nullptr && csr_col_ind_A == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // value arrays and column indices arrays must both be null (zero matrix) or both not null
+    if((csr_val_C == nullptr && csr_col_ind_C != nullptr)
+       || (csr_val_C != nullptr && csr_col_ind_C == nullptr))
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(nnz_A != 0 && (csr_val_A == nullptr && csr_col_ind_A == nullptr))
     {
         return rocsparse_status_invalid_pointer;
     }

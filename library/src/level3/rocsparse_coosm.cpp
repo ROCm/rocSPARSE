@@ -98,6 +98,12 @@ rocsparse_status rocsparse_coosm_buffer_size_template(rocsparse_handle          
         return rocsparse_status_invalid_value;
     }
 
+    // Check solve policy
+    if(rocsparse_enum_utils::is_invalid(policy))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check sizes
     if(m < 0)
     {
@@ -261,6 +267,11 @@ rocsparse_status rocsparse_coosm_analysis_template(rocsparse_handle          han
     }
 
     // Check solve policy
+    if(rocsparse_enum_utils::is_invalid(solve))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     if(solve != rocsparse_solve_policy_auto)
     {
         return rocsparse_status_invalid_value;
@@ -390,6 +401,12 @@ rocsparse_status rocsparse_coosm_solve_template(rocsparse_handle          handle
     }
 
     if(rocsparse_enum_utils::is_invalid(trans_B))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check solve policy
+    if(rocsparse_enum_utils::is_invalid(policy))
     {
         return rocsparse_status_invalid_value;
     }

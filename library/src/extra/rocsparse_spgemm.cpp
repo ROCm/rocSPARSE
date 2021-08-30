@@ -251,16 +251,14 @@ extern "C" rocsparse_status rocsparse_spgemm(rocsparse_handle            handle,
               (const void*&)buffer_size,
               (const void*&)temp_buffer);
 
-    // Check for invalid descriptors
-    RETURN_IF_NULLPTR(A);
-    RETURN_IF_NULLPTR(B);
-    RETURN_IF_NULLPTR(D);
-    RETURN_IF_NULLPTR(C);
-
-    // Check for valid scalars
-    if(alpha == nullptr && beta == nullptr)
+    if(rocsparse_enum_utils::is_invalid(trans_A))
     {
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(trans_B))
+    {
+        return rocsparse_status_invalid_value;
     }
 
     if(rocsparse_enum_utils::is_invalid(compute_type))
@@ -277,6 +275,43 @@ extern "C" rocsparse_status rocsparse_spgemm(rocsparse_handle            handle,
     {
         return rocsparse_status_invalid_value;
     }
+
+    // Check for invalid descriptors
+    RETURN_IF_NULLPTR(A);
+    RETURN_IF_NULLPTR(B);
+    RETURN_IF_NULLPTR(D);
+    RETURN_IF_NULLPTR(C);
+
+    // Check for valid scalars
+    if(alpha == nullptr && beta == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // if(rocsparse_enum_utils::is_invalid(trans_A))
+    // {
+    //     return rocsparse_status_invalid_value;
+    // }
+
+    // if(rocsparse_enum_utils::is_invalid(trans_B))
+    // {
+    //     return rocsparse_status_invalid_value;
+    // }
+
+    // if(rocsparse_enum_utils::is_invalid(compute_type))
+    // {
+    //     return rocsparse_status_invalid_value;
+    // }
+
+    // if(rocsparse_enum_utils::is_invalid(alg))
+    // {
+    //     return rocsparse_status_invalid_value;
+    // }
+
+    // if(rocsparse_enum_utils::is_invalid(stage))
+    // {
+    //     return rocsparse_status_invalid_value;
+    // }
 
     // Check for valid buffer_size pointer only if temp_buffer is nullptr
     if(temp_buffer == nullptr)

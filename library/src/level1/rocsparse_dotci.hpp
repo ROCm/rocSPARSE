@@ -59,7 +59,7 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
     log_bench(handle, "./rocsparse-bench -f dotci -r", replaceX<T>("X"), "--mtx <vector.mtx> ");
 
     // Check index base
-    if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)
+    if(rocsparse_enum_utils::is_invalid(idx_base))
     {
         return rocsparse_status_invalid_value;
     }
@@ -77,19 +77,7 @@ rocsparse_status rocsparse_dotci_template(rocsparse_handle     handle,
     }
 
     // Check pointer arguments
-    if(x_val == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(x_ind == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(y == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(result == nullptr)
+    if(x_val == nullptr || x_ind == nullptr || y == nullptr || result == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }

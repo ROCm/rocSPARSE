@@ -1679,6 +1679,21 @@ public:
                                      col_block_dim,
                                      base);
     }
+
+    virtual void init_bsr(std::vector<I>&      bsr_row_ptr,
+                          std::vector<J>&      bsr_col_ind,
+                          std::vector<T>&      bsr_val,
+                          rocsparse_direction  dirb,
+                          J&                   Mb,
+                          J&                   Nb,
+                          I&                   nnzb,
+                          J&                   block_dim,
+                          rocsparse_index_base base)
+    {
+        this->m_instance->init_gebsr(
+            bsr_row_ptr, bsr_col_ind, bsr_val, dirb, Mb, Nb, nnzb, block_dim, block_dim, base);
+    }
+
     virtual void init_coo(std::vector<I>&      coo_row_ind,
                           std::vector<I>&      coo_col_ind,
                           std::vector<T>&      coo_val,

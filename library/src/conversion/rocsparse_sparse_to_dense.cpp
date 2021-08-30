@@ -171,6 +171,12 @@ extern "C" rocsparse_status rocsparse_sparse_to_dense(rocsparse_handle          
               (const void*&)buffer_size,
               (const void*&)temp_buffer);
 
+    // Check alg
+    if(rocsparse_enum_utils::is_invalid(alg))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Check for invalid descriptors
     RETURN_IF_NULLPTR(mat_A);
     RETURN_IF_NULLPTR(mat_B);

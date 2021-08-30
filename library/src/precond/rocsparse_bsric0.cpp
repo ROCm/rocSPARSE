@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,16 @@ extern "C" rocsparse_status rocsparse_sbsric0_buffer_size(rocsparse_handle      
                                                           rocsparse_mat_info        info,
                                                           size_t*                   buffer_size)
 {
+    if(rocsparse_enum_utils::is_invalid(dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(block_dim <= 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
     return rocsparse_scsrsv_buffer_size(handle,
                                         rocsparse_operation_none,
                                         mb,
@@ -66,6 +76,16 @@ extern "C" rocsparse_status rocsparse_dbsric0_buffer_size(rocsparse_handle      
                                                           rocsparse_mat_info        info,
                                                           size_t*                   buffer_size)
 {
+    if(rocsparse_enum_utils::is_invalid(dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(block_dim <= 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
     return rocsparse_dcsrsv_buffer_size(handle,
                                         rocsparse_operation_none,
                                         mb,
@@ -90,6 +110,16 @@ extern "C" rocsparse_status rocsparse_cbsric0_buffer_size(rocsparse_handle      
                                                           rocsparse_mat_info   info,
                                                           size_t*              buffer_size)
 {
+    if(rocsparse_enum_utils::is_invalid(dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(block_dim <= 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
     return rocsparse_ccsrsv_buffer_size(handle,
                                         rocsparse_operation_none,
                                         mb,
@@ -114,6 +144,16 @@ extern "C" rocsparse_status rocsparse_zbsric0_buffer_size(rocsparse_handle      
                                                           rocsparse_mat_info   info,
                                                           size_t*              buffer_size)
 {
+    if(rocsparse_enum_utils::is_invalid(dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(block_dim <= 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
     return rocsparse_zcsrsv_buffer_size(handle,
                                         rocsparse_operation_none,
                                         mb,

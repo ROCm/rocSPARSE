@@ -22,102 +22,33 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename T>
 void testing_nnz_bad_arg(const Arguments& arg)
 {
+    static const size_t safe_size = 100;
 
-    static constexpr size_t        safe_size = 100;
-    static constexpr rocsparse_int M         = 10;
-    static constexpr rocsparse_int N         = 10;
-    static constexpr rocsparse_int LD        = M;
+    // Create rocsparse handle
+    rocsparse_local_handle local_handle;
 
-    rocsparse_direction       dirA = rocsparse_direction_row;
-    rocsparse_local_handle    handle;
-    rocsparse_local_mat_descr descrA;
+    // Create descriptor
+    rocsparse_local_mat_descr local_descr;
 
-    device_vector<T> d_A(safe_size);
+    rocsparse_handle          handle                 = local_handle;
+    rocsparse_direction       dir                    = rocsparse_direction_row;
+    rocsparse_int             m                      = safe_size;
+    rocsparse_int             n                      = safe_size;
+    const rocsparse_mat_descr descr                  = local_descr;
+    const T*                  A                      = (const T*)0x4;
+    rocsparse_int             ld                     = safe_size;
+    rocsparse_int*            nnz_per_row_columns    = (rocsparse_int*)0x4;
+    rocsparse_int*            nnz_total_dev_host_ptr = (rocsparse_int*)0x4;
 
-    device_vector<rocsparse_int> d_nnzPerRowColumn(safe_size), d_nnzTotalDevHostPtr(safe_size);
-
-    if(!d_A || !d_nnzPerRowColumn || !d_nnzTotalDevHostPtr)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-    //
-    // Testing invalid handle.
-    //
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz<T>(
-            nullptr, dirA, M, N, descrA, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
-        rocsparse_status_invalid_handle);
-
-    //
-    // Testing invalid pointers.
-    //
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz<T>(
-            handle, dirA, M, N, nullptr, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
-        rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz<T>(
-            handle, dirA, M, N, nullptr, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
-        rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz<T>(
-            handle, dirA, M, N, descrA, nullptr, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
-        rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz<T>(handle, dirA, M, N, descrA, d_A, LD, nullptr, d_nnzTotalDevHostPtr),
-        rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz<T>(handle, dirA, M, N, descrA, d_A, LD, d_nnzPerRowColumn, nullptr),
-        rocsparse_status_invalid_pointer);
-
-    //
-    // Testing invalid direction
-    //
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz<T>(
-            handle, (rocsparse_direction)77, -1, -1, descrA, nullptr, -1, nullptr, nullptr),
-        rocsparse_status_invalid_value);
-
-    //
-    // Testing invalid size on M
-    //
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz<T>(
-            handle, dirA, -1, N, descrA, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
-        rocsparse_status_invalid_size);
-
-    //
-    // Testing invalid size on N
-    //
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz<T>(
-            handle, dirA, M, -1, descrA, d_A, LD, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
-        rocsparse_status_invalid_size);
-
-    //
-    // Testing invalid size on LD
-    //
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz<T>(
-            handle, dirA, M, N, descrA, d_A, 0, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
-        rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_nnz<T>(
-            handle, dirA, M, N, descrA, d_A, M - 1, d_nnzPerRowColumn, d_nnzTotalDevHostPtr),
-        rocsparse_status_invalid_size);
+#define PARAMS handle, dir, m, n, descr, A, ld, nnz_per_row_columns, nnz_total_dev_host_ptr
+    auto_testing_bad_arg(rocsparse_nnz<T>, PARAMS);
+#undef PARAMS
 }
 
 template <typename T>

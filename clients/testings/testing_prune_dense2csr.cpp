@@ -22,325 +22,55 @@
 *
 * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename T>
 void testing_prune_dense2csr_bad_arg(const Arguments& arg)
 {
-    static constexpr size_t safe_size = 100;
-
-    static constexpr rocsparse_int M                      = 10;
-    static constexpr rocsparse_int N                      = 10;
-    static constexpr rocsparse_int LDA                    = M;
-    static constexpr T             threshold              = static_cast<T>(1);
-    static rocsparse_int           nnz_total_dev_host_ptr = 100;
-    static size_t                  buffer_size            = 100;
+    static const size_t  safe_size                = 100;
+    static rocsparse_int h_nnz_total_dev_host_ptr = 100;
+    static size_t        h_buffer_size            = 100;
+    static T             h_threshold              = static_cast<T>(1);
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
-    // Create matrix descriptor
-    rocsparse_local_mat_descr descr;
+    // Create descriptor
+    rocsparse_local_mat_descr local_descr;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dcsr_col_ind(safe_size);
-    device_vector<T>             dcsr_val(safe_size);
-    device_vector<T>             dA(safe_size);
-    device_vector<T>             dtemp_buffer(safe_size);
+    rocsparse_handle          handle                 = local_handle;
+    rocsparse_int             m                      = safe_size;
+    rocsparse_int             n                      = safe_size;
+    const T*                  A                      = (const T*)0x4;
+    rocsparse_int             ld                     = safe_size;
+    const rocsparse_mat_descr descr                  = local_descr;
+    T*                        csr_val                = (T*)0x4;
+    rocsparse_int*            csr_row_ptr            = (rocsparse_int*)0x4;
+    rocsparse_int*            csr_col_ind            = (rocsparse_int*)0x4;
+    rocsparse_int*            nnz_total_dev_host_ptr = &h_nnz_total_dev_host_ptr;
+    size_t*                   buffer_size            = &h_buffer_size;
+    void*                     temp_buffer            = (void*)0x4;
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dA || !dtemp_buffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    int       nargs_to_exclude   = 1;
+    const int args_to_exclude[1] = {5};
+    const T*  threshold          = &h_threshold;
 
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-    // Test rocsparse_prune_dense2csr_buffer_size
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_buffer_size<T>(nullptr,
-                                                                     M,
-                                                                     N,
-                                                                     dA,
-                                                                     LDA,
-                                                                     &threshold,
-                                                                     descr,
-                                                                     dcsr_val,
-                                                                     dcsr_row_ptr,
-                                                                     dcsr_col_ind,
-                                                                     &buffer_size),
-                            rocsparse_status_invalid_handle);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_buffer_size<T>(handle,
-                                                                     M,
-                                                                     N,
-                                                                     dA,
-                                                                     LDA,
-                                                                     &threshold,
-                                                                     descr,
-                                                                     dcsr_val,
-                                                                     dcsr_row_ptr,
-                                                                     dcsr_col_ind,
-                                                                     nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_prune_dense2csr_nnz
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_nnz<T>(nullptr,
-                                                             M,
-                                                             N,
-                                                             dA,
-                                                             LDA,
-                                                             &threshold,
-                                                             descr,
-                                                             dcsr_row_ptr,
-                                                             &nnz_total_dev_host_ptr,
-                                                             dtemp_buffer),
-                            rocsparse_status_invalid_handle);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_nnz<T>(handle,
-                                                             -1,
-                                                             N,
-                                                             dA,
-                                                             LDA,
-                                                             &threshold,
-                                                             descr,
-                                                             dcsr_row_ptr,
-                                                             &nnz_total_dev_host_ptr,
-                                                             dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_nnz<T>(handle,
-                                                             M,
-                                                             -1,
-                                                             dA,
-                                                             LDA,
-                                                             &threshold,
-                                                             descr,
-                                                             dcsr_row_ptr,
-                                                             &nnz_total_dev_host_ptr,
-                                                             dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_nnz<T>(handle,
-                                                             M,
-                                                             N,
-                                                             dA,
-                                                             -1,
-                                                             &threshold,
-                                                             descr,
-                                                             dcsr_row_ptr,
-                                                             &nnz_total_dev_host_ptr,
-                                                             dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_nnz<T>(handle,
-                                                             M,
-                                                             N,
-                                                             (const T*)nullptr,
-                                                             LDA,
-                                                             &threshold,
-                                                             descr,
-                                                             dcsr_row_ptr,
-                                                             &nnz_total_dev_host_ptr,
-                                                             dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_nnz<T>(handle,
-                                                             M,
-                                                             N,
-                                                             dA,
-                                                             LDA,
-                                                             (const T*)nullptr,
-                                                             descr,
-                                                             dcsr_row_ptr,
-                                                             &nnz_total_dev_host_ptr,
-                                                             dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_nnz<T>(handle,
-                                                             M,
-                                                             N,
-                                                             dA,
-                                                             LDA,
-                                                             &threshold,
-                                                             nullptr,
-                                                             dcsr_row_ptr,
-                                                             &nnz_total_dev_host_ptr,
-                                                             dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_nnz<T>(handle,
-                                                             M,
-                                                             N,
-                                                             dA,
-                                                             LDA,
-                                                             &threshold,
-                                                             descr,
-                                                             nullptr,
-                                                             &nnz_total_dev_host_ptr,
-                                                             dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_prune_dense2csr_nnz<T>(
-            handle, M, N, dA, LDA, &threshold, descr, dcsr_row_ptr, nullptr, dtemp_buffer),
-        rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr_nnz<T>(handle,
-                                                             M,
-                                                             N,
-                                                             dA,
-                                                             LDA,
-                                                             &threshold,
-                                                             descr,
-                                                             dcsr_row_ptr,
-                                                             &nnz_total_dev_host_ptr,
-                                                             nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_prune_dense2csr
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr<T>(nullptr,
-                                                         M,
-                                                         N,
-                                                         dA,
-                                                         LDA,
-                                                         &threshold,
-                                                         descr,
-                                                         dcsr_val,
-                                                         dcsr_row_ptr,
-                                                         dcsr_col_ind,
-                                                         dtemp_buffer),
-                            rocsparse_status_invalid_handle);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr<T>(handle,
-                                                         -1,
-                                                         N,
-                                                         dA,
-                                                         LDA,
-                                                         &threshold,
-                                                         descr,
-                                                         dcsr_val,
-                                                         dcsr_row_ptr,
-                                                         dcsr_col_ind,
-                                                         dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr<T>(handle,
-                                                         M,
-                                                         -1,
-                                                         dA,
-                                                         LDA,
-                                                         &threshold,
-                                                         descr,
-                                                         dcsr_val,
-                                                         dcsr_row_ptr,
-                                                         dcsr_col_ind,
-                                                         dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr<T>(handle,
-                                                         M,
-                                                         N,
-                                                         dA,
-                                                         -1,
-                                                         &threshold,
-                                                         descr,
-                                                         dcsr_val,
-                                                         dcsr_row_ptr,
-                                                         dcsr_col_ind,
-                                                         dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr<T>(handle,
-                                                         M,
-                                                         N,
-                                                         (const T*)nullptr,
-                                                         LDA,
-                                                         &threshold,
-                                                         descr,
-                                                         dcsr_val,
-                                                         dcsr_row_ptr,
-                                                         dcsr_col_ind,
-                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr<T>(handle,
-                                                         M,
-                                                         N,
-                                                         dA,
-                                                         LDA,
-                                                         (const T*)nullptr,
-                                                         descr,
-                                                         dcsr_val,
-                                                         dcsr_row_ptr,
-                                                         dcsr_col_ind,
-                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr<T>(handle,
-                                                         M,
-                                                         N,
-                                                         dA,
-                                                         LDA,
-                                                         &threshold,
-                                                         nullptr,
-                                                         dcsr_val,
-                                                         dcsr_row_ptr,
-                                                         dcsr_col_ind,
-                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr<T>(handle,
-                                                         M,
-                                                         N,
-                                                         dA,
-                                                         LDA,
-                                                         &threshold,
-                                                         descr,
-                                                         (T*)nullptr,
-                                                         dcsr_row_ptr,
-                                                         dcsr_col_ind,
-                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr<T>(handle,
-                                                         M,
-                                                         N,
-                                                         dA,
-                                                         LDA,
-                                                         &threshold,
-                                                         descr,
-                                                         dcsr_val,
-                                                         nullptr,
-                                                         dcsr_col_ind,
-                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr<T>(handle,
-                                                         M,
-                                                         N,
-                                                         dA,
-                                                         LDA,
-                                                         &threshold,
-                                                         descr,
-                                                         dcsr_val,
-                                                         dcsr_row_ptr,
-                                                         nullptr,
-                                                         dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_dense2csr<T>(handle,
-                                                         M,
-                                                         N,
-                                                         dA,
-                                                         LDA,
-                                                         &threshold,
-                                                         descr,
-                                                         dcsr_val,
-                                                         dcsr_row_ptr,
-                                                         dcsr_col_ind,
-                                                         nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_BUFFER_SIZE \
+    handle, m, n, A, ld, threshold, descr, csr_val, csr_row_ptr, csr_col_ind, buffer_size
+#define PARAMS_NNZ \
+    handle, m, n, A, ld, threshold, descr, csr_row_ptr, nnz_total_dev_host_ptr, temp_buffer
+#define PARAMS handle, m, n, A, ld, threshold, descr, csr_val, csr_row_ptr, csr_col_ind, temp_buffer
+    auto_testing_bad_arg(rocsparse_prune_dense2csr_buffer_size<T>,
+                         nargs_to_exclude,
+                         args_to_exclude,
+                         PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(
+        rocsparse_prune_dense2csr_nnz<T>, nargs_to_exclude, args_to_exclude, PARAMS_NNZ);
+    auto_testing_bad_arg(rocsparse_prune_dense2csr<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+#undef PARAMS
+#undef PARAMS_NNZ
+#undef PARAMS_BUFFER_SIZE
 }
 
 template <typename T>

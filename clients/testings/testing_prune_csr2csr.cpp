@@ -22,494 +22,63 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename T>
 void testing_prune_csr2csr_bad_arg(const Arguments& arg)
 {
-    static constexpr size_t safe_size              = 100;
-    static constexpr T      threshold              = static_cast<T>(1);
-    static rocsparse_int    nnz_total_dev_host_ptr = 100;
-    static size_t           buffer_size            = 100;
+    static const size_t  safe_size                = 100;
+    static rocsparse_int h_nnz_total_dev_host_ptr = 100;
+    static size_t        h_buffer_size            = 100;
+    static T             h_threshold              = static_cast<T>(1);
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dcsr_row_ptr_A(safe_size);
-    device_vector<rocsparse_int> dcsr_col_ind_A(safe_size);
-    device_vector<T>             dcsr_val_A(safe_size);
-    device_vector<rocsparse_int> dcsr_row_ptr_C(safe_size);
-    device_vector<rocsparse_int> dcsr_col_ind_C(safe_size);
-    device_vector<T>             dcsr_val_C(safe_size);
-    device_vector<T>             dtemp_buffer(safe_size);
+    // Create descriptors
+    rocsparse_local_mat_descr local_csr_descr_A;
+    rocsparse_local_mat_descr local_csr_descr_C;
 
-    if(!dcsr_row_ptr_A || !dcsr_col_ind_A || !dcsr_val_A || !dcsr_row_ptr_C || !dcsr_col_ind_C
-       || !dcsr_val_C || !dtemp_buffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    rocsparse_handle          handle                 = local_handle;
+    rocsparse_int             m                      = safe_size;
+    rocsparse_int             n                      = safe_size;
+    rocsparse_int             nnz_A                  = safe_size;
+    const rocsparse_mat_descr csr_descr_A            = local_csr_descr_A;
+    const T*                  csr_val_A              = (const T*)0x4;
+    const rocsparse_int*      csr_row_ptr_A          = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_col_ind_A          = (const rocsparse_int*)0x4;
+    const rocsparse_mat_descr csr_descr_C            = local_csr_descr_C;
+    T*                        csr_val_C              = (T*)0x4;
+    rocsparse_int*            csr_row_ptr_C          = (rocsparse_int*)0x4;
+    rocsparse_int*            csr_col_ind_C          = (rocsparse_int*)0x4;
+    rocsparse_int*            nnz_total_dev_host_ptr = &h_nnz_total_dev_host_ptr;
+    size_t*                   buffer_size            = &h_buffer_size;
+    void*                     temp_buffer            = (void*)0x4;
 
-    rocsparse_local_mat_descr csr_descr_A;
-    rocsparse_local_mat_descr csr_descr_C;
+    int       nargs_to_exclude   = 1;
+    const int args_to_exclude[1] = {8};
+    const T*  threshold          = &h_threshold;
 
-    rocsparse_set_mat_index_base(csr_descr_A, rocsparse_index_base_zero);
-    rocsparse_set_mat_index_base(csr_descr_C, rocsparse_index_base_zero);
-
-    // Test rocsparse_prune_csr2csr_buffer_size
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_buffer_size<T>(nullptr,
-                                                                   safe_size,
-                                                                   safe_size,
-                                                                   safe_size,
-                                                                   csr_descr_A,
-                                                                   dcsr_val_A,
-                                                                   dcsr_row_ptr_A,
-                                                                   dcsr_col_ind_A,
-                                                                   &threshold,
-                                                                   csr_descr_C,
-                                                                   dcsr_val_C,
-                                                                   dcsr_row_ptr_C,
-                                                                   dcsr_col_ind_C,
-                                                                   &buffer_size),
-                            rocsparse_status_invalid_handle);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_buffer_size<T>(handle,
-                                                                   safe_size,
-                                                                   safe_size,
-                                                                   safe_size,
-                                                                   csr_descr_A,
-                                                                   dcsr_val_A,
-                                                                   dcsr_row_ptr_A,
-                                                                   dcsr_col_ind_A,
-                                                                   &threshold,
-                                                                   csr_descr_C,
-                                                                   dcsr_val_C,
-                                                                   dcsr_row_ptr_C,
-                                                                   dcsr_col_ind_C,
-                                                                   nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_prune_csr2csr_nnz
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(nullptr,
-                                                           safe_size,
-                                                           safe_size,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           dcsr_val_A,
-                                                           dcsr_row_ptr_A,
-                                                           dcsr_col_ind_A,
-                                                           &threshold,
-                                                           csr_descr_C,
-                                                           dcsr_row_ptr_C,
-                                                           &nnz_total_dev_host_ptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_handle);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           -1,
-                                                           safe_size,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           dcsr_val_A,
-                                                           dcsr_row_ptr_A,
-                                                           dcsr_col_ind_A,
-                                                           &threshold,
-                                                           csr_descr_C,
-                                                           dcsr_row_ptr_C,
-                                                           &nnz_total_dev_host_ptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           safe_size,
-                                                           -1,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           dcsr_val_A,
-                                                           dcsr_row_ptr_A,
-                                                           dcsr_col_ind_A,
-                                                           &threshold,
-                                                           csr_descr_C,
-                                                           dcsr_row_ptr_C,
-                                                           &nnz_total_dev_host_ptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           safe_size,
-                                                           safe_size,
-                                                           -1,
-                                                           csr_descr_A,
-                                                           dcsr_val_A,
-                                                           dcsr_row_ptr_A,
-                                                           dcsr_col_ind_A,
-                                                           &threshold,
-                                                           csr_descr_C,
-                                                           dcsr_row_ptr_C,
-                                                           &nnz_total_dev_host_ptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           safe_size,
-                                                           safe_size,
-                                                           safe_size,
-                                                           nullptr,
-                                                           dcsr_val_A,
-                                                           dcsr_row_ptr_A,
-                                                           dcsr_col_ind_A,
-                                                           &threshold,
-                                                           csr_descr_C,
-                                                           dcsr_row_ptr_C,
-                                                           &nnz_total_dev_host_ptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           safe_size,
-                                                           safe_size,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           (const T*)nullptr,
-                                                           dcsr_row_ptr_A,
-                                                           dcsr_col_ind_A,
-                                                           &threshold,
-                                                           csr_descr_C,
-                                                           dcsr_row_ptr_C,
-                                                           &nnz_total_dev_host_ptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           safe_size,
-                                                           safe_size,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           dcsr_val_A,
-                                                           nullptr,
-                                                           dcsr_col_ind_A,
-                                                           &threshold,
-                                                           csr_descr_C,
-                                                           dcsr_row_ptr_C,
-                                                           &nnz_total_dev_host_ptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           safe_size,
-                                                           safe_size,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           dcsr_val_A,
-                                                           dcsr_row_ptr_A,
-                                                           nullptr,
-                                                           &threshold,
-                                                           csr_descr_C,
-                                                           dcsr_row_ptr_C,
-                                                           &nnz_total_dev_host_ptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           safe_size,
-                                                           safe_size,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           dcsr_val_A,
-                                                           dcsr_row_ptr_A,
-                                                           dcsr_col_ind_A,
-                                                           (const T*)nullptr,
-                                                           csr_descr_C,
-                                                           dcsr_row_ptr_C,
-                                                           &nnz_total_dev_host_ptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           safe_size,
-                                                           safe_size,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           dcsr_val_A,
-                                                           dcsr_row_ptr_A,
-                                                           dcsr_col_ind_A,
-                                                           &threshold,
-                                                           nullptr,
-                                                           dcsr_row_ptr_C,
-                                                           &nnz_total_dev_host_ptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           safe_size,
-                                                           safe_size,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           dcsr_val_A,
-                                                           dcsr_row_ptr_A,
-                                                           dcsr_col_ind_A,
-                                                           &threshold,
-                                                           csr_descr_C,
-                                                           nullptr,
-                                                           &nnz_total_dev_host_ptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           safe_size,
-                                                           safe_size,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           dcsr_val_A,
-                                                           dcsr_row_ptr_A,
-                                                           dcsr_col_ind_A,
-                                                           &threshold,
-                                                           csr_descr_C,
-                                                           dcsr_row_ptr_C,
-                                                           nullptr,
-                                                           dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz<T>(handle,
-                                                           safe_size,
-                                                           safe_size,
-                                                           safe_size,
-                                                           csr_descr_A,
-                                                           dcsr_val_A,
-                                                           dcsr_row_ptr_A,
-                                                           dcsr_col_ind_A,
-                                                           &threshold,
-                                                           csr_descr_C,
-                                                           dcsr_row_ptr_C,
-                                                           &nnz_total_dev_host_ptr,
-                                                           nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_prune_csr2csr
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(nullptr,
-                                                       safe_size,
-                                                       safe_size,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_handle);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       -1,
-                                                       safe_size,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       -1,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       safe_size,
-                                                       -1,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_size);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       safe_size,
-                                                       safe_size,
-                                                       nullptr,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       safe_size,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       (const T*)nullptr,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       safe_size,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       nullptr,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       safe_size,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       nullptr,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       safe_size,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       (const T*)nullptr,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       safe_size,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       nullptr,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       safe_size,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       (T*)nullptr,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       safe_size,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       nullptr,
-                                                       dcsr_col_ind_C,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       safe_size,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       nullptr,
-                                                       dtemp_buffer),
-                            rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr<T>(handle,
-                                                       safe_size,
-                                                       safe_size,
-                                                       safe_size,
-                                                       csr_descr_A,
-                                                       dcsr_val_A,
-                                                       dcsr_row_ptr_A,
-                                                       dcsr_col_ind_A,
-                                                       &threshold,
-                                                       csr_descr_C,
-                                                       dcsr_val_C,
-                                                       dcsr_row_ptr_C,
-                                                       dcsr_col_ind_C,
-                                                       nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_BUFFER_SIZE                                                                \
+    handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, threshold, \
+        csr_descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, buffer_size
+#define PARAMS_NNZ                                                                        \
+    handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, threshold, \
+        csr_descr_C, csr_row_ptr_C, nnz_total_dev_host_ptr, temp_buffer
+#define PARAMS                                                                            \
+    handle, m, n, nnz_A, csr_descr_A, csr_val_A, csr_row_ptr_A, csr_col_ind_A, threshold, \
+        csr_descr_C, csr_val_C, csr_row_ptr_C, csr_col_ind_C, temp_buffer
+    auto_testing_bad_arg(rocsparse_prune_csr2csr_buffer_size<T>,
+                         nargs_to_exclude,
+                         args_to_exclude,
+                         PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(
+        rocsparse_prune_csr2csr_nnz<T>, nargs_to_exclude, args_to_exclude, PARAMS_NNZ);
+    auto_testing_bad_arg(rocsparse_prune_csr2csr<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+#undef PARAMS
+#undef PARAMS_NNZ
+#undef PARAMS_BUFFER_SIZE
 }
 
 template <typename T>
@@ -594,13 +163,13 @@ void testing_prune_csr2csr(const Arguments& arg)
                                                                  N,
                                                                  nnz_A,
                                                                  csr_descr_A,
-                                                                 nullptr,
+                                                                 d_csr_val_A,
                                                                  d_csr_row_ptr_A,
-                                                                 nullptr,
+                                                                 d_csr_col_ind_A,
                                                                  &threshold,
                                                                  csr_descr_C,
                                                                  nullptr,
-                                                                 nullptr,
+                                                                 d_csr_row_ptr_C,
                                                                  nullptr,
                                                                  &buffer_size));
 

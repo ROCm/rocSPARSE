@@ -25,327 +25,57 @@
 #include "testing.hpp"
 #include "testing_csrilu0.hpp"
 
+#include "auto_testing_bad_arg.hpp"
+
 template <typename T>
 void testing_bsrilu0_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
     // Create matrix descriptor
-    rocsparse_local_mat_descr descr;
+    rocsparse_local_mat_descr local_descr;
 
     // Create matrix info
-    rocsparse_local_mat_info info;
+    rocsparse_local_mat_info local_info;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dbsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dbsr_col_ind(safe_size);
-    device_vector<T>             dbsr_val(safe_size);
-    device_vector<T>             dbuffer(safe_size);
-    device_vector<T>             dboost_tol(1);
-    device_vector<T>             dboost_val(1);
+    size_t h_buffer_size;
 
-    if(!dbsr_row_ptr || !dbsr_col_ind || !dbsr_val || !dbuffer || !dboost_tol || !dboost_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    rocsparse_handle          handle      = local_handle;
+    rocsparse_direction       dir         = rocsparse_direction_row;
+    rocsparse_int             mb          = safe_size;
+    rocsparse_int             nnzb        = safe_size;
+    const rocsparse_mat_descr descr       = local_descr;
+    T*                        bsr_val     = (T*)0x4;
+    const rocsparse_int*      bsr_row_ptr = (const rocsparse_int*)0x4;
+    const rocsparse_int*      bsr_col_ind = (const rocsparse_int*)0x4;
+    rocsparse_int             block_dim   = safe_size;
+    rocsparse_mat_info        info        = local_info;
+    rocsparse_analysis_policy analysis    = rocsparse_analysis_policy_force;
+    rocsparse_solve_policy    solve       = rocsparse_solve_policy_auto;
+    size_t*                   buffer_size = &h_buffer_size;
+    void*                     temp_buffer = (void*)0x4;
 
-    // Test rocsparse_bsrilu0_buffer_size()
-    size_t buffer_size;
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_buffer_size<T>(nullptr,
-                                                             rocsparse_direction_row,
-                                                             safe_size,
-                                                             safe_size,
-                                                             descr,
-                                                             dbsr_val,
-                                                             dbsr_row_ptr,
-                                                             dbsr_col_ind,
-                                                             safe_size,
-                                                             info,
-                                                             &buffer_size),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_buffer_size<T>(handle,
-                                                             rocsparse_direction_row,
-                                                             safe_size,
-                                                             safe_size,
-                                                             nullptr,
-                                                             dbsr_val,
-                                                             dbsr_row_ptr,
-                                                             dbsr_col_ind,
-                                                             safe_size,
-                                                             info,
-                                                             &buffer_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_buffer_size<T>(handle,
-                                                             rocsparse_direction_row,
-                                                             safe_size,
-                                                             safe_size,
-                                                             descr,
-                                                             nullptr,
-                                                             dbsr_row_ptr,
-                                                             dbsr_col_ind,
-                                                             safe_size,
-                                                             info,
-                                                             &buffer_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_buffer_size<T>(handle,
-                                                             rocsparse_direction_row,
-                                                             safe_size,
-                                                             safe_size,
-                                                             descr,
-                                                             dbsr_val,
-                                                             nullptr,
-                                                             dbsr_col_ind,
-                                                             safe_size,
-                                                             info,
-                                                             &buffer_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_buffer_size<T>(handle,
-                                                             rocsparse_direction_row,
-                                                             safe_size,
-                                                             safe_size,
-                                                             descr,
-                                                             dbsr_val,
-                                                             dbsr_row_ptr,
-                                                             nullptr,
-                                                             safe_size,
-                                                             info,
-                                                             &buffer_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_buffer_size<T>(handle,
-                                                             rocsparse_direction_row,
-                                                             safe_size,
-                                                             safe_size,
-                                                             descr,
-                                                             dbsr_val,
-                                                             dbsr_row_ptr,
-                                                             dbsr_col_ind,
-                                                             safe_size,
-                                                             nullptr,
-                                                             &buffer_size),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_buffer_size<T>(handle,
-                                                             rocsparse_direction_row,
-                                                             safe_size,
-                                                             safe_size,
-                                                             descr,
-                                                             dbsr_val,
-                                                             dbsr_row_ptr,
-                                                             dbsr_col_ind,
-                                                             safe_size,
-                                                             info,
-                                                             nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_BUFFER_SIZE \
+    handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, buffer_size
 
-    // Test rocsparse_bsrilu0_numeric_boost()
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_bsrilu0_numeric_boost<T>(nullptr, info, 1, get_boost_tol(dboost_tol), dboost_val),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_numeric_boost<T>(
-                                handle, nullptr, 1, get_boost_tol(dboost_tol), dboost_val),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_bsrilu0_numeric_boost<T>(handle, info, 1, get_boost_tol((T*)nullptr), dboost_val),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_bsrilu0_numeric_boost<T>(handle, info, 1, get_boost_tol(dboost_tol), nullptr),
-        rocsparse_status_invalid_pointer);
+#define PARAMS_ANALYSIS                                                                         \
+    handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, analysis, \
+        solve, temp_buffer
 
-    // Test rocsparse_bsrilu0_analysis()
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_analysis<T>(nullptr,
-                                                          rocsparse_direction_row,
-                                                          safe_size,
-                                                          safe_size,
-                                                          descr,
-                                                          dbsr_val,
-                                                          dbsr_row_ptr,
-                                                          dbsr_col_ind,
-                                                          safe_size,
-                                                          info,
-                                                          rocsparse_analysis_policy_reuse,
-                                                          rocsparse_solve_policy_auto,
-                                                          dbuffer),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_analysis<T>(handle,
-                                                          rocsparse_direction_row,
-                                                          safe_size,
-                                                          safe_size,
-                                                          nullptr,
-                                                          dbsr_val,
-                                                          dbsr_row_ptr,
-                                                          dbsr_col_ind,
-                                                          safe_size,
-                                                          info,
-                                                          rocsparse_analysis_policy_reuse,
-                                                          rocsparse_solve_policy_auto,
-                                                          dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_analysis<T>(handle,
-                                                          rocsparse_direction_row,
-                                                          safe_size,
-                                                          safe_size,
-                                                          descr,
-                                                          nullptr,
-                                                          dbsr_row_ptr,
-                                                          dbsr_col_ind,
-                                                          safe_size,
-                                                          info,
-                                                          rocsparse_analysis_policy_reuse,
-                                                          rocsparse_solve_policy_auto,
-                                                          dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_analysis<T>(handle,
-                                                          rocsparse_direction_row,
-                                                          safe_size,
-                                                          safe_size,
-                                                          descr,
-                                                          dbsr_val,
-                                                          nullptr,
-                                                          dbsr_col_ind,
-                                                          safe_size,
-                                                          info,
-                                                          rocsparse_analysis_policy_reuse,
-                                                          rocsparse_solve_policy_auto,
-                                                          dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_analysis<T>(handle,
-                                                          rocsparse_direction_row,
-                                                          safe_size,
-                                                          safe_size,
-                                                          descr,
-                                                          dbsr_val,
-                                                          dbsr_row_ptr,
-                                                          nullptr,
-                                                          safe_size,
-                                                          info,
-                                                          rocsparse_analysis_policy_reuse,
-                                                          rocsparse_solve_policy_auto,
-                                                          dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_analysis<T>(handle,
-                                                          rocsparse_direction_row,
-                                                          safe_size,
-                                                          safe_size,
-                                                          descr,
-                                                          dbsr_val,
-                                                          dbsr_row_ptr,
-                                                          dbsr_col_ind,
-                                                          safe_size,
-                                                          nullptr,
-                                                          rocsparse_analysis_policy_reuse,
-                                                          rocsparse_solve_policy_auto,
-                                                          dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_analysis<T>(handle,
-                                                          rocsparse_direction_row,
-                                                          safe_size,
-                                                          safe_size,
-                                                          descr,
-                                                          dbsr_val,
-                                                          dbsr_row_ptr,
-                                                          dbsr_col_ind,
-                                                          safe_size,
-                                                          info,
-                                                          rocsparse_analysis_policy_reuse,
-                                                          rocsparse_solve_policy_auto,
-                                                          nullptr),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS                                                                               \
+    handle, dir, mb, nnzb, descr, bsr_val, bsr_row_ptr, bsr_col_ind, block_dim, info, solve, \
+        temp_buffer
 
-    // Test rocsparse_bsrilu0()
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(nullptr,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 info,
-                                                 rocsparse_solve_policy_auto,
-                                                 dbuffer),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 nullptr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 info,
-                                                 rocsparse_solve_policy_auto,
-                                                 dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 descr,
-                                                 nullptr,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 info,
-                                                 rocsparse_solve_policy_auto,
-                                                 dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 descr,
-                                                 dbsr_val,
-                                                 nullptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 info,
-                                                 rocsparse_solve_policy_auto,
-                                                 dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 nullptr,
-                                                 safe_size,
-                                                 info,
-                                                 rocsparse_solve_policy_auto,
-                                                 dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 nullptr,
-                                                 rocsparse_solve_policy_auto,
-                                                 dbuffer),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(handle,
-                                                 rocsparse_direction_row,
-                                                 safe_size,
-                                                 safe_size,
-                                                 descr,
-                                                 dbsr_val,
-                                                 dbsr_row_ptr,
-                                                 dbsr_col_ind,
-                                                 safe_size,
-                                                 info,
-                                                 rocsparse_solve_policy_auto,
-                                                 nullptr),
-                            rocsparse_status_invalid_pointer);
+    auto_testing_bad_arg(rocsparse_bsrilu0_buffer_size<T>, PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(rocsparse_bsrilu0_analysis<T>, PARAMS_ANALYSIS);
+    auto_testing_bad_arg(rocsparse_bsrilu0<T>, PARAMS);
+
+#undef PARAMS_BUFFER_SIZE
+#undef PARAMS_ANALYSIS
+#undef PARAMS
 
     // Test rocsparse_bsrilu0_zero_pivot()
     rocsparse_int position;
@@ -365,11 +95,11 @@ void testing_bsrilu0_bad_arg(const Arguments& arg)
                                                              safe_size,
                                                              descr,
                                                              nullptr,
-                                                             dbsr_row_ptr,
+                                                             bsr_row_ptr,
                                                              nullptr,
                                                              safe_size,
                                                              info,
-                                                             &buffer_size),
+                                                             buffer_size),
                             rocsparse_status_invalid_pointer);
 
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_analysis<T>(handle,
@@ -378,13 +108,13 @@ void testing_bsrilu0_bad_arg(const Arguments& arg)
                                                           safe_size,
                                                           descr,
                                                           nullptr,
-                                                          dbsr_row_ptr,
+                                                          bsr_row_ptr,
                                                           nullptr,
                                                           safe_size,
                                                           info,
                                                           rocsparse_analysis_policy_reuse,
                                                           rocsparse_solve_policy_auto,
-                                                          dbuffer),
+                                                          temp_buffer),
                             rocsparse_status_invalid_pointer);
 
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(handle,
@@ -393,12 +123,12 @@ void testing_bsrilu0_bad_arg(const Arguments& arg)
                                                  safe_size,
                                                  descr,
                                                  nullptr,
-                                                 dbsr_row_ptr,
+                                                 bsr_row_ptr,
                                                  nullptr,
                                                  safe_size,
                                                  info,
                                                  rocsparse_solve_policy_auto,
-                                                 dbuffer),
+                                                 temp_buffer),
                             rocsparse_status_invalid_pointer);
 }
 
@@ -406,26 +136,27 @@ template <typename T>
 void testing_bsrilu0(const Arguments& arg)
 {
     static constexpr bool       to_int    = false;
-    static constexpr bool       full_rank = true;
+    static constexpr bool       full_rank = false;
     rocsparse_matrix_factory<T> matrix_factory(arg, to_int, full_rank);
-    rocsparse_int               M           = arg.M;
-    rocsparse_int               N           = arg.N;
-    rocsparse_int               block_dim   = arg.block_dim;
-    rocsparse_analysis_policy   apol        = arg.apol;
-    rocsparse_solve_policy      spol        = arg.spol;
-    int                         boost       = arg.numericboost;
-    T                           h_boost_tol = static_cast<T>(arg.boosttol);
-    rocsparse_index_base        base        = arg.baseA;
-    rocsparse_direction         direction   = arg.direction;
-    std::string                 filename
-        = arg.timing ? arg.filename : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
+
+    rocsparse_int             M           = arg.M;
+    rocsparse_int             N           = arg.N;
+    rocsparse_int             block_dim   = arg.block_dim;
+    rocsparse_analysis_policy apol        = arg.apol;
+    rocsparse_solve_policy    spol        = arg.spol;
+    int                       boost       = arg.numericboost;
+    T                         h_boost_tol = static_cast<T>(arg.boosttol);
+    rocsparse_index_base      base        = arg.baseA;
+    rocsparse_direction       direction   = arg.direction;
 
     T h_boost_val = arg.get_boostval<T>();
 
     rocsparse_int Mb = -1;
+    rocsparse_int Nb = -1;
     if(block_dim > 0)
     {
         Mb = (M + block_dim - 1) / block_dim;
+        Nb = (N + block_dim - 1) / block_dim;
     }
 
     // Create rocsparse handle
@@ -496,125 +227,53 @@ void testing_bsrilu0(const Arguments& arg)
         return;
     }
 
-    // Allocate host memory for original CSR matrix
-    host_vector<rocsparse_int> hcsr_row_ptr_orig;
-    host_vector<rocsparse_int> hcsr_col_ind_orig;
-    host_vector<T>             hcsr_val_orig;
-
-    // Generate CSR matrix on host (or read from file)
-    rocsparse_int nnz;
-    matrix_factory.init_csr(hcsr_row_ptr_orig, hcsr_col_ind_orig, hcsr_val_orig, M, N, nnz, base);
-
-    // M and N can be modified by rocsparse_init_csr_matrix if reading from a file
-    Mb = (M + block_dim - 1) / block_dim;
-
-    // // Allocate device memory for original CSR matrix
-    device_vector<rocsparse_int> dcsr_row_ptr_orig(M + 1);
-    device_vector<rocsparse_int> dcsr_col_ind_orig(nnz);
-    device_vector<T>             dcsr_val_orig(nnz);
-
-    if(!dcsr_row_ptr_orig || !dcsr_col_ind_orig || !dcsr_val_orig)
+    if(M != N)
     {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
-    // Copy CSR matrix to device
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_row_ptr_orig,
-                              hcsr_row_ptr_orig.data(),
-                              sizeof(rocsparse_int) * (M + 1),
-                              hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_col_ind_orig,
-                              hcsr_col_ind_orig.data(),
-                              sizeof(rocsparse_int) * nnz,
-                              hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(
-        hipMemcpy(dcsr_val_orig, hcsr_val_orig.data(), sizeof(T) * nnz, hipMemcpyHostToDevice));
+    // Allocate host memory for output BSR matrix
+    host_vector<rocsparse_int> hbsr_row_ptr;
+    host_vector<rocsparse_int> hbsr_col_ind;
+    host_vector<T>             hbsr_val_1;
 
-    // Allocate device memory for BSR row pointer array
-    device_vector<rocsparse_int> dbsr_row_ptr(Mb + 1);
-
-    if(!dbsr_row_ptr)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-    // Convert sample CSR matrix to bsr
+    // Generate BSR matrix on host (or read from file)
     rocsparse_int nnzb;
-    CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr_nnz(handle,
-                                                direction,
-                                                M,
-                                                N,
-                                                descr,
-                                                dcsr_row_ptr_orig,
-                                                dcsr_col_ind_orig,
-                                                block_dim,
-                                                descr,
-                                                dbsr_row_ptr,
-                                                &nnzb));
+    matrix_factory.init_bsr(
+        hbsr_row_ptr, hbsr_col_ind, hbsr_val_1, direction, Mb, Nb, nnzb, block_dim, base);
+    M = Mb * block_dim;
 
-    // Allocate device memory for BSR col indices and values array
+    host_vector<T> hbsr_val_orig(hbsr_val_1);
+    host_vector<T> hbsr_val_gold(hbsr_val_1);
+    host_vector<T> hbsr_val_2(hbsr_val_1);
+
+    // Allocate device memory for BSR matrix
+    device_vector<rocsparse_int> dbsr_row_ptr(Mb + 1);
     device_vector<rocsparse_int> dbsr_col_ind(nnzb);
     device_vector<T>             dbsr_val_1(nnzb * block_dim * block_dim);
     device_vector<T>             dbsr_val_2(nnzb * block_dim * block_dim);
 
-    if(!dbsr_col_ind || !dbsr_val_1 || !dbsr_val_2)
+    if(!dbsr_row_ptr || !dbsr_col_ind || !dbsr_val_1 || !dbsr_val_2)
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
     }
 
-    CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr<T>(handle,
-                                               direction,
-                                               M,
-                                               N,
-                                               descr,
-                                               dcsr_val_orig,
-                                               dcsr_row_ptr_orig,
-                                               dcsr_col_ind_orig,
-                                               block_dim,
-                                               descr,
-                                               dbsr_val_1,
-                                               dbsr_row_ptr,
-                                               dbsr_col_ind));
-
-    CHECK_HIP_ERROR(hipMemcpy(
-        dbsr_val_2, dbsr_val_1, sizeof(T) * nnzb * block_dim * block_dim, hipMemcpyDeviceToDevice));
-
-    // Allocate host memory for output BSR matrix
-    host_vector<rocsparse_int> hbsr_row_ptr(Mb + 1);
-    host_vector<rocsparse_int> hbsr_col_ind(nnzb);
-    host_vector<T>             hbsr_val_orig(nnzb * block_dim * block_dim);
-    host_vector<T>             hbsr_val_gold(nnzb * block_dim * block_dim);
-    host_vector<T>             hbsr_val_1(nnzb * block_dim * block_dim);
-    host_vector<T>             hbsr_val_2(nnzb * block_dim * block_dim);
-
-    // Copy BSR matrix output to host
-    CHECK_HIP_ERROR(hipMemcpy(hbsr_row_ptr.data(),
-                              dbsr_row_ptr,
+    // Copy BSR matrix from host to device
+    CHECK_HIP_ERROR(hipMemcpy(dbsr_row_ptr,
+                              hbsr_row_ptr.data(),
                               sizeof(rocsparse_int) * (Mb + 1),
-                              hipMemcpyDeviceToHost));
+                              hipMemcpyHostToDevice));
     CHECK_HIP_ERROR(hipMemcpy(
-        hbsr_col_ind.data(), dbsr_col_ind, sizeof(rocsparse_int) * nnzb, hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(hbsr_val_orig.data(),
-                              dbsr_val_1,
+        dbsr_col_ind, hbsr_col_ind.data(), sizeof(rocsparse_int) * nnzb, hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dbsr_val_1,
+                              hbsr_val_1.data(),
                               sizeof(T) * nnzb * block_dim * block_dim,
-                              hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(hbsr_val_gold.data(),
-                              dbsr_val_1,
+                              hipMemcpyHostToDevice));
+    CHECK_HIP_ERROR(hipMemcpy(dbsr_val_2,
+                              hbsr_val_2.data(),
                               sizeof(T) * nnzb * block_dim * block_dim,
-                              hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(hbsr_val_1.data(),
-                              dbsr_val_1,
-                              sizeof(T) * nnzb * block_dim * block_dim,
-                              hipMemcpyDeviceToHost));
-    CHECK_HIP_ERROR(hipMemcpy(hbsr_val_2.data(),
-                              dbsr_val_2,
-                              sizeof(T) * nnzb * block_dim * block_dim,
-                              hipMemcpyDeviceToHost));
+                              hipMemcpyHostToDevice));
 
     // Allocate host memory for pivots
     host_vector<rocsparse_int> hanalysis_pivot_1(1);

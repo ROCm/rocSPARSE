@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,98 +24,40 @@
 
 #include "testing.hpp"
 
+#include "auto_testing_bad_arg.hpp"
+
 template <typename T>
 void testing_csr2hyb_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
-    // Create matrix descriptor
-    rocsparse_local_mat_descr descr;
+    // Create matrix descriptors
+    rocsparse_local_mat_descr local_descr;
 
     // Create hyb matrix
-    rocsparse_local_hyb_mat hyb;
+    rocsparse_local_hyb_mat local_hyb;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dcsr_col_ind(safe_size);
-    device_vector<T>             dcsr_val(safe_size);
+    rocsparse_handle          handle         = local_handle;
+    rocsparse_int             m              = safe_size;
+    rocsparse_int             n              = safe_size;
+    const rocsparse_mat_descr descr          = local_descr;
+    const T*                  csr_val        = (const T*)0x4;
+    const rocsparse_int*      csr_row_ptr    = (const rocsparse_int*)0x4;
+    const rocsparse_int*      csr_col_ind    = (const rocsparse_int*)0x4;
+    rocsparse_hyb_mat         hyb            = local_hyb;
+    rocsparse_hyb_partition   partition_type = rocsparse_hyb_partition_auto;
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    int           nargs_to_exclude   = 1;
+    const int     args_to_exclude[1] = {8};
+    rocsparse_int user_ell_width     = 0;
 
-    // Test rocsparse_csr2hyb()
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(nullptr,
-                                                 safe_size,
-                                                 safe_size,
-                                                 descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind,
-                                                 hyb,
-                                                 0,
-                                                 rocsparse_hyb_partition_auto),
-                            rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(handle,
-                                                 safe_size,
-                                                 safe_size,
-                                                 nullptr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind,
-                                                 hyb,
-                                                 0,
-                                                 rocsparse_hyb_partition_auto),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(handle,
-                                                 safe_size,
-                                                 safe_size,
-                                                 descr,
-                                                 nullptr,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind,
-                                                 hyb,
-                                                 0,
-                                                 rocsparse_hyb_partition_auto),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(handle,
-                                                 safe_size,
-                                                 safe_size,
-                                                 descr,
-                                                 dcsr_val,
-                                                 nullptr,
-                                                 dcsr_col_ind,
-                                                 hyb,
-                                                 0,
-                                                 rocsparse_hyb_partition_auto),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(handle,
-                                                 safe_size,
-                                                 safe_size,
-                                                 descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 nullptr,
-                                                 hyb,
-                                                 0,
-                                                 rocsparse_hyb_partition_auto),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2hyb<T>(handle,
-                                                 safe_size,
-                                                 safe_size,
-                                                 descr,
-                                                 dcsr_val,
-                                                 dcsr_row_ptr,
-                                                 dcsr_col_ind,
-                                                 nullptr,
-                                                 0,
-                                                 rocsparse_hyb_partition_auto),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS \
+    handle, m, n, descr, csr_val, csr_row_ptr, csr_col_ind, hyb, user_ell_width, partition_type
+    auto_testing_bad_arg(rocsparse_csr2hyb<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+#undef PARAMS
 }
 
 template <typename T>

@@ -24,48 +24,29 @@
 
 #include "testing.hpp"
 
+#include "auto_testing_bad_arg.hpp"
+
 template <typename T>
 void testing_dotci_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
-    T result;
+    T h_result;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dx_ind(safe_size);
-    device_vector<T>             dx_val(safe_size);
-    device_vector<T>             dy(safe_size);
+    rocsparse_handle     handle = local_handle;
+    rocsparse_int        nnz    = safe_size;
+    const T*             x_val  = (const T*)0x4;
+    const rocsparse_int* x_ind  = (const rocsparse_int*)0x4;
+    const T*             y      = (const T*)0x4;
+    T*                   result = &h_result;
+    rocsparse_index_base base   = rocsparse_index_base_zero;
 
-    if(!dx_ind || !dx_val || !dy)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Test rocsparse_dotci()
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dotci<T>(
-            nullptr, safe_size, dx_val, dx_ind, dy, &result, rocsparse_index_base_zero),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dotci<T>(
-            handle, safe_size, nullptr, dx_ind, dy, &result, rocsparse_index_base_zero),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dotci<T>(
-            handle, safe_size, dx_val, nullptr, dy, &result, rocsparse_index_base_zero),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dotci<T>(
-            handle, safe_size, dx_val, dx_ind, nullptr, &result, rocsparse_index_base_zero),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dotci<T>(
-            handle, safe_size, dx_val, dx_ind, dy, nullptr, rocsparse_index_base_zero),
-        rocsparse_status_invalid_pointer);
+#define PARAMS handle, nnz, x_val, x_ind, y, result, base
+    auto_testing_bad_arg(rocsparse_dotci<T>, PARAMS);
+#undef PARAMS
 }
 
 template <typename T>

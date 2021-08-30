@@ -42,6 +42,16 @@ extern "C" rocsparse_status rocsparse_sbsrilu0_buffer_size(rocsparse_handle     
                                                            rocsparse_mat_info        info,
                                                            size_t*                   buffer_size)
 {
+    if(rocsparse_enum_utils::is_invalid(dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(block_dim <= 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
     return rocsparse_scsrsv_buffer_size(handle,
                                         rocsparse_operation_none,
                                         mb,
@@ -66,6 +76,16 @@ extern "C" rocsparse_status rocsparse_dbsrilu0_buffer_size(rocsparse_handle     
                                                            rocsparse_mat_info        info,
                                                            size_t*                   buffer_size)
 {
+    if(rocsparse_enum_utils::is_invalid(dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(block_dim <= 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
     return rocsparse_dcsrsv_buffer_size(handle,
                                         rocsparse_operation_none,
                                         mb,
@@ -90,6 +110,16 @@ extern "C" rocsparse_status rocsparse_cbsrilu0_buffer_size(rocsparse_handle     
                                                            rocsparse_mat_info   info,
                                                            size_t*              buffer_size)
 {
+    if(rocsparse_enum_utils::is_invalid(dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(block_dim <= 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
     return rocsparse_ccsrsv_buffer_size(handle,
                                         rocsparse_operation_none,
                                         mb,
@@ -114,6 +144,16 @@ extern "C" rocsparse_status rocsparse_zbsrilu0_buffer_size(rocsparse_handle     
                                                            rocsparse_mat_info   info,
                                                            size_t*              buffer_size)
 {
+    if(rocsparse_enum_utils::is_invalid(dir))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(block_dim <= 0)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
     return rocsparse_zcsrsv_buffer_size(handle,
                                         rocsparse_operation_none,
                                         mb,

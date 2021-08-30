@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,81 +21,50 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
+template <typename T>
 void testing_dnmat_descr_bad_arg(const Arguments& arg)
 {
-    int64_t rows = 100;
-    int64_t cols = 100;
-    int64_t ld   = 100;
+    static const size_t safe_size = 100;
 
-    rocsparse_datatype type  = rocsparse_datatype_f32_r;
-    rocsparse_order    order = rocsparse_order_column;
+    rocsparse_dnmat_descr A{};
+    int64_t               rows   = safe_size;
+    int64_t               cols   = safe_size;
+    int64_t               ld     = safe_size;
+    void*                 values = (void*)0x4;
+    rocsparse_order       order  = rocsparse_order_column;
+    rocsparse_datatype    ttype  = get_datatype<T>();
 
-    // Allocate memory on device
-    device_vector<float> values(ld * cols);
-
-    if(!values)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    rocsparse_dnmat_descr A;
-
-    // rocsparse_create_dnmat_descr
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_create_dnmat_descr(nullptr, rows, cols, ld, values, type, order),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, -1, cols, ld, values, type, order),
-                            rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, rows, -1, ld, values, type, order),
-                            rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, rows, cols, -1, values, type, order),
-                            rocsparse_status_invalid_size);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, rows, cols, ld, nullptr, type, order),
-                            rocsparse_status_invalid_pointer);
+#define PARAMS_CREATE &A, rows, cols, ld, values, ttype, order
+    auto_testing_bad_arg(rocsparse_create_dnmat_descr, PARAMS_CREATE);
+#undef PARAMS_CREATE
 
     // rocsparse_destroy_dnmat_descr
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(nullptr),
                             rocsparse_status_invalid_pointer);
 
     // Check valid descriptor creations
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, 0, cols, ld, nullptr, type, order),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, 0, cols, ld, nullptr, ttype, order),
                             rocsparse_status_success);
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(A), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, rows, 0, ld, nullptr, type, order),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, rows, 0, ld, nullptr, ttype, order),
                             rocsparse_status_success);
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(A), rocsparse_status_success);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, rows, cols, 0, nullptr, type, order),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, rows, cols, 0, nullptr, ttype, order),
                             rocsparse_status_success);
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(A), rocsparse_status_success);
 
     // Create valid descriptor
-    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, rows, cols, ld, values, type, order),
+    EXPECT_ROCSPARSE_STATUS(rocsparse_create_dnmat_descr(&A, rows, cols, ld, values, ttype, order),
                             rocsparse_status_success);
 
-    // rocsparse_dnmat_get
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dnmat_get(nullptr, &rows, &cols, &ld, (void**)&values, &type, &order),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dnmat_get(A, nullptr, &cols, &ld, (void**)&values, &type, &order),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dnmat_get(A, &rows, nullptr, &ld, (void**)&values, &type, &order),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dnmat_get(A, &rows, &cols, nullptr, (void**)&values, &type, &order),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_get(A, &rows, &cols, &ld, nullptr, &type, &order),
-                            rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dnmat_get(A, &rows, &cols, &ld, (void**)&values, nullptr, &order),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dnmat_get(A, &rows, &cols, &ld, (void**)&values, &type, nullptr),
-        rocsparse_status_invalid_pointer);
+    void** values_ptr = (void**)0x4;
+
+#define PARAMS_GET A, &rows, &cols, &ld, values_ptr, &ttype, &order
+    auto_testing_bad_arg(rocsparse_dnmat_get, PARAMS_GET);
+#undef PARAMS_GET
 
     // rocsparse_dnmat_get_values
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_get_values(nullptr, (void**)&values),
@@ -112,3 +81,10 @@ void testing_dnmat_descr_bad_arg(const Arguments& arg)
     // Destroy valid descriptor
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(A), rocsparse_status_success);
 }
+
+#define INSTANTIATE(TTYPE) template void testing_dnmat_descr_bad_arg<TTYPE>(const Arguments& arg);
+
+INSTANTIATE(float);
+INSTANTIATE(double);
+INSTANTIATE(rocsparse_float_complex);
+INSTANTIATE(rocsparse_double_complex);

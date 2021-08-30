@@ -390,6 +390,12 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
         return rocsparse_status_invalid_handle;
     }
 
+    // Check for valid rocsparse_mat_info
+    if(info_C == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Logging
     log_trace(handle,
               replaceX<T>("rocsparse_Xcsrgemm_buffer_size"),
@@ -426,10 +432,10 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
         return rocsparse_status_invalid_value;
     }
 
-    // Check for valid rocsparse_mat_info
-    if(info_C == nullptr)
+    // Check valid sizes
+    if(m < 0 || n < 0 || k < 0)
     {
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_invalid_size;
     }
 
     // Clear csrgemm info
@@ -1418,6 +1424,12 @@ rocsparse_status rocsparse_csrgemm_nnz_template(rocsparse_handle          handle
         return rocsparse_status_invalid_handle;
     }
 
+    // Check for valid rocsparse_mat_info
+    if(info_C == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Logging
     log_trace(handle,
               "rocsparse_csrgemm_nnz",
@@ -1444,10 +1456,21 @@ rocsparse_status rocsparse_csrgemm_nnz_template(rocsparse_handle          handle
               (const void*&)info_C,
               (const void*&)temp_buffer);
 
-    // Check for valid rocsparse_mat_info
-    if(info_C == nullptr)
+    // Check operation
+    if(rocsparse_enum_utils::is_invalid(trans_A))
     {
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_invalid_value;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(trans_B))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    // Check valid sizes
+    if(m < 0 || n < 0 || k < 0)
+    {
+        return rocsparse_status_invalid_size;
     }
 
     // Check for valid rocsparse_csrgemm_info

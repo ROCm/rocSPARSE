@@ -52,8 +52,8 @@ void testing_spsm_coo_bad_arg(const Arguments& arg)
     rocsparse_local_dnmat local_B(m, k, m, (void*)0x4, ttype, rocsparse_order_column);
     rocsparse_local_dnmat local_C(m, k, m, (void*)0x4, ttype, rocsparse_order_column);
 
-    int nargs_to_exclude   = 2;
-    int args_to_exclude[2] = {10, 11};
+    int       nargs_to_exclude   = 2;
+    const int args_to_exclude[2] = {10, 11};
 
     rocsparse_handle      handle = local_handle;
     rocsparse_spmat_descr A      = local_A;
@@ -75,12 +75,9 @@ void testing_spsm_coo_bad_arg(const Arguments& arg)
     handle, trans_A, trans_B, &alpha, A, B, C, ttype, alg, rocsparse_spsm_stage_compute, \
         &buffer_size, temp_buffer
 
-    auto_testing_bad_arg(
-        rocsparse_spsm, nargs_to_exclude, (const int*)&args_to_exclude[0], PARAMS_BUFFER_SIZE);
-    auto_testing_bad_arg(
-        rocsparse_spsm, nargs_to_exclude, (const int*)&args_to_exclude[0], PARAMS_ANALYSIS);
-    auto_testing_bad_arg(
-        rocsparse_spsm, nargs_to_exclude, (const int*)&args_to_exclude[0], PARAMS_SOLVE);
+    auto_testing_bad_arg(rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_ANALYSIS);
+    auto_testing_bad_arg(rocsparse_spsm, nargs_to_exclude, args_to_exclude, PARAMS_SOLVE);
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_ANALYSIS

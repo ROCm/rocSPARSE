@@ -21,96 +21,82 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename I, typename J, typename T>
 void testing_dense_to_sparse_csc_bad_arg(const Arguments& arg)
 {
-    size_t safe_size = 100;
-    J      m         = 10;
-    J      n         = 10;
-    I      nnz       = 10;
-    I      ld        = m;
+    static const size_t safe_size = 100;
 
-    rocsparse_index_base          base  = rocsparse_index_base_zero;
-    rocsparse_dense_to_sparse_alg alg   = rocsparse_dense_to_sparse_alg_default;
-    rocsparse_order               order = rocsparse_order_column;
+    // Create rocsparse handle
+    rocsparse_local_handle local_handle;
 
-    // Index and data type
+    rocsparse_handle              handle      = local_handle;
+    J                             m           = safe_size;
+    J                             n           = safe_size;
+    I                             nnz         = safe_size;
+    I                             ld          = safe_size;
+    void*                         dense_val   = (void*)0x4;
+    void*                         csc_val     = (void*)0x4;
+    void*                         csc_row_ind = (void*)0x4;
+    void*                         csc_col_ptr = (void*)0x4;
+    rocsparse_index_base          base        = rocsparse_index_base_zero;
+    rocsparse_order               order       = rocsparse_order_column;
+    rocsparse_dense_to_sparse_alg alg         = rocsparse_dense_to_sparse_alg_default;
+
     rocsparse_indextype itype = get_indextype<I>();
     rocsparse_indextype jtype = get_indextype<J>();
     rocsparse_datatype  ttype = get_datatype<T>();
 
-    // Create rocsparse handle
-    rocsparse_local_handle handle;
+    // Dense and sparse matrix structures
+    rocsparse_local_dnmat local_mat_A(m, n, ld, dense_val, ttype, order);
+    rocsparse_local_spmat local_mat_B(m,
+                                      n,
+                                      nnz,
+                                      csc_col_ptr,
+                                      csc_row_ind,
+                                      csc_val,
+                                      itype,
+                                      jtype,
+                                      base,
+                                      ttype,
+                                      rocsparse_format_csc);
 
-    device_vector<T> d_dense_val(safe_size);
-    device_vector<I> d_csc_col_ptr(n + 1);
-    device_vector<J> d_csc_row_ind(nnz);
-    device_vector<T> d_csc_val(nnz);
+    rocsparse_dnmat_descr mat_A = local_mat_A;
+    rocsparse_spmat_descr mat_B = local_mat_B;
 
-    if(!d_dense_val || !d_csc_col_ptr || !d_csc_row_ind || !d_csc_val)
+    int       nargs_to_exclude   = 2;
+    const int args_to_exclude[2] = {4, 5};
+
+#define PARAMS handle, mat_A, mat_B, alg, buffer_size, temp_buffer
     {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_dense_to_sparse, nargs_to_exclude, args_to_exclude, PARAMS);
     }
 
-    // Sparse and dense matrix structures
-    rocsparse_local_dnmat mat_A(m, n, ld, d_dense_val, ttype, order);
-    rocsparse_local_spmat mat_B(m,
-                                n,
-                                nnz,
-                                d_csc_col_ptr,
-                                d_csc_row_ind,
-                                d_csc_val,
-                                itype,
-                                jtype,
-                                base,
-                                ttype,
-                                rocsparse_format_csc);
+    {
+        size_t* buffer_size = (size_t*)0x4;
+        void*   temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_dense_to_sparse, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
-    // Test dense_to_sparse with invalid buffer
-    size_t buffer_size;
+    {
+        size_t* buffer_size = nullptr;
+        void*   temp_buffer = (void*)0x4;
+        auto_testing_bad_arg(rocsparse_dense_to_sparse, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
 
-    // Testing invalid handle.
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dense_to_sparse(nullptr, mat_A, mat_B, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_handle);
-
-    // Testing invalid pointers.
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dense_to_sparse(handle, nullptr, mat_B, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dense_to_sparse(handle, mat_A, nullptr, alg, &buffer_size, nullptr),
-        rocsparse_status_invalid_pointer);
+    {
+        size_t* buffer_size = nullptr;
+        void*   temp_buffer = nullptr;
+        auto_testing_bad_arg(rocsparse_dense_to_sparse, nargs_to_exclude, args_to_exclude, PARAMS);
+    }
+#undef PARAMS
 
     EXPECT_ROCSPARSE_STATUS(rocsparse_dense_to_sparse(handle, mat_A, mat_B, alg, nullptr, nullptr),
                             rocsparse_status_invalid_pointer);
-
-    // Test dense_to_sparse with valid buffer
-    void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, 100));
-
-    // Testing invalid handle.
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dense_to_sparse(nullptr, mat_A, mat_B, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_handle);
-
-    // Testing invalid pointers.
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dense_to_sparse(handle, nullptr, mat_B, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_dense_to_sparse(handle, mat_A, nullptr, alg, &buffer_size, dbuffer),
-        rocsparse_status_invalid_pointer);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_dense_to_sparse(handle, mat_A, mat_B, alg, nullptr, nullptr),
-                            rocsparse_status_invalid_pointer);
-
-    CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
 template <typename I, typename J, typename T>

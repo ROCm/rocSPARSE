@@ -101,6 +101,7 @@ rocsparse_status rocsparse_csrsm_buffer_size_template(rocsparse_handle          
         return rocsparse_status_invalid_value;
     }
 
+    // Check solve policy
     if(rocsparse_enum_utils::is_invalid(policy))
     {
         return rocsparse_status_invalid_value;
@@ -287,16 +288,6 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
         return rocsparse_status_invalid_value;
     }
 
-    if(rocsparse_enum_utils::is_invalid(analysis))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
-    if(rocsparse_enum_utils::is_invalid(solve))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
@@ -311,6 +302,10 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
     }
 
     // Check solve policy
+    if(rocsparse_enum_utils::is_invalid(solve))
+    {
+        return rocsparse_status_invalid_value;
+    }
     if(solve != rocsparse_solve_policy_auto)
     {
         return rocsparse_status_invalid_value;
@@ -329,6 +324,15 @@ rocsparse_status rocsparse_csrsm_analysis_template(rocsparse_handle          han
     else if((trans_B == rocsparse_operation_transpose
              || trans_B == rocsparse_operation_conjugate_transpose)
             && ldb < nrhs)
+    {
+        return rocsparse_status_invalid_size;
+    }
+
+    if(trans_B == rocsparse_operation_none && ldb < m)
+    {
+        return rocsparse_status_invalid_size;
+    }
+    else if(trans_B == rocsparse_operation_transpose && ldb < nrhs)
     {
         return rocsparse_status_invalid_size;
     }
@@ -1079,15 +1083,16 @@ rocsparse_status rocsparse_csrsm_solve_template(rocsparse_handle          handle
         return rocsparse_status_invalid_value;
     }
 
-    if(rocsparse_enum_utils::is_invalid(policy))
-    {
-        return rocsparse_status_invalid_value;
-    }
-
     if(descr->type != rocsparse_matrix_type_general)
     {
         // TODO
         return rocsparse_status_not_implemented;
+    }
+
+    // Check solve policy
+    if(rocsparse_enum_utils::is_invalid(policy))
+    {
+        return rocsparse_status_invalid_value;
     }
 
     // Check sizes

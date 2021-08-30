@@ -210,11 +210,6 @@ rocsparse_status rocsparse_bsrilu0_analysis_template(rocsparse_handle          h
               solve,
               analysis);
 
-    if(descr->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
     // Check direction
     if(rocsparse_enum_utils::is_invalid(dir))
     {
@@ -236,6 +231,11 @@ rocsparse_status rocsparse_bsrilu0_analysis_template(rocsparse_handle          h
     if(solve != rocsparse_solve_policy_auto)
     {
         return rocsparse_status_invalid_value;
+    }
+
+    if(descr->type != rocsparse_matrix_type_general)
+    {
+        return rocsparse_status_not_implemented;
     }
 
     // Check sizes

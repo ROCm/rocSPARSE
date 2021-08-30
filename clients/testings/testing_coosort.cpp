@@ -24,79 +24,36 @@
 
 #include "testing.hpp"
 
+#include "auto_testing_bad_arg.hpp"
+
 template <typename T>
 void testing_coosort_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dcoo_row_ind(safe_size);
-    device_vector<rocsparse_int> dcoo_col_ind(safe_size);
-    device_vector<rocsparse_int> dbuffer(safe_size);
+    rocsparse_handle handle      = local_handle;
+    rocsparse_int    m           = safe_size;
+    rocsparse_int    n           = safe_size;
+    rocsparse_int    nnz         = safe_size;
+    rocsparse_int*   coo_row_ind = (rocsparse_int*)0x4;
+    rocsparse_int*   coo_col_ind = (rocsparse_int*)0x4;
+    size_t*          buffer_size = (size_t*)0x4;
+    void*            temp_buffer = (void*)0x4;
 
-    if(!dcoo_row_ind || !dcoo_col_ind || !dbuffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    int            nargs_to_exclude   = 1;
+    const int      args_to_exclude[1] = {6};
+    rocsparse_int* perm               = nullptr;
 
-    // Test rocsparse_coosort_buffer_size()
-    size_t buffer_size;
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_buffer_size(
-            nullptr, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, &buffer_size),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_buffer_size(
-            handle, safe_size, safe_size, safe_size, nullptr, dcoo_col_ind, &buffer_size),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_buffer_size(
-            handle, safe_size, safe_size, safe_size, dcoo_row_ind, nullptr, &buffer_size),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_buffer_size(
-            handle, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, nullptr),
-        rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_coosort_by_row()
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_by_row(
-            nullptr, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, nullptr, dbuffer),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_by_row(
-            handle, safe_size, safe_size, safe_size, nullptr, dcoo_col_ind, nullptr, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_by_row(
-            handle, safe_size, safe_size, safe_size, dcoo_row_ind, nullptr, nullptr, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_by_row(
-            handle, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, nullptr, nullptr),
-        rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_coosort_by_column()
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_by_column(
-            nullptr, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, nullptr, dbuffer),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_by_column(
-            handle, safe_size, safe_size, safe_size, nullptr, dcoo_col_ind, nullptr, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_by_column(
-            handle, safe_size, safe_size, safe_size, dcoo_row_ind, nullptr, nullptr, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_coosort_by_column(
-            handle, safe_size, safe_size, safe_size, dcoo_row_ind, dcoo_col_ind, nullptr, nullptr),
-        rocsparse_status_invalid_pointer);
+#define PARAMS_BUFFER_SIZE handle, m, n, nnz, coo_row_ind, coo_col_ind, buffer_size
+#define PARAMS handle, m, n, nnz, coo_row_ind, coo_col_ind, perm, temp_buffer
+    auto_testing_bad_arg(rocsparse_coosort_buffer_size, PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(rocsparse_coosort_by_row, nargs_to_exclude, args_to_exclude, PARAMS);
+    auto_testing_bad_arg(rocsparse_coosort_by_column, nargs_to_exclude, args_to_exclude, PARAMS);
+#undef PARAMS_BUFFER_SIZE
+#undef PARAMS
 }
 
 template <typename T>

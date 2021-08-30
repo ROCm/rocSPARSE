@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -25,6 +25,7 @@
 #ifndef TESTING_DNVEC_DESCR_HPP
 #define TESTING_DNVEC_DESCR_HPP
 
+template <typename T>
 void testing_dnvec_descr_bad_arg(const Arguments& arg);
 
 #endif // TESTING_DNVEC_DESCR_HPP

@@ -21,6 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename T>
@@ -29,14 +30,14 @@ void testing_hyb2csr_bad_arg(const Arguments& arg)
     static const size_t safe_size = 100;
 
     // Create rocsparse handle
-    rocsparse_local_handle handle;
+    rocsparse_local_handle local_handle;
 
-    // Create matrix descriptor
-    rocsparse_local_mat_descr descr;
+    // Create descriptor
+    rocsparse_local_mat_descr local_descr;
 
     // Create HYB structure
-    rocsparse_local_hyb_mat hyb;
-    rocsparse_hyb_mat       ptr  = hyb;
+    rocsparse_local_hyb_mat local_hyb;
+    rocsparse_hyb_mat       ptr  = local_hyb;
     test_hyb*               dhyb = reinterpret_cast<test_hyb*>(ptr);
 
     dhyb->m       = safe_size;
@@ -44,58 +45,21 @@ void testing_hyb2csr_bad_arg(const Arguments& arg)
     dhyb->ell_nnz = safe_size;
     dhyb->coo_nnz = safe_size;
 
-    // Allocate memory on device
-    device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
-    device_vector<rocsparse_int> dcsr_col_ind(safe_size);
-    device_vector<T>             dcsr_val(safe_size);
-    device_vector<rocsparse_int> dbuffer(safe_size);
+    rocsparse_handle          handle      = local_handle;
+    const rocsparse_mat_descr descr       = local_descr;
+    const rocsparse_hyb_mat   hyb         = local_hyb;
+    T*                        csr_val     = (T*)0x4;
+    rocsparse_int*            csr_row_ptr = (rocsparse_int*)0x4;
+    rocsparse_int*            csr_col_ind = (rocsparse_int*)0x4;
+    size_t*                   buffer_size = (size_t*)0x4;
+    void*                     temp_buffer = (void*)0x4;
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dbuffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Test rocsparse_hyb2csr_buffer_size()
-    size_t buffer_size;
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr_buffer_size(nullptr, descr, hyb, dcsr_row_ptr, &buffer_size),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr_buffer_size(handle, nullptr, hyb, dcsr_row_ptr, &buffer_size),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr_buffer_size(handle, descr, nullptr, dcsr_row_ptr, &buffer_size),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr_buffer_size(handle, descr, hyb, nullptr, &buffer_size),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr_buffer_size(handle, descr, hyb, dcsr_row_ptr, nullptr),
-        rocsparse_status_invalid_pointer);
-
-    // Test rocsparse_hyb2csr()
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr<T>(nullptr, descr, hyb, dcsr_val, dcsr_row_ptr, dcsr_col_ind, dbuffer),
-        rocsparse_status_invalid_handle);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr<T>(handle, nullptr, hyb, dcsr_val, dcsr_row_ptr, dcsr_col_ind, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr<T>(handle, descr, nullptr, dcsr_val, dcsr_row_ptr, dcsr_col_ind, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr<T>(handle, descr, hyb, nullptr, dcsr_row_ptr, dcsr_col_ind, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr<T>(handle, descr, hyb, dcsr_val, nullptr, dcsr_col_ind, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr<T>(handle, descr, hyb, dcsr_val, dcsr_row_ptr, nullptr, dbuffer),
-        rocsparse_status_invalid_pointer);
-    EXPECT_ROCSPARSE_STATUS(
-        rocsparse_hyb2csr<T>(handle, descr, hyb, dcsr_val, dcsr_row_ptr, dcsr_col_ind, nullptr),
-        rocsparse_status_invalid_pointer);
+#define PARAMS_BUFFER_SIZE handle, descr, hyb, csr_row_ptr, buffer_size
+#define PARAMS handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer
+    auto_testing_bad_arg(rocsparse_hyb2csr_buffer_size, PARAMS_BUFFER_SIZE);
+    auto_testing_bad_arg(rocsparse_hyb2csr<T>, PARAMS);
+#undef PARAMS
+#undef PARAMS_BUFFER_SIZE
 }
 
 template <typename T>
