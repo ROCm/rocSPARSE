@@ -46,6 +46,7 @@ protected:
     T*     m_val;
 
 public:
+    using value_type = T;
     dense_vector_t(size_t size, T* val);
     dense_vector_t& operator()(size_t size, T* val)
     {
@@ -188,11 +189,15 @@ public:
         allocator::free(this->data());
     };
 
-    // Tell whether malloc failed
-    explicit operator bool() const
+    hipError_t memcheck() const
     {
-        return this->m_val != nullptr;
+        return ((this->m_size == 0) && (this->data() == nullptr))
+                   ? hipSuccess
+                   : (((this->m_size > 0) && (this->data() != nullptr)) ? hipSuccess
+                                                                        : hipErrorOutOfMemory);
     }
+
+    // Tell whether malloc failed
 
     void resize(size_t s)
     {

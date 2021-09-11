@@ -143,7 +143,7 @@ private:
 
     static T* install_guards(T* d, size_t size)
     {
-        if(d != nullptr && d != ((T*)0x4))
+        if(d != nullptr)
         {
             if(PAD > 0)
             {
@@ -179,7 +179,7 @@ public:
     {
         if(size == 0)
         {
-            return (T*)0x4;
+            return (T*)nullptr;
         }
         size_t nbytes = compute_nbytes(size);
         T*     d;
@@ -191,6 +191,7 @@ public:
             {
                 fprintf(stderr, "Error allocating %'zu bytes (%zu GB)\n", nbytes, nbytes >> 30);
                 d = nullptr;
+                throw std::bad_alloc();
             }
             break;
         }
@@ -200,6 +201,7 @@ public:
             {
                 fprintf(stderr, "Error allocating %'zu bytes (%zu GB)\n", nbytes, nbytes >> 30);
                 d = nullptr;
+                throw std::bad_alloc();
             }
             break;
         }
@@ -210,6 +212,7 @@ public:
             {
                 fprintf(stderr, "Error allocating %'zu bytes (%zu GB)\n", nbytes, nbytes >> 30);
                 d = nullptr;
+                throw std::bad_alloc();
             }
 
             break;
@@ -225,7 +228,7 @@ public:
 #ifdef GOOGLE_TEST
     static void check_guards(T* d, size_t size)
     {
-        if(d != nullptr && d != ((T*)0x4))
+        if(d != nullptr)
         {
             if(PAD > 0)
             {
@@ -263,7 +266,7 @@ public:
 
     static void free(T* d)
     {
-        if(d != nullptr && d != ((T*)0x4))
+        if(d != nullptr)
         {
 #ifdef GOOGLE_TEST
             d = off_guards(d);

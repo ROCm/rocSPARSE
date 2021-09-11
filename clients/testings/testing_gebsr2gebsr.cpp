@@ -119,13 +119,6 @@ void testing_gebsr2gebsr(const Arguments& arg)
         device_vector<rocsparse_int> dbsr_col_ind_C(safe_size);
         device_vector<T>             dbsr_val_C(safe_size);
 
-        if(!dbsr_row_ptr_A || !dbsr_col_ind_A || !dbsr_val_A || !dbsr_row_ptr_C || !dbsr_col_ind_C
-           || !dbsr_val_C)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr<T>(handle,
                                                          rocsparse_direction_row,
                                                          Mb,
@@ -183,12 +176,6 @@ void testing_gebsr2gebsr(const Arguments& arg)
     // Allocate device memory for output BSR row pointer array
     device_vector<rocsparse_int> dbsr_row_ptr_C(Mb_C + 1);
 
-    if(!dbsr_row_ptr_A || !dbsr_col_ind_A || !dbsr_val_A || !dbsr_row_ptr_C)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dbsr_row_ptr_A,
                               hbsr_row_ptr_A.data(),
@@ -221,12 +208,6 @@ void testing_gebsr2gebsr(const Arguments& arg)
 
     T* dtemp_buffer = nullptr;
     CHECK_HIP_ERROR(hipMalloc(&dtemp_buffer, buffer_size));
-
-    if(!dtemp_buffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     host_vector<rocsparse_int> hnnzb_C(1);
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
@@ -268,12 +249,6 @@ void testing_gebsr2gebsr(const Arguments& arg)
 
     device_vector<rocsparse_int> dbsr_col_ind_C(hnnzb_C[0]);
     device_vector<T>             dbsr_val_C(hnnzb_C[0] * row_block_dim_C * col_block_dim_C);
-
-    if(!dbsr_col_ind_C || !dbsr_val_C)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     if(arg.unit_check)
     {

@@ -253,12 +253,6 @@ void testing_bsrilu0(const Arguments& arg)
     device_vector<T>             dbsr_val_1(nnzb * block_dim * block_dim);
     device_vector<T>             dbsr_val_2(nnzb * block_dim * block_dim);
 
-    if(!dbsr_row_ptr || !dbsr_col_ind || !dbsr_val_1 || !dbsr_val_2)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     // Copy BSR matrix from host to device
     CHECK_HIP_ERROR(hipMemcpy(dbsr_row_ptr,
                               hbsr_row_ptr.data(),
@@ -289,12 +283,6 @@ void testing_bsrilu0(const Arguments& arg)
     device_vector<T>             d_boost_tol(1);
     device_vector<T>             d_boost_val(1);
 
-    if(!danalysis_pivot_2 || !dsolve_pivot_2 || !d_boost_tol || !d_boost_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     // Obtain required buffer size
     size_t buffer_size;
     CHECK_ROCSPARSE_ERROR(rocsparse_bsrilu0_buffer_size<T>(handle,
@@ -311,13 +299,6 @@ void testing_bsrilu0(const Arguments& arg)
 
     void* dbuffer;
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
-
-    if(!dbuffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     if(arg.unit_check)
     {
         CHECK_HIP_ERROR(hipMemcpy(d_boost_tol, &h_boost_tol, sizeof(T), hipMemcpyHostToDevice));

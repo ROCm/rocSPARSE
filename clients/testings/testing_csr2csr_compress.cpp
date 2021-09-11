@@ -101,13 +101,6 @@ void testing_csr2csr_compress(const Arguments& arg)
         device_vector<T>             dcsr_val_C(safe_size);
         device_vector<rocsparse_int> dnnz_per_row(safe_size);
 
-        if(!dcsr_row_ptr_A || !dcsr_col_ind_A || !dcsr_val_A || !dcsr_row_ptr_C || !dcsr_col_ind_C
-           || !dcsr_val_C || !dnnz_per_row)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         rocsparse_status status = rocsparse_status_success;
         if(M < 0 || N < 0)
         {
@@ -161,18 +154,10 @@ void testing_csr2csr_compress(const Arguments& arg)
     device_vector<rocsparse_int> dcsr_row_ptr_C(M + 1);
     device_vector<rocsparse_int> dnnz_per_row(M);
 
-    if(!dcsr_row_ptr_A || !dcsr_col_ind_A || !dcsr_val_A || !dcsr_row_ptr_C || !dnnz_per_row)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     // Copy data from CPU to device
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_row_ptr_A, hcsr_row_ptr_A, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(
-        dcsr_col_ind_A, hcsr_col_ind_A, sizeof(rocsparse_int) * nnz_A, hipMemcpyHostToDevice));
-    CHECK_HIP_ERROR(hipMemcpy(dcsr_val_A, hcsr_val_A, sizeof(T) * nnz_A, hipMemcpyHostToDevice));
+    dcsr_row_ptr_A.transfer_from(hcsr_row_ptr_A);
+    dcsr_col_ind_A.transfer_from(hcsr_col_ind_A);
+    dcsr_val_A.transfer_from(hcsr_val_A);
 
     if(arg.unit_check)
     {
@@ -199,13 +184,6 @@ void testing_csr2csr_compress(const Arguments& arg)
         // Allocate device memory for compressed CSR col indices and values array
         device_vector<rocsparse_int> dcsr_col_ind_C(hnnz_C);
         device_vector<T>             dcsr_val_C(hnnz_C);
-
-        if(!dcsr_col_ind_C || !dcsr_val_C)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         CHECK_ROCSPARSE_ERROR(rocsparse_csr2csr_compress<T>(handle,
                                                             M,
                                                             N,
@@ -224,15 +202,9 @@ void testing_csr2csr_compress(const Arguments& arg)
         host_vector<rocsparse_int> hcsr_col_ind_C(hnnz_C);
         host_vector<T>             hcsr_val_C(hnnz_C);
 
-        // Copy output to host
-        CHECK_HIP_ERROR(hipMemcpy(hcsr_row_ptr_C,
-                                  dcsr_row_ptr_C,
-                                  sizeof(rocsparse_int) * (M + 1),
-                                  hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(hipMemcpy(
-            hcsr_col_ind_C, dcsr_col_ind_C, sizeof(rocsparse_int) * hnnz_C, hipMemcpyDeviceToHost));
-        CHECK_HIP_ERROR(
-            hipMemcpy(hcsr_val_C, dcsr_val_C, sizeof(T) * hnnz_C, hipMemcpyDeviceToHost));
+        hcsr_row_ptr_C.transfer_from(dcsr_row_ptr_C);
+        hcsr_col_ind_C.transfer_from(dcsr_col_ind_C);
+        hcsr_val_C.transfer_from(dcsr_val_C);
 
         // CPU csr2csr_compress
         host_csr_to_csr_compress<T>(M,
@@ -271,12 +243,6 @@ void testing_csr2csr_compress(const Arguments& arg)
             device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
             device_vector<T>             dcsr_val_C(nnz_C);
 
-            if(!dcsr_col_ind_C || !dcsr_val_C)
-            {
-                CHECK_HIP_ERROR(hipErrorOutOfMemory);
-                return;
-            }
-
             CHECK_ROCSPARSE_ERROR(rocsparse_csr2csr_compress<T>(handle,
                                                                 M,
                                                                 N,
@@ -298,12 +264,6 @@ void testing_csr2csr_compress(const Arguments& arg)
         // Allocate device memory for compressed CSR col indices and values array
         device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
         device_vector<T>             dcsr_val_C(nnz_C);
-
-        if(!dcsr_col_ind_C || !dcsr_val_C)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
 
         double gpu_time_used = get_time_us();
 

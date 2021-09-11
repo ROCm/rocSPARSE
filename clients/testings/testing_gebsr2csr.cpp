@@ -96,13 +96,6 @@ void testing_gebsr2csr(const Arguments& arg)
         device_vector<rocsparse_int> dcsr_col_ind(safe_size);
         device_vector<T>             dcsr_val(safe_size);
 
-        if(!dbsr_row_ptr || !dbsr_col_ind || !dbsr_val || !dcsr_row_ptr || !dcsr_col_ind
-           || !dcsr_val)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2csr<T>(handle,
                                                        direction,
                                                        Mb,
@@ -159,12 +152,6 @@ void testing_gebsr2csr(const Arguments& arg)
     device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
     device_vector<rocsparse_int> dcsr_col_ind(nnz);
     device_vector<T>             dcsr_val(nnz);
-
-    if(!dbsr_row_ptr || !dbsr_col_ind || !dbsr_val || !dcsr_row_ptr || !dcsr_col_ind || !dcsr_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(

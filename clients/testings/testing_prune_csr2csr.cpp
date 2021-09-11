@@ -143,13 +143,6 @@ void testing_prune_csr2csr(const Arguments& arg)
     device_vector<rocsparse_int> d_csr_col_ind_A(nnz_A);
     device_vector<T>             d_csr_val_A(nnz_A);
 
-    if(!d_nnz_total_dev_host_ptr || !d_csr_row_ptr_C || !d_csr_row_ptr_A || !d_csr_col_ind_A
-       || !d_csr_val_A)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
         d_csr_row_ptr_A, h_csr_row_ptr_A, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
@@ -176,20 +169,8 @@ void testing_prune_csr2csr(const Arguments& arg)
     T* d_temp_buffer = nullptr;
     CHECK_HIP_ERROR(hipMalloc(&d_temp_buffer, buffer_size));
 
-    if(!d_temp_buffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     T* d_threshold = nullptr;
     CHECK_HIP_ERROR(hipMalloc(&d_threshold, sizeof(T)));
-
-    if(!d_threshold)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     CHECK_HIP_ERROR(hipMemcpy(d_threshold, &threshold, sizeof(T), hipMemcpyHostToDevice));
 
@@ -225,12 +206,6 @@ void testing_prune_csr2csr(const Arguments& arg)
 
     device_vector<rocsparse_int> d_csr_col_ind_C(h_nnz_total_dev_host_ptr[0]);
     device_vector<T>             d_csr_val_C(h_nnz_total_dev_host_ptr[0]);
-
-    if(!d_csr_col_ind_C || !d_csr_val_C)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     if(arg.unit_check)
     {

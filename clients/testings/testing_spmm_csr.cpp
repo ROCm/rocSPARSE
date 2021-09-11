@@ -158,12 +158,6 @@ void testing_spmm_csr(const Arguments& arg)
         device_vector<T> dB(safe_size);
         device_vector<T> dC(safe_size);
 
-        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         // Check SpMM when structures can be created
         if(M == 0 && N == 0 && K == 0)
         {
@@ -295,12 +289,6 @@ void testing_spmm_csr(const Arguments& arg)
     device_vector<T> dC_2(nnz_C);
     device_vector<T> dalpha(1);
     device_vector<T> dbeta(1);
-
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dB || !dC_1 || !dC_2 || !dalpha || !dbeta)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(

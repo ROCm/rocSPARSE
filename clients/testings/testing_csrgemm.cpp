@@ -368,14 +368,6 @@ void testing_csrgemm(const Arguments& arg)
         device_vector<T>             dcsr_val_D(safe_size);
         device_vector<T>             dbuffer(safe_size);
 
-        if(!dcsr_row_ptr_A || !dcsr_col_ind_A || !dcsr_val_A || !dcsr_row_ptr_B || !dcsr_col_ind_B
-           || !dcsr_val_B || !dcsr_row_ptr_C || !dcsr_col_ind_C || !dcsr_val_C || !dcsr_row_ptr_D
-           || !dcsr_col_ind_D || !dcsr_val_D || !dbuffer)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
         size_t        buffer_size;
@@ -530,13 +522,6 @@ void testing_csrgemm(const Arguments& arg)
     device_vector<rocsparse_int> dcsr_row_ptr_C_1(M + 1);
     device_vector<rocsparse_int> dcsr_row_ptr_C_2(M + 1);
     device_vector<rocsparse_int> dnnz_C_2(1);
-
-    if(!dcsr_row_ptr_A || !dcsr_col_ind_A || !dcsr_val_A || !dcsr_row_ptr_B || !dcsr_col_ind_B
-       || !dcsr_val_B || !dcsr_row_ptr_D || !dcsr_col_ind_D || !dcsr_val_D || !d_alpha || !d_beta)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     if(scenario == 2)
