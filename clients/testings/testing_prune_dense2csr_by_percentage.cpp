@@ -132,11 +132,6 @@ void testing_prune_dense2csr_by_percentage(const Arguments& arg)
     device_vector<T>             d_A(LDA * N);
     device_vector<rocsparse_int> d_nnz_total_dev_host_ptr(1);
     device_vector<rocsparse_int> d_csr_row_ptr(M + 1);
-    if(!d_A || !d_nnz_total_dev_host_ptr || !d_csr_row_ptr)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Initialize a random matrix.
     rocsparse_seedrand();
@@ -179,12 +174,6 @@ void testing_prune_dense2csr_by_percentage(const Arguments& arg)
     T* d_temp_buffer = nullptr;
     CHECK_HIP_ERROR(hipMalloc(&d_temp_buffer, buffer_size));
 
-    if(!d_temp_buffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
     CHECK_ROCSPARSE_ERROR(rocsparse_prune_dense2csr_nnz_by_percentage<T>(handle,
                                                                          M,
@@ -213,12 +202,6 @@ void testing_prune_dense2csr_by_percentage(const Arguments& arg)
 
     device_vector<rocsparse_int> d_csr_col_ind(h_nnz_total_dev_host_ptr[0]);
     device_vector<T>             d_csr_val(h_nnz_total_dev_host_ptr[0]);
-
-    if(!d_csr_col_ind || !d_csr_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     if(arg.unit_check)
     {

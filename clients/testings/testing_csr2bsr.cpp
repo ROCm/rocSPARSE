@@ -158,7 +158,13 @@ void testing_csr2bsr(const Arguments& arg)
     device_vector<rocsparse_int> dcsr_col_ind_A(nnz);
     device_vector<T>             dcsr_val_A(nnz);
 
-    if(!dcsr_row_ptr_A || !dcsr_col_ind_A || !dcsr_val_A)
+    if(!dcsr_row_ptr_A)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
+    if((nnz > 0) && (!dcsr_col_ind_A || !dcsr_val_A))
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -190,7 +196,13 @@ void testing_csr2bsr(const Arguments& arg)
     device_vector<rocsparse_int> dcsr_col_ind_C(nnz_C);
     device_vector<T>             dcsr_val_C(nnz_C);
 
-    if(!dcsr_row_ptr_C || !dcsr_col_ind_C || !dcsr_val_C)
+    if(!dcsr_row_ptr_C)
+    {
+        CHECK_HIP_ERROR(hipErrorOutOfMemory);
+        return;
+    }
+
+    if((nnz_C > 0) && (!dcsr_col_ind_C || !dcsr_val_C))
     {
         CHECK_HIP_ERROR(hipErrorOutOfMemory);
         return;
@@ -285,7 +297,7 @@ void testing_csr2bsr(const Arguments& arg)
         device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
         device_vector<T>             dbsr_val(hbsr_nnzb * block_dim * block_dim);
 
-        if(!dbsr_col_ind || !dbsr_val)
+        if((hbsr_nnzb > 0) && (!dbsr_col_ind || !dbsr_val))
         {
             CHECK_HIP_ERROR(hipErrorOutOfMemory);
             return;
@@ -330,7 +342,13 @@ void testing_csr2bsr(const Arguments& arg)
         device_vector<rocsparse_int> dcsr_col_ind_gold_A(hbsr_nnzb * block_dim * block_dim);
         device_vector<T>             dcsr_val_gold_A(hbsr_nnzb * block_dim * block_dim);
 
-        if(!dcsr_row_ptr_gold_A || !dcsr_col_ind_gold_A || !dcsr_val_gold_A)
+        if(!dcsr_row_ptr_gold_A)
+        {
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
+        }
+
+        if((hbsr_nnzb > 0) && (!dcsr_col_ind_gold_A || !dcsr_val_gold_A))
         {
             CHECK_HIP_ERROR(hipErrorOutOfMemory);
             return;
@@ -354,7 +372,7 @@ void testing_csr2bsr(const Arguments& arg)
         rocsparse_int                nnz_gold_C;
         device_vector<rocsparse_int> dnnz_per_row_gold(M);
 
-        if(!dnnz_per_row_gold)
+        if((M > 0) && !dnnz_per_row_gold)
         {
             CHECK_HIP_ERROR(hipErrorOutOfMemory);
             return;
@@ -374,7 +392,13 @@ void testing_csr2bsr(const Arguments& arg)
         device_vector<rocsparse_int> dcsr_col_ind_gold_C(nnz_gold_C);
         device_vector<T>             dcsr_val_gold_C(nnz_gold_C);
 
-        if(!dcsr_row_ptr_gold_C || !dcsr_col_ind_gold_C || !dcsr_val_gold_C)
+        if(!dcsr_row_ptr_gold_C)
+        {
+            CHECK_HIP_ERROR(hipErrorOutOfMemory);
+            return;
+        }
+
+        if((nnz_gold_C > 0) && (!dcsr_col_ind_gold_C || !dcsr_val_gold_C))
         {
             CHECK_HIP_ERROR(hipErrorOutOfMemory);
             return;
@@ -450,7 +474,7 @@ void testing_csr2bsr(const Arguments& arg)
             device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
             device_vector<T>             dbsr_val(hbsr_nnzb * block_dim * block_dim);
 
-            if(!dbsr_col_ind || !dbsr_val)
+            if((hbsr_nnzb > 0) && (!dbsr_col_ind || !dbsr_val))
             {
                 CHECK_HIP_ERROR(hipErrorOutOfMemory);
                 return;
@@ -487,7 +511,7 @@ void testing_csr2bsr(const Arguments& arg)
         device_vector<rocsparse_int> dbsr_col_ind(hbsr_nnzb);
         device_vector<T>             dbsr_val(hbsr_nnzb * block_dim * block_dim);
 
-        if(!dbsr_col_ind || !dbsr_val)
+        if((hbsr_nnzb > 0) && (!dbsr_col_ind || !dbsr_val))
         {
             CHECK_HIP_ERROR(hipErrorOutOfMemory);
             return;

@@ -144,15 +144,15 @@ rocsparse_status rocsparse_coosm_buffer_size_template(rocsparse_handle          
     }
 
     // Check pointer arguments
-    if(coo_row_ind == nullptr)
+    if(nnz > 0 && coo_row_ind == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(coo_col_ind == nullptr)
+    else if(nnz > 0 && coo_col_ind == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
-    else if(coo_val == nullptr)
+    else if(nnz > 0 && coo_val == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -166,6 +166,10 @@ rocsparse_status rocsparse_coosm_buffer_size_template(rocsparse_handle          
     }
 
     // Call CSR buffer size
+    //
+    // Trick since it is not used in csrsm_buffer_size, otherwise we need to create a proper ptr array for nothing.
+    //
+    const I* ptr = (coo_row_ind) ? coo_row_ind : (const I*)0x4;
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsm_buffer_size_template(handle,
                                                                    trans_A,
                                                                    trans_B,
@@ -175,7 +179,7 @@ rocsparse_status rocsparse_coosm_buffer_size_template(rocsparse_handle          
                                                                    alpha,
                                                                    descr,
                                                                    coo_val,
-                                                                   coo_row_ind,
+                                                                   ptr,
                                                                    coo_col_ind,
                                                                    B,
                                                                    ldb,
@@ -298,8 +302,8 @@ rocsparse_status rocsparse_coosm_analysis_template(rocsparse_handle          han
     }
 
     // Check pointer arguments
-    if(coo_row_ind == nullptr || coo_col_ind == nullptr || coo_val == nullptr || B == nullptr
-       || alpha == nullptr || temp_buffer == nullptr)
+    if(((nnz > 0 && (coo_row_ind == nullptr || coo_col_ind == nullptr || coo_val == nullptr)))
+       || B == nullptr || alpha == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -430,7 +434,7 @@ rocsparse_status rocsparse_coosm_solve_template(rocsparse_handle          handle
     }
 
     // Check pointer arguments
-    if(coo_val == nullptr || coo_row_ind == nullptr || coo_col_ind == nullptr
+    if((nnz > 0 && (coo_val == nullptr || coo_row_ind == nullptr || coo_col_ind == nullptr))
        || alpha_device_host == nullptr || B == nullptr || temp_buffer == nullptr)
     {
         return rocsparse_status_invalid_pointer;

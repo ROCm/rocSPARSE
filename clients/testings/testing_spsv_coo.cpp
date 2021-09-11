@@ -121,12 +121,6 @@ void testing_spsv_coo(const Arguments& arg)
         device_vector<T> dx(safe_size);
         device_vector<T> dy(safe_size);
 
-        if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dx || !dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         // Check SpSV when structures can be created
         if(M == 0 && M == N)
         {
@@ -218,12 +212,6 @@ void testing_spsv_coo(const Arguments& arg)
     device_vector<T> dy_1(M);
     device_vector<T> dy_2(M);
     device_vector<T> dalpha(1);
-
-    if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dx || !dy_1 || !dy_2 || !dalpha)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(

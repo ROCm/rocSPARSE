@@ -85,13 +85,6 @@ void testing_csr2csc(const Arguments& arg)
         device_vector<T>             dcsc_val(safe_size);
         device_vector<T>             dbuffer(safe_size);
 
-        if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dcsc_row_ind || !dcsc_col_ptr
-           || !dcsc_val || !dbuffer)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         size_t buffer_size;
 
         EXPECT_ROCSPARSE_STATUS(
@@ -141,12 +134,6 @@ void testing_csr2csc(const Arguments& arg)
     device_vector<rocsparse_int> dcsc_row_ind(nnz);
     device_vector<rocsparse_int> dcsc_col_ptr(N + 1);
     device_vector<T>             dcsc_val(nnz);
-
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dcsc_row_ind || !dcsc_col_ptr || !dcsc_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(

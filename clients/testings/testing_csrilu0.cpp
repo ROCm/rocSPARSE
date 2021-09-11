@@ -251,13 +251,6 @@ void testing_csrilu0(const Arguments& arg)
     device_vector<T>             d_boost_tol(1);
     device_vector<T>             d_boost_val(1);
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val_1 || !dcsr_val_2 || !d_analysis_pivot_2
-       || !d_solve_pivot_2 || !d_boost_tol || !d_boost_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
         dcsr_row_ptr, hcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));

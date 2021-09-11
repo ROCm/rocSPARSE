@@ -125,12 +125,6 @@ void testing_spsm_coo(const Arguments& arg)
         device_vector<T> dB(safe_size);
         device_vector<T> dC(safe_size);
 
-        if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dB || !dC)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         // Check SpSM when structures can be created
         if(M >= 0 && K >= 0 && M == N)
         {
@@ -263,12 +257,6 @@ void testing_spsm_coo(const Arguments& arg)
     device_dense_matrix<T> dC_1(C_m, C_n);
     device_dense_matrix<T> dC_2(C_m, C_n);
     device_vector<T>       dalpha(1);
-
-    if(!dcoo_row_ind || !dcoo_col_ind || !dcoo_val || !dB || !dC_1 || !dC_2 || !dalpha)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(

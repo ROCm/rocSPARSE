@@ -110,11 +110,6 @@ void testing_prune_dense2csr(const Arguments& arg)
     device_vector<T>             d_A(LDA * N);
     device_vector<rocsparse_int> d_nnz_total_dev_host_ptr(1);
     device_vector<rocsparse_int> d_csr_row_ptr(M + 1);
-    if(!d_A || !d_nnz_total_dev_host_ptr || !d_csr_row_ptr)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Initialize a random matrix.
     rocsparse_seedrand();
@@ -147,20 +142,8 @@ void testing_prune_dense2csr(const Arguments& arg)
     T* d_temp_buffer = nullptr;
     CHECK_HIP_ERROR(hipMalloc(&d_temp_buffer, buffer_size));
 
-    if(!d_temp_buffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     T* d_threshold = nullptr;
     CHECK_HIP_ERROR(hipMalloc(&d_threshold, sizeof(T)));
-
-    if(!d_threshold)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     CHECK_HIP_ERROR(hipMemcpy(d_threshold, &threshold, sizeof(T), hipMemcpyHostToDevice));
 
@@ -190,12 +173,6 @@ void testing_prune_dense2csr(const Arguments& arg)
 
     device_vector<rocsparse_int> d_csr_col_ind(h_nnz_total_dev_host_ptr[0]);
     device_vector<T>             d_csr_val(h_nnz_total_dev_host_ptr[0]);
-
-    if(!d_csr_col_ind || !d_csr_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     if(arg.unit_check)
     {

@@ -67,12 +67,6 @@ void testing_coo2csr(const Arguments& arg)
         device_vector<rocsparse_int> dcsr_row_ptr(safe_size);
         device_vector<rocsparse_int> dcoo_row_ind(safe_size);
 
-        if(!dcsr_row_ptr || !dcoo_row_ind)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         rocsparse_int nnz = (M > 0 && N > 0) ? 0 : -1;
 
         EXPECT_ROCSPARSE_STATUS(rocsparse_coo2csr(handle, dcoo_row_ind, nnz, M, dcsr_row_ptr, base),
@@ -98,12 +92,6 @@ void testing_coo2csr(const Arguments& arg)
     // Allocate device memory
     device_vector<rocsparse_int> dcoo_row_ind(nnz);
     device_vector<rocsparse_int> dcsr_row_ptr(M + 1);
-
-    if(!dcsr_row_ptr || !dcoo_row_ind)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(

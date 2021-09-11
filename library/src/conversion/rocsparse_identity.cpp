@@ -45,16 +45,16 @@ rocsparse_status rocsparse_create_identity_permutation_template(rocsparse_handle
         return rocsparse_status_invalid_size;
     }
 
-    // Check pointer arguments
-    if(p == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-
     // Quick return if possible
     if(n == 0)
     {
         return rocsparse_status_success;
+    }
+
+    // Check pointer arguments
+    if(p == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
     }
 
     // Stream

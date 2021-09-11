@@ -114,12 +114,6 @@ void testing_gemvi(const Arguments& arg)
     {
         device_vector<T> dy(std::max(100, M));
 
-        if(!dy)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
         size_t buffer_size;
@@ -175,12 +169,6 @@ void testing_gemvi(const Arguments& arg)
     device_vector<T>             dy_2(M);
     device_vector<T>             d_alpha(1);
     device_vector<T>             d_beta(1);
-
-    if(!dA || !dx_val || !dx_ind || !dy_1 || !dy_2 || !d_alpha || !d_beta)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(dx_ind, hx_ind, sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));

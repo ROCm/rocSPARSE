@@ -113,12 +113,17 @@ rocsparse_status rocsparse_coosv_buffer_size_template(rocsparse_handle          
     }
 
     // Call CSR buffer size
+    *buffer_size = 0;
+
+    //
+    // Trick since it is not used in csrsm_buffer_size, otherwise we need to create a proper ptr array for nothing.
+    //
+    const I* ptr = (coo_row_ind) ? coo_row_ind : (const I*)0x4;
     RETURN_IF_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size_template(
-        handle, trans, m, nnz, descr, coo_val, coo_row_ind, coo_col_ind, info, buffer_size));
+        handle, trans, m, nnz, descr, coo_val, ptr, coo_col_ind, info, buffer_size));
 
     // For coosv we first convert from COO to CSR format.
     *buffer_size += sizeof(I) * (m / 256 + 1) * 256;
-
     return rocsparse_status_success;
 }
 

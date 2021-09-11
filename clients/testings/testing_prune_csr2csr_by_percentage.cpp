@@ -155,13 +155,6 @@ void testing_prune_csr2csr_by_percentage(const Arguments& arg)
     device_vector<rocsparse_int> d_csr_col_ind_A(nnz_A);
     device_vector<T>             d_csr_val_A(nnz_A);
 
-    if(!d_nnz_total_dev_host_ptr || !d_csr_row_ptr_C || !d_csr_row_ptr_A || !d_csr_col_ind_A
-       || !d_csr_val_A)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
         d_csr_row_ptr_A, h_csr_row_ptr_A, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
@@ -188,12 +181,6 @@ void testing_prune_csr2csr_by_percentage(const Arguments& arg)
 
     T* d_temp_buffer = nullptr;
     CHECK_HIP_ERROR(hipMalloc(&d_temp_buffer, buffer_size));
-
-    if(!d_temp_buffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
     CHECK_ROCSPARSE_ERROR(rocsparse_prune_csr2csr_nnz_by_percentage<T>(handle,
@@ -229,12 +216,6 @@ void testing_prune_csr2csr_by_percentage(const Arguments& arg)
 
     device_vector<rocsparse_int> d_csr_col_ind_C(h_nnz_total_dev_host_ptr[0]);
     device_vector<T>             d_csr_val_C(h_nnz_total_dev_host_ptr[0]);
-
-    if(!d_csr_col_ind_C || !d_csr_val_C)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     if(arg.unit_check)
     {

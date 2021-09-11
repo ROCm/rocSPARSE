@@ -139,12 +139,6 @@ void testing_csrsort(const Arguments& arg)
         device_vector<rocsparse_int> dcsr_col_ind(safe_size);
         device_vector<rocsparse_int> dbuffer(safe_size);
 
-        if(!dcsr_row_ptr || !dcsr_col_ind || !dbuffer)
-        {
-            CHECK_HIP_ERROR(hipErrorOutOfMemory);
-            return;
-        }
-
         size_t buffer_size;
         EXPECT_ROCSPARSE_STATUS(rocsparse_csrsort_buffer_size(
                                     handle, M, N, 0, dcsr_row_ptr, dcsr_col_ind, &buffer_size),
@@ -193,12 +187,6 @@ void testing_csrsort(const Arguments& arg)
     device_vector<T>             dcsr_val(nnz);
     device_vector<rocsparse_int> dperm(nnz);
 
-    if(!dcsr_row_ptr || !dcsr_col_ind || !dcsr_val || !dperm)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
     // Copy data from CPU to device
     CHECK_HIP_ERROR(hipMemcpy(
         dcsr_row_ptr, hcsr_row_ptr, sizeof(rocsparse_int) * (M + 1), hipMemcpyHostToDevice));
@@ -214,12 +202,6 @@ void testing_csrsort(const Arguments& arg)
     // Allocate buffer
     void* dbuffer;
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
-
-    if(!dbuffer)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
 
     if(arg.unit_check)
     {
@@ -247,12 +229,6 @@ void testing_csrsort(const Arguments& arg)
         if(permute)
         {
             device_vector<T> dcsr_val_sorted(nnz);
-
-            if(!dcsr_val_sorted)
-            {
-                CHECK_HIP_ERROR(hipErrorOutOfMemory);
-                return;
-            }
 
             CHECK_ROCSPARSE_ERROR(rocsparse_gthr<T>(
                 handle, nnz, dcsr_val, dcsr_val_sorted, dperm, rocsparse_index_base_zero));
