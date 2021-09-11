@@ -1594,6 +1594,11 @@ static inline rocsparse_status rocsparse_csrgemm_multadd_template(rocsparse_hand
                                                temp_buffer);
     }
 
+    if((trans_A != rocsparse_operation_none) || (trans_B != rocsparse_operation_none))
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     // nnz_D == 0 - compute alpha * A * B
     if(nnz_D == 0)
     {
@@ -1766,6 +1771,11 @@ static inline rocsparse_status rocsparse_csrgemm_mult_template(rocsparse_handle 
     if(m == 0 || n == 0 || k == 0 || nnz_A == 0 || nnz_B == 0)
     {
         return rocsparse_status_success;
+    }
+
+    if((trans_A != rocsparse_operation_none) || (trans_B != rocsparse_operation_none))
+    {
+        return rocsparse_status_not_implemented;
     }
 
     // Perform gemm calculation

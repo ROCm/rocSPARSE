@@ -128,6 +128,11 @@ static inline rocsparse_status
             handle, m, n, beta, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D, info_C, buffer_size);
     }
 
+    if((trans_A != rocsparse_operation_none) || (trans_B != rocsparse_operation_none))
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     // nnz_D == 0 - compute alpha * A * B
     if(nnz_D == 0)
     {
@@ -263,6 +268,11 @@ static inline rocsparse_status
         *buffer_size = 4;
 
         return rocsparse_status_success;
+    }
+
+    if((trans_A != rocsparse_operation_none) || (trans_B != rocsparse_operation_none))
+    {
+        return rocsparse_status_not_implemented;
     }
 
     // Stream
@@ -1234,6 +1244,11 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_multadd(rocsparse_handle   
                                           temp_buffer);
     }
 
+    if((trans_A != rocsparse_operation_none) || (trans_B != rocsparse_operation_none))
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     // nnz_D == 0 - compute alpha * A * B
     if(nnz_D == 0)
     {
@@ -1365,6 +1380,11 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_mult(rocsparse_handle      
         }
 
         return rocsparse_status_success;
+    }
+
+    if((trans_A != rocsparse_operation_none) || (trans_B != rocsparse_operation_none))
+    {
+        return rocsparse_status_not_implemented;
     }
 
     // Perform nnz calculation
