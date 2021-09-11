@@ -267,251 +267,106 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
         auto_testing_bad_arg(rocsparse_csrgemm_nnz, PARAMS_NNZ);
         auto_testing_bad_arg(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
     }
+    
+    //
+    // Not implemented cases.
+    //
+    {
+        const T* alpha = &h_alpha;
+        const T* beta  = &h_beta;
+        // A matrix                                                                                                                                                                                                                 
+        const rocsparse_mat_descr descr_A       = local_descr_A;
+        rocsparse_int             nnz_A         = safe_size;
+        const T*                  csr_val_A     = (const T*)0x4;
+        const rocsparse_int*      csr_row_ptr_A = (const rocsparse_int*)0x4;
+        const rocsparse_int*      csr_col_ind_A = (const rocsparse_int*)0x4;
 
+        // B matrix                                                                                                                                                                                                                 
+        const rocsparse_mat_descr descr_B       = local_descr_B;
+        rocsparse_int             nnz_B         = safe_size;
+        const T*                  csr_val_B     = (const T*)0x4;
+        const rocsparse_int*      csr_row_ptr_B = (const rocsparse_int*)0x4;
+        const rocsparse_int*      csr_col_ind_B = (const rocsparse_int*)0x4;
+
+        // D matrix                                                                                                                                                                                                                 
+        const rocsparse_mat_descr descr_D       = local_descr_D;
+        rocsparse_int             nnz_D         = safe_size;
+        const T*                  csr_val_D     = (const T*)0x4;
+        const rocsparse_int*      csr_row_ptr_D = (const rocsparse_int*)0x4;
+        const rocsparse_int*      csr_col_ind_D = (const rocsparse_int*)0x4;
+
+        {
+            rocsparse_operation op = trans_A;
+            trans_A                = rocsparse_operation_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                                    rocsparse_status_not_implemented);
+            trans_A = op;
+
+            trans_A = rocsparse_operation_conjugate_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                                    rocsparse_status_not_implemented);
+            trans_A = op;
+
+            op      = trans_B;
+            trans_B = rocsparse_operation_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                                    rocsparse_status_not_implemented);
+            trans_B = op;
+            op      = trans_B;
+            trans_B = rocsparse_operation_conjugate_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                                    rocsparse_status_not_implemented);
+            trans_B = op;
+        }
+	    {
+            rocsparse_operation op = trans_A;
+            trans_A                = rocsparse_operation_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(PARAMS_NNZ),
+                                    rocsparse_status_not_implemented);
+            trans_A = op;
+
+            trans_A = rocsparse_operation_conjugate_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(PARAMS_NNZ),
+                                    rocsparse_status_not_implemented);
+            trans_A = op;
+
+            op      = trans_B;
+            trans_B = rocsparse_operation_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(PARAMS_NNZ),
+                                    rocsparse_status_not_implemented);
+            trans_B = op;
+
+            trans_B = rocsparse_operation_conjugate_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(PARAMS_NNZ),
+                                    rocsparse_status_not_implemented);
+            trans_B = op;
+        }
+
+        {
+            rocsparse_operation op = trans_A;
+            trans_A                = rocsparse_operation_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm<T>(PARAMS), rocsparse_status_not_implemented);
+            trans_A = op;
+
+            trans_A = rocsparse_operation_conjugate_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm<T>(PARAMS), rocsparse_status_not_implemented);
+            trans_A = op;
+
+            op      = trans_B;
+            trans_B = rocsparse_operation_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm<T>(PARAMS), rocsparse_status_not_implemented);
+            trans_B = op;
+            op      = trans_B;
+            trans_B = rocsparse_operation_conjugate_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm<T>(PARAMS), rocsparse_status_not_implemented);
+            trans_B = op;
+        }
+    }
+    
 #undef PARAMS
 #undef PARAMS_NNZ
 #undef PARAMS_BUFFER_SIZE
     
-    
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_buffer_size<T>(handle,
-                                                             rocsparse_operation_transpose,
-                                                             rocsparse_operation_none,
-                                                             safe_size,
-                                                             safe_size,
-                                                             safe_size,
-                                                             &h_alpha,
-                                                             descrA,
-                                                             safe_size,
-                                                             dcsr_row_ptr_A,
-                                                             dcsr_col_ind_A,
-                                                             descrB,
-                                                             safe_size,
-                                                             dcsr_row_ptr_B,
-                                                             dcsr_col_ind_B,
-                                                             &h_beta,
-                                                             descrD,
-                                                             safe_size,
-                                                             dcsr_row_ptr_D,
-                                                             dcsr_col_ind_D,
-                                                             info,
-                                                             &buffer_size),
-                            rocsparse_status_not_implemented);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_buffer_size<T>(handle,
-                                                             rocsparse_operation_none,
-                                                             rocsparse_operation_transpose,
-                                                             safe_size,
-                                                             safe_size,
-                                                             safe_size,
-                                                             &h_alpha,
-                                                             descrA,
-                                                             safe_size,
-                                                             dcsr_row_ptr_A,
-                                                             dcsr_col_ind_A,
-                                                             descrB,
-                                                             safe_size,
-                                                             dcsr_row_ptr_B,
-                                                             dcsr_col_ind_B,
-                                                             &h_beta,
-                                                             descrD,
-                                                             safe_size,
-                                                             dcsr_row_ptr_D,
-                                                             dcsr_col_ind_D,
-                                                             info,
-                                                             &buffer_size),
-                            rocsparse_status_not_implemented);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_buffer_size<T>(handle,
-                                                             rocsparse_operation_transpose,
-                                                             rocsparse_operation_transpose,
-                                                             safe_size,
-                                                             safe_size,
-                                                             safe_size,
-                                                             &h_alpha,
-                                                             descrA,
-                                                             safe_size,
-                                                             dcsr_row_ptr_A,
-                                                             dcsr_col_ind_A,
-                                                             descrB,
-                                                             safe_size,
-                                                             dcsr_row_ptr_B,
-                                                             dcsr_col_ind_B,
-                                                             &h_beta,
-                                                             descrD,
-                                                             safe_size,
-                                                             dcsr_row_ptr_D,
-                                                             dcsr_col_ind_D,
-                                                             info,
-                                                             &buffer_size),
-                            rocsparse_status_not_implemented);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(handle,
-                                                  rocsparse_operation_transpose,
-                                                  rocsparse_operation_none,
-                                                  safe_size,
-                                                  safe_size,
-                                                  safe_size,
-                                                  descrA,
-                                                  safe_size,
-                                                  dcsr_row_ptr_A,
-                                                  dcsr_col_ind_A,
-                                                  descrB,
-                                                  safe_size,
-                                                  dcsr_row_ptr_B,
-                                                  dcsr_col_ind_B,
-                                                  descrD,
-                                                  safe_size,
-                                                  dcsr_row_ptr_D,
-                                                  dcsr_col_ind_D,
-                                                  descrC,
-                                                  dcsr_row_ptr_C,
-                                                  &nnz_C,
-                                                  info,
-                                                  dbuffer),
-                            rocsparse_status_not_implemented);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(handle,
-                                                  rocsparse_operation_transpose,
-                                                  rocsparse_operation_transpose,
-                                                  safe_size,
-                                                  safe_size,
-                                                  safe_size,
-                                                  descrA,
-                                                  safe_size,
-                                                  dcsr_row_ptr_A,
-                                                  dcsr_col_ind_A,
-                                                  descrB,
-                                                  safe_size,
-                                                  dcsr_row_ptr_B,
-                                                  dcsr_col_ind_B,
-                                                  descrD,
-                                                  safe_size,
-                                                  dcsr_row_ptr_D,
-                                                  dcsr_col_ind_D,
-                                                  descrC,
-                                                  dcsr_row_ptr_C,
-                                                  &nnz_C,
-                                                  info,
-                                                  dbuffer),
-                            rocsparse_status_not_implemented);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(handle,
-                                                  rocsparse_operation_none,
-                                                  rocsparse_operation_transpose,
-                                                  safe_size,
-                                                  safe_size,
-                                                  safe_size,
-                                                  descrA,
-                                                  safe_size,
-                                                  dcsr_row_ptr_A,
-                                                  dcsr_col_ind_A,
-                                                  descrB,
-                                                  safe_size,
-                                                  dcsr_row_ptr_B,
-                                                  dcsr_col_ind_B,
-                                                  descrD,
-                                                  safe_size,
-                                                  dcsr_row_ptr_D,
-                                                  dcsr_col_ind_D,
-                                                  descrC,
-                                                  dcsr_row_ptr_C,
-                                                  &nnz_C,
-                                                  info,
-                                                  dbuffer),
-                            rocsparse_status_not_implemented);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm<T>(handle,
-                                                 rocsparse_operation_transpose,
-                                                 rocsparse_operation_none,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descrA,
-                                                 safe_size,
-                                                 dcsr_val_A,
-                                                 dcsr_row_ptr_A,
-                                                 dcsr_col_ind_A,
-                                                 descrB,
-                                                 safe_size,
-                                                 dcsr_val_B,
-                                                 dcsr_row_ptr_B,
-                                                 dcsr_col_ind_B,
-                                                 &h_beta,
-                                                 descrD,
-                                                 safe_size,
-                                                 dcsr_val_D,
-                                                 dcsr_row_ptr_D,
-                                                 dcsr_col_ind_D,
-                                                 descrC,
-                                                 dcsr_val_C,
-                                                 dcsr_row_ptr_C,
-                                                 dcsr_col_ind_C,
-                                                 info,
-                                                 dbuffer),
-                            rocsparse_status_not_implemented);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm<T>(handle,
-                                                 rocsparse_operation_none,
-                                                 rocsparse_operation_transpose,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descrA,
-                                                 safe_size,
-                                                 dcsr_val_A,
-                                                 dcsr_row_ptr_A,
-                                                 dcsr_col_ind_A,
-                                                 descrB,
-                                                 safe_size,
-                                                 dcsr_val_B,
-                                                 dcsr_row_ptr_B,
-                                                 dcsr_col_ind_B,
-                                                 &h_beta,
-                                                 descrD,
-                                                 safe_size,
-                                                 dcsr_val_D,
-                                                 dcsr_row_ptr_D,
-                                                 dcsr_col_ind_D,
-                                                 descrC,
-                                                 dcsr_val_C,
-                                                 dcsr_row_ptr_C,
-                                                 dcsr_col_ind_C,
-                                                 info,
-                                                 dbuffer),
-                            rocsparse_status_not_implemented);
-
-    EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm<T>(handle,
-                                                 rocsparse_operation_transpose,
-                                                 rocsparse_operation_transpose,
-                                                 safe_size,
-                                                 safe_size,
-                                                 safe_size,
-                                                 &h_alpha,
-                                                 descrA,
-                                                 safe_size,
-                                                 dcsr_val_A,
-                                                 dcsr_row_ptr_A,
-                                                 dcsr_col_ind_A,
-                                                 descrB,
-                                                 safe_size,
-                                                 dcsr_val_B,
-                                                 dcsr_row_ptr_B,
-                                                 dcsr_col_ind_B,
-                                                 &h_beta,
-                                                 descrD,
-                                                 safe_size,
-                                                 dcsr_val_D,
-                                                 dcsr_row_ptr_D,
-                                                 dcsr_col_ind_D,
-                                                 descrC,
-                                                 dcsr_val_C,
-                                                 dcsr_row_ptr_C,
-                                                 dcsr_col_ind_C,
-                                                 info,
-                                                 dbuffer),
-                            rocsparse_status_not_implemented);
 }
 
 template <typename T>
