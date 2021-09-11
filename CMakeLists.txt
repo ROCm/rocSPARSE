@@ -123,7 +123,19 @@ else()
         set(DEFAULT_AMDGPU_TARGETS "gfx803;gfx900;gfx906;gfx908")
     endif()
 endif()
-set(AMDGPU_TARGETS "${DEFAULT_AMDGPU_TARGETS}" CACHE STRING "List of specific machine types for library to target" FORCE)
+
+if (AMDGPU_TARGETS)
+  set(TMPAMDGPU_TARGETS "${AMDGPU_TARGETS}")
+  if(TMPAMDGPU_TARGETS STREQUAL "all" )
+    set(AMDGPU_TARGETS "${DEFAULT_AMDGPU_TARGETS}" CACHE STRING "List of specific machine types for library to target" FORCE)
+  else()
+    set(AMDGPU_TARGETS "${TMPAMDGPU_TARGETS}" CACHE STRING "AMD GPU targets to compile for" FORCE)
+  endif()
+else()
+  set(AMDGPU_TARGETS "${DEFAULT_AMDGPU_TARGETS}" CACHE STRING "List of specific machine types for library to target")
+endif()
+
+message(STATUS "AMDGPU_TARGETS: ${AMDGPU_TARGETS}")
 
 # Find rocprim package
 find_package(rocprim REQUIRED)

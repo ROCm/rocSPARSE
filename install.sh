@@ -14,6 +14,7 @@ function display_help()
 #  echo "    [--prefix] Specify an alternate CMAKE_INSTALL_PREFIX for cmake"
   echo "    [-i|--install] install after build"
   echo "    [-d|--dependencies] install build dependencies"
+  echo "    [-a|--architecture] Set GPU architecture target(s), e.g., all, gfx000, gfx900, gfx906:xnack-;gfx908:xnack-"
   echo "    [-c|--clients] build library clients too (combines with -i & -d)"
   echo "    [-r]--relocatable] create a package to support relocatable ROCm"
   echo "    [-g|--debug] -DCMAKE_BUILD_TYPE=Debug (default is =Release)"
@@ -254,6 +255,7 @@ build_relocatable=false
 build_address_sanitizer=false
 matrices_dir=
 matrices_dir_install=
+gpu_architecture=all
 
 # #################################################
 # Parameter parsing
@@ -262,7 +264,7 @@ matrices_dir_install=
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,address-sanitizer,matrices-dir:,matrices-dir-install: --options hicdgrk -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture: --options hicdgrka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -277,60 +279,63 @@ eval set -- "${GETOPT_PARSE}"
 
 while true; do
     case "${1}" in
-	-h|--help)
+        -h|--help)
             display_help
             exit 0
             ;;
-	-i|--install)
+        -i|--install)
             install_package=true
             shift ;;
-	-d|--dependencies)
+        -d|--dependencies)
             install_dependencies=true
             shift ;;
-	-c|--clients)
+        -c|--clients)
             build_clients=true
             shift ;;
-	-r|--relocatable)
+        -r|--relocatable)
             build_relocatable=true
             shift ;;
-	-g|--debug)
+        -g|--debug)
             build_release=false
             shift ;;
-	--hip-clang)
+        --hip-clang)
             build_hip_clang=true
             shift ;;
-	--static)
+        --static)
             build_static=true
             shift ;;
-	--address-sanitizer)
+        --address-sanitizer)
             build_address_sanitizer=true
             shift ;;
-	-k|--relwithdebinfo)
+        -k|--relwithdebinfo)
             build_release=false
             build_release_debug=true
-	    shift ;;
-	--codecoverage)
+            shift ;;
+        --codecoverage)
             build_codecoverage=true
             shift ;;
-	--matrices-dir)
-            matrices_dir=${2}
-	    if [[ "${matrices_dir}" == "" ]];then
-		echo "Missing argument from command line parameter --matrices-dir; aborting"
-		exit 1
-	    fi
-	    shift 2 ;;
-	--matrices-dir-install)
-            matrices_dir_install=${2}
-	    if [[ "${matrices_dir_install}" == "" ]];then
-		echo "Missing argument from command line parameter --matrices-dir-install; aborting"
-		exit 1
-	    fi
+        -a|--architecture)
+            gpu_architecture=${2}
             shift 2 ;;
-	--prefix)
+        --matrices-dir)
+            matrices_dir=${2}
+            if [[ "${matrices_dir}" == "" ]];then
+                echo "Missing argument from command line parameter --matrices-dir; aborting"
+                exit 1
+            fi
+            shift 2 ;;
+        --matrices-dir-install)
+            matrices_dir_install=${2}
+            if [[ "${matrices_dir_install}" == "" ]];then
+                echo "Missing argument from command line parameter --matrices-dir-install; aborting"
+                exit 1
+            fi
+            shift 2 ;;
+        --prefix)
             install_prefix=${2}
             shift 2 ;;
-	--) shift ; break ;;
-	*)  echo "Unexpected command line parameter received: '${1}'; aborting";
+        --) shift ; break ;;
+        *)  echo "Unexpected command line parameter received: '${1}'; aborting";
             exit 1
             ;;
     esac
@@ -350,8 +355,8 @@ fi
 #
 if ! [[ "${matrices_dir}" == "" ]];then
     if ! [ -e ${matrices_dir} ];then
-	echo "Invalid dir from command line parameter --matrices-dir: ${matrices_dir}; aborting";
-	exit 1
+        echo "Invalid dir from command line parameter --matrices-dir: ${matrices_dir}; aborting";
+        exit 1
     fi
 
     # Let's 'reinstall' to the specified location to check if all good
@@ -430,7 +435,7 @@ pushd .
   # #################################################
   # configure & build
   # #################################################
-  cmake_common_options=""
+  cmake_common_options="-DAMDGPU_TARGETS=${gpu_architecture}"
   cmake_client_options=""
 
   # build type
@@ -472,7 +477,7 @@ pushd .
       # Add matrices_dir if exists.
       #
       if ! [[ "${matrices_dir}" == "" ]];then
-	  cmake_client_options="${cmake_client_options} -DCMAKE_MATRICES_DIR=${matrices_dir}"
+          cmake_client_options="${cmake_client_options} -DCMAKE_MATRICES_DIR=${matrices_dir}"
       fi
   fi
 
