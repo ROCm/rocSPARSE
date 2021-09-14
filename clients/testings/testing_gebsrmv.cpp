@@ -191,6 +191,20 @@ void testing_gebsrmv(const Arguments& arg)
 
     if(arg.unit_check)
     {
+        // Navi21 on Windows requires weaker tolerance due to different rounding behaviour
+#if defined(WIN32)
+        int dev;
+        hipGetDevice(&dev);
+
+        hipDeviceProp_t prop;
+        hipGetDeviceProperties(&prop, dev);
+
+        if(prop.major == 10 && prop.minor == 3)
+        {
+            tol *= 1e2;
+        }
+#endif
+
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_gebsrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
