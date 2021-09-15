@@ -29,23 +29,23 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
-static __device__ void csrmmnn_general_device(rocsparse_operation trans_A,
-                                              rocsparse_operation trans_B,
-                                              J                   M,
-                                              J                   N,
-                                              J                   K,
-                                              I                   nnz,
-                                              T                   alpha,
-                                              const I* __restrict__ csr_row_ptr,
-                                              const J* __restrict__ csr_col_ind,
-                                              const T* __restrict__ csr_val,
-                                              const T* __restrict__ B,
-                                              J ldb,
-                                              T beta,
-                                              T* __restrict__ C,
-                                              J                    ldc,
-                                              rocsparse_order      order,
-                                              rocsparse_index_base idx_base)
+static ROCSPARSE_DEVICE_ILF void csrmmnn_general_device(rocsparse_operation trans_A,
+                                                        rocsparse_operation trans_B,
+                                                        J                   M,
+                                                        J                   N,
+                                                        J                   K,
+                                                        I                   nnz,
+                                                        T                   alpha,
+                                                        const I* __restrict__ csr_row_ptr,
+                                                        const J* __restrict__ csr_col_ind,
+                                                        const T* __restrict__ csr_val,
+                                                        const T* __restrict__ B,
+                                                        J ldb,
+                                                        T beta,
+                                                        T* __restrict__ C,
+                                                        J                    ldc,
+                                                        rocsparse_order      order,
+                                                        rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
     J   gid = hipBlockIdx_x * BLOCKSIZE + tid;
@@ -141,25 +141,25 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-static __device__ void csrmmnt_general_main_device(rocsparse_operation trans_A,
-                                                   rocsparse_operation trans_B,
-                                                   J                   offset,
-                                                   J                   ncol,
-                                                   J                   M,
-                                                   J                   N,
-                                                   J                   K,
-                                                   I                   nnz,
-                                                   T                   alpha,
-                                                   const I* __restrict__ csr_row_ptr,
-                                                   const J* __restrict__ csr_col_ind,
-                                                   const T* __restrict__ csr_val,
-                                                   const T* __restrict__ B,
-                                                   J ldb,
-                                                   T beta,
-                                                   T* __restrict__ C,
-                                                   J                    ldc,
-                                                   rocsparse_order      order,
-                                                   rocsparse_index_base idx_base)
+static ROCSPARSE_DEVICE_ILF void csrmmnt_general_main_device(rocsparse_operation trans_A,
+                                                             rocsparse_operation trans_B,
+                                                             J                   offset,
+                                                             J                   ncol,
+                                                             J                   M,
+                                                             J                   N,
+                                                             J                   K,
+                                                             I                   nnz,
+                                                             T                   alpha,
+                                                             const I* __restrict__ csr_row_ptr,
+                                                             const J* __restrict__ csr_col_ind,
+                                                             const T* __restrict__ csr_val,
+                                                             const T* __restrict__ B,
+                                                             J ldb,
+                                                             T beta,
+                                                             T* __restrict__ C,
+                                                             J                    ldc,
+                                                             rocsparse_order      order,
+                                                             rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
     J   gid = hipBlockIdx_x * BLOCKSIZE + tid;
@@ -279,25 +279,25 @@ static __device__ void csrmmnt_general_main_device(rocsparse_operation trans_A,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
-static __device__ void csrmmnt_general_remainder_device(rocsparse_operation trans_A,
-                                                        rocsparse_operation trans_B,
-                                                        J                   offset,
-                                                        J                   ncol,
-                                                        J                   M,
-                                                        J                   N,
-                                                        J                   K,
-                                                        I                   nnz,
-                                                        T                   alpha,
-                                                        const I* __restrict__ csr_row_ptr,
-                                                        const J* __restrict__ csr_col_ind,
-                                                        const T* __restrict__ csr_val,
-                                                        const T* __restrict__ B,
-                                                        J ldb,
-                                                        T beta,
-                                                        T* __restrict__ C,
-                                                        J                    ldc,
-                                                        rocsparse_order      order,
-                                                        rocsparse_index_base idx_base)
+static ROCSPARSE_DEVICE_ILF void csrmmnt_general_remainder_device(rocsparse_operation trans_A,
+                                                                  rocsparse_operation trans_B,
+                                                                  J                   offset,
+                                                                  J                   ncol,
+                                                                  J                   M,
+                                                                  J                   N,
+                                                                  J                   K,
+                                                                  I                   nnz,
+                                                                  T                   alpha,
+                                                                  const I* __restrict__ csr_row_ptr,
+                                                                  const J* __restrict__ csr_col_ind,
+                                                                  const T* __restrict__ csr_val,
+                                                                  const T* __restrict__ B,
+                                                                  J ldb,
+                                                                  T beta,
+                                                                  T* __restrict__ C,
+                                                                  J                    ldc,
+                                                                  rocsparse_order      order,
+                                                                  rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
     J   gid = hipBlockIdx_x * BLOCKSIZE + tid;
@@ -394,7 +394,7 @@ static __device__ void csrmmnt_general_remainder_device(rocsparse_operation tran
 
 // Scale kernel for beta != 1.0
 template <typename I, typename T>
-static __device__ void
+static ROCSPARSE_DEVICE_ILF void
     csrmm_scale_device(I m, I n, T beta, T* __restrict__ data, I ld, rocsparse_order order)
 {
     I gidx = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
@@ -419,23 +419,23 @@ static __device__ void
 // 2014 20th IEEE International Conference on Parallel and Distributed Systems (ICPADS), 2014, pp. 987-992,
 // doi: 10.1109/PADSW.2014.7097920.
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
-static __device__ void csrmmtn_general_device(rocsparse_operation trans_A,
-                                              rocsparse_operation trans_B,
-                                              J                   M,
-                                              J                   N,
-                                              J                   K,
-                                              I                   nnz,
-                                              T                   alpha,
-                                              const I* __restrict__ csr_row_ptr,
-                                              const J* __restrict__ csr_col_ind,
-                                              const T* __restrict__ csr_val,
-                                              const T* __restrict__ B,
-                                              J ldb,
-                                              T beta,
-                                              T* __restrict__ C,
-                                              J                    ldc,
-                                              rocsparse_order      order,
-                                              rocsparse_index_base idx_base)
+static ROCSPARSE_DEVICE_ILF void csrmmtn_general_device(rocsparse_operation trans_A,
+                                                        rocsparse_operation trans_B,
+                                                        J                   M,
+                                                        J                   N,
+                                                        J                   K,
+                                                        I                   nnz,
+                                                        T                   alpha,
+                                                        const I* __restrict__ csr_row_ptr,
+                                                        const J* __restrict__ csr_col_ind,
+                                                        const T* __restrict__ csr_val,
+                                                        const T* __restrict__ B,
+                                                        J ldb,
+                                                        T beta,
+                                                        T* __restrict__ C,
+                                                        J                    ldc,
+                                                        rocsparse_order      order,
+                                                        rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
     J   gid = hipBlockIdx_x * BLOCKSIZE + tid;
@@ -503,23 +503,23 @@ static __device__ void csrmmtn_general_device(rocsparse_operation trans_A,
 // 2014 20th IEEE International Conference on Parallel and Distributed Systems (ICPADS), 2014, pp. 987-992,
 // doi: 10.1109/PADSW.2014.7097920.
 template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
-static __device__ void csrmmtt_general_device(rocsparse_operation trans_A,
-                                              rocsparse_operation trans_B,
-                                              J                   M,
-                                              J                   N,
-                                              J                   K,
-                                              I                   nnz,
-                                              T                   alpha,
-                                              const I* __restrict__ csr_row_ptr,
-                                              const J* __restrict__ csr_col_ind,
-                                              const T* __restrict__ csr_val,
-                                              const T* __restrict__ B,
-                                              J ldb,
-                                              T beta,
-                                              T* __restrict__ C,
-                                              J                    ldc,
-                                              rocsparse_order      order,
-                                              rocsparse_index_base idx_base)
+static ROCSPARSE_DEVICE_ILF void csrmmtt_general_device(rocsparse_operation trans_A,
+                                                        rocsparse_operation trans_B,
+                                                        J                   M,
+                                                        J                   N,
+                                                        J                   K,
+                                                        I                   nnz,
+                                                        T                   alpha,
+                                                        const I* __restrict__ csr_row_ptr,
+                                                        const J* __restrict__ csr_col_ind,
+                                                        const T* __restrict__ csr_val,
+                                                        const T* __restrict__ B,
+                                                        J ldb,
+                                                        T beta,
+                                                        T* __restrict__ C,
+                                                        J                    ldc,
+                                                        rocsparse_order      order,
+                                                        rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
     J   gid = hipBlockIdx_x * BLOCKSIZE + tid;

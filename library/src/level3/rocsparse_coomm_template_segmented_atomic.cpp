@@ -33,19 +33,19 @@ template <unsigned int WF_SIZE,
           bool         NT,
           typename I,
           typename T>
-static __device__ void coommnn_segmented_atomic_device(rocsparse_operation  transB,
-                                                       I                    nnz,
-                                                       I                    nstart,
-                                                       T                    alpha,
-                                                       const I*             coo_row_ind,
-                                                       const I*             coo_col_ind,
-                                                       const T*             coo_val,
-                                                       const T*             B,
-                                                       I                    ldb,
-                                                       T*                   C,
-                                                       I                    ldc,
-                                                       rocsparse_order      order,
-                                                       rocsparse_index_base idx_base)
+static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  transB,
+                                                                 I                    nnz,
+                                                                 I                    nstart,
+                                                                 T                    alpha,
+                                                                 const I*             coo_row_ind,
+                                                                 const I*             coo_col_ind,
+                                                                 const T*             coo_val,
+                                                                 const T*             B,
+                                                                 I                    ldb,
+                                                                 T*                   C,
+                                                                 I                    ldc,
+                                                                 rocsparse_order      order,
+                                                                 rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
     int lid = tid & (WF_SIZE - 1);
