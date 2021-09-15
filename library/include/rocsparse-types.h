@@ -36,8 +36,10 @@
 
 #ifdef WIN32
 #define ROCSPARSE_KERNEL __global__ static
+#define ROCSPARSE_DEVICE_ILF __device__ __forceinline__
 #else
 #define ROCSPARSE_KERNEL __global__
+#define ROCSPARSE_DEVICE_ILF __device__
 #endif
 
 /*! \ingroup types_module

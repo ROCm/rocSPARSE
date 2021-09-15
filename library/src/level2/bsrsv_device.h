@@ -29,20 +29,20 @@
 #include "common.h"
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
-__device__ void bsrsv_lower_general_device(rocsparse_int mb,
-                                           T             alpha,
-                                           const rocsparse_int* __restrict__ bsr_row_ptr,
-                                           const rocsparse_int* __restrict__ bsr_col_ind,
-                                           const T* __restrict__ bsr_val,
-                                           rocsparse_int block_dim,
-                                           const T* __restrict__ x,
-                                           T* __restrict__ y,
-                                           int* __restrict__ done_array,
-                                           rocsparse_int* __restrict__ map,
-                                           rocsparse_int* __restrict__ zero_pivot,
-                                           rocsparse_index_base idx_base,
-                                           rocsparse_diag_type  diag_type,
-                                           rocsparse_direction  dir)
+ROCSPARSE_DEVICE_ILF void bsrsv_lower_general_device(rocsparse_int mb,
+                                                     T             alpha,
+                                                     const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                     const rocsparse_int* __restrict__ bsr_col_ind,
+                                                     const T* __restrict__ bsr_val,
+                                                     rocsparse_int block_dim,
+                                                     const T* __restrict__ x,
+                                                     T* __restrict__ y,
+                                                     int* __restrict__ done_array,
+                                                     rocsparse_int* __restrict__ map,
+                                                     rocsparse_int* __restrict__ zero_pivot,
+                                                     rocsparse_index_base idx_base,
+                                                     rocsparse_diag_type  diag_type,
+                                                     rocsparse_direction  dir)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -178,20 +178,20 @@ __device__ void bsrsv_lower_general_device(rocsparse_int mb,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T>
-__device__ void bsrsv_upper_general_device(rocsparse_int mb,
-                                           T             alpha,
-                                           const rocsparse_int* __restrict__ bsr_row_ptr,
-                                           const rocsparse_int* __restrict__ bsr_col_ind,
-                                           const T* __restrict__ bsr_val,
-                                           rocsparse_int block_dim,
-                                           const T* __restrict__ x,
-                                           T* __restrict__ y,
-                                           int* __restrict__ done_array,
-                                           rocsparse_int* __restrict__ map,
-                                           rocsparse_int* __restrict__ zero_pivot,
-                                           rocsparse_index_base idx_base,
-                                           rocsparse_diag_type  diag_type,
-                                           rocsparse_direction  dir)
+ROCSPARSE_DEVICE_ILF void bsrsv_upper_general_device(rocsparse_int mb,
+                                                     T             alpha,
+                                                     const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                     const rocsparse_int* __restrict__ bsr_col_ind,
+                                                     const T* __restrict__ bsr_val,
+                                                     rocsparse_int block_dim,
+                                                     const T* __restrict__ x,
+                                                     T* __restrict__ y,
+                                                     int* __restrict__ done_array,
+                                                     rocsparse_int* __restrict__ map,
+                                                     rocsparse_int* __restrict__ zero_pivot,
+                                                     rocsparse_index_base idx_base,
+                                                     rocsparse_diag_type  diag_type,
+                                                     rocsparse_direction  dir)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -327,20 +327,20 @@ __device__ void bsrsv_upper_general_device(rocsparse_int mb,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, rocsparse_int BSRDIM, bool SLEEP, typename T>
-__device__ void bsrsv_lower_shared_device(rocsparse_int mb,
-                                          T             alpha,
-                                          const rocsparse_int* __restrict__ bsr_row_ptr,
-                                          const rocsparse_int* __restrict__ bsr_col_ind,
-                                          const T* __restrict__ bsr_val,
-                                          rocsparse_int block_dim,
-                                          const T* __restrict__ x,
-                                          T* __restrict__ y,
-                                          int* __restrict__ done_array,
-                                          rocsparse_int* __restrict__ map,
-                                          rocsparse_int* __restrict__ zero_pivot,
-                                          rocsparse_index_base idx_base,
-                                          rocsparse_diag_type  diag_type,
-                                          rocsparse_direction  dir)
+ROCSPARSE_DEVICE_ILF void bsrsv_lower_shared_device(rocsparse_int mb,
+                                                    T             alpha,
+                                                    const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                    const rocsparse_int* __restrict__ bsr_col_ind,
+                                                    const T* __restrict__ bsr_val,
+                                                    rocsparse_int block_dim,
+                                                    const T* __restrict__ x,
+                                                    T* __restrict__ y,
+                                                    int* __restrict__ done_array,
+                                                    rocsparse_int* __restrict__ map,
+                                                    rocsparse_int* __restrict__ zero_pivot,
+                                                    rocsparse_index_base idx_base,
+                                                    rocsparse_diag_type  diag_type,
+                                                    rocsparse_direction  dir)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
@@ -509,20 +509,20 @@ __device__ void bsrsv_lower_shared_device(rocsparse_int mb,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, rocsparse_int BSRDIM, bool SLEEP, typename T>
-__device__ void bsrsv_upper_shared_device(rocsparse_int mb,
-                                          T             alpha,
-                                          const rocsparse_int* __restrict__ bsr_row_ptr,
-                                          const rocsparse_int* __restrict__ bsr_col_ind,
-                                          const T* __restrict__ bsr_val,
-                                          rocsparse_int block_dim,
-                                          const T* __restrict__ x,
-                                          T* __restrict__ y,
-                                          int* __restrict__ done_array,
-                                          rocsparse_int* __restrict__ map,
-                                          rocsparse_int* __restrict__ zero_pivot,
-                                          rocsparse_index_base idx_base,
-                                          rocsparse_diag_type  diag_type,
-                                          rocsparse_direction  dir)
+ROCSPARSE_DEVICE_ILF void bsrsv_upper_shared_device(rocsparse_int mb,
+                                                    T             alpha,
+                                                    const rocsparse_int* __restrict__ bsr_row_ptr,
+                                                    const rocsparse_int* __restrict__ bsr_col_ind,
+                                                    const T* __restrict__ bsr_val,
+                                                    rocsparse_int block_dim,
+                                                    const T* __restrict__ x,
+                                                    T* __restrict__ y,
+                                                    int* __restrict__ done_array,
+                                                    rocsparse_int* __restrict__ map,
+                                                    rocsparse_int* __restrict__ zero_pivot,
+                                                    rocsparse_index_base idx_base,
+                                                    rocsparse_diag_type  diag_type,
+                                                    rocsparse_direction  dir)
 {
     int lid = hipThreadIdx_x & (WFSIZE - 1);
     int wid = hipThreadIdx_x / WFSIZE;
