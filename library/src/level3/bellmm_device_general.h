@@ -29,24 +29,24 @@
 #include "common.h"
 
 template <rocsparse_int BELL_BLOCK_DIM, rocsparse_int BLK_SIZE_Y, typename T, typename I>
-static __device__ void bellmm_general_blockdim_device(rocsparse_operation trans_A,
-                                                      rocsparse_operation trans_B,
-                                                      rocsparse_order     order_B,
-                                                      rocsparse_order     order_C,
-                                                      rocsparse_direction dir_A,
-                                                      I                   Mb,
-                                                      I                   N,
-                                                      T                   alpha,
-                                                      I                   bell_cols,
-                                                      I                   block_dim,
-                                                      const I* __restrict__ bell_col_ind,
-                                                      const T* __restrict__ bell_val,
-                                                      const T* __restrict__ B,
-                                                      I ldb,
-                                                      T beta,
-                                                      T* __restrict__ C,
-                                                      I                    ldc,
-                                                      rocsparse_index_base idx_base)
+static ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operation trans_A,
+                                                                rocsparse_operation trans_B,
+                                                                rocsparse_order     order_B,
+                                                                rocsparse_order     order_C,
+                                                                rocsparse_direction dir_A,
+                                                                I                   Mb,
+                                                                I                   N,
+                                                                T                   alpha,
+                                                                I                   bell_cols,
+                                                                I                   block_dim,
+                                                                const I* __restrict__ bell_col_ind,
+                                                                const T* __restrict__ bell_val,
+                                                                const T* __restrict__ B,
+                                                                I ldb,
+                                                                T beta,
+                                                                T* __restrict__ C,
+                                                                I                    ldc,
+                                                                rocsparse_index_base idx_base)
 {
     const I tidx       = hipThreadIdx_x;
     const I tidy       = hipThreadIdx_y;
