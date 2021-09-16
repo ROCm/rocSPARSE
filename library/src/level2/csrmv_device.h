@@ -97,7 +97,8 @@ template <rocsparse_int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__device__ void csrmvn_adaptive_device(const I*             row_blocks,
+__device__ void csrmvn_adaptive_device(I                    nnz,
+                                       const I*             row_blocks,
                                        unsigned int*        wg_flags,
                                        const J*             wg_ids,
                                        T                    alpha,
@@ -179,7 +180,7 @@ __device__ void csrmvn_adaptive_device(const I*             row_blocks,
         // Stream all of this row block's matrix values into local memory.
         // Perform the matvec in parallel with this work.
         I col = csr_row_ptr[row] + lid - idx_base;
-        if(gid != (gridDim.x - 1))
+        if(col + BLOCKSIZE - WG_SIZE < nnz)
         {
             for(J i = 0; i < BLOCKSIZE; i += WG_SIZE)
             {

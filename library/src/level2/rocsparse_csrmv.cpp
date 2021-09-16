@@ -472,7 +472,8 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
 template <typename I, typename J, typename T, typename U>
 __launch_bounds__(WG_SIZE) ROCSPARSE_KERNEL
-    void csrmvn_adaptive_kernel(const I* __restrict__ row_blocks,
+    void csrmvn_adaptive_kernel(I nnz,
+                                const I* __restrict__ row_blocks,
                                 unsigned int* __restrict__ wg_flags,
                                 const J* __restrict__ wg_ids,
                                 U alpha_device_host,
@@ -488,7 +489,8 @@ __launch_bounds__(WG_SIZE) ROCSPARSE_KERNEL
     auto beta  = load_scalar_device_host(beta_device_host);
     if(alpha != static_cast<T>(0) || beta != static_cast<T>(1))
     {
-        csrmvn_adaptive_device<BLOCK_SIZE, BLOCK_MULTIPLIER, ROWS_FOR_VECTOR, WG_SIZE>(row_blocks,
+        csrmvn_adaptive_device<BLOCK_SIZE, BLOCK_MULTIPLIER, ROWS_FOR_VECTOR, WG_SIZE>(nnz,
+                                                                                       row_blocks,
                                                                                        wg_flags,
                                                                                        wg_ids,
                                                                                        alpha,
@@ -786,6 +788,7 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
                            csrmvn_threads,
                            0,
                            stream,
+                           nnz,
                            static_cast<I*>(info->row_blocks),
                            info->wg_flags,
                            static_cast<J*>(info->wg_ids),
