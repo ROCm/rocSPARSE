@@ -97,7 +97,7 @@ template <rocsparse_int BLOCKSIZE,
           typename I,
           typename J,
           typename T>
-__device__ void csrmvn_adaptive_device(I nnz,
+__device__ void csrmvn_adaptive_device(I                    nnz,
                                        const I*             row_blocks,
                                        unsigned int*        wg_flags,
                                        const J*             wg_ids,
