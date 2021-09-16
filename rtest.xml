@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE testset SYSTEM "/usr/local/share/rtest.dtd">
 <testset>
     <fileversion>0.1</fileversion>
-    <var name="COMMAND">rocsparse-test --gtest_color=yes --gtest_output=xml</var>
-    <var name="GTEST_FILTER">*</var>
+    <var name="COMMAND" value="rocsparse-test --gtest_color=yes --gtest_output=xml"></var>
+    <var name="GTEST_FILTER" value="*"></var>
     <test sets="psdb">
         <run name="quick_pre_checkin">{COMMAND}:output_psdb.xml --gtest_filter=*quick*:*pre_checkin*</run>
     </test>
