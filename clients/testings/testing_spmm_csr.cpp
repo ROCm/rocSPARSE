@@ -51,6 +51,7 @@ void testing_spmm_csr_bad_arg(const Arguments& arg)
     rocsparse_index_base base        = rocsparse_index_base_zero;
     rocsparse_order      order       = rocsparse_order_column;
     rocsparse_spmm_alg   alg         = rocsparse_spmm_alg_default;
+    rocsparse_spmm_stage stage       = rocsparse_spmm_stage_auto;
 
     rocsparse_indextype itype = get_indextype<I>();
     rocsparse_indextype jtype = get_indextype<J>();
@@ -76,10 +77,11 @@ void testing_spmm_csr_bad_arg(const Arguments& arg)
     rocsparse_dnmat_descr mat_C = local_mat_C;
 
     int       nargs_to_exclude   = 2;
-    const int args_to_exclude[2] = {10, 11};
+    const int args_to_exclude[2] = {11, 12};
 
-#define PARAMS \
-    handle, trans_A, trans_B, alpha, mat_A, mat_B, beta, mat_C, ttype, alg, buffer_size, temp_buffer
+#define PARAMS                                                                                  \
+    handle, trans_A, trans_B, alpha, mat_A, mat_B, beta, mat_C, ttype, alg, stage, buffer_size, \
+        temp_buffer
     {
         size_t* buffer_size = (size_t*)0x4;
         void*   temp_buffer = (void*)0x4;
@@ -115,6 +117,7 @@ void testing_spmm_csr_bad_arg(const Arguments& arg)
                                            mat_C,
                                            ttype,
                                            alg,
+                                           stage,
                                            nullptr,
                                            nullptr),
                             rocsparse_status_invalid_pointer);
@@ -203,6 +206,7 @@ void testing_spmm_csr(const Arguments& arg)
                                                    C,
                                                    ttype,
                                                    alg,
+                                                   rocsparse_spmm_stage_buffer_size,
                                                    &buffer_size,
                                                    nullptr),
                                     rocsparse_status_success);
@@ -220,6 +224,22 @@ void testing_spmm_csr(const Arguments& arg)
                                                    C,
                                                    ttype,
                                                    alg,
+                                                   rocsparse_spmm_stage_preprocess,
+                                                   &buffer_size,
+                                                   dbuffer),
+                                    rocsparse_status_success);
+
+            EXPECT_ROCSPARSE_STATUS(rocsparse_spmm(handle,
+                                                   trans_A,
+                                                   trans_B,
+                                                   &halpha,
+                                                   A,
+                                                   B,
+                                                   &hbeta,
+                                                   C,
+                                                   ttype,
+                                                   alg,
+                                                   rocsparse_spmm_stage_compute,
                                                    &buffer_size,
                                                    dbuffer),
                                     rocsparse_status_success);
@@ -320,12 +340,37 @@ void testing_spmm_csr(const Arguments& arg)
 
     // Query SpMM buffer
     size_t buffer_size;
-    CHECK_ROCSPARSE_ERROR(rocsparse_spmm(
-        handle, trans_A, trans_B, &halpha, A, B, &hbeta, C1, ttype, alg, &buffer_size, nullptr));
+    CHECK_ROCSPARSE_ERROR(rocsparse_spmm(handle,
+                                         trans_A,
+                                         trans_B,
+                                         &halpha,
+                                         A,
+                                         B,
+                                         &hbeta,
+                                         C1,
+                                         ttype,
+                                         alg,
+                                         rocsparse_spmm_stage_buffer_size,
+                                         &buffer_size,
+                                         nullptr));
 
     // Allocate buffer
     void* dbuffer;
     CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_spmm(handle,
+                                         trans_A,
+                                         trans_B,
+                                         &halpha,
+                                         A,
+                                         B,
+                                         &hbeta,
+                                         C1,
+                                         ttype,
+                                         alg,
+                                         rocsparse_spmm_stage_preprocess,
+                                         &buffer_size,
+                                         dbuffer));
 
     if(arg.unit_check)
     {
@@ -343,13 +388,25 @@ void testing_spmm_csr(const Arguments& arg)
                                              C1,
                                              ttype,
                                              alg,
+                                             rocsparse_spmm_stage_compute,
                                              &buffer_size,
                                              dbuffer));
 
         // Pointer mode device
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
-        CHECK_ROCSPARSE_ERROR(rocsparse_spmm(
-            handle, trans_A, trans_B, dalpha, A, B, dbeta, C2, ttype, alg, &buffer_size, dbuffer));
+        CHECK_ROCSPARSE_ERROR(rocsparse_spmm(handle,
+                                             trans_A,
+                                             trans_B,
+                                             dalpha,
+                                             A,
+                                             B,
+                                             dbeta,
+                                             C2,
+                                             ttype,
+                                             alg,
+                                             rocsparse_spmm_stage_compute,
+                                             &buffer_size,
+                                             dbuffer));
 
         // Copy output to host
         CHECK_HIP_ERROR(hipMemcpy(hC_1, dC_1, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
@@ -397,6 +454,7 @@ void testing_spmm_csr(const Arguments& arg)
                                                  C1,
                                                  ttype,
                                                  alg,
+                                                 rocsparse_spmm_stage_compute,
                                                  &buffer_size,
                                                  dbuffer));
         }
@@ -416,6 +474,7 @@ void testing_spmm_csr(const Arguments& arg)
                                                  C1,
                                                  ttype,
                                                  alg,
+                                                 rocsparse_spmm_stage_compute,
                                                  &buffer_size,
                                                  dbuffer));
         }

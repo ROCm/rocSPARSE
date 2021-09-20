@@ -129,11 +129,26 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                    C,
                                    ttype,
                                    rocsparse_spmm_alg_default,
+                                   rocsparse_spmm_stage_buffer_size,
                                    &buffer_size,
                                    nullptr));
 
     void* temp_buffer;
     HIP_CHECK(hipMalloc(&temp_buffer, buffer_size));
+
+    ROCSPARSE_CHECK(rocsparse_spmm(handle,
+                                   rocsparse_operation_none,
+                                   rocsparse_operation_none,
+                                   &halpha,
+                                   A,
+                                   B,
+                                   &hbeta,
+                                   C,
+                                   ttype,
+                                   rocsparse_spmm_alg_default,
+                                   rocsparse_spmm_stage_preprocess,
+                                   &buffer_size,
+                                   temp_buffer));
 
     // Warm up
     for(int i = 0; i < 10; ++i)
@@ -149,6 +164,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                        C,
                                        ttype,
                                        rocsparse_spmm_alg_default,
+                                       rocsparse_spmm_stage_compute,
                                        &buffer_size,
                                        temp_buffer));
     }
@@ -175,6 +191,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
                                            C,
                                            ttype,
                                            rocsparse_spmm_alg_default,
+                                           rocsparse_spmm_stage_compute,
                                            &buffer_size,
                                            temp_buffer));
         }
