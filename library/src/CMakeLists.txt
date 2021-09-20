@@ -107,7 +107,6 @@ set(rocsparse_source
   src/level3/rocsparse_coomm_template_segmented.cpp
   src/level3/rocsparse_coomm_template_segmented_atomic.cpp
   src/level3/rocsparse_spmm.cpp
-  src/level3/rocsparse_spmm_ex.cpp
   src/level3/rocsparse_csrsm.cpp
   src/level3/rocsparse_coosm.cpp
   src/level3/rocsparse_bsrsm.cpp
