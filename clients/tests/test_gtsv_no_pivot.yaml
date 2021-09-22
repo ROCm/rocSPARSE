@@ -84,3 +84,30 @@ Tests:
   N: [256, 512]
   denseld: [2048, 4096, 8192, 16384]
   matrix: [rocsparse_matrix_random]
+
+- name: gtsv_no_pivot
+  category: quick
+  function: gtsv_no_pivot
+  precision: *single_double_precisions_complex_real
+  M: [131072, 424576, 1048576]
+  N: [1, 2]
+  denseld: [131072, 424576, 1048576]
+  matrix: [rocsparse_matrix_random]
+
+- name: gtsv_no_pivot
+  category: pre_checkin
+  function: gtsv_no_pivot
+  precision: *single_double_precisions
+  M: [231772, 262144, 1143576]
+  N: [32]
+  denseld: [231772, 262144, 1143576]
+  matrix: [rocsparse_matrix_random]
+
+- name: gtsv_no_pivot
+  category: nightly
+  function: gtsv_no_pivot
+  precision: *single_double_precisions
+  M: [4194304]
+  N: [7]
+  denseld: [4194304]
+  matrix: [rocsparse_matrix_random]
