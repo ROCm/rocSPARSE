@@ -26,40 +26,6 @@
 
 #include "gtsv_nopivot_device.h"
 
-#define LAUNCH_GTSV_NOPIVOT_PCR_POW2_STAGE1(T, block_size, stride, iter)        \
-    hipLaunchKernelGGL((gtsv_nopivot_pcr_pow2_stage1_kernel<block_size>),       \
-                       dim3(((m - 1) / block_size + 1), n, 1),                  \
-                       dim3(block_size, 1, 1),                                  \
-                       0,                                                       \
-                       handle->stream,                                          \
-                       stride,                                                  \
-                       m,                                                       \
-                       n,                                                       \
-                       ((iter == 0) ? ldb : m),                                 \
-                       ((iter == 0) ? dl : (((iter & 1) == 0) ? da0 : da1)),    \
-                       ((iter == 0) ? d : (((iter & 1) == 0) ? db0 : db1)),     \
-                       ((iter == 0) ? du : (((iter & 1) == 0) ? dc0 : dc1)),    \
-                       ((iter == 0) ? B : (((iter & 1) == 0) ? drhs0 : drhs1)), \
-                       (((iter & 1) == 0) ? da1 : da0),                         \
-                       (((iter & 1) == 0) ? db1 : db0),                         \
-                       (((iter & 1) == 0) ? dc1 : dc0),                         \
-                       (((iter & 1) == 0) ? drhs1 : drhs0));
-
-#define LAUNCH_GTSV_NOPIVOT_CR_POW2_STAGE2(T, block_size, iter)          \
-    hipLaunchKernelGGL((gtsv_nopivot_cr_pow2_stage2_kernel<block_size>), \
-                       dim3(subsystem_count, n, 1),                      \
-                       dim3(block_size),                                 \
-                       0,                                                \
-                       handle->stream,                                   \
-                       m,                                                \
-                       n,                                                \
-                       ldb,                                              \
-                       (((iter & 1) != 0) ? da1 : da0),                  \
-                       (((iter & 1) != 0) ? db1 : db0),                  \
-                       (((iter & 1) != 0) ? dc1 : dc0),                  \
-                       (((iter & 1) != 0) ? drhs1 : drhs0),              \
-                       B);
-
 #define LAUNCH_GTSV_NOPIVOT_CR_POW2_SHARED(T, block_size)                \
     hipLaunchKernelGGL((gtsv_nopivot_cr_pow2_shared_kernel<block_size>), \
                        dim3(n),                                          \
@@ -114,40 +80,6 @@
                        dl,                                           \
                        d,                                            \
                        du,                                           \
-                       B);
-
-#define LAUNCH_GTSV_NOPIVOT_PCR_STAGE1(T, block_size, stride, iter)             \
-    hipLaunchKernelGGL((gtsv_nopivot_pcr_stage1_kernel<block_size>),            \
-                       dim3(((m - 1) / block_size + 1), n, 1),                  \
-                       dim3(block_size),                                        \
-                       0,                                                       \
-                       handle->stream,                                          \
-                       stride,                                                  \
-                       m,                                                       \
-                       n,                                                       \
-                       ((iter == 0) ? ldb : m),                                 \
-                       ((iter == 0) ? dl : (((iter & 1) == 0) ? da0 : da1)),    \
-                       ((iter == 0) ? d : (((iter & 1) == 0) ? db0 : db1)),     \
-                       ((iter == 0) ? du : (((iter & 1) == 0) ? dc0 : dc1)),    \
-                       ((iter == 0) ? B : (((iter & 1) == 0) ? drhs0 : drhs1)), \
-                       (((iter & 1) == 0) ? da1 : da0),                         \
-                       (((iter & 1) == 0) ? db1 : db0),                         \
-                       (((iter & 1) == 0) ? dc1 : dc0),                         \
-                       (((iter & 1) == 0) ? drhs1 : drhs0));
-
-#define LAUNCH_GTSV_NOPIVOT_PCR_STAGE2(T, block_size, iter)          \
-    hipLaunchKernelGGL((gtsv_nopivot_pcr_stage2_kernel<block_size>), \
-                       dim3(subsystem_count, n, 1),                  \
-                       dim3(block_size),                             \
-                       0,                                            \
-                       handle->stream,                               \
-                       m,                                            \
-                       n,                                            \
-                       ldb,                                          \
-                       (((iter & 1) != 0) ? da1 : da0),              \
-                       (((iter & 1) != 0) ? db1 : db0),              \
-                       (((iter & 1) != 0) ? dc1 : dc0),              \
-                       (((iter & 1) != 0) ? drhs1 : drhs0),          \
                        B);
 
 template <typename T>
@@ -331,6 +263,228 @@ rocsparse_status rocsparse_gtsv_no_pivot_small_template(rocsparse_handle handle,
     return rocsparse_status_success;
 }
 
+#define LAUNCH_GTSV_NOPIVOT_PCR_POW2_STAGE1_N(T, block_size, stride, iter)      \
+    hipLaunchKernelGGL((gtsv_nopivot_pcr_pow2_stage1_n_kernel<block_size>),     \
+                       dim3(((m - 1) / block_size + 1), n, 1),                  \
+                       dim3(block_size, 1, 1),                                  \
+                       0,                                                       \
+                       handle->stream,                                          \
+                       stride,                                                  \
+                       m,                                                       \
+                       n,                                                       \
+                       ((iter == 0) ? ldb : m),                                 \
+                       ((iter == 0) ? dl : (((iter & 1) == 0) ? da0 : da1)),    \
+                       ((iter == 0) ? d : (((iter & 1) == 0) ? db0 : db1)),     \
+                       ((iter == 0) ? du : (((iter & 1) == 0) ? dc0 : dc1)),    \
+                       ((iter == 0) ? B : (((iter & 1) == 0) ? drhs0 : drhs1)), \
+                       (((iter & 1) == 0) ? da1 : da0),                         \
+                       (((iter & 1) == 0) ? db1 : db0),                         \
+                       (((iter & 1) == 0) ? dc1 : dc0),                         \
+                       (((iter & 1) == 0) ? drhs1 : drhs0));
+
+#define LAUNCH_GTSV_NOPIVOT_PCR_STAGE1_N(T, block_size, stride, iter)           \
+    hipLaunchKernelGGL((gtsv_nopivot_pcr_stage1_n_kernel<block_size>),          \
+                       dim3(((m - 1) / block_size + 1), n, 1),                  \
+                       dim3(block_size),                                        \
+                       0,                                                       \
+                       handle->stream,                                          \
+                       stride,                                                  \
+                       m,                                                       \
+                       n,                                                       \
+                       ((iter == 0) ? ldb : m),                                 \
+                       ((iter == 0) ? dl : (((iter & 1) == 0) ? da0 : da1)),    \
+                       ((iter == 0) ? d : (((iter & 1) == 0) ? db0 : db1)),     \
+                       ((iter == 0) ? du : (((iter & 1) == 0) ? dc0 : dc1)),    \
+                       ((iter == 0) ? B : (((iter & 1) == 0) ? drhs0 : drhs1)), \
+                       (((iter & 1) == 0) ? da1 : da0),                         \
+                       (((iter & 1) == 0) ? db1 : db0),                         \
+                       (((iter & 1) == 0) ? dc1 : dc0),                         \
+                       (((iter & 1) == 0) ? drhs1 : drhs0));
+
+#define LAUNCH_GTSV_NOPIVOT_CR_POW2_STAGE2(T, block_size, iter)          \
+    hipLaunchKernelGGL((gtsv_nopivot_cr_pow2_stage2_kernel<block_size>), \
+                       dim3(subsystem_count, n, 1),                      \
+                       dim3(block_size),                                 \
+                       0,                                                \
+                       handle->stream,                                   \
+                       m,                                                \
+                       n,                                                \
+                       ldb,                                              \
+                       (((iter & 1) != 0) ? da1 : da0),                  \
+                       (((iter & 1) != 0) ? db1 : db0),                  \
+                       (((iter & 1) != 0) ? dc1 : dc0),                  \
+                       (((iter & 1) != 0) ? drhs1 : drhs0),              \
+                       B);
+
+#define LAUNCH_GTSV_NOPIVOT_PCR_STAGE2(T, block_size, iter)          \
+    hipLaunchKernelGGL((gtsv_nopivot_pcr_stage2_kernel<block_size>), \
+                       dim3(subsystem_count, n, 1),                  \
+                       dim3(block_size),                             \
+                       0,                                            \
+                       handle->stream,                               \
+                       m,                                            \
+                       n,                                            \
+                       ldb,                                          \
+                       (((iter & 1) != 0) ? da1 : da0),              \
+                       (((iter & 1) != 0) ? db1 : db0),              \
+                       (((iter & 1) != 0) ? dc1 : dc0),              \
+                       (((iter & 1) != 0) ? drhs1 : drhs0),          \
+                       B);
+
+template <typename T>
+rocsparse_status rocsparse_gtsv_no_pivot_medium_template(rocsparse_handle handle,
+                                                         rocsparse_int    m,
+                                                         rocsparse_int    n,
+                                                         const T*         dl,
+                                                         const T*         d,
+                                                         const T*         du,
+                                                         T*               B,
+                                                         rocsparse_int    ldb,
+                                                         void*            temp_buffer)
+{
+    assert(m > 512 && m <= 65536);
+
+    char* ptr = reinterpret_cast<char*>(temp_buffer);
+    T*    da0 = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m - 1) / 256 + 1) * 256;
+    T* da1 = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m - 1) / 256 + 1) * 256;
+    T* db0 = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m - 1) / 256 + 1) * 256;
+    T* db1 = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m - 1) / 256 + 1) * 256;
+    T* dc0 = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m - 1) / 256 + 1) * 256;
+    T* dc1 = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m - 1) / 256 + 1) * 256;
+    T* drhs0 = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m * n - 1) / 256 + 1) * 256;
+    T* drhs1 = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m * n - 1) / 256 + 1) * 256;
+
+    // Run special algorithm if m is power of 2
+    if((m & (m - 1)) == 0)
+    {
+        // Stage1: Break large tridiagonal system into multiple smaller systems
+        // using parallel cyclic reduction so that each sub system is of size 512.
+        rocsparse_int iter
+            = static_cast<rocsparse_int>(log2(m)) - static_cast<rocsparse_int>(log2(512));
+
+        rocsparse_int stride = 1;
+        for(rocsparse_int i = 0; i < iter; i++)
+        {
+            LAUNCH_GTSV_NOPIVOT_PCR_POW2_STAGE1_N(T, 256, stride, i);
+
+            stride *= 2;
+        }
+
+        // Stage2: Solve the many systems from stage1 in parallel using cyclic reduction.
+        rocsparse_int subsystem_count = 1 << iter;
+
+        LAUNCH_GTSV_NOPIVOT_CR_POW2_STAGE2(T, 256, iter);
+    }
+    else
+    {
+        // Stage1: Break large tridiagonal system into multiple smaller systems
+        // using parallel cyclic reduction so that each sub system is of size 512 or less.
+        rocsparse_int iter
+            = static_cast<rocsparse_int>(log2(m)) - static_cast<rocsparse_int>(log2(512)) + 1;
+
+        rocsparse_int stride = 1;
+        for(rocsparse_int i = 0; i < iter; i++)
+        {
+            LAUNCH_GTSV_NOPIVOT_PCR_STAGE1_N(T, 256, stride, i);
+
+            stride *= 2;
+        }
+
+        // Stage2: Solve the many systems from stage1 in parallel using cyclic reduction.
+        rocsparse_int subsystem_count = 1 << iter;
+
+        LAUNCH_GTSV_NOPIVOT_PCR_STAGE2(T, 512, iter);
+    }
+
+    return rocsparse_status_success;
+}
+
+#define LAUNCH_GTSV_NOPIVOT_PCR_POW2_STAGE1(T, block_size, stride, iter)        \
+    hipLaunchKernelGGL((gtsv_nopivot_pcr_pow2_stage1_kernel<block_size>),       \
+                       dim3(((m - 1) / block_size + 1), 1, 1),                  \
+                       dim3(block_size, 1, 1),                                  \
+                       0,                                                       \
+                       handle->stream,                                          \
+                       stride,                                                  \
+                       m,                                                       \
+                       n,                                                       \
+                       ((iter == 0) ? ldb : m),                                 \
+                       ((iter == 0) ? dl : (((iter & 1) == 0) ? da0 : da1)),    \
+                       ((iter == 0) ? d : (((iter & 1) == 0) ? db0 : db1)),     \
+                       ((iter == 0) ? du : (((iter & 1) == 0) ? dc0 : dc1)),    \
+                       ((iter == 0) ? B : (((iter & 1) == 0) ? drhs0 : drhs1)), \
+                       (((iter & 1) == 0) ? da1 : da0),                         \
+                       (((iter & 1) == 0) ? db1 : db0),                         \
+                       (((iter & 1) == 0) ? dc1 : dc0),                         \
+                       (((iter & 1) == 0) ? drhs1 : drhs0));
+
+#define LAUNCH_GTSV_NOPIVOT_PCR_STAGE1(T, block_size, stride, iter)             \
+    hipLaunchKernelGGL((gtsv_nopivot_pcr_stage1_kernel<block_size>),            \
+                       dim3(((m - 1) / block_size + 1), 1, 1),                  \
+                       dim3(block_size),                                        \
+                       0,                                                       \
+                       handle->stream,                                          \
+                       stride,                                                  \
+                       m,                                                       \
+                       n,                                                       \
+                       ((iter == 0) ? ldb : m),                                 \
+                       ((iter == 0) ? dl : (((iter & 1) == 0) ? da0 : da1)),    \
+                       ((iter == 0) ? d : (((iter & 1) == 0) ? db0 : db1)),     \
+                       ((iter == 0) ? du : (((iter & 1) == 0) ? dc0 : dc1)),    \
+                       ((iter == 0) ? B : (((iter & 1) == 0) ? drhs0 : drhs1)), \
+                       (((iter & 1) == 0) ? da1 : da0),                         \
+                       (((iter & 1) == 0) ? db1 : db0),                         \
+                       (((iter & 1) == 0) ? dc1 : dc0),                         \
+                       (((iter & 1) == 0) ? drhs1 : drhs0));
+
+#define LAUNCH_GTSV_NOPIVOT_THOMAS_POW2_STAGE2(T, block_size, system_size, iter)          \
+    hipLaunchKernelGGL((gtsv_nopivot_thomas_pow2_stage2_kernel<block_size, system_size>), \
+                       dim3(((subsystem_count - 1) / block_size + 1), n, 1),              \
+                       dim3(block_size),                                                  \
+                       0,                                                                 \
+                       handle->stream,                                                    \
+                       stride,                                                            \
+                       m,                                                                 \
+                       n,                                                                 \
+                       ldb,                                                               \
+                       (((iter & 1) != 0) ? da1 : da0),                                   \
+                       (((iter & 1) != 0) ? db1 : db0),                                   \
+                       (((iter & 1) != 0) ? dc1 : dc0),                                   \
+                       (((iter & 1) != 0) ? drhs1 : drhs0),                               \
+                       (((iter & 1) != 0) ? da0 : da1),                                   \
+                       (((iter & 1) != 0) ? db0 : db1),                                   \
+                       (((iter & 1) != 0) ? dc0 : dc1),                                   \
+                       (((iter & 1) != 0) ? drhs0 : drhs1),                               \
+                       B);
+
+#define LAUNCH_GTSV_NOPIVOT_THOMAS_STAGE2(T, block_size, iter)               \
+    hipLaunchKernelGGL((gtsv_nopivot_thomas_stage2_kernel<block_size>),      \
+                       dim3(((subsystem_count - 1) / block_size + 1), n, 1), \
+                       dim3(block_size),                                     \
+                       0,                                                    \
+                       handle->stream,                                       \
+                       stride,                                               \
+                       m,                                                    \
+                       n,                                                    \
+                       ldb,                                                  \
+                       (((iter & 1) != 0) ? da1 : da0),                      \
+                       (((iter & 1) != 0) ? db1 : db0),                      \
+                       (((iter & 1) != 0) ? dc1 : dc0),                      \
+                       (((iter & 1) != 0) ? drhs1 : drhs0),                  \
+                       (((iter & 1) != 0) ? da0 : da1),                      \
+                       (((iter & 1) != 0) ? db0 : db1),                      \
+                       (((iter & 1) != 0) ? dc0 : dc1),                      \
+                       (((iter & 1) != 0) ? drhs0 : drhs1),                  \
+                       B);
+
 template <typename T>
 rocsparse_status rocsparse_gtsv_no_pivot_large_template(rocsparse_handle handle,
                                                         rocsparse_int    m,
@@ -342,7 +496,7 @@ rocsparse_status rocsparse_gtsv_no_pivot_large_template(rocsparse_handle handle,
                                                         rocsparse_int    ldb,
                                                         void*            temp_buffer)
 {
-    assert(m > 512);
+    assert(m > 65536);
 
     char* ptr = reinterpret_cast<char*>(temp_buffer);
     T*    da0 = reinterpret_cast<T*>(ptr);
@@ -378,10 +532,10 @@ rocsparse_status rocsparse_gtsv_no_pivot_large_template(rocsparse_handle handle,
             stride *= 2;
         }
 
-        // Stage2: Solve the many systems from stage1 in parallel using cyclic reduction.
-        rocsparse_int subsystem_count = 1 << iter;
+        rocsparse_int subsystem_count = stride;
 
-        LAUNCH_GTSV_NOPIVOT_CR_POW2_STAGE2(T, 256, iter);
+        // Stage2: Solve the many systems from stage1 in parallel using p-thread thomas algorithm.
+        LAUNCH_GTSV_NOPIVOT_THOMAS_POW2_STAGE2(T, 256, 512, iter);
     }
     else
     {
@@ -401,7 +555,7 @@ rocsparse_status rocsparse_gtsv_no_pivot_large_template(rocsparse_handle handle,
         // Stage2: Solve the many systems from stage1 in parallel using cyclic reduction.
         rocsparse_int subsystem_count = 1 << iter;
 
-        LAUNCH_GTSV_NOPIVOT_PCR_STAGE2(T, 512, iter);
+        LAUNCH_GTSV_NOPIVOT_THOMAS_STAGE2(T, 256, iter);
     }
 
     return rocsparse_status_success;
@@ -477,6 +631,11 @@ rocsparse_status rocsparse_gtsv_no_pivot_template(rocsparse_handle handle,
     if(m <= 512)
     {
         return rocsparse_gtsv_no_pivot_small_template(handle, m, n, dl, d, du, B, ldb, temp_buffer);
+    }
+    else if(m <= 65536)
+    {
+        return rocsparse_gtsv_no_pivot_medium_template(
+            handle, m, n, dl, d, du, B, ldb, temp_buffer);
     }
 
     return rocsparse_gtsv_no_pivot_large_template(handle, m, n, dl, d, du, B, ldb, temp_buffer);

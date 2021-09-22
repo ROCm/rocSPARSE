@@ -28,6 +28,8 @@
 
 #include "common.h"
 
+// Small sized problems
+
 // Cyclic reduction + parallel cyclic reduction algorithms based on paper
 // "Fast Tridiagonal Solvers on the GPU" by Yao Zhang, Jonathan Cohen, and John Owens
 //
@@ -410,22 +412,114 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     B[tid + BLOCKSIZE + ldb * hipBlockIdx_x] = sx[tid + BLOCKSIZE];
 }
 
+// Parallel cyclic reduction algorithm
+template <unsigned int BLOCKSIZE, typename T>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void gtsv_nopivot_pcr_shared_kernel(rocsparse_int m,
+                                        rocsparse_int n,
+                                        rocsparse_int ldb,
+                                        const T* __restrict__ dl,
+                                        const T* __restrict__ d,
+                                        const T* __restrict__ du,
+                                        T* __restrict__ B)
+{
+    rocsparse_int tid = hipThreadIdx_x;
+
+    rocsparse_int iter   = static_cast<rocsparse_int>(log2(BLOCKSIZE / 2));
+    rocsparse_int stride = 1;
+
+    // Parallel cyclic reduction shared memory
+    __shared__ T sa[BLOCKSIZE];
+    __shared__ T sb[BLOCKSIZE];
+    __shared__ T sc[BLOCKSIZE];
+    __shared__ T srhs[BLOCKSIZE];
+    __shared__ T sx[BLOCKSIZE];
+
+    // Fill parallel cyclic reduction shared memory
+    sa[tid]   = (tid < m) ? dl[tid] : static_cast<T>(0);
+    sb[tid]   = (tid < m) ? d[tid] : static_cast<T>(0);
+    sc[tid]   = (tid < m) ? du[tid] : static_cast<T>(0);
+    srhs[tid] = (tid < m) ? B[tid + ldb * hipBlockIdx_x] : static_cast<T>(0);
+
+    __syncthreads();
+
+    for(rocsparse_int j = 0; j < iter; j++)
+    {
+        rocsparse_int right = tid + stride;
+        if(right >= m)
+            right = m - 1;
+
+        rocsparse_int left = tid - stride;
+        if(left < 0)
+            left = 0;
+
+        T k1 = sa[tid] / sb[left];
+        T k2 = sc[tid] / sb[right];
+
+        T tb   = sb[tid] - sc[left] * k1 - sa[right] * k2;
+        T trhs = srhs[tid] - srhs[left] * k1 - srhs[right] * k2;
+        T ta   = -sa[left] * k1;
+        T tc   = -sc[right] * k2;
+
+        __syncthreads();
+
+        sb[tid]   = tb;
+        srhs[tid] = trhs;
+        sa[tid]   = ta;
+        sc[tid]   = tc;
+
+        stride <<= 1; //stride *= 2;
+
+        __syncthreads();
+    }
+
+    if(tid < BLOCKSIZE / 2)
+    {
+        rocsparse_int i = tid;
+        rocsparse_int j = tid + stride;
+
+        if(j < m)
+        {
+            // Solve 2x2 systems
+            T det = sb[j] * sb[i] - sc[i] * sa[j];
+            det   = static_cast<T>(1) / det;
+
+            sx[i] = (sb[j] * srhs[i] - sc[i] * srhs[j]) * det;
+            sx[j] = (srhs[j] * sb[i] - srhs[i] * sa[j]) * det;
+        }
+        else
+        {
+            // Solve 1x1 systems
+            sx[i] = srhs[i] / sb[i];
+        }
+    }
+
+    __syncthreads();
+
+    if(tid < m)
+    {
+        B[tid + ldb * hipBlockIdx_x] = sx[tid];
+    }
+}
+
+// Medium sized problems
+
 // Parallel cyclic reduction algorithm using global memory for partitioning large matrices into
 // multiple small ones that can be solved in parallel in stage 2
 template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_nopivot_pcr_pow2_stage1_kernel(rocsparse_int stride,
-                                             rocsparse_int m,
-                                             rocsparse_int n,
-                                             rocsparse_int ldb,
-                                             const T* __restrict__ a0,
-                                             const T* __restrict__ b0,
-                                             const T* __restrict__ c0,
-                                             const T* __restrict__ rhs0,
-                                             T* __restrict__ a1,
-                                             T* __restrict__ b1,
-                                             T* __restrict__ c1,
-                                             T* __restrict__ rhs1)
+    void gtsv_nopivot_pcr_pow2_stage1_n_kernel(rocsparse_int stride,
+                                               rocsparse_int m,
+                                               rocsparse_int n,
+                                               rocsparse_int ldb,
+                                               const T* __restrict__ a0,
+                                               const T* __restrict__ b0,
+                                               const T* __restrict__ c0,
+                                               const T* __restrict__ rhs0,
+                                               T* __restrict__ a1,
+                                               T* __restrict__ b1,
+                                               T* __restrict__ c1,
+                                               T* __restrict__ rhs1)
 {
     rocsparse_int tid = hipThreadIdx_x;
     rocsparse_int gid = tid + BLOCKSIZE * hipBlockIdx_x;
@@ -443,16 +537,64 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
 
     T k1 = a0[gid] / b0[left];
     T k2 = c0[gid] / b0[right];
-    T k3 = rhs0_col[right];
-    T k4 = rhs0_col[left];
+    T k3 = -a0[left];
+    T k4 = -c0[right];
 
-    b1[gid]       = b0[gid] - c0[left] * k1 - a0[right] * k2;
-    rhs1_col[gid] = rhs0_col[gid] - k4 * k1 - k3 * k2;
-    k3            = -a0[left];
-    k4            = -c0[right];
-
+    b1[gid] = b0[gid] - c0[left] * k1 - a0[right] * k2;
     a1[gid] = k3 * k1;
     c1[gid] = k4 * k2;
+
+    k3            = rhs0_col[right];
+    k4            = rhs0_col[left];
+    rhs1_col[gid] = rhs0_col[gid] - k4 * k1 - k3 * k2;
+}
+
+template <unsigned int BLOCKSIZE, typename T>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void gtsv_nopivot_pcr_stage1_n_kernel(rocsparse_int stride,
+                                          rocsparse_int m,
+                                          rocsparse_int n,
+                                          rocsparse_int ldb,
+                                          const T* __restrict__ a0,
+                                          const T* __restrict__ b0,
+                                          const T* __restrict__ c0,
+                                          const T* __restrict__ rhs0,
+                                          T* __restrict__ a1,
+                                          T* __restrict__ b1,
+                                          T* __restrict__ c1,
+                                          T* __restrict__ rhs1)
+{
+    rocsparse_int tid = hipThreadIdx_x;
+    rocsparse_int gid = tid + BLOCKSIZE * hipBlockIdx_x;
+
+    if(gid >= m)
+    {
+        return;
+    }
+
+    rocsparse_int right = gid + stride;
+    if(right >= m)
+        right = m - 1;
+
+    rocsparse_int left = gid - stride;
+    if(left < 0)
+        left = 0;
+
+    T k1 = a0[gid] / b0[left];
+    T k2 = c0[gid] / b0[right];
+    T k3 = -a0[left];
+    T k4 = -c0[right];
+
+    b1[gid] = b0[gid] - c0[left] * k1 - a0[right] * k2;
+    a1[gid] = k3 * k1;
+    c1[gid] = k4 * k2;
+
+    const T* rhs0_col = rhs0 + ldb * hipBlockIdx_y;
+    T*       rhs1_col = rhs1 + m * hipBlockIdx_y;
+
+    k3            = rhs0_col[right];
+    k4            = rhs0_col[left];
+    rhs1_col[gid] = rhs0_col[gid] - k4 * k1 - k3 * k2;
 }
 
 // Cyclic reduction algorithm using shared memory to solve multiple small matrices produced from
@@ -571,146 +713,6 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     B[hipGridDim_x * (tid + BLOCKSIZE) + hipBlockIdx_x + ldb * hipBlockIdx_y] = sx[tid + BLOCKSIZE];
 }
 
-// Parallel cyclic reduction algorithm
-template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_nopivot_pcr_shared_kernel(rocsparse_int m,
-                                        rocsparse_int n,
-                                        rocsparse_int ldb,
-                                        const T* __restrict__ dl,
-                                        const T* __restrict__ d,
-                                        const T* __restrict__ du,
-                                        T* __restrict__ B)
-{
-    rocsparse_int tid = hipThreadIdx_x;
-
-    rocsparse_int iter   = static_cast<rocsparse_int>(log2(BLOCKSIZE / 2));
-    rocsparse_int stride = 1;
-
-    // Parallel cyclic reduction shared memory
-    __shared__ T sa[BLOCKSIZE];
-    __shared__ T sb[BLOCKSIZE];
-    __shared__ T sc[BLOCKSIZE];
-    __shared__ T srhs[BLOCKSIZE];
-    __shared__ T sx[BLOCKSIZE];
-
-    // Fill parallel cyclic reduction shared memory
-    sa[tid]   = (tid < m) ? dl[tid] : static_cast<T>(0);
-    sb[tid]   = (tid < m) ? d[tid] : static_cast<T>(0);
-    sc[tid]   = (tid < m) ? du[tid] : static_cast<T>(0);
-    srhs[tid] = (tid < m) ? B[tid + ldb * hipBlockIdx_x] : static_cast<T>(0);
-
-    __syncthreads();
-
-    for(rocsparse_int j = 0; j < iter; j++)
-    {
-        rocsparse_int right = tid + stride;
-        if(right >= m)
-            right = m - 1;
-
-        rocsparse_int left = tid - stride;
-        if(left < 0)
-            left = 0;
-
-        T k1 = sa[tid] / sb[left];
-        T k2 = sc[tid] / sb[right];
-
-        T tb   = sb[tid] - sc[left] * k1 - sa[right] * k2;
-        T trhs = srhs[tid] - srhs[left] * k1 - srhs[right] * k2;
-        T ta   = -sa[left] * k1;
-        T tc   = -sc[right] * k2;
-
-        __syncthreads();
-
-        sb[tid]   = tb;
-        srhs[tid] = trhs;
-        sa[tid]   = ta;
-        sc[tid]   = tc;
-
-        stride <<= 1; //stride *= 2;
-
-        __syncthreads();
-    }
-
-    if(tid < BLOCKSIZE / 2)
-    {
-        rocsparse_int i = tid;
-        rocsparse_int j = tid + stride;
-
-        if(j < m)
-        {
-            // Solve 2x2 systems
-            T det = sb[j] * sb[i] - sc[i] * sa[j];
-            det   = static_cast<T>(1) / det;
-
-            sx[i] = (sb[j] * srhs[i] - sc[i] * srhs[j]) * det;
-            sx[j] = (srhs[j] * sb[i] - srhs[i] * sa[j]) * det;
-        }
-        else
-        {
-            // Solve 1x1 systems
-            sx[i] = srhs[i] / sb[i];
-        }
-    }
-
-    __syncthreads();
-
-    if(tid < m)
-    {
-        B[tid + ldb * hipBlockIdx_x] = sx[tid];
-    }
-}
-
-// Parallel cyclic reduction algorithm using global memory for partitioning large matrices into
-// multiple small ones that can be solved in parallel in stage 2
-template <unsigned int BLOCKSIZE, typename T>
-__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gtsv_nopivot_pcr_stage1_kernel(rocsparse_int stride,
-                                        rocsparse_int m,
-                                        rocsparse_int n,
-                                        rocsparse_int ldb,
-                                        const T* __restrict__ a0,
-                                        const T* __restrict__ b0,
-                                        const T* __restrict__ c0,
-                                        const T* __restrict__ rhs0,
-                                        T* __restrict__ a1,
-                                        T* __restrict__ b1,
-                                        T* __restrict__ c1,
-                                        T* __restrict__ rhs1)
-{
-    rocsparse_int tid = hipThreadIdx_x;
-    rocsparse_int gid = tid + BLOCKSIZE * hipBlockIdx_x;
-
-    if(gid >= m)
-    {
-        return;
-    }
-
-    const T* rhs0_col = rhs0 + ldb * hipBlockIdx_y;
-    T*       rhs1_col = rhs1 + m * hipBlockIdx_y;
-
-    rocsparse_int right = gid + stride;
-    if(right >= m)
-        right = m - 1;
-
-    rocsparse_int left = gid - stride;
-    if(left < 0)
-        left = 0;
-
-    T k1 = a0[gid] / b0[left];
-    T k2 = c0[gid] / b0[right];
-    T k3 = rhs0_col[right];
-    T k4 = rhs0_col[left];
-
-    b1[gid]       = b0[gid] - c0[left] * k1 - a0[right] * k2;
-    rhs1_col[gid] = rhs0_col[gid] - k4 * k1 - k3 * k2;
-    k3            = -a0[left];
-    k4            = -c0[right];
-
-    a1[gid] = k3 * k1;
-    c1[gid] = k4 * k2;
-}
-
 // Parallel cyclic reduction algorithm using shared memory to solve multiple small matrices produced from
 // stage 1 above in parallel
 template <unsigned int BLOCKSIZE, typename T>
@@ -803,6 +805,218 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     if(gid < m)
     {
         B[gid + ldb * hipBlockIdx_y] = sx[tid];
+    }
+}
+
+// Large size problems
+
+// Parallel cyclic reduction algorithm using global memory for partitioning large matrices into
+// multiple small ones that can be solved in parallel in stage 2
+template <unsigned int BLOCKSIZE, typename T>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void gtsv_nopivot_pcr_pow2_stage1_kernel(rocsparse_int stride,
+                                             rocsparse_int m,
+                                             rocsparse_int n,
+                                             rocsparse_int ldb,
+                                             const T* __restrict__ a0,
+                                             const T* __restrict__ b0,
+                                             const T* __restrict__ c0,
+                                             const T* __restrict__ rhs0,
+                                             T* __restrict__ a1,
+                                             T* __restrict__ b1,
+                                             T* __restrict__ c1,
+                                             T* __restrict__ rhs1)
+{
+    rocsparse_int gid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+    rocsparse_int right = gid + stride;
+    if(right >= m)
+        right = m - 1;
+
+    rocsparse_int left = gid - stride;
+    if(left < 0)
+        left = 0;
+
+    T k1 = a0[gid] / b0[left];
+    T k2 = c0[gid] / b0[right];
+    T k3 = -a0[left];
+    T k4 = -c0[right];
+
+    b1[gid] = b0[gid] - c0[left] * k1 - a0[right] * k2;
+    a1[gid] = k3 * k1;
+    c1[gid] = k4 * k2;
+
+    for(rocsparse_int i = 0; i < n; i++)
+    {
+        const T* rhs0_col = rhs0 + ldb * i;
+        T*       rhs1_col = rhs1 + m * i;
+
+        k3            = rhs0_col[right];
+        k4            = rhs0_col[left];
+        rhs1_col[gid] = rhs0_col[gid] - k4 * k1 - k3 * k2;
+    }
+}
+
+// Parallel cyclic reduction algorithm using global memory for partitioning large matrices into
+// multiple small ones that can be solved in parallel in stage 2
+template <unsigned int BLOCKSIZE, typename T>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void gtsv_nopivot_pcr_stage1_kernel(rocsparse_int stride,
+                                        rocsparse_int m,
+                                        rocsparse_int n,
+                                        rocsparse_int ldb,
+                                        const T* __restrict__ a0,
+                                        const T* __restrict__ b0,
+                                        const T* __restrict__ c0,
+                                        const T* __restrict__ rhs0,
+                                        T* __restrict__ a1,
+                                        T* __restrict__ b1,
+                                        T* __restrict__ c1,
+                                        T* __restrict__ rhs1)
+{
+    rocsparse_int tid = hipThreadIdx_x;
+    rocsparse_int gid = tid + BLOCKSIZE * hipBlockIdx_x;
+
+    if(gid >= m)
+    {
+        return;
+    }
+
+    rocsparse_int right = gid + stride;
+    if(right >= m)
+        right = m - 1;
+
+    rocsparse_int left = gid - stride;
+    if(left < 0)
+        left = 0;
+
+    T k1 = a0[gid] / b0[left];
+    T k2 = c0[gid] / b0[right];
+    T k3 = -a0[left];
+    T k4 = -c0[right];
+
+    b1[gid] = b0[gid] - c0[left] * k1 - a0[right] * k2;
+    a1[gid] = k3 * k1;
+    c1[gid] = k4 * k2;
+
+    for(rocsparse_int i = 0; i < n; i++)
+    {
+        const T* rhs0_col = rhs0 + ldb * i;
+        T*       rhs1_col = rhs1 + m * i;
+
+        k3            = rhs0_col[right];
+        k4            = rhs0_col[left];
+        rhs1_col[gid] = rhs0_col[gid] - k4 * k1 - k3 * k2;
+    }
+}
+
+// See Nikolai Sakharnykh. Efficient tridiagonal solvers for adi methods and fluid simulation.
+// In NVIDIA GPU Technology Conference 2010, September 2010.
+template <unsigned int BLOCKSIZE, unsigned int SYSTEM_SIZE, typename T>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void gtsv_nopivot_thomas_pow2_stage2_kernel(rocsparse_int stride,
+                                                rocsparse_int m,
+                                                rocsparse_int n,
+                                                rocsparse_int ldb,
+                                                const T* __restrict__ a0,
+                                                const T* __restrict__ b0,
+                                                const T* __restrict__ c0,
+                                                const T* __restrict__ rhs0,
+                                                T* __restrict__ a1,
+                                                T* __restrict__ b1,
+                                                T* __restrict__ c1,
+                                                T* __restrict__ rhs1,
+                                                T* __restrict__ B)
+{
+    rocsparse_int gid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+    if(gid >= stride)
+    {
+        return;
+    }
+
+    // Forward elimination
+    c1[gid]                       = c0[gid] / b0[gid];
+    rhs1[gid + m * hipBlockIdx_y] = rhs0[gid + m * hipBlockIdx_y] / b0[gid];
+
+    for(rocsparse_int i = 1; i < SYSTEM_SIZE; i++)
+    {
+        rocsparse_int index = stride * i + gid;
+        rocsparse_int minus = stride * (i - 1) + gid;
+
+        T k = static_cast<T>(1) / (b0[index] - c1[minus] * a0[index]);
+
+        c1[index] = c0[index] * k;
+        rhs1[index + m * hipBlockIdx_y]
+            = (rhs0[index + m * hipBlockIdx_y] - rhs1[minus + m * hipBlockIdx_y] * a0[index]) * k;
+    }
+
+    // backward substitution
+    B[stride * (SYSTEM_SIZE - 1) + gid + ldb * hipBlockIdx_y]
+        = rhs1[stride * (SYSTEM_SIZE - 1) + gid + m * hipBlockIdx_y];
+
+    for(rocsparse_int i = SYSTEM_SIZE - 2; i >= 0; i--)
+    {
+        rocsparse_int index = stride * i + gid;
+        rocsparse_int plus  = stride * (i + 1) + gid;
+
+        B[index + ldb * hipBlockIdx_y]
+            = rhs1[index + m * hipBlockIdx_y] - c1[index] * B[plus + ldb * hipBlockIdx_y];
+    }
+}
+
+template <unsigned int BLOCKSIZE, typename T>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void gtsv_nopivot_thomas_stage2_kernel(rocsparse_int stride,
+                                           rocsparse_int m,
+                                           rocsparse_int n,
+                                           rocsparse_int ldb,
+                                           const T* __restrict__ a0,
+                                           const T* __restrict__ b0,
+                                           const T* __restrict__ c0,
+                                           const T* __restrict__ rhs0,
+                                           T* __restrict__ a1,
+                                           T* __restrict__ b1,
+                                           T* __restrict__ c1,
+                                           T* __restrict__ rhs1,
+                                           T* __restrict__ B)
+{
+    rocsparse_int gid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+    if(gid >= stride)
+    {
+        return;
+    }
+
+    rocsparse_int system_size = (m - gid - 1) / stride + 1;
+
+    // Forward elimination
+    c1[gid]                       = c0[gid] / b0[gid];
+    rhs1[gid + m * hipBlockIdx_y] = rhs0[gid + m * hipBlockIdx_y] / b0[gid];
+
+    for(rocsparse_int i = 1; i < system_size; i++)
+    {
+        rocsparse_int index = stride * i + gid;
+        rocsparse_int minus = stride * (i - 1) + gid;
+
+        T k = static_cast<T>(1) / (b0[index] - c1[minus] * a0[index]);
+
+        c1[index] = c0[index] * k;
+        rhs1[index + m * hipBlockIdx_y]
+            = (rhs0[index + m * hipBlockIdx_y] - rhs1[minus + m * hipBlockIdx_y] * a0[index]) * k;
+    }
+
+    // backward substitution
+    B[stride * (system_size - 1) + gid + ldb * hipBlockIdx_y]
+        = rhs1[stride * (system_size - 1) + gid + m * hipBlockIdx_y];
+
+    for(rocsparse_int i = system_size - 2; i >= 0; i--)
+    {
+        rocsparse_int index = stride * i + gid;
+        rocsparse_int plus  = stride * (i + 1) + gid;
+
+        B[index + ldb * hipBlockIdx_y]
+            = rhs1[index + m * hipBlockIdx_y] - c1[index] * B[plus + ldb * hipBlockIdx_y];
     }
 }
 
