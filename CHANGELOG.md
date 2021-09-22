@@ -10,6 +10,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Additional atomic based algorithms for SpMM in COO format
 - Extended version of SpMM
 - Additional algorithm for SpMM in CSR format
+- Added (conjugate) transpose support for csrmv and SpMV (CSR) routines
 ### Changed
 - Packaging split into a runtime package called rocsparse and a development package called rocsparse-devel. The development package depends on runtime. The runtime package suggests the development package for all supported OSes except CentOS 7 to aid in the transition. The suggests feature in packaging is introduced as a deprecated feature and will be removed in a future rocm release.
 ### Known Issues

@@ -234,7 +234,8 @@ void host_bsrsv(rocsparse_operation  trans,
                 rocsparse_int*       numeric_pivot);
 
 template <typename I, typename T>
-void host_coomv(I                    M,
+void host_coomv(rocsparse_operation  trans,
+                I                    M,
                 I                    nnz,
                 T                    alpha,
                 const I*             coo_row_ind,
@@ -246,7 +247,8 @@ void host_coomv(I                    M,
                 rocsparse_index_base base);
 
 template <typename I, typename T>
-void host_coomv_aos(I                    M,
+void host_coomv_aos(rocsparse_operation  trans,
+                    I                    M,
                     I                    nnz,
                     T                    alpha,
                     const I*             coo_ind,
@@ -257,7 +259,9 @@ void host_coomv_aos(I                    M,
                     rocsparse_index_base base);
 
 template <typename I, typename J, typename T>
-void host_csrmv(J                    M,
+void host_csrmv(rocsparse_operation  trans,
+                J                    M,
+                J                    N,
                 I                    nnz,
                 T                    alpha,
                 const I*             csr_row_ptr,
@@ -302,7 +306,8 @@ void host_coosv(rocsparse_operation   trans,
                 I*                    numeric_pivot);
 
 template <typename I, typename T>
-void host_ellmv(I                    M,
+void host_ellmv(rocsparse_operation  trans,
+                I                    M,
                 I                    N,
                 T                    alpha,
                 const I*             ell_col_ind,

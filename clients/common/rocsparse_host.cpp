@@ -1277,7 +1277,8 @@ void host_bsrsv(rocsparse_operation  trans,
 }
 
 template <typename I, typename T>
-void host_coomv(I                    M,
+void host_coomv(rocsparse_operation  trans,
+                I                    M,
                 I                    nnz,
                 T                    alpha,
                 const I*             coo_row_ind,
@@ -1304,7 +1305,8 @@ void host_coomv(I                    M,
 }
 
 template <typename I, typename T>
-void host_coomv_aos(I                    M,
+void host_coomv_aos(rocsparse_operation  trans,
+                    I                    M,
                     I                    nnz,
                     T                    alpha,
                     const I*             coo_ind,
@@ -1330,7 +1332,9 @@ void host_coomv_aos(I                    M,
 }
 
 template <typename I, typename J, typename T>
-void host_csrmv(J                    M,
+void host_csrmv(rocsparse_operation  trans,
+                J                    M,
+                J                    N,
                 I                    nnz,
                 T                    alpha,
                 const I*             csr_row_ptr,
@@ -1342,120 +1346,148 @@ void host_csrmv(J                    M,
                 rocsparse_index_base base,
                 int                  algo)
 {
-    if(algo == 0)
+    if(trans == rocsparse_operation_none)
     {
-        // Get device properties
-        int             dev;
-        hipDeviceProp_t prop;
-
-        hipGetDevice(&dev);
-        hipGetDeviceProperties(&prop, dev);
-
-        int WF_SIZE;
-        J   nnz_per_row = nnz / M;
-
-        if(prop.warpSize == 32)
+        if(algo == 0)
         {
-            if(nnz_per_row < 4)
-                WF_SIZE = 2;
-            else if(nnz_per_row < 8)
-                WF_SIZE = 4;
-            else if(nnz_per_row < 16)
-                WF_SIZE = 8;
-            else if(nnz_per_row < 32)
-                WF_SIZE = 16;
+            // Get device properties
+            int             dev;
+            hipDeviceProp_t prop;
+
+            hipGetDevice(&dev);
+            hipGetDeviceProperties(&prop, dev);
+
+            int WF_SIZE;
+            J   nnz_per_row = nnz / M;
+
+            if(prop.warpSize == 32)
+            {
+                if(nnz_per_row < 4)
+                    WF_SIZE = 2;
+                else if(nnz_per_row < 8)
+                    WF_SIZE = 4;
+                else if(nnz_per_row < 16)
+                    WF_SIZE = 8;
+                else if(nnz_per_row < 32)
+                    WF_SIZE = 16;
+                else
+                    WF_SIZE = 32;
+            }
+            else if(prop.warpSize == 64)
+            {
+                if(nnz_per_row < 4)
+                    WF_SIZE = 2;
+                else if(nnz_per_row < 8)
+                    WF_SIZE = 4;
+                else if(nnz_per_row < 16)
+                    WF_SIZE = 8;
+                else if(nnz_per_row < 32)
+                    WF_SIZE = 16;
+                else if(nnz_per_row < 64)
+                    WF_SIZE = 32;
+                else
+                    WF_SIZE = 64;
+            }
             else
-                WF_SIZE = 32;
-        }
-        else if(prop.warpSize == 64)
-        {
-            if(nnz_per_row < 4)
-                WF_SIZE = 2;
-            else if(nnz_per_row < 8)
-                WF_SIZE = 4;
-            else if(nnz_per_row < 16)
-                WF_SIZE = 8;
-            else if(nnz_per_row < 32)
-                WF_SIZE = 16;
-            else if(nnz_per_row < 64)
-                WF_SIZE = 32;
-            else
-                WF_SIZE = 64;
-        }
-        else
-        {
-            //            CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-        }
+            {
+                //            CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
+            }
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
 #endif
-        for(J i = 0; i < M; ++i)
-        {
-            I row_begin = csr_row_ptr[i] - base;
-            I row_end   = csr_row_ptr[i + 1] - base;
-
-            std::vector<T> sum(WF_SIZE, static_cast<T>(0));
-
-            for(I j = row_begin; j < row_end; j += WF_SIZE)
+            for(J i = 0; i < M; ++i)
             {
-                for(int k = 0; k < WF_SIZE; ++k)
+                I row_begin = csr_row_ptr[i] - base;
+                I row_end   = csr_row_ptr[i + 1] - base;
+
+                std::vector<T> sum(WF_SIZE, static_cast<T>(0));
+
+                for(I j = row_begin; j < row_end; j += WF_SIZE)
                 {
-                    if(j + k < row_end)
+                    for(int k = 0; k < WF_SIZE; ++k)
                     {
-                        sum[k] = std::fma(
-                            alpha * csr_val[j + k], x[csr_col_ind[j + k] - base], sum[k]);
+                        if(j + k < row_end)
+                        {
+                            sum[k] = std::fma(
+                                alpha * csr_val[j + k], x[csr_col_ind[j + k] - base], sum[k]);
+                        }
                     }
                 }
-            }
 
-            for(int j = 1; j < WF_SIZE; j <<= 1)
-            {
-                for(int k = 0; k < WF_SIZE - j; ++k)
+                for(int j = 1; j < WF_SIZE; j <<= 1)
                 {
-                    sum[k] += sum[k + j];
+                    for(int k = 0; k < WF_SIZE - j; ++k)
+                    {
+                        sum[k] += sum[k + j];
+                    }
+                }
+
+                if(beta == static_cast<T>(0))
+                {
+                    y[i] = sum[0];
+                }
+                else
+                {
+                    y[i] = std::fma(beta, y[i], sum[0]);
                 }
             }
+        }
+        else
+        {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+            for(J i = 0; i < M; ++i)
+            {
+                T sum = static_cast<T>(0);
+                T err = static_cast<T>(0);
 
-            if(beta == static_cast<T>(0))
-            {
-                y[i] = sum[0];
-            }
-            else
-            {
-                y[i] = std::fma(beta, y[i], sum[0]);
+                I row_begin = csr_row_ptr[i] - base;
+                I row_end   = csr_row_ptr[i + 1] - base;
+
+                for(I j = row_begin; j < row_end; ++j)
+                {
+                    T old  = sum;
+                    T prod = alpha * csr_val[j] * x[csr_col_ind[j] - base];
+
+                    sum = sum + prod;
+                    err = (old - (sum - (sum - old))) + (prod - (sum - old)) + err;
+                }
+
+                if(beta != static_cast<T>(0))
+                {
+                    y[i] = std::fma(beta, y[i], sum + err);
+                }
+                else
+                {
+                    y[i] = sum + err;
+                }
             }
         }
     }
     else
     {
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1024)
-#endif
+        // Scale y with beta
+        for(J i = 0; i < N; ++i)
+        {
+            y[i] *= beta;
+        }
+
+        // Transposed SpMV
         for(J i = 0; i < M; ++i)
         {
-            T sum = static_cast<T>(0);
-            T err = static_cast<T>(0);
-
             I row_begin = csr_row_ptr[i] - base;
             I row_end   = csr_row_ptr[i + 1] - base;
+            T row_val   = alpha * x[i];
 
             for(I j = row_begin; j < row_end; ++j)
             {
-                T old  = sum;
-                T prod = alpha * csr_val[j] * x[csr_col_ind[j] - base];
-
-                sum = sum + prod;
-                err = (old - (sum - (sum - old))) + (prod - (sum - old)) + err;
-            }
-
-            if(beta != static_cast<T>(0))
-            {
-                y[i] = std::fma(beta, y[i], sum + err);
-            }
-            else
-            {
-                y[i] = sum + err;
+                J col  = csr_col_ind[j] - base;
+                T val  = (trans == rocsparse_operation_conjugate_transpose)
+                             ? rocsparse_conj(csr_val[j])
+                             : csr_val[j];
+                y[col] = std::fma(val, row_val, y[col]);
             }
         }
     }
@@ -1823,7 +1855,8 @@ void host_coosv(rocsparse_operation   trans,
 }
 
 template <typename I, typename T>
-void host_ellmv(I                    M,
+void host_ellmv(rocsparse_operation  trans,
+                I                    M,
                 I                    N,
                 T                    alpha,
                 const I*             ell_col_ind,
@@ -1888,14 +1921,34 @@ void host_hybmv(rocsparse_int        M,
     // ELL part
     if(ell_nnz > 0)
     {
-        host_ellmv(M, N, alpha, ell_col_ind, ell_val, ell_width, x, beta, y, base);
+        host_ellmv(rocsparse_operation_none,
+                   M,
+                   N,
+                   alpha,
+                   ell_col_ind,
+                   ell_val,
+                   ell_width,
+                   x,
+                   beta,
+                   y,
+                   base);
         coo_beta = static_cast<T>(1);
     }
 
     // COO part
     if(coo_nnz > 0)
     {
-        host_coomv(M, coo_nnz, alpha, coo_row_ind, coo_col_ind, coo_val, x, coo_beta, y, base);
+        host_coomv(rocsparse_operation_none,
+                   M,
+                   coo_nnz,
+                   alpha,
+                   coo_row_ind,
+                   coo_col_ind,
+                   coo_val,
+                   x,
+                   coo_beta,
+                   y,
+                   base);
     }
 }
 
@@ -7556,7 +7609,8 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                   std::vector<TTYPE>&       coo_val,             \
                                                   std::vector<ITYPE>&       coo_row_ind,         \
                                                   std::vector<ITYPE>&       coo_col_ind);              \
-    template void host_coomv<ITYPE, TTYPE>(ITYPE                M,                               \
+    template void host_coomv<ITYPE, TTYPE>(rocsparse_operation  trans,                           \
+                                           ITYPE                M,                               \
                                            ITYPE                nnz,                             \
                                            TTYPE                alpha,                           \
                                            const ITYPE*         coo_row_ind,                     \
@@ -7566,7 +7620,8 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                            TTYPE                beta,                            \
                                            TTYPE*               y,                               \
                                            rocsparse_index_base base);                           \
-    template void host_coomv_aos<ITYPE, TTYPE>(ITYPE                M,                           \
+    template void host_coomv_aos<ITYPE, TTYPE>(rocsparse_operation  trans,                       \
+                                               ITYPE                M,                           \
                                                ITYPE                nnz,                         \
                                                TTYPE                alpha,                       \
                                                const ITYPE*         coo_ind,                     \
@@ -7575,7 +7630,8 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                TTYPE                beta,                        \
                                                TTYPE*               y,                           \
                                                rocsparse_index_base base);                       \
-    template void host_ellmv<ITYPE, TTYPE>(ITYPE                M,                               \
+    template void host_ellmv<ITYPE, TTYPE>(rocsparse_operation  trans,                           \
+                                           ITYPE                M,                               \
                                            ITYPE                N,                               \
                                            TTYPE                alpha,                           \
                                            const ITYPE*         ell_col_ind,                     \
@@ -7689,7 +7745,9 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                   rocsparse_index_base base,                     \
                                                   JTYPE*               struct_pivot,             \
                                                   JTYPE*               numeric_pivot);                         \
-    template void host_csrmv<ITYPE, JTYPE, TTYPE>(JTYPE                M,                        \
+    template void host_csrmv<ITYPE, JTYPE, TTYPE>(rocsparse_operation  trans,                    \
+                                                  JTYPE                M,                        \
+                                                  JTYPE                N,                        \
                                                   ITYPE                nnz,                      \
                                                   TTYPE                alpha,                    \
                                                   const ITYPE*         csr_row_ptr,              \

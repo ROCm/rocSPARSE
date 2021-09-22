@@ -102,11 +102,27 @@ struct testing_spmv_dispatch_traits<rocsparse_format_csr, I, J, T>
         matrix_factory.init_csr(hA, ts...);
     }
 
-    static void host_calculation(
-        T* h_alpha, host_sparse_matrix<T>& hA, T* hx, T* h_beta, T* hy, bool adaptive)
+    static void host_calculation(rocsparse_operation    trans,
+                                 T*                     h_alpha,
+                                 host_sparse_matrix<T>& hA,
+                                 T*                     hx,
+                                 T*                     h_beta,
+                                 T*                     hy,
+                                 bool                   adaptive)
     {
-        host_csrmv<I, J, T>(
-            hA.m, hA.nnz, *h_alpha, hA.ptr, hA.ind, hA.val, hx, *h_beta, hy, hA.base, adaptive);
+        host_csrmv<I, J, T>(trans,
+                            hA.m,
+                            hA.n,
+                            hA.nnz,
+                            *h_alpha,
+                            hA.ptr,
+                            hA.ind,
+                            hA.val,
+                            hx,
+                            *h_beta,
+                            hy,
+                            hA.base,
+                            adaptive);
     }
 };
 
@@ -131,11 +147,25 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo, I, I, T>
         matrix_factory.init_coo(hA, ts...);
     }
 
-    static void host_calculation(
-        T* h_alpha, host_sparse_matrix<T>& hA, T* hx, T* h_beta, T* hy, bool adaptive)
+    static void host_calculation(rocsparse_operation    trans,
+                                 T*                     h_alpha,
+                                 host_sparse_matrix<T>& hA,
+                                 T*                     hx,
+                                 T*                     h_beta,
+                                 T*                     hy,
+                                 bool                   adaptive)
     {
-        host_coomv<I, T>(
-            hA.m, hA.nnz, *h_alpha, hA.row_ind, hA.col_ind, hA.val, hx, *h_beta, hy, hA.base);
+        host_coomv<I, T>(trans,
+                         hA.m,
+                         hA.nnz,
+                         *h_alpha,
+                         hA.row_ind,
+                         hA.col_ind,
+                         hA.val,
+                         hx,
+                         *h_beta,
+                         hy,
+                         hA.base);
     };
 };
 
@@ -160,10 +190,16 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo_aos, I, I, T>
         matrix_factory.init_coo_aos(hA, ts...);
     }
 
-    static void host_calculation(
-        T* h_alpha, host_sparse_matrix<T>& hA, T* hx, T* h_beta, T* hy, bool adaptive)
+    static void host_calculation(rocsparse_operation    trans,
+                                 T*                     h_alpha,
+                                 host_sparse_matrix<T>& hA,
+                                 T*                     hx,
+                                 T*                     h_beta,
+                                 T*                     hy,
+                                 bool                   adaptive)
     {
-        host_coomv_aos<I, T>(hA.m, hA.nnz, *h_alpha, hA.ind, hA.val, hx, *h_beta, hy, hA.base);
+        host_coomv_aos<I, T>(
+            trans, hA.m, hA.nnz, *h_alpha, hA.ind, hA.val, hx, *h_beta, hy, hA.base);
     };
 };
 
@@ -187,10 +223,16 @@ struct testing_spmv_dispatch_traits<rocsparse_format_ell, I, I, T>
         matrix_factory.init_ell(hA, ts...);
     }
 
-    static void host_calculation(
-        T* h_alpha, host_sparse_matrix<T>& hA, T* hx, T* h_beta, T* hy, bool adaptive)
+    static void host_calculation(rocsparse_operation    trans,
+                                 T*                     h_alpha,
+                                 host_sparse_matrix<T>& hA,
+                                 T*                     hx,
+                                 T*                     h_beta,
+                                 T*                     hy,
+                                 bool                   adaptive)
     {
-        host_ellmv<I, T>(hA.m, hA.n, *h_alpha, hA.ind, hA.val, hA.width, hx, *h_beta, hy, hA.base);
+        host_ellmv<I, T>(
+            trans, hA.m, hA.n, *h_alpha, hA.ind, hA.val, hA.width, hx, *h_beta, hy, hA.base);
     };
 };
 
@@ -416,11 +458,11 @@ public:
 
         device_sparse_matrix<T> dA(hA);
 
-        host_dense_matrix<T> hx(N, 1);
+        host_dense_matrix<T> hx((trans == rocsparse_operation_none) ? N : M, 1);
         rocsparse_matrix_utils::init_exact(hx);
         device_dense_matrix<T> dx(hx);
 
-        host_dense_matrix<T> hy(M, 1);
+        host_dense_matrix<T> hy((trans == rocsparse_operation_none) ? M : N, 1);
         rocsparse_matrix_utils::init_exact(hy);
 
         device_dense_matrix<T> dy(hy);
@@ -446,7 +488,7 @@ public:
                 //
                 // HOST CALCULATION
                 //
-                traits::host_calculation(h_alpha, hA, hx, h_beta, hy, adaptive);
+                traits::host_calculation(trans, h_alpha, hA, hx, h_beta, hy, adaptive);
                 hy.near_check(dy);
                 dy.transfer_from(hy_copy);
             }
