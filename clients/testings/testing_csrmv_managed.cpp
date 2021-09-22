@@ -320,7 +320,9 @@ void testing_csrmv_managed(const Arguments& arg)
         }
 
         // CPU csrmv
-        host_csrmv(M,
+        host_csrmv(trans,
+                   M,
+                   N,
                    nnz,
                    *alpha,
                    csr_row_ptr,

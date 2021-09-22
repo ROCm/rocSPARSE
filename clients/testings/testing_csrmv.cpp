@@ -132,8 +132,8 @@ void testing_csrmv(const Arguments& arg)
         device_csr_matrix<T> dA;
         device_vector<T>     dx, dy;
 
-        dA.m   = M;
-        dA.n   = N;
+        dA.m   = trans == rocsparse_operation_none ? M : N;
+        dA.n   = trans == rocsparse_operation_none ? N : M;
         dA.nnz = safe_size;
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
@@ -176,11 +176,11 @@ void testing_csrmv(const Arguments& arg)
     matrix_factory.init_csr(hA, M, N);
     device_csr_matrix<T> dA(hA);
 
-    host_dense_matrix<T> hx(N, 1);
+    host_dense_matrix<T> hx(trans == rocsparse_operation_none ? N : M, 1);
     rocsparse_matrix_utils::init_exact(hx);
     device_dense_matrix<T> dx(hx);
 
-    host_dense_matrix<T> hy(M, 1);
+    host_dense_matrix<T> hy(trans == rocsparse_operation_none ? M : N, 1);
     rocsparse_matrix_utils::init_exact(hy);
     device_dense_matrix<T> dy(hy);
 
@@ -192,6 +192,13 @@ void testing_csrmv(const Arguments& arg)
 
     if(arg.unit_check)
     {
+        // We need to weaken the tolerance when trans != rocsparse_operation_none due to
+        // rounding differences from global atomic operations (note: non-deterministic)
+        if(trans != rocsparse_operation_none)
+        {
+            tol *= 1e1;
+        }
+
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
@@ -199,8 +206,19 @@ void testing_csrmv(const Arguments& arg)
         {
             host_dense_matrix<T> hy_copy(hy);
             // CPU csrmv
-            host_csrmv<rocsparse_int, rocsparse_int, T>(
-                M, hA.nnz, *h_alpha, hA.ptr, hA.ind, hA.val, hx, *h_beta, hy, base, adaptive);
+            host_csrmv<rocsparse_int, rocsparse_int, T>(trans,
+                                                        M,
+                                                        N,
+                                                        hA.nnz,
+                                                        *h_alpha,
+                                                        hA.ptr,
+                                                        hA.ind,
+                                                        hA.val,
+                                                        hx,
+                                                        *h_beta,
+                                                        hy,
+                                                        base,
+                                                        adaptive);
 
             hy.near_check(dy, tol);
             dy = hy_copy;
