@@ -2,7 +2,7 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## rocSPARSE 1.22.0 for ROCm 4.5.0
+## rocSPARSE 1.22.2 for ROCm 4.5.0
 ### Added
 - Triangular solve for multiple right-hand sides using BSR format
 - SpMV for BSRX format
@@ -19,6 +19,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 - Packaging split into a runtime package called rocsparse and a development package called rocsparse-devel. The development package depends on runtime. The runtime package suggests the development package for all supported OSes except CentOS 7 to aid in the transition. The suggests feature in packaging is introduced as a deprecated feature and will be removed in a future rocm release.
 ### Improved
 - Fixed a bug with gemvi on Navi21
+- Fixed a bug with adaptive csrmv
 - Optimization for pivot based gtsv
 ### Known Issues
 - none
