@@ -2506,9 +2506,6 @@ rocsparse_status rocsparse_zcsrsv_solve(rocsparse_handle                handle,
 *  This function is non blocking and executed asynchronously with respect to the host.
 *  It may return before the actual computation has finished.
 *
-*  \note
-*  Currently, only \p trans == \ref rocsparse_operation_none is supported.
-*
 *  @param[in]
 *  handle      handle to the rocsparse library context queue.
 *  @param[in]
@@ -2545,7 +2542,6 @@ rocsparse_status rocsparse_zcsrsv_solve(rocsparse_handle                handle,
 *  \retval     rocsparse_status_invalid_pointer \p descr, \p alpha, \p ell_val,
 *              \p ell_col_ind, \p x, \p beta or \p y pointer is invalid.
 *  \retval     rocsparse_status_not_implemented
-*              \p trans != \ref rocsparse_operation_none or
 *              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
 */
 /**@{*/

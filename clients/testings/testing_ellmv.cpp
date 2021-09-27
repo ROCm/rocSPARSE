@@ -60,20 +60,6 @@ void testing_ellmv_bad_arg(const Arguments& arg)
 
     auto_testing_bad_arg(rocsparse_ellmv<T>, PARAMS);
 
-    for(auto operation : rocsparse_operation_t::values)
-    {
-        if(operation != rocsparse_operation_none)
-        {
-            {
-                auto tmp = trans;
-                trans    = operation;
-                EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(PARAMS),
-                                        rocsparse_status_not_implemented);
-                trans = tmp;
-            }
-        }
-    }
-
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {
         if(matrix_type != rocsparse_matrix_type_general)
@@ -146,8 +132,8 @@ void testing_ellmv(const Arguments& arg)
 
     matrix_factory.init_ell(hA, M, N, base);
 
-    host_dense_matrix<T> hx(N, 1);
-    host_dense_matrix<T> hy(M, 1);
+    host_dense_matrix<T> hx((trans == rocsparse_operation_none) ? N : M, 1);
+    host_dense_matrix<T> hy((trans == rocsparse_operation_none) ? M : N, 1);
 
     rocsparse_matrix_utils::init(hx);
     rocsparse_matrix_utils::init(hy);
