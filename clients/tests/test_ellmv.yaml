@@ -58,7 +58,7 @@ Tests:
   M: [10, 500]
   N: [33, 842]
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
 
@@ -69,7 +69,7 @@ Tests:
   M: [-1, 0, 711]
   N: [-3, 0, 444]
   alpha_beta: *alpha_beta_range_0_1
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
 
@@ -80,7 +80,7 @@ Tests:
   M: [7111, 10000]
   N: [4441, 10000]
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
 
@@ -91,7 +91,7 @@ Tests:
   M: [39385, 193482, 639102]
   N: [29348, 340123, 710341]
   alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
 
@@ -102,7 +102,7 @@ Tests:
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [mac_econ_fwd500,
@@ -118,7 +118,7 @@ Tests:
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [nos1,
@@ -149,7 +149,7 @@ Tests:
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron2,
@@ -176,7 +176,7 @@ Tests:
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   filename: [Chevron4]

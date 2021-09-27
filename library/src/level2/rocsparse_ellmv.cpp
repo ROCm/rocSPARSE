@@ -49,6 +49,37 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void ellmvn_kernel(I m,
     }
 }
 
+template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void ellmvt_kernel(rocsparse_operation trans,
+                                                                 I                   m,
+                                                                 I                   n,
+                                                                 I                   ell_width,
+                                                                 U alpha_device_host,
+                                                                 const I* __restrict__ ell_col_ind,
+                                                                 const T* __restrict__ ell_val,
+                                                                 const T* __restrict__ x,
+                                                                 T* __restrict__ y,
+                                                                 rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    if(alpha != static_cast<T>(0))
+    {
+        ellmvt_device<BLOCKSIZE>(
+            trans, m, n, ell_width, alpha, ell_col_ind, ell_val, x, y, idx_base);
+    }
+}
+
+template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void ellmvt_scale_kernel(I size, U scalar_device_host, T* __restrict__ data)
+{
+    auto scalar = load_scalar_device_host(scalar_device_host);
+    if(scalar != static_cast<T>(1))
+    {
+        ellmvt_scale_device(size, scalar, data);
+    }
+}
+
 template <typename I, typename T, typename U>
 rocsparse_status rocsparse_ellmv_dispatch(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
@@ -70,32 +101,31 @@ rocsparse_status rocsparse_ellmv_dispatch(rocsparse_handle          handle,
     if(trans == rocsparse_operation_none)
     {
 #define ELLMVN_DIM 512
-        dim3 ellmvn_blocks((m - 1) / ELLMVN_DIM + 1);
-        dim3 ellmvn_threads(ELLMVN_DIM);
-
-        hipLaunchKernelGGL((ellmvn_kernel<ELLMVN_DIM>),
-                           ellmvn_blocks,
-                           ellmvn_threads,
-                           0,
-                           stream,
-                           m,
-                           n,
-                           ell_width,
-                           alpha_device_host,
-                           ell_col_ind,
-                           ell_val,
-                           x,
-                           beta_device_host,
-                           y,
-                           descr->base);
-
+        ellmvn_kernel<ELLMVN_DIM>
+            <<<(m - 1) / ELLMVN_DIM + 1, ELLMVN_DIM, 0, stream>>>(m,
+                                                                  n,
+                                                                  ell_width,
+                                                                  alpha_device_host,
+                                                                  ell_col_ind,
+                                                                  ell_val,
+                                                                  x,
+                                                                  beta_device_host,
+                                                                  y,
+                                                                  descr->base);
 #undef ELLMVN_DIM
     }
     else
     {
-        // TODO
-        return rocsparse_status_not_implemented;
+#define ELLMVT_DIM 1024
+        // Scale y with beta
+        ellmvt_scale_kernel<ELLMVT_DIM>
+            <<<(n - 1) / ELLMVT_DIM + 1, ELLMVT_DIM, 0, stream>>>(n, beta_device_host, y);
+
+        ellmvt_kernel<ELLMVT_DIM><<<(m - 1) / ELLMVT_DIM + 1, ELLMVT_DIM, 0, stream>>>(
+            trans, m, n, ell_width, alpha_device_host, ell_col_ind, ell_val, x, y, descr->base);
+#undef ELLMVT_DIM
     }
+
     return rocsparse_status_success;
 }
 

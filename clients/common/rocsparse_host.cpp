@@ -1867,34 +1867,70 @@ void host_ellmv(rocsparse_operation  trans,
                 T*                   y,
                 rocsparse_index_base base)
 {
+    if(trans == rocsparse_operation_none)
+    {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
 #endif
-    for(I i = 0; i < M; ++i)
-    {
-        T sum = static_cast<T>(0);
-        for(I p = 0; p < ell_width; ++p)
+        for(I i = 0; i < M; ++i)
         {
-            I idx = p * M + i;
-            I col = ell_col_ind[idx] - base;
-
-            if(col >= 0 && col < N)
+            T sum = static_cast<T>(0);
+            for(I p = 0; p < ell_width; ++p)
             {
-                sum = std::fma(ell_val[idx], x[col], sum);
+                I idx = p * M + i;
+                I col = ell_col_ind[idx] - base;
+
+                if(col >= 0 && col < N)
+                {
+                    sum = std::fma(ell_val[idx], x[col], sum);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if(beta != static_cast<T>(0))
+            {
+                y[i] = std::fma(beta, y[i], alpha * sum);
             }
             else
             {
-                break;
+                y[i] = alpha * sum;
             }
         }
-
-        if(beta != static_cast<T>(0))
+    }
+    else
+    {
+        // Scale y with beta
+        for(I i = 0; i < N; ++i)
         {
-            y[i] = std::fma(beta, y[i], alpha * sum);
+            y[i] *= beta;
         }
-        else
+
+        // Transposed SpMV
+        for(I i = 0; i < M; ++i)
         {
-            y[i] = alpha * sum;
+            T row_val = alpha * x[i];
+
+            for(I p = 0; p < ell_width; ++p)
+            {
+                I idx = p * M + i;
+                I col = ell_col_ind[idx] - base;
+
+                if(col >= 0 && col < N)
+                {
+                    T val = (trans == rocsparse_operation_conjugate_transpose)
+                                ? rocsparse_conj(ell_val[idx])
+                                : ell_val[idx];
+
+                    y[col] = std::fma(val, row_val, y[col]);
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
     }
 }
