@@ -93,12 +93,17 @@ rocsparse_status rocsparse_gtsv_buffer_size_template(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    rocsparse_int          block_dim = 64;
-    constexpr unsigned int BLOCKSIZE = 64;
+    constexpr unsigned int BLOCKSIZE = 256;
 
-    rocsparse_int m_pad = ((m - 1) / (block_dim * BLOCKSIZE) + 1) * (block_dim * BLOCKSIZE);
-
-    rocsparse_int gridsize = ((m_pad / block_dim - 1) / BLOCKSIZE + 1);
+    rocsparse_int block_dim = 2;
+    rocsparse_int m_pad     = ((m - 1) / (block_dim * BLOCKSIZE) + 1) * (block_dim * BLOCKSIZE);
+    rocsparse_int gridsize  = ((m_pad / block_dim - 1) / BLOCKSIZE + 1);
+    while(gridsize > 512)
+    {
+        block_dim *= 2;
+        m_pad    = ((m - 1) / (block_dim * BLOCKSIZE) + 1) * (block_dim * BLOCKSIZE);
+        gridsize = ((m_pad / block_dim - 1) / BLOCKSIZE + 1);
+    }
 
     // round up to next power of 2
     gridsize = fnp2(gridsize);
@@ -120,6 +125,374 @@ rocsparse_status rocsparse_gtsv_buffer_size_template(rocsparse_handle handle,
     *buffer_size += sizeof(T) * ((2 * gridsize - 1) / 256 + 1) * 256; // v_scratch
 
     *buffer_size += sizeof(rocsparse_int) * ((m_pad - 1) / 256 + 1) * 256; // pivot_pad
+
+    return rocsparse_status_success;
+}
+
+template <unsigned int BLOCKSIZE, unsigned int BLOCKDIM, typename T>
+rocsparse_status rocsparse_gtsv_spike_solver_template(rocsparse_handle handle,
+                                                      rocsparse_int    m,
+                                                      rocsparse_int    n,
+                                                      rocsparse_int    m_pad,
+                                                      rocsparse_int    gridsize,
+                                                      const T*         dl,
+                                                      const T*         d,
+                                                      const T*         du,
+                                                      T*               B,
+                                                      rocsparse_int    ldb,
+                                                      void*            temp_buffer)
+{
+    char* ptr    = reinterpret_cast<char*>(temp_buffer);
+    T*    dl_pad = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    T* d_pad = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    T* du_pad = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    T* rhs_pad = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m_pad * n - 1) / 256 + 1) * 256;
+    T* w_pad = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    T* v_pad = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    T* w2_pad = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    T* v2_pad = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+    T* mt_pad = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
+
+    T* rhs_scratch = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((2 * gridsize * n - 1) / 256 + 1) * 256;
+    T* w_scratch = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((2 * gridsize - 1) / 256 + 1) * 256;
+    T* v_scratch = reinterpret_cast<T*>(ptr);
+    ptr += sizeof(T) * ((2 * gridsize - 1) / 256 + 1) * 256;
+
+    rocsparse_int* pivot_pad = reinterpret_cast<rocsparse_int*>(ptr);
+    ptr += sizeof(rocsparse_int) * ((m_pad - 1) / 256 + 1) * 256;
+
+    hipLaunchKernelGGL((gtsv_transpose_and_pad_array_shared_kernel<BLOCKSIZE, BLOCKDIM>),
+                       dim3((m_pad - 1) / BLOCKSIZE + 1),
+                       dim3(BLOCKSIZE),
+                       0,
+                       handle->stream,
+                       m,
+                       m_pad,
+                       m_pad,
+                       dl,
+                       dl_pad,
+                       static_cast<T>(0));
+
+    hipLaunchKernelGGL((gtsv_transpose_and_pad_array_shared_kernel<BLOCKSIZE, BLOCKDIM>),
+                       dim3((m_pad - 1) / BLOCKSIZE + 1),
+                       dim3(BLOCKSIZE),
+                       0,
+                       handle->stream,
+                       m,
+                       m_pad,
+                       m_pad,
+                       d,
+                       d_pad,
+                       static_cast<T>(1));
+
+    hipLaunchKernelGGL((gtsv_transpose_and_pad_array_shared_kernel<BLOCKSIZE, BLOCKDIM>),
+                       dim3((m_pad - 1) / BLOCKSIZE + 1),
+                       dim3(BLOCKSIZE),
+                       0,
+                       handle->stream,
+                       m,
+                       m_pad,
+                       m_pad,
+                       du,
+                       du_pad,
+                       static_cast<T>(0));
+
+    hipLaunchKernelGGL((gtsv_transpose_and_pad_array_shared_kernel<BLOCKSIZE, BLOCKDIM>),
+                       dim3((m_pad - 1) / BLOCKSIZE + 1, n),
+                       dim3(BLOCKSIZE),
+                       0,
+                       handle->stream,
+                       m,
+                       m_pad,
+                       ldb,
+                       B,
+                       rhs_pad,
+                       static_cast<T>(0));
+
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(w_pad, 0, m_pad * sizeof(T), handle->stream));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(v_pad, 0, m_pad * sizeof(T), handle->stream));
+
+    hipLaunchKernelGGL((gtsv_LBM_wv_kernel<BLOCKSIZE, BLOCKDIM>),
+                       dim3(gridsize),
+                       dim3(BLOCKSIZE),
+                       0,
+                       handle->stream,
+                       m_pad,
+                       n,
+                       ldb,
+                       dl_pad,
+                       d_pad,
+                       du_pad,
+                       w_pad,
+                       v_pad,
+                       mt_pad,
+                       pivot_pad);
+
+    if(n % 8 == 0)
+    {
+        hipLaunchKernelGGL((gtsv_LBM_rhs_kernel<BLOCKSIZE, BLOCKDIM, 8>),
+                           dim3(gridsize, n / 8),
+                           dim3(BLOCKSIZE),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           dl_pad,
+                           d_pad,
+                           du_pad,
+                           rhs_pad,
+                           mt_pad,
+                           pivot_pad);
+    }
+    else if(n % 4 == 0)
+    {
+        hipLaunchKernelGGL((gtsv_LBM_rhs_kernel<BLOCKSIZE, BLOCKDIM, 4>),
+                           dim3(gridsize, n / 4),
+                           dim3(BLOCKSIZE),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           dl_pad,
+                           d_pad,
+                           du_pad,
+                           rhs_pad,
+                           mt_pad,
+                           pivot_pad);
+    }
+    else if(n % 2 == 0)
+    {
+        hipLaunchKernelGGL((gtsv_LBM_rhs_kernel<BLOCKSIZE, BLOCKDIM, 2>),
+                           dim3(gridsize, n / 2),
+                           dim3(BLOCKSIZE),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           dl_pad,
+                           d_pad,
+                           du_pad,
+                           rhs_pad,
+                           mt_pad,
+                           pivot_pad);
+    }
+    else
+    {
+        hipLaunchKernelGGL((gtsv_LBM_rhs_kernel<BLOCKSIZE, BLOCKDIM, 1>),
+                           dim3(gridsize, n),
+                           dim3(BLOCKSIZE),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           dl_pad,
+                           d_pad,
+                           du_pad,
+                           rhs_pad,
+                           mt_pad,
+                           pivot_pad);
+    }
+
+    RETURN_IF_HIP_ERROR(
+        hipMemcpyAsync(w2_pad, w_pad, m_pad * sizeof(T), hipMemcpyDeviceToDevice, handle->stream));
+    RETURN_IF_HIP_ERROR(
+        hipMemcpyAsync(v2_pad, v_pad, m_pad * sizeof(T), hipMemcpyDeviceToDevice, handle->stream));
+
+    hipLaunchKernelGGL((gtsv_spike_block_level_kernel<BLOCKSIZE, BLOCKDIM>),
+                       dim3(gridsize, n),
+                       dim3(BLOCKSIZE),
+                       0,
+                       handle->stream,
+                       m_pad,
+                       n,
+                       ldb,
+                       rhs_pad,
+                       w_pad,
+                       v_pad,
+                       w2_pad,
+                       v2_pad,
+                       rhs_scratch,
+                       w_scratch,
+                       v_scratch);
+
+    // gridsize is always a power of 2
+    if(gridsize == 2)
+    {
+        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<2>),
+                           dim3(1, n),
+                           dim3(2),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           rhs_scratch,
+                           w_scratch,
+                           v_scratch);
+    }
+    else if(gridsize == 4)
+    {
+        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<4>),
+                           dim3(1, n),
+                           dim3(4),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           rhs_scratch,
+                           w_scratch,
+                           v_scratch);
+    }
+    else if(gridsize == 8)
+    {
+        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<8>),
+                           dim3(1, n),
+                           dim3(8),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           rhs_scratch,
+                           w_scratch,
+                           v_scratch);
+    }
+    else if(gridsize == 16)
+    {
+        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<16>),
+                           dim3(1, n),
+                           dim3(16),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           rhs_scratch,
+                           w_scratch,
+                           v_scratch);
+    }
+    else if(gridsize == 32)
+    {
+        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<32>),
+                           dim3(1, n),
+                           dim3(32),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           rhs_scratch,
+                           w_scratch,
+                           v_scratch);
+    }
+    else if(gridsize == 64)
+    {
+        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<64>),
+                           dim3(1, n),
+                           dim3(64),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           rhs_scratch,
+                           w_scratch,
+                           v_scratch);
+    }
+    else if(gridsize == 128)
+    {
+        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<128>),
+                           dim3(1, n),
+                           dim3(128),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           rhs_scratch,
+                           w_scratch,
+                           v_scratch);
+    }
+    else if(gridsize == 256)
+    {
+        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<256>),
+                           dim3(1, n),
+                           dim3(256),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           rhs_scratch,
+                           w_scratch,
+                           v_scratch);
+    }
+    else if(gridsize == 512)
+    {
+        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<512>),
+                           dim3(1, n),
+                           dim3(512),
+                           0,
+                           handle->stream,
+                           m_pad,
+                           n,
+                           ldb,
+                           rhs_scratch,
+                           w_scratch,
+                           v_scratch);
+    }
+
+    hipLaunchKernelGGL((gtsv_solve_spike_propagate_kernel<BLOCKSIZE, BLOCKDIM>),
+                       dim3(gridsize, n),
+                       dim3(BLOCKSIZE),
+                       0,
+                       handle->stream,
+                       m_pad,
+                       n,
+                       ldb,
+                       rhs_pad,
+                       w2_pad,
+                       v2_pad,
+                       rhs_scratch);
+
+    hipLaunchKernelGGL((gtsv_spike_backward_substitution_kernel<BLOCKSIZE, BLOCKDIM>),
+                       dim3(gridsize, n),
+                       dim3(BLOCKSIZE),
+                       0,
+                       handle->stream,
+                       m_pad,
+                       n,
+                       ldb,
+                       rhs_pad,
+                       w2_pad,
+                       v2_pad);
+
+    hipLaunchKernelGGL((gtsv_transpose_back_array_kernel<BLOCKSIZE, BLOCKDIM>),
+                       dim3((m_pad - 1) / BLOCKSIZE + 1, n),
+                       dim3(BLOCKSIZE),
+                       0,
+                       handle->stream,
+                       m,
+                       m_pad,
+                       ldb,
+                       rhs_pad,
+                       B);
 
     return rocsparse_status_success;
 }
@@ -189,337 +562,65 @@ rocsparse_status rocsparse_gtsv_template(rocsparse_handle handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    constexpr unsigned int BLOCKDIM  = 64;
-    constexpr unsigned int BLOCKSIZE = 64;
-    rocsparse_int          m_pad = ((m - 1) / (BLOCKDIM * BLOCKSIZE) + 1) * (BLOCKDIM * BLOCKSIZE);
-    rocsparse_int          gridsize_x = ((m_pad / BLOCKDIM - 1) / BLOCKSIZE + 1);
+    constexpr unsigned int BLOCKSIZE = 256;
+
+    rocsparse_int block_dim = 2;
+    rocsparse_int m_pad     = ((m - 1) / (block_dim * BLOCKSIZE) + 1) * (block_dim * BLOCKSIZE);
+    rocsparse_int gridsize  = ((m_pad / block_dim - 1) / BLOCKSIZE + 1);
+    while(gridsize > 512)
+    {
+        block_dim *= 2;
+        m_pad    = ((m - 1) / (block_dim * BLOCKSIZE) + 1) * (block_dim * BLOCKSIZE);
+        gridsize = ((m_pad / block_dim - 1) / BLOCKSIZE + 1);
+    }
 
     // round up to next power of 2
-    gridsize_x = fnp2(gridsize_x);
+    gridsize = fnp2(gridsize);
 
-    char* ptr    = reinterpret_cast<char*>(temp_buffer);
-    T*    dl_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
-    T* d_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
-    T* du_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
-    T* rhs_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad * n - 1) / 256 + 1) * 256;
-    T* w_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
-    T* v_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
-    T* w2_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
-    T* v2_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
-    T* mt_pad = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m_pad - 1) / 256 + 1) * 256;
-
-    T* rhs_scratch = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((2 * gridsize_x * n - 1) / 256 + 1) * 256;
-    T* w_scratch = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((2 * gridsize_x - 1) / 256 + 1) * 256;
-    T* v_scratch = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((2 * gridsize_x - 1) / 256 + 1) * 256;
-
-    rocsparse_int* pivot_pad = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((m_pad - 1) / 256 + 1) * 256;
-
-    hipLaunchKernelGGL((gtsv_transpose_and_pad_array_kernel<BLOCKSIZE, BLOCKDIM>),
-                       dim3((m_pad - 1) / BLOCKSIZE + 1),
-                       dim3(BLOCKSIZE),
-                       0,
-                       handle->stream,
-                       m,
-                       m_pad,
-                       m_pad,
-                       dl,
-                       dl_pad,
-                       static_cast<T>(0));
-
-    hipLaunchKernelGGL((gtsv_transpose_and_pad_array_kernel<BLOCKSIZE, BLOCKDIM>),
-                       dim3((m_pad - 1) / BLOCKSIZE + 1),
-                       dim3(BLOCKSIZE),
-                       0,
-                       handle->stream,
-                       m,
-                       m_pad,
-                       m_pad,
-                       d,
-                       d_pad,
-                       static_cast<T>(1));
-
-    hipLaunchKernelGGL((gtsv_transpose_and_pad_array_kernel<BLOCKSIZE, BLOCKDIM>),
-                       dim3((m_pad - 1) / BLOCKSIZE + 1),
-                       dim3(BLOCKSIZE),
-                       0,
-                       handle->stream,
-                       m,
-                       m_pad,
-                       m_pad,
-                       du,
-                       du_pad,
-                       static_cast<T>(0));
-
-    hipLaunchKernelGGL((gtsv_transpose_and_pad_array_kernel<BLOCKSIZE, BLOCKDIM>),
-                       dim3((m_pad - 1) / BLOCKSIZE + 1, n),
-                       dim3(BLOCKSIZE),
-                       0,
-                       handle->stream,
-                       m,
-                       m_pad,
-                       ldb,
-                       B,
-                       rhs_pad,
-                       static_cast<T>(0));
-
-    RETURN_IF_HIP_ERROR(hipMemsetAsync(w_pad, 0, m_pad * sizeof(T), handle->stream));
-    RETURN_IF_HIP_ERROR(hipMemsetAsync(v_pad, 0, m_pad * sizeof(T), handle->stream));
-
-    hipLaunchKernelGGL((gtsv_LBM_wv_kernel<BLOCKSIZE, BLOCKDIM>),
-                       dim3(gridsize_x),
-                       dim3(BLOCKSIZE),
-                       0,
-                       handle->stream,
-                       m_pad,
-                       n,
-                       ldb,
-                       dl_pad,
-                       d_pad,
-                       du_pad,
-                       w_pad,
-                       v_pad,
-                       mt_pad,
-                       pivot_pad);
-
-    if(n % 4 == 0)
+    if(block_dim == 2)
     {
-        hipLaunchKernelGGL((gtsv_LBM_rhs_kernel<BLOCKSIZE, BLOCKDIM, 4>),
-                           dim3(gridsize_x, n / 4),
-                           dim3(BLOCKSIZE),
-                           0,
-                           handle->stream,
-                           m_pad,
-                           n,
-                           ldb,
-                           dl_pad,
-                           d_pad,
-                           du_pad,
-                           rhs_pad,
-                           w_pad,
-                           v_pad,
-                           mt_pad,
-                           pivot_pad);
+        return rocsparse_gtsv_spike_solver_template<BLOCKSIZE, 2>(
+            handle, m, n, m_pad, gridsize, dl, d, du, B, ldb, temp_buffer);
+    }
+    else if(block_dim == 4)
+    {
+        return rocsparse_gtsv_spike_solver_template<BLOCKSIZE, 4>(
+            handle, m, n, m_pad, gridsize, dl, d, du, B, ldb, temp_buffer);
+    }
+    else if(block_dim == 8)
+    {
+        return rocsparse_gtsv_spike_solver_template<BLOCKSIZE, 8>(
+            handle, m, n, m_pad, gridsize, dl, d, du, B, ldb, temp_buffer);
+    }
+    else if(block_dim == 16)
+    {
+        return rocsparse_gtsv_spike_solver_template<BLOCKSIZE, 16>(
+            handle, m, n, m_pad, gridsize, dl, d, du, B, ldb, temp_buffer);
+    }
+    else if(block_dim == 32)
+    {
+        return rocsparse_gtsv_spike_solver_template<BLOCKSIZE, 32>(
+            handle, m, n, m_pad, gridsize, dl, d, du, B, ldb, temp_buffer);
+    }
+    else if(block_dim == 64)
+    {
+        return rocsparse_gtsv_spike_solver_template<BLOCKSIZE, 64>(
+            handle, m, n, m_pad, gridsize, dl, d, du, B, ldb, temp_buffer);
+    }
+    else if(block_dim == 128)
+    {
+        return rocsparse_gtsv_spike_solver_template<BLOCKSIZE, 128>(
+            handle, m, n, m_pad, gridsize, dl, d, du, B, ldb, temp_buffer);
+    }
+    else if(block_dim == 256)
+    {
+        return rocsparse_gtsv_spike_solver_template<BLOCKSIZE, 256>(
+            handle, m, n, m_pad, gridsize, dl, d, du, B, ldb, temp_buffer);
     }
     else
     {
-        hipLaunchKernelGGL((gtsv_LBM_rhs_kernel<BLOCKSIZE, BLOCKDIM, 1>),
-                           dim3(gridsize_x, n / 1),
-                           dim3(BLOCKSIZE),
-                           0,
-                           handle->stream,
-                           m_pad,
-                           n,
-                           ldb,
-                           dl_pad,
-                           d_pad,
-                           du_pad,
-                           rhs_pad,
-                           w_pad,
-                           v_pad,
-                           mt_pad,
-                           pivot_pad);
+        return rocsparse_status_not_implemented;
     }
-
-    RETURN_IF_HIP_ERROR(
-        hipMemcpyAsync(w2_pad, w_pad, m_pad * sizeof(T), hipMemcpyDeviceToDevice, handle->stream));
-    RETURN_IF_HIP_ERROR(
-        hipMemcpyAsync(v2_pad, v_pad, m_pad * sizeof(T), hipMemcpyDeviceToDevice, handle->stream));
-
-    hipLaunchKernelGGL((gtsv_spike_block_level_kernel<BLOCKSIZE, BLOCKDIM>),
-                       dim3(gridsize_x, n),
-                       dim3(BLOCKSIZE),
-                       0,
-                       handle->stream,
-                       m_pad,
-                       n,
-                       ldb,
-                       rhs_pad,
-                       w_pad,
-                       v_pad,
-                       w2_pad,
-                       v2_pad,
-                       rhs_scratch,
-                       w_scratch,
-                       v_scratch);
-
-    // gridsize_x is always a power of 2
-    if(gridsize_x == 2)
-    {
-        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<2>),
-                           dim3(1, n),
-                           dim3(2),
-                           0,
-                           handle->stream,
-                           m_pad,
-                           n,
-                           ldb,
-                           rhs_scratch,
-                           w_scratch,
-                           v_scratch);
-    }
-    else if(gridsize_x == 4)
-    {
-        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<4>),
-                           dim3(1, n),
-                           dim3(4),
-                           0,
-                           handle->stream,
-                           m_pad,
-                           n,
-                           ldb,
-                           rhs_scratch,
-                           w_scratch,
-                           v_scratch);
-    }
-    else if(gridsize_x == 8)
-    {
-        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<8>),
-                           dim3(1, n),
-                           dim3(8),
-                           0,
-                           handle->stream,
-                           m_pad,
-                           n,
-                           ldb,
-                           rhs_scratch,
-                           w_scratch,
-                           v_scratch);
-    }
-    else if(gridsize_x == 16)
-    {
-        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<16>),
-                           dim3(1, n),
-                           dim3(16),
-                           0,
-                           handle->stream,
-                           m_pad,
-                           n,
-                           ldb,
-                           rhs_scratch,
-                           w_scratch,
-                           v_scratch);
-    }
-    else if(gridsize_x == 32)
-    {
-        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<32>),
-                           dim3(1, n),
-                           dim3(32),
-                           0,
-                           handle->stream,
-                           m_pad,
-                           n,
-                           ldb,
-                           rhs_scratch,
-                           w_scratch,
-                           v_scratch);
-    }
-    else if(gridsize_x == 64)
-    {
-        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<64>),
-                           dim3(1, n),
-                           dim3(64),
-                           0,
-                           handle->stream,
-                           m_pad,
-                           n,
-                           ldb,
-                           rhs_scratch,
-                           w_scratch,
-                           v_scratch);
-    }
-    else if(gridsize_x == 128)
-    {
-        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<128>),
-                           dim3(1, n),
-                           dim3(128),
-                           0,
-                           handle->stream,
-                           m_pad,
-                           n,
-                           ldb,
-                           rhs_scratch,
-                           w_scratch,
-                           v_scratch);
-    }
-    else if(gridsize_x == 256)
-    {
-        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<256>),
-                           dim3(1, n),
-                           dim3(256),
-                           0,
-                           handle->stream,
-                           m_pad,
-                           n,
-                           ldb,
-                           rhs_scratch,
-                           w_scratch,
-                           v_scratch);
-    }
-    else if(gridsize_x == 512)
-    {
-        hipLaunchKernelGGL((gtsv_solve_spike_grid_level_kernel<512>),
-                           dim3(1, n),
-                           dim3(512),
-                           0,
-                           handle->stream,
-                           m_pad,
-                           n,
-                           ldb,
-                           rhs_scratch,
-                           w_scratch,
-                           v_scratch);
-    }
-
-    hipLaunchKernelGGL((gtsv_solve_spike_propagate_kernel<BLOCKSIZE, BLOCKDIM>),
-                       dim3(gridsize_x, n),
-                       dim3(BLOCKSIZE),
-                       0,
-                       handle->stream,
-                       m_pad,
-                       n,
-                       ldb,
-                       rhs_pad,
-                       w2_pad,
-                       v2_pad,
-                       rhs_scratch);
-
-    hipLaunchKernelGGL((gtsv_spike_backward_substitution_kernel<BLOCKSIZE, BLOCKDIM>),
-                       dim3(gridsize_x, n),
-                       dim3(BLOCKSIZE),
-                       0,
-                       handle->stream,
-                       m_pad,
-                       n,
-                       ldb,
-                       rhs_pad,
-                       w2_pad,
-                       v2_pad);
-
-    hipLaunchKernelGGL((gtsv_transpose_back_array_kernel<BLOCKSIZE, BLOCKDIM>),
-                       dim3((m_pad - 1) / BLOCKSIZE + 1, n),
-                       dim3(BLOCKSIZE),
-                       0,
-                       handle->stream,
-                       m,
-                       m_pad,
-                       ldb,
-                       rhs_pad,
-                       B);
-
-    return rocsparse_status_success;
 }
 
 /*
