@@ -28,7 +28,7 @@ find_package(Git REQUIRED)
 
 # Workaround until hcc & hip cmake modules fixes symlink logic in their config files.
 # (Thanks to rocBLAS devs for finding workaround for this problem!)
-list(APPEND CMAKE_PREFIX_PATH /opt/rocm/hip /opt/rocm)
+list(APPEND CMAKE_PREFIX_PATH /opt/rocm)
 
 # ROCm cmake package
 find_package(ROCM QUIET CONFIG PATHS ${CMAKE_PREFIX_PATH})
