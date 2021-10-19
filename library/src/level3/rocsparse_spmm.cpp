@@ -172,9 +172,9 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
             return status;
         }
 
-        const J m = (J)mat_C->rows;
+        const J m = (J)mat_A->rows;
         const J n = (J)mat_C->cols;
-        const J k = trans_A == rocsparse_operation_none ? (J)mat_A->cols : (J)mat_A->rows;
+        const J k = (J)mat_A->cols;
 
         switch(stage)
         {

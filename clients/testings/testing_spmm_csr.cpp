@@ -413,9 +413,9 @@ void testing_spmm_csr(const Arguments& arg)
         CHECK_HIP_ERROR(hipMemcpy(hC_2, dC_2, sizeof(T) * nnz_C, hipMemcpyDeviceToHost));
 
         // CPU csrmm
-        host_csrmm<T, I, J>(M,
+        host_csrmm<T, I, J>(A_m,
                             N,
-                            K,
+                            A_n,
                             trans_A,
                             trans_B,
                             halpha,
