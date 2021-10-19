@@ -78,7 +78,7 @@ endforeach()
 
 # Target include directories
 target_include_directories(rocsparse
-                           PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/include>
+                           PUBLIC  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/include>
                                    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
                            PUBLIC  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
                                    $<INSTALL_INTERFACE:include>
@@ -100,26 +100,25 @@ generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/
 # Force installation of .f module file
 install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse.f"
               "${CMAKE_SOURCE_DIR}/library/src/rocsparse_enums.f"
-        DESTINATION "rocsparse/include"
+        DESTINATION "include/rocsparse"
 )
 
 # Install targets
-rocm_install_targets(TARGETS rocsparse
-                     INCLUDE
-                       ${CMAKE_SOURCE_DIR}/library/include
-                       ${CMAKE_BINARY_DIR}/include
-                     PREFIX rocsparse
-)
+rocm_install_targets(TARGETS rocsparse)
+
+install(
+       DIRECTORY "${CMAKE_SOURCE_DIR}/library/include/" "${PROJECT_BINARY_DIR}/include/"
+       DESTINATION "include/rocsparse/"
+       FILES_MATCHING
+       PATTERN "*.h"
+       PATTERN "*.hpp"
+       PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ )
 
 # Export targets
 rocm_export_targets(TARGETS roc::rocsparse
-                    PREFIX rocsparse
                     DEPENDS PACKAGE hip
                     NAMESPACE roc::
 )
-
-# Symbolic links
-rocm_install_symlink_subdir(rocsparse)
 
 # Package specific CPACK vars
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip-rocclr (>= 3.5.0)")
