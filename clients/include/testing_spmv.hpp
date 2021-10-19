@@ -157,6 +157,7 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo, I, I, T>
     {
         host_coomv<I, T>(trans,
                          hA.m,
+                         hA.n,
                          hA.nnz,
                          *h_alpha,
                          hA.row_ind,
@@ -199,7 +200,7 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo_aos, I, I, T>
                                  bool                   adaptive)
     {
         host_coomv_aos<I, T>(
-            trans, hA.m, hA.nnz, *h_alpha, hA.ind, hA.val, hx, *h_beta, hy, hA.base);
+            trans, hA.m, hA.n, hA.nnz, *h_alpha, hA.ind, hA.val, hx, *h_beta, hy, hA.base);
     };
 };
 
