@@ -384,4 +384,55 @@ static __device__ void coomvn_aos_general_wf_reduce(I                    nnz,
     }
 }
 
+template <typename I, typename T>
+__device__ void coomvt_device(rocsparse_operation  trans,
+                              I                    nnz,
+                              T                    alpha,
+                              const I*             coo_row_ind,
+                              const I*             coo_col_ind,
+                              const T*             coo_val,
+                              const T*             x,
+                              T*                   y,
+                              rocsparse_index_base idx_base)
+{
+    int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(gid >= nnz)
+    {
+        return;
+    }
+
+    I row = coo_row_ind[gid] - idx_base;
+    I col = coo_col_ind[gid] - idx_base;
+    T val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse_conj(coo_val[gid])
+                                                               : coo_val[gid];
+
+    atomicAdd(&y[col], alpha * val * x[row]);
+}
+
+template <typename I, typename T>
+__device__ void coomvt_aos_device(rocsparse_operation  trans,
+                                  I                    nnz,
+                                  T                    alpha,
+                                  const I*             coo_ind,
+                                  const T*             coo_val,
+                                  const T*             x,
+                                  T*                   y,
+                                  rocsparse_index_base idx_base)
+{
+    int gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
+
+    if(gid >= nnz)
+    {
+        return;
+    }
+
+    I row = coo_ind[2 * gid] - idx_base;
+    I col = coo_ind[2 * gid + 1] - idx_base;
+    T val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse_conj(coo_val[gid])
+                                                               : coo_val[gid];
+
+    atomicAdd(&y[col], alpha * val * x[row]);
+}
+
 #endif // COOMV_DEVICE_H

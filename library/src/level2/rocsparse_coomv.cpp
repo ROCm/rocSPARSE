@@ -66,6 +66,21 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvn_wf(I nnz,
                                                  idx_base);
 }
 
+template <unsigned int BLOCKSIZE, typename I, typename T, typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvt_kernel(rocsparse_operation trans,
+                                                                 I                   nnz,
+                                                                 U alpha_device_host,
+                                                                 const I* __restrict__ coo_row_ind,
+                                                                 const I* __restrict__ coo_col_ind,
+                                                                 const T* __restrict__ coo_val,
+                                                                 const T* __restrict__ x,
+                                                                 T* __restrict__ y,
+                                                                 rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    coomvt_device(trans, nnz, alpha, coo_row_ind, coo_col_ind, coo_val, x, y, idx_base);
+}
+
 template <typename I, typename T, typename U>
 rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
                                           rocsparse_operation       trans,
@@ -84,43 +99,46 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
     // Stream
     hipStream_t stream = handle->stream;
 
-    // Run different coomv kernels
-    if(trans == rocsparse_operation_none)
-    {
+    I ysize = (trans == rocsparse_operation_none) ? m : n;
 
-        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    if(handle->pointer_mode == rocsparse_pointer_mode_device)
+    {
+        // Scale y with beta
+        hipLaunchKernelGGL((coomv_scale<1024>),
+                           dim3((ysize - 1) / 1024 + 1),
+                           dim3(1024),
+                           0,
+                           handle->stream,
+                           ysize,
+                           beta_device_host,
+                           y);
+    }
+    else
+    {
+        auto beta = load_scalar_device_host(beta_device_host);
+        // If beta == 0.0 we need to set y to 0
+        if(beta == static_cast<T>(0))
         {
-            // Scale y with beta
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(y, 0, sizeof(T) * ysize, handle->stream));
+        }
+        else if(beta != static_cast<T>(1))
+        {
             hipLaunchKernelGGL((coomv_scale<1024>),
-                               dim3((m - 1) / 1024 + 1),
+                               dim3((ysize - 1) / 1024 + 1),
                                dim3(1024),
                                0,
                                handle->stream,
-                               m,
-                               beta_device_host,
+                               ysize,
+                               beta,
                                y);
         }
-        else
-        {
-            auto beta = load_scalar_device_host(beta_device_host);
-            // If beta == 0.0 we need to set y to 0
-            if(beta == static_cast<T>(0))
-            {
-                RETURN_IF_HIP_ERROR(hipMemsetAsync(y, 0, sizeof(T) * m, handle->stream));
-            }
-            else if(beta != static_cast<T>(1))
-            {
-                hipLaunchKernelGGL((coomv_scale<1024>),
-                                   dim3((m - 1) / 1024 + 1),
-                                   dim3(1024),
-                                   0,
-                                   handle->stream,
-                                   m,
-                                   beta,
-                                   y);
-            }
-        }
+    }
 
+    // Run different coomv kernels
+    switch(trans)
+    {
+    case rocsparse_operation_none:
+    {
 #define COOMVN_DIM 128
         int maxthreads = handle->properties.maxThreadsPerBlock;
         int nprocs     = handle->properties.multiProcessorCount;
@@ -197,12 +215,17 @@ rocsparse_status rocsparse_coomv_dispatch(rocsparse_handle          handle,
                            val_block_red,
                            y);
 #undef COOMVN_DIM
+        break;
     }
-    else
+    case rocsparse_operation_transpose:
+    case rocsparse_operation_conjugate_transpose:
     {
-        // TODO
-        return rocsparse_status_not_implemented;
+        coomvt_kernel<1024><<<(nnz - 1) / 1024 + 1, 1024, 0, handle->stream>>>(
+            trans, nnz, alpha_device_host, coo_row_ind, coo_col_ind, coo_val, x, y, descr->base);
+        break;
     }
+    }
+
     return rocsparse_status_success;
 }
 
@@ -262,15 +285,9 @@ rocsparse_status rocsparse_coomv_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_value;
     }
 
-    if(trans != rocsparse_operation_none)
-    {
-        return rocsparse_status_not_implemented;
-    }
-
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
-        // TODO
         return rocsparse_status_not_implemented;
     }
 

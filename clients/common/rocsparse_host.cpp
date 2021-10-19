@@ -1279,6 +1279,7 @@ void host_bsrsv(rocsparse_operation  trans,
 template <typename I, typename T>
 void host_coomv(rocsparse_operation  trans,
                 I                    M,
+                I                    N,
                 I                    nnz,
                 T                    alpha,
                 const I*             coo_row_ind,
@@ -1289,24 +1290,48 @@ void host_coomv(rocsparse_operation  trans,
                 T*                   y,
                 rocsparse_index_base base)
 {
+    if(trans == rocsparse_operation_none)
+    {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
 #endif
-    for(I i = 0; i < M; ++i)
-    {
-        y[i] *= beta;
-    }
+        for(I i = 0; i < M; ++i)
+        {
+            y[i] *= beta;
+        }
 
-    for(I i = 0; i < nnz; ++i)
+        for(I i = 0; i < nnz; ++i)
+        {
+            y[coo_row_ind[i] - base]
+                = std::fma(alpha * coo_val[i], x[coo_col_ind[i] - base], y[coo_row_ind[i] - base]);
+        }
+    }
+    else
     {
-        y[coo_row_ind[i] - base]
-            = std::fma(alpha * coo_val[i], x[coo_col_ind[i] - base], y[coo_row_ind[i] - base]);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(I i = 0; i < N; ++i)
+        {
+            y[i] *= beta;
+        }
+
+        for(I i = 0; i < nnz; ++i)
+        {
+            I row = coo_row_ind[i] - base;
+            I col = coo_col_ind[i] - base;
+            T val = (trans == rocsparse_operation_transpose) ? coo_val[i]
+                                                             : rocsparse_conj(coo_val[i]);
+
+            y[col] = std::fma(alpha * val, x[row], y[col]);
+        }
     }
 }
 
 template <typename I, typename T>
 void host_coomv_aos(rocsparse_operation  trans,
                     I                    M,
+                    I                    N,
                     I                    nnz,
                     T                    alpha,
                     const I*             coo_ind,
@@ -1316,18 +1341,41 @@ void host_coomv_aos(rocsparse_operation  trans,
                     T*                   y,
                     rocsparse_index_base base)
 {
+    if(trans == rocsparse_operation_none)
+    {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
 #endif
-    for(I i = 0; i < M; ++i)
-    {
-        y[i] *= beta;
-    }
+        for(I i = 0; i < M; ++i)
+        {
+            y[i] *= beta;
+        }
 
-    for(I i = 0; i < nnz; ++i)
+        for(I i = 0; i < nnz; ++i)
+        {
+            y[coo_ind[2 * i] - base] = std::fma(
+                alpha * coo_val[i], x[coo_ind[2 * i + 1] - base], y[coo_ind[2 * i] - base]);
+        }
+    }
+    else
     {
-        y[coo_ind[2 * i] - base]
-            = std::fma(alpha * coo_val[i], x[coo_ind[2 * i + 1] - base], y[coo_ind[2 * i] - base]);
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(I i = 0; i < N; ++i)
+        {
+            y[i] *= beta;
+        }
+
+        for(I i = 0; i < nnz; ++i)
+        {
+            I row = coo_ind[2 * i] - base;
+            I col = coo_ind[2 * i + 1] - base;
+            T val = (trans == rocsparse_operation_transpose) ? coo_val[i]
+                                                             : rocsparse_conj(coo_val[i]);
+
+            y[col] = std::fma(alpha * val, x[row], y[col]);
+        }
     }
 }
 
@@ -1976,6 +2024,7 @@ void host_hybmv(rocsparse_int        M,
     {
         host_coomv(rocsparse_operation_none,
                    M,
+                   N,
                    coo_nnz,
                    alpha,
                    coo_row_ind,
@@ -7647,6 +7696,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                                   std::vector<ITYPE>&       coo_col_ind);              \
     template void host_coomv<ITYPE, TTYPE>(rocsparse_operation  trans,                           \
                                            ITYPE                M,                               \
+                                           ITYPE                N,                               \
                                            ITYPE                nnz,                             \
                                            TTYPE                alpha,                           \
                                            const ITYPE*         coo_row_ind,                     \
@@ -7658,6 +7708,7 @@ template void host_coosort_by_column(rocsparse_int                         M,
                                            rocsparse_index_base base);                           \
     template void host_coomv_aos<ITYPE, TTYPE>(rocsparse_operation  trans,                       \
                                                ITYPE                M,                           \
+                                               ITYPE                N,                           \
                                                ITYPE                nnz,                         \
                                                TTYPE                alpha,                       \
                                                const ITYPE*         coo_ind,                     \
