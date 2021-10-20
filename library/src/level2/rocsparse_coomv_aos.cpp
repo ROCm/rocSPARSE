@@ -67,7 +67,10 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void coomvt_aos_kernel(rocsparse_o
                                                                      rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
-    coomvt_aos_device(trans, nnz, alpha, coo_ind, coo_val, x, y, idx_base);
+    if(alpha != static_cast<T>(0))
+    {
+        coomvt_aos_device(trans, nnz, alpha, coo_ind, coo_val, x, y, idx_base);
+    }
 }
 
 template <typename I, typename T, typename U>

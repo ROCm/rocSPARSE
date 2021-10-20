@@ -55,7 +55,7 @@ Tests:
   M: [-1, 0, 16, 32, 111]
   N: [-1, 0, 16, 32, 441]
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
@@ -68,7 +68,7 @@ Tests:
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max]
@@ -85,7 +85,7 @@ Tests:
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto]
@@ -100,7 +100,7 @@ Tests:
   M: [10, 500]
   N: [33, 842]
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max, rocsparse_hyb_partition_user]
@@ -113,7 +113,7 @@ Tests:
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max]
@@ -130,7 +130,7 @@ Tests:
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_quick
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto, rocsparse_hyb_partition_max]
@@ -144,7 +144,7 @@ Tests:
   M: [39385, 193482, 639102]
   N: [29348, 340123, 710341]
   alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
   part: [rocsparse_hyb_partition_auto]
@@ -156,7 +156,7 @@ Tests:
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto]
@@ -173,7 +173,7 @@ Tests:
   M: 1
   N: 1
   alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
+  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
   part: [rocsparse_hyb_partition_auto]
