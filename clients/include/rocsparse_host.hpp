@@ -321,7 +321,8 @@ void host_ellmv(rocsparse_operation  trans,
                 rocsparse_index_base base);
 
 template <typename T>
-void host_hybmv(rocsparse_int        M,
+void host_hybmv(rocsparse_operation  trans,
+                rocsparse_int        M,
                 rocsparse_int        N,
                 T                    alpha,
                 rocsparse_int        ell_nnz,

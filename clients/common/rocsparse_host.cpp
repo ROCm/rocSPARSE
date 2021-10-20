@@ -1341,7 +1341,9 @@ void host_coomv_aos(rocsparse_operation  trans,
                     T*                   y,
                     rocsparse_index_base base)
 {
-    if(trans == rocsparse_operation_none)
+    switch(trans)
+    {
+    case rocsparse_operation_none:
     {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
@@ -1356,8 +1358,11 @@ void host_coomv_aos(rocsparse_operation  trans,
             y[coo_ind[2 * i] - base] = std::fma(
                 alpha * coo_val[i], x[coo_ind[2 * i + 1] - base], y[coo_ind[2 * i] - base]);
         }
+
+        break;
     }
-    else
+    case rocsparse_operation_transpose:
+    case rocsparse_operation_conjugate_transpose:
     {
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1024)
@@ -1376,6 +1381,9 @@ void host_coomv_aos(rocsparse_operation  trans,
 
             y[col] = std::fma(alpha * val, x[row], y[col]);
         }
+
+        break;
+    }
     }
 }
 
@@ -1984,7 +1992,8 @@ void host_ellmv(rocsparse_operation  trans,
 }
 
 template <typename T>
-void host_hybmv(rocsparse_int        M,
+void host_hybmv(rocsparse_operation  trans,
+                rocsparse_int        M,
                 rocsparse_int        N,
                 T                    alpha,
                 rocsparse_int        ell_nnz,
@@ -2005,35 +2014,15 @@ void host_hybmv(rocsparse_int        M,
     // ELL part
     if(ell_nnz > 0)
     {
-        host_ellmv(rocsparse_operation_none,
-                   M,
-                   N,
-                   alpha,
-                   ell_col_ind,
-                   ell_val,
-                   ell_width,
-                   x,
-                   beta,
-                   y,
-                   base);
+        host_ellmv(trans, M, N, alpha, ell_col_ind, ell_val, ell_width, x, beta, y, base);
         coo_beta = static_cast<T>(1);
     }
 
     // COO part
     if(coo_nnz > 0)
     {
-        host_coomv(rocsparse_operation_none,
-                   M,
-                   N,
-                   coo_nnz,
-                   alpha,
-                   coo_row_ind,
-                   coo_col_ind,
-                   coo_val,
-                   x,
-                   coo_beta,
-                   y,
-                   base);
+        host_coomv(
+            trans, M, N, coo_nnz, alpha, coo_row_ind, coo_col_ind, coo_val, x, coo_beta, y, base);
     }
 }
 
@@ -5978,7 +5967,8 @@ template void host_bsrsv(rocsparse_operation  trans,
                          rocsparse_int*       struct_pivot,
                          rocsparse_int*       numeric_pivot);
 
-template void host_hybmv(rocsparse_int        M,
+template void host_hybmv(rocsparse_operation  trans,
+                         rocsparse_int        M,
                          rocsparse_int        N,
                          float                alpha,
                          rocsparse_int        ell_nnz,
@@ -6503,7 +6493,8 @@ template void host_bsrsv(rocsparse_operation  trans,
                          rocsparse_int*       struct_pivot,
                          rocsparse_int*       numeric_pivot);
 
-template void host_hybmv(rocsparse_int        M,
+template void host_hybmv(rocsparse_operation  trans,
+                         rocsparse_int        M,
                          rocsparse_int        N,
                          double               alpha,
                          rocsparse_int        ell_nnz,
@@ -6944,7 +6935,8 @@ template void host_bsrsv(rocsparse_operation             trans,
                          rocsparse_int*                  struct_pivot,
                          rocsparse_int*                  numeric_pivot);
 
-template void host_hybmv(rocsparse_int                   M,
+template void host_hybmv(rocsparse_operation             trans,
+                         rocsparse_int                   M,
                          rocsparse_int                   N,
                          rocsparse_double_complex        alpha,
                          rocsparse_int                   ell_nnz,
@@ -7337,7 +7329,8 @@ template void host_bsrsv(rocsparse_operation            trans,
                          rocsparse_int*                 struct_pivot,
                          rocsparse_int*                 numeric_pivot);
 
-template void host_hybmv(rocsparse_int                  M,
+template void host_hybmv(rocsparse_operation            trans,
+                         rocsparse_int                  M,
                          rocsparse_int                  N,
                          rocsparse_float_complex        alpha,
                          rocsparse_int                  ell_nnz,

@@ -55,20 +55,6 @@ void testing_hybmv_bad_arg(const Arguments& arg)
 
     auto_testing_bad_arg(rocsparse_hybmv<T>, PARAMS);
 
-    for(auto operation : rocsparse_operation_t::values)
-    {
-        if(operation != rocsparse_operation_none)
-        {
-            {
-                auto tmp = trans;
-                trans    = operation;
-                EXPECT_ROCSPARSE_STATUS(rocsparse_hybmv<T>(PARAMS),
-                                        rocsparse_status_not_implemented);
-                trans = tmp;
-            }
-        }
-    }
-
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {
         if(matrix_type != rocsparse_matrix_type_general)
@@ -139,8 +125,8 @@ void testing_hybmv(const Arguments& arg)
         return;
     }
 
-    host_dense_matrix<T> hx(N, 1);
-    host_dense_matrix<T> hy(M, 1);
+    host_dense_matrix<T> hx((trans == rocsparse_operation_none) ? N : M, 1);
+    host_dense_matrix<T> hy((trans == rocsparse_operation_none) ? M : N, 1);
 
     rocsparse_matrix_utils::init_exact(hx);
     rocsparse_matrix_utils::init_exact(hy);
@@ -185,7 +171,8 @@ void testing_hybmv(const Arguments& arg)
 
             host_dense_matrix<T> hy_copy(hy);
             // CPU hybmv
-            host_hybmv<T>(M,
+            host_hybmv<T>(trans,
+                          M,
                           N,
                           *h_alpha,
                           hA_ell.nnz,
