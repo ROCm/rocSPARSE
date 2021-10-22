@@ -99,7 +99,7 @@ C and C++ code is formatted using clang-format. To format a file, use
 
 ::
 
-  /opt/rocm/bin/llvm/clang-format -style=file -i <file>
+  /opt/rocm/llvm/bin/clang-format -style=file -i <file>
 
 To format all files, run the following script in rocSPARSE directory:
 
@@ -115,7 +115,7 @@ To format all files, run the following script in rocSPARSE directory:
   -o -iname '*.cpp.in' \
   -o -iname '*.cl' \
   | grep -v 'build' \
-  | xargs -n 1 -P 8 -I{} /opt/rocm/bin/llvm/clang-format -style=file -i {}
+  | xargs -n 1 -P 8 -I{} /opt/rocm/llvm/bin/clang-format -style=file -i {}
 
 Library Source Organization
 ===========================
