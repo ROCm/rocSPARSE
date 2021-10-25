@@ -40,10 +40,12 @@ def runTestCommand (platform, project, gfilter, String dirmode = "release")
     def hmmTestCommand= ''
     if (platform.jenkinsLabel.contains('gfx90a'))
     {
-        hmmTestCommand = """
-                            ROCSPARSE_MALLOC_MANAGED=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test --gtest_output=xml:test_detail_hmm_xnack_off.xml --gtest_color=yes --gtest_filter=*csrmv_managed*
-                            HSA_XNACK=1 ROCSPARSE_MALLOC_MANAGED=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test --gtest_output=xml:test_detail_hmm_xnack_on.xml --gtest_color=yes --gtest_filter=*csrmv_managed*
-                         """
+        hmmTestCommand = ""
+                        //Temporarily remove hmm tests
+                        //"""
+                        //    ROCSPARSE_MALLOC_MANAGED=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test --gtest_output=xml:test_detail_hmm_xnack_off.xml --gtest_color=yes --gtest_filter=*csrmv_managed*
+                        //    HSA_XNACK=1 ROCSPARSE_MALLOC_MANAGED=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test --gtest_output=xml:test_detail_hmm_xnack_on.xml --gtest_color=yes --gtest_filter=*csrmv_managed*
+                        //"""
     }
 
     def command = """#!/usr/bin/env bash
