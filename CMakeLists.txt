@@ -84,8 +84,9 @@ if(BUILD_CODE_COVERAGE)
 endif()
 
 if(BUILD_ADDRESS_SANITIZER)
-  add_compile_options(-g -fsanitize=address -fno-omit-frame-pointer)
-  add_link_options(-g -fsanitize=address -fuse-ld=lld)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -shared-libasan")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -shared-libasan")
+  add_link_options(-fuse-ld=lld)
 endif()
 
 # Dependencies

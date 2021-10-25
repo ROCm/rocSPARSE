@@ -84,7 +84,11 @@ if(NOT CONVERT_SOURCE)
   set(CONVERT_SOURCE ${CMAKE_SOURCE_DIR}/deps/convert.cpp)
 endif()
 
-execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
+if(BUILD_ADDRESS_SANITIZER)
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -fsanitize=address -shared-libasan -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
+else()
+  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
+endif()
 
 list(LENGTH TEST_MATRICES len)
 math(EXPR len1 "${len} - 1")
