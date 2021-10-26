@@ -28,6 +28,7 @@
 #include "utility.h"
 
 #include "csrmv_device.h"
+#include "csrmv_symm_device.h"
 
 #define BLOCK_SIZE 1024
 #define BLOCK_MULTIPLIER 3
@@ -49,6 +50,24 @@
 #define LAUNCH_CSRMVT(wfsize)                                                                \
     csrmvt_general_kernel<CSRMVT_DIM, wfsize><<<csrmvt_blocks, csrmvt_threads, 0, stream>>>( \
         trans, m, alpha_device_host, csr_row_ptr, csr_col_ind, csr_val, x, y, descr->base)
+
+#define LAUNCH_CSRMVN_SYMM_GENERAL(wfsize)                                \
+    csrmvn_symm_general_kernel<CSRMV_SYMM_DIM, wfsize>                    \
+        <<<csrmvn_blocks, csrmvn_threads, 0, stream>>>(trans,             \
+                                                       m,                 \
+                                                       alpha_device_host, \
+                                                       csr_row_ptr,       \
+                                                       csr_col_ind,       \
+                                                       csr_val,           \
+                                                       x,                 \
+                                                       beta_device_host,  \
+                                                       y,                 \
+                                                       descr->base)
+
+#define LAUNCH_CSRMVT_SYMM(wfsize)                      \
+    csrmvt_symm_general_kernel<CSRMV_SYMM_DIM, wfsize>  \
+        <<<csrmvt_blocks, csrmvt_threads, 0, stream>>>( \
+            trans, m, alpha_device_host, csr_row_ptr, csr_col_ind, csr_val, x, y, descr->base)
 
 __attribute__((unused)) static unsigned int flp2(unsigned int x)
 {
@@ -86,6 +105,21 @@ static unsigned long long numThreadsForReduction(unsigned long long num_rows)
 #else
     return flp2(WG_SIZE / num_rows);
 #endif
+}
+
+template <typename I>
+static inline I maxRowsInABlock(const I* rowBlocks, size_t rowBlockSize)
+{
+    I max = 0;
+    for(size_t i = 1; i < rowBlockSize; i++)
+    {
+        I current_row = rowBlocks[i];
+        I prev_row    = rowBlocks[i - 1];
+
+        if(max < current_row - prev_row)
+            max = current_row - prev_row;
+    }
+    return max;
 }
 
 template <typename I, typename J>
@@ -350,10 +384,21 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
     }
 
     // Check index base
-    if(descr->type != rocsparse_matrix_type_general)
+    if(descr->type != rocsparse_matrix_type_general
+       && descr->type != rocsparse_matrix_type_triangular
+       && descr->type != rocsparse_matrix_type_symmetric)
     {
         // TODO
         return rocsparse_status_not_implemented;
+    }
+
+    if(descr->type == rocsparse_matrix_type_symmetric
+       || descr->type == rocsparse_matrix_type_triangular)
+    {
+        if(m != n)
+        {
+            return rocsparse_status_invalid_size;
+        }
     }
 
     // Check sizes
@@ -416,6 +461,11 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
 
     ComputeRowBlocks<I, J>(
         row_blocks.data(), wg_ids.data(), info->csrmv_info->size, hptr.data(), m, true);
+
+    if(descr->type == rocsparse_matrix_type_symmetric)
+    {
+        info->csrmv_info->max_rows = maxRowsInABlock(row_blocks.data(), info->csrmv_info->size);
+    }
 
     // Allocate memory on device to hold csrmv info, if required
     if(info->csrmv_info->size > 0)
@@ -519,6 +569,58 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     }
 }
 
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          typename I,
+          typename J,
+          typename T,
+          typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrmvn_symm_general_kernel(rocsparse_operation trans,
+                                    J                   m,
+                                    U                   alpha_device_host,
+                                    const I* __restrict__ csr_row_ptr,
+                                    const J* __restrict__ csr_col_ind,
+                                    const T* __restrict__ csr_val,
+                                    const T* __restrict__ x,
+                                    U beta_device_host,
+                                    T* __restrict__ y,
+                                    rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    auto beta  = load_scalar_device_host(beta_device_host);
+    if(alpha != static_cast<T>(0) || beta != static_cast<T>(1))
+    {
+        csrmvn_symm_general_device<BLOCKSIZE, WF_SIZE>(
+            trans, m, alpha, csr_row_ptr, csr_col_ind, csr_val, x, beta, y, idx_base);
+    }
+}
+
+template <unsigned int BLOCKSIZE,
+          unsigned int WF_SIZE,
+          typename I,
+          typename J,
+          typename T,
+          typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrmvt_symm_general_kernel(rocsparse_operation trans,
+                                    J                   m,
+                                    U                   alpha_device_host,
+                                    const I* __restrict__ csr_row_ptr,
+                                    const J* __restrict__ csr_col_ind,
+                                    const T* __restrict__ csr_val,
+                                    const T* __restrict__ x,
+                                    T* __restrict__ y,
+                                    rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    if(alpha != static_cast<T>(0))
+    {
+        csrmvt_symm_general_device<BLOCKSIZE, WF_SIZE>(
+            trans, m, alpha, csr_row_ptr, csr_col_ind, csr_val, x, y, idx_base);
+    }
+}
+
 template <typename I, typename J, typename T, typename U>
 __launch_bounds__(WG_SIZE) ROCSPARSE_KERNEL
     void csrmvn_adaptive_kernel(I nnz,
@@ -553,6 +655,38 @@ __launch_bounds__(WG_SIZE) ROCSPARSE_KERNEL
     }
 }
 
+template <rocsparse_int MAX_ROWS, typename I, typename J, typename T, typename U>
+__launch_bounds__(WG_SIZE) ROCSPARSE_KERNEL
+    void csrmvn_symm_adaptive_kernel(I nnz,
+                                     I max_rows,
+                                     const I* __restrict__ row_blocks,
+                                     U alpha_device_host,
+                                     const I* __restrict__ csr_row_ptr,
+                                     const J* __restrict__ csr_col_ind,
+                                     const T* __restrict__ csr_val,
+                                     const T* __restrict__ x,
+                                     U beta_device_host,
+                                     T* __restrict__ y,
+                                     rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    auto beta  = load_scalar_device_host(beta_device_host);
+    if(alpha != static_cast<T>(0) || beta != static_cast<T>(1))
+    {
+        csrmvn_symm_adaptive_device<BLOCK_SIZE, MAX_ROWS, WG_SIZE>(nnz,
+                                                                   max_rows,
+                                                                   row_blocks,
+                                                                   alpha,
+                                                                   csr_row_ptr,
+                                                                   csr_col_ind,
+                                                                   csr_val,
+                                                                   x,
+                                                                   beta,
+                                                                   y,
+                                                                   idx_base);
+    }
+}
+
 template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          handle,
                                                    rocsparse_operation       trans,
@@ -574,16 +708,16 @@ rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          han
     // Average nnz per row
     J nnz_per_row = nnz / m;
 
-    // Run different csrmv kernels
-    if(trans == rocsparse_operation_none)
+    if(descr->type == rocsparse_matrix_type_general
+       || descr->type == rocsparse_matrix_type_triangular)
     {
+        // Run different csrmv kernels
+        if(trans == rocsparse_operation_none)
+        {
 #define CSRMVN_DIM 512
-        dim3 csrmvn_blocks((m - 1) / CSRMVN_DIM + 1);
-        dim3 csrmvn_threads(CSRMVN_DIM);
+            dim3 csrmvn_blocks((m - 1) / CSRMVN_DIM + 1);
+            dim3 csrmvn_threads(CSRMVN_DIM);
 
-        if(handle->wavefront_size == 32)
-        {
-            // LCOV_EXCL_START
             if(nnz_per_row < 4)
             {
                 LAUNCH_CSRMVN_GENERAL(2);
@@ -600,32 +734,7 @@ rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          han
             {
                 LAUNCH_CSRMVN_GENERAL(16);
             }
-            else
-            {
-                LAUNCH_CSRMVN_GENERAL(32);
-            }
-            // LCOV_EXCL_STOP
-        }
-        else
-        {
-            assert(handle->wavefront_size == 64);
-            if(nnz_per_row < 4)
-            {
-                LAUNCH_CSRMVN_GENERAL(2);
-            }
-            else if(nnz_per_row < 8)
-            {
-                LAUNCH_CSRMVN_GENERAL(4);
-            }
-            else if(nnz_per_row < 16)
-            {
-                LAUNCH_CSRMVN_GENERAL(8);
-            }
-            else if(nnz_per_row < 32)
-            {
-                LAUNCH_CSRMVN_GENERAL(16);
-            }
-            else if(nnz_per_row < 64)
+            else if(nnz_per_row < 64 || handle->wavefront_size == 32)
             {
                 LAUNCH_CSRMVN_GENERAL(32);
             }
@@ -633,45 +742,21 @@ rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          han
             {
                 LAUNCH_CSRMVN_GENERAL(64);
             }
-        }
 
 #undef CSRMVN_DIM
-    }
-    else
-    {
-#define CSRMVT_DIM 256
-        // Scale y with beta
-        csrmvt_scale_kernel<CSRMVT_DIM>
-            <<<(n - 1) / CSRMVT_DIM + 1, CSRMVT_DIM, 0, stream>>>(n, beta_device_host, y);
-
-        rocsparse_int max_blocks = 1024;
-        rocsparse_int min_blocks = (m - 1) / CSRMVT_DIM + 1;
-
-        dim3 csrmvt_blocks(std::min(min_blocks, max_blocks));
-        dim3 csrmvt_threads(CSRMVT_DIM);
-
-        if(handle->wavefront_size == 32)
-        {
-            if(nnz_per_row < 4)
-            {
-                LAUNCH_CSRMVT(4);
-            }
-            else if(nnz_per_row < 8)
-            {
-                LAUNCH_CSRMVT(8);
-            }
-            else if(nnz_per_row < 16)
-            {
-                LAUNCH_CSRMVT(16);
-            }
-            else
-            {
-                LAUNCH_CSRMVT(32);
-            }
         }
         else
         {
-            assert(handle->wavefront_size == 64);
+#define CSRMVT_DIM 256
+            // Scale y with beta
+            csrmvt_scale_kernel<CSRMVT_DIM>
+                <<<(n - 1) / CSRMVT_DIM + 1, CSRMVT_DIM, 0, stream>>>(n, beta_device_host, y);
+
+            rocsparse_int max_blocks = 1024;
+            rocsparse_int min_blocks = (m - 1) / CSRMVT_DIM + 1;
+
+            dim3 csrmvt_blocks(std::min(min_blocks, max_blocks));
+            dim3 csrmvt_threads(CSRMVT_DIM);
 
             if(nnz_per_row < 4)
             {
@@ -685,7 +770,7 @@ rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          han
             {
                 LAUNCH_CSRMVT(16);
             }
-            else if(nnz_per_row < 32)
+            else if(nnz_per_row < 32 || handle->wavefront_size == 32)
             {
                 LAUNCH_CSRMVT(32);
             }
@@ -693,8 +778,71 @@ rocsparse_status rocsparse_csrmv_template_dispatch(rocsparse_handle          han
             {
                 LAUNCH_CSRMVT(64);
             }
-        }
 #undef CSRMVT_DIM
+        }
+    }
+    else if(descr->type == rocsparse_matrix_type_symmetric)
+    {
+#define CSRMV_SYMM_DIM 256
+        dim3 csrmvn_blocks((m - 1) / CSRMV_SYMM_DIM + 1);
+        dim3 csrmvn_threads(CSRMV_SYMM_DIM);
+
+        if(nnz_per_row < 4)
+        {
+            LAUNCH_CSRMVN_SYMM_GENERAL(2);
+        }
+        else if(nnz_per_row < 8)
+        {
+            LAUNCH_CSRMVN_SYMM_GENERAL(4);
+        }
+        else if(nnz_per_row < 16)
+        {
+            LAUNCH_CSRMVN_SYMM_GENERAL(8);
+        }
+        else if(nnz_per_row < 32)
+        {
+            LAUNCH_CSRMVN_SYMM_GENERAL(16);
+        }
+        else if(nnz_per_row < 64 || handle->wavefront_size == 32)
+        {
+            LAUNCH_CSRMVN_SYMM_GENERAL(32);
+        }
+        else
+        {
+            LAUNCH_CSRMVN_SYMM_GENERAL(64);
+        }
+
+        rocsparse_int max_blocks = 1024;
+        rocsparse_int min_blocks = (m - 1) / CSRMV_SYMM_DIM + 1;
+
+        dim3 csrmvt_blocks(std::min(min_blocks, max_blocks));
+        dim3 csrmvt_threads(CSRMV_SYMM_DIM);
+
+        if(nnz_per_row < 4)
+        {
+            LAUNCH_CSRMVT_SYMM(4);
+        }
+        else if(nnz_per_row < 8)
+        {
+            LAUNCH_CSRMVT_SYMM(8);
+        }
+        else if(nnz_per_row < 16)
+        {
+            LAUNCH_CSRMVT_SYMM(16);
+        }
+        else if(nnz_per_row < 32 || handle->wavefront_size == 32)
+        {
+            LAUNCH_CSRMVT_SYMM(32);
+        }
+        else
+        {
+            LAUNCH_CSRMVT_SYMM(64);
+        }
+#undef CSRMV_SYMM_DIM
+    }
+    else
+    {
+        return rocsparse_status_not_implemented;
     }
 
     return rocsparse_status_success;
@@ -722,6 +870,11 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
         return rocsparse_status_invalid_value;
     }
 
+    if(trans != rocsparse_operation_none)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     if(info->m != m || info->n != n || info->nnz != nnz)
     {
         return rocsparse_status_invalid_size;
@@ -740,9 +893,10 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
     // Stream
     hipStream_t stream = handle->stream;
 
-    // Run different csrmv kernels
-    if(trans == rocsparse_operation_none)
+    if(descr->type == rocsparse_matrix_type_general
+       || descr->type == rocsparse_matrix_type_triangular)
     {
+        // Run different csrmv kernels
         dim3 csrmvn_blocks((info->size) - 1);
         dim3 csrmvn_threads(WG_SIZE);
         hipLaunchKernelGGL((csrmvn_adaptive_kernel),
@@ -763,11 +917,145 @@ rocsparse_status rocsparse_csrmv_adaptive_template_dispatch(rocsparse_handle    
                            y,
                            descr->base);
     }
+    else if(descr->type == rocsparse_matrix_type_symmetric)
+    {
+        hipLaunchKernelGGL((scale_array<256>),
+                           dim3((m - 1) / 256 + 1),
+                           dim3(256),
+                           0,
+                           stream,
+                           m,
+                           y,
+                           beta_device_host);
+
+        dim3 csrmvn_blocks(info->size - 1);
+        dim3 csrmvn_threads(WG_SIZE);
+
+        I max_rows = static_cast<I>(info->max_rows);
+        if(max_rows <= 64)
+        {
+            hipLaunchKernelGGL((csrmvn_symm_adaptive_kernel<64>),
+                               csrmvn_blocks,
+                               csrmvn_threads,
+                               0,
+                               stream,
+                               nnz,
+                               max_rows,
+                               static_cast<I*>(info->row_blocks),
+                               alpha_device_host,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               x,
+                               beta_device_host,
+                               y,
+                               descr->base);
+        }
+        else if(max_rows <= 128)
+        {
+            hipLaunchKernelGGL((csrmvn_symm_adaptive_kernel<128>),
+                               csrmvn_blocks,
+                               csrmvn_threads,
+                               0,
+                               stream,
+                               nnz,
+                               max_rows,
+                               static_cast<I*>(info->row_blocks),
+                               alpha_device_host,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               x,
+                               beta_device_host,
+                               y,
+                               descr->base);
+        }
+        else if(max_rows <= 256)
+        {
+            hipLaunchKernelGGL((csrmvn_symm_adaptive_kernel<256>),
+                               csrmvn_blocks,
+                               csrmvn_threads,
+                               0,
+                               stream,
+                               nnz,
+                               max_rows,
+                               static_cast<I*>(info->row_blocks),
+                               alpha_device_host,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               x,
+                               beta_device_host,
+                               y,
+                               descr->base);
+        }
+        else if(max_rows <= 512)
+        {
+            hipLaunchKernelGGL((csrmvn_symm_adaptive_kernel<512>),
+                               csrmvn_blocks,
+                               csrmvn_threads,
+                               0,
+                               stream,
+                               nnz,
+                               max_rows,
+                               static_cast<I*>(info->row_blocks),
+                               alpha_device_host,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               x,
+                               beta_device_host,
+                               y,
+                               descr->base);
+        }
+        else if(max_rows <= 1024)
+        {
+            hipLaunchKernelGGL((csrmvn_symm_adaptive_kernel<1024>),
+                               csrmvn_blocks,
+                               csrmvn_threads,
+                               0,
+                               stream,
+                               nnz,
+                               max_rows,
+                               static_cast<I*>(info->row_blocks),
+                               alpha_device_host,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               x,
+                               beta_device_host,
+                               y,
+                               descr->base);
+        }
+        else if(max_rows <= 2048)
+        {
+            hipLaunchKernelGGL((csrmvn_symm_adaptive_kernel<2048>),
+                               csrmvn_blocks,
+                               csrmvn_threads,
+                               0,
+                               stream,
+                               nnz,
+                               max_rows,
+                               static_cast<I*>(info->row_blocks),
+                               alpha_device_host,
+                               csr_row_ptr,
+                               csr_col_ind,
+                               csr_val,
+                               x,
+                               beta_device_host,
+                               y,
+                               descr->base);
+        }
+        else
+        {
+            return rocsparse_status_not_implemented;
+        }
+    }
     else
     {
-        // TODO
         return rocsparse_status_not_implemented;
     }
+
     return rocsparse_status_success;
 }
 
@@ -828,10 +1116,22 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
     {
         return rocsparse_status_invalid_value;
     }
-    if(descr->type != rocsparse_matrix_type_general)
+
+    if(descr->type != rocsparse_matrix_type_general
+       && descr->type != rocsparse_matrix_type_triangular
+       && descr->type != rocsparse_matrix_type_symmetric)
     {
         // TODO
         return rocsparse_status_not_implemented;
+    }
+
+    if(descr->type == rocsparse_matrix_type_symmetric
+       || descr->type == rocsparse_matrix_type_triangular)
+    {
+        if(m != n)
+        {
+            return rocsparse_status_invalid_size;
+        }
     }
 
     // Check sizes
@@ -912,7 +1212,6 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
         // If csrmv info is not available, call csrmv general
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-
             return rocsparse_csrmv_template_dispatch(handle,
                                                      trans,
                                                      m,
@@ -949,7 +1248,6 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
         // If csrmv info is available, call csrmv adaptive
         if(handle->pointer_mode == rocsparse_pointer_mode_device)
         {
-
             return rocsparse_csrmv_adaptive_template_dispatch(handle,
                                                               trans,
                                                               m,
@@ -967,7 +1265,6 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
         }
         else
         {
-
             return rocsparse_csrmv_adaptive_template_dispatch(handle,
                                                               trans,
                                                               m,

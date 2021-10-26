@@ -683,6 +683,108 @@ struct rocsparse_matrix_utils
         CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
     }
 
+    // Extract lower or upper part of input matrix to form new triangular output matrix
+    template <typename T, typename I, typename J>
+    static void host_csrtri(const I*             ptr,
+                            const J*             ind,
+                            const T*             val,
+                            std::vector<I>&      csr_row_ptr,
+                            std::vector<J>&      csr_col_ind,
+                            std::vector<T>&      csr_val,
+                            J                    M,
+                            J                    N,
+                            I&                   nnz,
+                            rocsparse_index_base base,
+                            rocsparse_fill_mode  uplo)
+    {
+        if(M != N)
+        {
+            return;
+        }
+
+        nnz = 0;
+        if(uplo == rocsparse_fill_mode_lower)
+        {
+            for(J i = 0; i < M; i++)
+            {
+                I start = ptr[i] - base;
+                I end   = ptr[i + 1] - base;
+
+                for(I j = start; j < end; j++)
+                {
+                    if(ind[j] - base <= i)
+                    {
+                        nnz++;
+                    }
+                }
+            }
+        }
+        else
+        {
+            for(J i = 0; i < M; i++)
+            {
+                I start = ptr[i] - base;
+                I end   = ptr[i + 1] - base;
+
+                for(I j = start; j < end; j++)
+                {
+                    if(ind[j] - base >= i)
+                    {
+                        nnz++;
+                    }
+                }
+            }
+        }
+
+        csr_row_ptr.resize(M + 1, 0);
+        csr_col_ind.resize(nnz, 0);
+        csr_val.resize(nnz, static_cast<T>(0));
+
+        I index        = 0;
+        csr_row_ptr[0] = base;
+
+        if(uplo == rocsparse_fill_mode_lower)
+        {
+            for(J i = 0; i < M; i++)
+            {
+                I start = ptr[i] - base;
+                I end   = ptr[i + 1] - base;
+
+                for(I j = start; j < end; j++)
+                {
+                    if(ind[j] - base <= i)
+                    {
+                        csr_col_ind[index] = ind[j];
+                        csr_val[index]     = val[j];
+                        index++;
+                    }
+                }
+
+                csr_row_ptr[i + 1] = index + base;
+            }
+        }
+        else
+        {
+            for(J i = 0; i < M; i++)
+            {
+                I start = ptr[i] - base;
+                I end   = ptr[i + 1] - base;
+
+                for(I j = start; j < end; j++)
+                {
+                    if(ind[j] - base >= i)
+                    {
+                        csr_col_ind[index] = ind[j];
+                        csr_val[index]     = val[j];
+                        index++;
+                    }
+                }
+
+                csr_row_ptr[i + 1] = index + base;
+            }
+        }
+    }
+
     template <typename T, typename I, typename J>
     static rocsparse_status host_csrsym(const host_csr_matrix<T, I, J>& A,
                                         host_csr_matrix<T, I, J>&       symA)
@@ -902,13 +1004,17 @@ public:
     // @param[inout] N number of columns.
     // @param[inout] nnz number of non-zeros.
     // @param[in] base base of indices.
-    virtual void init_csr(std::vector<I>&      csr_row_ptr,
-                          std::vector<J>&      csr_col_ind,
-                          std::vector<T>&      csr_val,
-                          J&                   M,
-                          J&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
+    // @param[in] matrix_type what type of matrix to generate.
+    // @param[in] uplo fill mode of matrix.
+    virtual void init_csr(std::vector<I>&       csr_row_ptr,
+                          std::vector<J>&       csr_col_ind,
+                          std::vector<T>&       csr_val,
+                          J&                    M,
+                          J&                    N,
+                          I&                    nnz,
+                          rocsparse_index_base  base,
+                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
         = 0;
 
     // @brief Initialize a gebsr-sparse matrix.
@@ -969,80 +1075,62 @@ public:
         , m_to_int(to_int)
         , m_matrix_init_kind(matrix_init_kind){};
 
-    virtual void init_csr(std::vector<I>&      csr_row_ptr,
-                          std::vector<J>&      csr_col_ind,
-                          std::vector<T>&      csr_val,
-                          J&                   M,
-                          J&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
+    virtual void init_csr(std::vector<I>&       csr_row_ptr,
+                          std::vector<J>&       csr_col_ind,
+                          std::vector<T>&       csr_val,
+                          J&                    M,
+                          J&                    N,
+                          I&                    nnz,
+                          rocsparse_index_base  base,
+                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
     {
-
-        switch(this->m_matrix_init_kind)
+        switch(matrix_type)
         {
-        case rocsparse_matrix_init_kind_tunedavg:
+        case rocsparse_matrix_type_symmetric:
+        case rocsparse_matrix_type_hermitian:
+        case rocsparse_matrix_type_triangular:
         {
-            rocsparse_int alpha = static_cast<rocsparse_int>(0);
-            if(N >= 16384)
-            {
-                alpha = static_cast<rocsparse_int>(4);
-            }
-            else if(N >= 8192)
-            {
-                alpha = static_cast<rocsparse_int>(8);
-            }
-            else if(N >= 4096)
-            {
-                alpha = static_cast<rocsparse_int>(16);
-            }
-            else if(N >= 1024)
-            {
-                alpha = static_cast<rocsparse_int>(32);
-            }
-            else
-            {
-                alpha = static_cast<rocsparse_int>(64);
-            }
+            std::vector<I> ptr;
+            std::vector<J> ind;
+            std::vector<T> val;
 
-            nnz = M * alpha;
-            nnz = std::min(nnz, static_cast<I>(M) * static_cast<I>(N));
+            rocsparse_init_csr_random(ptr,
+                                      ind,
+                                      val,
+                                      M,
+                                      N,
+                                      nnz,
+                                      base,
+                                      this->m_matrix_init_kind,
+                                      this->m_fullrank,
+                                      this->m_to_int);
 
-            // Sample random matrix
-            std::vector<J> row_ind(nnz);
-            // Sample COO matrix
-            rocsparse_init_coo_matrix<J>(
-                row_ind, csr_col_ind, csr_val, M, N, nnz, base, this->m_fullrank, this->m_to_int);
-
-            // Convert to CSR
-            host_coo_to_csr(M, nnz, row_ind.data(), csr_row_ptr, base);
+            rocsparse_matrix_utils::host_csrtri(ptr.data(),
+                                                ind.data(),
+                                                val.data(),
+                                                csr_row_ptr,
+                                                csr_col_ind,
+                                                csr_val,
+                                                M,
+                                                N,
+                                                nnz,
+                                                base,
+                                                uplo);
             break;
         }
-
-        case rocsparse_matrix_init_kind_default:
+        case rocsparse_matrix_type_general:
         {
-            if(M < 32 && N < 32)
-            {
-                nnz = (M * N) / 4;
-                if(this->m_fullrank)
-                {
-                    nnz = std::max(nnz, static_cast<I>(M));
-                }
-                nnz = std::max(nnz, static_cast<I>(M));
-                nnz = std::min(nnz, static_cast<I>(M) * static_cast<I>(N));
-            }
-            else
-            {
-                nnz = M * ((M > 1000 || N > 1000) ? 2.0 / std::max(M, N) : 0.02) * N;
-            }
-
-            // Sample random matrix
-            std::vector<J> row_ind(nnz);
-            // Sample COO matrix
-            rocsparse_init_coo_matrix<J>(
-                row_ind, csr_col_ind, csr_val, M, N, nnz, base, this->m_fullrank, this->m_to_int);
-
-            // Convert to CSR
-            host_coo_to_csr(M, nnz, row_ind.data(), csr_row_ptr, base);
+            rocsparse_init_csr_random(csr_row_ptr,
+                                      csr_col_ind,
+                                      csr_val,
+                                      M,
+                                      N,
+                                      nnz,
+                                      base,
+                                      this->m_matrix_init_kind,
+                                      this->m_fullrank,
+                                      this->m_to_int);
             break;
         }
         }
@@ -1059,24 +1147,18 @@ public:
                             J&                   col_block_dim,
                             rocsparse_index_base base)
     {
-        this->init_csr(bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
-
-        I nvalues = nnzb * row_block_dim * col_block_dim;
-        bsr_val.resize(nvalues);
-        if(this->m_to_int)
-        {
-            for(I i = 0; i < nvalues; ++i)
-            {
-                bsr_val[i] = random_generator_exact<T>();
-            }
-        }
-        else
-        {
-            for(I i = 0; i < nvalues; ++i)
-            {
-                bsr_val[i] = random_generator<T>();
-            }
-        }
+        rocsparse_init_gebsr_random(bsr_row_ptr,
+                                    bsr_col_ind,
+                                    bsr_val,
+                                    Mb,
+                                    Nb,
+                                    nnzb,
+                                    row_block_dim,
+                                    col_block_dim,
+                                    base,
+                                    this->m_matrix_init_kind,
+                                    this->m_fullrank,
+                                    this->m_to_int);
     }
 
     virtual void init_coo(std::vector<I>&      coo_row_ind,
@@ -1087,18 +1169,7 @@ public:
                           I&                   nnz,
                           rocsparse_index_base base)
     {
-        // Compute non-zero entries of the matrix
-        if(M < 32 && N < 32)
-        {
-            nnz = (M * N) / 4;
-        }
-        else
-        {
-            nnz = M * ((M > 1000 || N > 1000) ? 2.0 / std::max(M, N) : 0.02) * N;
-        }
-        // Sample random matrix
-
-        rocsparse_init_coo_matrix(
+        rocsparse_init_coo_random(
             coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base, this->m_fullrank, this->m_to_int);
     }
 };
@@ -1168,24 +1239,56 @@ public:
         that_on_device.val.transfer_to(bsr_val);
     }
 
-    virtual void init_csr(std::vector<I>&      csr_row_ptr,
-                          std::vector<J>&      csr_col_ind,
-                          std::vector<T>&      csr_val,
-                          J&                   M,
-                          J&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
+    virtual void init_csr(std::vector<I>&       csr_row_ptr,
+                          std::vector<J>&       csr_col_ind,
+                          std::vector<T>&       csr_val,
+                          J&                    M,
+                          J&                    N,
+                          I&                    nnz,
+                          rocsparse_index_base  base,
+                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
     {
+        switch(matrix_type)
+        {
+        case rocsparse_matrix_type_symmetric:
+        case rocsparse_matrix_type_hermitian:
+        case rocsparse_matrix_type_triangular:
+        {
+            std::vector<I> ptr;
+            std::vector<J> ind;
+            std::vector<T> val;
 
-        rocsparse_init_csr_rocalution(this->m_filename.c_str(),
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      csr_val,
-                                      M,
-                                      N,
-                                      nnz,
-                                      base,
-                                      this->m_toint);
+            rocsparse_init_csr_rocalution(
+                this->m_filename.c_str(), ptr, ind, val, M, N, nnz, base, this->m_toint);
+
+            rocsparse_matrix_utils::host_csrtri(ptr.data(),
+                                                ind.data(),
+                                                val.data(),
+                                                csr_row_ptr,
+                                                csr_col_ind,
+                                                csr_val,
+                                                M,
+                                                N,
+                                                nnz,
+                                                base,
+                                                uplo);
+            break;
+        }
+        case rocsparse_matrix_type_general:
+        {
+            rocsparse_init_csr_rocalution(this->m_filename.c_str(),
+                                          csr_row_ptr,
+                                          csr_col_ind,
+                                          csr_val,
+                                          M,
+                                          N,
+                                          nnz,
+                                          base,
+                                          this->m_toint);
+            break;
+        }
+        }
     }
 
     virtual void init_coo(std::vector<I>&      coo_row_ind,
@@ -1231,40 +1334,69 @@ public:
                             J&                   col_block_dim,
                             rocsparse_index_base base)
     {
-        //
-        // Temporarily the file contains a CSR matrix.
-        //
-        this->init_csr(bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
-
-        //
-        // Then temporarily skip the values.
-        //
-        I nvalues = nnzb * row_block_dim * col_block_dim;
-        bsr_val.resize(nvalues);
-        for(I i = 0; i < nvalues; ++i)
-        {
-            bsr_val[i] = random_generator<T>();
-        }
+        rocsparse_init_gebsr_rocalution(this->m_filename.c_str(),
+                                        bsr_row_ptr,
+                                        bsr_col_ind,
+                                        bsr_val,
+                                        Mb,
+                                        Nb,
+                                        nnzb,
+                                        row_block_dim,
+                                        col_block_dim,
+                                        base,
+                                        this->m_toint);
     }
 
-    virtual void init_csr(std::vector<I>&      csr_row_ptr,
-                          std::vector<J>&      csr_col_ind,
-                          std::vector<T>&      csr_val,
-                          J&                   M,
-                          J&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
+    virtual void init_csr(std::vector<I>&       csr_row_ptr,
+                          std::vector<J>&       csr_col_ind,
+                          std::vector<T>&       csr_val,
+                          J&                    M,
+                          J&                    N,
+                          I&                    nnz,
+                          rocsparse_index_base  base,
+                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
     {
+        switch(matrix_type)
+        {
+        case rocsparse_matrix_type_symmetric:
+        case rocsparse_matrix_type_hermitian:
+        case rocsparse_matrix_type_triangular:
+        {
+            std::vector<I> ptr;
+            std::vector<J> ind;
+            std::vector<T> val;
 
-        rocsparse_init_csr_rocalution(this->m_filename.c_str(),
-                                      csr_row_ptr,
-                                      csr_col_ind,
-                                      csr_val,
-                                      M,
-                                      N,
-                                      nnz,
-                                      base,
-                                      this->m_toint);
+            rocsparse_init_csr_rocalution(
+                this->m_filename.c_str(), ptr, ind, val, M, N, nnz, base, this->m_toint);
+
+            rocsparse_matrix_utils::host_csrtri(ptr.data(),
+                                                ind.data(),
+                                                val.data(),
+                                                csr_row_ptr,
+                                                csr_col_ind,
+                                                csr_val,
+                                                M,
+                                                N,
+                                                nnz,
+                                                base,
+                                                uplo);
+            break;
+        }
+        case rocsparse_matrix_type_general:
+        {
+            rocsparse_init_csr_rocalution(this->m_filename.c_str(),
+                                          csr_row_ptr,
+                                          csr_col_ind,
+                                          csr_val,
+                                          M,
+                                          N,
+                                          nnz,
+                                          base,
+                                          this->m_toint);
+            break;
+        }
+        }
     }
 
     virtual void init_coo(std::vector<I>&      coo_row_ind,
@@ -1308,32 +1440,60 @@ public:
                             J&                   col_block_dim,
                             rocsparse_index_base base)
     {
-        //
-        // Temporarily the file contains a CSR matrix.
-        //
-        this->init_csr(bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
-
-        //
-        // Then temporarily skip the values.
-        //
-        I nvalues = nnzb * row_block_dim * col_block_dim;
-        bsr_val.resize(nvalues);
-        for(I i = 0; i < nvalues; ++i)
-        {
-            bsr_val[i] = random_generator<T>();
-        }
+        rocsparse_init_gebsr_mtx(this->m_filename.c_str(),
+                                 bsr_row_ptr,
+                                 bsr_col_ind,
+                                 bsr_val,
+                                 Mb,
+                                 Nb,
+                                 nnzb,
+                                 row_block_dim,
+                                 col_block_dim,
+                                 base);
     }
 
-    virtual void init_csr(std::vector<I>&      csr_row_ptr,
-                          std::vector<J>&      csr_col_ind,
-                          std::vector<T>&      csr_val,
-                          J&                   M,
-                          J&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
+    virtual void init_csr(std::vector<I>&       csr_row_ptr,
+                          std::vector<J>&       csr_col_ind,
+                          std::vector<T>&       csr_val,
+                          J&                    M,
+                          J&                    N,
+                          I&                    nnz,
+                          rocsparse_index_base  base,
+                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
     {
-        rocsparse_init_csr_mtx(
-            this->m_filename.c_str(), csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base);
+        switch(matrix_type)
+        {
+        case rocsparse_matrix_type_symmetric:
+        case rocsparse_matrix_type_hermitian:
+        case rocsparse_matrix_type_triangular:
+        {
+            std::vector<I> ptr;
+            std::vector<J> ind;
+            std::vector<T> val;
+
+            rocsparse_init_csr_mtx(this->m_filename.c_str(), ptr, ind, val, M, N, nnz, base);
+
+            rocsparse_matrix_utils::host_csrtri(ptr.data(),
+                                                ind.data(),
+                                                val.data(),
+                                                csr_row_ptr,
+                                                csr_col_ind,
+                                                csr_val,
+                                                M,
+                                                N,
+                                                nnz,
+                                                base,
+                                                uplo);
+            break;
+        }
+        case rocsparse_matrix_type_general:
+        {
+            rocsparse_init_csr_mtx(
+                this->m_filename.c_str(), csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base);
+            break;
+        }
+        }
     }
 
     virtual void init_coo(std::vector<I>&      coo_row_ind,
@@ -1360,43 +1520,49 @@ public:
         : m_dimx(dimx)
         , m_dimy(dimy){};
 
-    virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
-                            std::vector<J>&      bsr_col_ind,
-                            std::vector<T>&      bsr_val,
-                            rocsparse_direction  dirb,
-                            J&                   Mb,
-                            J&                   Nb,
-                            I&                   nnzb,
-                            J&                   row_block_dim,
-                            J&                   col_block_dim,
-                            rocsparse_index_base base)
+    virtual void init_csr(std::vector<I>&       csr_row_ptr,
+                          std::vector<J>&       csr_col_ind,
+                          std::vector<T>&       csr_val,
+                          J&                    M,
+                          J&                    N,
+                          I&                    nnz,
+                          rocsparse_index_base  base,
+                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
     {
-        //
-        // Temporarily laplace2d generates a CSR matrix.
-        //
-        this->init_csr(bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
-
-        //
-        // Then temporarily skip the values.
-        //
-        I nvalues = nnzb * row_block_dim * col_block_dim;
-        bsr_val.resize(nvalues);
-        for(I i = 0; i < nvalues; ++i)
+        switch(matrix_type)
         {
-            bsr_val[i] = random_generator<T>();
-        }
-    }
+        case rocsparse_matrix_type_symmetric:
+        case rocsparse_matrix_type_hermitian:
+        case rocsparse_matrix_type_triangular:
+        {
+            std::vector<I> ptr;
+            std::vector<J> ind;
+            std::vector<T> val;
 
-    virtual void init_csr(std::vector<I>&      csr_row_ptr,
-                          std::vector<J>&      csr_col_ind,
-                          std::vector<T>&      csr_val,
-                          J&                   M,
-                          J&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
-    {
-        rocsparse_init_csr_laplace2d(
-            csr_row_ptr, csr_col_ind, csr_val, this->m_dimx, this->m_dimy, M, N, nnz, base);
+            rocsparse_init_csr_laplace2d(
+                ptr, ind, val, this->m_dimx, this->m_dimy, M, N, nnz, base);
+
+            rocsparse_matrix_utils::host_csrtri(ptr.data(),
+                                                ind.data(),
+                                                val.data(),
+                                                csr_row_ptr,
+                                                csr_col_ind,
+                                                csr_val,
+                                                M,
+                                                N,
+                                                nnz,
+                                                base,
+                                                uplo);
+            break;
+        }
+        case rocsparse_matrix_type_general:
+        {
+            rocsparse_init_csr_laplace2d(
+                csr_row_ptr, csr_col_ind, csr_val, this->m_dimx, this->m_dimy, M, N, nnz, base);
+            break;
+        }
+        }
     }
 
     virtual void init_coo(std::vector<I>&      coo_row_ind,
@@ -1409,6 +1575,30 @@ public:
     {
         rocsparse_init_coo_laplace2d(
             coo_row_ind, coo_col_ind, coo_val, this->m_dimx, this->m_dimy, M, N, nnz, base);
+    }
+
+    virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
+                            std::vector<J>&      bsr_col_ind,
+                            std::vector<T>&      bsr_val,
+                            rocsparse_direction  dirb,
+                            J&                   Mb,
+                            J&                   Nb,
+                            I&                   nnzb,
+                            J&                   row_block_dim,
+                            J&                   col_block_dim,
+                            rocsparse_index_base base)
+    {
+        rocsparse_init_gebsr_laplace2d(bsr_row_ptr,
+                                       bsr_col_ind,
+                                       bsr_val,
+                                       this->m_dimx,
+                                       this->m_dimy,
+                                       Mb,
+                                       Nb,
+                                       nnzb,
+                                       row_block_dim,
+                                       col_block_dim,
+                                       base);
     }
 };
 
@@ -1424,51 +1614,57 @@ public:
         , m_dimy(dimy)
         , m_dimz(dimz){};
 
-    virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
-                            std::vector<J>&      bsr_col_ind,
-                            std::vector<T>&      bsr_val,
-                            rocsparse_direction  dirb,
-                            J&                   Mb,
-                            J&                   Nb,
-                            I&                   nnzb,
-                            J&                   row_block_dim,
-                            J&                   col_block_dim,
-                            rocsparse_index_base base)
+    virtual void init_csr(std::vector<I>&       csr_row_ptr,
+                          std::vector<J>&       csr_col_ind,
+                          std::vector<T>&       csr_val,
+                          J&                    M,
+                          J&                    N,
+                          I&                    nnz,
+                          rocsparse_index_base  base,
+                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
     {
-        //
-        // Temporarily laplace3d generates a CSR matrix.
-        //
-        this->init_csr(bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
-
-        //
-        // Then temporarily skip the values.
-        //
-        I nvalues = nnzb * row_block_dim * col_block_dim;
-        bsr_val.resize(nvalues);
-        for(I i = 0; i < nvalues; ++i)
+        switch(matrix_type)
         {
-            bsr_val[i] = random_generator<T>();
-        }
-    }
+        case rocsparse_matrix_type_symmetric:
+        case rocsparse_matrix_type_hermitian:
+        case rocsparse_matrix_type_triangular:
+        {
+            std::vector<I> ptr;
+            std::vector<J> ind;
+            std::vector<T> val;
 
-    virtual void init_csr(std::vector<I>&      csr_row_ptr,
-                          std::vector<J>&      csr_col_ind,
-                          std::vector<T>&      csr_val,
-                          J&                   M,
-                          J&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
-    {
-        rocsparse_init_csr_laplace3d(csr_row_ptr,
-                                     csr_col_ind,
-                                     csr_val,
-                                     this->m_dimx,
-                                     this->m_dimy,
-                                     this->m_dimz,
-                                     M,
-                                     N,
-                                     nnz,
-                                     base);
+            rocsparse_init_csr_laplace3d(
+                ptr, ind, val, this->m_dimx, this->m_dimy, this->m_dimz, M, N, nnz, base);
+
+            rocsparse_matrix_utils::host_csrtri(ptr.data(),
+                                                ind.data(),
+                                                val.data(),
+                                                csr_row_ptr,
+                                                csr_col_ind,
+                                                csr_val,
+                                                M,
+                                                N,
+                                                nnz,
+                                                base,
+                                                uplo);
+            break;
+        }
+        case rocsparse_matrix_type_general:
+        {
+            rocsparse_init_csr_laplace3d(csr_row_ptr,
+                                         csr_col_ind,
+                                         csr_val,
+                                         this->m_dimx,
+                                         this->m_dimy,
+                                         this->m_dimz,
+                                         M,
+                                         N,
+                                         nnz,
+                                         base);
+            break;
+        }
+        }
     }
 
     virtual void init_coo(std::vector<I>&      coo_row_ind,
@@ -1490,6 +1686,31 @@ public:
                                      nnz,
                                      base);
     }
+
+    virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
+                            std::vector<J>&      bsr_col_ind,
+                            std::vector<T>&      bsr_val,
+                            rocsparse_direction  dirb,
+                            J&                   Mb,
+                            J&                   Nb,
+                            I&                   nnzb,
+                            J&                   row_block_dim,
+                            J&                   col_block_dim,
+                            rocsparse_index_base base)
+    {
+        rocsparse_init_gebsr_laplace3d(bsr_row_ptr,
+                                       bsr_col_ind,
+                                       bsr_val,
+                                       this->m_dimx,
+                                       this->m_dimy,
+                                       this->m_dimz,
+                                       Mb,
+                                       Nb,
+                                       nnzb,
+                                       row_block_dim,
+                                       col_block_dim,
+                                       base);
+    }
 };
 
 template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
@@ -1498,13 +1719,15 @@ struct rocsparse_matrix_factory_zero : public rocsparse_matrix_factory_base<T, I
 public:
     rocsparse_matrix_factory_zero(){};
 
-    virtual void init_csr(std::vector<I>&      csr_row_ptr,
-                          std::vector<J>&      csr_col_ind,
-                          std::vector<T>&      csr_val,
-                          J&                   M,
-                          J&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
+    virtual void init_csr(std::vector<I>&       csr_row_ptr,
+                          std::vector<J>&       csr_col_ind,
+                          std::vector<T>&       csr_val,
+                          J&                    M,
+                          J&                    N,
+                          I&                    nnz,
+                          rocsparse_index_base  base,
+                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
     {
         csr_row_ptr.resize(M + 1, static_cast<I>(base));
         csr_col_ind.resize(0);
@@ -1608,7 +1831,6 @@ public:
             std::string filename
                 = arg.timing ? arg.filename
                              : rocsparse_exepath() + "../matrices/" + arg.filename + ".csr";
-
             this->m_instance
                 = new rocsparse_matrix_factory_rocalution<T, I, J>(filename.c_str(), to_int);
             break;
@@ -1646,15 +1868,18 @@ public:
     {
     }
 
-    virtual void init_csr(std::vector<I>&      csr_row_ptr,
-                          std::vector<J>&      csr_col_ind,
-                          std::vector<T>&      csr_val,
-                          J&                   M,
-                          J&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
+    virtual void init_csr(std::vector<I>&       csr_row_ptr,
+                          std::vector<J>&       csr_col_ind,
+                          std::vector<T>&       csr_val,
+                          J&                    M,
+                          J&                    N,
+                          I&                    nnz,
+                          rocsparse_index_base  base,
+                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
     {
-        this->m_instance->init_csr(csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base);
+        this->m_instance->init_csr(
+            csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base, matrix_type, uplo);
     }
 
     virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
@@ -1706,14 +1931,18 @@ public:
     }
 
     // @brief Init host csr matrix.
-    void init_csr(host_csr_matrix<T, I, J>& that, J& m, J& n, rocsparse_index_base base)
+    void init_csr(host_csr_matrix<T, I, J>& that,
+                  J&                        m,
+                  J&                        n,
+                  rocsparse_index_base      base,
+                  rocsparse_matrix_type     matrix_type = rocsparse_matrix_type_general,
+                  rocsparse_fill_mode       uplo        = rocsparse_fill_mode_lower)
     {
         that.base = base;
         that.m    = m;
         that.n    = n;
-
         this->m_instance->init_csr(
-            that.ptr, that.ind, that.val, that.m, that.n, that.nnz, that.base);
+            that.ptr, that.ind, that.val, that.m, that.n, that.nnz, that.base, matrix_type, uplo);
         m = that.m;
         n = that.n;
     }
@@ -1731,8 +1960,15 @@ public:
         that.base = this->m_arg.baseA;
         that.m    = this->m_arg.M;
         that.n    = this->m_arg.N;
-        this->m_instance->init_csr(
-            that.ptr, that.ind, that.val, that.m, that.n, that.nnz, that.base);
+        this->m_instance->init_csr(that.ptr,
+                                   that.ind,
+                                   that.val,
+                                   that.m,
+                                   that.n,
+                                   that.nnz,
+                                   that.base,
+                                   this->m_arg.matrix_type,
+                                   this->m_arg.uplo);
     }
 
     void init_bsr(host_gebsr_matrix<T, I, J>&   that,
@@ -1855,7 +2091,7 @@ public:
 
     void init_csr(host_csr_matrix<T, I, J>& that, J& m, J& n)
     {
-        this->init_csr(that, m, n, this->m_arg.baseA);
+        this->init_csr(that, m, n, this->m_arg.baseA, this->m_arg.matrix_type, this->m_arg.uplo);
     }
 
     void init_gebsr_spezial(host_gebsr_matrix<T, I, J>& that, J& Mb, J& Nb)
@@ -1925,7 +2161,12 @@ public:
             that.row_ind, that.col_ind, that.val, that.m, that.n, that.nnz, that.base);
     }
 
-    void init_coo(host_coo_matrix<T, I>& that, I& M, I& N, rocsparse_index_base base)
+    void init_coo(host_coo_matrix<T, I>& that,
+                  I&                     M,
+                  I&                     N,
+                  rocsparse_index_base   base,
+                  rocsparse_matrix_type  matrix_type = rocsparse_matrix_type_general,
+                  rocsparse_fill_mode    uplo        = rocsparse_fill_mode_lower)
     {
         that.base = base;
         that.m    = M;
@@ -1936,19 +2177,29 @@ public:
         N = that.n;
     }
 
-    void init_coo_aos(host_coo_aos_matrix<T, I>& that, I& M, I& N, rocsparse_index_base base)
+    void init_coo_aos(host_coo_aos_matrix<T, I>& that,
+                      I&                         M,
+                      I&                         N,
+                      rocsparse_index_base       base,
+                      rocsparse_matrix_type      matrix_type = rocsparse_matrix_type_general,
+                      rocsparse_fill_mode        uplo        = rocsparse_fill_mode_lower)
     {
         host_csr_matrix<T, I, I> hA;
-        this->init_csr(hA, M, N, base);
+        this->init_csr(hA, M, N, base, matrix_type, uplo);
         that.define(hA.m, hA.n, hA.nnz, hA.base);
         host_csr_to_coo_aos(hA.m, hA.nnz, hA.ptr, hA.ind, that.ind, hA.base);
         that.val.transfer_from(hA.val);
     }
 
-    void init_ell(host_ell_matrix<T, I>& that, I& M, I& N, rocsparse_index_base base)
+    void init_ell(host_ell_matrix<T, I>& that,
+                  I&                     M,
+                  I&                     N,
+                  rocsparse_index_base   base,
+                  rocsparse_matrix_type  matrix_type = rocsparse_matrix_type_general,
+                  rocsparse_fill_mode    uplo        = rocsparse_fill_mode_lower)
     {
         host_csr_matrix<T, I, I> hA;
-        this->init_csr(hA, M, N, base);
+        this->init_csr(hA, M, N, base, matrix_type, uplo);
         that.define(hA.m, hA.n, 0, hA.base);
         host_csr_to_ell(
             hA.m, hA.ptr, hA.ind, hA.val, that.ind, that.val, that.width, hA.base, that.base);

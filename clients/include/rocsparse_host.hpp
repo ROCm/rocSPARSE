@@ -261,19 +261,20 @@ void host_coomv_aos(rocsparse_operation  trans,
                     rocsparse_index_base base);
 
 template <typename I, typename J, typename T>
-void host_csrmv(rocsparse_operation  trans,
-                J                    M,
-                J                    N,
-                I                    nnz,
-                T                    alpha,
-                const I*             csr_row_ptr,
-                const J*             csr_col_ind,
-                const T*             csr_val,
-                const T*             x,
-                T                    beta,
-                T*                   y,
-                rocsparse_index_base base,
-                int                  algo);
+void host_csrmv(rocsparse_operation   trans,
+                J                     M,
+                J                     N,
+                I                     nnz,
+                T                     alpha,
+                const I*              csr_row_ptr,
+                const J*              csr_col_ind,
+                const T*              csr_val,
+                const T*              x,
+                T                     beta,
+                T*                    y,
+                rocsparse_index_base  base,
+                rocsparse_matrix_type matrix_type,
+                rocsparse_spmv_alg    algo);
 
 template <typename I, typename J, typename T>
 void host_csrsv(rocsparse_operation  trans,

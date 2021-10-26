@@ -108,7 +108,8 @@ struct testing_spmv_dispatch_traits<rocsparse_format_csr, I, J, T>
                                  T*                     hx,
                                  T*                     h_beta,
                                  T*                     hy,
-                                 bool                   adaptive)
+                                 rocsparse_spmv_alg     alg,
+                                 rocsparse_matrix_type  matrix_type = rocsparse_matrix_type_general)
     {
         host_csrmv<I, J, T>(trans,
                             hA.m,
@@ -122,7 +123,8 @@ struct testing_spmv_dispatch_traits<rocsparse_format_csr, I, J, T>
                             *h_beta,
                             hy,
                             hA.base,
-                            adaptive);
+                            matrix_type,
+                            alg);
     }
 };
 
@@ -153,7 +155,8 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo, I, I, T>
                                  T*                     hx,
                                  T*                     h_beta,
                                  T*                     hy,
-                                 bool                   adaptive)
+                                 rocsparse_spmv_alg     alg,
+                                 rocsparse_matrix_type  matrix_type = rocsparse_matrix_type_general)
     {
         host_coomv<I, T>(trans,
                          hA.m,
@@ -197,7 +200,8 @@ struct testing_spmv_dispatch_traits<rocsparse_format_coo_aos, I, I, T>
                                  T*                     hx,
                                  T*                     h_beta,
                                  T*                     hy,
-                                 bool                   adaptive)
+                                 rocsparse_spmv_alg     alg,
+                                 rocsparse_matrix_type  matrix_type = rocsparse_matrix_type_general)
     {
         host_coomv_aos<I, T>(
             trans, hA.m, hA.n, hA.nnz, *h_alpha, hA.ind, hA.val, hx, *h_beta, hy, hA.base);
@@ -230,7 +234,8 @@ struct testing_spmv_dispatch_traits<rocsparse_format_ell, I, I, T>
                                  T*                     hx,
                                  T*                     h_beta,
                                  T*                     hy,
-                                 bool                   adaptive)
+                                 rocsparse_spmv_alg     alg,
+                                 rocsparse_matrix_type  matrix_type = rocsparse_matrix_type_general)
     {
         host_ellmv<I, T>(
             trans, hA.m, hA.n, *h_alpha, hA.ind, hA.val, hA.width, hx, *h_beta, hy, hA.base);
@@ -386,14 +391,16 @@ public:
 
     static void testing_spmv(const Arguments& arg)
     {
-        J                    M     = arg.M;
-        J                    N     = arg.N;
-        rocsparse_operation  trans = arg.transA;
-        rocsparse_index_base base  = arg.baseA;
-        rocsparse_spmv_alg   alg   = arg.spmv_alg;
+        J                     M           = arg.M;
+        J                     N           = arg.N;
+        rocsparse_operation   trans       = arg.transA;
+        rocsparse_index_base  base        = arg.baseA;
+        rocsparse_spmv_alg    alg         = arg.spmv_alg;
+        rocsparse_matrix_init matrix_init = arg.matrix;
+        rocsparse_matrix_type matrix_type = arg.matrix_type;
+        rocsparse_fill_mode   uplo        = arg.uplo;
 
-        bool               adaptive = (alg == rocsparse_spmv_alg_csr_stream) ? false : true;
-        rocsparse_datatype ttype    = get_datatype<T>();
+        rocsparse_datatype ttype = get_datatype<T>();
 
         // Create rocsparse handle
         rocsparse_local_handle handle;
@@ -411,9 +418,9 @@ public:
 
         // Check structures
         // Check SpMV when structures can be created
-        if(M <= 0 || N <= 0)
+        if(M <= 0 || N <= 0 || (matrix_type == rocsparse_matrix_type_symmetric && M != N)
+           || (matrix_type == rocsparse_matrix_type_triangular && M != N))
         {
-
             if(M == 0 || N == 0)
             {
                 CHECK_ROCSPARSE_ERROR(
@@ -424,6 +431,15 @@ public:
                 rocsparse_local_spmat A(dA);
                 rocsparse_local_dnvec x(dx);
                 rocsparse_local_dnvec y(dy);
+
+                EXPECT_ROCSPARSE_STATUS(
+                    rocsparse_spmat_set_attribute(
+                        A, rocsparse_spmat_matrix_type, &matrix_type, sizeof(matrix_type)),
+                    rocsparse_status_success);
+
+                EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_attribute(
+                                            A, rocsparse_spmat_fill_mode, &uplo, sizeof(uplo)),
+                                        rocsparse_status_success);
 
                 size_t buffer_size;
                 void*  dbuffer = nullptr;
@@ -450,11 +466,24 @@ public:
         host_sparse_matrix<T> hA;
 
         {
-            bool                              type      = (prop.warpSize == 32) ? true : adaptive;
+            bool to_int = false;
+            to_int |= (prop.warpSize == 32);
+            to_int |= (alg != rocsparse_spmv_alg_csr_stream);
+            to_int |= (trans != rocsparse_operation_none
+                       && matrix_init == rocsparse_matrix_file_rocalution);
+            to_int |= (matrix_type == rocsparse_matrix_type_symmetric
+                       && matrix_init == rocsparse_matrix_file_rocalution);
+
             static constexpr bool             full_rank = false;
             rocsparse_matrix_factory<T, I, J> matrix_factory(
-                arg, arg.timing ? false : type, full_rank);
-            traits::sparse_initialization(matrix_factory, hA, M, N, base);
+                arg, arg.unit_check ? to_int : false, full_rank);
+            traits::sparse_initialization(matrix_factory, hA, M, N, base, matrix_type, uplo);
+        }
+
+        if((matrix_type == rocsparse_matrix_type_symmetric && M != N)
+           || (matrix_type == rocsparse_matrix_type_triangular && M != N))
+        {
+            return;
         }
 
         device_sparse_matrix<T> dA(hA);
@@ -472,6 +501,15 @@ public:
         rocsparse_local_dnvec x(dx);
         rocsparse_local_dnvec y(dy);
 
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_spmat_set_attribute(
+                A, rocsparse_spmat_matrix_type, &matrix_type, sizeof(matrix_type)),
+            rocsparse_status_success);
+
+        EXPECT_ROCSPARSE_STATUS(
+            rocsparse_spmat_set_attribute(A, rocsparse_spmat_fill_mode, &uplo, sizeof(uplo)),
+            rocsparse_status_success);
+
         void*  dbuffer = nullptr;
         size_t buffer_size;
         CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)));
@@ -483,13 +521,14 @@ public:
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
             CHECK_ROCSPARSE_ERROR(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)));
 
-            // CPU csrmv
+            // CPU spmv
             {
                 host_dense_matrix<T> hy_copy(hy);
                 //
                 // HOST CALCULATION
                 //
-                traits::host_calculation(trans, h_alpha, hA, hx, h_beta, hy, adaptive);
+                traits::host_calculation(trans, h_alpha, hA, hx, h_beta, hy, alg, matrix_type);
+
                 hy.near_check(dy);
                 dy.transfer_from(hy_copy);
             }
@@ -546,7 +585,7 @@ public:
                                 "beta",
                                 *h_beta,
                                 "Algorithm",
-                                (adaptive ? "adaptive" : "stream"),
+                                ((alg == rocsparse_spmv_alg_csr_adaptive) ? "adaptive" : "stream"),
                                 "GFlop/s",
                                 gpu_gflops,
                                 "GB/s",
@@ -564,4 +603,4 @@ public:
     }
 };
 
-#endif // TESTING_SPMV_CSR_HPP
+#endif // TESTING_SPMV_HPP
