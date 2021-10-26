@@ -57,7 +57,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
-  algo: [0, 1]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
 
 - name: csrmv_managed
   category: pre_checkin
@@ -69,7 +69,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
-  algo: [0, 1]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
 
 - name: csrmv_managed
   category: nightly
@@ -81,7 +81,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
-  algo: [0, 1]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
 
 - name: csrmv_managed_file
   category: quick
@@ -93,7 +93,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  algo: [0, 1]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [mac_econ_fwd500,
              nos2,
              nos4,
@@ -110,7 +110,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  algo: [0, 1]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [nos1,
              nos3,
              nos5,
@@ -126,7 +126,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  algo: [0, 1]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [bibd_22_8,
              ASIC_320k,
              amazon0312,
@@ -144,7 +144,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  algo: [0, 1]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [mplate, qc2534]
 
 - name: csrmv_managed_file
@@ -157,7 +157,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  algo: [0, 1]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [Chevron2]
 
 - name: csrmv_managed_file
@@ -170,5 +170,5 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  algo: [0, 1]
+  spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [Chevron3]

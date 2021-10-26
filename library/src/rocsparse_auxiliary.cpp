@@ -2208,6 +2208,16 @@ rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
         *uplo                     = rocsparse_get_mat_diag_type(descr->descr);
         return rocsparse_status_success;
     }
+    case rocsparse_spmat_matrix_type:
+    {
+        if(data_size != sizeof(rocsparse_spmat_matrix_type))
+        {
+            return rocsparse_status_invalid_size;
+        }
+        rocsparse_matrix_type* matrix = reinterpret_cast<rocsparse_matrix_type*>(data);
+        *matrix                       = rocsparse_get_mat_type(descr->descr);
+        return rocsparse_status_success;
+    }
     }
 
     return rocsparse_status_invalid_value;
@@ -2245,6 +2255,16 @@ rocsparse_status rocsparse_spmat_set_attribute(rocsparse_spmat_descr     descr,
         }
         rocsparse_diag_type diag = *reinterpret_cast<const rocsparse_diag_type*>(data);
         return rocsparse_set_mat_diag_type(descr->descr, diag);
+    }
+
+    case rocsparse_spmat_matrix_type:
+    {
+        if(data_size != sizeof(rocsparse_spmat_matrix_type))
+        {
+            return rocsparse_status_invalid_size;
+        }
+        rocsparse_matrix_type matrix = *reinterpret_cast<const rocsparse_matrix_type*>(data);
+        return rocsparse_set_mat_type(descr->descr, matrix);
     }
     }
 

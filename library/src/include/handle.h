@@ -212,6 +212,7 @@ struct _rocsparse_csrmv_info
     int64_t                     m;
     int64_t                     n;
     int64_t                     nnz;
+    int64_t                     max_rows;
     const _rocsparse_mat_descr* descr;
     const void*                 csr_row_ptr;
     const void*                 csr_col_ind;

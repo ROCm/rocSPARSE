@@ -78,7 +78,9 @@ void testing_csrmv_bad_arg(const Arguments& arg)
 
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {
-        if(matrix_type != rocsparse_matrix_type_general)
+        if(matrix_type != rocsparse_matrix_type_general
+           && matrix_type != rocsparse_matrix_type_symmetric
+           && matrix_type != rocsparse_matrix_type_triangular)
         {
             CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, matrix_type));
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(PARAMS_ANALYSIS),
@@ -94,12 +96,15 @@ void testing_csrmv_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_csrmv(const Arguments& arg)
 {
-    auto                 tol      = get_near_check_tol<T>(arg);
-    rocsparse_int        M        = arg.M;
-    rocsparse_int        N        = arg.N;
-    rocsparse_operation  trans    = arg.transA;
-    rocsparse_index_base base     = arg.baseA;
-    uint32_t             adaptive = arg.algo;
+    auto                  tol         = get_near_check_tol<T>(arg);
+    rocsparse_int         M           = arg.M;
+    rocsparse_int         N           = arg.N;
+    rocsparse_operation   trans       = arg.transA;
+    rocsparse_index_base  base        = arg.baseA;
+    rocsparse_matrix_init matrix_init = arg.matrix;
+    rocsparse_matrix_type matrix_type = arg.matrix_type;
+    rocsparse_fill_mode   uplo        = arg.uplo;
+    rocsparse_spmv_alg    alg         = arg.spmv_alg;
 
     host_scalar<T> h_alpha(arg.get_alpha<T>());
     host_scalar<T> h_beta(arg.get_beta<T>());
@@ -113,19 +118,24 @@ void testing_csrmv(const Arguments& arg)
     // Create matrix info
     rocsparse_local_mat_info info_ptr;
 
-    // Differentiate between algorithm 0 (csrmv without analysis step) and
-    //                       algorithm 1 (csrmv with analysis step)
-    rocsparse_mat_info info = adaptive ? info_ptr : nullptr;
+    rocsparse_mat_info info = (alg == rocsparse_spmv_alg_csr_adaptive) ? info_ptr : nullptr;
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
+
+    // Set matrix type
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, matrix_type));
+
+    // Set fill mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_fill_mode(descr, uplo));
 
 #define PARAMS_ANALYSIS(A_) handle, trans, A_.m, A_.n, A_.nnz, descr, A_.val, A_.ptr, A_.ind, info
 #define PARAMS(alpha_, A_, x_, beta_, y_) \
     handle, trans, A_.m, A_.n, A_.nnz, alpha_, descr, A_.val, A_.ptr, A_.ind, info, x_, beta_, y_
 
     // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0)
+    if(M <= 0 || N <= 0 || (matrix_type == rocsparse_matrix_type_symmetric && M != N)
+       || (matrix_type == rocsparse_matrix_type_triangular && M != N))
     {
         static const size_t safe_size = 100;
 
@@ -139,19 +149,25 @@ void testing_csrmv(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
         // If adaptive, perform analysis step
-        if(adaptive)
+        if(alg == rocsparse_spmv_alg_csr_adaptive)
         {
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(PARAMS_ANALYSIS(dA)),
-                                    (M < 0 || N < 0) ? rocsparse_status_invalid_size
-                                                     : rocsparse_status_success);
+                                    (M < 0 || N < 0
+                                     || (matrix_type == rocsparse_matrix_type_symmetric && M != N)
+                                     || (matrix_type == rocsparse_matrix_type_triangular && M != N))
+                                        ? rocsparse_status_invalid_size
+                                        : rocsparse_status_success);
         }
 
         EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
-                                (M < 0 || N < 0) ? rocsparse_status_invalid_size
-                                                 : rocsparse_status_success);
+                                (M < 0 || N < 0
+                                 || (matrix_type == rocsparse_matrix_type_symmetric && M != N)
+                                 || (matrix_type == rocsparse_matrix_type_triangular && M != N))
+                                    ? rocsparse_status_invalid_size
+                                    : rocsparse_status_success);
 
         // If adaptive, clear data
-        if(adaptive)
+        if(alg == rocsparse_spmv_alg_csr_adaptive)
         {
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_clear(handle, info), rocsparse_status_success);
         }
@@ -167,13 +183,25 @@ void testing_csrmv(const Arguments& arg)
     hipDeviceProp_t prop;
     hipGetDeviceProperties(&prop, dev);
 
-    bool type = (prop.warpSize == 32) ? true : adaptive;
+    bool to_int = false;
+    to_int |= (prop.warpSize == 32);
+    to_int |= (alg != rocsparse_spmv_alg_csr_stream);
+    to_int
+        |= (trans != rocsparse_operation_none && matrix_init == rocsparse_matrix_file_rocalution);
+    to_int |= (matrix_type == rocsparse_matrix_type_symmetric
+               && matrix_init == rocsparse_matrix_file_rocalution);
 
     static constexpr bool       full_rank = false;
-    rocsparse_matrix_factory<T> matrix_factory(arg, arg.timing ? false : type, full_rank);
+    rocsparse_matrix_factory<T> matrix_factory(arg, arg.unit_check ? to_int : false, full_rank);
 
     host_csr_matrix<T> hA;
     matrix_factory.init_csr(hA, M, N);
+
+    if((matrix_type == rocsparse_matrix_type_symmetric && M != N)
+       || (matrix_type == rocsparse_matrix_type_triangular && M != N))
+    {
+        return;
+    }
     device_csr_matrix<T> dA(hA);
 
     host_dense_matrix<T> hx(trans == rocsparse_operation_none ? N : M, 1);
@@ -185,49 +213,41 @@ void testing_csrmv(const Arguments& arg)
     device_dense_matrix<T> dy(hy);
 
     // If adaptive, run analysis step
-    if(adaptive)
+    if(alg == rocsparse_spmv_alg_csr_adaptive)
     {
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_analysis<T>(PARAMS_ANALYSIS(dA)));
     }
 
     if(arg.unit_check)
     {
-        // We need to weaken the tolerance when trans != rocsparse_operation_none due to
-        // rounding differences from global atomic operations (note: non-deterministic)
-        if(trans != rocsparse_operation_none)
-        {
-            tol *= 1e1;
-        }
-
         // Pointer mode host
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)));
 
-        {
-            host_dense_matrix<T> hy_copy(hy);
-            // CPU csrmv
-            host_csrmv<rocsparse_int, rocsparse_int, T>(trans,
-                                                        M,
-                                                        N,
-                                                        hA.nnz,
-                                                        *h_alpha,
-                                                        hA.ptr,
-                                                        hA.ind,
-                                                        hA.val,
-                                                        hx,
-                                                        *h_beta,
-                                                        hy,
-                                                        base,
-                                                        adaptive);
+        host_dense_matrix<T> hy_copy(hy);
+        host_csrmv<rocsparse_int, rocsparse_int, T>(trans,
+                                                    M,
+                                                    N,
+                                                    hA.nnz,
+                                                    *h_alpha,
+                                                    hA.ptr,
+                                                    hA.ind,
+                                                    hA.val,
+                                                    hx,
+                                                    *h_beta,
+                                                    hy,
+                                                    base,
+                                                    matrix_type,
+                                                    alg);
 
-            hy.near_check(dy, tol);
-            dy = hy_copy;
-        }
+        hy.near_check(dy, tol);
+        dy = hy_copy;
 
         // Pointer mode device
         device_scalar<T> d_alpha(h_alpha), d_beta(h_beta);
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv<T>(PARAMS(d_alpha, dA, dx, d_beta, dy)));
+
         hy.near_check(dy, tol);
     }
 
@@ -271,7 +291,7 @@ void testing_csrmv(const Arguments& arg)
                             "beta",
                             *h_beta,
                             "Algorithm",
-                            (adaptive ? "adaptive" : "stream"),
+                            ((alg == rocsparse_spmv_alg_csr_adaptive) ? "adaptive" : "stream"),
                             "GFlop/s",
                             gpu_gflops,
                             "GB/s",
@@ -285,7 +305,7 @@ void testing_csrmv(const Arguments& arg)
     }
 
     // If adaptive, clear analysis data
-    if(adaptive)
+    if(alg == rocsparse_spmv_alg_csr_adaptive)
     {
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_clear(handle, info));
     }

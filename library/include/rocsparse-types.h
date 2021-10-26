@@ -368,8 +368,9 @@ typedef enum rocsparse_order_
  */
 typedef enum rocsparse_spmat_attribute_
 {
-    rocsparse_spmat_fill_mode = 0, /**< Fill mode attribute. */
-    rocsparse_spmat_diag_type = 1 /**< Diag type attribute. */
+    rocsparse_spmat_fill_mode   = 0, /**< Fill mode attribute. */
+    rocsparse_spmat_diag_type   = 1, /**< Diag type attribute. */
+    rocsparse_spmat_matrix_type = 2 /**< Matrix type attribute. */
 } rocsparse_spmat_attribute;
 
 /*! \ingroup types_module

@@ -154,6 +154,7 @@ int main(int argc, char* argv[])
     int           baseD;
     int           action;
     int           part;
+    int           matrix_type;
     char          diag;
     char          uplo;
     char          apol;
@@ -275,6 +276,11 @@ int main(int argc, char* argv[])
         "0 = rocsparse_hyb_partition_auto, 1 = rocsparse_hyb_partition_user,\n"
         "2 = rocsparse_hyb_partition_max, (default: 0)")
 
+        ("matrix_type",
+        value<int>(&matrix_type)->default_value(0),
+        "0 = rocsparse_matrix_type_general, 1 = rocsparse_matrix_type_symmetric,\n"
+        "2 = rocsparse_matrix_type_hermitian, 3 = rocsparse_matrix_type_triangular, (default: 0)")
+
         ("diag",
         value<char>(&diag)->default_value('N'),
         "N = non-unit diagonal, U = unit diagonal, (default = N)")
@@ -388,7 +394,6 @@ int main(int argc, char* argv[])
     else if(transA == 'T')
     {
         arg.transA = rocsparse_operation_transpose;
-        ;
     }
     else if(transA == 'C')
     {
@@ -413,14 +418,18 @@ int main(int argc, char* argv[])
     arg.baseC = (baseC == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
     arg.baseD = (baseD == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
 
-    arg.action = (action == 0) ? rocsparse_action_numeric : rocsparse_action_symbolic;
-    arg.part   = (part == 0)   ? rocsparse_hyb_partition_auto
-                 : (part == 1) ? rocsparse_hyb_partition_user
-                               : rocsparse_hyb_partition_max;
-    arg.diag   = (diag == 'N') ? rocsparse_diag_type_non_unit : rocsparse_diag_type_unit;
-    arg.uplo   = (uplo == 'L') ? rocsparse_fill_mode_lower : rocsparse_fill_mode_upper;
-    arg.apol   = (apol == 'R') ? rocsparse_analysis_policy_reuse : rocsparse_analysis_policy_force;
-    arg.spol   = rocsparse_solve_policy_auto;
+    arg.action      = (action == 0) ? rocsparse_action_numeric : rocsparse_action_symbolic;
+    arg.part        = (part == 0)   ? rocsparse_hyb_partition_auto
+                      : (part == 1) ? rocsparse_hyb_partition_user
+                                    : rocsparse_hyb_partition_max;
+    arg.matrix_type = (matrix_type == 0)   ? rocsparse_matrix_type_general
+                      : (matrix_type == 1) ? rocsparse_matrix_type_symmetric
+                      : (matrix_type == 2) ? rocsparse_matrix_type_hermitian
+                                           : rocsparse_matrix_type_triangular;
+    arg.diag        = (diag == 'N') ? rocsparse_diag_type_non_unit : rocsparse_diag_type_unit;
+    arg.uplo        = (uplo == 'L') ? rocsparse_fill_mode_lower : rocsparse_fill_mode_upper;
+    arg.apol = (apol == 'R') ? rocsparse_analysis_policy_reuse : rocsparse_analysis_policy_force;
+    arg.spol = rocsparse_solve_policy_auto;
     arg.direction
         = (dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
     arg.order  = (order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;

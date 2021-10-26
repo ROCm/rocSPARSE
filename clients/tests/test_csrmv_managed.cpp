@@ -88,7 +88,7 @@ namespace
                        << arg.alphai << '_' << arg.beta << '_' << arg.betai << '_'
                        << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.algo << '_'
+                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.spmv_alg << '_'
                        << rocsparse_filename2string(arg.filename);
             }
             else
@@ -98,7 +98,7 @@ namespace
                        << arg.N << '_' << arg.alpha << '_' << arg.alphai << '_' << arg.beta << '_'
                        << arg.betai << '_' << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.algo;
+                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.spmv_alg;
             }
         }
     };

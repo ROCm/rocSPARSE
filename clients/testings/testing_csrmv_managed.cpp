@@ -83,7 +83,9 @@ void testing_csrmv_managed_bad_arg(const Arguments& arg)
 
     for(auto matrix_type : rocsparse_matrix_type_t::values)
     {
-        if(matrix_type != rocsparse_matrix_type_general)
+        if(matrix_type != rocsparse_matrix_type_general
+           && matrix_type != rocsparse_matrix_type_symmetric
+           && matrix_type != rocsparse_matrix_type_triangular)
         {
             CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, matrix_type));
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(PARAMS_ANALYSIS),
@@ -104,11 +106,11 @@ void testing_csrmv_managed(const Arguments& arg)
         return;
     }
 
-    rocsparse_int        M        = arg.M;
-    rocsparse_int        N        = arg.N;
-    rocsparse_operation  trans    = arg.transA;
-    rocsparse_index_base base     = arg.baseA;
-    uint32_t             adaptive = arg.algo;
+    rocsparse_int        M     = arg.M;
+    rocsparse_int        N     = arg.N;
+    rocsparse_operation  trans = arg.transA;
+    rocsparse_index_base base  = arg.baseA;
+    rocsparse_spmv_alg   alg   = arg.spmv_alg;
 
     // Create rocsparse handle
     rocsparse_local_handle handle;
@@ -119,9 +121,7 @@ void testing_csrmv_managed(const Arguments& arg)
     // Create matrix info
     rocsparse_local_mat_info info_ptr;
 
-    // Differentiate between algorithm 0 (csrmv without analysis step) and
-    //                       algorithm 1 (csrmv with analysis step)
-    rocsparse_mat_info info = adaptive ? info_ptr : nullptr;
+    rocsparse_mat_info info = (alg == rocsparse_spmv_alg_csr_adaptive) ? info_ptr : nullptr;
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
@@ -151,7 +151,7 @@ void testing_csrmv_managed(const Arguments& arg)
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
         // If adaptive, perform analysis step
-        if(adaptive)
+        if(alg == rocsparse_spmv_alg_csr_adaptive)
         {
             EXPECT_ROCSPARSE_STATUS(
                 rocsparse_csrmv_analysis<T>(
@@ -177,7 +177,7 @@ void testing_csrmv_managed(const Arguments& arg)
                                                  : rocsparse_status_success);
 
         // If adaptive, clear data
-        if(adaptive)
+        if(alg == rocsparse_spmv_alg_csr_adaptive)
         {
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_clear(handle, info), rocsparse_status_success);
         }
@@ -200,10 +200,12 @@ void testing_csrmv_managed(const Arguments& arg)
     hipDeviceProp_t prop;
     hipGetDeviceProperties(&prop, dev);
 
-    bool type = (prop.warpSize == 32) ? true : adaptive;
+    bool to_int = false;
+    to_int |= (prop.warpSize == 32);
+    to_int |= (alg != rocsparse_spmv_alg_csr_stream);
 
     static constexpr bool       full_rank = false;
-    rocsparse_matrix_factory<T> matrix_factory(arg, arg.timing ? false : type, full_rank);
+    rocsparse_matrix_factory<T> matrix_factory(arg, arg.unit_check ? to_int : false, full_rank);
 
     // Generate matrix
     std::vector<rocsparse_int> trow_ptr;
@@ -268,7 +270,7 @@ void testing_csrmv_managed(const Arguments& arg)
     *beta  = arg.get_beta<T>();
 
     // If adaptive, run analysis step
-    if(adaptive)
+    if(alg == rocsparse_spmv_alg_csr_adaptive)
     {
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_analysis<T>(
             handle, trans, M, N, nnz, descr, csr_val, csr_row_ptr, csr_col_ind, info));
@@ -332,7 +334,8 @@ void testing_csrmv_managed(const Arguments& arg)
                    *beta,
                    &y_gold[0],
                    base,
-                   adaptive);
+                   rocsparse_matrix_type_general,
+                   alg);
 
         near_check_segments<T>(M, &y_gold[0], y_1);
         near_check_segments<T>(M, &y_gold[0], y_2);
@@ -408,14 +411,14 @@ void testing_csrmv_managed(const Arguments& arg)
 
         std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << nnz
                   << std::setw(12) << *alpha << std::setw(12) << *beta << std::setw(12)
-                  << (adaptive ? "adaptive" : "stream") << std::setw(12) << gpu_gflops
-                  << std::setw(12) << gpu_gbyte << std::setw(12) << gpu_time_used / 1e3
-                  << std::setw(12) << number_hot_calls << std::setw(12)
+                  << (alg == rocsparse_spmv_alg_csr_adaptive ? "adaptive" : "stream")
+                  << std::setw(12) << gpu_gflops << std::setw(12) << gpu_gbyte << std::setw(12)
+                  << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls << std::setw(12)
                   << (arg.unit_check ? "yes" : "no") << std::endl;
     }
 
     // If adaptive, clear analysis data
-    if(adaptive)
+    if(alg == rocsparse_spmv_alg_csr_adaptive)
     {
         CHECK_ROCSPARSE_ERROR(rocsparse_csrmv_clear(handle, info));
     }

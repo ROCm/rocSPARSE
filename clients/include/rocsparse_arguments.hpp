@@ -74,6 +74,7 @@ struct Arguments
     rocsparse_index_base          baseD;
     rocsparse_action              action;
     rocsparse_hyb_partition       part;
+    rocsparse_matrix_type         matrix_type;
     rocsparse_diag_type           diag;
     rocsparse_fill_mode           uplo;
     rocsparse_analysis_policy     apol;
@@ -179,6 +180,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(baseD);
         ROCSPARSE_FORMAT_CHECK(action);
         ROCSPARSE_FORMAT_CHECK(part);
+        ROCSPARSE_FORMAT_CHECK(matrix_type);
         ROCSPARSE_FORMAT_CHECK(diag);
         ROCSPARSE_FORMAT_CHECK(uplo);
         ROCSPARSE_FORMAT_CHECK(apol);
@@ -363,6 +365,7 @@ private:
         print("percentage", arg.percentage);
         print("action", rocsparse_action2string(arg.action));
         print("part", rocsparse_partition2string(arg.part));
+        print("matrix_type", rocsparse_matrixtype2string(arg.matrix_type));
         print("diag", rocsparse_diagtype2string(arg.diag));
         print("uplo", rocsparse_fillmode2string(arg.uplo));
         print("analysis_policy", rocsparse_analysis2string(arg.apol));

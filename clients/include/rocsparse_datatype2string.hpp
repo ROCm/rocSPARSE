@@ -135,6 +135,22 @@ constexpr auto rocsparse_operation2string(rocsparse_operation trans)
     return "invalid";
 }
 
+constexpr auto rocsparse_matrixtype2string(rocsparse_matrix_type type)
+{
+    switch(type)
+    {
+    case rocsparse_matrix_type_general:
+        return "general";
+    case rocsparse_matrix_type_symmetric:
+        return "symmetric";
+    case rocsparse_matrix_type_hermitian:
+        return "hermitian";
+    case rocsparse_matrix_type_triangular:
+        return "triangular";
+    }
+    return "invalid";
+}
+
 constexpr auto rocsparse_diagtype2string(rocsparse_diag_type diag)
 {
     switch(diag)

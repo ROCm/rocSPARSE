@@ -586,6 +586,31 @@ void rocsparse_init_coo_laplace2d(std::vector<I>&      row_ind,
 }
 
 /* ==================================================================================== */
+/*! \brief  Generate 2D 9pt laplacian on unit square in GEBSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_laplace2d(std::vector<I>&      row_ptr,
+                                    std::vector<J>&      col_ind,
+                                    std::vector<T>&      val,
+                                    int32_t              dim_x,
+                                    int32_t              dim_y,
+                                    J&                   Mb,
+                                    J&                   Nb,
+                                    I&                   nnzb,
+                                    J                    row_block_dim,
+                                    J                    col_block_dim,
+                                    rocsparse_index_base base)
+{
+    rocsparse_init_csr_laplace2d(row_ptr, col_ind, val, dim_x, dim_y, Mb, Nb, nnzb, base);
+
+    I nvalues = nnzb * row_block_dim * col_block_dim;
+    val.resize(nvalues);
+    for(I i = 0; i < nvalues; ++i)
+    {
+        val[i] = random_generator<T>();
+    }
+}
+
+/* ==================================================================================== */
 /*! \brief  Generate 2D 9pt laplacian on unit square in ELL format */
 template <typename I, typename T>
 void rocsparse_init_ell_laplace2d(std::vector<I>&      col_ind,
@@ -713,6 +738,32 @@ void rocsparse_init_coo_laplace3d(std::vector<I>&      row_ind,
     host_csr_to_coo(M, nnz, row_ptr, row_ind, base);
 }
 
+/* ==================================================================================== */
+/*! \brief  Generate 3D 27pt laplacian on unit square in GEBSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_laplace3d(std::vector<I>&      row_ptr,
+                                    std::vector<J>&      col_ind,
+                                    std::vector<T>&      val,
+                                    int32_t              dim_x,
+                                    int32_t              dim_y,
+                                    int32_t              dim_z,
+                                    J&                   Mb,
+                                    J&                   Nb,
+                                    I&                   nnzb,
+                                    J                    row_block_dim,
+                                    J                    col_block_dim,
+                                    rocsparse_index_base base)
+{
+    rocsparse_init_csr_laplace3d(row_ptr, col_ind, val, dim_x, dim_y, dim_z, Mb, Nb, nnzb, base);
+
+    I nvalues = nnzb * row_block_dim * col_block_dim;
+    val.resize(nvalues);
+    for(I i = 0; i < nvalues; ++i)
+    {
+        val[i] = random_generator<T>();
+    }
+}
+
 /* ============================================================================================ */
 /*! \brief  Read matrix from mtx file in COO format */
 static inline void read_mtx_value(std::istringstream& is, int64_t& row, int64_t& col, float& val)
@@ -749,6 +800,43 @@ static inline void read_mtx_value(std::istringstream&       is,
     val = {real, imag};
 }
 
+/* ==================================================================================== */
+/*! \brief  Read matrix from mtx file in CSR format */
+template <typename I, typename J, typename T>
+void rocsparse_init_csr_mtx(const char*          filename,
+                            std::vector<I>&      csr_row_ptr,
+                            std::vector<J>&      csr_col_ind,
+                            std::vector<T>&      csr_val,
+                            J&                   M,
+                            J&                   N,
+                            I&                   nnz,
+                            rocsparse_index_base base)
+{
+    I coo_M, coo_N;
+
+    std::vector<I> coo_row_ind;
+    std::vector<I> coo_col_ind;
+
+    // Read COO matrix
+    rocsparse_init_coo_mtx(filename, coo_row_ind, coo_col_ind, csr_val, coo_M, coo_N, nnz, base);
+
+    // Convert to CSR
+    M = (J)coo_M;
+    N = (J)coo_N;
+
+    csr_row_ptr.resize(M + 1);
+    csr_col_ind.resize(nnz);
+
+    host_coo_to_csr(coo_M, nnz, coo_row_ind.data(), csr_row_ptr, base);
+
+    for(I i = 0; i < nnz; ++i)
+    {
+        csr_col_ind[i] = (J)coo_col_ind[i];
+    }
+}
+
+/* ============================================================================================ */
+/*! \brief  Read matrix from mtx file in COO format */
 template <typename I, typename T>
 void rocsparse_init_coo_mtx(const char*          filename,
                             std::vector<I>&      coo_row_ind,
@@ -954,83 +1042,29 @@ void rocsparse_init_coo_mtx(const char*          filename,
     }
 }
 
-/* ==================================================================================== */
-/*! \brief  Read matrix from mtx file in CSR format */
+/* ============================================================================================ */
+/*! \brief  Read matrix from mtx file in GEBSR format */
 template <typename I, typename J, typename T>
-void rocsparse_init_csr_mtx(const char*          filename,
-                            std::vector<I>&      csr_row_ptr,
-                            std::vector<J>&      csr_col_ind,
-                            std::vector<T>&      csr_val,
-                            J&                   M,
-                            J&                   N,
-                            I&                   nnz,
-                            rocsparse_index_base base)
+void rocsparse_init_gebsr_mtx(const char*          filename,
+                              std::vector<I>&      bsr_row_ptr,
+                              std::vector<J>&      bsr_col_ind,
+                              std::vector<T>&      bsr_val,
+                              J&                   Mb,
+                              J&                   Nb,
+                              I&                   nnzb,
+                              J                    row_block_dim,
+                              J                    col_block_dim,
+                              rocsparse_index_base base)
 {
-    I coo_M, coo_N;
+    //this->init_csr(bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
+    rocsparse_init_csr_mtx(filename, bsr_row_ptr, bsr_col_ind, bsr_val, Mb, Nb, nnzb, base);
 
-    std::vector<I> coo_row_ind;
-    std::vector<I> coo_col_ind;
-
-    // Read COO matrix
-    rocsparse_init_coo_mtx(filename, coo_row_ind, coo_col_ind, csr_val, coo_M, coo_N, nnz, base);
-
-    // Convert to CSR
-    M = (J)coo_M;
-    N = (J)coo_N;
-
-    csr_row_ptr.resize(M + 1);
-    csr_col_ind.resize(nnz);
-
-    host_coo_to_csr(coo_M, nnz, coo_row_ind.data(), csr_row_ptr, base);
-
-    for(I i = 0; i < nnz; ++i)
+    I nvalues = nnzb * row_block_dim * col_block_dim;
+    bsr_val.resize(nvalues);
+    for(I i = 0; i < nvalues; ++i)
     {
-        csr_col_ind[i] = (J)coo_col_ind[i];
+        bsr_val[i] = random_generator<T>();
     }
-}
-
-/* ==================================================================================== */
-/*! \brief  Read matrix from mtx file in BSR format */
-template <typename T>
-void rocsparse_init_bsr_mtx(const char*                 filename,
-                            std::vector<rocsparse_int>& bsr_row_ptr,
-                            std::vector<rocsparse_int>& bsr_col_ind,
-                            std::vector<T>&             bsr_val,
-                            rocsparse_direction         direction,
-                            rocsparse_int&              Mb,
-                            rocsparse_int&              Nb,
-                            rocsparse_int               block_dim,
-                            rocsparse_int&              nnzb,
-                            rocsparse_index_base        base)
-{
-    std::vector<rocsparse_int> csr_row_ptr;
-    std::vector<rocsparse_int> csr_col_ind;
-    std::vector<T>             csr_val;
-
-    rocsparse_int M   = 0;
-    rocsparse_int N   = 0;
-    rocsparse_int nnz = 0;
-
-    rocsparse_init_csr_mtx(filename, csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base);
-
-    Mb = (M + block_dim - 1) / block_dim;
-    Nb = (N + block_dim - 1) / block_dim;
-#if 0
-    // Convert to BSR
-    host_csr_to_bsr(direction,
-                    M,
-                    N,
-                    block_dim,
-                    nnzb,
-                    base,
-                    csr_row_ptr,
-                    csr_col_ind,
-                    csr_val,
-                    base,
-                    bsr_row_ptr,
-                    bsr_col_ind,
-                    bsr_val);
-#endif
 }
 
 /* ==================================================================================== */
@@ -1237,31 +1271,114 @@ void rocsparse_init_coo_rocalution(const char*          filename,
 }
 
 /* ==================================================================================== */
+/*! \brief  Read matrix from binary file in rocALUTION format */
+template <typename I, typename J, typename T>
+void rocsparse_init_gebsr_rocalution(const char*          filename,
+                                     std::vector<I>&      row_ptr,
+                                     std::vector<J>&      col_ind,
+                                     std::vector<T>&      val,
+                                     J&                   Mb,
+                                     J&                   Nb,
+                                     I&                   nnzb,
+                                     J                    row_block_dim,
+                                     J                    col_block_dim,
+                                     rocsparse_index_base base,
+                                     bool                 toint)
+{
+    // Temporarily the file contains a CSR matrix.
+    rocsparse_init_csr_rocalution(filename, row_ptr, col_ind, val, Mb, Nb, nnzb, base, toint);
+
+    // Then temporarily skip the values.
+    I nvalues = nnzb * row_block_dim * col_block_dim;
+    val.resize(nvalues);
+    for(I i = 0; i < nvalues; ++i)
+    {
+        val[i] = random_generator<T>();
+    }
+}
+
+/* ==================================================================================== */
 /*! \brief  Generate a random sparse matrix in CSR format */
 template <typename I, typename J, typename T>
-void rocsparse_init_csr_random(std::vector<I>&      csr_row_ptr,
-                               std::vector<J>&      csr_col_ind,
-                               std::vector<T>&      csr_val,
-                               J                    M,
-                               J                    N,
-                               I&                   nnz,
-                               rocsparse_index_base base,
-                               bool                 full_rank,
-                               bool                 to_int)
+void rocsparse_init_csr_random(std::vector<I>&            csr_row_ptr,
+                               std::vector<J>&            csr_col_ind,
+                               std::vector<T>&            csr_val,
+                               J                          M,
+                               J                          N,
+                               I&                         nnz,
+                               rocsparse_index_base       base,
+                               rocsparse_matrix_init_kind init_kind,
+                               bool                       full_rank,
+                               bool                       to_int)
 {
-    // Compute non-zero entries of the matrix
-    nnz = M * ((M > 1000 || N > 1000) ? 2.0 / std::max(M, N) : 0.02) * N;
+    switch(init_kind)
+    {
+    case rocsparse_matrix_init_kind_tunedavg:
+    {
+        rocsparse_int alpha = static_cast<rocsparse_int>(0);
+        if(N >= 16384)
+        {
+            alpha = static_cast<rocsparse_int>(4);
+        }
+        else if(N >= 8192)
+        {
+            alpha = static_cast<rocsparse_int>(8);
+        }
+        else if(N >= 4096)
+        {
+            alpha = static_cast<rocsparse_int>(16);
+        }
+        else if(N >= 1024)
+        {
+            alpha = static_cast<rocsparse_int>(32);
+        }
+        else
+        {
+            alpha = static_cast<rocsparse_int>(64);
+        }
 
-    // Sample COO matrix
-    std::vector<J> coo_row_ind;
-    //
-    // unsafe conversion here.
-    //
-    rocsparse_init_coo_matrix<J>(
-        coo_row_ind, csr_col_ind, csr_val, M, N, nnz, base, full_rank, to_int);
+        nnz = M * alpha;
+        nnz = std::min(nnz, static_cast<I>(M) * static_cast<I>(N));
 
-    // Convert to CSR
-    host_coo_to_csr(M, nnz, coo_row_ind.data(), csr_row_ptr, base);
+        // Sample random matrix
+        std::vector<J> row_ind(nnz);
+        // Sample COO matrix
+        rocsparse_init_coo_matrix<J>(
+            row_ind, csr_col_ind, csr_val, M, N, nnz, base, full_rank, to_int);
+
+        // Convert to CSR
+        host_coo_to_csr(M, nnz, row_ind.data(), csr_row_ptr, base);
+        break;
+    }
+
+    case rocsparse_matrix_init_kind_default:
+    {
+        if(M < 32 && N < 32)
+        {
+            nnz = (M * N) / 4;
+            if(full_rank)
+            {
+                nnz = std::max(nnz, static_cast<I>(M));
+            }
+            nnz = std::max(nnz, static_cast<I>(M));
+            nnz = std::min(nnz, static_cast<I>(M) * static_cast<I>(N));
+        }
+        else
+        {
+            nnz = M * ((M > 1000 || N > 1000) ? 2.0 / std::max(M, N) : 0.02) * N;
+        }
+
+        // Sample random matrix
+        std::vector<J> row_ind(nnz);
+        // Sample COO matrix
+        rocsparse_init_coo_matrix<J>(
+            row_ind, csr_col_ind, csr_val, M, N, nnz, base, full_rank, to_int);
+
+        // Convert to CSR
+        host_coo_to_csr(M, nnz, row_ind.data(), csr_row_ptr, base);
+        break;
+    }
+    }
 }
 
 /* ==================================================================================== */
@@ -1278,146 +1395,53 @@ void rocsparse_init_coo_random(std::vector<I>&      row_ind,
                                bool                 to_int)
 {
     // Compute non-zero entries of the matrix
-    nnz = M * ((M > 1000 || N > 1000) ? 2.0 / std::max(M, N) : 0.02) * N;
-
+    if(M < 32 && N < 32)
+    {
+        nnz = (M * N) / 4;
+    }
+    else
+    {
+        nnz = M * ((M > 1000 || N > 1000) ? 2.0 / std::max(M, N) : 0.02) * N;
+    }
     // Sample random matrix
+
     rocsparse_init_coo_matrix(row_ind, col_ind, val, M, N, nnz, base, full_rank, to_int);
 }
 
 /* ==================================================================================== */
-/*! \brief  Initialize a sparse matrix in CSR format */
+/*! \brief  Generate a random sparse matrix in GEBSR format */
 template <typename I, typename J, typename T>
-void rocsparse_init_csr_matrix(std::vector<I>&       csr_row_ptr,
-                               std::vector<J>&       csr_col_ind,
-                               std::vector<T>&       csr_val,
-                               J&                    M,
-                               J&                    N,
-                               J&                    K,
-                               int32_t               dim_x,
-                               int32_t               dim_y,
-                               int32_t               dim_z,
-                               I&                    nnz,
-                               rocsparse_index_base  base,
-                               rocsparse_matrix_init matrix,
-                               const char*           filename,
-                               bool                  toint,
-                               bool                  full_rank)
+void rocsparse_init_gebsr_random(std::vector<I>&            row_ptr,
+                                 std::vector<J>&            col_ind,
+                                 std::vector<T>&            val,
+                                 J                          Mb,
+                                 J                          Nb,
+                                 I&                         nnzb,
+                                 J                          row_block_dim,
+                                 J                          col_block_dim,
+                                 rocsparse_index_base       base,
+                                 rocsparse_matrix_init_kind init_kind,
+                                 bool                       full_rank,
+                                 bool                       to_int)
 {
-    // Differentiate the different matrix generators
-    if(matrix == rocsparse_matrix_random)
-    {
-        rocsparse_init_csr_random(csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base, full_rank);
-    }
-    else if(matrix == rocsparse_matrix_laplace_2d)
-    {
-        rocsparse_init_csr_laplace2d(
-            csr_row_ptr, csr_col_ind, csr_val, dim_x, dim_y, M, N, nnz, base);
-    }
-    else if(matrix == rocsparse_matrix_laplace_3d)
-    {
-        rocsparse_init_csr_laplace3d(
-            csr_row_ptr, csr_col_ind, csr_val, dim_x, dim_y, dim_z, M, N, nnz, base);
-    }
-    else if(matrix == rocsparse_matrix_file_rocalution)
-    {
-        rocsparse_init_csr_rocalution(
-            filename, csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base, toint);
-    }
-    else if(matrix == rocsparse_matrix_file_mtx)
-    {
-        rocsparse_init_csr_mtx(filename, csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base);
-    }
-}
+    rocsparse_init_csr_random(
+        row_ptr, col_ind, val, Mb, Nb, nnzb, base, init_kind, full_rank, to_int);
 
-/* ==================================================================================== */
-/*! \brief  Initialize a sparse matrix in ELL format */
-template <typename I, typename T>
-void rocsparse_init_ell_matrix(std::vector<I>&       ell_col_ind,
-                               std::vector<T>&       ell_val,
-                               I&                    M,
-                               I&                    N,
-                               I&                    K,
-                               int32_t               dim_x,
-                               int32_t               dim_y,
-                               int32_t               dim_z,
-                               I&                    ell_width,
-                               rocsparse_index_base  base,
-                               rocsparse_matrix_init matrix,
-                               const char*           filename,
-                               bool                  toint,
-                               bool                  full_rank)
-{
-    I csr_nnz;
-
-    std::vector<I> csr_row_ptr;
-    std::vector<I> csr_col_ind;
-    std::vector<T> csr_val;
-
-    // Initialize CSR matrix
-    rocsparse_init_csr_matrix(csr_row_ptr,
-                              csr_col_ind,
-                              csr_val,
-                              M,
-                              N,
-                              K,
-                              dim_x,
-                              dim_y,
-                              dim_z,
-                              csr_nnz,
-                              base,
-                              matrix,
-                              filename,
-                              toint,
-                              full_rank);
-
-    // Convert to ELL
-    host_csr_to_ell(
-        M, csr_row_ptr, csr_col_ind, csr_val, ell_col_ind, ell_val, ell_width, base, base);
-}
-
-/* ==================================================================================== */
-/*! \brief  Initialize a sparse matrix in COO format */
-template <typename I, typename T>
-void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
-                               std::vector<I>&       coo_col_ind,
-                               std::vector<T>&       coo_val,
-                               I&                    M,
-                               I&                    N,
-                               I&                    K,
-                               int32_t               dim_x,
-                               int32_t               dim_y,
-                               int32_t               dim_z,
-                               I&                    nnz,
-                               rocsparse_index_base  base,
-                               rocsparse_matrix_init matrix,
-                               const char*           filename,
-                               bool                  toint,
-                               bool                  full_rank)
-{
-    // Differentiate the different matrix generators
-    if(matrix == rocsparse_matrix_random)
+    I nvalues = nnzb * row_block_dim * col_block_dim;
+    val.resize(nvalues);
+    if(to_int)
     {
-        rocsparse_init_coo_random(
-            coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base, full_rank, toint);
+        for(I i = 0; i < nvalues; ++i)
+        {
+            val[i] = random_generator_exact<T>();
+        }
     }
-    else if(matrix == rocsparse_matrix_laplace_2d)
+    else
     {
-        rocsparse_init_coo_laplace2d(
-            coo_row_ind, coo_col_ind, coo_val, dim_x, dim_y, M, N, nnz, base);
-    }
-    else if(matrix == rocsparse_matrix_laplace_3d)
-    {
-        rocsparse_init_coo_laplace3d(
-            coo_row_ind, coo_col_ind, coo_val, dim_x, dim_y, dim_z, M, N, nnz, base);
-    }
-    else if(matrix == rocsparse_matrix_file_rocalution)
-    {
-        rocsparse_init_coo_rocalution(
-            filename, coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base, toint);
-    }
-    else if(matrix == rocsparse_matrix_file_mtx)
-    {
-        rocsparse_init_coo_mtx(filename, coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base);
+        for(I i = 0; i < nvalues; ++i)
+        {
+            val[i] = random_generator<T>();
+        }
     }
 }
 
@@ -1466,17 +1490,7 @@ void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
                                            size_t N,                                               \
                                            size_t lda,                                             \
                                            size_t stride = 0,                                      \
-                                           size_t batch_count);                                    \
-    template void rocsparse_init_bsr_mtx<TYPE>(const char*                 filename,               \
-                                               std::vector<rocsparse_int>& bsr_row_ptr,            \
-                                               std::vector<rocsparse_int>& bsr_col_ind,            \
-                                               std::vector<TYPE>&          bsr_val,                \
-                                               rocsparse_direction         direction,              \
-                                               rocsparse_int&              Mb,                     \
-                                               rocsparse_int&              Nb,                     \
-                                               rocsparse_int               block_dim,              \
-                                               rocsparse_int&              nnzb,                   \
-                                               rocsparse_index_base        base);
+                                           size_t batch_count);
 
 #define INSTANTIATE1(ITYPE, JTYPE)                                                     \
     template void host_csr_to_coo<ITYPE, JTYPE>(JTYPE                     M,           \
@@ -1552,36 +1566,7 @@ void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
                                                           ITYPE & nnz,                       \
                                                           rocsparse_index_base base,         \
                                                           bool                 full_rank,    \
-                                                          bool                 to_int);                      \
-    template void rocsparse_init_coo_matrix<ITYPE, TTYPE>(std::vector<ITYPE> & coo_row_ind,  \
-                                                          std::vector<ITYPE> & coo_col_ind,  \
-                                                          std::vector<TTYPE> & coo_val,      \
-                                                          ITYPE & M,                         \
-                                                          ITYPE & N,                         \
-                                                          ITYPE & K,                         \
-                                                          int32_t dim_x,                     \
-                                                          int32_t dim_y,                     \
-                                                          int32_t dim_z,                     \
-                                                          ITYPE & nnz,                       \
-                                                          rocsparse_index_base  base,        \
-                                                          rocsparse_matrix_init matrix,      \
-                                                          const char*           filename,    \
-                                                          bool                  toint,       \
-                                                          bool                  full_rank);                   \
-    template void rocsparse_init_ell_matrix<ITYPE, TTYPE>(std::vector<ITYPE> & ell_col_ind,  \
-                                                          std::vector<TTYPE> & ell_val,      \
-                                                          ITYPE & M,                         \
-                                                          ITYPE & N,                         \
-                                                          ITYPE & K,                         \
-                                                          int32_t dim_x,                     \
-                                                          int32_t dim_y,                     \
-                                                          int32_t dim_z,                     \
-                                                          ITYPE & ell_width,                 \
-                                                          rocsparse_index_base  base,        \
-                                                          rocsparse_matrix_init matrix,      \
-                                                          const char*           filename,    \
-                                                          bool                  toint,       \
-                                                          bool                  full_rank);
+                                                          bool                 to_int);
 
 #define INSTANTIATE3(ITYPE, JTYPE, TTYPE)                                                           \
     template void rocsparse_init_csr_laplace2d<ITYPE, JTYPE, TTYPE>(std::vector<ITYPE> & row_ptr,   \
@@ -1620,30 +1605,77 @@ void rocsparse_init_coo_matrix(std::vector<I>&       coo_row_ind,
                                                                      ITYPE&               nnz,      \
                                                                      rocsparse_index_base base,     \
                                                                      bool                 toint);                   \
-    template void rocsparse_init_csr_random<ITYPE, JTYPE, TTYPE>(std::vector<ITYPE> & row_ptr,      \
-                                                                 std::vector<JTYPE> & col_ind,      \
-                                                                 std::vector<TTYPE> & val,          \
-                                                                 JTYPE M,                           \
-                                                                 JTYPE N,                           \
-                                                                 ITYPE & nnz,                       \
-                                                                 rocsparse_index_base base,         \
-                                                                 bool                 full_rank,    \
-                                                                 bool                 to_int);                      \
-    template void rocsparse_init_csr_matrix<ITYPE, JTYPE, TTYPE>(std::vector<ITYPE> & csr_row_ptr,  \
-                                                                 std::vector<JTYPE> & csr_col_ind,  \
-                                                                 std::vector<TTYPE> & csr_val,      \
-                                                                 JTYPE & M,                         \
-                                                                 JTYPE & N,                         \
-                                                                 JTYPE & K,                         \
-                                                                 int32_t dim_x,                     \
-                                                                 int32_t dim_y,                     \
-                                                                 int32_t dim_z,                     \
-                                                                 ITYPE & nnz,                       \
-                                                                 rocsparse_index_base  base,        \
-                                                                 rocsparse_matrix_init matrix,      \
-                                                                 const char*           filename,    \
-                                                                 bool                  toint,       \
-                                                                 bool                  full_rank);                   \
+    template void rocsparse_init_csr_random<ITYPE, JTYPE, TTYPE>(                                   \
+        std::vector<ITYPE> & row_ptr,                                                               \
+        std::vector<JTYPE> & col_ind,                                                               \
+        std::vector<TTYPE> & val,                                                                   \
+        JTYPE M,                                                                                    \
+        JTYPE N,                                                                                    \
+        ITYPE & nnz,                                                                                \
+        rocsparse_index_base       base,                                                            \
+        rocsparse_matrix_init_kind init_kind,                                                       \
+        bool                       full_rank,                                                       \
+        bool                       to_int);                                                                               \
+    template void rocsparse_init_gebsr_laplace2d<ITYPE, JTYPE, TTYPE>(                              \
+        std::vector<ITYPE> & row_ptr,                                                               \
+        std::vector<JTYPE> & col_ind,                                                               \
+        std::vector<TTYPE> & val,                                                                   \
+        int32_t dim_x,                                                                              \
+        int32_t dim_y,                                                                              \
+        JTYPE & Mb,                                                                                 \
+        JTYPE & Nb,                                                                                 \
+        ITYPE & nnzb,                                                                               \
+        JTYPE                row_block_dim,                                                         \
+        JTYPE                col_block_dim,                                                         \
+        rocsparse_index_base base);                                                                 \
+    template void rocsparse_init_gebsr_laplace3d<ITYPE, JTYPE, TTYPE>(                              \
+        std::vector<ITYPE> & row_ptr,                                                               \
+        std::vector<JTYPE> & col_ind,                                                               \
+        std::vector<TTYPE> & val,                                                                   \
+        int32_t dim_x,                                                                              \
+        int32_t dim_y,                                                                              \
+        int32_t dim_z,                                                                              \
+        JTYPE & Mb,                                                                                 \
+        JTYPE & Nb,                                                                                 \
+        ITYPE & nnzb,                                                                               \
+        JTYPE                row_block_dim,                                                         \
+        JTYPE                col_block_dim,                                                         \
+        rocsparse_index_base base);                                                                 \
+    template void rocsparse_init_gebsr_mtx<ITYPE, JTYPE, TTYPE>(const char*          filename,      \
+                                                                std::vector<ITYPE>&  bsr_row_ptr,   \
+                                                                std::vector<JTYPE>&  bsr_col_ind,   \
+                                                                std::vector<TTYPE>&  bsr_val,       \
+                                                                JTYPE&               Mb,            \
+                                                                JTYPE&               Nb,            \
+                                                                ITYPE&               nnzb,          \
+                                                                JTYPE                row_block_dim, \
+                                                                JTYPE                col_block_dim, \
+                                                                rocsparse_index_base base);         \
+    template void rocsparse_init_gebsr_rocalution<ITYPE, JTYPE, TTYPE>(                             \
+        const char*          filename,                                                              \
+        std::vector<ITYPE>&  row_ptr,                                                               \
+        std::vector<JTYPE>&  col_ind,                                                               \
+        std::vector<TTYPE>&  val,                                                                   \
+        JTYPE&               Mb,                                                                    \
+        JTYPE&               Nb,                                                                    \
+        ITYPE&               nnzb,                                                                  \
+        JTYPE                row_block_dim,                                                         \
+        JTYPE                col_block_dim,                                                         \
+        rocsparse_index_base base,                                                                  \
+        bool                 toint);                                                                                \
+    template void rocsparse_init_gebsr_random<ITYPE, JTYPE, TTYPE>(                                 \
+        std::vector<ITYPE> & row_ptr,                                                               \
+        std::vector<JTYPE> & col_ind,                                                               \
+        std::vector<TTYPE> & val,                                                                   \
+        JTYPE Mb,                                                                                   \
+        JTYPE Nb,                                                                                   \
+        ITYPE & nnzb,                                                                               \
+        JTYPE                      row_block_dim,                                                   \
+        JTYPE                      col_block_dim,                                                   \
+        rocsparse_index_base       base,                                                            \
+        rocsparse_matrix_init_kind init_kind,                                                       \
+        bool                       full_rank,                                                       \
+        bool                       to_int);                                                                               \
     template void host_csr_to_ell<ITYPE, JTYPE, TTYPE>(JTYPE                     M,                 \
                                                        const std::vector<ITYPE>& csr_row_ptr,       \
                                                        const std::vector<JTYPE>& csr_col_ind,       \

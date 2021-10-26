@@ -1654,8 +1654,9 @@ rocsparse_status rocsparse_zcoomv(rocsparse_handle                handle,
 *  \retval     rocsparse_status_memory_error the buffer for the gathered information
 *              could not be allocated.
 *  \retval     rocsparse_status_internal_error an internal error occurred.
-*  \retval     rocsparse_status_not_implemented
-*              \ref rocsparse_matrix_type != \ref rocsparse_matrix_type_general.
+*  \retval     rocsparse_status_not_implemented if \ref rocsparse_matrix_type is not one of
+*              \ref rocsparse_matrix_type_general, \ref rocsparse_matrix_type_symmetric, or
+*              \ref rocsparse_matrix_type_triangular.
 */
 /**@{*/
 ROCSPARSE_EXPORT

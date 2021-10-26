@@ -65,6 +65,13 @@ Datatypes:
       attr:
         rocsparse_index_base_zero: 0
         rocsparse_index_base_one: 1
+  - rocsparse_matrix_type:
+      bases: [ c_int ]
+      attr:
+        rocsparse_matrix_type_general: 0
+        rocsparse_matrix_type_symmetric: 1
+        rocsparse_matrix_type_hermitian: 2
+        rocsparse_matrix_type_triangular: 3
   - rocsparse_diag_type:
       bases: [ c_int ]
       attr:
@@ -256,6 +263,7 @@ Arguments:
   - baseD: rocsparse_index_base
   - action: rocsparse_action
   - part: rocsparse_hyb_partition
+  - matrix_type: rocsparse_matrix_type
   - diag: rocsparse_diag_type
   - uplo: rocsparse_fill_mode
   - apol: rocsparse_analysis_policy
@@ -356,6 +364,7 @@ Defaults:
   baseD: rocsparse_index_base_zero
   action: rocsparse_action_numeric
   part: rocsparse_hyb_partition_auto
+  matrix_type: rocsparse_matrix_type_general
   diag: rocsparse_diag_type_non_unit
   uplo: rocsparse_fill_mode_lower
   apol: rocsparse_analysis_policy_reuse

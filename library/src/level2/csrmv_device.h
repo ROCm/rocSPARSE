@@ -91,7 +91,7 @@ static __device__ void csrmvt_scale_device(J size, T scalar, T* data)
     data[idx] *= scalar;
 }
 
-template <unsigned int BLOCKSIZE, unsigned int WFSIZE, typename I, typename J, typename T>
+template <unsigned int BLOCKSIZE, unsigned int WF_SIZE, typename I, typename J, typename T>
 static __device__ void csrmvt_general_device(rocsparse_operation  trans,
                                              J                    m,
                                              T                    alpha,
@@ -102,18 +102,18 @@ static __device__ void csrmvt_general_device(rocsparse_operation  trans,
                                              T*                   y,
                                              rocsparse_index_base idx_base)
 {
-    int lid = threadIdx.x & (WFSIZE - 1);
+    int lid = hipThreadIdx_x & (WF_SIZE - 1);
 
-    J gid = blockIdx.x * BLOCKSIZE + threadIdx.x;
-    J inc = gridDim.x * BLOCKSIZE / WFSIZE;
+    J gid = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    J inc = hipGridDim_x * BLOCKSIZE / WF_SIZE;
 
-    for(J row = gid / WFSIZE; row < m; row += inc)
+    for(J row = gid / WF_SIZE; row < m; row += inc)
     {
         I row_begin = csr_row_ptr[row] - idx_base;
         I row_end   = csr_row_ptr[row + 1] - idx_base;
         T row_val   = alpha * x[row];
 
-        for(I j = row_begin + lid; j < row_end; j += WFSIZE)
+        for(I j = row_begin + lid; j < row_end; j += WF_SIZE)
         {
             J col = csr_col_ind[j] - idx_base;
             T val = (trans == rocsparse_operation_conjugate_transpose) ? rocsparse_conj(csr_val[j])
