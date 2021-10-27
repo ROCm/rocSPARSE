@@ -87,7 +87,7 @@ Tests:
 - name: ellmv
   category: nightly
   function: ellmv
-  precision: *single_double_precisions_complex_real
+  precision: *double_only_precisions_complex
   M: [39385, 193482, 639102]
   N: [29348, 340123, 710341]
   alpha_beta: *alpha_beta_range_nightly
