@@ -503,7 +503,7 @@ extern "C" rocsparse_status rocsparse_csrgeam_nnz(rocsparse_handle          hand
                                                 rocprim_size,
                                                 csr_row_ptr_C,
                                                 csr_row_ptr_C,
-                                                descr_C->base,
+                                                static_cast<rocsparse_int>(descr_C->base),
                                                 m + 1,
                                                 rocprim::plus<rocsparse_int>(),
                                                 stream));
@@ -526,7 +526,7 @@ extern "C" rocsparse_status rocsparse_csrgeam_nnz(rocsparse_handle          hand
                                                 rocprim_size,
                                                 csr_row_ptr_C,
                                                 csr_row_ptr_C,
-                                                descr_C->base,
+                                                static_cast<rocsparse_int>(descr_C->base),
                                                 m + 1,
                                                 rocprim::plus<rocsparse_int>(),
                                                 stream));

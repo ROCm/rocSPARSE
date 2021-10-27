@@ -1091,7 +1091,7 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle      
                                                 rocprim_size,
                                                 csr_row_ptr_C,
                                                 csr_row_ptr_C,
-                                                descr_C->base,
+                                                static_cast<rocsparse_int>(descr_C->base),
                                                 m + 1,
                                                 rocprim::plus<I>(),
                                                 stream));
@@ -1100,7 +1100,7 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle      
                                                 rocprim_size,
                                                 csr_row_ptr_C,
                                                 csr_row_ptr_C,
-                                                descr_C->base,
+                                                static_cast<rocsparse_int>(descr_C->base),
                                                 m + 1,
                                                 rocprim::plus<I>(),
                                                 stream));
