@@ -2,6 +2,15 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
+## (Unreleased) rocSPARSE 2.0.0
+### Added
+- csrmv, coomv, ellmv, hybmv for (conjugate) transposed matrices
+- csrmv for symmetric matrices
+### Changed
+- spmm\_ex is now deprecated and will be removed in the next major release
+### Improved
+- Optimization for gtsv
+
 ## rocSPARSE 1.22.2 for ROCm 4.5.0
 ### Added
 - Triangular solve for multiple right-hand sides using BSR format
