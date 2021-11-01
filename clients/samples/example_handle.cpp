@@ -22,7 +22,7 @@
  *
  * ************************************************************************ */
 
-#include <rocsparse.h>
+#include <rocsparse/rocsparse.h>
 #include <stdio.h>
 
 int main(int argc, char* argv[])
