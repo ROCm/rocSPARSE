@@ -31,7 +31,7 @@
 #ifndef FLOPS_HPP
 #define FLOPS_HPP
 
-#include <rocsparse.h>
+#include <rocsparse/rocsparse.h>
 
 /*
  * ===========================================================================
