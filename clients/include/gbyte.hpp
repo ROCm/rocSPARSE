@@ -31,7 +31,7 @@
 #ifndef GBYTE_HPP
 #define GBYTE_HPP
 
-#include <rocsparse.h>
+#include <rocsparse/rocsparse.h>
 
 /*
  * ===========================================================================

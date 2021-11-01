@@ -27,7 +27,7 @@
 #define ROCSPARSE_MATH_HPP
 
 #include <cmath>
-#include <rocsparse.h>
+#include <rocsparse/rocsparse.h>
 
 /* =================================================================================== */
 /*! \brief  returns true if value is NaN */
