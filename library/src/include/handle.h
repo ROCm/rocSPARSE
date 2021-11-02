@@ -26,7 +26,7 @@
 #ifndef HANDLE_H
 #define HANDLE_H
 
-#include "rocsparse.h"
+#include "rocsparse/rocsparse.h"
 
 #include <fstream>
 #include <hip/hip_runtime_api.h>

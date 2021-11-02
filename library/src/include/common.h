@@ -26,7 +26,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "rocsparse.h"
+#include "rocsparse/rocsparse.h"
 
 #include <hip/hip_runtime.h>
 

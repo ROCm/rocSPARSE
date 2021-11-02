@@ -31,8 +31,8 @@
 
 #include <stdint.h>
 
-#include "rocsparse-export.h"
-#include "rocsparse-types.h"
+#include "rocsparse/rocsparse-export.h"
+#include "rocsparse/rocsparse-types.h"
 
 #ifdef __cplusplus
 extern "C" {

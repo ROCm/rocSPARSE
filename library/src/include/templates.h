@@ -26,7 +26,7 @@
 #ifndef TEMPLATES_H
 #define TEMPLATES_H
 
-#include "rocsparse.h"
+#include "rocsparse/rocsparse.h"
 
 //
 // For reusing without recompiling.
