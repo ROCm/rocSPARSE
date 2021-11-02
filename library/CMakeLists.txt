@@ -117,7 +117,7 @@ set_target_properties(rocsparse PROPERTIES DEBUG_POSTFIX "-d")
 
 # Generate export header
 include(GenerateExportHeader)
-generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse-export.h)
+generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-export.h)
 
 # Force installation of .f module file
 install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse.f"

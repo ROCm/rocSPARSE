@@ -25,7 +25,7 @@
 #ifndef STATUS_H
 #define STATUS_H
 
-#include "rocsparse.h"
+#include "rocsparse/rocsparse.h"
 
 #include <hip/hip_runtime_api.h>
 

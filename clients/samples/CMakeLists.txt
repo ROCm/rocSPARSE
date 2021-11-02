@@ -27,6 +27,7 @@ add_library(rocsparsecommon ${ROCSPARSE_CLIENTS_COMMON})
 # Include common client headers
 target_compile_options(rocsparsecommon PRIVATE -Wno-unused-command-line-argument -Wall)
 target_include_directories(rocsparsecommon PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
+target_include_directories(rocsparsecommon PRIVATE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 
 target_link_libraries(rocsparsecommon PRIVATE roc::rocsparse hip::host)
 set_target_properties(rocsparsecommon PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
@@ -44,6 +45,7 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
 
   # Include common client headers
   target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
+  target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 
   # Linker dependencies
   target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host rocsparsecommon)
