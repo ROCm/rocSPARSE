@@ -129,7 +129,7 @@ install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse.f"
 rocm_install_targets(TARGETS rocsparse)
 
 install(
-       DIRECTORY "${CMAKE_SOURCE_DIR}/library/include/" "${PROJECT_BINARY_DIR}/include/"
+       DIRECTORY "${PROJECT_BINARY_DIR}/include/rocsparse/"
        DESTINATION "include/rocsparse/"
        FILES_MATCHING
        PATTERN "*.h"
