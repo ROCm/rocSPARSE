@@ -527,7 +527,9 @@ typedef enum rocsparse_spgemm_stage_
     rocsparse_spgemm_stage_auto        = 0, /**< Automatic stage detection. */
     rocsparse_spgemm_stage_buffer_size = 1, /**< Returns the required buffer size. */
     rocsparse_spgemm_stage_nnz         = 2, /**< Computes number of non-zero entries. */
-    rocsparse_spgemm_stage_compute     = 3 /**< Performs the actual SpGEMM computation. */
+    rocsparse_spgemm_stage_compute     = 3, /**< Performs the actual SpGEMM computation. */
+    rocsparse_spgemm_stage_symbolic    = 4, /**< Performs the actual SpGEMM symbolic computation. */
+    rocsparse_spgemm_stage_numeric     = 5 /**< Performs the actual SpGEMM numeric computation. */
 } rocsparse_spgemm_stage;
 
 /*! \ingroup types_module

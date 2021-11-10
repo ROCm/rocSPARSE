@@ -902,7 +902,9 @@ Function name                                                                 si
 :cpp:func:`rocsparse_Xcsrgeam() <rocsparse_scsrgeam>`                         x      x      x              x
 :cpp:func:`rocsparse_Xcsrgemm_buffer_size() <rocsparse_scsrgemm_buffer_size>` x      x      x              x
 :cpp:func:`rocsparse_csrgemm_nnz`
+:cpp:func:`rocsparse_csrgemm_symbolic`
 :cpp:func:`rocsparse_Xcsrgemm() <rocsparse_scsrgemm>`                         x      x      x              x
+:cpp:func:`rocsparse_Xcsrgemm_numeric() <rocsparse_scsrgemm_numeric>`         x      x      x              x
 ============================================================================= ====== ====== ============== ==============
 
 Preconditioner Functions
@@ -1809,6 +1811,11 @@ rocsparse_csrgemm_nnz()
 
 .. doxygenfunction:: rocsparse_csrgemm_nnz
 
+rocsparse_csrgemm_symbolic()
+----------------------------
+
+.. doxygenfunction:: rocsparse_csrgemm_symbolic
+
 rocsparse_csrgemm()
 -------------------
 
@@ -1819,6 +1826,17 @@ rocsparse_csrgemm()
 .. doxygenfunction:: rocsparse_ccsrgemm
   :outline:
 .. doxygenfunction:: rocsparse_zcsrgemm
+
+rocsparse_csrgemm_numeric()
+---------------------------
+
+.. doxygenfunction:: rocsparse_scsrgemm_numeric
+  :outline:
+.. doxygenfunction:: rocsparse_dcsrgemm_numeric
+  :outline:
+.. doxygenfunction:: rocsparse_ccsrgemm_numeric
+  :outline:
+.. doxygenfunction:: rocsparse_zcsrgemm_numeric
 
 .. _rocsparse_precond_functions_:
 

@@ -30,6 +30,19 @@
 
 #include <rocprim/rocprim.hpp>
 
+template <unsigned int BLOCKSIZE, typename I, typename J>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void csrgemm_set_base(I size, J* __restrict__ out, rocsparse_index_base idx_base_out)
+{
+    I idx = hipBlockIdx_x * BLOCKSIZE + hipThreadIdx_x;
+    if(idx >= size)
+    {
+        return;
+    }
+
+    out[idx] = idx_base_out;
+}
+
 template <typename I, typename J, typename T>
 static inline rocsparse_status
     rocsparse_csrgemm_multadd_buffer_size_template(rocsparse_handle          handle,
@@ -76,9 +89,23 @@ static inline rocsparse_status
     }
 
     // Check valid pointers
-    if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
-       || csr_row_ptr_B == nullptr || descr_D == nullptr || csr_row_ptr_D == nullptr
-       || buffer_size == nullptr || alpha == nullptr || beta == nullptr)
+    if(descr_A == nullptr || descr_B == nullptr || descr_D == nullptr || buffer_size == nullptr
+       || alpha == nullptr || beta == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(m > 0 && csr_row_ptr_A == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(m > 0 && csr_row_ptr_D == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(k > 0 && csr_row_ptr_B == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -214,6 +241,7 @@ static inline rocsparse_status
                                                 rocsparse_mat_info        info_C,
                                                 size_t*                   buffer_size)
 {
+
     // Check for valid handle and info structure
     if(handle == nullptr)
     {
@@ -235,8 +263,22 @@ static inline rocsparse_status
     }
 
     // Check valid pointers
-    if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
-       || csr_row_ptr_B == nullptr || buffer_size == nullptr || alpha == nullptr)
+    if(descr_A == nullptr || descr_B == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(m > 0 && csr_row_ptr_A == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(k > 0 && csr_row_ptr_B == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(buffer_size == nullptr || alpha == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -348,7 +390,12 @@ static inline rocsparse_status
     }
 
     // Check valid pointers
-    if(descr_D == nullptr || csr_row_ptr_D == nullptr || buffer_size == nullptr || beta == nullptr)
+    if(descr_D == nullptr || buffer_size == nullptr || beta == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(m > 0 && csr_row_ptr_D == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -442,6 +489,11 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
         return rocsparse_status_invalid_value;
     }
 
+    if(buffer_size == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Check valid sizes
     if(m < 0 || n < 0 || k < 0)
     {
@@ -458,10 +510,28 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
     info_C->csrgemm_info->mul = (alpha != nullptr);
     info_C->csrgemm_info->add = (beta != nullptr);
 
-    // Either alpha or beta can be nullptr
-    if(alpha != nullptr && beta != nullptr)
+    if(info_C->csrgemm_info->add)
     {
-        // alpha != nullptr && beta != nullptr
+        if(nnz_D == 0)
+        {
+            info_C->csrgemm_info->add = false;
+            if(false == info_C->csrgemm_info->mul)
+            {
+                *buffer_size = 4;
+                return rocsparse_status_success;
+            }
+        }
+    }
+
+    if(m == 0)
+    {
+        *buffer_size = 4;
+        return rocsparse_status_success;
+    }
+
+    // Either alpha or beta can be nullptr
+    if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == true)
+    {
         return rocsparse_csrgemm_multadd_buffer_size_template(handle,
                                                               trans_A,
                                                               trans_B,
@@ -485,9 +555,8 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
                                                               info_C,
                                                               buffer_size);
     }
-    else if(alpha != nullptr && beta == nullptr)
+    else if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == false)
     {
-        // alpha != nullptr && beta == nullptr
         return rocsparse_csrgemm_mult_buffer_size_template(handle,
                                                            trans_A,
                                                            trans_B,
@@ -506,9 +575,8 @@ rocsparse_status rocsparse_csrgemm_buffer_size_template(rocsparse_handle        
                                                            info_C,
                                                            buffer_size);
     }
-    else if(alpha == nullptr && beta != nullptr)
+    else if(info_C->csrgemm_info->mul == false && info_C->csrgemm_info->add == true)
     {
-        // alpha == nullptr && beta != nullptr
         return rocsparse_csrgemm_scal_buffer_size_template(
             handle, m, n, beta, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D, info_C, buffer_size);
     }
@@ -548,8 +616,17 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_scal(rocsparse_handle      
     }
 
     // Check valid pointers
-    if(descr_D == nullptr || csr_row_ptr_D == nullptr || descr_C == nullptr
-       || csr_row_ptr_C == nullptr || nnz_C == nullptr || temp_buffer == nullptr)
+    if(descr_D == nullptr || descr_C == nullptr || nnz_C == nullptr || temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(m > 0 && csr_row_ptr_D == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(m > 0 && csr_row_ptr_C == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -583,7 +660,19 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_scal(rocsparse_handle      
         {
             *nnz_C = 0;
         }
-
+        if(m > 0)
+        {
+#define CSRGEMM_DIM 1024
+            hipLaunchKernelGGL((csrgemm_set_base<CSRGEMM_DIM>),
+                               dim3((m + 1) / CSRGEMM_DIM + 1),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               m + 1,
+                               csr_row_ptr_C,
+                               descr_C->base);
+#undef CSRGEMM_DIM
+        }
         return rocsparse_status_success;
     }
 
@@ -597,7 +686,6 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_scal(rocsparse_handle      
     {
         *nnz_C = nnz_D;
     }
-
     // Copy row pointers
 #define CSRGEMM_DIM 1024
     hipLaunchKernelGGL((csrgemm_copy<CSRGEMM_DIM>),
@@ -648,8 +736,12 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle      
         = info_C->csrgemm_info->mul ? descr_A->base : rocsparse_index_base_zero;
     rocsparse_index_base base_B
         = info_C->csrgemm_info->mul ? descr_B->base : rocsparse_index_base_zero;
-    rocsparse_index_base base_D
-        = info_C->csrgemm_info->add ? descr_D->base : rocsparse_index_base_zero;
+    rocsparse_index_base base_D = info_C->csrgemm_info->add
+                                      ? ((descr_D) ? descr_D->base : rocsparse_index_base_zero)
+                                      : rocsparse_index_base_zero;
+
+    bool mul = info_C->csrgemm_info->mul;
+    bool add = info_C->csrgemm_info->add;
 
     // Temporary buffer
     char* buffer = reinterpret_cast<char*>(temp_buffer);
@@ -673,8 +765,8 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle      
                        csr_row_ptr_D,
                        csr_row_ptr_C,
                        base_A,
-                       info_C->csrgemm_info->mul,
-                       info_C->csrgemm_info->add);
+                       mul,
+                       add);
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
 
@@ -700,7 +792,6 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle      
     I int_max;
     RETURN_IF_HIP_ERROR(
         hipMemcpyAsync(&int_max, csr_row_ptr_C + m, sizeof(I), hipMemcpyDeviceToHost, stream));
-
     // Wait for host transfer to finish
     RETURN_IF_HIP_ERROR(hipStreamSynchronize(stream));
 
@@ -836,8 +927,8 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle      
             base_A,
             base_B,
             base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            mul,
+            add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -868,8 +959,8 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle      
             base_A,
             base_B,
             base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            mul,
+            add);
 #undef CSRGEMM_HASHSIZE
 #undef CSRGEMM_SUB
 #undef CSRGEMM_DIM
@@ -1074,8 +1165,8 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_calc(rocsparse_handle      
             base_A,
             base_B,
             base_D,
-            info_C->csrgemm_info->mul,
-            info_C->csrgemm_info->add);
+            mul,
+            add);
 
         if(info_C->csrgemm_info->mul == true)
         {
@@ -1166,10 +1257,28 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_multadd(rocsparse_handle   
     }
 
     // Check valid pointers
-    if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
-       || csr_row_ptr_B == nullptr || descr_D == nullptr || csr_row_ptr_D == nullptr
-       || descr_C == nullptr || csr_row_ptr_C == nullptr || nnz_C == nullptr
-       || temp_buffer == nullptr)
+    if(descr_A == nullptr || descr_B == nullptr || descr_D == nullptr || descr_C == nullptr
+       || nnz_C == nullptr || temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(m > 0 && csr_row_ptr_A == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(k > 0 && csr_row_ptr_B == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(m > 0 && csr_row_ptr_C == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(m > 0 && csr_row_ptr_D == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -1194,14 +1303,17 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_multadd(rocsparse_handle   
     {
         return rocsparse_status_not_implemented;
     }
+
     if(descr_B->type != rocsparse_matrix_type_general)
     {
         return rocsparse_status_not_implemented;
     }
+
     if(descr_D->type != rocsparse_matrix_type_general)
     {
         return rocsparse_status_not_implemented;
     }
+
     if(descr_C->type != rocsparse_matrix_type_general)
     {
         return rocsparse_status_not_implemented;
@@ -1332,10 +1444,23 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_mult(rocsparse_handle      
         return rocsparse_status_invalid_size;
     }
 
+    if(m > 0 && csr_row_ptr_A == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(k > 0 && csr_row_ptr_B == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(m > 0 && csr_row_ptr_C == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
     // Check valid pointers
-    if(descr_A == nullptr || csr_row_ptr_A == nullptr || descr_B == nullptr
-       || csr_row_ptr_B == nullptr || descr_C == nullptr || csr_row_ptr_C == nullptr
-       || nnz_C == nullptr || temp_buffer == nullptr)
+    if(descr_A == nullptr || descr_B == nullptr || descr_C == nullptr || nnz_C == nullptr)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -1379,12 +1504,31 @@ static inline rocsparse_status rocsparse_csrgemm_nnz_mult(rocsparse_handle      
             *nnz_C = 0;
         }
 
+        if(m > 0)
+        {
+#define CSRGEMM_DIM 1024
+            hipLaunchKernelGGL((csrgemm_set_base<CSRGEMM_DIM>),
+                               dim3((m + 1) / CSRGEMM_DIM + 1),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               stream,
+                               m + 1,
+                               csr_row_ptr_C,
+                               descr_C->base);
+#undef CSRGEMM_DIM
+        }
+
         return rocsparse_status_success;
     }
 
     if((trans_A != rocsparse_operation_none) || (trans_B != rocsparse_operation_none))
     {
         return rocsparse_status_not_implemented;
+    }
+
+    if(temp_buffer == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
     }
 
     // Perform nnz calculation
@@ -1438,6 +1582,7 @@ rocsparse_status rocsparse_csrgemm_nnz_template(rocsparse_handle          handle
                                                 const rocsparse_mat_info  info_C,
                                                 void*                     temp_buffer)
 {
+
     // Check for valid handle and info structure
     if(handle == nullptr)
     {
@@ -1499,9 +1644,40 @@ rocsparse_status rocsparse_csrgemm_nnz_template(rocsparse_handle          handle
         return rocsparse_status_invalid_pointer;
     }
 
+    // quick return
+    if(m == 0 || n == 0
+       || (info_C->csrgemm_info->mul == false && info_C->csrgemm_info->add == false))
+    {
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            RETURN_IF_HIP_ERROR(hipMemsetAsync(nnz_C, 0, sizeof(I), handle->stream));
+        }
+        else
+        {
+            *nnz_C = 0;
+        }
+
+        if(m > 0)
+        {
+
+#define CSRGEMM_DIM 1024
+            hipLaunchKernelGGL((csrgemm_set_base<CSRGEMM_DIM>),
+                               dim3((m + 1) / CSRGEMM_DIM + 1),
+                               dim3(CSRGEMM_DIM),
+                               0,
+                               handle->stream,
+                               m + 1,
+                               csr_row_ptr_C,
+                               descr_C->base);
+#undef CSRGEMM_DIM
+        }
+        return rocsparse_status_success;
+    }
+
     // Either mult, add or multadd need to be performed
     if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == true)
     {
+
         // C = alpha * A * B + beta * D
         return rocsparse_csrgemm_nnz_multadd(handle,
                                              trans_A,
@@ -1529,6 +1705,7 @@ rocsparse_status rocsparse_csrgemm_nnz_template(rocsparse_handle          handle
     }
     else if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == false)
     {
+
         // C = alpha * A * B
         return rocsparse_csrgemm_nnz_mult(handle,
                                           trans_A,
@@ -1550,8 +1727,9 @@ rocsparse_status rocsparse_csrgemm_nnz_template(rocsparse_handle          handle
                                           info_C,
                                           temp_buffer);
     }
-    else if(info_C->csrgemm_info->mul == false && info_C->csrgemm_info->add == true)
+    else
     {
+        assert(info_C->csrgemm_info->mul == false && info_C->csrgemm_info->add == true);
         // C = beta * D
         return rocsparse_csrgemm_nnz_scal(handle,
                                           m,
@@ -1566,13 +1744,6 @@ rocsparse_status rocsparse_csrgemm_nnz_template(rocsparse_handle          handle
                                           info_C,
                                           temp_buffer);
     }
-    else
-    {
-        // C = 0
-        return rocsparse_status_invalid_pointer;
-    }
-
-    return rocsparse_status_success;
 }
 
 #define INSTANTIATE(ITYPE, JTYPE)                                           \

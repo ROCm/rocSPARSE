@@ -1729,7 +1729,7 @@ public:
                           rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
                           rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
     {
-        csr_row_ptr.resize(M + 1, static_cast<I>(base));
+        csr_row_ptr.resize((M > 0) ? (M + 1) : 0, static_cast<I>(base));
         csr_col_ind.resize(0);
         csr_val.resize(0);
 
@@ -1747,7 +1747,7 @@ public:
                             J&                   col_block_dim,
                             rocsparse_index_base base)
     {
-        bsr_row_ptr.resize(Mb + 1, static_cast<I>(base));
+        bsr_row_ptr.resize((Mb > 0) ? (Mb + 1) : 0, static_cast<I>(base));
         bsr_col_ind.resize(0);
         bsr_val.resize(0);
 

@@ -67,7 +67,8 @@ struct gebsx_matrix
         , row_block_dim(row_block_dim_)
         , col_block_dim(col_block_dim_)
         , base(base_)
-        , ptr((rocsparse_direction_row == direction_) ? (mb + 1) : (nb + 1))
+        , ptr((rocsparse_direction_row == direction_) ? ((mb > 0) ? (mb + 1) : 0)
+                                                      : ((nb > 0) ? (nb + 1) : 0))
         , ind(nnzb)
         , val(nnzb * row_block_dim * col_block_dim){};
 
@@ -112,11 +113,37 @@ struct gebsx_matrix
         unit_check_scalar<I>(this->nnzb, that.nnzb);
         unit_check_scalar<J>(this->row_block_dim, that.row_block_dim);
         unit_check_scalar<J>(this->col_block_dim, that.col_block_dim);
-        this->ind.unit_check(that.ind);
-        this->ptr.unit_check(that.ptr);
+        switch(direction_)
+        {
+        case rocsparse_direction_row:
+        {
+            if(this->mb > 0)
+            {
+                this->ptr.unit_check(that.ptr);
+            }
+            break;
+        }
+        case rocsparse_direction_column:
+        {
+            if(this->nb > 0)
+            {
+                this->ptr.unit_check(that.ptr);
+            }
+            break;
+        }
+        }
+
+        if(this->nnzb > 0)
+        {
+            this->ind.unit_check(that.ind);
+        }
+
         if(check_values)
         {
-            this->val.unit_check(that.val);
+            if(this->nnzb > 0)
+            {
+                this->val.unit_check(that.val);
+            }
         }
     }
 
@@ -147,14 +174,32 @@ struct gebsx_matrix
             return true;
         if(this->col_block_dim <= 0)
             return true;
-        if(direction_ == rocsparse_direction_row && this->ptr.size() != this->mb + 1)
-            return true;
-        else if(direction_ == rocsparse_direction_column && this->ptr.size() != this->nb + 1)
-            return true;
-        if(this->ind.size() != this->nnzb * this->row_block_dim * this->col_block_dim)
-            return true;
-        if(this->val.size() != this->nnzb * this->row_block_dim * this->col_block_dim)
-            return true;
+        switch(direction_)
+        {
+        case rocsparse_direction_row:
+        {
+            if(this->mb > 0)
+            {
+                if(this->ptr.size() != (this->mb + 1))
+                {
+                    return true;
+                }
+            }
+            break;
+        }
+        case rocsparse_direction_column:
+        {
+            if(this->nb > 0)
+            {
+                if(this->ptr.size() != (this->nb + 1))
+                {
+                    return true;
+                }
+            }
+            break;
+        }
+        }
+
         return false;
     };
 
@@ -186,7 +231,7 @@ struct gebsx_matrix
             this->mb = mb_;
             if(direction_ == rocsparse_direction_row)
             {
-                this->ptr.resize(this->mb + 1);
+                this->ptr.resize((this->mb > 0) ? (this->mb + 1) : 0);
             }
         }
 
@@ -195,7 +240,7 @@ struct gebsx_matrix
             this->nb = nb_;
             if(direction_ == rocsparse_direction_column)
             {
-                this->ptr.resize(this->nb + 1);
+                this->ptr.resize((this->nb > 0) ? (this->nb + 1) : 0);
             }
         }
 
@@ -222,9 +267,15 @@ struct gebsx_matrix
                             ? hipSuccess
                             : hipErrorInvalidValue);
 
-        this->ptr.transfer_from(that.ptr);
-        this->ind.transfer_from(that.ind);
-        this->val.transfer_from(that.val);
+        if(this->mb > 0)
+        {
+            this->ptr.transfer_from(that.ptr);
+        }
+        if(this->nnzb > 0)
+        {
+            this->ind.transfer_from(that.ind);
+            this->val.transfer_from(that.val);
+        }
     };
 
     template <memory_mode::value_t THAT_MODE>

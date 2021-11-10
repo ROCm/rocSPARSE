@@ -26,14 +26,16 @@
 #include "testing.hpp"
 
 template <typename T>
-void testing_csrgemm_bad_arg(const Arguments& arg)
+void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
 {
     static const size_t safe_size = 100;
-    T                   h_alpha   = 0.6;
-    T                   h_beta    = 0.2;
+
+    T h_alpha = 0.6;
+    T h_beta  = 0.2;
 
     // Create rocsparse handle
     rocsparse_local_handle local_handle;
+
     // Create matrix descriptors
     rocsparse_local_mat_descr local_descr_A;
     rocsparse_local_mat_descr local_descr_B;
@@ -59,7 +61,7 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
     rocsparse_int*            csr_row_ptr_C = (rocsparse_int*)0x4;
     rocsparse_int*            csr_col_ind_C = (rocsparse_int*)0x4;
     rocsparse_int*            pnnz_C        = (rocsparse_int*)0x4;
-
+    rocsparse_int             nnz_C         = safe_size;
 #define PARAMS_BUFFER_SIZE                                                                  \
     handle, trans_A, trans_B, m, n, k, alpha, descr_A, nnz_A, csr_row_ptr_A, csr_col_ind_A, \
         descr_B, nnz_B, csr_row_ptr_B, csr_col_ind_B, beta, descr_D, nnz_D, csr_row_ptr_D,  \
@@ -70,10 +72,15 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
         nnz_B, csr_row_ptr_B, csr_col_ind_B, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D,    \
         descr_C, csr_row_ptr_C, pnnz_C, info_C, temp_buffer
 
-#define PARAMS                                                                                 \
-    handle, trans_A, trans_B, m, n, k, alpha, descr_A, nnz_A, csr_val_A, csr_row_ptr_A,        \
-        csr_col_ind_A, descr_B, nnz_B, csr_val_B, csr_row_ptr_B, csr_col_ind_B, beta, descr_D, \
-        nnz_D, csr_val_D, csr_row_ptr_D, csr_col_ind_D, descr_C, csr_val_C, csr_row_ptr_C,     \
+#define PARAMS_SYMBOLIC                                                                       \
+    handle, trans_A, trans_B, m, n, k, descr_A, nnz_A, csr_row_ptr_A, csr_col_ind_A, descr_B, \
+        nnz_B, csr_row_ptr_B, csr_col_ind_B, descr_D, nnz_D, csr_row_ptr_D, csr_col_ind_D,    \
+        descr_C, nnz_C, csr_row_ptr_C, csr_col_ind_C, info_C, temp_buffer
+
+#define PARAMS_NUMERIC                                                                            \
+    handle, trans_A, trans_B, m, n, k, alpha, descr_A, nnz_A, csr_val_A, csr_row_ptr_A,           \
+        csr_col_ind_A, descr_B, nnz_B, csr_val_B, csr_row_ptr_B, csr_col_ind_B, beta, descr_D,    \
+        nnz_D, csr_val_D, csr_row_ptr_D, csr_col_ind_D, descr_C, nnz_C, csr_val_C, csr_row_ptr_C, \
         csr_col_ind_C, info_C, temp_buffer
 
     // 4 Scenarios need to be tested:
@@ -131,7 +138,11 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
         auto_testing_bad_arg(
             rocsparse_csrgemm_nnz, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
 
-        auto_testing_bad_arg(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+        auto_testing_bad_arg(
+            rocsparse_csrgemm_symbolic, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_SYMBOLIC);
+
+        auto_testing_bad_arg(
+            rocsparse_csrgemm_numeric<T>, nargs_to_exclude, args_to_exclude, PARAMS_NUMERIC);
     }
 
     // ###############################################
@@ -175,16 +186,18 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
                              nargs_to_exclude_buffer_size,
                              args_to_exclude_buffer_size,
                              PARAMS_BUFFER_SIZE);
+
         auto_testing_bad_arg(
             rocsparse_csrgemm_nnz, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
-
-        auto_testing_bad_arg(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+        auto_testing_bad_arg(
+            rocsparse_csrgemm_symbolic, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_SYMBOLIC);
+        auto_testing_bad_arg(
+            rocsparse_csrgemm_numeric<T>, nargs_to_exclude, args_to_exclude, PARAMS_NUMERIC);
     }
 
     // ###############################################
     // Scenario 3: alpha == nullptr && beta != nullptr
     // ###############################################
-
     {
         // In this scenario matrices A == B == nullptr and D != nullptr
         int nargs_to_exclude_buffer_size = 9;
@@ -223,16 +236,20 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
                              nargs_to_exclude_buffer_size,
                              args_to_exclude_buffer_size,
                              PARAMS_BUFFER_SIZE);
+
         auto_testing_bad_arg(
             rocsparse_csrgemm_nnz, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
 
-        auto_testing_bad_arg(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+        auto_testing_bad_arg(
+            rocsparse_csrgemm_symbolic, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_SYMBOLIC);
+
+        auto_testing_bad_arg(
+            rocsparse_csrgemm_numeric<T>, nargs_to_exclude, args_to_exclude, PARAMS_NUMERIC);
     }
 
     // ###############################################
     // Scenario 4: alpha != nullptr && beta != nullptr
     // ###############################################
-
     {
         // In this scenario matrices A != B != D != nullptr
         int nargs_to_exclude_buffer_size = 2;
@@ -269,14 +286,16 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
                              nargs_to_exclude_buffer_size,
                              args_to_exclude_buffer_size,
                              PARAMS_BUFFER_SIZE);
+
         auto_testing_bad_arg(rocsparse_csrgemm_nnz, PARAMS_NNZ);
-        auto_testing_bad_arg(rocsparse_csrgemm<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+        auto_testing_bad_arg(rocsparse_csrgemm_symbolic, PARAMS_SYMBOLIC);
+        auto_testing_bad_arg(
+            rocsparse_csrgemm_numeric<T>, nargs_to_exclude, args_to_exclude, PARAMS_NUMERIC);
     }
 
     //
     // Not implemented cases.
     //
-
     {
         const T* alpha = &h_alpha;
         const T* beta  = &h_beta;
@@ -352,25 +371,55 @@ void testing_csrgemm_bad_arg(const Arguments& arg)
         {
             rocsparse_operation op = trans_A;
             trans_A                = rocsparse_operation_transpose;
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm<T>(PARAMS), rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC),
+                                    rocsparse_status_not_implemented);
             trans_A = op;
 
             trans_A = rocsparse_operation_conjugate_transpose;
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm<T>(PARAMS), rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC),
+                                    rocsparse_status_not_implemented);
             trans_A = op;
 
             op      = trans_B;
             trans_B = rocsparse_operation_transpose;
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm<T>(PARAMS), rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC),
+                                    rocsparse_status_not_implemented);
             trans_B = op;
             op      = trans_B;
             trans_B = rocsparse_operation_conjugate_transpose;
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm<T>(PARAMS), rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC),
+                                    rocsparse_status_not_implemented);
+            trans_B = op;
+        }
+
+        {
+            rocsparse_operation op = trans_A;
+            trans_A                = rocsparse_operation_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_numeric<T>(PARAMS_NUMERIC),
+                                    rocsparse_status_not_implemented);
+            trans_A = op;
+
+            trans_A = rocsparse_operation_conjugate_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_numeric<T>(PARAMS_NUMERIC),
+                                    rocsparse_status_not_implemented);
+            trans_A = op;
+
+            op      = trans_B;
+            trans_B = rocsparse_operation_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_numeric<T>(PARAMS_NUMERIC),
+                                    rocsparse_status_not_implemented);
+            trans_B = op;
+            op      = trans_B;
+            trans_B = rocsparse_operation_conjugate_transpose;
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_numeric<T>(PARAMS_NUMERIC),
+                                    rocsparse_status_not_implemented);
             trans_B = op;
         }
     }
 
 #undef PARAMS
+#undef PARAMS_SYMBOLIC
+#undef PARAMS_NUMERIC
 #undef PARAMS_NNZ
 #undef PARAMS_BUFFER_SIZE
 }
@@ -384,9 +433,8 @@ enum testing_csrgemm_scenario
 };
 
 template <typename T>
-void testing_csrgemm(const Arguments& arg)
+void testing_csrgemm_reuse(const Arguments& arg)
 {
-
     rocsparse_int         M         = arg.M;
     rocsparse_int         N         = arg.N;
     rocsparse_int         K         = arg.K;
@@ -431,6 +479,15 @@ void testing_csrgemm(const Arguments& arg)
     handle, transA, transB, A.m, C.n, A.n, alpha, descrA, A.nnz, A.val, A.ptr, A.ind, descrB, \
         B.nnz, B.val, B.ptr, B.ind, beta, descrD, D.nnz, D.val, D.ptr, D.ind, descrC, C.val,  \
         C.ptr, C.ind, info, dbuffer
+
+#define PARAMS_SYMBOLIC(A, B, C, D)                                                           \
+    handle, transA, transB, A.m, C.n, A.n, descrA, A.nnz, A.ptr, A.ind, descrB, B.nnz, B.ptr, \
+        B.ind, descrD, D.nnz, D.ptr, D.ind, descrC, C.nnz, C.ptr, C.ind, info, dbuffer
+
+#define PARAMS_NUMERIC(alpha, beta, A, B, C, D)                                               \
+    handle, transA, transB, A.m, C.n, A.n, alpha, descrA, A.nnz, A.val, A.ptr, A.ind, descrB, \
+        B.nnz, B.val, B.ptr, B.ind, beta, descrD, D.nnz, D.val, D.ptr, D.ind, descrC, C.nnz,  \
+        C.val, C.ptr, C.ind, info, dbuffer
 
     // 4 Scenarios need to be tested:
 
@@ -487,7 +544,7 @@ void testing_csrgemm(const Arguments& arg)
     //
     // Argument sanity check before allocating invalid memory
     //
-    if((M <= 0 || N <= 0 || K <= 0) || scenario == testing_csrgemm_scenario_none)
+    if((M == 0 || N == 0 || K == 0))
     {
 
         device_csr_matrix<T> d_A, d_B, d_C, d_D;
@@ -498,32 +555,15 @@ void testing_csrgemm(const Arguments& arg)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-        size_t           out_buffer_size;
-        rocsparse_int    out_nnz;
-        rocsparse_status status_1 = rocsparse_csrgemm_buffer_size<T>(
-            PARAMS_BUFFER_SIZE(h_alpha, h_beta, d_A, d_B, d_C, d_D, out_buffer_size));
-        rocsparse_status status_2 = rocsparse_csrgemm_nnz(PARAMS_NNZ(d_A, d_B, d_C, d_D, &out_nnz));
-        rocsparse_status status_3
-            = rocsparse_csrgemm<T>(PARAMS(h_alpha, h_beta, d_A, d_B, d_C, d_D));
+        size_t        out_buffer_size;
+        rocsparse_int out_nnz;
 
-        EXPECT_ROCSPARSE_STATUS(status_1,
-                                (M < 0 || N < 0 || K < 0) ? rocsparse_status_invalid_size
-                                : scenario == testing_csrgemm_scenario_none
-                                    ? rocsparse_status_invalid_pointer
-                                    : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(status_2,
-                                (M < 0 || N < 0 || K < 0) ? rocsparse_status_invalid_size
-                                : scenario == testing_csrgemm_scenario_none
-                                    ? rocsparse_status_invalid_pointer
-                                    : rocsparse_status_success);
-
-        EXPECT_ROCSPARSE_STATUS(status_3,
-                                (M < 0 || N < 0 || K < 0) ? rocsparse_status_invalid_size
-                                : scenario == testing_csrgemm_scenario_none
-                                    ? rocsparse_status_invalid_pointer
-                                    : rocsparse_status_success);
-        return;
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_buffer_size<T>(
+            PARAMS_BUFFER_SIZE(h_alpha, h_beta, d_A, d_B, d_C, d_D, out_buffer_size)));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_nnz(PARAMS_NNZ(d_A, d_B, d_C, d_D, &out_nnz)));
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC(d_A, d_B, d_C, d_D)));
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_csrgemm_numeric<T>(PARAMS_NUMERIC(h_alpha, h_beta, d_A, d_B, d_C, d_D)));
     }
 
     //
@@ -537,6 +577,7 @@ void testing_csrgemm(const Arguments& arg)
     {
         rocsparse_matrix_factory<T> matrix_factory(arg, arg.timing ? false : true, full_rank);
         matrix_factory.init_csr(h_A, M, K, baseA);
+
         switch(scenario)
         {
         case testing_csrgemm_scenario_none:
@@ -600,6 +641,7 @@ void testing_csrgemm(const Arguments& arg)
 
     if(arg.unit_check)
     {
+
         //
         // Host calculation.
         //
@@ -653,27 +695,32 @@ void testing_csrgemm(const Arguments& arg)
             //
             // GPU with pointer mode host
             //
-            host_scalar<rocsparse_int> h_out_nnz;
+            rocsparse_int out_nnz;
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-            CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_nnz(PARAMS_NNZ(d_A, d_B, d_C, d_D, h_out_nnz)));
-            d_C.define(d_C.m, d_C.n, *h_out_nnz, d_C.base);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_nnz(PARAMS_NNZ(d_A, d_B, d_C, d_D, &out_nnz)));
+            d_C.define(d_C.m, d_C.n, out_nnz, d_C.base);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC(d_A, d_B, d_C, d_D)));
             CHECK_ROCSPARSE_ERROR(
-                rocsparse_csrgemm<T>(PARAMS(h_alpha, h_beta, d_A, d_B, d_C, d_D)));
+                rocsparse_csrgemm_numeric<T>(PARAMS_NUMERIC(h_alpha, h_beta, d_A, d_B, d_C, d_D)));
             h_C.near_check(d_C);
         }
+
+        d_C.define(d_C.m, d_C.n, 0, d_C.base);
+
         {
             //
-            // GPU with pointer mode host
+            // GPU with pointer mode device
             //
             device_scalar<rocsparse_int> d_out_nnz;
             CHECK_ROCSPARSE_ERROR(
                 rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
             CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_nnz(PARAMS_NNZ(d_A, d_B, d_C, d_D, d_out_nnz)));
+
             host_scalar<rocsparse_int> h_out_nnz(d_out_nnz);
-            d_C.define(d_C.m, d_C.n, 0, d_C.base);
             d_C.define(d_C.m, d_C.n, *h_out_nnz, d_C.base);
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC(d_A, d_B, d_C, d_D)));
             CHECK_ROCSPARSE_ERROR(
-                rocsparse_csrgemm<T>(PARAMS(d_alpha, d_beta, d_A, d_B, d_C, d_D)));
+                rocsparse_csrgemm_numeric<T>(PARAMS_NUMERIC(d_alpha, d_beta, d_A, d_B, d_C, d_D)));
             h_C.near_check(d_C);
         }
     }
@@ -688,41 +735,42 @@ void testing_csrgemm(const Arguments& arg)
 
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-        //
-        // WARM UP
-        //
         rocsparse_int out_nnz;
         CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_nnz(PARAMS_NNZ(d_A, d_B, d_C, d_D, &out_nnz)));
         d_C.define(d_C.m, d_C.n, out_nnz, d_C.base);
 
+        //
+        // WARM UP
+        //
         for(int iter = 0; iter < number_cold_calls; ++iter)
         {
-            CHECK_ROCSPARSE_ERROR(
-                rocsparse_csrgemm<T>(PARAMS(h_alpha, h_beta, d_A, d_B, d_C, d_D)));
+            CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC(d_A, d_B, d_C, d_D)));
         }
 
-        ROCSPARSE_TIMER_IN(gpu_solve_time_used);
+        ROCSPARSE_TIMER_IN(gpu_num_time_used)
         {
             for(int iter = 0; iter < number_hot_calls; ++iter)
             {
-                CHECK_ROCSPARSE_ERROR(
-                    rocsparse_csrgemm<T>(PARAMS(h_alpha, h_beta, d_A, d_B, d_C, d_D)));
+                CHECK_ROCSPARSE_ERROR(rocsparse_csrgemm_numeric<T>(
+                    PARAMS_NUMERIC(h_alpha, h_beta, d_A, d_B, d_C, d_D)));
             }
         }
-        ROCSPARSE_TIMER_OUT(gpu_solve_time_used);
+        ROCSPARSE_TIMER_OUT(gpu_num_time_used);
         hipDeviceSynchronize();
 
 #undef PARAMS
 #undef PARAM_NNZ
 #undef PARAMS_BUFFER_SIZE
+#undef PARAMS_SYMBOLIC
+#undef PARAMS_NUMERIC
 
         double gflop_count = csrgemm_gflop_count<T, rocsparse_int, rocsparse_int>(
             M, h_alpha, h_A.ptr, h_A.ind, h_B.ptr, h_beta, h_D.ptr, h_A.base);
         double gbyte_count = csrgemm_gbyte_count<T, rocsparse_int, rocsparse_int>(
             M, N, K, d_A.nnz, d_B.nnz, d_C.nnz, d_D.nnz, h_alpha, h_beta);
 
-        double gpu_gflops = get_gpu_gflops(gpu_solve_time_used, gflop_count);
-        double gpu_gbyte  = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
+        double gpu_gflops = get_gpu_gflops(gpu_num_time_used, gflop_count);
+        double gpu_gbyte  = get_gpu_gbyte(gpu_num_time_used, gbyte_count);
 
         char alpha[32], beta[32];
         sprintf(alpha, "null");
@@ -768,7 +816,7 @@ void testing_csrgemm(const Arguments& arg)
                             "GB/s",
                             gpu_gbyte,
                             "msec",
-                            get_gpu_time_msec(gpu_solve_time_used),
+                            get_gpu_time_msec(gpu_num_time_used),
                             "iter",
                             number_hot_calls,
                             "verified",
@@ -779,9 +827,9 @@ void testing_csrgemm(const Arguments& arg)
     CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
-#define INSTANTIATE(TYPE)                                              \
-    template void testing_csrgemm_bad_arg<TYPE>(const Arguments& arg); \
-    template void testing_csrgemm<TYPE>(const Arguments& arg)
+#define INSTANTIATE(TYPE)                                                    \
+    template void testing_csrgemm_reuse_bad_arg<TYPE>(const Arguments& arg); \
+    template void testing_csrgemm_reuse<TYPE>(const Arguments& arg)
 INSTANTIATE(float);
 INSTANTIATE(double);
 INSTANTIATE(rocsparse_float_complex);

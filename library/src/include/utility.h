@@ -176,6 +176,12 @@ std::string replaceX(std::string input_string)
     return input_string;
 }
 
+//
+// These macros can be redefined if the developer includes src/include/debug.h
+//
+#define ROCSPARSE_DEBUG_VERBOSE(msg__) (void)0
+#define ROCSPARSE_RETURN_STATUS(token__) return rocsparse_status_##token__
+
 // Convert the current C++ exception to rocsparse_status
 // This allows extern "C" functions to return this function in a catch(...) block
 // while converting all C++ exceptions to an equivalent rocsparse_status here
@@ -570,6 +576,8 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_spgemm_stage value_)
     case rocsparse_spgemm_stage_buffer_size:
     case rocsparse_spgemm_stage_nnz:
     case rocsparse_spgemm_stage_compute:
+    case rocsparse_spgemm_stage_symbolic:
+    case rocsparse_spgemm_stage_numeric:
     {
         return false;
     }
