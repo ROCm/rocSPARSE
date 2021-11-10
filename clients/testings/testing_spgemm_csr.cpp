@@ -304,16 +304,19 @@ void testing_spgemm_csr(const Arguments& arg)
             std::max(M, static_cast<J>(0)), std::max(K, static_cast<J>(0)), nnz_A, base_A);
         dA.m = M; // not fancy but okay.
         dA.n = K;
+
         device_csr dB(
             std::max(K, static_cast<J>(0)), std::max(N, static_cast<J>(0)), nnz_B, base_B);
         dB.m = K;
         dB.n = N;
+
         device_csr dC(std::max(M, static_cast<J>(0)),
                       std::max(N, static_cast<J>(0)),
                       static_cast<I>(0),
                       base_C);
         dC.m = M;
         dC.n = N;
+
         device_csr dD(
             std::max(M, static_cast<J>(0)), std::max(N, static_cast<J>(0)), nnz_D, base_D);
         dD.m = M;
@@ -345,6 +348,7 @@ void testing_spgemm_csr(const Arguments& arg)
             int64_t                  nnz_C;
             static constexpr int64_t zero = 0;
             CHECK_ROCSPARSE_ERROR(rocsparse_spmat_get_size(C, &rows_C, &cols_C, &nnz_C));
+
             unit_check_scalar(zero, nnz_C);
         }
 
@@ -358,7 +362,6 @@ void testing_spgemm_csr(const Arguments& arg)
     // Declare host matrices.
     //
     host_csr hA, hB, hD;
-
     //
     // Init matrix A from the input rocsparse_matrix_init
     //
@@ -370,7 +373,6 @@ void testing_spgemm_csr(const Arguments& arg)
         rocsparse_matrix_factory<T, I, J> matrix_factory(arg, to_int, full_rank);
         matrix_factory.init_csr(hA, M, K, arg.baseA);
     }
-
     //
     // Init matrix B and D from rocsparse_matrix_init random.
     //
@@ -385,13 +387,14 @@ void testing_spgemm_csr(const Arguments& arg)
     //
     // Declare device matrices.
     //
-    device_csr dA(hA), dB(hB), dD(hD);
+    device_csr dA(hA);
+    device_csr dB(hB);
+    device_csr dD(hD);
 
     //
     // Declare local spmat.
     //
     rocsparse_local_spmat A(dA), B(dB), D(dD);
-
     if(arg.unit_check)
     {
         //
@@ -402,47 +405,47 @@ void testing_spgemm_csr(const Arguments& arg)
         {
             I hC_nnz = 0;
             hC.define(M, N, hC_nnz, base_C);
-            host_csrgemm_nnz(M,
-                             N,
-                             K,
-                             h_alpha_ptr,
-                             hA.ptr,
-                             hA.ind,
-                             hB.ptr,
-                             hB.ind,
-                             h_beta_ptr,
-                             hD.ptr,
-                             hD.ind,
-                             hC.ptr,
-                             &hC_nnz,
-                             hA.base,
-                             hB.base,
-                             hC.base,
-                             hD.base);
+            host_csrgemm_nnz<T, I, J>(M,
+                                      N,
+                                      K,
+                                      h_alpha_ptr,
+                                      hA.ptr,
+                                      hA.ind,
+                                      hB.ptr,
+                                      hB.ind,
+                                      h_beta_ptr,
+                                      hD.ptr,
+                                      hD.ind,
+                                      hC.ptr,
+                                      &hC_nnz,
+                                      hA.base,
+                                      hB.base,
+                                      hC.base,
+                                      hD.base);
             hC.define(hC.m, hC.n, hC_nnz, hC.base);
         }
 
-        host_csrgemm(M,
-                     N,
-                     K,
-                     h_alpha_ptr,
-                     hA.ptr,
-                     hA.ind,
-                     hA.val,
-                     hB.ptr,
-                     hB.ind,
-                     hB.val,
-                     h_beta_ptr,
-                     hD.ptr,
-                     hD.ind,
-                     hD.val,
-                     hC.ptr,
-                     hC.ind,
-                     hC.val,
-                     hA.base,
-                     hB.base,
-                     hC.base,
-                     hD.base);
+        host_csrgemm<T, I, J>(M,
+                              N,
+                              K,
+                              h_alpha_ptr,
+                              hA.ptr,
+                              hA.ind,
+                              hA.val,
+                              hB.ptr,
+                              hB.ind,
+                              hB.val,
+                              h_beta_ptr,
+                              hD.ptr,
+                              hD.ind,
+                              hD.val,
+                              hC.ptr,
+                              hC.ind,
+                              hC.val,
+                              hA.base,
+                              hB.base,
+                              hC.base,
+                              hD.base);
 
         //
         // Compute C on device with mode host.
@@ -656,10 +659,10 @@ void testing_spgemm_csr(const Arguments& arg)
         }
 
         double gpu_gflops = csrgemm_gflop_count<T, I, J>(
-                                M, h_alpha_ptr, dA.ptr, dA.ind, dB.ptr, h_beta_ptr, dD.ptr, dA.base)
+                                M, h_alpha_ptr, hA.ptr, hA.ind, hB.ptr, h_beta_ptr, hD.ptr, hA.base)
                             / gpu_solve_time_used * 1e6;
 
-        double gpu_gbyte = csrgemm_gbyte_count<I, J, T>(
+        double gpu_gbyte = csrgemm_gbyte_count<T, I, J>(
                                M, N, K, dA.nnz, dB.nnz, C_nnz, dD.nnz, h_alpha_ptr, h_beta_ptr)
                            / gpu_solve_time_used * 1e6;
 

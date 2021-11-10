@@ -66,6 +66,8 @@
 
 // Extra
 #include "testing_csrgeam.hpp"
+#include "testing_csrgemm.hpp"
+#include "testing_csrgemm_reuse.hpp"
 #include "testing_spgemm_csr.hpp"
 
 // Preconditioner
@@ -299,7 +301,7 @@ int main(int argc, char* argv[])
         "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
         "  Level2: bsrmv, bsrxmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, coosv, ellmv, hybmv, gebsrmv, gemvi\n"
         "  Level3: bsrmm, bsrsm, gebsrmm, csrmm, coomm, csrsm, coosm, gemmi, sddmm\n"
-        "  Extra: csrgeam, csrgemm\n"
+        "  Extra: csrgeam, csrgemm, csrgemm_reuse\n"
         "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, gtsv, gtsv_no_pivot, gtsv_no_pivot_strided_batch\n"
         "  Conversion: csr2coo, csr2csc, gebsr2gebsc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
         "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2coo, prune_dense2csr, prune_dense2csr_by_percentage, dense2csc\n"
@@ -1146,39 +1148,38 @@ int main(int argc, char* argv[])
     {
         if(precision == 's')
         {
-            if(indextype == 's')
-                testing_spgemm_csr<int32_t, int32_t, float>(arg);
-            else if(indextype == 'm')
-                testing_spgemm_csr<int64_t, int32_t, float>(arg);
-            else if(indextype == 'd')
-                testing_spgemm_csr<int64_t, int64_t, float>(arg);
+            testing_csrgemm<float>(arg);
         }
         else if(precision == 'd')
         {
-            if(indextype == 's')
-                testing_spgemm_csr<int32_t, int32_t, double>(arg);
-            else if(indextype == 'm')
-                testing_spgemm_csr<int64_t, int32_t, double>(arg);
-            else if(indextype == 'd')
-                testing_spgemm_csr<int64_t, int64_t, double>(arg);
+            testing_csrgemm<double>(arg);
         }
         else if(precision == 'c')
         {
-            if(indextype == 's')
-                testing_spgemm_csr<int32_t, int32_t, rocsparse_float_complex>(arg);
-            else if(indextype == 'm')
-                testing_spgemm_csr<int64_t, int32_t, rocsparse_float_complex>(arg);
-            else if(indextype == 'd')
-                testing_spgemm_csr<int64_t, int64_t, rocsparse_float_complex>(arg);
+            testing_csrgemm<rocsparse_float_complex>(arg);
         }
         else if(precision == 'z')
         {
-            if(indextype == 's')
-                testing_spgemm_csr<int32_t, int32_t, rocsparse_double_complex>(arg);
-            else if(indextype == 'm')
-                testing_spgemm_csr<int64_t, int32_t, rocsparse_double_complex>(arg);
-            else if(indextype == 'd')
-                testing_spgemm_csr<int64_t, int64_t, rocsparse_double_complex>(arg);
+            testing_csrgemm<rocsparse_double_complex>(arg);
+        }
+    }
+    else if(function == "csrgemm_reuse")
+    {
+        if(precision == 's')
+        {
+            testing_csrgemm_reuse<float>(arg);
+        }
+        else if(precision == 'd')
+        {
+            testing_csrgemm_reuse<double>(arg);
+        }
+        else if(precision == 'c')
+        {
+            testing_csrgemm_reuse<rocsparse_float_complex>(arg);
+        }
+        else if(precision == 'z')
+        {
+            testing_csrgemm_reuse<rocsparse_double_complex>(arg);
         }
     }
     else if(function == "sddmm")

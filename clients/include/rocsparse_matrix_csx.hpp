@@ -55,9 +55,11 @@ struct csx_matrix
         , n(n_)
         , nnz(nnz_)
         , base(base_)
-        , ptr((rocsparse_direction_row == DIRECTION) ? (m_ + 1) : (n_ + 1))
+        , ptr((rocsparse_direction_row == DIRECTION) ? ((m_ > 0) ? (m_ + 1) : 0)
+                                                     : ((n_ > 0) ? (n_ + 1) : 0))
         , ind(nnz_)
         , val(nnz_){};
+
     csx_matrix(const csx_matrix<MODE, DIRECTION, T, I, J>& that_, bool transfer = true)
         : csx_matrix<MODE, DIRECTION, T, I, J>(that_.m, that_.n, that_.nnz, that_.base)
     {
@@ -241,8 +243,25 @@ struct csx_matrix
                          && this->dir == that.dir && this->base == that.base)
                             ? hipSuccess
                             : hipErrorInvalidValue);
-
-        this->ptr.transfer_from(that.ptr);
+        switch(DIRECTION)
+        {
+        case rocsparse_direction_row:
+        {
+            if(this->m > 0)
+            {
+                this->ptr.transfer_from(that.ptr);
+            }
+            break;
+        }
+        case rocsparse_direction_column:
+        {
+            if(this->n > 0)
+            {
+                this->ptr.transfer_from(that.ptr);
+            }
+            break;
+        }
+        }
         this->ind.transfer_from(that.ind);
         this->val.transfer_from(that.val);
     };
@@ -272,9 +291,31 @@ struct csx_matrix
                 unit_check_scalar(this->nnz, that_.nnz);
                 unit_check_enum(this->base, that_.base);
 
-                this->ptr.unit_check(that_.ptr);
-                this->ind.unit_check(that_.ind);
-                this->val.unit_check(that_.val);
+                switch(DIRECTION)
+                {
+                case rocsparse_direction_row:
+                {
+                    if(this->m > 0)
+                    {
+                        this->ptr.unit_check(that_.ptr);
+                    }
+                    break;
+                }
+                case rocsparse_direction_column:
+                {
+                    if(this->n > 0)
+                    {
+                        this->ptr.unit_check(that_.ptr);
+                    }
+                    break;
+                }
+                }
+
+                if(this->nnz > 0)
+                {
+                    this->ind.unit_check(that_.ind);
+                    this->val.unit_check(that_.val);
+                }
 
                 break;
             }
@@ -316,9 +357,30 @@ struct csx_matrix
                 unit_check_scalar(this->nnz, that_.nnz);
                 unit_check_enum(this->base, that_.base);
 
-                this->ptr.unit_check(that_.ptr);
-                this->ind.unit_check(that_.ind);
-                this->val.near_check(that_.val, tol);
+                switch(DIRECTION)
+                {
+                case rocsparse_direction_row:
+                {
+                    if(this->m > 0)
+                    {
+                        this->ptr.unit_check(that_.ptr);
+                    }
+                    break;
+                }
+                case rocsparse_direction_column:
+                {
+                    if(this->n > 0)
+                    {
+                        this->ptr.unit_check(that_.ptr);
+                    }
+                    break;
+                }
+                }
+                if(this->nnz > 0)
+                {
+                    this->ind.unit_check(that_.ind);
+                    this->val.near_check(that_.val, tol);
+                }
 
                 break;
             }

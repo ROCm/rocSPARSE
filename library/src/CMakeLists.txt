@@ -126,8 +126,11 @@ set(rocsparse_source
 # Extra
   src/extra/rocsparse_csrgeam.cpp
   src/extra/rocsparse_csrgemm.cpp
+  src/extra/rocsparse_csrgemm_symbolic.cpp
+  src/extra/rocsparse_csrgemm_numeric.cpp
   src/extra/rocsparse_csrgemm_nnz.cpp
   src/extra/rocsparse_spgemm.cpp
+
 
 # Preconditioner
   src/precond/rocsparse_bsric0.cpp

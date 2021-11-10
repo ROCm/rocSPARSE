@@ -63,6 +63,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_gemmi.cpp
 ../testings/testing_csrgeam.cpp
 ../testings/testing_csrgemm.cpp
+../testings/testing_csrgemm_reuse.cpp
 ../testings/testing_bsric0.cpp
 ../testings/testing_bsrilu0.cpp
 ../testings/testing_csric0.cpp

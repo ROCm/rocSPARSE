@@ -2072,10 +2072,32 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_pointer;
     }
 
-    // Either mult, add or multadd need to be performed
-    if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == true)
+    // Quick return if possible
+    if(m == 0 || n == 0)
     {
-        // C = alpha * A * B + beta * D
+        return rocsparse_status_success;
+    }
+
+    if((info_C->csrgemm_info->mul == false || k == 0) && info_C->csrgemm_info->add == true)
+    {
+        return rocsparse_csrgemm_scal_template(handle,
+                                               m,
+                                               n,
+                                               beta,
+                                               descr_D,
+                                               nnz_D,
+                                               csr_val_D,
+                                               csr_row_ptr_D,
+                                               csr_col_ind_D,
+                                               descr_C,
+                                               csr_val_C,
+                                               csr_row_ptr_C,
+                                               csr_col_ind_C,
+                                               info_C,
+                                               temp_buffer);
+    }
+    else if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == true)
+    {
         return rocsparse_csrgemm_multadd_template(handle,
                                                   trans_A,
                                                   trans_B,
@@ -2108,6 +2130,10 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle          handle,
     }
     else if(info_C->csrgemm_info->mul == true && info_C->csrgemm_info->add == false)
     {
+        if(k == 0)
+        {
+            return rocsparse_status_success;
+        }
         // C = alpha * A * B
         return rocsparse_csrgemm_mult_template(handle,
                                                trans_A,
@@ -2133,29 +2159,10 @@ rocsparse_status rocsparse_csrgemm_template(rocsparse_handle          handle,
                                                info_C,
                                                temp_buffer);
     }
-    else if(info_C->csrgemm_info->mul == false && info_C->csrgemm_info->add == true)
-    {
-        // C = beta * D
-        return rocsparse_csrgemm_scal_template(handle,
-                                               m,
-                                               n,
-                                               beta,
-                                               descr_D,
-                                               nnz_D,
-                                               csr_val_D,
-                                               csr_row_ptr_D,
-                                               csr_col_ind_D,
-                                               descr_C,
-                                               csr_val_C,
-                                               csr_row_ptr_C,
-                                               csr_col_ind_C,
-                                               info_C,
-                                               temp_buffer);
-    }
     else
     {
         // C = 0
-        return rocsparse_status_invalid_pointer;
+        return rocsparse_status_success;
     }
 
     return rocsparse_status_success;

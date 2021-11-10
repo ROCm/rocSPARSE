@@ -289,7 +289,7 @@ constexpr double csrgeam_gbyte_count(rocsparse_int M,
     return (size_A + size_B + size_C) / 1e9;
 }
 
-template <typename I, typename J, typename T>
+template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
 constexpr double csrgemm_gbyte_count(
     J M, J N, J K, I nnz_A, I nnz_B, I nnz_C, I nnz_D, const T* alpha, const T* beta)
 {
