@@ -31,29 +31,29 @@ if(BUILD_VERBOSE)
 endif()
 
 # Copy include headers to build directory
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse.h"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse.h"
                "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse.h"
 	       COPYONLY
 )
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse-complex-types.h"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse-complex-types.h"
                "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-complex-types.h"
 	       COPYONLY
 )
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse-types.h"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse-types.h"
                "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-types.h"
 	       COPYONLY
 )
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse-functions.h"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse-functions.h"
                "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-functions.h"
 	       COPYONLY
 )
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse-auxiliary.h"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse-auxiliary.h"
                "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-auxiliary.h"
 	       COPYONLY
 )
 
 # Configure a header file to pass the rocSPARSE version
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse-version.h.in"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse-version.h.in"
                "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-version.h"
 )
 

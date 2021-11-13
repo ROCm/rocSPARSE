@@ -26,7 +26,7 @@
 #ifndef ROCSPARSE_IDENTITY_HPP
 #define ROCSPARSE_IDENTITY_HPP
 
-#include "rocsparse.h"
+#include "rocsparse/rocsparse.h"
 
 template <typename I>
 rocsparse_status rocsparse_create_identity_permutation_template(rocsparse_handle handle, I n, I* p);
