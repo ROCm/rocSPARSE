@@ -769,6 +769,8 @@ Auxiliary Functions
 +------------------------------------------+
 |:cpp:func:`rocsparse_create_mat_info`     |
 +------------------------------------------+
+|:cpp:func:`rocsparse_copy_mat_info`       |
++------------------------------------------+
 |:cpp:func:`rocsparse_destroy_mat_info`    |
 +------------------------------------------+
 |:cpp:func:`rocsparse_create_spvec_descr`  |
@@ -1200,6 +1202,11 @@ rocsparse_create_mat_info()
 ---------------------------
 
 .. doxygenfunction:: rocsparse_create_mat_info
+
+rocsparse_copy_mat_info()
+-------------------------
+
+.. doxygenfunction:: rocsparse_copy_mat_info
 
 .. _rocsparse_destroy_mat_info_:
 

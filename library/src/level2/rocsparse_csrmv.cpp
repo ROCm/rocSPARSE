@@ -507,6 +507,17 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
     info->csrmv_info->csr_row_ptr = csr_row_ptr;
     info->csrmv_info->csr_col_ind = csr_col_ind;
 
+    info->csrmv_info->index_type_I
+        = (sizeof(I) == sizeof(uint16_t))
+              ? rocsparse_indextype_u16
+              : ((sizeof(I) == sizeof(int32_t)) ? rocsparse_indextype_i32
+                                                : rocsparse_indextype_i64);
+    info->csrmv_info->index_type_J
+        = (sizeof(J) == sizeof(uint16_t))
+              ? rocsparse_indextype_u16
+              : ((sizeof(J) == sizeof(int32_t)) ? rocsparse_indextype_i32
+                                                : rocsparse_indextype_i64);
+
     return rocsparse_status_success;
 }
 

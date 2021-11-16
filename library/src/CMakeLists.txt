@@ -178,5 +178,4 @@ set(rocsparse_source
 # Reordering
   src/reordering/rocsparse_csrcolor.cpp
 
-
 )

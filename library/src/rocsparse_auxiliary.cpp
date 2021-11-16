@@ -224,11 +224,7 @@ rocsparse_status rocsparse_create_mat_descr(rocsparse_mat_descr* descr)
  *******************************************************************************/
 rocsparse_status rocsparse_copy_mat_descr(rocsparse_mat_descr dest, const rocsparse_mat_descr src)
 {
-    if(dest == nullptr)
-    {
-        return rocsparse_status_invalid_pointer;
-    }
-    else if(src == nullptr)
+    if(dest == nullptr || src == nullptr || dest == src)
     {
         return rocsparse_status_invalid_pointer;
     }
@@ -409,6 +405,144 @@ rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb)
 }
 
 /********************************************************************************
+ * \brief Copy HYB matrix.
+ *******************************************************************************/
+rocsparse_status rocsparse_copy_hyb_mat(rocsparse_hyb_mat dest, const rocsparse_hyb_mat src)
+{
+    if(dest == nullptr || src == nullptr || dest == src)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // check if destination already contains data. If it does, verify its allocated arrays are the same size as source
+    bool previously_created = false;
+    previously_created |= (dest->m != 0);
+    previously_created |= (dest->n != 0);
+    previously_created |= (dest->partition != rocsparse_hyb_partition_auto);
+    previously_created |= (dest->ell_nnz != 0);
+    previously_created |= (dest->ell_width != 0);
+    previously_created |= (dest->ell_col_ind != nullptr);
+    previously_created |= (dest->ell_val != nullptr);
+    previously_created |= (dest->coo_nnz != 0);
+    previously_created |= (dest->coo_row_ind != nullptr);
+    previously_created |= (dest->coo_col_ind != nullptr);
+    previously_created |= (dest->coo_val != nullptr);
+    previously_created |= (dest->data_type_T != rocsparse_datatype_f32_r);
+
+    if(previously_created)
+    {
+        // Sparsity pattern of dest and src must match
+        bool invalid = false;
+        invalid |= (dest->m != src->m);
+        invalid |= (dest->n != src->n);
+        invalid |= (dest->partition != src->partition);
+        invalid |= (dest->ell_width != src->ell_width);
+        invalid |= (dest->ell_nnz != src->ell_nnz);
+        invalid |= (dest->coo_nnz != src->coo_nnz);
+        invalid |= (dest->data_type_T != src->data_type_T);
+
+        if(invalid)
+        {
+            return rocsparse_status_invalid_pointer;
+        }
+    }
+
+    size_t T_size = sizeof(float);
+    switch(src->data_type_T)
+    {
+    case rocsparse_datatype_f32_r:
+    {
+        T_size = sizeof(float);
+        break;
+    }
+    case rocsparse_datatype_f64_r:
+    {
+        T_size = sizeof(double);
+        break;
+    }
+    case rocsparse_datatype_f32_c:
+    {
+        T_size = sizeof(rocsparse_float_complex);
+        break;
+    }
+    case rocsparse_datatype_f64_c:
+    {
+        T_size = sizeof(rocsparse_double_complex);
+        break;
+    }
+    }
+
+    if(src->ell_col_ind != nullptr)
+    {
+        if(dest->ell_col_ind == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(
+                hipMalloc((void**)&(dest->ell_col_ind), sizeof(rocsparse_int) * src->ell_nnz));
+        }
+        RETURN_IF_HIP_ERROR(hipMemcpy(dest->ell_col_ind,
+                                      src->ell_col_ind,
+                                      sizeof(rocsparse_int) * src->ell_nnz,
+                                      hipMemcpyDeviceToDevice));
+    }
+
+    if(src->ell_val != nullptr)
+    {
+        if(dest->ell_val == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(hipMalloc((void**)&(dest->ell_val), T_size * src->ell_nnz));
+        }
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(dest->ell_val, src->ell_val, T_size * src->ell_nnz, hipMemcpyDeviceToDevice));
+    }
+
+    if(src->coo_row_ind != nullptr)
+    {
+        if(dest->coo_row_ind == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(
+                hipMalloc((void**)&(dest->coo_row_ind), sizeof(rocsparse_int) * src->coo_nnz));
+        }
+        RETURN_IF_HIP_ERROR(hipMemcpy(dest->coo_row_ind,
+                                      src->coo_row_ind,
+                                      sizeof(rocsparse_int) * src->coo_nnz,
+                                      hipMemcpyDeviceToDevice));
+    }
+
+    if(src->coo_col_ind != nullptr)
+    {
+        if(dest->coo_col_ind == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(
+                hipMalloc((void**)&(dest->coo_col_ind), sizeof(rocsparse_int) * src->coo_nnz));
+        }
+        RETURN_IF_HIP_ERROR(hipMemcpy(dest->coo_col_ind,
+                                      src->coo_col_ind,
+                                      sizeof(rocsparse_int) * src->coo_nnz,
+                                      hipMemcpyDeviceToDevice));
+    }
+
+    if(src->coo_val != nullptr)
+    {
+        if(dest->coo_val == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(hipMalloc((void**)&(dest->coo_val), T_size * src->coo_nnz));
+        }
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(dest->coo_val, src->coo_val, T_size * src->coo_nnz, hipMemcpyDeviceToDevice));
+    }
+
+    dest->m           = src->m;
+    dest->n           = src->n;
+    dest->partition   = src->partition;
+    dest->ell_width   = src->ell_width;
+    dest->ell_nnz     = src->ell_nnz;
+    dest->coo_nnz     = src->coo_nnz;
+    dest->data_type_T = src->data_type_T;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
  * \brief Destroy HYB matrix.
  *******************************************************************************/
 rocsparse_status rocsparse_destroy_hyb_mat(rocsparse_hyb_mat hyb)
@@ -476,6 +610,303 @@ rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info)
         }
         return rocsparse_status_success;
     }
+}
+
+/********************************************************************************
+ * \brief Copy mat info.
+ *******************************************************************************/
+rocsparse_status rocsparse_copy_mat_info(rocsparse_mat_info dest, const rocsparse_mat_info src)
+{
+    if(dest == nullptr || src == nullptr || dest == src)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    rocsparse_indextype index_type_J = rocsparse_indextype_u16;
+
+    if(src->bsrsv_upper_info != nullptr)
+    {
+        index_type_J = src->bsrsv_upper_info->index_type_J;
+
+        if(dest->bsrsv_upper_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->bsrsv_upper_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->bsrsv_upper_info, src->bsrsv_upper_info));
+    }
+
+    if(src->bsrsv_lower_info != nullptr)
+    {
+        index_type_J = src->bsrsv_lower_info->index_type_J;
+
+        if(dest->bsrsv_lower_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->bsrsv_lower_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->bsrsv_lower_info, src->bsrsv_lower_info));
+    }
+
+    if(src->bsrsvt_upper_info != nullptr)
+    {
+        index_type_J = src->bsrsvt_upper_info->index_type_J;
+
+        if(dest->bsrsvt_upper_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->bsrsvt_upper_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->bsrsvt_upper_info, src->bsrsvt_upper_info));
+    }
+
+    if(src->bsrsvt_lower_info != nullptr)
+    {
+        index_type_J = src->bsrsvt_lower_info->index_type_J;
+
+        if(dest->bsrsvt_lower_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->bsrsvt_lower_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->bsrsvt_lower_info, src->bsrsvt_lower_info));
+    }
+
+    if(src->bsric0_info != nullptr)
+    {
+        index_type_J = src->bsric0_info->index_type_J;
+
+        if(dest->bsric0_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->bsric0_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_copy_trm_info(dest->bsric0_info, src->bsric0_info));
+    }
+
+    if(src->bsrilu0_info != nullptr)
+    {
+        index_type_J = src->bsrilu0_info->index_type_J;
+
+        if(dest->bsrilu0_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->bsrilu0_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_copy_trm_info(dest->bsrilu0_info, src->bsrilu0_info));
+    }
+
+    if(src->bsrsm_upper_info != nullptr)
+    {
+        index_type_J = src->bsrsm_upper_info->index_type_J;
+
+        if(dest->bsrsm_upper_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->bsrsm_upper_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->bsrsm_upper_info, src->bsrsm_upper_info));
+    }
+
+    if(src->bsrsm_lower_info != nullptr)
+    {
+        index_type_J = src->bsrsm_lower_info->index_type_J;
+
+        if(dest->bsrsm_lower_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->bsrsm_lower_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->bsrsm_lower_info, src->bsrsm_lower_info));
+    }
+
+    if(src->bsrsmt_upper_info != nullptr)
+    {
+        index_type_J = src->bsrsmt_upper_info->index_type_J;
+
+        if(dest->bsrsmt_upper_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->bsrsmt_upper_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->bsrsmt_upper_info, src->bsrsmt_upper_info));
+    }
+
+    if(src->bsrsmt_lower_info != nullptr)
+    {
+        index_type_J = src->bsrsmt_lower_info->index_type_J;
+
+        if(dest->bsrsmt_lower_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->bsrsmt_lower_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->bsrsmt_lower_info, src->bsrsmt_lower_info));
+    }
+
+    if(src->csrmv_info != nullptr)
+    {
+        index_type_J = src->csrmv_info->index_type_J;
+
+        if(dest->csrmv_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrmv_info(&dest->csrmv_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_copy_csrmv_info(dest->csrmv_info, src->csrmv_info));
+    }
+
+    if(src->csric0_info != nullptr)
+    {
+        index_type_J = src->csric0_info->index_type_J;
+
+        if(dest->csric0_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->csric0_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_copy_trm_info(dest->csric0_info, src->csric0_info));
+    }
+
+    if(src->csrilu0_info != nullptr)
+    {
+        index_type_J = src->csrilu0_info->index_type_J;
+
+        if(dest->csrilu0_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->csrilu0_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(rocsparse_copy_trm_info(dest->csrilu0_info, src->csrilu0_info));
+    }
+
+    if(src->csrsv_upper_info != nullptr)
+    {
+        index_type_J = src->csrsv_upper_info->index_type_J;
+
+        if(dest->csrsv_upper_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->csrsv_upper_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->csrsv_upper_info, src->csrsv_upper_info));
+    }
+
+    if(src->csrsv_lower_info != nullptr)
+    {
+        index_type_J = src->csrsv_lower_info->index_type_J;
+
+        if(dest->csrsv_lower_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->csrsv_lower_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->csrsv_lower_info, src->csrsv_lower_info));
+    }
+
+    if(src->csrsvt_upper_info != nullptr)
+    {
+        index_type_J = src->csrsvt_upper_info->index_type_J;
+
+        if(dest->csrsvt_upper_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->csrsvt_upper_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->csrsvt_upper_info, src->csrsvt_upper_info));
+    }
+
+    if(src->csrsm_upper_info != nullptr)
+    {
+        index_type_J = src->csrsm_upper_info->index_type_J;
+
+        if(dest->csrsm_upper_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->csrsm_upper_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->csrsm_upper_info, src->csrsm_upper_info));
+    }
+
+    if(src->csrsm_lower_info != nullptr)
+    {
+        index_type_J = src->csrsm_lower_info->index_type_J;
+
+        if(dest->csrsm_lower_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->csrsm_lower_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->csrsm_lower_info, src->csrsm_lower_info));
+    }
+
+    if(src->csrsmt_upper_info != nullptr)
+    {
+        index_type_J = src->csrsmt_upper_info->index_type_J;
+
+        if(dest->csrsmt_upper_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->csrsmt_upper_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->csrsmt_upper_info, src->csrsmt_upper_info));
+    }
+
+    if(src->csrsmt_lower_info != nullptr)
+    {
+        index_type_J = src->csrsmt_lower_info->index_type_J;
+
+        if(dest->csrsmt_lower_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_trm_info(&dest->csrsmt_lower_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_trm_info(dest->csrsmt_lower_info, src->csrsmt_lower_info));
+    }
+
+    if(src->csrgemm_info != nullptr)
+    {
+        if(dest->csrgemm_info == nullptr)
+        {
+            RETURN_IF_ROCSPARSE_ERROR(rocsparse_create_csrgemm_info(&dest->csrgemm_info));
+        }
+        RETURN_IF_ROCSPARSE_ERROR(
+            rocsparse_copy_csrgemm_info(dest->csrgemm_info, src->csrgemm_info));
+    }
+
+    if(src->zero_pivot != nullptr)
+    {
+        // zero pivot for csrsv, csrsm, csrilu0, csric0
+        size_t J_size = sizeof(uint16_t);
+        switch(index_type_J)
+        {
+        case rocsparse_indextype_u16:
+        {
+            J_size = sizeof(uint16_t);
+            break;
+        }
+        case rocsparse_indextype_i32:
+        {
+            J_size = sizeof(int32_t);
+            break;
+        }
+        case rocsparse_indextype_i64:
+        {
+            J_size = sizeof(int64_t);
+            break;
+        }
+        }
+
+        if(dest->zero_pivot == nullptr)
+        {
+            RETURN_IF_HIP_ERROR(hipMalloc((void**)&dest->zero_pivot, J_size));
+        }
+
+        RETURN_IF_HIP_ERROR(
+            hipMemcpy(dest->zero_pivot, src->zero_pivot, J_size, hipMemcpyDeviceToDevice));
+    }
+
+    dest->boost_enable        = src->boost_enable;
+    dest->use_double_prec_tol = src->use_double_prec_tol;
+    dest->boost_tol           = src->boost_tol;
+    dest->boost_val           = src->boost_val;
+
+    return rocsparse_status_success;
 }
 
 /********************************************************************************
@@ -740,6 +1171,20 @@ rocsparse_status rocsparse_create_color_info(rocsparse_color_info* info)
         }
         return rocsparse_status_success;
     }
+}
+
+/********************************************************************************
+ * \brief Copy color info.
+ *******************************************************************************/
+rocsparse_status rocsparse_copy_color_info(rocsparse_color_info       dest,
+                                           const rocsparse_color_info src)
+{
+    if(dest == nullptr || src == nullptr || dest == src)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    return rocsparse_status_success;
 }
 
 /********************************************************************************
