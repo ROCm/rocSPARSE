@@ -151,6 +151,23 @@ rocsparse_status rocsparse_csr2hyb_template(rocsparse_handle          handle,
     hyb->ell_width = 0;
     hyb->coo_nnz   = 0;
 
+    if(std::is_same<T, float>{})
+    {
+        hyb->data_type_T = rocsparse_datatype_f32_r;
+    }
+    else if(std::is_same<T, double>{})
+    {
+        hyb->data_type_T = rocsparse_datatype_f32_r;
+    }
+    else if(std::is_same<T, rocsparse_float_complex>{})
+    {
+        hyb->data_type_T = rocsparse_datatype_f32_c;
+    }
+    else if(std::is_same<T, rocsparse_double_complex>{})
+    {
+        hyb->data_type_T = rocsparse_datatype_f64_c;
+    }
+
     if(hyb->ell_col_ind)
     {
         RETURN_IF_HIP_ERROR(hipFree(hyb->ell_col_ind));

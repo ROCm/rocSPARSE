@@ -482,6 +482,15 @@ rocsparse_status rocsparse_trm_analysis(rocsparse_handle          handle,
     info->trm_row_ptr = (trans == rocsparse_operation_none) ? csr_row_ptr : info->trmt_row_ptr;
     info->trm_col_ind = (trans == rocsparse_operation_none) ? csr_col_ind : info->trmt_col_ind;
 
+    info->index_type_I = (sizeof(I) == sizeof(uint16_t))
+                             ? rocsparse_indextype_u16
+                             : ((sizeof(I) == sizeof(int32_t)) ? rocsparse_indextype_i32
+                                                               : rocsparse_indextype_i64);
+    info->index_type_J = (sizeof(J) == sizeof(uint16_t))
+                             ? rocsparse_indextype_u16
+                             : ((sizeof(J) == sizeof(int32_t)) ? rocsparse_indextype_i32
+                                                               : rocsparse_indextype_i64);
+
     return rocsparse_status_success;
 }
 

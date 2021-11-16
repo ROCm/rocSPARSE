@@ -420,6 +420,24 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_hyb_mat(rocsparse_hyb_mat* hyb);
 
 /*! \ingroup aux_module
+ *  \brief Copy a \p HYB matrix structure
+ *
+ *  \details
+ *  \p rocsparse_copy_hyb_mat copies a matrix info structure. Both, source and destination
+ *  matrix info structure must be initialized prior to calling \p rocsparse_copy_hyb_mat.
+ *
+ *  @param[out]
+ *  dest    the pointer to the destination matrix info structure.
+ *  @param[in]
+ *  src     the pointer to the source matrix info structure.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p hyb pointer is invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_copy_hyb_mat(rocsparse_hyb_mat dest, const rocsparse_hyb_mat src);
+
+/*! \ingroup aux_module
  *  \brief Destroy a \p HYB matrix structure
  *
  *  \details
@@ -453,6 +471,23 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_mat_info(rocsparse_mat_info* info);
 
 /*! \ingroup aux_module
+ *  \brief Copy a matrix info structure
+ *  \details
+ *  \p rocsparse_copy_mat_info copies a matrix info structure. Both, source and destination
+ *  matrix info structure must be initialized prior to calling \p rocsparse_copy_mat_info.
+ *
+ *  @param[out]
+ *  dest    the pointer to the destination matrix info structure.
+ *  @param[in]
+ *  src     the pointer to the source matrix info structure.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p src or \p dest pointer is invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_copy_mat_info(rocsparse_mat_info dest, const rocsparse_mat_info src);
+
+/*! \ingroup aux_module
  *  \brief Destroy a matrix info structure
  *
  *  \details
@@ -484,6 +519,24 @@ rocsparse_status rocsparse_destroy_mat_info(rocsparse_mat_info info);
  */
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_create_color_info(rocsparse_color_info* info);
+
+/*! \ingroup aux_module
+ *  \brief Copy a color info structure
+ *  \details
+ *  \p rocsparse_copy_color_info copies a color info structure. Both, source and destination
+ *  color info structure must be initialized prior to calling \p rocsparse_copy_color_info.
+ *
+ *  @param[out]
+ *  dest    the pointer to the destination color info structure.
+ *  @param[in]
+ *  src     the pointer to the source color info structure.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p src or \p dest pointer is invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_copy_color_info(rocsparse_color_info       dest,
+                                           const rocsparse_color_info src);
 
 /*! \ingroup aux_module
  *  \brief Destroy a color info structure

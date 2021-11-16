@@ -135,6 +135,8 @@ struct _rocsparse_hyb_mat
     rocsparse_int* coo_row_ind = nullptr;
     rocsparse_int* coo_col_ind = nullptr;
     void*          coo_val     = nullptr;
+
+    rocsparse_datatype data_type_T = rocsparse_datatype_f32_r;
 };
 
 /********************************************************************************
@@ -208,14 +210,17 @@ struct _rocsparse_csrmv_info
     void*         wg_ids     = nullptr;
 
     // some data to verify correct execution
-    rocsparse_operation         trans;
-    int64_t                     m;
-    int64_t                     n;
-    int64_t                     nnz;
-    int64_t                     max_rows;
-    const _rocsparse_mat_descr* descr;
-    const void*                 csr_row_ptr;
-    const void*                 csr_col_ind;
+    rocsparse_operation         trans       = rocsparse_operation_none;
+    int64_t                     m           = 0;
+    int64_t                     n           = 0;
+    int64_t                     nnz         = 0;
+    int64_t                     max_rows    = 0;
+    const _rocsparse_mat_descr* descr       = nullptr;
+    const void*                 csr_row_ptr = nullptr;
+    const void*                 csr_col_ind = nullptr;
+
+    rocsparse_indextype index_type_I = rocsparse_indextype_u16;
+    rocsparse_indextype index_type_J = rocsparse_indextype_u16;
 };
 
 /********************************************************************************
@@ -225,6 +230,12 @@ struct _rocsparse_csrmv_info
  * using rocsparse_destroy_csrmv_info().
  *******************************************************************************/
 rocsparse_status rocsparse_create_csrmv_info(rocsparse_csrmv_info* info);
+
+/********************************************************************************
+ * \brief Copy csrmv info.
+ *******************************************************************************/
+rocsparse_status rocsparse_copy_csrmv_info(rocsparse_csrmv_info       dest,
+                                           const rocsparse_csrmv_info src);
 
 /********************************************************************************
  * \brief Destroy csrmv info.
@@ -246,11 +257,14 @@ struct _rocsparse_trm_info
     void* trmt_col_ind = nullptr;
 
     // some data to verify correct execution
-    int64_t                     m;
-    int64_t                     nnz;
-    const _rocsparse_mat_descr* descr;
-    const void*                 trm_row_ptr;
-    const void*                 trm_col_ind;
+    int64_t                     m           = 0;
+    int64_t                     nnz         = 0;
+    const _rocsparse_mat_descr* descr       = nullptr;
+    const void*                 trm_row_ptr = nullptr;
+    const void*                 trm_col_ind = nullptr;
+
+    rocsparse_indextype index_type_I = rocsparse_indextype_u16;
+    rocsparse_indextype index_type_J = rocsparse_indextype_u16;
 };
 
 /********************************************************************************
@@ -261,6 +275,11 @@ struct _rocsparse_trm_info
  * using rocsparse_destroy_trm_info().
  *******************************************************************************/
 rocsparse_status rocsparse_create_trm_info(rocsparse_trm_info* info);
+
+/********************************************************************************
+ * \brief Copy trm info.
+ *******************************************************************************/
+rocsparse_status rocsparse_copy_trm_info(rocsparse_trm_info dest, const rocsparse_trm_info src);
 
 /********************************************************************************
  * \brief Destroy trm info.
@@ -294,6 +313,12 @@ struct _rocsparse_csrgemm_info
  * end using rocsparse_destroy_csrgemm_info().
  *******************************************************************************/
 rocsparse_status rocsparse_create_csrgemm_info(rocsparse_csrgemm_info* info);
+
+/********************************************************************************
+ * \brief Copy csrgemm info.
+ *******************************************************************************/
+rocsparse_status rocsparse_copy_csrgemm_info(rocsparse_csrgemm_info       dest,
+                                             const rocsparse_csrgemm_info src);
 
 /********************************************************************************
  * \brief Destroy csrgemm info.
