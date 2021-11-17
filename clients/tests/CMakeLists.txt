@@ -21,7 +21,7 @@
 #
 # ########################################################################
 
-find_package(GTest 1.10.0 REQUIRED)
+find_package(GTest 1.11.0 REQUIRED)
 
 #
 # Client matrices.
