@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,7 +93,11 @@ namespace
                        << arg.alphai << '_' << arg.beta << '_' << arg.betai << '_'
                        << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
+                       << rocsparse_fillmode2string(arg.uplo) << '_'
+                       << rocsparse_spmvalg2string(arg.spmv_alg) << '_'
+                       << rocsparse_matrixtype2string(arg.matrix_type) << '_'
+                       << rocsparse_matrix2string(arg.matrix) << '_'
+                       << rocsparse_filename2string(arg.filename);
             }
             else
             {
@@ -104,6 +108,9 @@ namespace
                        << arg.N << '_' << arg.alpha << '_' << arg.alphai << '_' << arg.beta << '_'
                        << arg.betai << '_' << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
+                       << rocsparse_fillmode2string(arg.uplo) << '_'
+                       << rocsparse_spmvalg2string(arg.spmv_alg) << '_'
+                       << rocsparse_matrixtype2string(arg.matrix_type) << '_'
                        << rocsparse_matrix2string(arg.matrix);
             }
         }

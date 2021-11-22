@@ -259,7 +259,7 @@ void testing_spgemm_csr(const Arguments& arg)
     J                    N       = arg.N;
     J                    K       = arg.K;
     rocsparse_operation  trans_A = arg.transA;
-    rocsparse_operation  trans_B = arg.transA;
+    rocsparse_operation  trans_B = arg.transB;
     rocsparse_index_base base_A  = arg.baseA;
     rocsparse_index_base base_B  = arg.baseB;
     rocsparse_index_base base_C  = arg.baseC;

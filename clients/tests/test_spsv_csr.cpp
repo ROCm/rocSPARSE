@@ -90,10 +90,13 @@ namespace
                        << rocsparse_indextype2string(arg.index_type_I) << '_'
                        << rocsparse_indextype2string(arg.index_type_J) << '_'
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.alpha << '_'
-                       << arg.alphai << '_' << arg.beta << '_' << arg.betai << '_'
-                       << rocsparse_operation2string(arg.transA) << '_'
+                       << arg.alphai << '_' << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
+                       << rocsparse_diagtype2string(arg.diag) << '_'
+                       << rocsparse_fillmode2string(arg.uplo) << '_'
+                       << rocsparse_spsvalg2string(arg.spsv_alg) << '_'
+                       << rocsparse_matrix2string(arg.matrix) << '_'
+                       << rocsparse_filename2string(arg.filename);
             }
             else
             {
@@ -101,9 +104,12 @@ namespace
                        << rocsparse_indextype2string(arg.index_type_I) << '_'
                        << rocsparse_indextype2string(arg.index_type_J) << '_'
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
-                       << arg.N << '_' << arg.alpha << '_' << arg.alphai << '_' << arg.beta << '_'
-                       << arg.betai << '_' << rocsparse_operation2string(arg.transA) << '_'
+                       << arg.N << '_' << arg.alpha << '_' << arg.alphai << '_'
+                       << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
+                       << rocsparse_diagtype2string(arg.diag) << '_'
+                       << rocsparse_fillmode2string(arg.uplo) << '_'
+                       << rocsparse_spsvalg2string(arg.spsv_alg) << '_'
                        << rocsparse_matrix2string(arg.matrix);
             }
         }

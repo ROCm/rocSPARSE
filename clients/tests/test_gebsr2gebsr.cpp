@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,7 +89,8 @@ namespace
                        << arg.col_block_dimB << '_' << rocsparse_direction2string(arg.direction)
                        << '_' << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_indexbase2string(arg.baseB) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
+                       << rocsparse_matrix2string(arg.matrix) << '_'
+                       << rocsparse_filename2string(arg.filename);
             }
             else
             {

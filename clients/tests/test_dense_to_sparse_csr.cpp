@@ -89,7 +89,8 @@ namespace
                    << rocsparse_indextype2string(arg.index_type_J) << '_'
                    << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_' << arg.N
                    << '_' << arg.denseld << '_' << rocsparse_indexbase2string(arg.baseA) << '_'
-                   << rocsparse_order2string(arg.order);
+                   << rocsparse_order2string(arg.order) << '_'
+                   << rocsparse_densetosparsealg2string(arg.dense_to_sparse_alg);
         }
     };
 

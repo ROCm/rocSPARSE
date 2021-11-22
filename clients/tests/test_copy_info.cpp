@@ -83,21 +83,17 @@ namespace
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
                 return RocSPARSE_TestName<copy_info>{}
-                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.alpha << '_'
-                       << arg.alphai << '_' << arg.beta << '_' << arg.betai << '_'
+                       << rocsparse_datatype2string(arg.compute_type) << '_'
                        << rocsparse_operation2string(arg.transA) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.spmv_alg << '_'
+                       << rocsparse_matrix2string(arg.matrix) << '_'
                        << rocsparse_filename2string(arg.filename);
             }
             else
             {
                 return RocSPARSE_TestName<copy_info>{}
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
-                       << arg.N << '_' << arg.alpha << '_' << arg.alphai << '_' << arg.beta << '_'
-                       << arg.betai << '_' << rocsparse_operation2string(arg.transA) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.spmv_alg;
+                       << arg.N << '_' << rocsparse_operation2string(arg.transA) << '_'
+                       << rocsparse_matrix2string(arg.matrix);
             }
         }
     };

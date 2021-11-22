@@ -87,11 +87,11 @@ namespace
                 return RocSPARSE_TestName<spsm_csr>{}
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.alpha << '_'
                        << arg.alphai << '_' << rocsparse_operation2string(arg.transA) << '_'
+                       << rocsparse_operation2string(arg.transB) << '_'
+                       << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_diagtype2string(arg.diag) << '_'
                        << rocsparse_fillmode2string(arg.uplo) << '_'
-                       << rocsparse_analysis2string(arg.apol) << '_'
-                       << rocsparse_solve2string(arg.spol) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
+                       << rocsparse_spsmalg2string(arg.spsm_alg) << '_'
                        << rocsparse_matrix2string(arg.matrix) << '_'
                        << rocsparse_filename2string(arg.filename);
             }
@@ -101,11 +101,11 @@ namespace
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
                        << arg.alpha << '_' << arg.alphai << '_'
                        << rocsparse_operation2string(arg.transA) << '_'
+                       << rocsparse_operation2string(arg.transB) << '_'
+                       << rocsparse_indexbase2string(arg.baseA) << '_'
                        << rocsparse_diagtype2string(arg.diag) << '_'
                        << rocsparse_fillmode2string(arg.uplo) << '_'
-                       << rocsparse_analysis2string(arg.apol) << '_'
-                       << rocsparse_solve2string(arg.spol) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
+                       << rocsparse_spsmalg2string(arg.spsm_alg) << '_'
                        << rocsparse_matrix2string(arg.matrix);
             }
         }

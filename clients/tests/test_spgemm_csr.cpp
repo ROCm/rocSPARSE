@@ -99,7 +99,9 @@ namespace
                        << rocsparse_indexbase2string(arg.baseB) << '_'
                        << rocsparse_indexbase2string(arg.baseC) << '_'
                        << rocsparse_indexbase2string(arg.baseD) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
+                       << rocsparse_spgemmalg2string(arg.spgemm_alg) << '_'
+                       << rocsparse_matrix2string(arg.matrix) << '_'
+                       << rocsparse_filename2string(arg.filename);
             }
             else
             {
@@ -115,6 +117,7 @@ namespace
                        << rocsparse_indexbase2string(arg.baseB) << '_'
                        << rocsparse_indexbase2string(arg.baseC) << '_'
                        << rocsparse_indexbase2string(arg.baseD) << '_'
+                       << rocsparse_spgemmalg2string(arg.spgemm_alg) << '_'
                        << rocsparse_matrix2string(arg.matrix);
             }
         }

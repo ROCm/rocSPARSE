@@ -81,33 +81,9 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            if(arg.matrix == rocsparse_matrix_file_rocalution
-               || arg.matrix == rocsparse_matrix_file_mtx)
-            {
-                return RocSPARSE_TestName<gtsv_no_pivot_strided_batch>{}
-                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.alpha << '_'
-                       << arg.alphai << '_' << rocsparse_operation2string(arg.transA) << '_'
-                       << rocsparse_diagtype2string(arg.diag) << '_'
-                       << rocsparse_fillmode2string(arg.uplo) << '_'
-                       << rocsparse_analysis2string(arg.apol) << '_'
-                       << rocsparse_solve2string(arg.spol) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_'
-                       << rocsparse_filename2string(arg.filename);
-            }
-            else
-            {
-                return RocSPARSE_TestName<gtsv_no_pivot_strided_batch>{}
-                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
-                       << arg.alpha << '_' << arg.alphai << '_'
-                       << rocsparse_operation2string(arg.transA) << '_'
-                       << rocsparse_diagtype2string(arg.diag) << '_'
-                       << rocsparse_fillmode2string(arg.uplo) << '_'
-                       << rocsparse_analysis2string(arg.apol) << '_'
-                       << rocsparse_solve2string(arg.spol) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix);
-            }
+            return RocSPARSE_TestName<gtsv_no_pivot_strided_batch>{}
+                   << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_' << arg.N
+                   << '_' << arg.denseld << '_' << rocsparse_matrix2string(arg.matrix);
         }
     };
 
