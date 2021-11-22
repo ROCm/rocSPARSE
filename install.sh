@@ -392,7 +392,7 @@ esac
 # If user provides custom ${rocm_path} path for hcc it has lesser priority,
 # but with hip-clang existing path has lesser priority to avoid use of installed clang++
 if [[ "${build_hip_clang}" == true ]]; then
-  export PATH=${rocm_path}/bin:${rocm_path}/hip/bin:${rocm_path}/llvm/bin:${PATH}
+  export PATH=${rocm_path}/bin:${rocm_path}/llvm/bin:${PATH}
 fi
 
 # #################################################
@@ -496,8 +496,8 @@ pushd .
       -DCMAKE_INSTALL_PREFIX=${install_prefix} \
       -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} \
       -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" \
-      -DCMAKE_PREFIX_PATH="${rocm_path} ${rocm_path}/hcc ${rocm_path}/hip" \
-      -DCMAKE_MODULE_PATH="${rocm_path}/hip/cmake" \
+      -DCMAKE_PREFIX_PATH="${rocm_path}" \
+      -DCMAKE_MODULE_PATH="${rocm_path}/lib/cmake/hip" \
       -DROCM_DISABLE_LDCONFIG=ON \
       -DROCM_PATH="${rocm_path}" ../..
   else

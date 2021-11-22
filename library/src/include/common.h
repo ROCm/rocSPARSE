@@ -26,7 +26,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "rocsparse.h"
+#include "rocsparse/rocsparse.h"
 #ifdef WIN32
 #include <intrin.h>
 #endif

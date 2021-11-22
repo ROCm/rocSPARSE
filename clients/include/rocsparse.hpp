@@ -32,7 +32,7 @@
 #define ROCSPARSE_HPP
 
 #include "rocsparse_traits.hpp"
-#include <rocsparse.h>
+#include <rocsparse/rocsparse.h>
 
 #define REAL_TEMPLATE(NAME_, ...)                              \
     template <typename T>                                      \

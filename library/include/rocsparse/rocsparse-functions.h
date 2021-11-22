@@ -30,8 +30,8 @@
 #ifndef _ROCSPARSE_FUNCTIONS_H_
 #define _ROCSPARSE_FUNCTIONS_H_
 
-#include "rocsparse-export.h"
-#include "rocsparse-types.h"
+#include "rocsparse/rocsparse-export.h"
+#include "rocsparse/rocsparse-types.h"
 
 #ifdef __cplusplus
 extern "C" {

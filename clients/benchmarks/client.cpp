@@ -120,7 +120,7 @@
 #include "testing_csrcolor.hpp"
 
 #include <iostream>
-#include <rocsparse.h>
+#include <rocsparse/rocsparse.h>
 #include <unordered_set>
 
 #include "program_options.hpp"

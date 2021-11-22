@@ -26,7 +26,7 @@
 #ifndef ROCSPARSE_DATATYPE2STRING_HPP
 #define ROCSPARSE_DATATYPE2STRING_HPP
 
-#include <rocsparse.h>
+#include <rocsparse/rocsparse.h>
 #include <string>
 
 #include <algorithm>

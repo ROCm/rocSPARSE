@@ -24,7 +24,7 @@
 
 #include <hip/hip_runtime_api.h>
 #include <iostream>
-#include <rocsparse.h>
+#include <rocsparse/rocsparse.h>
 
 #define HIP_CHECK(stat)                                                        \
     {                                                                          \

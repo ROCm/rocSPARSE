@@ -33,6 +33,7 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
 
   # Include common client headers
   target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
+  target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 
   # Linker dependencies
   target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host hip::device)
@@ -103,6 +104,7 @@ function(add_rocsparse_fortran_example EXAMPLE_SOURCE)
 
   # Include common client headers
   target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
+  target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
 
   # Linker dependencies
   target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host)

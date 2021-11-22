@@ -29,7 +29,7 @@
 #ifndef _ROCSPARSE_TYPES_H_
 #define _ROCSPARSE_TYPES_H_
 
-#include "rocsparse-complex-types.h"
+#include "rocsparse/rocsparse-complex-types.h"
 
 #include <stddef.h>
 #include <stdint.h>

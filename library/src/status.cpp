@@ -22,7 +22,7 @@
  * ************************************************************************ */
 
 #include "status.h"
-#include "rocsparse.h"
+#include "rocsparse/rocsparse.h"
 
 #include <hip/hip_runtime_api.h>
 

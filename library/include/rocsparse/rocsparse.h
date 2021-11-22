@@ -29,8 +29,8 @@
 #ifndef _ROCSPARSE_H_
 #define _ROCSPARSE_H_
 
-#include "rocsparse-auxiliary.h"
-#include "rocsparse-functions.h"
-#include "rocsparse-version.h"
+#include "rocsparse/rocsparse-auxiliary.h"
+#include "rocsparse/rocsparse-functions.h"
+#include "rocsparse/rocsparse-version.h"
 
 #endif /* _ROCSPARSE_H_ */

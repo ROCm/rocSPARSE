@@ -120,7 +120,7 @@ To format all files, run the following script in rocSPARSE directory:
 Library Source Organization
 ===========================
 
-The `library/include` directory
+The `library/include/rocsparse` directory
 -------------------------------
 This directory contains all files that are exposed to the user.
 The rocSPARSE API, is declared here.
@@ -178,7 +178,7 @@ Below is a sample for ``rocsparse_subroutine.cpp``, ``rocsparse_subroutine.hpp``
 .. code-block:: cpp
    :caption: rocsparse_subroutine.cpp
 
-   #include "rocsparse.h"
+   #include "rocsparse/rocsparse.h"
    #include "rocsparse_subroutine.hpp"
 
    /*
@@ -228,7 +228,7 @@ Below is a sample for ``rocsparse_subroutine.cpp``, ``rocsparse_subroutine.hpp``
 
    #include "definitions.h"
    #include "handle.h"
-   #include "rocsparse.h"
+   #include "rocsparse/rocsparse.h"
    #include "subroutine_device.h"
    #include "utility.h"
 

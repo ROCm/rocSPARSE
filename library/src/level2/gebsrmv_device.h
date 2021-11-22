@@ -26,7 +26,7 @@
 #define GEBSRMV_DEVICE_H
 
 #include "common.h"
-#include "rocsparse.h"
+#include "rocsparse/rocsparse.h"
 
 #include <hip/hip_runtime.h>
 

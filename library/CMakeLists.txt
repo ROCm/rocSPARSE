@@ -30,19 +30,41 @@ if(BUILD_VERBOSE)
   include(../cmake/Verbose.cmake)
 endif()
 
+# Copy include headers to build directory
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse.h"
+               "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse.h"
+	       COPYONLY
+)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse-complex-types.h"
+               "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-complex-types.h"
+	       COPYONLY
+)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse-types.h"
+               "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-types.h"
+	       COPYONLY
+)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse-functions.h"
+               "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-functions.h"
+	       COPYONLY
+)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse-auxiliary.h"
+               "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-auxiliary.h"
+	       COPYONLY
+)
+
 # Configure a header file to pass the rocSPARSE version
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse-version.h.in"
-               "${PROJECT_BINARY_DIR}/include/rocsparse-version.h"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse/rocsparse-version.h.in"
+               "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-version.h"
 )
 
 # Public rocSPARSE headers
 set(rocsparse_headers_public
-  include/rocsparse-auxiliary.h
-  include/rocsparse-functions.h
-  include/rocsparse-types.h
-  include/rocsparse-complex-types.h
-  include/rocsparse.h
-  ${PROJECT_BINARY_DIR}/include/rocsparse-version.h
+  ${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-auxiliary.h
+  ${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-functions.h
+  ${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-types.h
+  ${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-complex-types.h
+  ${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse.h
+  ${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-version.h
 )
 
 source_group("Header Files\\Public" FILES ${rocsparse_headers_public})
@@ -99,31 +121,31 @@ endif()
 
 # Generate export header
 include(GenerateExportHeader)
-generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse-export.h)
+generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-export.h)
 
 # Force installation of .f module file
 rocm_install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse.f90"
               "${CMAKE_SOURCE_DIR}/library/src/rocsparse_enums.f90"
-        DESTINATION "rocsparse/include"
+        DESTINATION "include/rocsparse"
 )
 
 # Install targets
-rocm_install_targets(TARGETS rocsparse
-                     INCLUDE
-                       ${CMAKE_SOURCE_DIR}/library/include
-                       ${CMAKE_BINARY_DIR}/include
-                     PREFIX rocsparse
-)
+rocm_install_targets(TARGETS rocsparse)
+
+install(
+       DIRECTORY "${PROJECT_BINARY_DIR}/include/rocsparse/"
+       DESTINATION "include/rocsparse/"
+       FILES_MATCHING
+       PATTERN "*.h"
+       PATTERN "*.hpp"
+       PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ )
 
 # Export targets
 rocm_export_targets(TARGETS roc::rocsparse
-                    PREFIX rocsparse
                     DEPENDS PACKAGE hip
                     NAMESPACE roc::
 )
 
-# Symbolic links
-rocm_install_symlink_subdir(rocsparse)
 
 # Package specific CPACK vars
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip-rocclr (>= 3.5.0)")
