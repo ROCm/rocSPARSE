@@ -90,18 +90,27 @@ namespace
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.alpha << '_'
                        << arg.alphai << '_' << arg.beta << '_' << arg.betai << '_' << arg.block_dim
                        << '_' << rocsparse_operation2string(arg.transA) << '_'
+                       << rocsparse_operation2string(arg.transB) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_' << arg.filename;
+                       << rocsparse_order2string(arg.order) << '_'
+                       << rocsparse_direction2string(arg.direction) << '_'
+                       << rocsparse_spmmalg2string(arg.spmm_alg) << '_'
+                       << rocsparse_matrix2string(arg.matrix) << '_'
+                       << rocsparse_filename2string(arg.filename);
             }
             else
             {
                 return RocSPARSE_TestName<spmm_bell>{}
                        << rocsparse_indextype2string(arg.index_type_I) << '_'
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
-                       << arg.N << '_' << arg.alpha << '_' << arg.alphai << '_' << arg.beta << '_'
-                       << arg.betai << '_' << arg.block_dim << '_'
+                       << arg.N << '_' << arg.K << '_' << arg.alpha << '_' << arg.alphai << '_'
+                       << arg.beta << '_' << arg.betai << '_' << arg.block_dim << '_'
                        << rocsparse_operation2string(arg.transA) << '_'
+                       << rocsparse_operation2string(arg.transB) << '_'
                        << rocsparse_indexbase2string(arg.baseA) << '_'
+                       << rocsparse_order2string(arg.order) << '_'
+                       << rocsparse_direction2string(arg.direction) << '_'
+                       << rocsparse_spmmalg2string(arg.spmm_alg) << '_'
                        << rocsparse_matrix2string(arg.matrix);
             }
         }
