@@ -492,28 +492,38 @@ void testing_csrgeam(const Arguments& arg)
 
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
 
-        double gpu_gflops = csrgeam_gflop_count<T>(nnz_A, nnz_B, nnz_C, &h_alpha, &h_beta)
-                            / gpu_solve_time_used * 1e6;
-        double gpu_gbyte = csrgeam_gbyte_count<T>(M, nnz_A, nnz_B, nnz_C, &h_alpha, &h_beta)
-                           / gpu_solve_time_used * 1e6;
+        double gflop_count = csrgeam_gflop_count<T>(nnz_A, nnz_B, nnz_C, &h_alpha, &h_beta);
+        double gbyte_count = csrgeam_gbyte_count<T>(M, nnz_A, nnz_B, nnz_C, &h_alpha, &h_beta);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
+        double gpu_gflops = get_gpu_gflops(gpu_solve_time_used, gflop_count);
+        double gpu_gbyte  = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
 
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "nnz_A"
-                  << std::setw(12) << "nnz_B" << std::setw(12) << "nnz_C" << std::setw(12)
-                  << "alpha" << std::setw(12) << "beta" << std::setw(12) << "GFlop/s"
-                  << std::setw(12) << "GB/s" << std::setw(16) << "nnz msec" << std::setw(16)
-                  << "gemm msec" << std::setw(12) << "iter" << std::setw(12) << "verified"
-                  << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << nnz_A
-                  << std::setw(12) << nnz_B << std::setw(12) << nnz_C << std::setw(12) << h_alpha
-                  << std::setw(12) << h_beta << std::setw(12) << gpu_gflops << std::setw(12)
-                  << gpu_gbyte << std::setw(16) << gpu_analysis_time_used / 1e3 << std::setw(16)
-                  << gpu_solve_time_used / 1e3 << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "nnz_A",
+                            nnz_A,
+                            "nnz_B",
+                            nnz_B,
+                            "nnz_C",
+                            nnz_C,
+                            "alpha",
+                            h_alpha,
+                            "beta",
+                            h_beta,
+                            s_timing_info_perf,
+                            gpu_gflops,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            "nnz msec",
+                            get_gpu_time_msec(gpu_analysis_time_used),
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_solve_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
 }
 

@@ -196,17 +196,18 @@ void testing_gtsv_no_pivot(const Arguments& arg)
 
         double gpu_gbyte = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "GB/s"
-                  << std::setw(12) << "solve_msec" << std::setw(12) << "iter" << std::setw(12)
-                  << "verified" << std::endl;
-
-        std::cout << std::setw(12) << m << std::setw(12) << n << std::setw(12) << gpu_gbyte
-                  << std::setw(12) << gpu_solve_time_used / 1e3 << std::setw(12) << number_hot_calls
-                  << std::setw(12) << (arg.unit_check ? "yes" : "no") << std::endl;
+        display_timing_info("M",
+                            m,
+                            "N",
+                            n,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_solve_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            arg.unit_check ? "yes" : "no");
     }
 
     // Free buffer

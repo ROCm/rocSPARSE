@@ -23,6 +23,11 @@
 
 set(ROCSPARSE_BENCHMARK_SOURCES
   client.cpp
+  rocsparse_bench_app.cpp
+  rocsparse_arguments_config.cpp
+  rocsparse_bench.cpp
+  rocsparse_bench_cmdlines.cpp
+  rocsparse_routine.cpp
 )
 
 set(ROCSPARSE_CLIENTS_COMMON

@@ -21,6 +21,7 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename I, typename T>
@@ -197,23 +198,30 @@ void testing_axpby(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gflops = axpby_gflop_count(nnz) / gpu_time_used * 1e6;
-        double gpu_gbyte  = axpby_gbyte_count<T>(nnz) / gpu_time_used * 1e6;
+        double gflop_count = axpby_gflop_count(nnz);
+        double gbyte_count = axpby_gbyte_count<T>(nnz);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
+        double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
+        double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
 
-        std::cout << std::setw(12) << "size" << std::setw(12) << "nnz" << std::setw(16) << "alpha"
-                  << std::setw(12) << "beta" << std::setw(12) << "GFlop/s" << std::setw(12)
-                  << "GB/s" << std::setw(12) << "usec" << std::setw(12) << "iter" << std::setw(12)
-                  << "verified" << std::endl;
-
-        std::cout << std::setw(12) << size << std::setw(12) << nnz << std::setw(16) << h_alpha
-                  << std::setw(12) << h_beta << std::setw(12) << gpu_gflops << std::setw(12)
-                  << gpu_gbyte << std::setw(12) << gpu_time_used << std::setw(12)
-                  << number_hot_calls << std::setw(12) << (arg.unit_check ? "yes" : "no")
-                  << std::endl;
+        display_timing_info("size",
+                            size,
+                            "nnz",
+                            nnz,
+                            "alpha",
+                            h_alpha,
+                            "beta",
+                            h_beta,
+                            s_timing_info_perf,
+                            gpu_gflops,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
 }
 

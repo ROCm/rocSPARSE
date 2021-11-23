@@ -509,27 +509,36 @@ void testing_bsrsv(const Arguments& arg)
         double gpu_gflops = get_gpu_gflops(gpu_solve_time_used, gflop_count);
         double gpu_gbyte  = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-        std::cout << std::setw(12) << "M" << std::setw(12) << "nnz" << std::setw(12) << "alpha"
-                  << std::setw(12) << "pivot" << std::setw(16) << "operation" << std::setw(12)
-                  << "diag_type" << std::setw(12) << "fill_mode" << std::setw(16)
-                  << "analysis_policy" << std::setw(16) << "solve_policy" << std::setw(12)
-                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(16) << "analysis_msec"
-                  << std::setw(16) << "solve_msec" << std::setw(12) << "iter" << std::setw(12)
-                  << "verified" << std::endl;
-        std::cout << std::setw(12) << M << std::setw(12)
-                  << dA.nnzb * dA.row_block_dim * dA.row_block_dim << std::setw(12) << h_alpha
-                  << std::setw(12) << std::min(*h_analysis_pivot, *h_solve_pivot) << std::setw(16)
-                  << rocsparse_operation2string(trans) << std::setw(12)
-                  << rocsparse_diagtype2string(diag) << std::setw(12)
-                  << rocsparse_fillmode2string(uplo) << std::setw(16)
-                  << rocsparse_analysis2string(apol) << std::setw(16)
-                  << rocsparse_solve2string(spol) << std::setw(12) << gpu_gflops << std::setw(12)
-                  << gpu_gbyte << std::setw(16) << gpu_analysis_time_used / 1e3 << std::setw(16)
-                  << gpu_solve_time_used / 1e3 << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        display_timing_info("M",
+                            M,
+                            "nnz",
+                            dA.nnzb * dA.row_block_dim * dA.row_block_dim,
+                            "alpha",
+                            h_alpha,
+                            "pivot",
+                            std::min(*h_analysis_pivot, *h_solve_pivot),
+                            "operation",
+                            rocsparse_operation2string(trans),
+                            "diag_type",
+                            rocsparse_diagtype2string(diag),
+                            "fill_mode",
+                            rocsparse_fillmode2string(uplo),
+                            "analysis_policy",
+                            rocsparse_analysis2string(apol),
+                            "solve_policy",
+                            rocsparse_solve2string(spol),
+                            "analysis time",
+                            get_gpu_time_msec(gpu_analysis_time_used),
+                            s_timing_info_perf,
+                            gpu_gflops,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_solve_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
 
     // Clear bsrsv meta data

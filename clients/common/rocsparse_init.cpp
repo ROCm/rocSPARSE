@@ -1159,6 +1159,7 @@ void rocsparse_init_csr_rocalution(const char*          filename,
                                    rocsparse_index_base base,
                                    bool                 toint)
 {
+
     const char* env = getenv("GTEST_LISTENER");
     if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
     {

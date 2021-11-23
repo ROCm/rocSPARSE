@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 
+#include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
 
 template <typename T>
@@ -169,18 +170,18 @@ void testing_sctr(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = sctr_gbyte_count<T>(nnz) / gpu_time_used * 1e6;
-
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-
-        std::cout << std::setw(12) << "nnz" << std::setw(12) << "GB/s" << std::setw(12) << "usec"
-                  << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
-
-        std::cout << std::setw(12) << nnz << std::setw(12) << gpu_gbyte << std::setw(12)
-                  << gpu_time_used << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        double gbyte_count = sctr_gbyte_count<T>(nnz);
+        double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
+        display_timing_info("nnz",
+                            nnz,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            arg.unit_check ? "yes" : "no");
     }
 }
 
