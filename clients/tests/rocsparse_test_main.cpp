@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,20 @@
 #include <gtest/gtest.h>
 
 using namespace testing;
+
+bool display_timing_info_stdout_skip_legend()
+{
+    return false;
+}
+bool display_timing_info_is_stdout_disabled()
+{
+    return false;
+}
+
+rocsparse_status rocsparse_record_timing(double msec, double gflops, double gbs)
+{
+    return rocsparse_status_success;
+}
 
 class ConfigurableEventListener : public TestEventListener
 {

@@ -382,32 +382,42 @@ void testing_gebsr2gebsr(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = gebsr2gebsr_gbyte_count<T>(Mb,
-                                                      Mb_C,
-                                                      row_block_dim_A,
-                                                      col_block_dim_A,
-                                                      row_block_dim_C,
-                                                      col_block_dim_C,
-                                                      hnnzb_A,
-                                                      hnnzb_C[0])
-                           / gpu_time_used * 1e6;
+        double gbyte_count = gebsr2gebsr_gbyte_count<T>(Mb,
+                                                        Mb_C,
+                                                        row_block_dim_A,
+                                                        col_block_dim_A,
+                                                        row_block_dim_C,
+                                                        col_block_dim_C,
+                                                        hnnzb_A,
+                                                        hnnzb_C[0]);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "Mb"
-                  << std::setw(12) << "Nb" << std::setw(12) << "rblockdimA" << std::setw(12)
-                  << "cblockdimA" << std::setw(12) << "rblockdimC" << std::setw(12) << "cblockdimC"
-                  << std::setw(12) << "nnzbC" << std::setw(12) << "GB/s" << std::setw(12) << "msec"
-                  << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << Mb
-                  << std::setw(12) << Nb << std::setw(12) << row_block_dim_A << std::setw(12)
-                  << col_block_dim_A << std::setw(12) << row_block_dim_C << std::setw(12)
-                  << col_block_dim_C << std::setw(12) << hnnzb_C[0] << std::setw(12) << gpu_gbyte
-                  << std::setw(12) << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls
-                  << std::setw(12) << (arg.unit_check ? "yes" : "no") << std::endl;
+        double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "Mb",
+                            Mb,
+                            "Nb",
+                            Nb,
+                            "rblockdimA",
+                            row_block_dim_A,
+                            "cblockdimA",
+                            col_block_dim_A,
+                            "rblockdimC",
+                            row_block_dim_C,
+                            "cblockdimC",
+                            col_block_dim_C,
+                            "nnzbC",
+                            hnnzb_C[0],
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            arg.unit_check ? "yes" : "no");
 
         // Free buffer
         CHECK_HIP_ERROR(hipFree(dtemp_buffer));

@@ -546,7 +546,7 @@ void testing_bsric0(const Arguments& arg)
 
         gpu_solve_time_used = gpu_solve_time_used / number_hot_calls;
 
-        double gpu_gbyte = bsric0_gbyte_count<T>(Mb, block_dim, nnzb) / gpu_solve_time_used * 1e6;
+        double gbyte_count = bsric0_gbyte_count<T>(Mb, block_dim, nnzb);
 
         rocsparse_int pivot = -1;
         if(hanalysis_pivot_1[0] == -1)
@@ -562,24 +562,32 @@ void testing_bsric0(const Arguments& arg)
             pivot = std::min(hanalysis_pivot_1[0], hsolve_pivot_1[0]);
         }
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
+        double gpu_gbyte = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
 
-        std::cout << std::setw(12) << "M" << std::setw(12) << "nnzb" << std::setw(12) << "block_dim"
-                  << std::setw(12) << "pivot" << std::setw(16) << "direction" << std::setw(16)
-                  << "analysis policy" << std::setw(16) << "solve policy" << std::setw(12) << "GB/s"
-                  << std::setw(16) << "analysis msec" << std::setw(16) << "solve msec"
-                  << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << nnzb << std::setw(12) << block_dim
-                  << std::setw(12) << pivot << std::setw(16)
-                  << rocsparse_direction2string(direction) << std::setw(16)
-                  << rocsparse_analysis2string(apol) << std::setw(16)
-                  << rocsparse_solve2string(spol) << std::setw(12) << gpu_gbyte << std::setw(16)
-                  << gpu_analysis_time_used / 1e3 << std::setw(16) << gpu_solve_time_used / 1e3
-                  << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        display_timing_info("M",
+                            M,
+                            "nnzb",
+                            nnzb,
+                            "block_dim",
+                            block_dim,
+                            "pivot",
+                            pivot,
+                            "direction",
+                            rocsparse_direction2string(direction),
+                            "analysis policy",
+                            rocsparse_analysis2string(apol),
+                            "solve policy",
+                            rocsparse_solve2string(spol),
+                            "analysis time",
+                            get_gpu_time_msec(gpu_analysis_time_used),
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_solve_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
 
     // Clear bsric0 meta data

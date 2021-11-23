@@ -225,20 +225,25 @@ void testing_cscsort(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = cscsort_gbyte_count<T>(N, nnz, permute) / gpu_time_used * 1e6;
+        double gbyte_count = cscsort_gbyte_count<T>(N, nnz, permute);
+        double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "nnz"
-                  << std::setw(12) << "permute" << std::setw(12) << "GB/s" << std::setw(12)
-                  << "msec" << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << nnz
-                  << std::setw(12) << (permute ? "yes" : "no") << std::setw(12) << gpu_gbyte
-                  << std::setw(12) << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls
-                  << std::setw(12) << (arg.unit_check ? "yes" : "no") << std::endl;
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "nnz",
+                            nnz,
+                            "permute",
+                            (permute ? "yes" : "no"),
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
 
     // Clear buffer

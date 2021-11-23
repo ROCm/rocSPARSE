@@ -426,7 +426,7 @@ void testing_csric0(const Arguments& arg)
 
         gpu_solve_time_used = gpu_solve_time_used / number_hot_calls;
 
-        double gpu_gbyte = csric0_gbyte_count<T>(M, nnz) / gpu_solve_time_used * 1e6;
+        double gbyte_count = csric0_gbyte_count<T>(M, nnz);
 
         rocsparse_int pivot = -1;
         if(h_analysis_pivot_1[0] == -1)
@@ -442,22 +442,27 @@ void testing_csric0(const Arguments& arg)
             pivot = std::min(h_analysis_pivot_1[0], h_solve_pivot_1[0]);
         }
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-
-        std::cout << std::setw(12) << "M" << std::setw(12) << "nnz" << std::setw(12) << "pivot"
-                  << std::setw(16) << "analysis policy" << std::setw(16) << "solve policy"
-                  << std::setw(12) << "GB/s" << std::setw(16) << "analysis msec" << std::setw(16)
-                  << "solve msec" << std::setw(12) << "iter" << std::setw(12) << "verified"
-                  << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << nnz << std::setw(12) << pivot
-                  << std::setw(16) << rocsparse_analysis2string(apol) << std::setw(16)
-                  << rocsparse_solve2string(spol) << std::setw(12) << gpu_gbyte << std::setw(16)
-                  << gpu_analysis_time_used / 1e3 << std::setw(16) << gpu_solve_time_used / 1e3
-                  << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        double gpu_gbyte = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
+        display_timing_info("M",
+                            M,
+                            "nnz",
+                            nnz,
+                            "pivot",
+                            pivot,
+                            "analysis policy",
+                            rocsparse_analysis2string(apol),
+                            "solve policy",
+                            rocsparse_solve2string(spol),
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            "analysis msec",
+                            get_gpu_time_msec(gpu_analysis_time_used),
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_solve_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
 
     // Clear csric0 meta data

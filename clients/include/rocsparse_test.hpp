@@ -36,6 +36,13 @@
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
+#include <vector>
+
+static constexpr const char* s_timing_info_perf      = "GFlop/s";
+static constexpr const char* s_timing_info_bandwidth = "GB/s";
+static constexpr const char* s_timing_info_time      = "msec";
+
+rocsparse_status rocsparse_record_timing(double msec, double gflops, double gbs);
 
 #ifdef GOOGLE_TEST
 #include <gtest/gtest.h>

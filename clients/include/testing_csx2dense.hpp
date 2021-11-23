@@ -28,6 +28,7 @@
 
 #include <rocsparse.hpp>
 
+#include "auto_testing_bad_arg.hpp"
 #include "gbyte.hpp"
 #include "rocsparse_check.hpp"
 #include "rocsparse_host.hpp"
@@ -368,34 +369,24 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
         }
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = csx2dense_gbyte_count<DIRA, T>(M, N, nnz) / gpu_time_used * 1e6;
-
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-        // clang-format off
-        std::cout
-	  << std::setw(20) << "M"
-	  << std::setw(20) << "N"
-	  << std::setw(20) << "LD"
-	  << std::setw(20) << "nnz"
-	  << std::setw(20) << "GB/s"
-	  << std::setw(20) << "msec"
-	  << std::setw(20) << "iter"
-	  << std::setw(20) << "verified"
-	  << std::endl;
-
-        std::cout
-	  << std::setw(20) << M
-	  << std::setw(20) << N
-	  << std::setw(20) << LD
-	  << std::setw(20) << nnz
-	  << std::setw(20) << gpu_gbyte
-	  << std::setw(20) << gpu_time_used / 1e3
-	  << std::setw(20) << number_hot_calls
-	  << std::setw(20) << (arg.unit_check ? "yes" : "no")
-	  << std::endl;
-        // clang-format on
+        double gbyte_count = csx2dense_gbyte_count<DIRA, T>(M, N, nnz);
+        double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "LD",
+                            LD,
+                            "nnz",
+                            nnz,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            arg.unit_check ? "yes" : "no");
     }
 }
 

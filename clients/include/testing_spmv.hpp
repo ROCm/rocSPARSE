@@ -574,7 +574,9 @@ public:
             double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
             double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-            display_timing_info("M",
+            display_timing_info("trans",
+                                rocsparse_operation2string(trans),
+                                "M",
                                 M,
                                 "N",
                                 N,
@@ -586,11 +588,11 @@ public:
                                 *h_beta,
                                 "Algorithm",
                                 ((alg == rocsparse_spmv_alg_csr_adaptive) ? "adaptive" : "stream"),
-                                "GFlop/s",
+                                s_timing_info_perf,
                                 gpu_gflops,
-                                "GB/s",
+                                s_timing_info_bandwidth,
                                 gpu_gbyte,
-                                "msec",
+                                s_timing_info_time,
                                 get_gpu_time_msec(gpu_time_used),
                                 "iter",
                                 number_hot_calls,

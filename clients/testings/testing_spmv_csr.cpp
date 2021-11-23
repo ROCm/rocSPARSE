@@ -23,7 +23,6 @@
 
 #include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
-
 #include "testing_spmv.hpp"
 
 template <typename I, typename J, typename T>

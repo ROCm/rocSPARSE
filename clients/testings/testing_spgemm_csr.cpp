@@ -658,34 +658,49 @@ void testing_spgemm_csr(const Arguments& arg)
             CHECK_HIP_ERROR(hipFree(dbuffer));
         }
 
-        double gpu_gflops = csrgemm_gflop_count<T, I, J>(
-                                M, h_alpha_ptr, hA.ptr, hA.ind, hB.ptr, h_beta_ptr, hD.ptr, hA.base)
-                            / gpu_solve_time_used * 1e6;
+        double gflop_count = csrgemm_gflop_count<T, I, J>(
+            M, h_alpha_ptr, dA.ptr, dA.ind, dB.ptr, h_beta_ptr, dD.ptr, dA.base);
 
-        double gpu_gbyte = csrgemm_gbyte_count<T, I, J>(
-                               M, N, K, dA.nnz, dB.nnz, C_nnz, dD.nnz, h_alpha_ptr, h_beta_ptr)
-                           / gpu_solve_time_used * 1e6;
+        double gbyte_count = csrgemm_gbyte_count<T, I, J>(
+            M, N, K, dA.nnz, dB.nnz, C_nnz, dD.nnz, h_alpha_ptr, h_beta_ptr);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
+        double gpu_gbyte  = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
+        double gpu_gflops = get_gpu_gflops(gpu_solve_time_used, gflop_count);
 
-        std::cout << std::setw(12) << "opA" << std::setw(12) << "opB" << std::setw(12) << "M"
-                  << std::setw(12) << "N" << std::setw(12) << "K" << std::setw(12) << "nnz_A"
-                  << std::setw(12) << "nnz_B" << std::setw(12) << "nnz_C" << std::setw(12)
-                  << "nnz_D" << std::setw(12) << "alpha" << std::setw(12) << "beta" << std::setw(12)
-                  << "GFlop/s" << std::setw(12) << "GB/s" << std::setw(16) << "nnz msec"
-                  << std::setw(16) << "gemm msec" << std::setw(12) << "iter" << std::setw(12)
-                  << "verified" << std::endl;
-
-        std::cout << std::setw(12) << rocsparse_operation2string(trans_A) << std::setw(12)
-                  << rocsparse_operation2string(trans_B) << std::setw(12) << M << std::setw(12) << N
-                  << std::setw(12) << K << std::setw(12) << dA.nnz << std::setw(12) << dB.nnz
-                  << std::setw(12) << C_nnz << std::setw(12) << dD.nnz << std::setw(12) << h_alpha
-                  << std::setw(12) << h_beta << std::setw(12) << gpu_gflops << std::setw(12)
-                  << gpu_gbyte << std::setw(16) << gpu_analysis_time_used / 1e3 << std::setw(16)
-                  << gpu_solve_time_used / 1e3 << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        display_timing_info("opA",
+                            rocsparse_operation2string(trans_A),
+                            "opB",
+                            rocsparse_operation2string(trans_B),
+                            "M",
+                            M,
+                            "N",
+                            N,
+                            "K",
+                            K,
+                            "nnz_A",
+                            dA.nnz,
+                            "nnz_B",
+                            dB.nnz,
+                            "nnz_C",
+                            C_nnz,
+                            "nnz_D",
+                            dD.nnz,
+                            "alpha",
+                            h_alpha,
+                            "beta",
+                            h_beta,
+                            s_timing_info_perf,
+                            gpu_gflops,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            "analysis msec",
+                            get_gpu_time_msec(gpu_analysis_time_used),
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_solve_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            arg.unit_check ? "yes" : "no");
     }
 }
 
