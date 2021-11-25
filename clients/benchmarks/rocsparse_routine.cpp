@@ -22,7 +22,7 @@
 *
 * ************************************************************************ */
 #include "rocsparse_routine.hpp"
-#include "rocsparse.h"
+#include "rocsparse/rocsparse.h"
 
 //
 //

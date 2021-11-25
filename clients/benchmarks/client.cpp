@@ -30,7 +30,6 @@
 
 #include <rocsparse/rocsparse.h>
 
-
 #include "rocsparse_bench_app.hpp"
 
 //

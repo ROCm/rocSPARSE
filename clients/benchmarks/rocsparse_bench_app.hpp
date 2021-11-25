@@ -23,7 +23,7 @@
 * ************************************************************************ */
 #pragma once
 
-#include "rocsparse-types.h"
+#include "rocsparse/rocsparse-types.h"
 #include "rocsparse_bench_cmdlines.hpp"
 #include <iostream>
 #include <vector>
