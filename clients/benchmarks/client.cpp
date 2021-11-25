@@ -121,7 +121,6 @@
 
 #include <iostream>
 #include <rocsparse/rocsparse.h>
-#include <unordered_set>
 
 #include "program_options.hpp"
 
