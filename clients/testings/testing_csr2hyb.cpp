@@ -318,20 +318,25 @@ void testing_csr2hyb(const Arguments& arg)
         rocsparse_int ell_nnz = dhyb->ell_nnz;
         rocsparse_int coo_nnz = dhyb->coo_nnz;
 
-        double gpu_gbyte = csr2hyb_gbyte_count<T>(M, nnz, ell_nnz, coo_nnz) / gpu_time_used * 1e6;
+        double gbyte_count = csr2hyb_gbyte_count<T>(M, nnz, ell_nnz, coo_nnz);
+        double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "ELL nnz"
-                  << std::setw(12) << "COO nnz" << std::setw(12) << "GB/s" << std::setw(12)
-                  << "msec" << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << ell_nnz
-                  << std::setw(12) << coo_nnz << std::setw(12) << gpu_gbyte << std::setw(12)
-                  << gpu_time_used / 1e3 << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "ELL nnz",
+                            ell_nnz,
+                            "COO nnz",
+                            coo_nnz,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            arg.unit_check ? "yes" : "no");
     }
 }
 

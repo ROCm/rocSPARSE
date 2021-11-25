@@ -278,23 +278,27 @@ void testing_prune_dense2csr(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte = prune_dense2csr_gbyte_count<T>(M, N, h_nnz_total_dev_host_ptr[0])
-                           / gpu_time_used * 1e6;
+        double gbyte_count = prune_dense2csr_gbyte_count<T>(M, N, h_nnz_total_dev_host_ptr[0]);
+        double gpu_gbyte   = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "denseld"
-                  << std::setw(12) << "nnz" << std::setw(12) << "threshold" << std::setw(12)
-                  << "GB/s" << std::setw(12) << "msec" << std::setw(12) << "iter" << std::setw(12)
-                  << "verified" << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << LDA
-                  << std::setw(12) << h_nnz_total_dev_host_ptr[0] << std::setw(12) << threshold
-                  << std::setw(12) << gpu_gbyte << std::setw(12) << gpu_time_used / 1e3
-                  << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "denseld",
+                            LDA,
+                            "nnz",
+                            h_nnz_total_dev_host_ptr[0],
+                            "threshold",
+                            threshold,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
 
     CHECK_HIP_ERROR(hipFree(d_temp_buffer));

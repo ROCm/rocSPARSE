@@ -200,21 +200,21 @@ void testing_gtsv_no_pivot_strided_batch(const Arguments& arg)
         gpu_solve_time_used = (get_time_us() - gpu_solve_time_used) / number_hot_calls;
 
         double gbyte_count = gtsv_strided_batch_gbyte_count<T>(m, batch_count);
-
-        double gpu_gbyte = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
-
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-
-        std::cout << std::setw(12) << "M" << std::setw(12) << "batch_count" << std::setw(12)
-                  << "batch_stride" << std::setw(12) << "GB/s" << std::setw(12) << "solve_msec"
-                  << std::setw(12) << "iter" << std::setw(12) << "verified" << std::endl;
-
-        std::cout << std::setw(12) << m << std::setw(12) << batch_count << std::setw(12)
-                  << batch_stride << std::setw(12) << gpu_gbyte << std::setw(12)
-                  << gpu_solve_time_used / 1e3 << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        double gpu_gbyte   = get_gpu_gbyte(gpu_solve_time_used, gbyte_count);
+        display_timing_info("M",
+                            m,
+                            "batch_count",
+                            batch_count,
+                            "batch_stride",
+                            batch_stride,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_solve_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            arg.unit_check ? "yes" : "no");
     }
 
     // Free buffer

@@ -451,27 +451,35 @@ void testing_spmm_coo(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gflops
-            = spmm_gflop_count(N, nnz_A, nnz_C, hbeta != static_cast<T>(0)) / gpu_time_used * 1e6;
-        double gpu_gbyte = coomm_gbyte_count<T>(nnz_A, nnz_B, nnz_C, hbeta != static_cast<T>(0))
-                           / gpu_time_used * 1e6;
+        double gflop_count = spmm_gflop_count(N, nnz_A, nnz_C, hbeta != static_cast<T>(0));
+        double gbyte_count = coomm_gbyte_count<T>(nnz_A, nnz_B, nnz_C, hbeta != static_cast<T>(0));
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "K"
-                  << std::setw(12) << "nnz_A" << std::setw(12) << "alpha" << std::setw(12) << "beta"
-                  << std::setw(12) << "Algorithm" << std::setw(12) << "GFlop/s" << std::setw(12)
-                  << "GB/s" << std::setw(12) << "msec" << std::setw(12) << "iter" << std::setw(12)
-                  << "verified" << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << K << std::setw(12)
-                  << nnz_A << std::setw(12) << halpha << std::setw(12) << hbeta << std::setw(12)
-                  << rocsparse_spmmalg2string(alg) << std::setw(12) << gpu_gflops << std::setw(12)
-                  << gpu_gbyte << std::setw(12) << gpu_time_used / 1e3 << std::setw(12)
-                  << number_hot_calls << std::setw(12) << (arg.unit_check ? "yes" : "no")
-                  << std::endl;
+        double gpu_gbyte  = get_gpu_gbyte(gpu_time_used, gbyte_count);
+        double gpu_gflops = get_gpu_gflops(gpu_time_used, gflop_count);
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "K",
+                            K,
+                            "nnz_A",
+                            nnz_A,
+                            "alpha",
+                            halpha,
+                            "beta",
+                            hbeta,
+                            "Algorithm",
+                            rocsparse_spmmalg2string(alg),
+                            s_timing_info_perf,
+                            gpu_gflops,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            arg.unit_check ? "yes" : "no");
     }
 
     CHECK_HIP_ERROR(hipFree(dbuffer));

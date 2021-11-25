@@ -533,43 +533,126 @@ inline void auto_testing_bad_arg(F f, int n, const int* idx, Ts... ts)
 // Template to display timing information.
 //
 template <typename T, typename... Ts>
-inline void display_timing_info_legend(const char* name, T t)
+inline void display_timing_info_legend(std::ostream& out, int n, const char* name, T t)
 {
-    std::cout << std::setw(12) << name;
+    out << std::setw(n) << name;
 }
 
 template <typename T, typename... Ts>
-inline void display_timing_info_legend(const char* name, T t, Ts... ts)
+inline void display_timing_info_legend(std::ostream& out, int n, const char* name, T t, Ts... ts)
 {
-    std::cout << std::setw(12) << name;
-    display_timing_info_legend(ts...);
+    out << std::setw(n) << name;
+    display_timing_info_legend(out, n, ts...);
 }
 
 template <typename T, typename... Ts>
-inline void display_timing_info_values(const char* name, T t)
+inline void display_timing_info_values(std::ostream& out, int n, const char* name, T t)
 {
-    std::cout << std::setw(12) << t;
+    out << std::setw(n) << t;
 }
 
 template <typename T, typename... Ts>
-inline void display_timing_info_values(const char* name, T t, Ts... ts)
+inline void display_timing_info_values(std::ostream& out, int n, const char* name, T t, Ts... ts)
 {
-    std::cout << std::setw(12) << t;
-    display_timing_info_values(ts...);
+    out << std::setw(n) << t;
+    display_timing_info_values(out, n, ts...);
+}
+
+template <typename T>
+inline void grab_results(double values[3], const char* name, T t)
+{
+}
+
+template <>
+inline void grab_results<double>(double values[3], const char* name, double t)
+{
+    if(!strcmp(name, s_timing_info_perf))
+    {
+        values[1] = t;
+    }
+    else if(!strcmp(name, s_timing_info_bandwidth))
+    {
+        values[2] = t;
+    }
+    else if(!strcmp(name, s_timing_info_time))
+    {
+        values[0] = t;
+    }
 }
 
 template <typename T, typename... Ts>
-inline void display_timing_info(const char* name, T t, Ts... ts)
+inline void display_timing_info_grab_results(double values[3], const char* name, T t)
 {
-    std::cout.precision(2);
-    std::cout.setf(std::ios::fixed);
-    std::cout.setf(std::ios::left);
+    grab_results(values, name, t);
+}
 
-    display_timing_info_legend(name, t, ts...);
-    std::cout << std::endl;
+template <typename T, typename... Ts>
+inline void display_timing_info_grab_results(double values[3], const char* name, T t, Ts... ts)
+{
+    grab_results(values, name, t);
+    display_timing_info_grab_results(values, ts...);
+}
 
-    display_timing_info_values(name, t, ts...);
-    std::cout << std::endl;
+bool display_timing_info_stdout_skip_legend();
+bool display_timing_info_is_stdout_disabled();
+
+template <typename T, typename... Ts>
+inline void display_timing_info(std::ostream& out, int n, const char* name, T t, Ts... ts)
+{
+    if(!display_timing_info_is_stdout_disabled())
+    {
+        out.precision(2);
+        out.setf(std::ios::fixed);
+        out.setf(std::ios::left);
+        if(!display_timing_info_stdout_skip_legend())
+        {
+            display_timing_info_legend(out, n, name, t, ts...);
+            out << std::endl;
+        }
+    }
+    double values[3]{};
+    display_timing_info_grab_results(values, name, t, ts...);
+    rocsparse_record_timing(values[0], values[1], values[2]);
+    if(!display_timing_info_is_stdout_disabled())
+    {
+        display_timing_info_values(out, n, name, t, ts...);
+        out << std::endl;
+    }
+}
+
+template <typename T, typename... Ts>
+inline void display_timing_info_max_size_strings(int mx[1], const char* name, T t)
+{
+    int len = strlen(name);
+    mx[0]   = std::max(len, mx[0]);
+}
+
+template <typename T, typename... Ts>
+inline void display_timing_info_max_size_strings(int mx[1], const char* name, T t, Ts... ts)
+{
+    int len = strlen(name);
+    mx[0]   = std::max(len, mx[0]);
+    display_timing_info_max_size_strings(mx, ts...);
+}
+
+#include <fstream>
+template <typename... Ts>
+inline void display_timing_info(const char* name, Ts... ts)
+{
+    //
+    // To configure the size of std::setw.
+    //
+    int n = 0;
+    display_timing_info_max_size_strings(&n, name, ts...);
+
+    //
+    //
+    //
+    n += 4;
+    //
+    // Call info.
+    //
+    display_timing_info(std::cout, n, name, ts...);
 }
 
 //

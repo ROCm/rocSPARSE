@@ -220,21 +220,23 @@ void testing_hyb2csr(const Arguments& arg)
         rocsparse_hyb_mat ptr  = hyb;
         test_hyb*         dhyb = reinterpret_cast<test_hyb*>(ptr);
 
-        double gpu_gbyte
-            = hyb2csr_gbyte_count<T>(M, nnz, dhyb->ell_nnz, dhyb->coo_nnz) / gpu_time_used * 1e6;
+        double gbyte_count = hyb2csr_gbyte_count<T>(M, nnz, dhyb->ell_nnz, dhyb->coo_nnz);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
-
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "nnz"
-                  << std::setw(12) << "GB/s" << std::setw(12) << "msec" << std::setw(12) << "iter"
-                  << std::setw(12) << "verified" << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << nnz
-                  << std::setw(12) << gpu_gbyte << std::setw(12) << gpu_time_used / 1e3
-                  << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "nnz",
+                            nnz,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            arg.unit_check ? "yes" : "no");
     }
 
     // Free buffer

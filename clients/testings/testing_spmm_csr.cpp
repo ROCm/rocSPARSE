@@ -24,6 +24,7 @@
 #include "testing.hpp"
 
 #include "auto_testing_bad_arg.hpp"
+#include <tuple>
 
 template <typename I, typename J, typename T>
 void testing_spmm_csr_bad_arg(const Arguments& arg)
@@ -489,22 +490,33 @@ void testing_spmm_csr(const Arguments& arg)
             A_m, nnz_A, (I)B_m * (I)B_n, (I)C_m * (I)C_n, hbeta != static_cast<T>(0));
         double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
+        CHECK_ROCSPARSE_ERROR(
+            rocsparse_record_timing(get_gpu_time_msec(gpu_time_used), gpu_gflops, gpu_gbyte));
 
-        std::cout << std::setw(12) << "M" << std::setw(12) << "N" << std::setw(12) << "K"
-                  << std::setw(12) << "nnz_A" << std::setw(12) << "alpha" << std::setw(12) << "beta"
-                  << std::setw(12) << "Algorithm" << std::setw(12) << "GFlop/s" << std::setw(12)
-                  << "GB/s" << std::setw(12) << "msec" << std::setw(12) << "iter" << std::setw(12)
-                  << "verified" << std::endl;
-
-        std::cout << std::setw(12) << M << std::setw(12) << N << std::setw(12) << K << std::setw(12)
-                  << nnz_A << std::setw(12) << halpha << std::setw(12) << hbeta << std::setw(12)
-                  << rocsparse_spmmalg2string(alg) << std::setw(12) << gpu_gflops << std::setw(12)
-                  << gpu_gbyte << std::setw(12) << gpu_time_used / 1e3 << std::setw(12)
-                  << number_hot_calls << std::setw(12) << (arg.unit_check ? "yes" : "no")
-                  << std::endl;
+        display_timing_info("M",
+                            M,
+                            "N",
+                            N,
+                            "K",
+                            K,
+                            "nnz_A",
+                            nnz_A,
+                            "alpha",
+                            halpha,
+                            "beta",
+                            hbeta,
+                            "Algorithm",
+                            rocsparse_spmmalg2string(alg),
+                            s_timing_info_perf,
+                            gpu_gflops,
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
 
     CHECK_HIP_ERROR(hipFree(dbuffer));

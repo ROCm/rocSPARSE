@@ -326,26 +326,31 @@ void testing_gebsr2gebsc(const Arguments& arg)
 
         gpu_time_used = (get_time_us() - gpu_time_used) / number_hot_calls;
 
-        double gpu_gbyte
-            = gebsr2gebsc_gbyte_count<T>(
-                  dbsr.mb, dbsr.nb, dbsr.nnzb, dbsr.row_block_dim, dbsr.col_block_dim, action)
-              / gpu_time_used * 1e6;
+        double gbyte_count = gebsr2gebsc_gbyte_count<T>(
+            dbsr.mb, dbsr.nb, dbsr.nnzb, dbsr.row_block_dim, dbsr.col_block_dim, action);
 
-        std::cout.precision(2);
-        std::cout.setf(std::ios::fixed);
-        std::cout.setf(std::ios::left);
+        double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        std::cout << std::setw(12) << "Mb" << std::setw(12) << "Nb" << std::setw(12) << "nnzb"
-                  << std::setw(12) << "rbdim" << std::setw(12) << "cbdim" << std::setw(12)
-                  << "action" << std::setw(12) << "GB/s" << std::setw(12) << "msec" << std::setw(12)
-                  << "iter" << std::setw(12) << "verified" << std::endl;
-
-        std::cout << std::setw(12) << dbsr.mb << std::setw(12) << dbsr.nb << std::setw(12)
-                  << dbsr.nnzb << std::setw(12) << dbsr.row_block_dim << std::setw(12)
-                  << dbsr.col_block_dim << std::setw(12) << rocsparse_action2string(action)
-                  << std::setw(12) << gpu_gbyte << std::setw(12) << gpu_time_used / 1e3
-                  << std::setw(12) << number_hot_calls << std::setw(12)
-                  << (arg.unit_check ? "yes" : "no") << std::endl;
+        display_timing_info("Mb",
+                            dbsr.mb,
+                            "Nb",
+                            dbsr.nb,
+                            "nnzb",
+                            dbsr.nnzb,
+                            "rbdim",
+                            dbsr.row_block_dim,
+                            "cbdim",
+                            dbsr.col_block_dim,
+                            "action",
+                            rocsparse_action2string(action),
+                            s_timing_info_bandwidth,
+                            gpu_gbyte,
+                            s_timing_info_time,
+                            get_gpu_time_msec(gpu_time_used),
+                            "iter",
+                            number_hot_calls,
+                            "verified",
+                            (arg.unit_check ? "yes" : "no"));
     }
     // Free buffer
     CHECK_HIP_ERROR(hipFree(dbuffer));
