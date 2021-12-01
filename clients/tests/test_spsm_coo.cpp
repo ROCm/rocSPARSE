@@ -44,9 +44,9 @@ namespace
     struct spsm_coo_testing<
         I,
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
-                                || std::is_same<T, rocsparse_float_complex>{}
-                                || std::is_same<T, rocsparse_double_complex>{}>::type>
+        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
+                                || std::is_same<T, rocsparse_float_complex>()
+                                || std::is_same<T, rocsparse_double_complex>()>::type>
     {
         explicit operator bool()
         {
@@ -83,7 +83,7 @@ namespace
             if(arg.matrix == rocsparse_matrix_file_rocalution
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
-                return RocSPARSE_TestName<spsm_coo>{}
+                return RocSPARSE_TestName<spsm_coo>()
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.alpha << '_'
                        << arg.alphai << '_' << rocsparse_operation2string(arg.transA) << '_'
                        << rocsparse_operation2string(arg.transB) << '_'
@@ -96,7 +96,7 @@ namespace
             }
             else
             {
-                return RocSPARSE_TestName<spsm_coo>{}
+                return RocSPARSE_TestName<spsm_coo>()
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
                        << arg.alpha << '_' << arg.alphai << '_'
                        << rocsparse_operation2string(arg.transA) << '_'

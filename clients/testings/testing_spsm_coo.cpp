@@ -114,7 +114,6 @@ void testing_spsm_coo(const Arguments& arg)
     if(M <= 0 || K <= 0)
     {
         // M == 0 means nnz can only be 0, too
-        I nnz_A = 0;
 
         static const I safe_size = 100;
 
@@ -141,6 +140,7 @@ void testing_spsm_coo(const Arguments& arg)
             I ldc = (trans_B == rocsparse_operation_none) ? M : K;
 
             // Check structures
+            I                     nnz_A = 0;
             rocsparse_local_spmat A(
                 M, N, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
 
@@ -169,8 +169,7 @@ void testing_spsm_coo(const Arguments& arg)
                                                    buffersize,
                                                    &buffer_size,
                                                    nullptr),
-                                    (M < 0 || K < 0) ? rocsparse_status_invalid_size
-                                                     : rocsparse_status_success);
+                                    rocsparse_status_success);
 
             void* dbuffer;
             CHECK_HIP_ERROR(hipMalloc(&dbuffer, safe_size));
@@ -187,8 +186,7 @@ void testing_spsm_coo(const Arguments& arg)
                                                    preprocess,
                                                    nullptr,
                                                    dbuffer),
-                                    (M < 0 || K < 0) ? rocsparse_status_invalid_size
-                                                     : rocsparse_status_success);
+                                    rocsparse_status_success);
 
             EXPECT_ROCSPARSE_STATUS(rocsparse_spsm(handle,
                                                    trans_A,
@@ -202,8 +200,7 @@ void testing_spsm_coo(const Arguments& arg)
                                                    compute,
                                                    &buffer_size,
                                                    dbuffer),
-                                    (M < 0 || K < 0) ? rocsparse_status_invalid_size
-                                                     : rocsparse_status_success);
+                                    rocsparse_status_success);
             CHECK_HIP_ERROR(hipFree(dbuffer));
         }
 

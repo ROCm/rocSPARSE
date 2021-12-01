@@ -360,7 +360,7 @@ rocsparse_status rocsparse_gtsv_no_pivot_medium_template(rocsparse_handle handle
     T* drhs0 = reinterpret_cast<T*>(ptr);
     ptr += sizeof(T) * ((m * n - 1) / 256 + 1) * 256;
     T* drhs1 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * n - 1) / 256 + 1) * 256;
+    // ptr += sizeof(T) * ((m * n - 1) / 256 + 1) * 256;
 
     // Run special algorithm if m is power of 2
     if((m & (m - 1)) == 0)
@@ -514,7 +514,7 @@ rocsparse_status rocsparse_gtsv_no_pivot_large_template(rocsparse_handle handle,
     T* drhs0 = reinterpret_cast<T*>(ptr);
     ptr += sizeof(T) * ((m * n - 1) / 256 + 1) * 256;
     T* drhs1 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * n - 1) / 256 + 1) * 256;
+    // ptr += sizeof(T) * ((m * n - 1) / 256 + 1) * 256;
 
     // Run special algorithm if m is power of 2
     if((m & (m - 1)) == 0)

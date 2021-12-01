@@ -287,8 +287,9 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
             {
                 launch_csr2bsr_2_32_kernel(T, rocsparse_direction_row, 32, 32);
             }
-            else if(block_dim <= 64)
+            else
             {
+                // (block_dim <= 64)
                 launch_csr2bsr_33_64_kernel(T, rocsparse_direction_row, 32, 2);
             }
         }
@@ -314,8 +315,9 @@ rocsparse_status rocsparse_csr2bsr_template(rocsparse_handle          handle,
             {
                 launch_csr2bsr_2_32_kernel(T, rocsparse_direction_column, 32, 32);
             }
-            else if(block_dim <= 64)
+            else
             {
+                // (block_dim <= 64)
                 launch_csr2bsr_33_64_kernel(T, rocsparse_direction_column, 32, 2);
             }
         }
@@ -617,8 +619,9 @@ extern "C" rocsparse_status rocsparse_csr2bsr_nnz(rocsparse_handle          hand
         {
             launch_csr2bsr_nnz_2_32_kernel(32, 32);
         }
-        else if(block_dim <= 64)
+        else
         {
+            // (block_dim <= 64)
             launch_csr2bsr_nnz_33_64_kernel(32, 2);
         }
     }

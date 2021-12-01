@@ -3405,18 +3405,6 @@ void host_csrgemm_nnz(J                    M,
         }
         return;
     }
-    else if(!alpha && !beta)
-    {
-        *nnz_C = 0;
-        if(M > 0)
-        {
-            for(J i = 0; i <= M; ++i)
-            {
-                csr_row_ptr_C[i] = base_C;
-            }
-        }
-        return;
-    }
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -3534,10 +3522,6 @@ void host_csrgemm(J                    M,
         return;
     }
     else if(alpha && !beta && (L == 0))
-    {
-        return;
-    }
-    else if(!alpha && !beta)
     {
         return;
     }
@@ -5395,13 +5379,15 @@ void host_csr_to_gebsr(rocsparse_direction               direction,
     bsr_val.resize(nnzb * row_block_dim * col_block_dim, 0);
 
     // fill GEBSR col indices array
-    rocsparse_int index = 0;
-    for(rocsparse_int i = 0; i < nnz; i++)
     {
-        if(temp[i] != -1)
+        rocsparse_int index = 0;
+        for(rocsparse_int i = 0; i < nnz; i++)
         {
-            bsr_col_ind[index] = temp[i] + bsr_base;
-            index++;
+            if(temp[i] != -1)
+            {
+                bsr_col_ind[index] = temp[i] + bsr_base;
+                index++;
+            }
         }
     }
 

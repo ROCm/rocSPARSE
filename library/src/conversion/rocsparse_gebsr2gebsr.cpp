@@ -112,7 +112,7 @@ rocsparse_status rocsparse_gebsr2gebsr_buffer_size_template(rocsparse_handle    
     }
 
     // Check sizes
-    if(mb < 0 || nb < 0 | nnzb < 0)
+    if(mb < 0 || nb < 0 || nnzb < 0)
     {
         return rocsparse_status_invalid_size;
     }
@@ -346,8 +346,9 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
             {
                 launch_gebsr2gebsr_fast_kernel(T, rocsparse_direction_row, 16, 16);
             }
-            else if(row_block_dim_C <= 32)
+            else
             {
+                // (row_block_dim_C <= 32)
                 launch_gebsr2gebsr_fast_kernel(T, rocsparse_direction_row, 32, 32);
             }
         }
@@ -369,8 +370,9 @@ rocsparse_status rocsparse_gebsr2gebsr_template(rocsparse_handle          handle
             {
                 launch_gebsr2gebsr_fast_kernel(T, rocsparse_direction_column, 16, 16);
             }
-            else if(row_block_dim_C <= 32)
+            else
             {
+                //  (row_block_dim_C <= 32)
                 launch_gebsr2gebsr_fast_kernel(T, rocsparse_direction_column, 32, 32);
             }
         }
@@ -689,7 +691,7 @@ extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          
     }
 
     // Check sizes
-    if(mb < 0 || nb < 0 | nnzb < 0)
+    if(mb < 0 || nb < 0 || nnzb < 0)
     {
         return rocsparse_status_invalid_size;
     }
@@ -808,8 +810,9 @@ extern "C" rocsparse_status rocsparse_gebsr2gebsr_nnz(rocsparse_handle          
         {
             launch_gebsr2gebsr_nnz_fast_kernel(16, 16);
         }
-        else if(row_block_dim_C <= 32)
+        else
         {
+            // (row_block_dim_C <= 32)
             launch_gebsr2gebsr_nnz_fast_kernel(32, 32);
         }
 

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ namespace
     template <typename T>
     struct csr2coo_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}>::type>
+        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()>::type>
     {
         explicit operator bool()
         {
@@ -80,15 +80,15 @@ namespace
             if(arg.matrix == rocsparse_matrix_file_rocalution
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
-                return RocSPARSE_TestName<csr2coo>{} << rocsparse_indexbase2string(arg.baseA) << '_'
+                return RocSPARSE_TestName<csr2coo>() << rocsparse_indexbase2string(arg.baseA) << '_'
                                                      << rocsparse_matrix2string(arg.matrix) << '_'
                                                      << rocsparse_filename2string(arg.filename);
             }
             else
             {
-                return RocSPARSE_TestName<csr2coo>{} << arg.M << '_' << arg.N << '_'
-                                                     << rocsparse_indexbase2string(arg.baseA) << '_'
-                                                     << rocsparse_matrix2string(arg.matrix);
+                return RocSPARSE_TestName<csr2coo>()
+                       << arg.M << '_' << arg.N << '_' << rocsparse_indexbase2string(arg.baseA)
+                       << '_' << rocsparse_matrix2string(arg.matrix);
             }
         }
     };

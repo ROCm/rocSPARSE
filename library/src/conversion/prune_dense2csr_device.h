@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,7 @@ static __device__ void prune_dense2csr_nnz_device(rocsparse_int m,
     rocsparse_int ty        = thread_id / DIM_X;
     rocsparse_int ind       = hipBlockIdx_x * DIM_X * 4 + tx;
     rocsparse_int n_tail    = n % (4 * DIM_Y);
-    rocsparse_int col       = ty * 4;
+    rocsparse_int col;
     rocsparse_int res_A[4];
 
     __shared__ rocsparse_int sdata[DIM_X * 4 * DIM_Y];

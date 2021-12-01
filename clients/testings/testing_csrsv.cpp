@@ -208,11 +208,12 @@ void testing_csrsv(const Arguments& arg)
     host_scalar<rocsparse_int> h_analysis_pivot, h_solve_pivot;
 
     // Obtain required buffer size
-    size_t buffer_size;
-    CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size<T>(PARAMS_BUFFER_SIZE(dA)));
-
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    {
+        size_t buffer_size;
+        CHECK_ROCSPARSE_ERROR(rocsparse_csrsv_buffer_size<T>(PARAMS_BUFFER_SIZE(dA)));
+        CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    }
 
     if(arg.unit_check)
     {

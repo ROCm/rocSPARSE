@@ -325,8 +325,6 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
             trans_A                = rocsparse_operation_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_buffer_size<T>(PARAMS_BUFFER_SIZE),
                                     rocsparse_status_not_implemented);
-            trans_A = op;
-
             trans_A = rocsparse_operation_conjugate_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_buffer_size<T>(PARAMS_BUFFER_SIZE),
                                     rocsparse_status_not_implemented);
@@ -336,8 +334,6 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
             trans_B = rocsparse_operation_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_buffer_size<T>(PARAMS_BUFFER_SIZE),
                                     rocsparse_status_not_implemented);
-            trans_B = op;
-            op      = trans_B;
             trans_B = rocsparse_operation_conjugate_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_buffer_size<T>(PARAMS_BUFFER_SIZE),
                                     rocsparse_status_not_implemented);
@@ -349,8 +345,6 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
             trans_A                = rocsparse_operation_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(PARAMS_NNZ),
                                     rocsparse_status_not_implemented);
-            trans_A = op;
-
             trans_A = rocsparse_operation_conjugate_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(PARAMS_NNZ),
                                     rocsparse_status_not_implemented);
@@ -360,8 +354,6 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
             trans_B = rocsparse_operation_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(PARAMS_NNZ),
                                     rocsparse_status_not_implemented);
-            trans_B = op;
-
             trans_B = rocsparse_operation_conjugate_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_nnz(PARAMS_NNZ),
                                     rocsparse_status_not_implemented);
@@ -373,8 +365,6 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
             trans_A                = rocsparse_operation_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC),
                                     rocsparse_status_not_implemented);
-            trans_A = op;
-
             trans_A = rocsparse_operation_conjugate_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC),
                                     rocsparse_status_not_implemented);
@@ -384,8 +374,6 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
             trans_B = rocsparse_operation_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC),
                                     rocsparse_status_not_implemented);
-            trans_B = op;
-            op      = trans_B;
             trans_B = rocsparse_operation_conjugate_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_symbolic(PARAMS_SYMBOLIC),
                                     rocsparse_status_not_implemented);
@@ -397,8 +385,6 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
             trans_A                = rocsparse_operation_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_numeric<T>(PARAMS_NUMERIC),
                                     rocsparse_status_not_implemented);
-            trans_A = op;
-
             trans_A = rocsparse_operation_conjugate_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_numeric<T>(PARAMS_NUMERIC),
                                     rocsparse_status_not_implemented);
@@ -408,8 +394,6 @@ void testing_csrgemm_reuse_bad_arg(const Arguments& arg)
             trans_B = rocsparse_operation_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_numeric<T>(PARAMS_NUMERIC),
                                     rocsparse_status_not_implemented);
-            trans_B = op;
-            op      = trans_B;
             trans_B = rocsparse_operation_conjugate_transpose;
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrgemm_numeric<T>(PARAMS_NUMERIC),
                                     rocsparse_status_not_implemented);

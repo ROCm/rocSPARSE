@@ -73,7 +73,8 @@ struct gebsx_matrix
         , val(nnzb * row_block_dim * col_block_dim){};
 
     template <memory_mode::value_t THAT_MODE>
-    gebsx_matrix(const gebsx_matrix<THAT_MODE, direction_, T, I, J>& that_, bool transfer = true)
+    explicit gebsx_matrix(const gebsx_matrix<THAT_MODE, direction_, T, I, J>& that_,
+                          bool                                                transfer = true)
         : gebsx_matrix<MODE, direction_, T, I, J>(that_.block_direction,
                                                   that_.mb,
                                                   that_.nb,
@@ -88,7 +89,8 @@ struct gebsx_matrix
         }
     }
 
-    gebsx_matrix(const gebsx_matrix<MODE, direction_, T, I, J>& that_, bool transfer = true)
+    explicit gebsx_matrix(const gebsx_matrix<MODE, direction_, T, I, J>& that_,
+                          bool                                           transfer = true)
         : gebsx_matrix<MODE, direction_, T, I, J>(that_.block_direction,
                                                   that_.mb,
                                                   that_.nb,

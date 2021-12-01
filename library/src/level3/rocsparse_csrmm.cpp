@@ -157,6 +157,7 @@ rocsparse_status rocsparse_csrmm_buffer_size_template(rocsparse_handle          
         return rocsparse_status_success;
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 template <typename I, typename J, typename T>
@@ -254,7 +255,7 @@ rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          han
         {
             char* ptr         = reinterpret_cast<char*>(temp_buffer);
             J*    csr_row_ind = reinterpret_cast<J*>(ptr);
-            ptr += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
+            // ptr += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
             RETURN_IF_ROCSPARSE_ERROR(
                 rocsparse_csr2coo_template(handle, csr_row_ptr, nnz, m, csr_row_ind, descr->base));
             return rocsparse_status_success;
@@ -273,6 +274,7 @@ rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          han
         return rocsparse_status_success;
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 template <typename I, typename J, typename T, typename U>
@@ -484,6 +486,7 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
         }
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 template <typename I, typename J, typename T>

@@ -52,6 +52,7 @@ rocsparse_status rocsparse_spmm_alg2bellmm_alg(rocsparse_spmm_alg    spmm_alg,
         return rocsparse_status_invalid_value;
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 rocsparse_status rocsparse_spmm_alg2csrmm_alg(rocsparse_spmm_alg   spmm_alg,
@@ -86,6 +87,7 @@ rocsparse_status rocsparse_spmm_alg2csrmm_alg(rocsparse_spmm_alg   spmm_alg,
         return rocsparse_status_invalid_value;
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 rocsparse_status rocsparse_spmm_alg2coomm_alg(rocsparse_spmm_alg   spmm_alg,
@@ -125,6 +127,7 @@ rocsparse_status rocsparse_spmm_alg2coomm_alg(rocsparse_spmm_alg   spmm_alg,
         return rocsparse_status_invalid_value;
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 template <typename I, typename J, typename T>
@@ -470,6 +473,7 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
         return rocsparse_status_not_implemented;
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 template <typename I, typename J, typename T>
@@ -719,6 +723,7 @@ static inline rocsparse_status rocsparse_spmm_dynamic_dispatch(rocsparse_datatyp
         }
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 /*

@@ -170,7 +170,7 @@ rocsparse_status rocsparse_gtsv_spike_solver_template(rocsparse_handle handle,
     ptr += sizeof(T) * ((2 * gridsize - 1) / 256 + 1) * 256;
 
     rocsparse_int* pivot_pad = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((m_pad - 1) / 256 + 1) * 256;
+    //    ptr += sizeof(rocsparse_int) * ((m_pad - 1) / 256 + 1) * 256;
 
     hipLaunchKernelGGL((gtsv_transpose_and_pad_array_shared_kernel<BLOCKSIZE, BLOCKDIM>),
                        dim3((m_pad - 1) / BLOCKSIZE + 1),

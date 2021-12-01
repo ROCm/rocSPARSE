@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,9 +43,9 @@ namespace
     template <typename T>
     struct csrilusv_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
-                                || std::is_same<T, rocsparse_float_complex>{}
-                                || std::is_same<T, rocsparse_double_complex>{}>::type>
+        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
+                                || std::is_same<T, rocsparse_float_complex>()
+                                || std::is_same<T, rocsparse_double_complex>()>::type>
     {
         explicit operator bool()
         {
@@ -77,12 +77,12 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            return RocSPARSE_TestName<csrilusv>{} << rocsparse_datatype2string(arg.compute_type)
-                                                  << '_' << rocsparse_analysis2string(arg.apol)
-                                                  << '_' << rocsparse_solve2string(arg.spol) << '_'
-                                                  << rocsparse_indexbase2string(arg.baseA) << '_'
-                                                  << rocsparse_matrix2string(arg.matrix) << '_'
-                                                  << rocsparse_filename2string(arg.filename);
+            return RocSPARSE_TestName<csrilusv>()
+                   << rocsparse_datatype2string(arg.compute_type) << '_'
+                   << rocsparse_analysis2string(arg.apol) << '_' << rocsparse_solve2string(arg.spol)
+                   << '_' << rocsparse_indexbase2string(arg.baseA) << '_'
+                   << rocsparse_matrix2string(arg.matrix) << '_'
+                   << rocsparse_filename2string(arg.filename);
         }
     };
 

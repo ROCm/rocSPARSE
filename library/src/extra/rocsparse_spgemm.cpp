@@ -149,6 +149,7 @@ rocsparse_status rocsparse_spgemm_template_dispatch(rocsparse_indextype itype,
         }
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 template <typename I, typename J, typename T>

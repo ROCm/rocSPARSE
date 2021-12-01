@@ -133,8 +133,8 @@ void testing_bsrsm_bad_arg(const Arguments& arg)
         trans_X  = rocsparse_operation_transpose;
         EXPECT_ROCSPARSE_STATUS(rocsparse_bsrsm_solve<T>(PARAMS_SOLVE),
                                 rocsparse_status_invalid_size);
-        ldb     = tmp;
-        trans_X = rocsparse_operation_none;
+        ldb = tmp;
+        // trans_X = rocsparse_operation_none;
     }
     {
         auto tmp = ldx;

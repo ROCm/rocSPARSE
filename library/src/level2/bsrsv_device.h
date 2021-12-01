@@ -437,10 +437,9 @@ ROCSPARSE_DEVICE_ILF void bsrsv_lower_shared_device(rocsparse_int mb,
         // Local sum computation
         if(lid < block_dim)
         {
-            for(rocsparse_int bj = 0; bj < BSRDIM; ++bj)
+            for(rocsparse_int l = 0; l < BSRDIM; ++l)
             {
-                local_sum
-                    = rocsparse_fma(-bsr_values[lid + bj * BSRDIM], bsr_updates[bj], local_sum);
+                local_sum = rocsparse_fma(-bsr_values[lid + l * BSRDIM], bsr_updates[l], local_sum);
             }
         }
     }
@@ -619,10 +618,9 @@ ROCSPARSE_DEVICE_ILF void bsrsv_upper_shared_device(rocsparse_int mb,
         // Local sum computation
         if(lid < block_dim)
         {
-            for(rocsparse_int bj = 0; bj < BSRDIM; ++bj)
+            for(rocsparse_int l = 0; l < BSRDIM; ++l)
             {
-                local_sum
-                    = rocsparse_fma(-bsr_values[lid + bj * BSRDIM], bsr_updates[bj], local_sum);
+                local_sum = rocsparse_fma(-bsr_values[lid + l * BSRDIM], bsr_updates[l], local_sum);
             }
         }
     }

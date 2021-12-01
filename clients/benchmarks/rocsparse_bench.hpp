@@ -41,7 +41,7 @@ struct gpu_config
     long maxThreadsPerBlock;
     long warpSize;
 
-    gpu_config(const hipDeviceProp_t& prop)
+    explicit gpu_config(const hipDeviceProp_t& prop)
     {
         strcpy(this->name, prop.name);
         this->memory_MB            = (prop.totalGlobalMem >> 20);

@@ -103,7 +103,7 @@ rocsparse_status rocsparse_routine::dispatch_indextype(const char cindextype, co
     }
     case rocsparse_indextype_i32:
     {
-        return rocsparse_routine::dispatch_call<FNAME, T, int32_t>(arg);
+        return dispatch_call<FNAME, T, int32_t>(arg);
     }
     case rocsparse_indextype_i64:
     {

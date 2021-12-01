@@ -142,8 +142,6 @@ void testing_spmm_coo(const Arguments& arg)
     if(M <= 0 || N <= 0 || K <= 0)
     {
         // M == N == 0 means nnz can only be 0, too
-        I nnz_A = 0;
-
         static const I safe_size = 100;
 
         // Allocate memory on device
@@ -159,21 +157,20 @@ void testing_spmm_coo(const Arguments& arg)
             // Pointer mode
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-            I nrow_A = trans_A == rocsparse_operation_none ? M : K;
-            I ncol_A = trans_A == rocsparse_operation_none ? K : M;
+            I nrow_A = 0;
+            I ncol_A = 0;
 
-            I ldb = order == rocsparse_order_column
-                        ? (trans_B == rocsparse_operation_none ? 2 * K : 2 * N)
-                        : (trans_B == rocsparse_operation_none ? 2 * N : 2 * K);
+            I ldb = 0;
 
-            I nrow_B = trans_B == rocsparse_operation_none ? K : N;
-            I ncol_B = trans_B == rocsparse_operation_none ? N : K;
+            I nrow_B = 0;
+            I ncol_B = 0;
 
-            I ldc    = order == rocsparse_order_column ? 2 * M : 2 * N;
-            I nrow_C = M;
-            I ncol_C = N;
+            I ldc    = 0;
+            I nrow_C = 0;
+            I ncol_C = 0;
 
             // Check structures
+            I                     nnz_A = 0;
             rocsparse_local_spmat A(
                 nrow_A, ncol_A, nnz_A, dcoo_row_ind, dcoo_col_ind, dcoo_val, itype, base, ttype);
             rocsparse_local_dnmat B(nrow_B, ncol_B, ldb, dB, ttype, order);
@@ -243,28 +240,29 @@ void testing_spmm_coo(const Arguments& arg)
     matrix_factory.init_coo(hcoo_row_ind,
                             hcoo_col_ind,
                             hcoo_val,
-                            trans_A == rocsparse_operation_none ? M : K,
-                            trans_A == rocsparse_operation_none ? K : M,
+                            (trans_A == rocsparse_operation_none) ? M : K,
+                            (trans_A == rocsparse_operation_none) ? K : M,
                             nnz_A,
                             base);
 
     // Some matrix properties
-    I nrow_A = trans_A == rocsparse_operation_none ? M : K;
-    I ncol_A = trans_A == rocsparse_operation_none ? K : M;
+    I nrow_A = (trans_A == rocsparse_operation_none) ? M : K;
+    I ncol_A = (trans_A == rocsparse_operation_none) ? K : M;
 
-    I ldb = order == rocsparse_order_column ? (trans_B == rocsparse_operation_none ? 2 * K : 2 * N)
-                                            : (trans_B == rocsparse_operation_none ? 2 * N : 2 * K);
+    I ldb = (order == rocsparse_order_column)
+                ? ((trans_B == rocsparse_operation_none) ? (2 * K) : (2 * N))
+                : ((trans_B == rocsparse_operation_none) ? (2 * N) : (2 * K));
 
-    I nrow_B = trans_B == rocsparse_operation_none ? K : N;
-    I ncol_B = trans_B == rocsparse_operation_none ? N : K;
+    I nrow_B = (trans_B == rocsparse_operation_none) ? K : N;
+    I ncol_B = (trans_B == rocsparse_operation_none) ? N : K;
 
     // I ldc    = order == rocsparse_order_column ? 2 * M : 2 * N;
-    I ldc    = order == rocsparse_order_column ? M : N;
+    I ldc    = (order == rocsparse_order_column) ? M : N;
     I nrow_C = M;
     I ncol_C = N;
 
-    I nnz_B = order == rocsparse_order_column ? ldb * ncol_B : nrow_B * ldb;
-    I nnz_C = order == rocsparse_order_column ? ldc * ncol_C : nrow_C * ldc;
+    I nnz_B = (order == rocsparse_order_column) ? ldb * ncol_B : nrow_B * ldb;
+    I nnz_C = (order == rocsparse_order_column) ? ldc * ncol_C : nrow_C * ldc;
 
     // Allocate host memory for vectors
     host_vector<T> hB(nnz_B);

@@ -163,6 +163,7 @@ rocsparse_status rocsparse_spmv_template(rocsparse_handle            handle,
         // LCOV_EXCL_STOP
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 template <typename... Ts>
@@ -226,6 +227,7 @@ rocsparse_status rocsparse_spmv_dynamic_dispatch(rocsparse_indextype itype,
 
 #undef DATATYPE_CASE
     }
+    return rocsparse_status_invalid_value;
 }
 
 /*

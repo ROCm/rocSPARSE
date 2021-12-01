@@ -156,13 +156,13 @@ void rocsparse_bench_app::confidence_interval(const double               alpha,
 
 void rocsparse_bench_app::export_item(std::ostream& out, rocsparse_bench_timing_t::item_t& item)
 {
-    double alpha = 0.95;
     //
     //
     //
     auto N = item.m_nruns;
     if(N > 1)
     {
+        const double alpha = 0.95;
         std::sort(item.msec.begin(), item.msec.end());
         std::sort(item.gflops.begin(), item.gflops.end());
         std::sort(item.gbs.begin(), item.gbs.end());

@@ -121,7 +121,6 @@ void testing_spsv_csr(const Arguments& arg)
     if(M <= 0)
     {
         // M == 0 means nnz can only be 0, too
-        I nnz_A = 0;
 
         static const I safe_size = 100;
 
@@ -145,6 +144,7 @@ void testing_spsv_csr(const Arguments& arg)
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
             // Check structures
+            I                     nnz_A = 0;
             rocsparse_local_spmat A(M,
                                     N,
                                     nnz_A,

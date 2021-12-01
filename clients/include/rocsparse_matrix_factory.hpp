@@ -367,11 +367,7 @@ struct rocsparse_matrix_utils
                                                                 analysis,
                                                                 solve,
                                                                 buffer));
-            if(step == bsrilu0_all)
-            {
-                step = bsrilu0_solve;
-            }
-            else
+            if(step != bsrilu0_all)
             {
                 break;
             }
@@ -464,11 +460,7 @@ struct rocsparse_matrix_utils
                                                                analysis,
                                                                solve,
                                                                buffer));
-            if(step == bsric0_all)
-            {
-                step = bsric0_solve;
-            }
-            else
+            if(step != bsric0_all)
             {
                 break;
             }
@@ -555,11 +547,7 @@ struct rocsparse_matrix_utils
                                                                analysis,
                                                                solve,
                                                                buffer));
-            if(step == csric0_all)
-            {
-                step = csric0_solve;
-            }
-            else
+            if(step != csric0_all)
             {
                 break;
             }
@@ -647,11 +635,7 @@ struct rocsparse_matrix_utils
                                                                 analysis,
                                                                 solve,
                                                                 buffer));
-            if(step == csrilu0_all)
-            {
-                step = csrilu0_solve;
-            }
-            else
+            if(step != csrilu0_all)
             {
                 break;
             }
@@ -1067,10 +1051,10 @@ private:
     rocsparse_matrix_init_kind m_matrix_init_kind;
 
 public:
-    rocsparse_matrix_factory_random(bool                       fullrank,
-                                    bool                       to_int = false,
-                                    rocsparse_matrix_init_kind matrix_init_kind
-                                    = rocsparse_matrix_init_kind_default)
+    explicit rocsparse_matrix_factory_random(bool                       fullrank,
+                                             bool                       to_int = false,
+                                             rocsparse_matrix_init_kind matrix_init_kind
+                                             = rocsparse_matrix_init_kind_default)
         : m_fullrank(fullrank)
         , m_to_int(to_int)
         , m_matrix_init_kind(matrix_init_kind){};
@@ -1083,7 +1067,7 @@ public:
                           I&                    nnz,
                           rocsparse_index_base  base,
                           rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
-                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower) override
     {
         switch(matrix_type)
         {
@@ -1145,7 +1129,7 @@ public:
                             I&                   nnzb,
                             J&                   row_block_dim,
                             J&                   col_block_dim,
-                            rocsparse_index_base base)
+                            rocsparse_index_base base) override
     {
         rocsparse_init_gebsr_random(bsr_row_ptr,
                                     bsr_col_ind,
@@ -1167,30 +1151,76 @@ public:
                           I&                   M,
                           I&                   N,
                           I&                   nnz,
-                          rocsparse_index_base base)
+                          rocsparse_index_base base) override
     {
         rocsparse_init_coo_random(
             coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base, this->m_fullrank, this->m_to_int);
     }
 };
 
-template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
-struct rocsparse_matrix_factory_rocalution;
-
-template <typename T>
-struct rocsparse_matrix_factory_rocalution<T, rocsparse_int, rocsparse_int>
-    : public rocsparse_matrix_factory_base<T, rocsparse_int, rocsparse_int>
+template <typename T, typename I, typename J>
+struct rocsparse_matrix_factory_rocalution_base : public rocsparse_matrix_factory_base<T, I, J>
 {
-private:
+protected:
     std::string m_filename;
     bool        m_toint;
-    using I = rocsparse_int;
-    using J = rocsparse_int;
 
 public:
-    rocsparse_matrix_factory_rocalution(const char* filename, bool toint = false)
+    explicit rocsparse_matrix_factory_rocalution_base(const char* filename, bool toint = false)
         : m_filename(filename)
         , m_toint(toint){};
+
+    virtual void init_csr(std::vector<I>&       csr_row_ptr,
+                          std::vector<J>&       csr_col_ind,
+                          std::vector<T>&       csr_val,
+                          J&                    M,
+                          J&                    N,
+                          I&                    nnz,
+                          rocsparse_index_base  base,
+                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower) override
+    {
+        switch(matrix_type)
+        {
+        case rocsparse_matrix_type_symmetric:
+        case rocsparse_matrix_type_hermitian:
+        case rocsparse_matrix_type_triangular:
+        {
+            std::vector<I> ptr;
+            std::vector<J> ind;
+            std::vector<T> val;
+
+            rocsparse_init_csr_rocalution(
+                this->m_filename.c_str(), ptr, ind, val, M, N, nnz, base, this->m_toint);
+
+            rocsparse_matrix_utils::host_csrtri(ptr.data(),
+                                                ind.data(),
+                                                val.data(),
+                                                csr_row_ptr,
+                                                csr_col_ind,
+                                                csr_val,
+                                                M,
+                                                N,
+                                                nnz,
+                                                base,
+                                                uplo);
+            break;
+        }
+        case rocsparse_matrix_type_general:
+        {
+            rocsparse_init_csr_rocalution(this->m_filename.c_str(),
+                                          csr_row_ptr,
+                                          csr_col_ind,
+                                          csr_val,
+                                          M,
+                                          N,
+                                          nnz,
+                                          base,
+                                          this->m_toint);
+            break;
+        }
+        }
+    }
 
     virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
                             std::vector<J>&      bsr_col_ind,
@@ -1201,17 +1231,89 @@ public:
                             I&                   nnzb,
                             J&                   row_block_dim,
                             J&                   col_block_dim,
-                            rocsparse_index_base base)
-    {
+                            rocsparse_index_base base) override = 0;
 
+    virtual void init_coo(std::vector<I>&      coo_row_ind,
+                          std::vector<I>&      coo_col_ind,
+                          std::vector<T>&      coo_val,
+                          I&                   M,
+                          I&                   N,
+                          I&                   nnz,
+                          rocsparse_index_base base) override
+    {
+        rocsparse_init_coo_rocalution(this->m_filename.c_str(),
+                                      coo_row_ind,
+                                      coo_col_ind,
+                                      coo_val,
+                                      M,
+                                      N,
+                                      nnz,
+                                      base,
+                                      this->m_toint);
+    }
+};
+
+template <typename T, typename I, typename J>
+struct rocsparse_matrix_factory_rocalution
+    : public rocsparse_matrix_factory_rocalution_base<T, I, J>
+{
+public:
+    explicit rocsparse_matrix_factory_rocalution(const char* filename, bool toint = false)
+        : rocsparse_matrix_factory_rocalution_base<T, I, J>(filename, toint){};
+
+    virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
+                            std::vector<J>&      bsr_col_ind,
+                            std::vector<T>&      bsr_val,
+                            rocsparse_direction  dirb,
+                            J&                   Mb,
+                            J&                   Nb,
+                            I&                   nnzb,
+                            J&                   row_block_dim,
+                            J&                   col_block_dim,
+                            rocsparse_index_base base) override
+    {
+        rocsparse_init_gebsr_rocalution(this->m_filename.c_str(),
+                                        bsr_row_ptr,
+                                        bsr_col_ind,
+                                        bsr_val,
+                                        Mb,
+                                        Nb,
+                                        nnzb,
+                                        row_block_dim,
+                                        col_block_dim,
+                                        base,
+                                        this->m_toint);
+    }
+};
+
+template <typename T>
+struct rocsparse_matrix_factory_rocalution<T, rocsparse_int, rocsparse_int>
+    : public rocsparse_matrix_factory_rocalution_base<T, rocsparse_int, rocsparse_int>
+{
+    using I = rocsparse_int;
+    using J = rocsparse_int;
+
+public:
+    explicit rocsparse_matrix_factory_rocalution(const char* filename, bool toint = false)
+        : rocsparse_matrix_factory_rocalution_base<T, rocsparse_int, rocsparse_int>(filename,
+                                                                                    toint){};
+
+    virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
+                            std::vector<J>&      bsr_col_ind,
+                            std::vector<T>&      bsr_val,
+                            rocsparse_direction  dirb,
+                            J&                   Mb,
+                            J&                   Nb,
+                            I&                   nnzb,
+                            J&                   row_block_dim,
+                            J&                   col_block_dim,
+                            rocsparse_index_base base) override
+    {
         //
         // Initialize in case init_csr requires it as input.
         //
-        std::vector<I> csr_row_ptr;
-        std::vector<J> csr_col_ind;
-        std::vector<T> csr_val;
-        J              M = Mb * row_block_dim;
-        J              N = Nb * col_block_dim;
+        J M = Mb * row_block_dim;
+        J N = Nb * col_block_dim;
 
         host_csr_matrix<T, I, J> hA_uncompressed(M, N, 0, base);
         this->init_csr(hA_uncompressed.ptr,
@@ -1238,185 +1340,6 @@ public:
         that_on_device.ind.transfer_to(bsr_col_ind);
         that_on_device.val.transfer_to(bsr_val);
     }
-
-    virtual void init_csr(std::vector<I>&       csr_row_ptr,
-                          std::vector<J>&       csr_col_ind,
-                          std::vector<T>&       csr_val,
-                          J&                    M,
-                          J&                    N,
-                          I&                    nnz,
-                          rocsparse_index_base  base,
-                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
-                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
-    {
-        switch(matrix_type)
-        {
-        case rocsparse_matrix_type_symmetric:
-        case rocsparse_matrix_type_hermitian:
-        case rocsparse_matrix_type_triangular:
-        {
-            std::vector<I> ptr;
-            std::vector<J> ind;
-            std::vector<T> val;
-
-            rocsparse_init_csr_rocalution(
-                this->m_filename.c_str(), ptr, ind, val, M, N, nnz, base, this->m_toint);
-
-            rocsparse_matrix_utils::host_csrtri(ptr.data(),
-                                                ind.data(),
-                                                val.data(),
-                                                csr_row_ptr,
-                                                csr_col_ind,
-                                                csr_val,
-                                                M,
-                                                N,
-                                                nnz,
-                                                base,
-                                                uplo);
-            break;
-        }
-        case rocsparse_matrix_type_general:
-        {
-            rocsparse_init_csr_rocalution(this->m_filename.c_str(),
-                                          csr_row_ptr,
-                                          csr_col_ind,
-                                          csr_val,
-                                          M,
-                                          N,
-                                          nnz,
-                                          base,
-                                          this->m_toint);
-            break;
-        }
-        }
-    }
-
-    virtual void init_coo(std::vector<I>&      coo_row_ind,
-                          std::vector<I>&      coo_col_ind,
-                          std::vector<T>&      coo_val,
-                          I&                   M,
-                          I&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
-    {
-        rocsparse_init_coo_rocalution(this->m_filename.c_str(),
-                                      coo_row_ind,
-                                      coo_col_ind,
-                                      coo_val,
-                                      M,
-                                      N,
-                                      nnz,
-                                      base,
-                                      this->m_toint);
-    }
-};
-
-template <typename T, typename I, typename J>
-struct rocsparse_matrix_factory_rocalution : public rocsparse_matrix_factory_base<T, I, J>
-{
-private:
-    std::string m_filename;
-    bool        m_toint;
-
-public:
-    rocsparse_matrix_factory_rocalution(const char* filename, bool toint = false)
-        : m_filename(filename)
-        , m_toint(toint){};
-
-    virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
-                            std::vector<J>&      bsr_col_ind,
-                            std::vector<T>&      bsr_val,
-                            rocsparse_direction  dirb,
-                            J&                   Mb,
-                            J&                   Nb,
-                            I&                   nnzb,
-                            J&                   row_block_dim,
-                            J&                   col_block_dim,
-                            rocsparse_index_base base)
-    {
-        rocsparse_init_gebsr_rocalution(this->m_filename.c_str(),
-                                        bsr_row_ptr,
-                                        bsr_col_ind,
-                                        bsr_val,
-                                        Mb,
-                                        Nb,
-                                        nnzb,
-                                        row_block_dim,
-                                        col_block_dim,
-                                        base,
-                                        this->m_toint);
-    }
-
-    virtual void init_csr(std::vector<I>&       csr_row_ptr,
-                          std::vector<J>&       csr_col_ind,
-                          std::vector<T>&       csr_val,
-                          J&                    M,
-                          J&                    N,
-                          I&                    nnz,
-                          rocsparse_index_base  base,
-                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
-                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
-    {
-        switch(matrix_type)
-        {
-        case rocsparse_matrix_type_symmetric:
-        case rocsparse_matrix_type_hermitian:
-        case rocsparse_matrix_type_triangular:
-        {
-            std::vector<I> ptr;
-            std::vector<J> ind;
-            std::vector<T> val;
-
-            rocsparse_init_csr_rocalution(
-                this->m_filename.c_str(), ptr, ind, val, M, N, nnz, base, this->m_toint);
-
-            rocsparse_matrix_utils::host_csrtri(ptr.data(),
-                                                ind.data(),
-                                                val.data(),
-                                                csr_row_ptr,
-                                                csr_col_ind,
-                                                csr_val,
-                                                M,
-                                                N,
-                                                nnz,
-                                                base,
-                                                uplo);
-            break;
-        }
-        case rocsparse_matrix_type_general:
-        {
-            rocsparse_init_csr_rocalution(this->m_filename.c_str(),
-                                          csr_row_ptr,
-                                          csr_col_ind,
-                                          csr_val,
-                                          M,
-                                          N,
-                                          nnz,
-                                          base,
-                                          this->m_toint);
-            break;
-        }
-        }
-    }
-
-    virtual void init_coo(std::vector<I>&      coo_row_ind,
-                          std::vector<I>&      coo_col_ind,
-                          std::vector<T>&      coo_val,
-                          I&                   M,
-                          I&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
-    {
-        rocsparse_init_coo_rocalution(this->m_filename.c_str(),
-                                      coo_row_ind,
-                                      coo_col_ind,
-                                      coo_val,
-                                      M,
-                                      N,
-                                      nnz,
-                                      base,
-                                      this->m_toint);
-    }
 };
 
 template <typename T, typename I = rocsparse_int, typename J = rocsparse_int>
@@ -1426,7 +1349,7 @@ private:
     std::string m_filename;
 
 public:
-    rocsparse_matrix_factory_mtx(const char* filename)
+    explicit rocsparse_matrix_factory_mtx(const char* filename)
         : m_filename(filename){};
 
     virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
@@ -1438,7 +1361,7 @@ public:
                             I&                   nnzb,
                             J&                   row_block_dim,
                             J&                   col_block_dim,
-                            rocsparse_index_base base)
+                            rocsparse_index_base base) override
     {
         rocsparse_init_gebsr_mtx(this->m_filename.c_str(),
                                  bsr_row_ptr,
@@ -1460,7 +1383,7 @@ public:
                           I&                    nnz,
                           rocsparse_index_base  base,
                           rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
-                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower) override
     {
         switch(matrix_type)
         {
@@ -1502,7 +1425,7 @@ public:
                           I&                   M,
                           I&                   N,
                           I&                   nnz,
-                          rocsparse_index_base base)
+                          rocsparse_index_base base) override
     {
         rocsparse_init_coo_mtx(
             this->m_filename.c_str(), coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base);
@@ -1528,7 +1451,7 @@ public:
                           I&                    nnz,
                           rocsparse_index_base  base,
                           rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
-                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower) override
     {
         switch(matrix_type)
         {
@@ -1571,7 +1494,7 @@ public:
                           I&                   M,
                           I&                   N,
                           I&                   nnz,
-                          rocsparse_index_base base)
+                          rocsparse_index_base base) override
     {
         rocsparse_init_coo_laplace2d(
             coo_row_ind, coo_col_ind, coo_val, this->m_dimx, this->m_dimy, M, N, nnz, base);
@@ -1586,7 +1509,7 @@ public:
                             I&                   nnzb,
                             J&                   row_block_dim,
                             J&                   col_block_dim,
-                            rocsparse_index_base base)
+                            rocsparse_index_base base) override
     {
         rocsparse_init_gebsr_laplace2d(bsr_row_ptr,
                                        bsr_col_ind,
@@ -1622,7 +1545,7 @@ public:
                           I&                    nnz,
                           rocsparse_index_base  base,
                           rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
-                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower) override
     {
         switch(matrix_type)
         {
@@ -1673,7 +1596,7 @@ public:
                           I&                   M,
                           I&                   N,
                           I&                   nnz,
-                          rocsparse_index_base base)
+                          rocsparse_index_base base) override
     {
         rocsparse_init_coo_laplace3d(coo_row_ind,
                                      coo_col_ind,
@@ -1696,7 +1619,7 @@ public:
                             I&                   nnzb,
                             J&                   row_block_dim,
                             J&                   col_block_dim,
-                            rocsparse_index_base base)
+                            rocsparse_index_base base) override
     {
         rocsparse_init_gebsr_laplace3d(bsr_row_ptr,
                                        bsr_col_ind,
@@ -1727,7 +1650,7 @@ public:
                           I&                    nnz,
                           rocsparse_index_base  base,
                           rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
-                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower) override
     {
         csr_row_ptr.resize((M > 0) ? (M + 1) : 0, static_cast<I>(base));
         csr_col_ind.resize(0);
@@ -1745,7 +1668,7 @@ public:
                             I&                   nnzb,
                             J&                   row_block_dim,
                             J&                   col_block_dim,
-                            rocsparse_index_base base)
+                            rocsparse_index_base base) override
     {
         bsr_row_ptr.resize((Mb > 0) ? (Mb + 1) : 0, static_cast<I>(base));
         bsr_col_ind.resize(0);
@@ -1760,7 +1683,7 @@ public:
                           I&                   M,
                           I&                   N,
                           I&                   nnz,
-                          rocsparse_index_base base)
+                          rocsparse_index_base base) override
     {
         coo_row_ind.resize(0);
         coo_col_ind.resize(0);
@@ -1859,11 +1782,12 @@ public:
         }
         assert(this->m_instance != nullptr);
     }
-
-    rocsparse_matrix_factory(const Arguments& arg,
-                             bool             to_int    = false,
-                             bool             full_rank = false,
-                             bool             noseed    = false)
+    rocsparse_matrix_factory(const rocsparse_matrix_factory& that) = delete;
+    rocsparse_matrix_factory& operator=(const rocsparse_matrix_factory& that) = delete;
+    explicit rocsparse_matrix_factory(const Arguments& arg,
+                                      bool             to_int    = false,
+                                      bool             full_rank = false,
+                                      bool             noseed    = false)
         : rocsparse_matrix_factory(arg, arg.matrix, to_int, full_rank, noseed)
     {
     }
@@ -1876,7 +1800,7 @@ public:
                           I&                    nnz,
                           rocsparse_index_base  base,
                           rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
-                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
+                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower) override
     {
         this->m_instance->init_csr(
             csr_row_ptr, csr_col_ind, csr_val, M, N, nnz, base, matrix_type, uplo);
@@ -1891,7 +1815,7 @@ public:
                             I&                   nnzb,
                             J&                   row_block_dim,
                             J&                   col_block_dim,
-                            rocsparse_index_base base)
+                            rocsparse_index_base base) override
     {
         this->m_instance->init_gebsr(bsr_row_ptr,
                                      bsr_col_ind,
@@ -1925,7 +1849,7 @@ public:
                           I&                   M,
                           I&                   N,
                           I&                   nnz,
-                          rocsparse_index_base base)
+                          rocsparse_index_base base) override
     {
         this->m_instance->init_coo(coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base);
     }

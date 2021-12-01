@@ -336,7 +336,7 @@ void rocsparse_init_coo_matrix(std::vector<I>&      row_ind,
     {
         I   i       = random_generator<I>(0, M - 1);
         int maxiter = 0;
-        while(count[i] >= N && maxiter < 10)
+        while(count[i] >= N && maxiter++ < 10)
         {
             i = random_generator<I>(0, M - 1);
         }
@@ -779,8 +779,8 @@ static inline void read_mtx_value(std::istringstream& is, int64_t& row, int64_t&
 static inline void
     read_mtx_value(std::istringstream& is, int64_t& row, int64_t& col, rocsparse_float_complex& val)
 {
-    float real;
-    float imag;
+    float real{};
+    float imag{};
 
     is >> row >> col >> real >> imag;
 
@@ -792,8 +792,8 @@ static inline void read_mtx_value(std::istringstream&       is,
                                   int64_t&                  col,
                                   rocsparse_double_complex& val)
 {
-    double real;
-    double imag;
+    double real{};
+    double imag{};
 
     is >> row >> col >> real >> imag;
 
@@ -853,13 +853,8 @@ void rocsparse_init_coo_mtx(const char*          filename,
         std::cout << "Reading matrix " << filename << " ... ";
     }
 
+    char  line[1024];
     FILE* f = fopen(filename, "r");
-    if(!f)
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-    }
-
-    char line[1024];
 
     // Check for banner
     if(!fgets(line, 1024, f))
@@ -960,8 +955,8 @@ void rocsparse_init_coo_mtx(const char*          filename,
             CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
         }
 
-        int64_t irow;
-        int64_t icol;
+        int64_t irow{};
+        int64_t icol{};
         T       ival;
 
         std::istringstream ss(line);

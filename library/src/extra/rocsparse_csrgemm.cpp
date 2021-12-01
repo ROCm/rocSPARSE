@@ -724,10 +724,10 @@ static inline rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle 
         d_perm = d_vals.current();
 
         // Release tmp_groups buffer
-        buffer -= ((sizeof(int) * m - 1) / 256 + 1) * 256;
+        // buffer -= ((sizeof(int) * m - 1) / 256 + 1) * 256;
 
         // Release tmp_keys buffer
-        buffer -= ((sizeof(int) * m - 1) / 256 + 1) * 256;
+        // buffer -= ((sizeof(int) * m - 1) / 256 + 1) * 256;
     }
     else
     {

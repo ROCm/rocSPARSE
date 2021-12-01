@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,9 +43,9 @@ namespace
     template <typename T>
     struct csrilu0_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
-                                || std::is_same<T, rocsparse_float_complex>{}
-                                || std::is_same<T, rocsparse_double_complex>{}>::type>
+        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
+                                || std::is_same<T, rocsparse_float_complex>()
+                                || std::is_same<T, rocsparse_double_complex>()>::type>
     {
         explicit operator bool()
         {
@@ -82,7 +82,7 @@ namespace
             if(arg.matrix == rocsparse_matrix_file_rocalution
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
-                return RocSPARSE_TestName<csrilu0>{}
+                return RocSPARSE_TestName<csrilu0>()
                        << rocsparse_datatype2string(arg.compute_type) << '_'
                        << rocsparse_operation2string(arg.transA) << '_' << arg.boosttol << '_'
                        << arg.boostval << '_' << arg.boostvali << '_'
@@ -94,7 +94,7 @@ namespace
             }
             else
             {
-                return RocSPARSE_TestName<csrilu0>{}
+                return RocSPARSE_TestName<csrilu0>()
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
                        << rocsparse_operation2string(arg.transA) << '_' << arg.boosttol << '_'
                        << arg.boostval << '_' << arg.boostvali << '_'

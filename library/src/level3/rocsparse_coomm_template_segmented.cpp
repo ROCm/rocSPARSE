@@ -332,12 +332,12 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
         ptr += 256;
 
         // row block reduction buffer
-        I* row_block_red = reinterpret_cast<I*>(ptr);
+        I* row_block_red = reinterpret_cast<I*>(reinterpret_cast<void*>(ptr));
         ptr += ((sizeof(I) * nblocks * n - 1) / COOMMN_DIM + 1) * COOMMN_DIM;
 
         // val block reduction buffer
         T* val_block_red = reinterpret_cast<T*>(ptr);
-        ptr += ((sizeof(T) * nblocks * n - 1) / COOMMN_DIM + 1) * COOMMN_DIM;
+        // ptr += ((sizeof(T) * nblocks * n - 1) / COOMMN_DIM + 1) * COOMMN_DIM;
 
         int len1 = ((sizeof(I) * nblocks * n - 1) / COOMMN_DIM + 1) * COOMMN_DIM;
 

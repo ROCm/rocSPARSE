@@ -214,15 +214,15 @@ void testing_bsrsv(const Arguments& arg)
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
 
     // BSR dimensions
-    rocsparse_int mb = (M + block_dim - 1) / block_dim;
-    rocsparse_int nb = (N + block_dim - 1) / block_dim;
+    const size_t  safe_size = 16;
+    rocsparse_int mb        = (block_dim > 0) ? ((M + block_dim - 1) / block_dim) : safe_size;
+    rocsparse_int nb        = (block_dim > 0) ? ((N + block_dim - 1) / block_dim) : safe_size;
 
     // Argument sanity check before allocating invalid memory
     if(mb <= 0 || nb <= 0 || M <= 0 || N <= 0 || block_dim <= 0)
     {
-        size_t        buffer_size;
-        rocsparse_int pivot;
-
+        rocsparse_int          pivot;
+        size_t                 buffer_size;
         device_vector<T>       dx, dy, dbuffer;
         device_gebsr_matrix<T> dA;
         dA.mb            = mb;
@@ -256,11 +256,7 @@ void testing_bsrsv(const Arguments& arg)
     device_gebsr_matrix<T> dA;
 
     // Sample matrix
-    {
-        rocsparse_int mb = (M + block_dim - 1) / block_dim;
-        rocsparse_int nb = (N + block_dim - 1) / block_dim;
-        matrix_factory.init_bsr(hA, dA, mb, nb);
-    }
+    matrix_factory.init_bsr(hA, dA, mb, nb);
 
     M = dA.mb * dA.row_block_dim;
     N = dA.nb * dA.col_block_dim;
@@ -280,11 +276,12 @@ void testing_bsrsv(const Arguments& arg)
     host_scalar<rocsparse_int> h_analysis_pivot, h_solve_pivot;
 
     // Obtain required buffer size
-    size_t buffer_size;
-    CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_buffer_size<T>(PARAMS_BUFFER_SIZE(dA)));
-
     void* dbuffer;
-    CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    {
+        size_t buffer_size;
+        CHECK_ROCSPARSE_ERROR(rocsparse_bsrsv_buffer_size<T>(PARAMS_BUFFER_SIZE(dA)));
+        CHECK_HIP_ERROR(hipMalloc(&dbuffer, buffer_size));
+    }
 
     if(arg.unit_check)
     {

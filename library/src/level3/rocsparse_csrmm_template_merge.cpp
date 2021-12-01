@@ -50,7 +50,7 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
     // Temporary buffer entry points
     char* ptr         = reinterpret_cast<char*>(temp_buffer);
     J*    csr_row_ind = reinterpret_cast<J*>(ptr);
-    ptr += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
+    // ptr += sizeof(J) * ((nnz - 1) / 256 + 1) * 256;
 
     return rocsparse_coomm_template_dispatch(handle,
                                              trans_A,

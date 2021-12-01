@@ -151,8 +151,6 @@ void testing_spmm_csr(const Arguments& arg)
     if(M <= 0 || N <= 0 || K <= 0)
     {
         // M == N == 0 means nnz can only be 0, too
-        I nnz_A = 0;
-
         static const I safe_size = 100;
 
         // Allocate memory on device
@@ -168,20 +166,19 @@ void testing_spmm_csr(const Arguments& arg)
             // Pointer mode
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
-            J A_m = trans_A == rocsparse_operation_none ? M : K;
-            J A_n = trans_A == rocsparse_operation_none ? K : M;
-            J B_m = trans_B == rocsparse_operation_none ? K : N;
-            J B_n = trans_B == rocsparse_operation_none ? N : K;
-            J C_m = M;
-            J C_n = N;
+            J A_m = 0;
+            J A_n = 0;
+            J B_m = 0;
+            J B_n = 0;
+            J C_m = 0;
+            J C_n = 0;
 
-            J ldb = order == rocsparse_order_column
-                        ? (trans_B == rocsparse_operation_none ? 2 * K : 2 * N)
-                        : (trans_B == rocsparse_operation_none ? 2 * N : 2 * K);
-
-            J ldc = order == rocsparse_order_column ? 2 * M : 2 * N;
+            J ldb = 0;
+            J ldc = 0;
 
             // Check structures
+            I nnz_A = 0;
+
             rocsparse_local_spmat A(A_m,
                                     A_n,
                                     nnz_A,
@@ -263,27 +260,28 @@ void testing_spmm_csr(const Arguments& arg)
     matrix_factory.init_csr(hcsr_row_ptr,
                             hcsr_col_ind,
                             hcsr_val,
-                            trans_A == rocsparse_operation_none ? M : K,
-                            trans_A == rocsparse_operation_none ? K : M,
+                            (trans_A == rocsparse_operation_none) ? M : K,
+                            (trans_A == rocsparse_operation_none) ? K : M,
                             nnz_A,
                             base);
 
     // Some matrix properties
-    J A_m = trans_A == rocsparse_operation_none ? M : K;
-    J A_n = trans_A == rocsparse_operation_none ? K : M;
-    J B_m = trans_B == rocsparse_operation_none ? K : N;
-    J B_n = trans_B == rocsparse_operation_none ? N : K;
+    J A_m = (trans_A == rocsparse_operation_none) ? M : K;
+    J A_n = (trans_A == rocsparse_operation_none) ? K : M;
+    J B_m = (trans_B == rocsparse_operation_none) ? K : N;
+    J B_n = (trans_B == rocsparse_operation_none) ? N : K;
     J C_m = M;
     J C_n = N;
 
-    J ldb = order == rocsparse_order_column ? (trans_B == rocsparse_operation_none ? 2 * K : 2 * N)
-                                            : (trans_B == rocsparse_operation_none ? 2 * N : 2 * K);
-    J ldc = order == rocsparse_order_column ? 2 * M : 2 * N;
+    J ldb = (order == rocsparse_order_column)
+                ? ((trans_B == rocsparse_operation_none) ? (2 * K) : (2 * N))
+                : ((trans_B == rocsparse_operation_none) ? (2 * N) : (2 * K));
+    J ldc = (order == rocsparse_order_column) ? (2 * M) : (2 * N);
 
-    J nrowB = order == rocsparse_order_column ? ldb : B_m;
-    J ncolB = order == rocsparse_order_column ? B_n : ldb;
-    J nrowC = order == rocsparse_order_column ? ldc : C_m;
-    J ncolC = order == rocsparse_order_column ? C_n : ldc;
+    J nrowB = (order == rocsparse_order_column) ? ldb : B_m;
+    J ncolB = (order == rocsparse_order_column) ? B_n : ldb;
+    J nrowC = (order == rocsparse_order_column) ? ldc : C_m;
+    J ncolC = (order == rocsparse_order_column) ? C_n : ldc;
 
     I nnz_B = nrowB * ncolB;
     I nnz_C = nrowC * ncolC;

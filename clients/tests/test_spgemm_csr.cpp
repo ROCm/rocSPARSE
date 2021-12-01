@@ -48,9 +48,9 @@ namespace
         I,
         J,
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
-                                || std::is_same<T, rocsparse_float_complex>{}
-                                || std::is_same<T, rocsparse_double_complex>{}>::type>
+        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
+                                || std::is_same<T, rocsparse_float_complex>()
+                                || std::is_same<T, rocsparse_double_complex>()>::type>
     {
         explicit operator bool()
         {
@@ -88,7 +88,7 @@ namespace
             if(arg.matrix == rocsparse_matrix_file_rocalution
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
-                return RocSPARSE_TestName<spgemm_csr>{}
+                return RocSPARSE_TestName<spgemm_csr>()
                        << rocsparse_indextype2string(arg.index_type_I) << '_'
                        << rocsparse_indextype2string(arg.index_type_J) << '_'
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.N << '_'
@@ -105,7 +105,7 @@ namespace
             }
             else
             {
-                return RocSPARSE_TestName<spgemm_csr>{}
+                return RocSPARSE_TestName<spgemm_csr>()
                        << rocsparse_indextype2string(arg.index_type_I) << '_'
                        << rocsparse_indextype2string(arg.index_type_J) << '_'
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'

@@ -113,8 +113,6 @@ void testing_sparse_to_dense_coo(const Arguments& arg)
     if(m <= 0 || n <= 0 || ld < mn)
     {
         // M == N == 0 means nnz can only be 0, too
-        I nnz = 0;
-
         static const I safe_size = 100;
 
         // Allocate memory on device
@@ -131,6 +129,8 @@ void testing_sparse_to_dense_coo(const Arguments& arg)
 
         if(m == 0 && n == 0 && ld >= mn)
         {
+            I nnz = 0;
+
             rocsparse_local_spmat mat_A(
                 m, n, nnz, d_coo_row_ind, d_coo_col_ind, d_coo_val, itype, base, ttype);
             rocsparse_local_dnmat mat_B(m, n, ld, d_dense_val, ttype, order);

@@ -43,9 +43,9 @@ namespace
     template <typename T>
     struct gemvi_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
-                                || std::is_same<T, rocsparse_float_complex>{}
-                                || std::is_same<T, rocsparse_double_complex>{}>::type>
+        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
+                                || std::is_same<T, rocsparse_float_complex>()
+                                || std::is_same<T, rocsparse_double_complex>()>::type>
     {
         explicit operator bool()
         {
@@ -79,7 +79,7 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            return RocSPARSE_TestName<gemvi>{}
+            return RocSPARSE_TestName<gemvi>()
                    << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_' << arg.N
                    << '_' << arg.alpha << '_' << arg.alphai << '_' << arg.beta << '_' << arg.betai
                    << '_' << rocsparse_operation2string(arg.transA) << '_'

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ namespace
     template <typename T>
     struct prune_dense2csr_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}>::type>
+        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()>::type>
     {
         explicit operator bool()
         {
@@ -78,7 +78,7 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            return RocSPARSE_TestName<prune_dense2csr>{}
+            return RocSPARSE_TestName<prune_dense2csr>()
                    << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_' << arg.N
                    << '_' << arg.denseld << '_' << arg.baseA << '_' << arg.threshold;
         }

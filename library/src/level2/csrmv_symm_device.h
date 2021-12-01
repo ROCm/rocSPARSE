@@ -121,7 +121,7 @@ template <typename I>
 static inline __device__ I
     binSearch(const I* csr_row_ptr, I row, I stop_row, I n, rocsparse_index_base base)
 {
-    I l = row, r = stop_row - 1, mid = 0, box = 0;
+    I l = row, r = stop_row - 1, box = 0, mid;
 
     while(l <= r)
     {
@@ -279,9 +279,9 @@ __device__ void csrmvn_symm_adaptive_device(I                    nnz,
 
         // Upper triangular
         // Initialize the cols_in_rows
-        for(I x = lid; x < max_rows; x += WG_SIZE)
+        for(I l = lid; l < max_rows; l += WG_SIZE)
         {
-            cols_in_rows[x] = static_cast<T>(0);
+            cols_in_rows[l] = static_cast<T>(0);
         }
 
         __syncthreads();
@@ -350,9 +350,9 @@ __device__ void csrmvn_symm_adaptive_device(I                    nnz,
 
         I end_cols_idx = (stop_row < max_rows) ? stop_row : max_rows;
 
-        for(I x = lid; x < (end_cols_idx - (stop_row - row)); x += WG_SIZE)
+        for(I l = lid; l < (end_cols_idx - (stop_row - row)); l += WG_SIZE)
         {
-            atomicAdd(&y[stop_cols_idx + x], cols_in_rows[x]);
+            atomicAdd(&y[stop_cols_idx + l], cols_in_rows[l]);
         }
 
         __syncthreads();
@@ -520,11 +520,11 @@ __device__ void csrmvn_symm_adaptive_device(I                    nnz,
         I VecEnd   = csr_row_ptr[stop_row] - idx_base;
         for(I j = vecStart + t; j < VecEnd; j += WG_SIZE)
         {
-            I myRow = binSearch(csr_row_ptr, row, stop_row, j, idx_base);
-            J myCol = csr_col_ind[j] - idx_base;
-            if(myCol != myRow)
+            I myRow2 = binSearch(csr_row_ptr, row, stop_row, j, idx_base);
+            J myCol  = csr_col_ind[j] - idx_base;
+            if(myCol != myRow2)
             {
-                atomicAdd(&y[myCol], (alpha * csr_val[j] * x[myRow]));
+                atomicAdd(&y[myCol], (alpha * csr_val[j] * x[myRow2]));
             }
         }
     }

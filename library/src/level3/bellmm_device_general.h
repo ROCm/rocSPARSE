@@ -112,39 +112,39 @@ static ROCSPARSE_DEVICE_ILF void bellmm_general_blockdim_device(rocsparse_operat
                     if((trans_A == rocsparse_operation_conjugate_transpose)
                        && (trans_B == rocsparse_operation_conjugate_transpose))
                     {
-                        for(I j = 0; j < BELL_BLOCK_DIM; j++)
+                        for(I l = 0; l < BELL_BLOCK_DIM; l++)
                         {
-                            sum = rocsparse_fma(rocsparse_conj(shared_A[BELL_BLOCK_DIM * j + tidx]),
-                                                rocsparse_conj(shared_B[BELL_BLOCK_DIM * tidy + j]),
+                            sum = rocsparse_fma(rocsparse_conj(shared_A[BELL_BLOCK_DIM * l + tidx]),
+                                                rocsparse_conj(shared_B[BELL_BLOCK_DIM * tidy + l]),
                                                 sum);
                         }
                     }
                     else if((trans_A != rocsparse_operation_conjugate_transpose)
                             && (trans_B == rocsparse_operation_conjugate_transpose))
                     {
-                        for(I j = 0; j < BELL_BLOCK_DIM; j++)
+                        for(I l = 0; l < BELL_BLOCK_DIM; l++)
                         {
-                            sum = rocsparse_fma(shared_A[BELL_BLOCK_DIM * j + tidx],
-                                                rocsparse_conj(shared_B[BELL_BLOCK_DIM * tidy + j]),
+                            sum = rocsparse_fma(shared_A[BELL_BLOCK_DIM * l + tidx],
+                                                rocsparse_conj(shared_B[BELL_BLOCK_DIM * tidy + l]),
                                                 sum);
                         }
                     }
                     else if((trans_A == rocsparse_operation_conjugate_transpose)
                             && (trans_B != rocsparse_operation_conjugate_transpose))
                     {
-                        for(I j = 0; j < BELL_BLOCK_DIM; j++)
+                        for(I l = 0; l < BELL_BLOCK_DIM; l++)
                         {
-                            sum = rocsparse_fma(rocsparse_conj(shared_A[BELL_BLOCK_DIM * j + tidx]),
-                                                shared_B[BELL_BLOCK_DIM * tidy + j],
+                            sum = rocsparse_fma(rocsparse_conj(shared_A[BELL_BLOCK_DIM * l + tidx]),
+                                                shared_B[BELL_BLOCK_DIM * tidy + l],
                                                 sum);
                         }
                     }
                     else
                     {
-                        for(I j = 0; j < BELL_BLOCK_DIM; j++)
+                        for(I l = 0; l < BELL_BLOCK_DIM; l++)
                         {
-                            sum = rocsparse_fma(shared_A[BELL_BLOCK_DIM * j + tidx],
-                                                shared_B[BELL_BLOCK_DIM * tidy + j],
+                            sum = rocsparse_fma(shared_A[BELL_BLOCK_DIM * l + tidx],
+                                                shared_B[BELL_BLOCK_DIM * tidy + l],
                                                 sum);
                         }
                     }
