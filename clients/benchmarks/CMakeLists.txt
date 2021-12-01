@@ -76,6 +76,7 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_gtsv.cpp
 ../testings/testing_gtsv_no_pivot.cpp
 ../testings/testing_gtsv_no_pivot_strided_batch.cpp
+../testings/testing_gtsv_interleaved_batch.cpp
 ../testings/testing_csr2coo.cpp
 ../testings/testing_csr2csc.cpp
 ../testings/testing_gebsr2gebsc.cpp

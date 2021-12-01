@@ -369,6 +369,22 @@ constexpr auto rocsparse_densetosparsealg2string(rocsparse_dense_to_sparse_alg a
     return "invalid";
 }
 
+constexpr auto rocsparse_gtsvinterleavedalg2string(rocsparse_gtsv_interleaved_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_gtsv_interleaved_alg_default:
+        return "default";
+    case rocsparse_gtsv_interleaved_alg_thomas:
+        return "thomas";
+    case rocsparse_gtsv_interleaved_alg_lu:
+        return "LU";
+    case rocsparse_gtsv_interleaved_alg_qr:
+        return "QR";
+    }
+    return "invalid";
+}
+
 // Return a string without '/' or '\\'
 inline std::string rocsparse_filename2string(const std::string& filename)
 {

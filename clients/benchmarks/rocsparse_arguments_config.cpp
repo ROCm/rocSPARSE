@@ -180,7 +180,7 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      "  Level2: bsrmv, bsrxmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, coosv, ellmv, hybmv, gebsrmv, gemvi\n"
      "  Level3: bsrmm, bsrsm, gebsrmm, csrmm, coomm, csrsm, coosm, gemmi, sddmm\n"
      "  Extra: csrgeam, csrgemm, csrgemm_reuse\n"
-     "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, gtsv, gtsv_no_pivot, gtsv_no_pivot_strided_batch\n"
+     "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, gtsv, gtsv_no_pivot, gtsv_no_pivot_strided_batch, gtsv_interleaved_batch\n"
      "  Conversion: csr2coo, csr2csc, gebsr2gebsc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
      "              coo2csr, ell2csr, hyb2csr, dense2csr, dense2coo, prune_dense2csr, prune_dense2csr_by_percentage, dense2csc\n"
      "              csr2dense, csc2dense, coo2dense, bsr2csr, gebsr2csr, gebsr2gebsr, csr2csr_compress, prune_csr2csr, prune_csr2csr_by_percentage\n"
@@ -221,8 +221,19 @@ void rocsparse_arguments_config::set_description(options_description& desc)
 
     ("denseld",
      value<rocsparse_int>(&this->denseld)->default_value(128),
-     "Indicates the leading dimension of a dense matrix >= M, assuming a column-oriented storage.");
+     "Indicates the leading dimension of a dense matrix >= M, assuming a column-oriented storage.")
 
+    ("batch_count",
+     value<rocsparse_int>(&this->batch_count)->default_value(128),
+     "Indicates the batch count for batched routines.")
+
+    ("batch_stride",
+     value<rocsparse_int>(&this->batch_stride)->default_value(128),
+     "Indicates the batch stride for batched routines.")
+
+    ("gtsv_interleaved_alg",
+      value<rocsparse_int>(&this->b_gtsv_interleaved_alg)->default_value(rocsparse_gtsv_interleaved_alg_default),
+      "Indicates what algorithm to use when running rocsparse_gtsv_interleaved_batch. Possibly choices are thomas: 1, lu: 2, qr: 3 (default:3)");
 }
 
 int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&desc)
@@ -232,68 +243,77 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   notify(vm);
 
   if(vm.count("help"))
-    {
-      std::cout << desc << std::endl;
-      return 0;
-    }
+  {
+    std::cout << desc << std::endl;
+    return 0;
+  }
 
   if(this->b_dir != rocsparse_direction_row && this->b_dir != rocsparse_direction_column)
-    {
-      std::cerr << "Invalid value for --direction" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --direction" << std::endl;
+    return -1;
+  }
 
   if(this->b_order != rocsparse_order_row && this->b_order != rocsparse_order_column)
-    {
-      std::cerr << "Invalid value for --order" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --order" << std::endl;
+    return -1;
+  }
 
   if(this->b_format != rocsparse_format_csr && this->b_format != rocsparse_format_coo
      && this->b_format != rocsparse_format_coo_aos && this->b_format != rocsparse_format_ell
      && this->b_format != rocsparse_format_csc)
-    {
-      std::cerr << "Invalid value for --format" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --format" << std::endl;
+    return -1;
+  }
 
   if(this->indextype != 's' && this->indextype != 'd' && this->indextype != 'm')
-    {
-      std::cerr << "Invalid value for --indextype" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --indextype" << std::endl;
+    return -1;
+  }
 
   if(this->precision != 's' && this->precision != 'd' && this->precision != 'c' && this->precision != 'z')
-    {
-      std::cerr << "Invalid value for --precision" << std::endl;
+  {
+    std::cerr << "Invalid value for --precision" << std::endl;
+    return -1;
+  }
+
+  if(this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_default
+       && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_thomas
+       && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_lu
+       && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_qr)
+  {
+      std::cerr << "Invalid value for --gtsv_interleaved_alg" << std::endl;
       return -1;
-    }
+  }
 
   if(this->b_transA == 'N')
-    {
-      this->transA = rocsparse_operation_none;
-    }
+  {
+    this->transA = rocsparse_operation_none;
+  }
   else if(this->b_transA == 'T')
-    {
-      this->transA = rocsparse_operation_transpose;
-    }
+  {
+    this->transA = rocsparse_operation_transpose;
+  }
   else if(this->b_transA == 'C')
-    {
-      this->transA = rocsparse_operation_conjugate_transpose;
-    }
+  {
+    this->transA = rocsparse_operation_conjugate_transpose;
+  }
 
   if(this->b_transB == 'N')
-    {
-      this->transB = rocsparse_operation_none;
-    }
+  {
+    this->transB = rocsparse_operation_none;
+  }
   else if(this->b_transB == 'T')
-    {
-      this->transB = rocsparse_operation_transpose;
-    }
+  {
+    this->transB = rocsparse_operation_transpose;
+  }
   else if(this->b_transB == 'C')
-    {
-      this->transB = rocsparse_operation_conjugate_transpose;
-    }
+  {
+    this->transB = rocsparse_operation_conjugate_transpose;
+  }
 
   this->baseA = (this->b_baseA == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
   this->baseB = (this->b_baseB == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
@@ -316,70 +336,71 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
     = (this->b_dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
   this->order  = (this->b_order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
   this->format = (rocsparse_format)this->b_format;
+  this->gtsv_interleaved_alg = (rocsparse_gtsv_interleaved_alg)this->b_gtsv_interleaved_alg;
 
 
   // rocALUTION parameter overrides filename parameter
   if(this->b_rocalution != "")
-    {
-      strcpy(this->filename, this->b_rocalution.c_str());
-      this->matrix = rocsparse_matrix_file_rocalution;
-    }
+  {
+    strcpy(this->filename, this->b_rocalution.c_str());
+    this->matrix = rocsparse_matrix_file_rocalution;
+  }
   else if(this->dimx != 0 && this->dimy != 0 && this->dimz != 0)
-    {
-      this->matrix = rocsparse_matrix_laplace_3d;
-    }
+  {
+    this->matrix = rocsparse_matrix_laplace_3d;
+  }
   else if(this->dimx != 0 && this->dimy != 0)
-    {
-      this->matrix = rocsparse_matrix_laplace_2d;
-    }
+  {
+    this->matrix = rocsparse_matrix_laplace_2d;
+  }
   else if(this->b_filename != "")
-    {
-      strcpy(this->filename, this->b_filename.c_str());
-      this->matrix = rocsparse_matrix_file_mtx;
-    }
+  {
+    strcpy(this->filename, this->b_filename.c_str());
+    this->matrix = rocsparse_matrix_file_mtx;
+  }
   else
-    {
-      this->matrix = rocsparse_matrix_random;
-    }
+  {
+    this->matrix = rocsparse_matrix_random;
+  }
 
   this->matrix_init_kind = rocsparse_matrix_init_kind_default;
   /* ============================================================================================
    */
   if(this->M < 0 || this->N < 0)
-    {
-      std::cerr << "Invalid dimension" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid dimension" << std::endl;
+    return -1;
+  }
 
   if(this->block_dim < 1)
-    {
-      std::cerr << "Invalid value for --blockdim" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --blockdim" << std::endl;
+    return -1;
+  }
 
   if(this->row_block_dimA < 1)
-    {
-      std::cerr << "Invalid value for --row-blockdimA" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --row-blockdimA" << std::endl;
+    return -1;
+  }
 
   if(this->col_block_dimA < 1)
-    {
-      std::cerr << "Invalid value for --col-blockdimA" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --col-blockdimA" << std::endl;
+    return -1;
+  }
 
   if(this->row_block_dimB < 1)
-    {
-      std::cerr << "Invalid value for --row-blockdimB" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --row-blockdimB" << std::endl;
+    return -1;
+  }
 
   if(this->col_block_dimB < 1)
-    {
-      std::cerr << "Invalid value for --col-blockdimB" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --col-blockdimB" << std::endl;
+    return -1;
+  }
   return 0;
 }
 
@@ -390,69 +411,77 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
   notify(vm);
 
   if(vm.count("help"))
-    {
-      std::cout << desc << std::endl;
-      return 0;
-    }
+  {
+    std::cout << desc << std::endl;
+    return 0;
+  }
 
   if(this->b_dir != rocsparse_direction_row && this->b_dir != rocsparse_direction_column)
-    {
-      std::cerr << "Invalid value for --direction" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --direction" << std::endl;
+    return -1;
+  }
 
   if(this->b_order != rocsparse_order_row && this->b_order != rocsparse_order_column)
-    {
-      std::cerr << "Invalid value for --order" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --order" << std::endl;
+    return -1;
+  }
 
   if(this->b_format != rocsparse_format_csr && this->b_format != rocsparse_format_coo
      && this->b_format != rocsparse_format_coo_aos && this->b_format != rocsparse_format_ell
      && this->b_format != rocsparse_format_csc)
-    {
-      std::cerr << "Invalid value for --format" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --format" << std::endl;
+    return -1;
+  }
 
   if(this->indextype != 's' && this->indextype != 'd' && this->indextype != 'm')
-    {
-      std::cerr << "Invalid value for --indextype" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --indextype" << std::endl;
+    return -1;
+  }
 
   if(this->precision != 's' && this->precision != 'd' && this->precision != 'c' && this->precision != 'z')
-    {
-      std::cerr << "Invalid value for --precision" << std::endl;
+  {
+    std::cerr << "Invalid value for --precision" << std::endl;
+    return -1;
+  }
+
+  if(this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_default
+       && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_thomas
+       && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_lu
+       && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_qr)
+  {
+      std::cerr << "Invalid value for --gtsv_interleaved_alg" << std::endl;
       return -1;
-    }
+  }
 
   if(b_transA == 'N')
-    {
-      this->transA = rocsparse_operation_none;
-    }
+  {
+    this->transA = rocsparse_operation_none;
+  }
   else if(b_transA == 'T')
-    {
-      this->transA = rocsparse_operation_transpose;
-      ;
-    }
+  {
+    this->transA = rocsparse_operation_transpose;
+  }
   else if(b_transA == 'C')
-    {
-      this->transA = rocsparse_operation_conjugate_transpose;
-    }
+  {
+    this->transA = rocsparse_operation_conjugate_transpose;
+  }
 
   if(b_transB == 'N')
-    {
-      this->transB = rocsparse_operation_none;
-    }
+  {
+    this->transB = rocsparse_operation_none;
+  }
   else if(b_transB == 'T')
-    {
-      this->transB = rocsparse_operation_transpose;
-    }
+  {
+    this->transB = rocsparse_operation_transpose;
+  }
   else if(b_transB == 'C')
-    {
-      this->transB = rocsparse_operation_conjugate_transpose;
-    }
+  {
+    this->transB = rocsparse_operation_conjugate_transpose;
+  }
 
   this->baseA = (b_baseA == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
   this->baseB = (b_baseB == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
@@ -471,69 +500,70 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
     = (b_dir == rocsparse_direction_row) ? rocsparse_direction_row : rocsparse_direction_column;
   this->order  = (b_order == rocsparse_order_row) ? rocsparse_order_row : rocsparse_order_column;
   this->format = (rocsparse_format)b_format;
+  this->gtsv_interleaved_alg = (rocsparse_gtsv_interleaved_alg)this->b_gtsv_interleaved_alg;
 
   // rocALUTION parameter overrides filename parameter
   if(b_rocalution != "")
-    {
-      strcpy(this->filename, b_rocalution.c_str());
-      this->matrix = rocsparse_matrix_file_rocalution;
-    }
+  {
+    strcpy(this->filename, b_rocalution.c_str());
+    this->matrix = rocsparse_matrix_file_rocalution;
+  }
   else if(this->dimx != 0 && this->dimy != 0 && this->dimz != 0)
-    {
-      this->matrix = rocsparse_matrix_laplace_3d;
-    }
+  {
+    this->matrix = rocsparse_matrix_laplace_3d;
+  }
   else if(this->dimx != 0 && this->dimy != 0)
-    {
-      this->matrix = rocsparse_matrix_laplace_2d;
-    }
+  {
+    this->matrix = rocsparse_matrix_laplace_2d;
+  }
   else if(b_filename != "")
-    {
-      strcpy(this->filename, b_filename.c_str());
-      this->matrix = rocsparse_matrix_file_mtx;
-    }
+  {
+    strcpy(this->filename, b_filename.c_str());
+    this->matrix = rocsparse_matrix_file_mtx;
+  }
   else
-    {
-      this->matrix = rocsparse_matrix_random;
-    }
+  {
+    this->matrix = rocsparse_matrix_random;
+  }
 
   this->matrix_init_kind = rocsparse_matrix_init_kind_default;
   /* ============================================================================================
    */
   if(this->M < 0 || this->N < 0)
-    {
-      std::cerr << "Invalid dimension" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid dimension" << std::endl;
+    return -1;
+  }
 
   if(this->block_dim < 1)
-    {
-      std::cerr << "Invalid value for --blockdim" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --blockdim" << std::endl;
+    return -1;
+  }
 
   if(this->row_block_dimA < 1)
-    {
-      std::cerr << "Invalid value for --row-blockdimA" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --row-blockdimA" << std::endl;
+    return -1;
+  }
 
   if(this->col_block_dimA < 1)
-    {
-      std::cerr << "Invalid value for --col-blockdimA" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --col-blockdimA" << std::endl;
+    return -1;
+  }
 
   if(this->row_block_dimB < 1)
-    {
-      std::cerr << "Invalid value for --row-blockdimB" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --row-blockdimB" << std::endl;
+    return -1;
+  }
 
   if(this->col_block_dimB < 1)
-    {
-      std::cerr << "Invalid value for --col-blockdimB" << std::endl;
-      return -1;
-    }
+  {
+    std::cerr << "Invalid value for --col-blockdimB" << std::endl;
+    return -1;
+  }
   return 0;
 }
 

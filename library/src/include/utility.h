@@ -405,6 +405,22 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_hyb_partition value)
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_gtsv_interleaved_alg value_)
+{
+    switch(value_)
+    {
+    case rocsparse_gtsv_interleaved_alg_default:
+    case rocsparse_gtsv_interleaved_alg_thomas:
+    case rocsparse_gtsv_interleaved_alg_lu:
+    case rocsparse_gtsv_interleaved_alg_qr:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_sparse_to_dense_alg value_)
 {
     switch(value_)

@@ -693,6 +693,11 @@ rocsparse_dense_to_sparse_alg
 
 .. doxygenenum:: rocsparse_dense_to_sparse_alg
 
+rocsparse_gtsv_interleaved_alg
+------------------------------
+
+.. doxygenenum:: rocsparse_gtsv_interleaved_alg
+
 .. _rocsparse_logging:
 
 Logging
@@ -943,6 +948,8 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xgtsv_no_pivot() <rocsparse_sgtsv_no_pivot>`                                                     x      x      x              x
 :cpp:func:`rocsparse_Xgtsv_no_pivot_strided_batch_buffer_size() <rocsparse_sgtsv_no_pivot_strided_batch_buffer_size>` x      x      x              x
 :cpp:func:`rocsparse_Xgtsv_no_pivot_strided_batch() <rocsparse_sgtsv_no_pivot_strided_batch>`                         x      x      x              x
+:cpp:func:`rocsparse_Xgtsv_interleaved_batch_buffer_size() <rocsparse_sgtsv_interleaved_batch_buffer_size>`           x      x      x              x
+:cpp:func:`rocsparse_Xgtsv_interleaved_batch() <rocsparse_sgtsv_interleaved_batch>`                                   x      x      x              x
 
 Conversion Functions
 --------------------
@@ -2113,6 +2120,28 @@ rocsparse_gtsv_no_pivot_strided_batch()
 .. doxygenfunction:: rocsparse_cgtsv_no_pivot_strided_batch
   :outline:
 .. doxygenfunction:: rocsparse_zgtsv_no_pivot_strided_batch
+
+rocsparse_gtsv_interleaved_batch_buffer_size()
+----------------------------------------------
+
+.. doxygenfunction:: rocsparse_sgtsv_interleaved_batch_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dgtsv_interleaved_batch_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cgtsv_interleaved_batch_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zgtsv_interleaved_batch_buffer_size
+
+rocsparse_gtsv_interleaved_batch()
+----------------------------------
+
+.. doxygenfunction:: rocsparse_sgtsv_interleaved_batch
+  :outline:
+.. doxygenfunction:: rocsparse_dgtsv_interleaved_batch
+  :outline:
+.. doxygenfunction:: rocsparse_cgtsv_interleaved_batch
+  :outline:
+.. doxygenfunction:: rocsparse_zgtsv_interleaved_batch
 
 .. _rocsparse_conversion_functions_:
 

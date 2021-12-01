@@ -4837,6 +4837,334 @@ void host_gtsv_no_pivot_strided_batch(rocsparse_int         m,
     }
 }
 
+template <typename T>
+void host_gtsv_interleaved_batch_thomas(rocsparse_int m,
+                                        const T*      dl,
+                                        const T*      d,
+                                        const T*      du,
+                                        T*            x,
+                                        rocsparse_int batch_count,
+                                        rocsparse_int batch_stride)
+{
+    std::vector<T> c1(m * batch_count, 0);
+    std::vector<T> x1(m * batch_count, 0);
+
+    // Forward elimination
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int j = 0; j < batch_count; j++)
+    {
+        c1[j] = du[j] / d[j];
+        x1[j] = x[j] / d[j];
+    }
+
+    for(rocsparse_int i = 1; i < m; i++)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(rocsparse_int j = 0; j < batch_count; j++)
+        {
+            rocsparse_int index = batch_count * i + j;
+            rocsparse_int minus = batch_count * (i - 1) + j;
+
+            T tdu = du[batch_stride * i + j];
+            T td  = d[batch_stride * i + j];
+            T tdl = dl[batch_stride * i + j];
+            T tx  = x[batch_stride * i + j];
+
+            c1[index] = tdu / (td - c1[minus] * tdl);
+            x1[index] = (tx - x1[minus] * tdl) / (td - c1[minus] * tdl);
+        }
+    }
+
+    // backward substitution
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int j = 0; j < batch_count; j++)
+    {
+        x[batch_stride * (m - 1) + j] = x1[batch_count * (m - 1) + j];
+    }
+
+    for(rocsparse_int i = m - 2; i >= 0; i--)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(rocsparse_int j = 0; j < batch_count; j++)
+        {
+            rocsparse_int index = batch_count * i + j;
+
+            x[batch_stride * i + j] = x1[index] - c1[index] * x[batch_stride * (i + 1) + j];
+        }
+    }
+}
+
+template <typename T>
+void host_gtsv_interleaved_batch_lu(rocsparse_int m,
+                                    const T*      dl,
+                                    const T*      d,
+                                    const T*      du,
+                                    T*            x,
+                                    rocsparse_int batch_count,
+                                    rocsparse_int batch_stride)
+{
+    std::vector<T>             l(m * batch_count, 0);
+    std::vector<T>             u0(m * batch_count, 0);
+    std::vector<T>             u1(m * batch_count, 0);
+    std::vector<T>             u2(m * batch_count, 0);
+    std::vector<rocsparse_int> p(m * batch_count, 0);
+
+    for(rocsparse_int i = 0; i < m; i++)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(rocsparse_int j = 0; j < batch_count; j++)
+        {
+            l[batch_count * i + j]  = dl[batch_stride * i + j];
+            u0[batch_count * i + j] = d[batch_stride * i + j];
+            u1[batch_count * i + j] = du[batch_stride * i + j];
+        }
+    }
+
+    // LU decomposition
+    for(rocsparse_int i = 0; i < m - 1; i++)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(rocsparse_int j = 0; j < batch_count; j++)
+        {
+            T ak_1 = l[batch_count * (i + 1) + j];
+            T bk   = u0[batch_count * i + j];
+
+            if(std::abs(bk) < std::abs(ak_1))
+            {
+                T bk_1 = u0[batch_count * (i + 1) + j];
+                T ck   = u1[batch_count * i + j];
+                T ck_1 = u1[batch_count * (i + 1) + j];
+                T dk   = u2[batch_count * i + j];
+
+                u0[batch_count * i + j] = ak_1;
+                u1[batch_count * i + j] = bk_1;
+                u2[batch_count * i + j] = ck_1;
+
+                u0[batch_count * (i + 1) + j] = ck;
+                u1[batch_count * (i + 1) + j] = dk;
+
+                rocsparse_int pk             = p[batch_count * i + j];
+                p[batch_count * i + j]       = i + 1;
+                p[batch_count * (i + 1) + j] = pk;
+
+                T xk                          = x[batch_stride * i + j];
+                x[batch_stride * i + j]       = x[batch_stride * (i + 1) + j];
+                x[batch_stride * (i + 1) + j] = xk;
+
+                T lk_1                       = bk / ak_1;
+                l[batch_count * (i + 1) + j] = lk_1;
+
+                u0[batch_count * (i + 1) + j]
+                    = u0[batch_count * (i + 1) + j] - lk_1 * u1[batch_count * i + j];
+                u1[batch_count * (i + 1) + j]
+                    = u1[batch_count * (i + 1) + j] - lk_1 * u2[batch_count * i + j];
+            }
+            else
+            {
+                p[batch_count * (i + 1) + j] = i + 1;
+
+                T lk_1                       = ak_1 / bk;
+                l[batch_count * (i + 1) + j] = lk_1;
+
+                u0[batch_count * (i + 1) + j]
+                    = u0[batch_count * (i + 1) + j] - lk_1 * u1[batch_count * i + j];
+                u1[batch_count * (i + 1) + j]
+                    = u1[batch_count * (i + 1) + j] - lk_1 * u2[batch_count * i + j];
+            }
+        }
+    }
+
+    // Forward elimination (L * x_new = x_old)
+    std::vector<rocsparse_int> start(batch_count, 0);
+    for(rocsparse_int i = 1; i < m; i++)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(rocsparse_int j = 0; j < batch_count; j++)
+        {
+            if(p[batch_count * i + j] <= i) // no pivoting occured, sum up result
+            {
+                T temp = static_cast<T>(0);
+                for(rocsparse_int s = start[j]; s < i; s++)
+                {
+                    temp = temp - l[batch_count * (s + 1) + j] * x[batch_stride * s + j];
+                }
+                x[batch_stride * i + j] = x[batch_stride * i + j] + temp;
+                start[j] += i - start[j];
+            }
+        }
+    }
+
+    // backward substitution (U * x_newest = x_new)
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int j = 0; j < batch_count; j++)
+    {
+        x[batch_stride * (m - 1) + j]
+            = x[batch_stride * (m - 1) + j] / u0[batch_count * (m - 1) + j];
+        x[batch_stride * (m - 2) + j]
+            = (x[batch_stride * (m - 2) + j]
+               - u1[batch_count * (m - 2) + j] * x[batch_stride * (m - 1) + j])
+              / u0[batch_count * (m - 2) + j];
+    }
+
+    for(rocsparse_int i = m - 3; i >= 0; i--)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(rocsparse_int j = 0; j < batch_count; j++)
+        {
+            x[batch_stride * i + j]
+                = (x[batch_stride * i + j] - u1[batch_count * i + j] * x[batch_stride * (i + 1) + j]
+                   - u2[batch_count * i + j] * x[batch_stride * (i + 2) + j])
+                  / u0[batch_count * i + j];
+        }
+    }
+}
+
+template <typename T>
+void host_gtsv_interleaved_batch_qr(rocsparse_int m,
+                                    const T*      dl,
+                                    const T*      d,
+                                    const T*      du,
+                                    T*            x,
+                                    rocsparse_int batch_count,
+                                    rocsparse_int batch_stride)
+{
+    std::vector<T> r0(m * batch_count, 0);
+    std::vector<T> r1(m * batch_count, 0);
+    std::vector<T> r2(m * batch_count, 0);
+
+    for(rocsparse_int i = 0; i < m; i++)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(rocsparse_int j = 0; j < batch_count; j++)
+        {
+            r0[batch_count * i + j] = d[batch_stride * i + j];
+            r1[batch_count * i + j] = du[batch_stride * i + j];
+        }
+    }
+
+    // Reduce A = Q*R where Q is orthonormal and R is upper triangular
+    // This means when solving A * x          = b
+    //                      => Q * R * x      = b
+    //                      => Q' * Q * R * x = Q' * b
+    //                      => R * x          = Q' * b
+    // Because A is tri-diagonal, we use Givens rotations
+    for(rocsparse_int i = 0; i < m - 1; i++)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(rocsparse_int j = 0; j < batch_count; j++)
+        {
+            T ak_1 = dl[batch_stride * (i + 1) + j];
+            T bk   = r0[batch_count * i + j];
+            T bk_1 = r0[batch_count * (i + 1) + j];
+            T ck   = r1[batch_count * i + j];
+            T ck_1 = r1[batch_count * (i + 1) + j];
+
+            T radius = std::sqrt(std::abs(bk * rocsparse_conj(bk) + ak_1 * rocsparse_conj(ak_1)));
+
+            // Apply Givens rotation
+            // | cos  sin | |bk    ck   0   |
+            // |-sin  cos | |ak_1  bk_1 ck_1|
+            T cos_theta = bk / radius;
+            T sin_theta = ak_1 / radius;
+
+            r0[batch_count * i + j]       = bk * cos_theta + ak_1 * sin_theta;
+            r0[batch_count * (i + 1) + j] = -ck * sin_theta + bk_1 * cos_theta;
+            r1[batch_count * i + j]       = ck * cos_theta + bk_1 * sin_theta;
+            r1[batch_count * (i + 1) + j] = ck_1 * cos_theta;
+            r2[batch_count * i + j]       = ck_1 * sin_theta;
+
+            // Apply Givens rotation to rhs vector
+            // | cos  sin | |xk  |
+            // |-sin  cos | |xk_1|
+            T xk                          = x[batch_stride * i + j];
+            T xk_1                        = x[batch_stride * (i + 1) + j];
+            x[batch_stride * i + j]       = cos_theta * xk + sin_theta * xk_1;
+            x[batch_stride * (i + 1) + j] = -sin_theta * xk + cos_theta * xk_1;
+        }
+    }
+
+    // Backward substitution on upper triangular R * x = x
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+    for(rocsparse_int j = 0; j < batch_count; j++)
+    {
+        x[batch_stride * (m - 1) + j]
+            = x[batch_stride * (m - 1) + j] / r0[batch_count * (m - 1) + j];
+        x[batch_stride * (m - 2) + j]
+            = (x[batch_stride * (m - 2) + j]
+               - r1[batch_count * (m - 2) + j] * x[batch_stride * (m - 1) + j])
+              / r0[batch_count * (m - 2) + j];
+    }
+
+    for(rocsparse_int i = m - 3; i >= 0; i--)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic, 1024)
+#endif
+        for(rocsparse_int j = 0; j < batch_count; j++)
+        {
+            x[batch_stride * i + j]
+                = (x[batch_stride * i + j] - r1[batch_count * i + j] * x[batch_stride * (i + 1) + j]
+                   - r2[batch_count * i + j] * x[batch_stride * (i + 2) + j])
+                  / r0[batch_count * i + j];
+        }
+    }
+}
+
+template <typename T>
+void host_gtsv_interleaved_batch(rocsparse_gtsv_interleaved_alg algo,
+                                 rocsparse_int                  m,
+                                 const T*                       dl,
+                                 const T*                       d,
+                                 const T*                       du,
+                                 T*                             x,
+                                 rocsparse_int                  batch_count,
+                                 rocsparse_int                  batch_stride)
+{
+    switch(algo)
+    {
+    case rocsparse_gtsv_interleaved_alg_thomas:
+    {
+        host_gtsv_interleaved_batch_thomas(m, dl, d, du, x, batch_count, batch_stride);
+        break;
+    }
+    case rocsparse_gtsv_interleaved_alg_lu:
+    {
+        host_gtsv_interleaved_batch_lu(m, dl, d, du, x, batch_count, batch_stride);
+        break;
+    }
+    case rocsparse_gtsv_interleaved_alg_default:
+    case rocsparse_gtsv_interleaved_alg_qr:
+    {
+        host_gtsv_interleaved_batch_qr(m, dl, d, du, x, batch_count, batch_stride);
+        break;
+    }
+    }
+}
+
 /*
  * ===========================================================================
  *    conversion SPARSE
@@ -6457,6 +6785,15 @@ template void host_gtsv_no_pivot_strided_batch(rocsparse_int             m,
                                                rocsparse_int             batch_count,
                                                rocsparse_int             batch_stride);
 
+template void host_gtsv_interleaved_batch(rocsparse_gtsv_interleaved_alg algo,
+                                          rocsparse_int                  m,
+                                          const float*                   dl,
+                                          const float*                   d,
+                                          const float*                   du,
+                                          float*                         x,
+                                          rocsparse_int                  batch_count,
+                                          rocsparse_int                  batch_stride);
+
 /*
  * ===========================================================================
  *    conversion SPARSE
@@ -6898,6 +7235,15 @@ template void host_gtsv_no_pivot_strided_batch(rocsparse_int              m,
                                                std::vector<double>&       x,
                                                rocsparse_int              batch_count,
                                                rocsparse_int              batch_stride);
+
+template void host_gtsv_interleaved_batch(rocsparse_gtsv_interleaved_alg algo,
+                                          rocsparse_int                  m,
+                                          const double*                  dl,
+                                          const double*                  d,
+                                          const double*                  du,
+                                          double*                        x,
+                                          rocsparse_int                  batch_count,
+                                          rocsparse_int                  batch_stride);
 
 /*
  * ===========================================================================
@@ -7342,6 +7688,15 @@ template void host_gtsv_no_pivot_strided_batch(rocsparse_int                    
                                                rocsparse_int batch_count,
                                                rocsparse_int batch_stride);
 
+template void host_gtsv_interleaved_batch(rocsparse_gtsv_interleaved_alg  algo,
+                                          rocsparse_int                   m,
+                                          const rocsparse_double_complex* dl,
+                                          const rocsparse_double_complex* d,
+                                          const rocsparse_double_complex* du,
+                                          rocsparse_double_complex*       x,
+                                          rocsparse_int                   batch_count,
+                                          rocsparse_int                   batch_stride);
+
 /*
  * ===========================================================================
  *    conversion SPARSE
@@ -7735,6 +8090,15 @@ template void host_gtsv_no_pivot_strided_batch(rocsparse_int                    
                                                std::vector<rocsparse_float_complex>&       x,
                                                rocsparse_int batch_count,
                                                rocsparse_int batch_stride);
+
+template void host_gtsv_interleaved_batch(rocsparse_gtsv_interleaved_alg algo,
+                                          rocsparse_int                  m,
+                                          const rocsparse_float_complex* dl,
+                                          const rocsparse_float_complex* d,
+                                          const rocsparse_float_complex* du,
+                                          rocsparse_float_complex*       x,
+                                          rocsparse_int                  batch_count,
+                                          rocsparse_int                  batch_stride);
 
 /*
  * ===========================================================================

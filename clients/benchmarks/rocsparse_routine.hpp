@@ -87,6 +87,7 @@
     gtsv,					\
     gtsv_no_pivot,				\
     gtsv_no_pivot_strided_batch,		\
+    gtsv_interleaved_batch,		\
     hybmv,					\
     hyb2csr,					\
     identity,					\
@@ -185,6 +186,7 @@ private:
                                                                "gtsv",
                                                                "gtsv_no_pivot",
                                                                "gtsv_no_pivot_strided_batch",
+                                                               "gtsv_interleaved_batch",
                                                                "hybmv",
                                                                "hyb2csr",
                                                                "identity",

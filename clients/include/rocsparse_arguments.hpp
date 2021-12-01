@@ -66,30 +66,31 @@ struct Arguments
     double threshold;
     double percentage;
 
-    rocsparse_operation           transA;
-    rocsparse_operation           transB;
-    rocsparse_index_base          baseA;
-    rocsparse_index_base          baseB;
-    rocsparse_index_base          baseC;
-    rocsparse_index_base          baseD;
-    rocsparse_action              action;
-    rocsparse_hyb_partition       part;
-    rocsparse_matrix_type         matrix_type;
-    rocsparse_diag_type           diag;
-    rocsparse_fill_mode           uplo;
-    rocsparse_analysis_policy     apol;
-    rocsparse_solve_policy        spol;
-    rocsparse_direction           direction;
-    rocsparse_order               order;
-    rocsparse_format              format;
-    rocsparse_sddmm_alg           sddmm_alg;
-    rocsparse_spmv_alg            spmv_alg;
-    rocsparse_spsv_alg            spsv_alg;
-    rocsparse_spsm_alg            spsm_alg;
-    rocsparse_spmm_alg            spmm_alg;
-    rocsparse_spgemm_alg          spgemm_alg;
-    rocsparse_sparse_to_dense_alg sparse_to_dense_alg;
-    rocsparse_dense_to_sparse_alg dense_to_sparse_alg;
+    rocsparse_operation            transA;
+    rocsparse_operation            transB;
+    rocsparse_index_base           baseA;
+    rocsparse_index_base           baseB;
+    rocsparse_index_base           baseC;
+    rocsparse_index_base           baseD;
+    rocsparse_action               action;
+    rocsparse_hyb_partition        part;
+    rocsparse_matrix_type          matrix_type;
+    rocsparse_diag_type            diag;
+    rocsparse_fill_mode            uplo;
+    rocsparse_analysis_policy      apol;
+    rocsparse_solve_policy         spol;
+    rocsparse_direction            direction;
+    rocsparse_order                order;
+    rocsparse_format               format;
+    rocsparse_sddmm_alg            sddmm_alg;
+    rocsparse_spmv_alg             spmv_alg;
+    rocsparse_spsv_alg             spsv_alg;
+    rocsparse_spsm_alg             spsm_alg;
+    rocsparse_spmm_alg             spmm_alg;
+    rocsparse_spgemm_alg           spgemm_alg;
+    rocsparse_sparse_to_dense_alg  sparse_to_dense_alg;
+    rocsparse_dense_to_sparse_alg  dense_to_sparse_alg;
+    rocsparse_gtsv_interleaved_alg gtsv_interleaved_alg;
 
     rocsparse_matrix_init      matrix;
     rocsparse_matrix_init_kind matrix_init_kind;
@@ -99,6 +100,8 @@ struct Arguments
     rocsparse_int iters;
 
     rocsparse_int denseld;
+    rocsparse_int batch_count;
+    rocsparse_int batch_stride;
 
     uint32_t algo;
 
@@ -196,12 +199,15 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(spgemm_alg);
         ROCSPARSE_FORMAT_CHECK(sparse_to_dense_alg);
         ROCSPARSE_FORMAT_CHECK(dense_to_sparse_alg);
+        ROCSPARSE_FORMAT_CHECK(gtsv_interleaved_alg);
         ROCSPARSE_FORMAT_CHECK(matrix);
         ROCSPARSE_FORMAT_CHECK(matrix_init_kind);
         ROCSPARSE_FORMAT_CHECK(unit_check);
         ROCSPARSE_FORMAT_CHECK(timing);
         ROCSPARSE_FORMAT_CHECK(iters);
         ROCSPARSE_FORMAT_CHECK(denseld);
+        ROCSPARSE_FORMAT_CHECK(batch_count);
+        ROCSPARSE_FORMAT_CHECK(batch_stride);
         ROCSPARSE_FORMAT_CHECK(algo);
         ROCSPARSE_FORMAT_CHECK(numericboost);
         ROCSPARSE_FORMAT_CHECK(boosttol);
@@ -381,6 +387,8 @@ private:
         print("spgemm_alg", rocsparse_spgemmalg2string(arg.spgemm_alg));
         print("sparse_to_dense_alg", rocsparse_sparsetodensealg2string(arg.sparse_to_dense_alg));
         print("dense_to_sparse_alg", rocsparse_densetosparsealg2string(arg.dense_to_sparse_alg));
+        print("gtsv_interleaved_alg",
+              rocsparse_gtsvinterleavedalg2string(arg.gtsv_interleaved_alg));
         print("matrix", rocsparse_matrix2string(arg.matrix));
         print("matrix_init_kind", rocsparse_matrix_init_kind2string(arg.matrix_init_kind));
         print("file", arg.filename);
@@ -396,6 +404,8 @@ private:
         print("timing", arg.timing);
         print("iters", arg.iters);
         print("denseld", arg.denseld);
+        print("batch_count", arg.batch_count);
+        print("batch_stride", arg.batch_stride);
         return str << " }\n";
     }
 };

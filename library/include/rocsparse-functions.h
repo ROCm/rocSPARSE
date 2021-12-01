@@ -9956,6 +9956,193 @@ rocsparse_status rocsparse_zgtsv_no_pivot_strided_batch(rocsparse_handle        
                                                         void*         temp_buffer);
 /**@}*/
 
+/*! \ingroup precond_module
+*  \brief Interleaved Batch tridiagonal solver
+*
+*  \details
+*  \p rocsparse_gtsv_interleaved_batch_buffer_size returns the size of the temporary storage buffer
+*  that is required by rocsparse_sgtsv_interleaved_batch(), rocsparse_dgtsv_interleaved_batch(),
+*  rocsparse_cgtsv_interleaved_batch() and rocsparse_zgtsv_interleaved_batch(). The temporary
+*  storage buffer must be allocated by the user.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  alg         Algorithm to use when solving tridiagonal systems. Options are thomas ( \p rocsparse_gtsv_interleaved_thomas ),
+*              LU ( \p rocsparse_gtsv_interleaved_lu ), or QR ( \p rocsparse_gtsv_interleaved_qr ). Passing
+*              \p rocsparse_gtsv_interleaved_default defaults the algorithm to use QR. Thomas algorithm is the fastest but is not
+*              stable while LU and QR are slower but are stable.
+*  @param[in]
+*  m           size of the tri-diagonal linear system.
+*  @param[in]
+*  dl          lower diagonal of tri-diagonal system. The first element of the lower diagonal must be zero.
+*  @param[in]
+*  d           main diagonal of tri-diagonal system.
+*  @param[in]
+*  du          upper diagonal of tri-diagonal system. The last element of the upper diagonal must be zero.
+*  @param[inout]
+*  x           Dense array of righthand-sides with dimension \p batch_stride by \p m.
+*  @param[in]
+*  batch_count The number of systems to solve.
+*  @param[in]
+*  batch_stride The number of elements that separate consecutive elements in a system. Must satisfy \p batch_stride >= batch_count.
+*  @param[out]
+*  buffer_size number of bytes of the temporary storage buffer required by
+*              rocsparse_sgtsv_interleaved_batch(), rocsparse_dgtsv_interleaved_batch(), rocsparse_cgtsv_interleaved_batch()
+*              and rocsparse_zgtsv_interleaved_batch().
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_size \p m, \p batch_count, \p batch_stride is invalid.
+*  \retval     rocsparse_status_invalid_pointer \p dl, \p d, \p du,
+*              \p x or \p buffer_size pointer is invalid.
+*  \retval     rocsparse_status_internal_error an internal error occurred.
+*/
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sgtsv_interleaved_batch_buffer_size(rocsparse_handle handle,
+                                                               rocsparse_gtsv_interleaved_alg alg,
+                                                               rocsparse_int                  m,
+                                                               const float*                   dl,
+                                                               const float*                   d,
+                                                               const float*                   du,
+                                                               const float*                   x,
+                                                               rocsparse_int batch_count,
+                                                               rocsparse_int batch_stride,
+                                                               size_t*       buffer_size);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dgtsv_interleaved_batch_buffer_size(rocsparse_handle handle,
+                                                               rocsparse_gtsv_interleaved_alg alg,
+                                                               rocsparse_int                  m,
+                                                               const double*                  dl,
+                                                               const double*                  d,
+                                                               const double*                  du,
+                                                               const double*                  x,
+                                                               rocsparse_int batch_count,
+                                                               rocsparse_int batch_stride,
+                                                               size_t*       buffer_size);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cgtsv_interleaved_batch_buffer_size(rocsparse_handle handle,
+                                                               rocsparse_gtsv_interleaved_alg alg,
+                                                               rocsparse_int                  m,
+                                                               const rocsparse_float_complex* dl,
+                                                               const rocsparse_float_complex* d,
+                                                               const rocsparse_float_complex* du,
+                                                               const rocsparse_float_complex* x,
+                                                               rocsparse_int batch_count,
+                                                               rocsparse_int batch_stride,
+                                                               size_t*       buffer_size);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zgtsv_interleaved_batch_buffer_size(rocsparse_handle handle,
+                                                               rocsparse_gtsv_interleaved_alg  alg,
+                                                               rocsparse_int                   m,
+                                                               const rocsparse_double_complex* dl,
+                                                               const rocsparse_double_complex* d,
+                                                               const rocsparse_double_complex* du,
+                                                               const rocsparse_double_complex* x,
+                                                               rocsparse_int batch_count,
+                                                               rocsparse_int batch_stride,
+                                                               size_t*       buffer_size);
+/**@}*/
+
+/*! \ingroup precond_module
+*  \brief Interleaved Batch tridiagonal solver
+*
+*  \details
+*  \p rocsparse_gtsv_interleaved_batch  solves a batched tridiagonal linear system. The routine requires a temporary storage
+*  buffer that must be allocated by the user. The size of this buffer can be determined by first calling
+*  \p rocsparse_gtsv_interleaved_batch_buffer_size. The user can specify different algorithms for \p rocsparse_gtsv_interleaved_batch
+*  to use. Options are thomas ( \p rocsparse_gtsv_interleaved_thomas ), LU ( \p rocsparse_gtsv_interleaved_lu ),
+*  or QR ( \p rocsparse_gtsv_interleaved_qr ). Passing \p rocsparse_gtsv_interleaved_default defaults the algorithm to use QR.
+*
+*  \note
+*  This function is non blocking and executed asynchronously with respect to the host.
+*  It may return before the actual computation has finished.
+*
+*  @param[in]
+*  handle      handle to the rocsparse library context queue.
+*  @param[in]
+*  alg         Algorithm to use when solving tridiagonal systems. Options are thomas ( \p rocsparse_gtsv_interleaved_thomas ),
+*              LU ( \p rocsparse_gtsv_interleaved_lu ), or QR ( \p rocsparse_gtsv_interleaved_qr ). Passing
+*              \p rocsparse_gtsv_interleaved_default defaults the algorithm to use QR. Thomas algorithm is the fastest but is not
+*              stable while LU and QR are slower but are stable.
+*  @param[in]
+*  m           size of the tri-diagonal linear system.
+*  @param[inout]
+*  dl          lower diagonal of tri-diagonal system. The first element of the lower diagonal must be zero.
+*  @param[inout]
+*  d           main diagonal of tri-diagonal system.
+*  @param[inout]
+*  du          upper diagonal of tri-diagonal system. The last element of the upper diagonal must be zero.
+*  @param[inout]
+*  x           Dense array of righthand-sides with dimension \p batch_stride by \p m.
+*  @param[in]
+*  batch_count The number of systems to solve.
+*  @param[in]
+*  batch_stride The number of elements that separate consecutive elements in a system. Must satisfy \p batch_stride >= batch_count.
+*  @param[in]
+*  temp_buffer temporary storage buffer allocated by the user.
+*
+*  \retval     rocsparse_status_success the operation completed successfully.
+*  \retval     rocsparse_status_invalid_handle the library context was not initialized.
+*  \retval     rocsparse_status_invalid_size \p m or \p batch_count or \p batch_stride is invalid.
+*  \retval     rocsparse_status_invalid_pointer \p dl, \p d,
+*              \p du, \p x or \p temp_buffer pointer is invalid.
+*  \retval     rocsparse_status_internal_error an internal error occurred.
+*/
+/**@{*/
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_sgtsv_interleaved_batch(rocsparse_handle               handle,
+                                                   rocsparse_gtsv_interleaved_alg alg,
+                                                   rocsparse_int                  m,
+                                                   float*                         dl,
+                                                   float*                         d,
+                                                   float*                         du,
+                                                   float*                         x,
+                                                   rocsparse_int                  batch_count,
+                                                   rocsparse_int                  batch_stride,
+                                                   void*                          temp_buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dgtsv_interleaved_batch(rocsparse_handle               handle,
+                                                   rocsparse_gtsv_interleaved_alg alg,
+                                                   rocsparse_int                  m,
+                                                   double*                        dl,
+                                                   double*                        d,
+                                                   double*                        du,
+                                                   double*                        x,
+                                                   rocsparse_int                  batch_count,
+                                                   rocsparse_int                  batch_stride,
+                                                   void*                          temp_buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_cgtsv_interleaved_batch(rocsparse_handle               handle,
+                                                   rocsparse_gtsv_interleaved_alg alg,
+                                                   rocsparse_int                  m,
+                                                   rocsparse_float_complex*       dl,
+                                                   rocsparse_float_complex*       d,
+                                                   rocsparse_float_complex*       du,
+                                                   rocsparse_float_complex*       x,
+                                                   rocsparse_int                  batch_count,
+                                                   rocsparse_int                  batch_stride,
+                                                   void*                          temp_buffer);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_zgtsv_interleaved_batch(rocsparse_handle               handle,
+                                                   rocsparse_gtsv_interleaved_alg alg,
+                                                   rocsparse_int                  m,
+                                                   rocsparse_double_complex*      dl,
+                                                   rocsparse_double_complex*      d,
+                                                   rocsparse_double_complex*      du,
+                                                   rocsparse_double_complex*      x,
+                                                   rocsparse_int                  batch_count,
+                                                   rocsparse_int                  batch_stride,
+                                                   void*                          temp_buffer);
+/**@}*/
+
 /*
 * ===========================================================================
 *    Sparse Format Conversions

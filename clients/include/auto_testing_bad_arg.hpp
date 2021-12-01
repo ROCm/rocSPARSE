@@ -156,6 +156,12 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_index_base& p)
 }
 
 template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_gtsv_interleaved_alg& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_sparse_to_dense_alg& p)
 {
     return rocsparse_status_invalid_value;
@@ -285,6 +291,12 @@ template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_index_base& p)
 {
     p = (rocsparse_index_base)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_gtsv_interleaved_alg& p)
+{
+    p = (rocsparse_gtsv_interleaved_alg)-1;
 }
 
 template <>

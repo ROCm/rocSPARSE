@@ -342,7 +342,7 @@ rocsparse_status rocsparse_csrcolor_dispatch(rocsparse_handle          handle,
     //
     // Initialize colors
     //
-    RETURN_IF_HIP_ERROR(hipMemsetAsync(colors, -1, sizeof(J) * m));
+    RETURN_IF_HIP_ERROR(hipMemsetAsync(colors, -1, sizeof(J) * m, stream));
 
     //
     // Iterate until the desired fraction of colored vertices is reached

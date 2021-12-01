@@ -222,6 +222,7 @@ rocsparse_status rocsparse_routine::dispatch(const char       precision,
         CASE(gtsv);
         CASE(gtsv_no_pivot);
         CASE(gtsv_no_pivot_strided_batch);
+        CASE(gtsv_interleaved_batch);
         CASE(hybmv);
         CASE(hyb2csr);
         CASE(identity);
@@ -320,6 +321,7 @@ constexpr const char* rocsparse_routine::to_string() const
         CASE(gtsv);
         CASE(gtsv_no_pivot);
         CASE(gtsv_no_pivot_strided_batch);
+        CASE(gtsv_interleaved_batch);
         CASE(hybmv);
         CASE(hyb2csr);
         CASE(identity);
@@ -390,6 +392,7 @@ constexpr const char* rocsparse_routine::to_string() const
 #include "testing_csric0.hpp"
 #include "testing_csrilu0.hpp"
 #include "testing_gtsv.hpp"
+#include "testing_gtsv_interleaved_batch.hpp"
 #include "testing_gtsv_no_pivot.hpp"
 #include "testing_gtsv_no_pivot_strided_batch.hpp"
 
@@ -615,6 +618,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_T(gtsv);
         DEFINE_CASE_T(gtsv_no_pivot);
         DEFINE_CASE_T(gtsv_no_pivot_strided_batch);
+        DEFINE_CASE_T(gtsv_interleaved_batch);
         DEFINE_CASE_T(hybmv);
         DEFINE_CASE_T(hyb2csr);
         DEFINE_CASE_T_FLOAT_ONLY(identity);
