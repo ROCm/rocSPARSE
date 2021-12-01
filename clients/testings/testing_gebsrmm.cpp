@@ -95,11 +95,8 @@ void testing_gebsrmm_bad_arg(const Arguments& arg)
     // CHECK NOT IMPLEMENTED CASE
     //
     {
-        auto tmp = trans_B;
-        trans_B  = rocsparse_operation_conjugate_transpose;
+        trans_B = rocsparse_operation_conjugate_transpose;
         EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmm<T>(PARAMS), rocsparse_status_not_implemented);
-
-        trans_B = tmp;
     }
 
     //

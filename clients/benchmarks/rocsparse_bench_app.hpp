@@ -45,7 +45,7 @@ public:
         return this->value;
     };
     inline constexpr rocsparse_benchfile_format(){};
-    inline constexpr rocsparse_benchfile_format(rocsparse_int ival)
+    inline constexpr explicit rocsparse_benchfile_format(rocsparse_int ival)
         : value((value_type)ival)
     {
     }
@@ -66,7 +66,7 @@ public:
         return true;
     };
 
-    inline rocsparse_benchfile_format(const char* ext)
+    inline explicit rocsparse_benchfile_format(const char* ext)
     {
         if(!strcmp(ext, ".json"))
         {
@@ -122,7 +122,7 @@ struct rocsparse_bench_timing_t
 
         item_t(){};
 
-        item_t(int nruns_)
+        explicit item_t(int nruns_)
             : m_nruns(nruns_)
             , msec(nruns_)
             , gflops(nruns_)
@@ -185,8 +185,8 @@ protected:
     //
     // Record initial command line.
     //
-    int    m_initial_argc;
-    char** m_initial_argv;
+    int    m_initial_argc{};
+    char** m_initial_argv{};
     //
     // Set of command lines.
     //
@@ -221,8 +221,8 @@ protected:
     //
     // For internal use, to get the current isample and irun.
     //
-    int m_isample;
-    int m_irun;
+    int m_isample{};
+    int m_irun{};
     int get_isample() const
     {
         return this->m_isample;

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -194,8 +194,8 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
                 else if(table[hash] == key)
                 {
                     // Entry found, do ILU computation
-                    rocsparse_int idx = data[hash];
-                    csr_val[idx]      = rocsparse_fma(-local_val, csr_val[k], csr_val[idx]);
+                    rocsparse_int idx_data = data[hash];
+                    csr_val[idx_data] = rocsparse_fma(-local_val, csr_val[k], csr_val[idx_data]);
                     break;
                 }
                 else
@@ -218,7 +218,7 @@ __device__ void csrilu0_hash_kernel(rocsparse_int m,
 }
 
 template <unsigned int BLOCKSIZE, unsigned int WFSIZE, bool SLEEP, typename T, typename U>
-__device__ void csrilu0_binsearch_kernel(rocsparse_int m,
+__device__ void csrilu0_binsearch_kernel(rocsparse_int m_,
                                          const rocsparse_int* __restrict__ csr_row_ptr,
                                          const rocsparse_int* __restrict__ csr_col_ind,
                                          T* __restrict__ csr_val,
@@ -237,7 +237,7 @@ __device__ void csrilu0_binsearch_kernel(rocsparse_int m,
     rocsparse_int idx = hipBlockIdx_x * BLOCKSIZE / WFSIZE + wid;
 
     // Do not run out of bounds
-    if(idx >= m)
+    if(idx >= m_)
     {
         return;
     }

@@ -124,7 +124,6 @@ void testing_sparse_to_dense_csc(const Arguments& arg)
     if(m <= 0 || n <= 0 || ld < mn)
     {
         // M == N == 0 means nnz can only be 0, too
-        I nnz = 0;
 
         static const I safe_size = 100;
 
@@ -142,6 +141,7 @@ void testing_sparse_to_dense_csc(const Arguments& arg)
 
         if(m == 0 && n == 0 && ld >= mn)
         {
+            I                     nnz = 0;
             rocsparse_local_spmat mat_A(m,
                                         n,
                                         nnz,

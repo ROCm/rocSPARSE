@@ -62,9 +62,9 @@ class RocSPARSE_TestData
 
     public:
         // Constructor takes a filter and iterator
-        iterator(bool filter(const Arguments&), std::istream_iterator<Arguments> iter)
+        explicit iterator(bool filter_(const Arguments&), std::istream_iterator<Arguments> iter)
             : std::istream_iterator<Arguments>(iter)
-            , filter(filter)
+            , filter(filter_)
         {
             skip_filter();
         }
@@ -95,7 +95,10 @@ public:
         {
             auto cleanup = [] { remove(filename().c_str()); };
             atexit(cleanup);
-            at_quick_exit(cleanup);
+            auto err = at_quick_exit(cleanup);
+            if(err)
+            {
+            }
         }
     }
 

@@ -41,20 +41,20 @@ struct host_scalar : public host_dense_matrix<T>
 {
     host_scalar()
         : host_dense_matrix<T>(1, 1){};
-    host_scalar(const T& value)
+    explicit host_scalar(const T& value)
         : host_dense_matrix<T>(1, 1)
     {
         T* p = *this;
         p[0] = value;
     };
 
-    host_scalar(const device_scalar<T>& that)
+    explicit host_scalar(const device_scalar<T>& that)
         : host_dense_matrix<T>(1, 1)
     {
         this->transfer_from(that);
     }
 
-    host_scalar(const managed_scalar<T>& that)
+    explicit host_scalar(const managed_scalar<T>& that)
         : host_dense_matrix<T>(1, 1)
     {
         this->transfer_from(that);
@@ -64,6 +64,7 @@ struct host_scalar : public host_dense_matrix<T>
     {
         T* p = *this;
         p[0] = that;
+        return *this;
     };
 };
 
@@ -72,12 +73,12 @@ struct device_scalar : public device_dense_matrix<T>
 {
     device_scalar()
         : device_dense_matrix<T>(1, 1){};
-    device_scalar(const host_scalar<T>& that)
+    explicit device_scalar(const host_scalar<T>& that)
         : device_dense_matrix<T>(1, 1)
     {
         this->transfer_from(that);
     }
-    device_scalar(const managed_scalar<T>& that)
+    explicit device_scalar(const managed_scalar<T>& that)
         : device_dense_matrix<T>(1, 1)
     {
         this->transfer_from(that);
@@ -90,13 +91,13 @@ struct managed_scalar : public managed_dense_matrix<T>
     managed_scalar()
         : managed_dense_matrix<T>(1, 1){};
 
-    managed_scalar(const host_scalar<T>& that)
+    explicit managed_scalar(const host_scalar<T>& that)
         : managed_dense_matrix<T>(1, 1)
     {
         this->transfer_from(that);
     }
 
-    managed_scalar(const device_scalar<T>& that)
+    explicit managed_scalar(const device_scalar<T>& that)
         : managed_dense_matrix<T>(1, 1)
     {
         this->transfer_from(that);

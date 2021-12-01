@@ -362,7 +362,7 @@ rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_large_template(rocsparse_
     T* drhs0 = reinterpret_cast<T*>(ptr);
     ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
     T* drhs1 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    // ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
 
     hipMemset(da0, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256);
     hipMemset(da1, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256);

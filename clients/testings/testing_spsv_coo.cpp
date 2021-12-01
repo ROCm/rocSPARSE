@@ -110,8 +110,6 @@ void testing_spsv_coo(const Arguments& arg)
     if(M <= 0)
     {
         // M == 0 means nnz can only be 0, too
-        I nnz_A = 0;
-
         static const I safe_size = 100;
 
         // Allocate memory on device
@@ -124,6 +122,8 @@ void testing_spsv_coo(const Arguments& arg)
         // Check SpSV when structures can be created
         if(M == 0 && M == N)
         {
+            I nnz_A = 0;
+
             // Pointer mode
             CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 

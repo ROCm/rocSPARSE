@@ -91,11 +91,6 @@ void testing_gebsr2gebsr(const Arguments& arg)
         Nb = (N + col_block_dim_A - 1) / col_block_dim_A;
     }
 
-    M = Mb * row_block_dim_A;
-    N = Nb * col_block_dim_A;
-
-    rocsparse_int Mb_C = (M + row_block_dim_C - 1) / row_block_dim_C;
-
     // Create rocsparse handle
     rocsparse_local_handle handle;
 
@@ -164,9 +159,9 @@ void testing_gebsr2gebsr(const Arguments& arg)
                                          base_A);
 
     // Mb and Nb can be modified by rocsparse_init_csr_matrix if reading from a file
-    M    = Mb * row_block_dim_A;
-    N    = Nb * col_block_dim_A;
-    Mb_C = (M + row_block_dim_C - 1) / row_block_dim_C;
+    M                  = Mb * row_block_dim_A;
+    N                  = Nb * col_block_dim_A;
+    rocsparse_int Mb_C = (M + row_block_dim_C - 1) / row_block_dim_C;
 
     // Allocate device memory for input BSR matrix
     device_vector<rocsparse_int> dbsr_row_ptr_A(Mb + 1);

@@ -52,7 +52,7 @@ struct coo_aos_matrix
         , ind(2 * nnz_)
         , val(nnz_){};
 
-    coo_aos_matrix(const coo_aos_matrix<MODE, T, I>& that_, bool transfer = true)
+    explicit coo_aos_matrix(const coo_aos_matrix<MODE, T, I>& that_, bool transfer = true)
         : coo_aos_matrix<MODE, T, I>(that_.m, that_.n, that_.nnz, that_.base)
     {
         if(transfer)
@@ -62,7 +62,7 @@ struct coo_aos_matrix
     }
 
     template <memory_mode::value_t THAT_MODE>
-    coo_aos_matrix(const coo_aos_matrix<THAT_MODE, T, I>& that_, bool transfer = true)
+    explicit coo_aos_matrix(const coo_aos_matrix<THAT_MODE, T, I>& that_, bool transfer = true)
         : coo_aos_matrix<MODE, T, I>(that_.m, that_.n, that_.nnz, that_.base)
     {
         if(transfer)

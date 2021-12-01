@@ -322,8 +322,8 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_transpose)
            || (order == rocsparse_order_row && trans_B == rocsparse_operation_conjugate_transpose))
         {
-            I main      = 0;
-            I remainder = 0;
+            I main = 0;
+            I remainder;
 
             if(handle->wavefront_size == 32)
             {
@@ -443,8 +443,8 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
                 || (order == rocsparse_order_column && trans_B == rocsparse_operation_transpose)
                 || (order == rocsparse_order_row && trans_B == rocsparse_operation_none))
         {
-            I main      = 0;
-            I remainder = 0;
+            I main = 0;
+            I remainder;
 
             if(handle->wavefront_size == 32)
             {

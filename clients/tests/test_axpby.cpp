@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,9 +44,9 @@ namespace
     struct axpby_testing<
         I,
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
-                                || std::is_same<T, rocsparse_float_complex>{}
-                                || std::is_same<T, rocsparse_double_complex>{}>::type>
+        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
+                                || std::is_same<T, rocsparse_float_complex>()
+                                || std::is_same<T, rocsparse_double_complex>()>::type>
     {
         explicit operator bool()
         {
@@ -80,7 +80,7 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            return RocSPARSE_TestName<axpby>{}
+            return RocSPARSE_TestName<axpby>()
                    << rocsparse_indextype2string(arg.index_type_I) << '_'
                    << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_' << arg.nnz
                    << '_' << arg.alpha << '_' << arg.alphai << '_' << arg.beta << '_' << arg.betai
@@ -91,7 +91,7 @@ namespace
     TEST_P(axpby, level1)
     {
         rocsparse_it_dispatch<axpby_testing>(GetParam());
-    }
+    };
     INSTANTIATE_TEST_CATEGORIES(axpby);
 
 } // namespace

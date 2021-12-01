@@ -60,7 +60,7 @@ struct csx_matrix
         , ind(nnz_)
         , val(nnz_){};
 
-    csx_matrix(const csx_matrix<MODE, DIRECTION, T, I, J>& that_, bool transfer = true)
+    explicit csx_matrix(const csx_matrix<MODE, DIRECTION, T, I, J>& that_, bool transfer = true)
         : csx_matrix<MODE, DIRECTION, T, I, J>(that_.m, that_.n, that_.nnz, that_.base)
     {
         if(transfer)
@@ -70,7 +70,8 @@ struct csx_matrix
     }
 
     template <memory_mode::value_t THAT_MODE>
-    csx_matrix(const csx_matrix<THAT_MODE, DIRECTION, T, I, J>& that_, bool transfer = true)
+    explicit csx_matrix(const csx_matrix<THAT_MODE, DIRECTION, T, I, J>& that_,
+                        bool                                             transfer = true)
         : csx_matrix<MODE, DIRECTION, T, I, J>(that_.m, that_.n, that_.nnz, that_.base)
     {
         if(transfer)
@@ -108,6 +109,7 @@ struct csx_matrix
             return rocsparse_status_not_implemented;
         }
         }
+        return rocsparse_status_invalid_value;
     }
 
     void define(J m_, J n_, I nnz_, rocsparse_index_base base_)

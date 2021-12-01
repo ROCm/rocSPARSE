@@ -480,9 +480,9 @@ __device__ void bsrilu0_9_32_device(rocsparse_direction  dir,
                     // Load BSR block from row k into shared memory
                     for(rocsparse_int p = threadIdx.x; p < block_dim; p += DIMX)
                     {
-                        for(rocsparse_int q = threadIdx.y; q < block_dim; q += DIMY)
+                        for(rocsparse_int qj = threadIdx.y; qj < block_dim; qj += DIMY)
                         {
-                            sdata1[q][p] = bsr_val[BSR_IND(k, p, q, dir)];
+                            sdata1[qj][p] = bsr_val[BSR_IND(k, p, qj, dir)];
                         }
                     }
 
@@ -786,9 +786,9 @@ __device__ void bsrilu0_33_64_device(rocsparse_direction  dir,
                     // Load BSR block from row k into shared memory
                     for(rocsparse_int p = threadIdx.x; p < block_dim; p += DIMX)
                     {
-                        for(rocsparse_int q = threadIdx.y; q < block_dim; q += DIMY)
+                        for(rocsparse_int qj = threadIdx.y; qj < block_dim; qj += DIMY)
                         {
-                            sdata[q][p] = bsr_val[BSR_IND(k, p, q, dir)];
+                            sdata[qj][p] = bsr_val[BSR_IND(k, p, qj, dir)];
                         }
                     }
 

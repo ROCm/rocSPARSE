@@ -425,8 +425,9 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
                 {
                     launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 16, 16, wf_size);
                 }
-                else if(row_block_dim <= 32)
+                else
                 {
+                    // (row_block_dim <= 32)
                     launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 32, 32, wf_size);
                 }
             }
@@ -448,8 +449,9 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
                 {
                     launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 16, 16, wf_size);
                 }
-                else if(row_block_dim <= 32)
+                else
                 {
+                    //(row_block_dim <= 32)
                     launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 32, 32, wf_size);
                 }
             }
@@ -483,8 +485,9 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
                 {
                     launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 16, 16, wf_size);
                 }
-                else if(row_block_dim <= 32)
+                else
                 {
+                    // (row_block_dim <= 32)
                     launch_csr2gebsr_fast_kernel(rocsparse_direction_row, 32, 32, wf_size);
                 }
             }
@@ -506,8 +509,9 @@ rocsparse_status rocsparse_csr2gebsr_template(rocsparse_handle          handle,
                 {
                     launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 16, 16, wf_size);
                 }
-                else if(row_block_dim <= 32)
+                else
                 {
+                    // (row_block_dim <= 32)
                     launch_csr2gebsr_fast_kernel(rocsparse_direction_column, 32, 32, wf_size);
                 }
             }
@@ -894,8 +898,9 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
             {
                 launch_csr2gebsr_nnz_fast_kernel(16, 16, wf_size);
             }
-            else if(row_block_dim <= 32)
+            else
             {
+                // (row_block_dim <= 32)
                 launch_csr2gebsr_nnz_fast_kernel(32, 32, wf_size);
             }
         }
@@ -926,8 +931,9 @@ extern "C" rocsparse_status rocsparse_csr2gebsr_nnz(rocsparse_handle          ha
             {
                 launch_csr2gebsr_nnz_fast_kernel(16, 16, wf_size);
             }
-            else if(row_block_dim <= 32)
+            else
             {
+                // (row_block_dim <= 32)
                 launch_csr2gebsr_nnz_fast_kernel(32, 32, wf_size);
             }
         }

@@ -33,29 +33,29 @@ struct rocsparse_arguments_config : Arguments
 {
 
 public:
-    char          precision;
-    char          indextype;
-    std::string   function;
-    rocsparse_int device_id;
+    char          precision{};
+    char          indextype{};
+    std::string   function_name{};
+    rocsparse_int device_id{};
 
 private:
-    std::string   b_filename;
-    std::string   b_rocalution;
-    char          b_transA;
-    char          b_transB;
-    int           b_baseA;
-    int           b_baseB;
-    int           b_baseC;
-    int           b_baseD;
-    int           b_action;
-    int           b_part;
-    int           b_matrix_type;
-    char          b_diag;
-    char          b_uplo;
-    char          b_apol;
-    rocsparse_int b_dir;
-    rocsparse_int b_order;
-    rocsparse_int b_format;
+    std::string   b_filename{};
+    std::string   b_rocalution{};
+    char          b_transA{};
+    char          b_transB{};
+    int           b_baseA{};
+    int           b_baseB{};
+    int           b_baseC{};
+    int           b_baseD{};
+    int           b_action{};
+    int           b_part{};
+    int           b_matrix_type{};
+    char          b_diag{};
+    char          b_uplo{};
+    char          b_apol{};
+    rocsparse_int b_dir{};
+    rocsparse_int b_order{};
+    rocsparse_int b_format{};
 
 public:
     rocsparse_arguments_config();

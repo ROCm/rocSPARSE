@@ -76,7 +76,7 @@ rocsparse_bench::rocsparse_bench(int& argc, char**& argv)
     : desc("rocsparse client command line options")
 {
     this->parse(argc, argv, this->config);
-    routine(this->config.function.c_str());
+    routine(this->config.function_name.c_str());
 
     // Device query
     int devs;
@@ -97,7 +97,7 @@ rocsparse_bench::rocsparse_bench(int& argc, char**& argv)
 rocsparse_bench& rocsparse_bench::operator()(int& argc, char**& argv)
 {
     this->parse(argc, argv, this->config);
-    routine(this->config.function.c_str());
+    routine(this->config.function_name.c_str());
     return *this;
 }
 

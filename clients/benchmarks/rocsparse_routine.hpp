@@ -203,9 +203,10 @@ private:
 public:
     rocsparse_routine();
     rocsparse_routine& operator()(const char* function);
-    rocsparse_routine(const char* function);
+    explicit rocsparse_routine(const char* function);
     rocsparse_status
         dispatch(const char precision, const char indextype, const Arguments& arg) const;
+    constexpr const char* to_string() const;
 
 private:
     template <rocsparse_routine::value_type FNAME, typename T, typename I, typename J = I>
@@ -217,6 +218,4 @@ private:
     template <rocsparse_routine::value_type FNAME>
     static rocsparse_status
         dispatch_precision(const char precision, const char indextype, const Arguments& arg);
-
-    constexpr const char* to_string() const;
 };

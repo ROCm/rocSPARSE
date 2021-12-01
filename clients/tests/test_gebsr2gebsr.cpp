@@ -43,9 +43,9 @@ namespace
     template <typename T>
     struct gebsr2gebsr_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
-                                || std::is_same<T, rocsparse_float_complex>{}
-                                || std::is_same<T, rocsparse_double_complex>{}>::type>
+        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
+                                || std::is_same<T, rocsparse_float_complex>()
+                                || std::is_same<T, rocsparse_double_complex>()>::type>
     {
         explicit operator bool()
         {
@@ -83,7 +83,7 @@ namespace
             if(arg.matrix == rocsparse_matrix_file_rocalution
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
-                return RocSPARSE_TestName<gebsr2gebsr>{}
+                return RocSPARSE_TestName<gebsr2gebsr>()
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.row_block_dimA
                        << '_' << arg.col_block_dimA << '_' << arg.row_block_dimB << '_'
                        << arg.col_block_dimB << '_' << rocsparse_direction2string(arg.direction)
@@ -94,7 +94,7 @@ namespace
             }
             else
             {
-                return RocSPARSE_TestName<gebsr2gebsr>{}
+                return RocSPARSE_TestName<gebsr2gebsr>()
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
                        << arg.N << '_' << arg.row_block_dimA << '_' << arg.col_block_dimA << '_'
                        << arg.row_block_dimB << '_' << arg.col_block_dimB << '_'

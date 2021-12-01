@@ -304,6 +304,7 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                          ldc);
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 template <typename I, typename T>

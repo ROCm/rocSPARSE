@@ -46,9 +46,9 @@ namespace
     template <typename T>
     struct bsrsm_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
-                                || std::is_same<T, rocsparse_float_complex>{}
-                                || std::is_same<T, rocsparse_double_complex>{}>::type>
+        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
+                                || std::is_same<T, rocsparse_float_complex>()
+                                || std::is_same<T, rocsparse_double_complex>()>::type>
     {
         explicit operator bool()
         {
@@ -85,7 +85,7 @@ namespace
             if(arg.matrix == rocsparse_matrix_file_rocalution
                || arg.matrix == rocsparse_matrix_file_mtx)
             {
-                return RocSPARSE_TestName<bsrsm>{}
+                return RocSPARSE_TestName<bsrsm>()
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.K << '_'
                        << arg.alpha << '_' << arg.alphai << '_'
                        << rocsparse_direction2string(arg.direction) << '_' << arg.block_dim << '_'
@@ -101,7 +101,7 @@ namespace
             }
             else
             {
-                return RocSPARSE_TestName<bsrsm>{}
+                return RocSPARSE_TestName<bsrsm>()
                        << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
                        << arg.K << '_' << arg.alpha << '_' << arg.alphai << '_'
                        << rocsparse_direction2string(arg.direction) << '_' << arg.block_dim << '_'

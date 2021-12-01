@@ -268,10 +268,10 @@ __device__ void csrgeam_fill_multipass_device(rocsparse_int m,
         for(; row_begin_A < row_end_A; row_begin_A += WFSIZE)
         {
             // Get the column of A
-            rocsparse_int col_A = csr_col_ind_A[row_begin_A] - idx_base_A;
+            rocsparse_int col = csr_col_ind_A[row_begin_A] - idx_base_A;
 
             // Get the column of A shifted by the chunk_begin
-            rocsparse_int shf_A = col_A - chunk_begin;
+            rocsparse_int shf_A = col - chunk_begin;
 
             // Check if this column of A is within the chunk
             if(shf_A < WFSIZE)
@@ -285,7 +285,7 @@ __device__ void csrgeam_fill_multipass_device(rocsparse_int m,
             else
             {
                 // Store the first column index of A that exceeds the current chunk
-                min_col = min(min_col, col_A);
+                min_col = min(min_col, col);
                 break;
             }
         }
@@ -295,10 +295,10 @@ __device__ void csrgeam_fill_multipass_device(rocsparse_int m,
         for(; row_begin_B < row_end_B; row_begin_B += WFSIZE)
         {
             // Get the column of B
-            rocsparse_int col_B = csr_col_ind_B[row_begin_B] - idx_base_B;
+            rocsparse_int col = csr_col_ind_B[row_begin_B] - idx_base_B;
 
             // Get the column of B shifted by the chunk_begin
-            rocsparse_int shf_B = col_B - chunk_begin;
+            rocsparse_int shf_B = col - chunk_begin;
 
             // Check if this column of B is within the chunk
             if(shf_B < WFSIZE)
@@ -312,7 +312,7 @@ __device__ void csrgeam_fill_multipass_device(rocsparse_int m,
             else
             {
                 // Store the first column index of B that exceeds the current chunk
-                min_col = min(min_col, col_B);
+                min_col = min(min_col, col);
                 break;
             }
         }

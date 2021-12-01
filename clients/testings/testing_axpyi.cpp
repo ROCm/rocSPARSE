@@ -39,9 +39,9 @@ void testing_axpyi_bad_arg(const Arguments& arg)
     rocsparse_handle     handle = local_handle;
     rocsparse_int        nnz    = safe_size;
     const T*             alpha  = &h_alpha;
-    const T*             x_val  = (const T*)0x4;
+    const T*             x_val  = static_cast<const T*>((void*)0x4);
     const rocsparse_int* x_ind  = (const rocsparse_int*)0x4;
-    T*                   y      = (T*)0x4;
+    T*                   y      = static_cast<T*>((void*)0x4);
     rocsparse_index_base base   = rocsparse_index_base_zero;
 
 #define PARAMS handle, nnz, alpha, x_val, x_ind, y, base

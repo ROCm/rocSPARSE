@@ -320,7 +320,6 @@ static inline void ComputeRowBlocks(I*       rowBlocks,
         }
 
         ++rowBlocks;
-        ++wgIds;
     }
 
     ++total_row_blocks;

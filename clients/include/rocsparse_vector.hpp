@@ -38,6 +38,15 @@ struct dense_vector;
 template <typename T>
 struct host_vector;
 
+template <typename T>
+using host_dense_vector = dense_vector<memory_mode::host, T>;
+
+template <typename T>
+using device_dense_vector = dense_vector<memory_mode::device, T>;
+
+template <typename T>
+using managed_dense_vector = dense_vector<memory_mode::managed, T>;
+
 template <memory_mode::value_t MODE, typename T>
 struct dense_vector_t
 {
@@ -70,14 +79,88 @@ public:
     template <memory_mode::value_t THAT_MODE>
     dense_vector_t<MODE, T>& operator=(const dense_vector_t<THAT_MODE, T>&);
     template <memory_mode::value_t THAT_MODE>
-    void unit_check(const dense_vector_t<THAT_MODE, T>& that_) const;
+    void unit_check(const dense_vector_t<THAT_MODE, T>& that_) const
+    {
+        switch(MODE)
+        {
+        case memory_mode::device:
+        {
+            host_dense_vector<T> on_host(*this);
+            on_host.unit_check(that_);
+            break;
+        }
+
+        case memory_mode::managed:
+        case memory_mode::host:
+        {
+            switch(THAT_MODE)
+            {
+            case memory_mode::managed:
+            case memory_mode::host:
+            {
+                unit_check_scalar<size_t>(this->size(), that_.size());
+                unit_check_segments<T>(this->size(), this->data(), that_.data());
+                break;
+            }
+            case memory_mode::device:
+            {
+                host_dense_vector<T> that(that_);
+                this->unit_check(that);
+                break;
+            }
+            }
+            break;
+        }
+        }
+    }
     template <memory_mode::value_t THAT_MODE>
     void near_check(const dense_vector_t<THAT_MODE, T>& that_,
-                    floating_data_t<T>                  tol_ = default_tolerance<T>::value) const;
+                    floating_data_t<T>                  tol_ = default_tolerance<T>::value) const
+    {
+        switch(MODE)
+        {
+        case memory_mode::device:
+        {
+            host_dense_vector<T> on_host(*this, true);
+            on_host.near_check(that_, tol_);
+            break;
+        }
+
+        case memory_mode::managed:
+        case memory_mode::host:
+        {
+            switch(THAT_MODE)
+            {
+            case memory_mode::managed:
+            case memory_mode::host:
+            {
+                unit_check_scalar<size_t>(this->size(), that_.size());
+                near_check_segments<T>(this->size(), this->data(), that_.data(), tol_);
+                break;
+            }
+            case memory_mode::device:
+            {
+                host_dense_vector<T> that(that_);
+                this->near_check(that, tol_);
+                break;
+            }
+            }
+            break;
+        }
+        }
+    }
     void print() const;
 
     template <memory_mode::value_t THAT_MODE>
-    void transfer_from(const dense_vector_t<THAT_MODE, T>& that);
+    void transfer_from(const dense_vector_t<THAT_MODE, T>& that)
+    {
+        CHECK_HIP_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
+        auto err = hipMemcpy(this->data(),
+                             that.data(),
+                             sizeof(T) * that.size(),
+                             memory_mode::get_hipMemcpyKind(MODE, THAT_MODE));
+        CHECK_HIP_ERROR(err);
+    }
 
     void transfer_to(std::vector<T>& that) const;
     void transfer_from(const host_vector<T>& that);
@@ -102,15 +185,36 @@ struct host_vector : std::vector<T>
         return this->data();
     }
     template <memory_mode::value_t THAT_MODE>
-    void transfer_from(const dense_vector_t<THAT_MODE, T>& that);
-    void transfer_from(const host_vector<T>& that);
+    void transfer_from(const dense_vector_t<THAT_MODE, T>& that)
+    {
+        CHECK_HIP_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
+        CHECK_HIP_ERROR(hipMemcpy(this->data(),
+                                  that.data(),
+                                  sizeof(T) * that.size(),
+                                  memory_mode::get_hipMemcpyKind(memory_mode::host, THAT_MODE)));
+    }
+    void transfer_from(const host_vector<T>& that)
+    {
+        CHECK_HIP_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
+        CHECK_HIP_ERROR(
+            hipMemcpy(this->data(),
+                      that.data(),
+                      sizeof(T) * that.size(),
+                      memory_mode::get_hipMemcpyKind(memory_mode::host, memory_mode::host)));
+    }
 
     template <memory_mode::value_t THAT_MODE>
-    void unit_check(const dense_vector_t<THAT_MODE, T>& that) const;
+    void unit_check(const dense_vector_t<THAT_MODE, T>& that_) const
+    {
+        that_.unit_check(*this);
+    }
 
     template <memory_mode::value_t THAT_MODE>
     void near_check(const dense_vector_t<THAT_MODE, T>& that_,
-                    floating_data_t<T>                  tol_ = default_tolerance<T>::value) const;
+                    floating_data_t<T>                  tol_ = default_tolerance<T>::value) const
+    {
+        that_.near_check(*this, tol_);
+    }
 
     void unit_check(const host_vector<T>& that_) const
     {
@@ -133,44 +237,27 @@ struct host_vector : std::vector<T>
                                   sizeof(T) * this->size(),
                                   memory_mode::get_hipMemcpyKind(memory_mode::host, THAT_MODE)));
     };
+
+    void print(std::ostream& out) const
+    {
+        const size_t N = this->size();
+        for(size_t i = 0; i < N; ++i)
+        {
+            out << "[" << i << "] = " << (*this)[i] << std::endl;
+        }
+    }
+
+    void print_limited(std::ostream& out, size_t bound) const
+    {
+        const size_t N = this->size();
+        for(size_t i = 0; i < N; ++i)
+        {
+            out << "[" << i << "] = " << (*this)[i] << std::endl;
+            if(i >= bound)
+                break;
+        }
+    }
 };
-
-template <typename T>
-template <memory_mode::value_t THAT_MODE>
-void host_vector<T>::unit_check(const dense_vector_t<THAT_MODE, T>& that_) const
-{
-    that_.unit_check(*this);
-}
-
-template <typename T>
-template <memory_mode::value_t THAT_MODE>
-void host_vector<T>::near_check(const dense_vector_t<THAT_MODE, T>& that_,
-                                floating_data_t<T>                  tol_) const
-{
-    that_.near_check(*this, tol_);
-}
-
-template <typename T>
-template <memory_mode::value_t THAT_MODE>
-void host_vector<T>::transfer_from(const dense_vector_t<THAT_MODE, T>& that)
-{
-    CHECK_HIP_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
-    CHECK_HIP_ERROR(hipMemcpy(this->data(),
-                              that.data(),
-                              sizeof(T) * that.size(),
-                              memory_mode::get_hipMemcpyKind(memory_mode::host, THAT_MODE)));
-}
-
-template <typename T>
-void host_vector<T>::transfer_from(const host_vector<T>& that)
-{
-    CHECK_HIP_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
-    CHECK_HIP_ERROR(
-        hipMemcpy(this->data(),
-                  that.data(),
-                  sizeof(T) * that.size(),
-                  memory_mode::get_hipMemcpyKind(memory_mode::host, memory_mode::host)));
-}
 
 template <memory_mode::value_t MODE, typename T>
 struct dense_vector : dense_vector_t<MODE, T>
@@ -254,15 +341,6 @@ public:
         }
     }
 };
-
-template <typename T>
-using host_dense_vector = dense_vector<memory_mode::host, T>;
-
-template <typename T>
-using device_dense_vector = dense_vector<memory_mode::device, T>;
-
-template <typename T>
-using managed_dense_vector = dense_vector<memory_mode::managed, T>;
 
 template <memory_mode::value_t MODE, typename T>
 dense_vector_t<MODE, T>::dense_vector_t(size_t size, T* val)
@@ -349,99 +427,14 @@ void dense_vector_t<MODE, T>::near_check(const host_vector<T>& that_, floating_d
 }
 
 template <memory_mode::value_t MODE, typename T>
-template <memory_mode::value_t THAT_MODE>
-void dense_vector_t<MODE, T>::unit_check(const dense_vector_t<THAT_MODE, T>& that_) const
-{
-    switch(MODE)
-    {
-    case memory_mode::device:
-    {
-        host_dense_vector<T> on_host(*this);
-        on_host.unit_check(that_);
-        break;
-    }
-
-    case memory_mode::managed:
-    case memory_mode::host:
-    {
-        switch(THAT_MODE)
-        {
-        case memory_mode::managed:
-        case memory_mode::host:
-        {
-            unit_check_scalar<size_t>(this->size(), that_.size());
-            unit_check_segments<T>(this->size(), this->data(), that_.data());
-            break;
-        }
-        case memory_mode::device:
-        {
-            host_dense_vector<T> that(that_);
-            this->unit_check(that);
-            break;
-        }
-        }
-        break;
-    }
-    }
-}
-
-template <memory_mode::value_t MODE, typename T>
-template <memory_mode::value_t THAT_MODE>
-void dense_vector_t<MODE, T>::near_check(const dense_vector_t<THAT_MODE, T>& that_,
-                                         floating_data_t<T>                  tol_) const
-{
-    switch(MODE)
-    {
-    case memory_mode::device:
-    {
-        host_dense_vector<T> on_host(*this, true);
-        on_host.near_check(that_, tol_);
-        break;
-    }
-
-    case memory_mode::managed:
-    case memory_mode::host:
-    {
-        switch(THAT_MODE)
-        {
-        case memory_mode::managed:
-        case memory_mode::host:
-        {
-            unit_check_scalar<size_t>(this->size(), that_.size());
-            near_check_segments<T>(this->size(), this->data(), that_.data(), tol_);
-            break;
-        }
-        case memory_mode::device:
-        {
-            host_dense_vector<T> that(that_);
-            this->near_check(that, tol_);
-            break;
-        }
-        }
-        break;
-    }
-    }
-}
-
-template <memory_mode::value_t MODE, typename T>
-template <memory_mode::value_t THAT_MODE>
-void dense_vector_t<MODE, T>::transfer_from(const dense_vector_t<THAT_MODE, T>& that)
-{
-    CHECK_HIP_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
-    CHECK_HIP_ERROR(hipMemcpy(this->data(),
-                              that.data(),
-                              sizeof(T) * that.size(),
-                              memory_mode::get_hipMemcpyKind(MODE, THAT_MODE)));
-}
-
-template <memory_mode::value_t MODE, typename T>
 void dense_vector_t<MODE, T>::transfer_from(const host_vector<T>& that)
 {
     CHECK_HIP_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
-    CHECK_HIP_ERROR(hipMemcpy(this->data(),
-                              that.data(),
-                              sizeof(T) * that.size(),
-                              memory_mode::get_hipMemcpyKind(MODE, memory_mode::host)));
+    auto err = hipMemcpy(this->data(),
+                         that.data(),
+                         sizeof(T) * that.size(),
+                         memory_mode::get_hipMemcpyKind(MODE, memory_mode::host));
+    CHECK_HIP_ERROR(err);
 }
 
 template <memory_mode::value_t MODE, typename T>

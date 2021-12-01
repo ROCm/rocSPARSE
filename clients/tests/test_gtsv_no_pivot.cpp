@@ -43,9 +43,9 @@ namespace
     template <typename T>
     struct gtsv_no_pivot_testing<
         T,
-        typename std::enable_if<std::is_same<T, float>{} || std::is_same<T, double>{}
-                                || std::is_same<T, rocsparse_float_complex>{}
-                                || std::is_same<T, rocsparse_double_complex>{}>::type>
+        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
+                                || std::is_same<T, rocsparse_float_complex>()
+                                || std::is_same<T, rocsparse_double_complex>()>::type>
     {
         explicit operator bool()
         {
@@ -80,7 +80,7 @@ namespace
         // Google Test name suffix based on parameters
         static std::string name_suffix(const Arguments& arg)
         {
-            return RocSPARSE_TestName<gtsv_no_pivot>{}
+            return RocSPARSE_TestName<gtsv_no_pivot>()
                    << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_' << arg.N
                    << '_' << arg.denseld << '_' << rocsparse_matrix2string(arg.matrix);
         }

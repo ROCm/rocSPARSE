@@ -27,6 +27,58 @@
 
 #include "rocsparse_vector.hpp"
 
+template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
+struct dense_matrix_t;
+
+template <typename T, typename I = rocsparse_int>
+using host_dense_matrix_t = dense_matrix_t<memory_mode::host, T, I>;
+
+template <typename T, typename I = rocsparse_int>
+using device_dense_matrix_t = dense_matrix_t<memory_mode::device, T, I>;
+
+template <typename T, typename I = rocsparse_int>
+using managed_dense_matrix_t = dense_matrix_t<memory_mode::managed, T, I>;
+
+template <typename T>
+using host_dense_matrix32_t = host_dense_matrix_t<T, int32_t>;
+template <typename T>
+using host_dense_matrix64_t = host_dense_matrix_t<T, int64_t>;
+
+template <typename T>
+using device_dense_matrix32_t = device_dense_matrix_t<T, int32_t>;
+template <typename T>
+using device_dense_matrix64_t = device_dense_matrix_t<T, int64_t>;
+
+template <typename T>
+using managed_dense_matrix32_t = managed_dense_matrix_t<T, int32_t>;
+template <typename T>
+using managed_dense_matrix64_t = managed_dense_matrix_t<T, int64_t>;
+
+template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
+struct dense_matrix;
+
+template <typename T, typename I = rocsparse_int>
+using host_dense_matrix = dense_matrix<memory_mode::host, T, I>;
+template <typename T, typename I = rocsparse_int>
+using device_dense_matrix = dense_matrix<memory_mode::device, T, I>;
+template <typename T, typename I = rocsparse_int>
+using managed_dense_matrix = dense_matrix<memory_mode::managed, T, I>;
+
+template <typename T>
+using host_dense_matrix32 = host_dense_matrix<T, int32_t>;
+template <typename T>
+using host_dense_matrix64 = host_dense_matrix<T, int64_t>;
+
+template <typename T>
+using device_dense_matrix32 = device_dense_matrix<T, int32_t>;
+template <typename T>
+using device_dense_matrix64 = device_dense_matrix<T, int64_t>;
+
+template <typename T>
+using managed_dense_matrix32 = managed_dense_matrix<T, int32_t>;
+template <typename T>
+using managed_dense_matrix64 = managed_dense_matrix<T, int64_t>;
+
 /* ============================================================================================ */
 /*! \brief Meta-data of a dense matrix on host, device and managed memory.
  *  \details
@@ -36,7 +88,7 @@
  *  \p For convenience, all other routines are transfering data to host if needed.
  *  \p The transfer method takes care of the leading dimension being greater than its allowed minimum.
  */
-template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
+template <memory_mode::value_t MODE, typename T, typename I>
 struct dense_matrix_t
 {
 private:
@@ -55,8 +107,17 @@ public:
     dense_matrix_t<MODE, T, I>(const dense_matrix_t<MODE, T, I>& that)      = delete;
 
     template <memory_mode::value_t THAT_MODE>
-    dense_matrix_t<MODE, T, I>& operator=(const dense_matrix_t<THAT_MODE, T, I>& that);
-    dense_matrix_t<MODE, T, I>& operator=(const dense_matrix_t<MODE, T, I>& that);
+    inline dense_matrix_t& operator=(const dense_matrix_t<THAT_MODE, T, I>& that)
+    {
+        this->transfer_from(that);
+        return *this;
+    }
+
+    inline dense_matrix_t& operator=(const dense_matrix_t& that)
+    {
+        this->transfer_from(that);
+        return *this;
+    }
 
 public:
     T* data()
@@ -170,16 +231,120 @@ public:
 
     void print() const;
     template <memory_mode::value_t THAT_MODE>
-    void unit_check(const dense_matrix_t<THAT_MODE, T, I>& that_) const;
+    void unit_check(const dense_matrix_t<THAT_MODE, T, I>& that_) const
+    {
+        switch(MODE)
+        {
+        case memory_mode::device:
+        {
+            dense_matrix<memory_mode::host, T, I> on_host(*this);
+            on_host.unit_check(that_);
+            break;
+        }
+
+        case memory_mode::managed:
+        case memory_mode::host:
+        {
+            switch(THAT_MODE)
+            {
+            case memory_mode::managed:
+            case memory_mode::host:
+            {
+                unit_check_scalar<I>(this->m, that_.m);
+                unit_check_scalar<I>(this->n, that_.n);
+                unit_check_enum(this->order, that_.order);
+
+                switch(this->order)
+                {
+                case rocsparse_order_column:
+                {
+                    unit_check_general<T>(this->m, this->n, *this, this->ld, that_, that_.ld);
+                    break;
+                }
+
+                case rocsparse_order_row:
+                {
+                    unit_check_general<T>(this->n, this->m, *this, this->ld, that_, that_.ld);
+                    break;
+                }
+                }
+                break;
+            }
+            case memory_mode::device:
+            {
+                dense_matrix<memory_mode::host, T, I> that(that_);
+                this->unit_check(that);
+                break;
+            }
+            }
+            break;
+        }
+        }
+    }
+
     template <memory_mode::value_t THAT_MODE>
     void near_check(const dense_matrix_t<THAT_MODE, T, I>& that_,
-                    floating_data_t<T>                     tol = default_tolerance<T>::value) const;
+                    floating_data_t<T>                     tol = default_tolerance<T>::value) const
+    {
+        switch(MODE)
+        {
+        case memory_mode::device:
+        {
+            dense_matrix<memory_mode::host, T, I> on_host(*this);
+            on_host.near_check(that_, tol);
+            break;
+        }
+
+        case memory_mode::managed:
+        case memory_mode::host:
+        {
+            switch(THAT_MODE)
+            {
+            case memory_mode::host:
+            case memory_mode::managed:
+            {
+                unit_check_scalar<I>(this->m, that_.m);
+                unit_check_scalar<I>(this->n, that_.n);
+                unit_check_enum(this->order, that_.order);
+
+                switch(this->order)
+                {
+                case rocsparse_order_column:
+                {
+                    near_check_general<T>(this->m, this->n, *this, this->ld, that_, that_.ld, tol);
+                    break;
+                }
+
+                case rocsparse_order_row:
+                {
+                    //
+                    // Little trick
+                    // If this poses a problem, we need to refactor unit_check_general.
+                    //
+                    near_check_general<T>(this->n, this->m, *this, this->ld, that_, that_.ld, tol);
+                    break;
+                }
+                }
+
+                break;
+            }
+            case memory_mode::device:
+            {
+                dense_matrix<memory_mode::host, T, I> that(that_);
+                this->near_check(that, tol);
+                break;
+            }
+            }
+            break;
+        }
+        }
+    }
 };
 
 /* ============================================================================================ */
 /*! \brief Implementation of a dense matrix responsible of the memory allocation.
  */
-template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
+template <memory_mode::value_t MODE, typename T, typename I>
 struct dense_matrix : public dense_matrix_t<MODE, T, I>
 {
 private:
@@ -197,6 +362,13 @@ public:
             allocator::free(this->data());
         }
     };
+
+    template <memory_mode::value_t THAT_MODE>
+    inline dense_matrix& operator=(const dense_matrix_t<THAT_MODE, T, I>& that)
+    {
+        this->transfer_from(that);
+        return *this;
+    }
 
     /*! \brief Copy constructor */
     dense_matrix(const dense_matrix<MODE, T, I>& that, bool transfer = true)
@@ -220,7 +392,7 @@ public:
                                      order_){};
 
     /*! \brief Copy constructor from a dense_matrix_t with the same memory mode. */
-    dense_matrix(const dense_matrix_t<MODE, T, I>& that, bool transfer = true)
+    explicit dense_matrix(const dense_matrix_t<MODE, T, I>& that, bool transfer = true)
         : dense_matrix_t<MODE, T, I>(that.m,
                                      that.n,
                                      allocator::malloc(size_t(that.m) * size_t(that.n)),
@@ -235,7 +407,7 @@ public:
 
     /*! \brief Copy constructor from a dense_matrix_t with a different memory mode*/
     template <memory_mode::value_t THAT_MODE>
-    dense_matrix(const dense_matrix_t<THAT_MODE, T, I>& that, bool transfer = true)
+    explicit dense_matrix(const dense_matrix_t<THAT_MODE, T, I>& that, bool transfer = true)
         : dense_matrix_t<MODE, T, I>(that.m,
                                      that.n,
                                      allocator::malloc(size_t(that.m) * size_t(that.n)),
@@ -295,176 +467,5 @@ void dense_matrix_t<MODE, T, I>::print() const
     }
     }
 };
-
-template <memory_mode::value_t MODE, typename T, typename I>
-template <memory_mode::value_t THAT_MODE>
-dense_matrix_t<MODE, T, I>&
-    dense_matrix_t<MODE, T, I>::operator=(const dense_matrix_t<THAT_MODE, T, I>& that)
-{
-    this->transfer_from(that);
-    return *this;
-}
-
-template <memory_mode::value_t MODE, typename T, typename I>
-dense_matrix_t<MODE, T, I>&
-    dense_matrix_t<MODE, T, I>::operator=(const dense_matrix_t<MODE, T, I>& that)
-{
-    this->transfer_from(that);
-    return *this;
-}
-
-template <memory_mode::value_t MODE, typename T, typename I>
-template <memory_mode::value_t THAT_MODE>
-void dense_matrix_t<MODE, T, I>::unit_check(const dense_matrix_t<THAT_MODE, T, I>& that_) const
-{
-    switch(MODE)
-    {
-    case memory_mode::device:
-    {
-        dense_matrix<memory_mode::host, T, I> on_host(*this);
-        on_host.unit_check(that_);
-        break;
-    }
-
-    case memory_mode::managed:
-    case memory_mode::host:
-    {
-        switch(THAT_MODE)
-        {
-        case memory_mode::managed:
-        case memory_mode::host:
-        {
-            unit_check_scalar<I>(this->m, that_.m);
-            unit_check_scalar<I>(this->n, that_.n);
-            unit_check_enum(this->order, that_.order);
-
-            switch(this->order)
-            {
-            case rocsparse_order_column:
-            {
-                unit_check_general<T>(this->m, this->n, *this, this->ld, that_, that_.ld);
-                break;
-            }
-
-            case rocsparse_order_row:
-            {
-                unit_check_general<T>(this->n, this->m, *this, this->ld, that_, that_.ld);
-                break;
-            }
-            }
-            break;
-        }
-        case memory_mode::device:
-        {
-            dense_matrix<memory_mode::host, T, I> that(that_);
-            this->unit_check(that);
-            break;
-        }
-        }
-        break;
-    }
-    }
-};
-
-template <memory_mode::value_t MODE, typename T, typename I>
-template <memory_mode::value_t THAT_MODE>
-void dense_matrix_t<MODE, T, I>::near_check(const dense_matrix_t<THAT_MODE, T, I>& that_,
-                                            floating_data_t<T>                     tol) const
-{
-    switch(MODE)
-    {
-    case memory_mode::device:
-    {
-        dense_matrix<memory_mode::host, T, I> on_host(*this);
-        on_host.near_check(that_, tol);
-        break;
-    }
-
-    case memory_mode::managed:
-    case memory_mode::host:
-    {
-        switch(THAT_MODE)
-        {
-        case memory_mode::host:
-        case memory_mode::managed:
-        {
-            unit_check_scalar<I>(this->m, that_.m);
-            unit_check_scalar<I>(this->n, that_.n);
-            unit_check_enum(this->order, that_.order);
-
-            switch(this->order)
-            {
-            case rocsparse_order_column:
-            {
-                near_check_general<T>(this->m, this->n, *this, this->ld, that_, that_.ld, tol);
-                break;
-            }
-
-            case rocsparse_order_row:
-            {
-                //
-                // Little trick
-                // If this poses a problem, we need to refactor unit_check_general.
-                //
-                near_check_general<T>(this->n, this->m, *this, this->ld, that_, that_.ld, tol);
-                break;
-            }
-            }
-
-            break;
-        }
-        case memory_mode::device:
-        {
-            dense_matrix<memory_mode::host, T, I> that(that_);
-            this->near_check(that, tol);
-            break;
-        }
-        }
-        break;
-    }
-    }
-};
-
-template <typename T>
-using host_dense_matrix32_t = dense_matrix_t<memory_mode::host, T, int32_t>;
-template <typename T>
-using host_dense_matrix64_t = dense_matrix_t<memory_mode::host, T, int64_t>;
-template <typename T>
-using host_dense_matrix_t = dense_matrix_t<memory_mode::host, T, rocsparse_int>;
-
-template <typename T>
-using device_dense_matrix32_t = dense_matrix_t<memory_mode::device, T, int32_t>;
-template <typename T>
-using device_dense_matrix64_t = dense_matrix_t<memory_mode::device, T, int64_t>;
-template <typename T>
-using device_dense_matrix_t = dense_matrix_t<memory_mode::device, T, rocsparse_int>;
-
-template <typename T>
-using managed_dense_matrix32_t = dense_matrix_t<memory_mode::managed, T, int32_t>;
-template <typename T>
-using managed_dense_matrix64_t = dense_matrix_t<memory_mode::managed, T, int64_t>;
-template <typename T>
-using managed_dense_matrix_t = dense_matrix_t<memory_mode::managed, T, rocsparse_int>;
-
-template <typename T>
-using host_dense_matrix32 = dense_matrix<memory_mode::host, T, int32_t>;
-template <typename T>
-using host_dense_matrix64 = dense_matrix<memory_mode::host, T, int64_t>;
-template <typename T>
-using host_dense_matrix = dense_matrix<memory_mode::host, T, rocsparse_int>;
-
-template <typename T>
-using device_dense_matrix32 = dense_matrix<memory_mode::device, T, int32_t>;
-template <typename T>
-using device_dense_matrix64 = dense_matrix<memory_mode::device, T, int64_t>;
-template <typename T>
-using device_dense_matrix = dense_matrix<memory_mode::device, T, rocsparse_int>;
-
-template <typename T>
-using managed_dense_matrix32 = dense_matrix<memory_mode::managed, T, int32_t>;
-template <typename T>
-using managed_dense_matrix64 = dense_matrix<memory_mode::managed, T, int64_t>;
-template <typename T>
-using managed_dense_matrix = dense_matrix<memory_mode::managed, T, rocsparse_int>;
 
 #endif // ROCSPARSE_MATRIX_DENSE_HPP

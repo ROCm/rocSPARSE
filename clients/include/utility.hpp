@@ -323,7 +323,7 @@ public:
     }
 
     template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
-    rocsparse_local_spmat(coo_matrix<MODE, T, I>& h)
+    explicit rocsparse_local_spmat(coo_matrix<MODE, T, I>& h)
         : rocsparse_local_spmat(h.m,
                                 h.n,
                                 h.nnz,
@@ -350,7 +350,7 @@ public:
     }
 
     template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
-    rocsparse_local_spmat(coo_aos_matrix<MODE, T, I>& h)
+    explicit rocsparse_local_spmat(coo_aos_matrix<MODE, T, I>& h)
         : rocsparse_local_spmat(
             h.m, h.n, h.nnz, h.ind, h.val, get_indextype<I>(), h.base, get_datatype<T>())
     {
@@ -405,7 +405,7 @@ public:
               typename T,
               typename I = rocsparse_int,
               typename J = rocsparse_int>
-    rocsparse_local_spmat(csx_matrix<MODE, DIRECTION_, T, I, J>& h)
+    explicit rocsparse_local_spmat(csx_matrix<MODE, DIRECTION_, T, I, J>& h)
         : rocsparse_local_spmat(h.m,
                                 h.n,
                                 h.nnz,
@@ -459,7 +459,7 @@ public:
     }
 
     template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
-    rocsparse_local_spmat(ell_matrix<MODE, T, I>& h)
+    explicit rocsparse_local_spmat(ell_matrix<MODE, T, I>& h)
         : rocsparse_local_spmat(
             h.m, h.n, h.ind, h.val, h.width, get_indextype<I>(), h.base, get_datatype<T>())
     {
@@ -495,7 +495,7 @@ public:
     }
 
     template <memory_mode::value_t MODE, typename T>
-    rocsparse_local_dnvec(dense_matrix<MODE, T>& h)
+    explicit rocsparse_local_dnvec(dense_matrix<MODE, T>& h)
         : rocsparse_local_dnvec(h.m, (T*)h, get_datatype<T>())
     {
     }
@@ -535,7 +535,7 @@ public:
     }
 
     template <memory_mode::value_t MODE, typename T>
-    rocsparse_local_dnmat(dense_matrix<MODE, T>& h)
+    explicit rocsparse_local_dnmat(dense_matrix<MODE, T>& h)
         : rocsparse_local_dnmat(h.m, h.n, h.ld, (T*)h, get_datatype<T>(), h.order)
     {
     }

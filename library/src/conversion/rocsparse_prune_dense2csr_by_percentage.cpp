@@ -285,40 +285,42 @@ rocsparse_status
     static constexpr int NNZ_DIM_X = 64;
     static constexpr int NNZ_DIM_Y = 16;
 
-    dim3 grid((m - 1) / (NNZ_DIM_X * 4) + 1);
-    dim3 threads(NNZ_DIM_X, NNZ_DIM_Y);
-
-    if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
-        hipLaunchKernelGGL((prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
-                           grid,
-                           threads,
-                           0,
-                           stream,
-                           m,
-                           n,
-                           A,
-                           lda,
-                           d_threshold,
-                           &csr_row_ptr[1]);
-    }
-    else
-    {
-        T h_threshold = static_cast<T>(0);
-        RETURN_IF_HIP_ERROR(hipMemcpy(&h_threshold, d_threshold, sizeof(T), hipMemcpyDeviceToHost));
-        hipLaunchKernelGGL((prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
-                           grid,
-                           threads,
-                           0,
-                           stream,
-                           m,
-                           n,
-                           A,
-                           lda,
-                           h_threshold,
-                           &csr_row_ptr[1]);
-    }
+        dim3 grid((m - 1) / (NNZ_DIM_X * 4) + 1);
+        dim3 threads(NNZ_DIM_X, NNZ_DIM_Y);
 
+        if(handle->pointer_mode == rocsparse_pointer_mode_device)
+        {
+            hipLaunchKernelGGL((prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
+                               grid,
+                               threads,
+                               0,
+                               stream,
+                               m,
+                               n,
+                               A,
+                               lda,
+                               d_threshold,
+                               &csr_row_ptr[1]);
+        }
+        else
+        {
+            T h_threshold = static_cast<T>(0);
+            RETURN_IF_HIP_ERROR(
+                hipMemcpy(&h_threshold, d_threshold, sizeof(T), hipMemcpyDeviceToHost));
+            hipLaunchKernelGGL((prune_dense2csr_nnz_kernel2<NNZ_DIM_X, NNZ_DIM_Y>),
+                               grid,
+                               threads,
+                               0,
+                               stream,
+                               m,
+                               n,
+                               A,
+                               lda,
+                               h_threshold,
+                               &csr_row_ptr[1]);
+        }
+    }
     // Store threshold at first entry in output array
     RETURN_IF_HIP_ERROR(hipMemcpy(output, d_threshold, sizeof(T), hipMemcpyDeviceToDevice));
 

@@ -54,7 +54,7 @@ struct ell_matrix
         , ind(nnz)
         , val(nnz){};
 
-    ell_matrix(const ell_matrix<MODE, T, I>& that_, bool transfer = true)
+    explicit ell_matrix(const ell_matrix<MODE, T, I>& that_, bool transfer = true)
         : ell_matrix<MODE, T, I>(that_.m, that_.n, that_.width, that_.base)
     {
         if(transfer)
@@ -64,7 +64,7 @@ struct ell_matrix
     }
 
     template <memory_mode::value_t THAT_MODE>
-    ell_matrix(const ell_matrix<THAT_MODE, T, I>& that_, bool transfer = true)
+    explicit ell_matrix(const ell_matrix<THAT_MODE, T, I>& that_, bool transfer = true)
         : ell_matrix<MODE, T, I>(that_.m, that_.n, that_.width, that_.base)
     {
         if(transfer)

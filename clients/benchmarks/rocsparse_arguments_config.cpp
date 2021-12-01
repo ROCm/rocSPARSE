@@ -174,7 +174,7 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      "R = reuse meta data, F = force re-build, (default = R)")
 
     ("function,f",
-     value<std::string>(&this->function)->default_value("axpyi"),
+     value<std::string>(&this->function_name)->default_value("axpyi"),
      "SPARSE function to test. Options:\n"
      "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
      "  Level2: bsrmv, bsrxmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, coosv, ellmv, hybmv, gebsrmv, gemvi\n"

@@ -132,9 +132,11 @@ void testing_ell2csr(const Arguments& arg)
     host_vector<T>             hcsr_val_gold;
 
     // Sample matrix
-    rocsparse_int csr_nnz_gold;
-    matrix_factory.init_csr(
-        hcsr_row_ptr_gold, hcsr_col_ind_gold, hcsr_val_gold, M, N, csr_nnz_gold, baseB);
+    {
+        rocsparse_int csr_nnz_gold;
+        matrix_factory.init_csr(
+            hcsr_row_ptr_gold, hcsr_col_ind_gold, hcsr_val_gold, M, N, csr_nnz_gold, baseB);
+    }
 
     // Convert to ELL
     host_vector<rocsparse_int> hell_col_ind;

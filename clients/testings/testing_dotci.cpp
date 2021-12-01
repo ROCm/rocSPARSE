@@ -40,7 +40,7 @@ void testing_dotci_bad_arg(const Arguments& arg)
     rocsparse_int        nnz    = safe_size;
     const T*             x_val  = (const T*)0x4;
     const rocsparse_int* x_ind  = (const rocsparse_int*)0x4;
-    const T*             y      = (const T*)0x4;
+    const T*             y      = (T*)0x4;
     T*                   result = &h_result;
     rocsparse_index_base base   = rocsparse_index_base_zero;
 

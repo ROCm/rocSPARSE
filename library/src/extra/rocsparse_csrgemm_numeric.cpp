@@ -329,7 +329,7 @@ template <unsigned int BLOCKSIZE,
           typename J,
           typename T>
 __device__ void csrgemm_numeric_fill_block_per_row_device(J nk,
-                                                          const J* __restrict__ offset,
+                                                          const J* __restrict__ offset_,
                                                           const J* __restrict__ perm,
                                                           T alpha,
                                                           const I* __restrict__ csr_row_ptr_A,
@@ -372,7 +372,7 @@ __device__ void csrgemm_numeric_fill_block_per_row_device(J nk,
     __syncthreads();
 
     // Each block processes a row (apply permutation)
-    J row = perm[hipBlockIdx_x + *offset];
+    J row = perm[hipBlockIdx_x + *offset_];
 
     // alpha * A * B part
     if(mul)
@@ -540,7 +540,7 @@ template <unsigned int BLOCKSIZE,
           typename T>
 __device__ void
     csrgemm_numeric_fill_block_per_row_multipass_device(J n,
-                                                        const J* __restrict__ offset,
+                                                        const J* __restrict__ offset_,
                                                         const J* __restrict__ perm,
                                                         T alpha,
                                                         const I* __restrict__ csr_row_ptr_A,
@@ -570,7 +570,7 @@ __device__ void
     int wid = hipThreadIdx_x / WFSIZE;
 
     // Each block processes a row (apply permutation)
-    J row = perm[hipBlockIdx_x + *offset];
+    J row = perm[hipBlockIdx_x + *offset_];
 
     // Row entry marker and value accumulator
     __shared__ bool table[CHUNKSIZE];
@@ -2203,6 +2203,7 @@ rocsparse_status rocsparse_csrgemm_numeric_template(rocsparse_handle          ha
                                                        temp_buffer);
     }
     }
+    return rocsparse_status_invalid_value;
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                               \

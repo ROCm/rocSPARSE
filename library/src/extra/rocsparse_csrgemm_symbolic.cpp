@@ -60,7 +60,7 @@ template <unsigned int BLOCKSIZE,
           typename J>
 __device__ void
     csrgemm_symbolic_fill_block_per_row_multipass_device(J n,
-                                                         const J* __restrict__ offset,
+                                                         const J* __restrict__ offset_,
                                                          const J* __restrict__ perm,
                                                          const I* __restrict__ csr_row_ptr_A,
                                                          const J* __restrict__ csr_col_ind_A,
@@ -84,7 +84,7 @@ __device__ void
     int wid = hipThreadIdx_x / WFSIZE;
 
     // Each block processes a row (apply permutation)
-    J row = perm[hipBlockIdx_x + *offset];
+    J row = perm[hipBlockIdx_x + *offset_];
 
     // Row entry marker and value accumulator
     __shared__ bool table[CHUNKSIZE];
@@ -799,7 +799,7 @@ template <unsigned int BLOCKSIZE,
           typename I,
           typename J>
 __device__ void csrgemm_symbolic_fill_block_per_row_device(J nk,
-                                                           const J* __restrict__ offset,
+                                                           const J* __restrict__ offset_,
                                                            const J* __restrict__ perm,
                                                            const I* __restrict__ csr_row_ptr_A,
                                                            const J* __restrict__ csr_col_ind_A,
@@ -834,7 +834,7 @@ __device__ void csrgemm_symbolic_fill_block_per_row_device(J nk,
     __syncthreads();
 
     // Each block processes a row (apply permutation)
-    J row = perm[hipBlockIdx_x + *offset];
+    J row = perm[hipBlockIdx_x + *offset_];
 
     // alpha * A * B part
     if(mul == true)
@@ -1098,10 +1098,6 @@ static inline rocsparse_status rocsparse_csrgemm_symbolic_calc_preprocess_templa
     // Temporary buffer
     char* buffer = reinterpret_cast<char*>(temp_buffer);
 
-    // rocprim buffer
-    size_t rocprim_size;
-    void*  rocprim_buffer;
-
     // Determine maximum non-zero entries per row of all rows
     J* workspace = reinterpret_cast<J*>(buffer);
 
@@ -1134,9 +1130,6 @@ static inline rocsparse_status rocsparse_csrgemm_symbolic_calc_preprocess_templa
 
     buffer += sizeof(J) * 256;
     // Group size buffer
-
-    // Permutation array
-    J* d_perm = nullptr;
 
     // If maximum of row nnz exceeds 16, we process the rows in groups of
     // similar sized row nnz
@@ -1181,7 +1174,7 @@ static inline rocsparse_status rocsparse_csrgemm_symbolic_calc_preprocess_templa
                            stream,
                            d_group_size);
 #undef CSRGEMM_DIM
-
+        size_t rocprim_size;
         // Exclusive sum to obtain group offsets
         RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(nullptr,
                                                     rocprim_size,
@@ -1191,7 +1184,7 @@ static inline rocsparse_status rocsparse_csrgemm_symbolic_calc_preprocess_templa
                                                     CSRGEMM_MAXGROUPS,
                                                     rocprim::plus<J>(),
                                                     stream));
-        rocprim_buffer = reinterpret_cast<void*>(buffer);
+        void* rocprim_buffer = reinterpret_cast<void*>(buffer);
         RETURN_IF_HIP_ERROR(rocprim::exclusive_scan(rocprim_buffer,
                                                     rocprim_size,
                                                     d_group_size,
@@ -1215,13 +1208,11 @@ static inline rocsparse_status rocsparse_csrgemm_symbolic_calc_preprocess_templa
         RETURN_IF_HIP_ERROR(rocprim::radix_sort_pairs(
             rocprim_buffer, rocprim_size, d_keys, d_vals, m, 0, 3, stream));
 
-        d_perm = d_vals.current();
-
         // Release tmp_groups buffer
-        buffer -= ((sizeof(int) * m - 1) / 256 + 1) * 256;
+        // buffer -= ((sizeof(int) * m - 1) / 256 + 1) * 256;
 
         // Release tmp_keys buffer
-        buffer -= ((sizeof(int) * m - 1) / 256 + 1) * 256;
+        // buffer -= ((sizeof(int) * m - 1) / 256 + 1) * 256;
     }
     else
     {
@@ -1786,13 +1777,9 @@ rocsparse_status
     {
         nnz_A = 0;
         //	descr_A = nullptr;
-        csr_row_ptr_A = nullptr;
-        csr_col_ind_A = nullptr;
 
         nnz_B = 0;
         //	descr_B = nullptr;
-        csr_row_ptr_B = nullptr;
-        csr_col_ind_B = nullptr;
     }
 
     if(add)
@@ -1926,7 +1913,7 @@ rocsparse_status rocsparse_csrgemm_symbolic_template(rocsparse_handle          h
     case 0:
     {
 
-        rocsparse_status status = rocsparse_csrgemm_symbolic_calc_preprocess_template(
+        status = rocsparse_csrgemm_symbolic_calc_preprocess_template(
             handle, m, csr_row_ptr_C, temp_buffer);
         if(status != rocsparse_status_success)
         {

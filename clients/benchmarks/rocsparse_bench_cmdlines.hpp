@@ -118,7 +118,8 @@ private:
         }
 
         val(){};
-        val(int n)
+        val(const val& v) = delete;
+        explicit val(int n)
             : argc(n)
         {
             this->argv = new char*[this->argc];
@@ -514,7 +515,7 @@ private:
         struct cmdline_arg
         {
             char* name{};
-            cmdline_arg(char* name_)
+            explicit cmdline_arg(char* name_)
                 : name(name_){};
         };
 
@@ -525,7 +526,7 @@ private:
         {
             char*                    name{};
             std::vector<cmdline_arg> args{};
-            cmdline_option(char* name_)
+            explicit cmdline_option(char* name_)
                 : name(name_){};
         };
 
@@ -590,6 +591,7 @@ public:
     // @brief Constructor.
     //
     rocsparse_bench_cmdlines(int argc, char** argv);
+    rocsparse_bench_cmdlines(const rocsparse_bench_cmdlines&) = delete;
 
     static bool applies(int argc, char** argv);
 

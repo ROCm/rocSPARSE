@@ -102,6 +102,7 @@ struct memory_mode
             }
         }
         }
+        throw(rocsparse_status_invalid_value);
     }
 };
 

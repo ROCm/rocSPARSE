@@ -30,6 +30,12 @@
 #include <rocsparse.hpp>
 
 template <typename T>
+inline T* rocsparse_fake_pointer()
+{
+    return static_cast<T*>((void*)0x4);
+}
+
+template <typename T>
 floating_data_t<T> get_near_check_tol(const Arguments& arg)
 {
     return static_cast<floating_data_t<T>>(arg.tolm) * default_tolerance<T>::value;
