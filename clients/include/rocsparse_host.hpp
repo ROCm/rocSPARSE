@@ -675,6 +675,16 @@ void host_gtsv_no_pivot_strided_batch(rocsparse_int         m,
                                       rocsparse_int         batch_count,
                                       rocsparse_int         batch_stride);
 
+template <typename T>
+void host_gtsv_interleaved_batch(rocsparse_gtsv_interleaved_alg algo,
+                                 rocsparse_int                  m,
+                                 const T*                       dl,
+                                 const T*                       d,
+                                 const T*                       du,
+                                 T*                             x,
+                                 rocsparse_int                  batch_count,
+                                 rocsparse_int                  batch_stride);
+
 /*
  * ===========================================================================
  *    conversion SPARSE

@@ -1121,7 +1121,7 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
               "--beta",
               LOG_BENCH_SCALAR_VALUE(handle, beta_device_host));
 
-    // Check index base
+    // Check transpose
     if(rocsparse_enum_utils::is_invalid(trans))
     {
         return rocsparse_status_invalid_value;

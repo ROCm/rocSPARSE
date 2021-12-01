@@ -33,10 +33,10 @@ template <typename T>
 rocsparse_status
     rocsparse_gtsv_no_pivot_strided_batch_buffer_size_template(rocsparse_handle handle,
                                                                rocsparse_int    m,
-                                                               const float*     dl,
-                                                               const float*     d,
-                                                               const float*     du,
-                                                               const float*     x,
+                                                               const T*         dl,
+                                                               const T*         d,
+                                                               const T*         du,
+                                                               const T*         x,
                                                                rocsparse_int    batch_count,
                                                                rocsparse_int    batch_stride,
                                                                size_t*          buffer_size);
@@ -44,10 +44,10 @@ rocsparse_status
 template <typename T>
 rocsparse_status rocsparse_gtsv_no_pivot_strided_batch_template(rocsparse_handle handle,
                                                                 rocsparse_int    m,
-                                                                const float*     dl,
-                                                                const float*     d,
-                                                                const float*     du,
-                                                                float*           x,
+                                                                const T*         dl,
+                                                                const T*         d,
+                                                                const T*         du,
+                                                                T*               x,
                                                                 rocsparse_int    batch_count,
                                                                 rocsparse_int    batch_stride,
                                                                 void*            temp_buffer);

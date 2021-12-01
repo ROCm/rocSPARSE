@@ -374,6 +374,25 @@ typedef enum rocsparse_spmat_attribute_
 } rocsparse_spmat_attribute;
 
 /*! \ingroup types_module
+ *  \brief List of interleaved gtsv algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_gtsv_interleaved_alg types that are used to perform
+ *  interleaved tridiagonal solve.
+ */
+typedef enum rocsparse_gtsv_interleaved_alg_
+{
+    rocsparse_gtsv_interleaved_alg_default
+    = 0, /**< Solve interleaved gtsv using QR algorithm (stable). */
+    rocsparse_gtsv_interleaved_alg_thomas
+    = 1, /**< Solve interleaved gtsv using thomas algorithm (unstable). */
+    rocsparse_gtsv_interleaved_alg_lu
+    = 2, /**< Solve interleaved gtsv using LU algorithm (stable). */
+    rocsparse_gtsv_interleaved_alg_qr
+    = 3 /**< Solve interleaved gtsv using QR algorithm (stable). */
+} rocsparse_gtsv_interleaved_alg;
+
+/*! \ingroup types_module
  *  \brief List of SpMV algorithms.
  *
  *  \details

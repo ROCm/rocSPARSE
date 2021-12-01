@@ -164,6 +164,13 @@ Datatypes:
       bases: [c_int ]
       attr:
         rocsparse_dense_to_sparse_alg_default: 0
+  - rocsparse_gtsv_interleaved_alg:
+      bases: [c_int ]
+      attr:
+        rocsparse_gtsv_interleaved_alg_default: 0
+        rocsparse_gtsv_interleaved_alg_thomas: 1
+        rocsparse_gtsv_interleaved_alg_lu: 2
+        rocsparse_gtsv_interleaved_alg_qr: 3
 
 indextype i64: &i32
   - index_type_I: i32
@@ -279,12 +286,15 @@ Arguments:
   - spgemm_alg: rocsparse_spgemm_alg
   - sparse_to_dense_alg: rocsparse_sparse_to_dense_alg
   - dense_to_sparse_alg: rocsparse_dense_to_sparse_alg
+  - gtsv_interleaved_alg: rocsparse_gtsv_interleaved_alg
   - matrix: rocsparse_matrix_init
   - matrix_init_kind: rocsparse_matrix_init_kind
   - unit_check: rocsparse_int
   - timing: rocsparse_int
   - iters: rocsparse_int
   - denseld: rocsparse_int
+  - batch_count: rocsparse_int
+  - batch_stride: rocsparse_int
   - algo: c_uint
   - numericboost: c_int
   - boosttol: c_double
@@ -380,12 +390,15 @@ Defaults:
   spgemm_alg: rocsparse_spgemm_alg_default
   sparse_to_dense_alg: rocsparse_sparse_to_dense_alg_default
   dense_to_sparse_alg: rocsparse_dense_to_sparse_alg_default
+  gtsv_interleaved_alg: rocsparse_gtsv_interleaved_alg_default
   matrix: rocsparse_matrix_random
   matrix_init_kind: rocsparse_matrix_init_kind_default
   unit_check: 1
   timing: 0
   iters: 10
   denseld: -1
+  batch_count: -1
+  batch_stride: -1
   algo: 0
   numericboost: 0
   boosttol: 0.0

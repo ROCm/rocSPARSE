@@ -317,8 +317,11 @@ rocsparse_status rocsparse_prune_dense2csr_nnz_template(rocsparse_handle        
     }
     else
     {
-        RETURN_IF_HIP_ERROR(hipMemcpyAsync(
-            nnz_total_dev_host_ptr, &csr_row_ptr[m], sizeof(rocsparse_int), hipMemcpyDeviceToHost));
+        RETURN_IF_HIP_ERROR(hipMemcpyAsync(nnz_total_dev_host_ptr,
+                                           &csr_row_ptr[m],
+                                           sizeof(rocsparse_int),
+                                           hipMemcpyDeviceToHost,
+                                           stream));
 
         *nnz_total_dev_host_ptr -= descr->base;
     }
