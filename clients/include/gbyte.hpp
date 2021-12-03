@@ -352,6 +352,12 @@ constexpr double gtsv_interleaved_batch_gbyte_count(rocsparse_int M, rocsparse_i
     return ((3 * M * N + 2 * M * N) * sizeof(T)) / 1e9;
 }
 
+template <typename T>
+constexpr double gpsv_interleaved_batch_gbyte_count(rocsparse_int M, rocsparse_int N)
+{
+    return ((5 * M * N + 2 * M * N) * sizeof(T)) / 1e9;
+}
+
 /*
  * ===========================================================================
  *    conversion SPARSE
