@@ -79,6 +79,9 @@ add_rocsparse_example(example_csrsm.cpp)
 add_rocsparse_example(example_gemmi.cpp)
 add_rocsparse_example(example_gtsv.cpp)
 
+# Precond
+add_rocsparse_example(example_gpsv.cpp)
+
 # Extra
 add_rocsparse_example(example_csrgeam.cpp)
 add_rocsparse_example(example_csrgemm.cpp)

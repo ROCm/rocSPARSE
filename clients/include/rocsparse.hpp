@@ -976,6 +976,35 @@ REAL_COMPLEX_TEMPLATE(gtsv_interleaved_batch,
                       rocsparse_int                  batch_stride,
                       void*                          temp_buffer);
 
+// gpsv_interleaved_batch
+REAL_COMPLEX_TEMPLATE(gpsv_interleaved_batch_buffer_size,
+                      rocsparse_handle               handle,
+                      rocsparse_gpsv_interleaved_alg alg,
+                      rocsparse_int                  m,
+                      const T*                       ds,
+                      const T*                       dl,
+                      const T*                       d,
+                      const T*                       du,
+                      const T*                       dw,
+                      const T*                       x,
+                      rocsparse_int                  batch_count,
+                      rocsparse_int                  batch_stride,
+                      size_t*                        buffer_size);
+
+REAL_COMPLEX_TEMPLATE(gpsv_interleaved_batch,
+                      rocsparse_handle               handle,
+                      rocsparse_gpsv_interleaved_alg alg,
+                      rocsparse_int                  m,
+                      const T*                       ds,
+                      const T*                       dl,
+                      const T*                       d,
+                      const T*                       du,
+                      const T*                       dw,
+                      T*                             x,
+                      rocsparse_int                  batch_count,
+                      rocsparse_int                  batch_stride,
+                      void*                          temp_buffer);
+
 /*
  * ===========================================================================
  *    conversion SPARSE

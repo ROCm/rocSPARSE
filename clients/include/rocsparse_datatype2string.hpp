@@ -385,6 +385,18 @@ constexpr auto rocsparse_gtsvinterleavedalg2string(rocsparse_gtsv_interleaved_al
     return "invalid";
 }
 
+constexpr auto rocsparse_gpsvalg2string(rocsparse_gpsv_interleaved_alg alg)
+{
+    switch(alg)
+    {
+    case rocsparse_gpsv_interleaved_alg_default:
+        return "default";
+    case rocsparse_gpsv_interleaved_alg_qr:
+        return "qr";
+    }
+    return "invalid";
+}
+
 // Return a string without '/' or '\\'
 inline std::string rocsparse_filename2string(const std::string& filename)
 {

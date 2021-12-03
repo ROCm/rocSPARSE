@@ -198,6 +198,12 @@ inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spmm_alg& p)
 }
 
 template <>
+inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_gpsv_interleaved_alg& p)
+{
+    return rocsparse_status_invalid_value;
+}
+
+template <>
 inline rocsparse_status auto_testing_bad_arg_get_status(rocsparse_spsm_alg& p)
 {
     return rocsparse_status_invalid_value;
@@ -339,6 +345,12 @@ template <>
 inline void auto_testing_bad_arg_set_invalid(rocsparse_spmm_alg& p)
 {
     p = (rocsparse_spmm_alg)-1;
+}
+
+template <>
+inline void auto_testing_bad_arg_set_invalid(rocsparse_gpsv_interleaved_alg& p)
+{
+    p = (rocsparse_gpsv_interleaved_alg)-1;
 }
 
 template <>

@@ -950,6 +950,8 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xgtsv_no_pivot_strided_batch() <rocsparse_sgtsv_no_pivot_strided_batch>`                         x      x      x              x
 :cpp:func:`rocsparse_Xgtsv_interleaved_batch_buffer_size() <rocsparse_sgtsv_interleaved_batch_buffer_size>`           x      x      x              x
 :cpp:func:`rocsparse_Xgtsv_interleaved_batch() <rocsparse_sgtsv_interleaved_batch>`                                   x      x      x              x
+:cpp:func:`rocsparse_Xgpsv_interleaved_batch_buffer_size() <rocsparse_sgpsv_interleaved_batch_buffer_size>`           x      x      x              x
+:cpp:func:`rocsparse_Xgpsv_interleaved_batch() <rocsparse_sgpsv_interleaved_batch>`                                   x      x      x              x
 
 Conversion Functions
 --------------------
@@ -2142,6 +2144,28 @@ rocsparse_gtsv_interleaved_batch()
 .. doxygenfunction:: rocsparse_cgtsv_interleaved_batch
   :outline:
 .. doxygenfunction:: rocsparse_zgtsv_interleaved_batch
+
+rocsparse_gpsv_interleaved_batch_buffer_size()
+----------------------------------------------
+
+.. doxygenfunction:: rocsparse_sgpsv_interleaved_batch_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_dgpsv_interleaved_batch_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_cgpsv_interleaved_batch_buffer_size
+  :outline:
+.. doxygenfunction:: rocsparse_zgpsv_interleaved_batch_buffer_size
+
+rocsparse_gpsv_interleaved_batch()
+----------------------------------
+
+.. doxygenfunction:: rocsparse_sgpsv_interleaved_batch
+  :outline:
+.. doxygenfunction:: rocsparse_dgpsv_interleaved_batch
+  :outline:
+.. doxygenfunction:: rocsparse_cgpsv_interleaved_batch
+  :outline:
+.. doxygenfunction:: rocsparse_zgpsv_interleaved_batch
 
 .. _rocsparse_conversion_functions_:
 

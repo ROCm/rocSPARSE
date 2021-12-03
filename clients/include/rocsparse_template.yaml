@@ -264,6 +264,14 @@ Functions:
   rocsparse_dgtsv_no_pivot_strideed_batch: { function: gtsv, <<: *double_precision }
   rocsparse_cgtsv_no_pivot_strideed_batch: { function: gtsv, <<: *single_precision_complex }
   rocsparse_zgtsv_no_pivot_strideed_batch: { function: gtsv, <<: *double_precision_complex }
+  rocsparse_sgpsv_interleaved_batch_buffer_size: { function: gpsv, <<: *single_precision }
+  rocsparse_dgpsv_interleaved_batch_buffer_size: { function: gpsv, <<: *double_precision }
+  rocsparse_cgpsv_interleaved_batch_buffer_size: { function: gpsv, <<: *single_precision_complex }
+  rocsparse_zgpsv_interleaved_batch_buffer_size: { function: gpsv, <<: *double_precision_complex }
+  rocsparse_sgpsv_interleaved_batch: { function: gpsv, <<: *single_precision }
+  rocsparse_dgpsv_interleaved_batch: { function: gpsv, <<: *double_precision }
+  rocsparse_cgpsv_interleaved_batch: { function: gpsv, <<: *single_precision_complex }
+  rocsparse_zgpsv_interleaved_batch: { function: gpsv, <<: *double_precision_complex }
 
   rocsparse_snnz: { function: nnz, <<: *single_precision }
   rocsparse_dnnz: { function: nnz, <<: *double_precision }

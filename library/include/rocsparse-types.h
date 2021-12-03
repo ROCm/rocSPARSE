@@ -563,6 +563,19 @@ typedef enum rocsparse_spgemm_alg_
     rocsparse_spgemm_alg_default = 0 /**< Default SpGEMM algorithm for the given format. */
 } rocsparse_spgemm_alg;
 
+/*! \ingroup types_module
+ *  \brief List of gpsv algorithms.
+ *
+ *  \details
+ *  This is a list of supported \ref rocsparse_gpsv_interleaved_alg types that are used to solve
+ *  pentadiagonal linear systems.
+ */
+typedef enum rocsparse_gpsv_interleaved_alg_
+{
+    rocsparse_gpsv_interleaved_alg_default = 0, /**< Default gpsv algorithm. */
+    rocsparse_gpsv_interleaved_alg_qr      = 1 /**< QR algorithm */
+} rocsparse_gpsv_interleaved_alg;
+
 #ifdef __cplusplus
 }
 #endif

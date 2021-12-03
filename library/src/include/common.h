@@ -74,6 +74,29 @@ __device__ __forceinline__ double rocsparse_abs(double x) { return x < 0.0 ? -x 
 __device__ __forceinline__ float rocsparse_abs(rocsparse_float_complex x) { return std::abs(x); }
 __device__ __forceinline__ double rocsparse_abs(rocsparse_double_complex x) { return std::abs(x); }
 
+__device__ __forceinline__ float rocsparse_sqrt(float val) { return sqrt(val); }
+__device__ __forceinline__ double rocsparse_sqrt(double val) { return sqrt(val); }
+__device__ __forceinline__ rocsparse_float_complex rocsparse_sqrt(rocsparse_float_complex val)
+{
+    float x = std::real(val);
+    float y = std::imag(val);
+
+    float sgnp = (y < 0.0f) ? -1.0f : 1.0f;
+    float absz = rocsparse_abs(val);
+
+    return rocsparse_float_complex(sqrt((absz + x) * 0.5f), sgnp * sqrt((absz - x) * 0.5f));
+}
+__device__ __forceinline__ rocsparse_double_complex rocsparse_sqrt(rocsparse_double_complex val)
+{
+    double x = std::real(val);
+    double y = std::imag(val);
+
+    double sgnp = (y < 0.0) ? -1.0 : 1.0;
+    double absz = rocsparse_abs(val);
+
+    return rocsparse_double_complex(sqrt((absz + x) * 0.5), sgnp * sqrt((absz - x) * 0.5));
+}
+
 __device__ __forceinline__ float rocsparse_conj(const float& x) { return x; }
 __device__ __forceinline__ double rocsparse_conj(const double& x) { return x; }
 __device__ __forceinline__ rocsparse_float_complex rocsparse_conj(const rocsparse_float_complex& x) { return std::conj(x); }
@@ -83,6 +106,31 @@ __device__ __forceinline__ float rocsparse_real(const float& x) { return x; }
 __device__ __forceinline__ double rocsparse_real(const double& x) { return x; }
 __device__ __forceinline__ float rocsparse_real(const rocsparse_float_complex& x) { return std::real(x); }
 __device__ __forceinline__ double rocsparse_real(const rocsparse_double_complex& x) { return std::real(x); }
+
+__device__ __forceinline__ bool rocsparse_gt(const float& x, const float& y) { return x > y; }
+__device__ __forceinline__ bool rocsparse_gt(const double& x, const double& y) { return x > y; }
+__device__ __forceinline__ bool rocsparse_gt(const rocsparse_float_complex& x, const rocsparse_float_complex& y)
+{
+    if(&x == &y)
+    {
+        return false;
+    }
+
+    assert(std::imag(x) == std::imag(y) && std::imag(x) == 0.0f);
+
+    return std::real(x) > std::real(y);
+}
+__device__ __forceinline__ bool rocsparse_gt(const rocsparse_double_complex& x, const rocsparse_double_complex& y)
+{
+    if(&x == &y)
+    {
+        return false;
+    }
+
+    assert(std::imag(x) == std::imag(y) && std::imag(x) == 0.0);
+
+    return std::real(x) > std::real(y);
+}
 
 __device__ __forceinline__ float rocsparse_nontemporal_load(const float* ptr) { return __builtin_nontemporal_load(ptr); }
 __device__ __forceinline__ double rocsparse_nontemporal_load(const double* ptr) { return __builtin_nontemporal_load(ptr); }

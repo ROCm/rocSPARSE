@@ -59,6 +59,7 @@ include: test_gtsv.yaml
 include: test_gtsv_no_pivot.yaml
 include: test_gtsv_no_pivot_strided_batch.yaml
 include: test_gtsv_interleaved_batch.yaml
+include: test_gpsv_interleaved_batch.yaml
 include: test_nnz.yaml
 include: test_dense2csr.yaml
 include: test_dense2coo.yaml
