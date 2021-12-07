@@ -98,7 +98,7 @@ private:
     void parse(int& argc, char**& argv, rocsparse_arguments_config& config);
 
     options_description        desc;
-    rocsparse_arguments_config config;
+    rocsparse_arguments_config config{};
     rocsparse_routine          routine{};
 
 public:

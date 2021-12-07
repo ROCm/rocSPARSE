@@ -71,6 +71,15 @@ void rocsparse_bench_cmdlines::get_argc(int isample, int& argc_) const
     argc_ = this->m_cmdset[isample].argc;
 }
 
+rocsparse_bench_cmdlines::~rocsparse_bench_cmdlines()
+{
+    if(this->m_cmdset != nullptr)
+    {
+        delete[] this->m_cmdset;
+        this->m_cmdset = nullptr;
+    }
+}
+
 //
 // @brief Constructor.
 //

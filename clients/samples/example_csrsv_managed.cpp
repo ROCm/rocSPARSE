@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
     // Call dcsrsv to perform lower triangular solve Ly = x
     for(int i = 0; i < trials; ++i)
     {
-        for(int i = 0; i < batch_size; ++i)
+        for(int j = 0; j < batch_size; ++j)
         {
             ROCSPARSE_CHECK(rocsparse_dcsrsv_solve(handle,
                                                    trans,

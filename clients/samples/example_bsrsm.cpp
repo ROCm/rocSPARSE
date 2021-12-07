@@ -95,7 +95,6 @@ int main(int argc, char* argv[])
 
     // Number of rows and columns
     rocsparse_int m = 4;
-    rocsparse_int n = 4;
 
     // Number of block rows and block columns
     rocsparse_int mb = 2;

@@ -108,6 +108,7 @@ private:
     public:
         int    argc{};
         char** argv{};
+        val&   operator=(const val&) = delete;
         ~val()
         {
             if(this->argv != nullptr)
@@ -585,14 +586,15 @@ public:
     int  get_nruns() const;
     void get(int isample, int& argc, char** argv) const;
 
-    void get_argc(int isample, int& argc_) const;
-
+    void                      get_argc(int isample, int& argc_) const;
+    rocsparse_bench_cmdlines& operator=(const rocsparse_bench_cmdlines&) = delete;
     //
     // @brief Constructor.
     //
     rocsparse_bench_cmdlines(int argc, char** argv);
     rocsparse_bench_cmdlines(const rocsparse_bench_cmdlines&) = delete;
 
+    virtual ~rocsparse_bench_cmdlines();
     static bool applies(int argc, char** argv);
 
     //
