@@ -26,20 +26,78 @@
 
 rocsparse_arguments_config::rocsparse_arguments_config()
 {
-    this->unit_check          = 0;
-    this->timing              = 1;
-    this->alphai              = 0.0;
-    this->betai               = 0.0;
-    this->threshold           = 0.0;
-    this->percentage          = 0.0;
-    this->sddmm_alg           = rocsparse_sddmm_alg_default;
-    this->spmv_alg            = rocsparse_spmv_alg_default;
-    this->spsv_alg            = rocsparse_spsv_alg_default;
-    this->spsm_alg            = rocsparse_spsm_alg_default;
-    this->spmm_alg            = rocsparse_spmm_alg_default;
-    this->spgemm_alg          = rocsparse_spgemm_alg_default;
-    this->sparse_to_dense_alg = rocsparse_sparse_to_dense_alg_default;
-    this->dense_to_sparse_alg = rocsparse_dense_to_sparse_alg_default;
+    //
+    // Arguments must be a C-compatible struct so cppcheck complains about non-initialized member variables.
+    // Then we need to initialize.
+    {
+        this->M              = static_cast<rocsparse_int>(0);
+        this->N              = static_cast<rocsparse_int>(0);
+        this->K              = static_cast<rocsparse_int>(0);
+        this->nnz            = static_cast<rocsparse_int>(0);
+        this->block_dim      = static_cast<rocsparse_int>(0);
+        this->row_block_dimA = static_cast<rocsparse_int>(0);
+        this->col_block_dimA = static_cast<rocsparse_int>(0);
+        this->row_block_dimB = static_cast<rocsparse_int>(0);
+        this->col_block_dimB = static_cast<rocsparse_int>(0);
+        this->dimx           = static_cast<rocsparse_int>(0);
+        this->dimy           = static_cast<rocsparse_int>(0);
+        this->dimz           = static_cast<rocsparse_int>(0);
+        this->index_type_I   = static_cast<rocsparse_indextype>(0);
+        this->index_type_J   = static_cast<rocsparse_indextype>(0);
+        this->compute_type   = static_cast<rocsparse_datatype>(0);
+        this->alpha          = static_cast<double>(0);
+        this->alphai         = static_cast<double>(0);
+        this->beta           = static_cast<double>(0);
+        this->betai          = static_cast<double>(0);
+        this->threshold      = static_cast<double>(0);
+        this->percentage     = static_cast<double>(0);
+        this->transA         = static_cast<rocsparse_operation>(0);
+        this->transB         = static_cast<rocsparse_operation>(0);
+        this->baseA          = static_cast<rocsparse_index_base>(0);
+        this->baseB          = static_cast<rocsparse_index_base>(0);
+        this->baseC          = static_cast<rocsparse_index_base>(0);
+        this->baseD          = static_cast<rocsparse_index_base>(0);
+        this->action         = static_cast<rocsparse_action>(0);
+        this->part           = static_cast<rocsparse_hyb_partition>(0);
+        this->matrix_type    = static_cast<rocsparse_matrix_type>(0);
+        this->diag           = static_cast<rocsparse_diag_type>(0);
+        this->uplo           = static_cast<rocsparse_fill_mode>(0);
+        this->apol           = static_cast<rocsparse_analysis_policy>(0);
+        this->spol           = static_cast<rocsparse_solve_policy>(0);
+        this->direction      = static_cast<rocsparse_direction>(0);
+        this->order          = static_cast<rocsparse_order>(0);
+        this->format         = static_cast<rocsparse_format>(0);
+
+        this->sddmm_alg           = rocsparse_sddmm_alg_default;
+        this->spmv_alg            = rocsparse_spmv_alg_default;
+        this->spsv_alg            = rocsparse_spsv_alg_default;
+        this->spsm_alg            = rocsparse_spsm_alg_default;
+        this->spmm_alg            = rocsparse_spmm_alg_default;
+        this->spgemm_alg          = rocsparse_spgemm_alg_default;
+        this->sparse_to_dense_alg = rocsparse_sparse_to_dense_alg_default;
+        this->dense_to_sparse_alg = rocsparse_dense_to_sparse_alg_default;
+
+        this->gtsv_interleaved_alg = static_cast<rocsparse_gtsv_interleaved_alg>(0);
+        this->gpsv_interleaved_alg = static_cast<rocsparse_gpsv_interleaved_alg>(0);
+        this->matrix               = static_cast<rocsparse_matrix_init>(0);
+        this->matrix_init_kind     = static_cast<rocsparse_matrix_init_kind>(0);
+        this->unit_check           = static_cast<rocsparse_int>(0);
+        this->timing               = static_cast<rocsparse_int>(1);
+        this->iters                = static_cast<rocsparse_int>(0);
+        this->denseld              = static_cast<rocsparse_int>(0);
+        this->batch_count          = static_cast<rocsparse_int>(0);
+        this->batch_stride         = static_cast<rocsparse_int>(0);
+        this->algo                 = static_cast<uint32_t>(0);
+        this->numericboost         = static_cast<int>(0);
+        this->boosttol             = static_cast<double>(0);
+        this->boostval             = static_cast<double>(0);
+        this->boostvali            = static_cast<double>(0);
+        this->tolm                 = static_cast<double>(0);
+        this->filename[0]          = '\n';
+        this->function[0]          = '\n';
+        this->name[0]              = '\n';
+        this->category[0]          = '\n';
+    }
 
     this->precision = 's';
     this->indextype = 's';

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,7 +84,6 @@ int main(int argc, char* argv[])
 
     // Number of rows and columns
     rocsparse_int m = 3;
-    rocsparse_int n = 3;
 
     // Number of right-hand-sides
     rocsparse_int nrhs = 4;

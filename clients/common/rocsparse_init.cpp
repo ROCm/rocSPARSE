@@ -869,7 +869,7 @@ void rocsparse_init_coo_mtx(const char*          filename,
     char type[16];
 
     // Extract banner
-    if(sscanf(line, "%s %s %s %s %s", banner, array, coord, data, type) != 5)
+    if(sscanf(line, "%15s %15s %15s %15s %15s", banner, array, coord, data, type) != 5)
     {
         CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
     }

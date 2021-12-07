@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
     // Call dgtsv to peform tri-diagonal solve
     for(int i = 0; i < trials; ++i)
     {
-        for(int i = 0; i < batch_size; ++i)
+        for(int j = 0; j < batch_size; ++j)
         {
             ROCSPARSE_CHECK(rocsparse_dgtsv(handle, m, n, ddl, dd, ddu, dB, ldb, temp_buffer));
 

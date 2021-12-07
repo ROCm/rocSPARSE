@@ -141,10 +141,10 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_thomas_template(rocsparse_hand
                                                                   void*            temp_buffer)
 {
     char* ptr = reinterpret_cast<char*>(temp_buffer);
-    T*    dc1 = reinterpret_cast<T*>(ptr);
+    T*    dc1 = reinterpret_cast<T*>(temp_buffer);
     ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
-    T* dx1 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    T* dx1 = reinterpret_cast<T*>(reinterpret_cast<void*>(ptr));
+    //  ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
 
     hipLaunchKernelGGL((gtsv_interleaved_batch_thomas_kernel<128>),
                        dim3(((batch_count - 1) / 128 + 1), 1, 1),
@@ -176,10 +176,10 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_lu_template(rocsparse_handle h
                                                               void*            temp_buffer)
 {
     char* ptr = reinterpret_cast<char*>(temp_buffer);
-    T*    u2  = reinterpret_cast<T*>(ptr);
+    T*    u2  = reinterpret_cast<T*>(temp_buffer);
     ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
-    rocsparse_int* p = reinterpret_cast<rocsparse_int*>(ptr);
-    ptr += sizeof(rocsparse_int) * ((m * batch_count - 1) / 256 + 1) * 256;
+    rocsparse_int* p = reinterpret_cast<rocsparse_int*>(reinterpret_cast<void*>(ptr));
+    // ptr += sizeof(rocsparse_int) * ((m * batch_count - 1) / 256 + 1) * 256;
 
     hipMemsetAsync(u2, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream);
 
@@ -214,7 +214,7 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_qr_template(rocsparse_handle h
 {
     char* ptr = reinterpret_cast<char*>(temp_buffer);
     T*    r2  = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    //   ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
 
     hipMemsetAsync(r2, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream);
 

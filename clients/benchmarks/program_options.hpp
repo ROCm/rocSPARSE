@@ -85,6 +85,7 @@ class options_description
         std::string m_desc;
 
     public:
+        desc_option& operator=(const desc_option&) = delete;
         // Constructor with options, value and description
         template <typename T>
         desc_option(std::string opts, value<T> val, std::string desc)

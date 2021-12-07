@@ -151,7 +151,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     // CSR matrix vector multiplication
     for(int i = 0; i < trials; ++i)
     {
-        for(int i = 0; i < batch_size; ++i)
+        for(int j = 0; j < batch_size; ++j)
         {
             // Call rocsparse spmv
             ROCSPARSE_CHECK(rocsparse_spmv(handle,

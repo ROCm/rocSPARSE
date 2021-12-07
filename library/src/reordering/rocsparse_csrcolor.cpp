@@ -201,9 +201,8 @@ static rocsparse_status rocsparse_csrcolor_assign_uncolored(rocsparse_handle han
     // Count uncolored values.
     //
     {
-        static constexpr rocsparse_int NB = 256;
-        dim3                           kernel_blocks(n);
-        dim3                           kernel_threads(NB);
+        dim3 kernel_blocks(n);
+        dim3 kernel_threads(NB);
         hipLaunchKernelGGL((count_uncolored<NB, J>),
                            kernel_blocks,
                            kernel_threads,

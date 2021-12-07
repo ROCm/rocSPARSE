@@ -145,7 +145,6 @@ int main(int argc, char* argv[])
     B[batch_stride * 3 + 1]  = 8;
 
     double G[m * batch_stride];
-    double H[m * batch_stride];
 
     // Offload data to device
     double* d_ds;
