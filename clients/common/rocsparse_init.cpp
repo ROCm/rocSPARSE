@@ -22,6 +22,8 @@
  *
  * ************************************************************************ */
 #include "rocsparse_init.hpp"
+#include "rocsparse_import.hpp"
+#include "rocsparse_matrix.hpp"
 
 template <typename I, typename J>
 void host_coo_to_csr(
@@ -66,11 +68,11 @@ void host_csr_to_coo(J                     M,
     }
 }
 
-template <typename I>
-void host_csr_to_coo_aos(I                     M,
+template <typename I, typename J>
+void host_csr_to_coo_aos(J                     M,
                          I                     nnz,
                          const std::vector<I>& csr_row_ptr,
-                         const std::vector<I>& csr_col_ind,
+                         const std::vector<J>& csr_col_ind,
                          std::vector<I>&       coo_ind,
                          rocsparse_index_base  base)
 {
@@ -88,7 +90,7 @@ void host_csr_to_coo_aos(I                     M,
         for(I j = row_begin; j < row_end; ++j)
         {
             coo_ind[2 * j]     = i + base;
-            coo_ind[2 * j + 1] = csr_col_ind[j];
+            coo_ind[2 * j + 1] = static_cast<I>(csr_col_ind[j]);
         }
     }
 }
@@ -766,39 +768,6 @@ void rocsparse_init_gebsr_laplace3d(std::vector<I>&      row_ptr,
 
 /* ============================================================================================ */
 /*! \brief  Read matrix from mtx file in COO format */
-static inline void read_mtx_value(std::istringstream& is, int64_t& row, int64_t& col, float& val)
-{
-    is >> row >> col >> val;
-}
-
-static inline void read_mtx_value(std::istringstream& is, int64_t& row, int64_t& col, double& val)
-{
-    is >> row >> col >> val;
-}
-
-static inline void
-    read_mtx_value(std::istringstream& is, int64_t& row, int64_t& col, rocsparse_float_complex& val)
-{
-    float real{};
-    float imag{};
-
-    is >> row >> col >> real >> imag;
-
-    val = {real, imag};
-}
-
-static inline void read_mtx_value(std::istringstream&       is,
-                                  int64_t&                  row,
-                                  int64_t&                  col,
-                                  rocsparse_double_complex& val)
-{
-    double real{};
-    double imag{};
-
-    is >> row >> col >> real >> imag;
-
-    val = {real, imag};
-}
 
 /* ==================================================================================== */
 /*! \brief  Read matrix from mtx file in CSR format */
@@ -847,194 +816,10 @@ void rocsparse_init_coo_mtx(const char*          filename,
                             I&                   nnz,
                             rocsparse_index_base base)
 {
-    const char* env = getenv("GTEST_LISTENER");
-    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
-    {
-        std::cout << "Reading matrix " << filename << " ... ";
-    }
-
-    char  line[1024];
-    FILE* f = fopen(filename, "r");
-
-    // Check for banner
-    if(!fgets(line, 1024, f))
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-    }
-
-    char banner[16];
-    char array[16];
-    char coord[16];
-    char data[16];
-    char type[16];
-
-    // Extract banner
-    if(sscanf(line, "%15s %15s %15s %15s %15s", banner, array, coord, data, type) != 5)
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-    }
-
-    // Convert to lower case
-    for(char* p = array; *p != '\0'; *p = tolower(*p), p++)
-        ;
-    for(char* p = coord; *p != '\0'; *p = tolower(*p), p++)
-        ;
-    for(char* p = data; *p != '\0'; *p = tolower(*p), p++)
-        ;
-    for(char* p = type; *p != '\0'; *p = tolower(*p), p++)
-        ;
-
-    // Check banner
-    if(strncmp(line, "%%MatrixMarket", 14) != 0)
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-    }
-
-    // Check array type
-    if(strcmp(array, "matrix") != 0)
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-    }
-
-    // Check coord
-    if(strcmp(coord, "coordinate") != 0)
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-    }
-
-    // Check data
-    if(strcmp(data, "real") != 0 && strcmp(data, "integer") != 0 && strcmp(data, "pattern") != 0
-       && strcmp(data, "complex") != 0)
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-    }
-
-    // Check type
-    if(strcmp(type, "general") != 0 && strcmp(type, "symmetric") != 0)
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-    }
-
-    // Symmetric flag
-    int symm = !strcmp(type, "symmetric");
-
-    // Skip comments
-    while(fgets(line, 1024, f))
-    {
-        if(line[0] != '%')
-        {
-            break;
-        }
-    }
-
-    // Read dimensions
-    I snnz;
-
-    int inrow;
-    int incol;
-    int innz;
-
-    sscanf(line, "%d %d %d", &inrow, &incol, &innz);
-
-    M    = static_cast<I>(inrow);
-    N    = static_cast<I>(incol);
-    snnz = static_cast<I>(innz);
-
-    nnz = symm ? (snnz - M) * 2 + M : snnz;
-
-    std::vector<I> unsorted_row(nnz);
-    std::vector<I> unsorted_col(nnz);
-    std::vector<T> unsorted_val(nnz);
-
-    // Read entries
-    I idx = 0;
-    while(fgets(line, 1024, f))
-    {
-        if(idx >= nnz)
-        {
-            CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-        }
-
-        int64_t irow{};
-        int64_t icol{};
-        T       ival;
-
-        std::istringstream ss(line);
-
-        if(!strcmp(data, "pattern"))
-        {
-            ss >> irow >> icol;
-            ival = static_cast<T>(1);
-        }
-        else
-        {
-            read_mtx_value(ss, irow, icol, ival);
-        }
-
-        if(base == rocsparse_index_base_zero)
-        {
-            --irow;
-            --icol;
-        }
-
-        unsorted_row[idx] = (I)irow;
-        unsorted_col[idx] = (I)icol;
-        unsorted_val[idx] = ival;
-
-        ++idx;
-
-        if(symm && irow != icol)
-        {
-            if(idx >= nnz)
-            {
-                CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-            }
-
-            unsorted_row[idx] = (I)icol;
-            unsorted_col[idx] = (I)irow;
-            unsorted_val[idx] = ival;
-            ++idx;
-        }
-    }
-    fclose(f);
-
-    coo_row_ind.resize(nnz);
-    coo_col_ind.resize(nnz);
-    coo_val.resize(nnz);
-
-    // Sort by row and column index
-    std::vector<I> perm(nnz);
-    for(I i = 0; i < nnz; ++i)
-    {
-        perm[i] = i;
-    }
-
-    std::sort(perm.begin(), perm.end(), [&](const I& a, const I& b) {
-        if(unsorted_row[a] < unsorted_row[b])
-        {
-            return true;
-        }
-        else if(unsorted_row[a] == unsorted_row[b])
-        {
-            return (unsorted_col[a] < unsorted_col[b]);
-        }
-        else
-        {
-            return false;
-        }
-    });
-
-    for(I i = 0; i < nnz; ++i)
-    {
-        coo_row_ind[i] = unsorted_row[perm[i]];
-        coo_col_ind[i] = unsorted_col[perm[i]];
-        coo_val[i]     = unsorted_val[perm[i]];
-    }
-
-    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
-    {
-        std::cout << "done." << std::endl;
-    }
+    rocsparse_importer_matrixmarket importer(filename);
+    rocsparse_status                status
+        = rocsparse_import_sparse_coo(importer, coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base);
+    CHECK_ROCSPARSE_ERROR(status);
 }
 
 /* ============================================================================================ */
@@ -1062,87 +847,6 @@ void rocsparse_init_gebsr_mtx(const char*          filename,
     }
 }
 
-/* ==================================================================================== */
-/*! \brief  Read matrix from binary file in rocALUTION format */
-static inline void read_csr_values(std::ifstream& in, int64_t nnz, float* csr_val, bool mod)
-{
-    // Temporary array to convert from double to float
-    std::vector<double> tmp(nnz);
-
-    // Read in double values
-    in.read((char*)tmp.data(), sizeof(double) * nnz);
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1024)
-#endif
-    for(int64_t i = 0; i < nnz; ++i)
-    {
-        if(mod)
-        {
-            csr_val[i] = std::abs(static_cast<float>(tmp[i]));
-        }
-        else
-        {
-            csr_val[i] = static_cast<float>(tmp[i]);
-        }
-    }
-}
-
-static inline void read_csr_values(std::ifstream& in, int64_t nnz, double* csr_val, bool mod)
-{
-    in.read((char*)csr_val, sizeof(double) * nnz);
-
-    if(mod)
-    {
-        for(int64_t i = 0; i < nnz; ++i)
-        {
-            csr_val[i] = std::abs(csr_val[i]);
-        }
-    }
-}
-
-static inline void
-    read_csr_values(std::ifstream& in, int64_t nnz, rocsparse_float_complex* csr_val, bool mod)
-{
-    // Temporary array to convert from double to float complex
-    std::vector<rocsparse_double_complex> tmp(nnz);
-
-    // Read in double complex values
-    in.read((char*)tmp.data(), sizeof(rocsparse_double_complex) * nnz);
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1024)
-#endif
-    for(int64_t i = 0; i < nnz; ++i)
-    {
-        if(mod)
-        {
-            csr_val[i] = rocsparse_float_complex(std::abs(static_cast<float>(std::real(tmp[i]))),
-                                                 std::abs(static_cast<float>(std::imag(tmp[i]))));
-        }
-        else
-        {
-            csr_val[i] = rocsparse_float_complex(static_cast<float>(std::real(tmp[i])),
-                                                 static_cast<float>(std::imag(tmp[i])));
-        }
-    }
-}
-
-static inline void
-    read_csr_values(std::ifstream& in, int64_t nnz, rocsparse_double_complex* csr_val, bool mod)
-{
-    in.read((char*)csr_val, sizeof(rocsparse_double_complex) * nnz);
-
-    if(mod)
-    {
-        for(int64_t i = 0; i < nnz; ++i)
-        {
-            csr_val[i] = rocsparse_double_complex(std::abs(std::real(csr_val[i])),
-                                                  std::abs(std::imag(csr_val[i])));
-        }
-    }
-}
-
 template <typename I, typename J, typename T>
 void rocsparse_init_csr_rocalution(const char*          filename,
                                    std::vector<I>&      row_ptr,
@@ -1154,94 +858,20 @@ void rocsparse_init_csr_rocalution(const char*          filename,
                                    rocsparse_index_base base,
                                    bool                 toint)
 {
+    rocsparse_importer_rocalution importer(filename);
+    rocsparse_status              status
+        = rocsparse_import_sparse_csr(importer, row_ptr, col_ind, val, M, N, nnz, base);
 
-    const char* env = getenv("GTEST_LISTENER");
-    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
+    if(toint)
     {
-        std::cout << "Reading matrix " << filename << " ... ";
+        //
+        // On GPU ?
+        //
+        size_t bound = static_cast<size_t>(nnz);
+        for(size_t i = 0; i < bound; ++i)
+            val[i] = std::abs(val[i]);
     }
-
-    std::ifstream in(filename, std::ios::in | std::ios::binary);
-    if(!in.is_open())
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-    }
-
-    std::string header;
-    std::getline(in, header);
-
-    if(header != "#rocALUTION binary csr file")
-    {
-        CHECK_ROCSPARSE_ERROR(rocsparse_status_internal_error);
-    }
-
-    int version;
-    in.read((char*)&version, sizeof(int));
-
-    int iM;
-    int iN;
-    int innz;
-
-    in.read((char*)&iM, sizeof(int));
-    in.read((char*)&iN, sizeof(int));
-    in.read((char*)&innz, sizeof(int));
-    M   = (J)iM;
-    N   = (J)iN;
-    nnz = (I)innz;
-
-    // Allocate memory
-    row_ptr.resize(M + 1);
-    col_ind.resize(nnz);
-    val.resize(nnz);
-
-    std::vector<int> iptr(M + 1);
-    std::vector<int> icol(nnz);
-
-    in.read((char*)iptr.data(), sizeof(int) * (M + 1));
-    in.read((char*)icol.data(), sizeof(int) * nnz);
-
-    read_csr_values(in, (int64_t)nnz, val.data(), toint);
-    in.close();
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1024)
-#endif
-    for(J i = 0; i < M + 1; ++i)
-    {
-        row_ptr[i] = static_cast<I>(iptr[i]);
-    }
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1024)
-#endif
-    for(I i = 0; i < nnz; ++i)
-    {
-        col_ind[i] = static_cast<J>(icol[i]);
-    }
-
-    if(base == rocsparse_index_base_one)
-    {
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1024)
-#endif
-        for(J i = 0; i < M + 1; ++i)
-        {
-            ++row_ptr[i];
-        }
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(dynamic, 1024)
-#endif
-        for(I i = 0; i < nnz; ++i)
-        {
-            ++col_ind[i];
-        }
-    }
-
-    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
-    {
-        std::cout << "done." << std::endl;
-    }
+    CHECK_ROCSPARSE_ERROR(status);
 }
 
 /* ==================================================================================== */
@@ -1488,17 +1118,23 @@ void rocsparse_init_gebsr_random(std::vector<I>&            row_ptr,
                                            size_t stride = 0,                                      \
                                            size_t batch_count);
 
-#define INSTANTIATE1(ITYPE, JTYPE)                                                     \
-    template void host_csr_to_coo<ITYPE, JTYPE>(JTYPE                     M,           \
-                                                ITYPE                     nnz,         \
-                                                const std::vector<ITYPE>& csr_row_ptr, \
-                                                std::vector<JTYPE>&       coo_row_ind, \
-                                                rocsparse_index_base      base);            \
-    template void host_coo_to_csr<ITYPE, JTYPE>(JTYPE                M,                \
-                                                ITYPE                NNZ,              \
-                                                const JTYPE*         coo_row_ind,      \
-                                                std::vector<ITYPE>&  csr_row_ptr,      \
-                                                rocsparse_index_base base);
+#define INSTANTIATE1(ITYPE, JTYPE)                                                         \
+    template void host_csr_to_coo<ITYPE, JTYPE>(JTYPE                     M,               \
+                                                ITYPE                     nnz,             \
+                                                const std::vector<ITYPE>& csr_row_ptr,     \
+                                                std::vector<JTYPE>&       coo_row_ind,     \
+                                                rocsparse_index_base      base);                \
+    template void host_coo_to_csr<ITYPE, JTYPE>(JTYPE                M,                    \
+                                                ITYPE                NNZ,                  \
+                                                const JTYPE*         coo_row_ind,          \
+                                                std::vector<ITYPE>&  csr_row_ptr,          \
+                                                rocsparse_index_base base);                \
+    template void host_csr_to_coo_aos<ITYPE, JTYPE>(JTYPE                     M,           \
+                                                    ITYPE                     nnz,         \
+                                                    const std::vector<ITYPE>& csr_row_ptr, \
+                                                    const std::vector<JTYPE>& csr_col_ind, \
+                                                    std::vector<ITYPE>&       coo_ind,     \
+                                                    rocsparse_index_base      base)
 
 #define INSTANTIATE2(ITYPE, TTYPE)                                                           \
     template void rocsparse_init_coo_laplace2d<ITYPE, TTYPE>(std::vector<ITYPE> & row_ind,   \
@@ -1682,14 +1318,6 @@ void rocsparse_init_gebsr_random(std::vector<I>&            row_ptr,
                                                        rocsparse_index_base      csr_base,          \
                                                        rocsparse_index_base      ell_base);
 
-#define INSTANTIATE4(ITYPE)                                                         \
-    template void host_csr_to_coo_aos<ITYPE>(ITYPE                     M,           \
-                                             ITYPE                     nnz,         \
-                                             const std::vector<ITYPE>& csr_row_ptr, \
-                                             const std::vector<ITYPE>& csr_col_ind, \
-                                             std::vector<ITYPE>&       coo_ind,     \
-                                             rocsparse_index_base      base);
-
 INSTANTIATEI(int32_t);
 INSTANTIATEI(int64_t);
 
@@ -1723,6 +1351,3 @@ INSTANTIATE3(int64_t, int64_t, rocsparse_float_complex);
 INSTANTIATE3(int32_t, int32_t, rocsparse_double_complex);
 INSTANTIATE3(int64_t, int32_t, rocsparse_double_complex);
 INSTANTIATE3(int64_t, int64_t, rocsparse_double_complex);
-
-INSTANTIATE4(int32_t);
-INSTANTIATE4(int64_t);

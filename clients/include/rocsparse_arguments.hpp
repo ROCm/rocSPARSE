@@ -421,4 +421,11 @@ static_assert(std::is_trivial<Arguments>{},
               "Arguments is not a trivial type, and thus is "
               "incompatible with C.");
 
+inline bool rocsparse_arguments_has_datafile(const Arguments& arg)
+{
+    return (arg.matrix == rocsparse_matrix_file_rocalution)
+           || (arg.matrix == rocsparse_matrix_file_mtx)
+           || (arg.matrix == rocsparse_matrix_file_rocsparseio);
+}
+
 #endif // ROCSPARSE_ARGUMENTS_HPP

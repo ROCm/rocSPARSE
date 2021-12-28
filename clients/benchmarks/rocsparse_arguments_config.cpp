@@ -147,12 +147,20 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      "General BSR col block dimension (default: 2)")
 
     ("mtx",
-     value<std::string>(&this->b_filename)->default_value(""), "read from matrix "
+     value<std::string>(&this->b_matrixmarket)->default_value(""), "read from matrix "
      "market (.mtx) format. This will override parameters -m, -n, and -z.")
 
     ("rocalution",
      value<std::string>(&this->b_rocalution)->default_value(""),
      "read from rocalution matrix binary file. This will override parameter --mtx")
+
+    ("rocsparseio",
+     value<std::string>(&this->b_rocsparseio)->default_value(""),
+     "read from rocsparseio matrix binary file. This will override parameter --rocalution")
+
+    ("file",
+     value<std::string>(&this->b_file)->default_value(""),
+     "read from file with file extension detection. This will override parameters --rocsparseio,rocalution,mtx")
 
     ("dimx",
      value<rocsparse_int>(&this->dimx)->default_value(0.0), "assemble "
@@ -398,7 +406,16 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
 
 
   // rocALUTION parameter overrides filename parameter
-  if(this->b_rocalution != "")
+  if(this->b_file != "")
+  {
+    strcpy(this->filename, this->b_file.c_str());
+  }
+  else if(this->b_rocsparseio != "")
+    {
+      strcpy(this->filename, this->b_rocsparseio.c_str());
+      this->matrix = rocsparse_matrix_file_rocsparseio;
+    }
+  else if(this->b_rocalution != "")
   {
     strcpy(this->filename, this->b_rocalution.c_str());
     this->matrix = rocsparse_matrix_file_rocalution;
@@ -411,9 +428,9 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   {
     this->matrix = rocsparse_matrix_laplace_2d;
   }
-  else if(this->b_filename != "")
+  else if(this->b_matrixmarket != "")
   {
-    strcpy(this->filename, this->b_filename.c_str());
+    strcpy(this->filename, this->b_matrixmarket.c_str());
     this->matrix = rocsparse_matrix_file_mtx;
   }
   else
@@ -561,7 +578,36 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
   this->gtsv_interleaved_alg = (rocsparse_gtsv_interleaved_alg)this->b_gtsv_interleaved_alg;
 
   // rocALUTION parameter overrides filename parameter
-  if(b_rocalution != "")
+  if(b_file != "")
+  {
+    strcpy(this->filename, b_file.c_str());
+    const char * p = b_file.c_str();
+    const char * q = nullptr;
+    while(*p!='\0') { if (*p=='.') q = p; ++p;}
+    if (q!=nullptr)
+      {
+	std::cerr << "extension is not detected in filename '"<< b_file <<"' " << std::endl;
+	return -1;
+      }
+    if (!strcmp(q,".mtx"))
+      {
+	this->matrix = rocsparse_matrix_file_mtx;
+      }
+    else if (!strcmp(q,".bin"))
+      {
+	this->matrix = rocsparse_matrix_file_rocsparseio;
+      }
+    else if (!strcmp(q,".csr"))
+      {
+	this->matrix = rocsparse_matrix_file_rocalution;
+      }
+  }
+  else if(b_rocsparseio != "")
+  {
+    strcpy(this->filename, b_rocsparseio.c_str());
+    this->matrix = rocsparse_matrix_file_rocsparseio;
+  }
+  else if(b_rocalution != "")
   {
     strcpy(this->filename, b_rocalution.c_str());
     this->matrix = rocsparse_matrix_file_rocalution;
@@ -574,9 +620,9 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
   {
     this->matrix = rocsparse_matrix_laplace_2d;
   }
-  else if(b_filename != "")
+  else if(b_matrixmarket != "")
   {
-    strcpy(this->filename, b_filename.c_str());
+    strcpy(this->filename, b_matrixmarket.c_str());
     this->matrix = rocsparse_matrix_file_mtx;
   }
   else
