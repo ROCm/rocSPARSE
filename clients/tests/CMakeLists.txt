@@ -22,6 +22,7 @@
 # ########################################################################
 
 find_package(GTest 1.11.0 REQUIRED)
+find_package(rocsparseio)
 
 #
 # Client matrices.
@@ -152,10 +153,6 @@ set(ROCSPARSE_TEST_SOURCES
   test_copy_info.cpp
 )
 
-set(ROCSPARSE_TEST_SOURCES_TEMPLATE_INSTANCES
-  testing_axpyi.instances.cpp
-)
-
 set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_axpby.cpp
 ../testings/testing_axpyi.cpp
@@ -264,7 +261,17 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_enum.cpp
   ../common/rocsparse_init.cpp
   ../common/rocsparse_host.cpp
-)
+  ../common/rocsparse_matrix_factory.cpp
+  ../common/rocsparse_matrix_factory_laplace2d.cpp
+  ../common/rocsparse_matrix_factory_laplace3d.cpp
+  ../common/rocsparse_matrix_factory_zero.cpp
+  ../common/rocsparse_matrix_factory_random.cpp
+  ../common/rocsparse_matrix_factory_file.cpp
+  ../common/rocsparse_importer.cpp
+  ../common/rocsparse_importer_rocalution.cpp
+  ../common/rocsparse_importer_rocsparseio.cpp
+  ../common/rocsparse_importer_matrixmarket.cpp
+  )
 
 add_executable(rocsparse-test rocsparse_test_main.cpp ${ROCSPARSE_TEST_SOURCES} ${ROCSPARSE_CLIENTS_COMMON} ${ROCSPARSE_CLIENTS_TESTINGS})
 
@@ -273,12 +280,19 @@ target_compile_definitions(rocsparse-test PRIVATE GOOGLE_TEST)
 
 # Target compile options
 target_compile_options(rocsparse-test PRIVATE -ffp-contract=on -mfma -Wno-unused-command-line-argument -Wall)
+if (rocsparseio_FOUND)
+  message("Compiles rocSPARSE client with rocSPARSEIO to import/export matrices.")
+  target_compile_options(rocsparse-test PRIVATE -DROCSPARSEIO)
+endif()
 
 # Internal common header
 target_include_directories(rocsparse-test PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
 # Target link libraries
 target_link_libraries(rocsparse-test PRIVATE GTest::GTest roc::rocsparse hip::host hip::device)
+if (rocsparseio_FOUND)
+  target_link_libraries(rocsparse-test PRIVATE roc::rocsparseio)
+endif()
 
 # Add OpenMP if available
 if(OPENMP_FOUND)
@@ -293,11 +307,14 @@ endif()
 # Set test output directory
 set_target_properties(rocsparse-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 
+
+string(REGEX REPLACE ".cpp" ".yaml" ROCSPARSE_TEST_YAMLS "${ROCSPARSE_TEST_SOURCES}")
+
 # Prepare testing data
 set(ROCSPARSE_TEST_DATA "${PROJECT_BINARY_DIR}/staging/rocsparse_test.data")
 add_custom_command(OUTPUT "${ROCSPARSE_TEST_DATA}"
                    COMMAND ${python} ../common/rocsparse_gentest.py -I ../include rocsparse_test.yaml -o "${ROCSPARSE_TEST_DATA}"
-                   DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml test_axpby.yaml test_axpyi.yaml test_doti.yaml test_dotci.yaml test_gather.yaml test_scatter.yaml test_gthr.yaml test_gthrz.yaml test_rot.yaml test_roti.yaml test_sctr.yaml test_bsrmv.yaml test_bsrxmv.yaml test_bsrsv.yaml test_coomv.yaml test_csrmv.yaml test_csrmv_managed.yaml test_csrsv.yaml test_ellmv.yaml test_hybmv.yaml test_gebsrmv.yaml test_bsrmm.yaml test_csrmm.yaml test_csrsm.yaml test_gemmi.yaml test_csrgeam.yaml test_csrgemm.yaml test_csrgemm_reuse.yaml test_bsric0.yaml test_bsrilu0.yaml test_csric0.yaml test_csrilu0.yaml test_csr2coo.yaml test_csr2csc.yaml test_gebsr2gebsc.yaml test_csr2ell.yaml test_csr2hyb.yaml test_bsr2csr.yaml test_gebsr2csr.yaml test_csr2bsr.yaml test_csr2gebsr.yaml test_coo2csr.yaml test_ell2csr.yaml test_hyb2csr.yaml test_identity.yaml test_csrsort.yaml test_cscsort.yaml test_coosort.yaml test_csricsv.yaml test_csrilusv.yaml test_nnz.yaml test_dense2csr.yaml test_dense2coo.yaml test_prune_dense2csr.yaml test_prune_dense2csr_by_percentage.yaml test_dense2csc.yaml test_csr2dense.yaml test_csc2dense.yaml test_coo2dense.yaml test_sparse_to_dense_coo.yaml test_sparse_to_dense_csr.yaml test_sparse_to_dense_csc.yaml test_dense_to_sparse_coo.yaml test_dense_to_sparse_csr.yaml test_dense_to_sparse_csc.yaml test_csr2csr_compress.yaml test_prune_csr2csr.yaml test_prune_csr2csr_by_percentage.yaml test_gebsr2gebsr.yaml test_spvec_descr.yaml test_spmat_descr.yaml test_dnvec_descr.yaml test_dnmat_descr.yaml test_spmv_coo.yaml test_spmv_coo_aos.yaml test_spmv_csr.yaml test_spmv_ell.yaml test_spmm_csr.yaml test_spmm_coo.yaml test_spmm_bell.yaml test_spvv.yaml test_spgemm_csr.yaml test_gebsrmm.yaml test_gemvi.yaml test_sddmm.yaml test_gtsv.yaml test_gtsv_no_pivot.yaml test_gtsv_no_pivot_strided_batch.yaml test_gtsv_interleaved_batch.yaml test_gpsv_interleaved_batch.yaml test_csrcolor.yaml test_bsrsm.yaml test_spsv_csr.yaml test_spsv_coo.yaml test_spsm_csr.yaml test_spsm_coo.yaml test_copy_info.yaml
+                   DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml ${ROCSPARSE_TEST_YAMLS}
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 add_custom_target(rocsparse-test-data
                   DEPENDS "${ROCSPARSE_TEST_DATA}" )

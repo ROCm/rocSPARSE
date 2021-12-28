@@ -49,6 +49,7 @@ Datatypes:
         rocsparse_matrix_file_mtx: 3
         rocsparse_matrix_file_rocalution: 4
         rocsparse_matrix_zero: 5
+        rocsparse_matrix_file_rocsparseio: 6
   - rocsparse_matrix_init_kind:
       bases: [ c_int ]
       attr:

@@ -777,11 +777,11 @@ void host_csr_to_coo(J                     M,
                      std::vector<J>&       coo_row_ind,
                      rocsparse_index_base  base);
 
-template <typename I>
-void host_csr_to_coo_aos(I                     M,
+template <typename I, typename J>
+void host_csr_to_coo_aos(J                     M,
                          I                     nnz,
                          const std::vector<I>& csr_row_ptr,
-                         const std::vector<I>& csr_col_ind,
+                         const std::vector<J>& csr_col_ind,
                          std::vector<I>&       coo_ind,
                          rocsparse_index_base  base);
 

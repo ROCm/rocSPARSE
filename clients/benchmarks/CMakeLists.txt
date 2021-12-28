@@ -21,6 +21,8 @@
 #
 # ########################################################################
 
+find_package(rocsparseio)
+
 set(ROCSPARSE_BENCHMARK_SOURCES
   client.cpp
   rocsparse_bench_app.cpp
@@ -36,6 +38,16 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_enum.cpp
   ../common/rocsparse_init.cpp
   ../common/rocsparse_host.cpp
+  ../common/rocsparse_matrix_factory.cpp
+  ../common/rocsparse_matrix_factory_laplace2d.cpp
+  ../common/rocsparse_matrix_factory_laplace3d.cpp
+  ../common/rocsparse_matrix_factory_zero.cpp
+  ../common/rocsparse_matrix_factory_random.cpp
+  ../common/rocsparse_matrix_factory_file.cpp
+  ../common/rocsparse_importer.cpp
+  ../common/rocsparse_importer_rocalution.cpp
+  ../common/rocsparse_importer_rocsparseio.cpp
+  ../common/rocsparse_importer_matrixmarket.cpp
 )
 
 
@@ -133,12 +145,19 @@ add_executable(rocsparse-bench ${ROCSPARSE_BENCHMARK_SOURCES} ${ROCSPARSE_CLIENT
 
 # Target compile options
 target_compile_options(rocsparse-bench PRIVATE -Wno-unused-command-line-argument -Wall)
+if (rocsparseio_FOUND)
+  message("Compile with ROCSPARSEIO")
+  target_compile_options(rocsparse-bench PRIVATE -DROCSPARSEIO)
+endif()
 
 # Internal common header
 target_include_directories(rocsparse-bench PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
 # Target link libraries
 target_link_libraries(rocsparse-bench PRIVATE roc::rocsparse hip::host hip::device)
+if (rocsparseio_FOUND)
+  target_link_libraries(rocsparse-bench PRIVATE roc::rocsparseio)
+endif()
 
 # Add OpenMP if available
 if(OPENMP_FOUND)

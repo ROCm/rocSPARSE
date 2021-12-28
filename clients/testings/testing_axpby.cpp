@@ -23,10 +23,10 @@
 
 #include "auto_testing_bad_arg.hpp"
 #include "testing.hpp"
-
 template <typename I, typename T>
 void testing_axpby_bad_arg(const Arguments& arg)
 {
+
     I size = 100;
     I nnz  = 100;
 

@@ -505,7 +505,7 @@ pushd .
   fi
   check_exit_code "$?"
 
-  make -j$(nproc) install
+  make -j$(nproc) install VERBOSE=1
   check_exit_code "$?"
 
   # #################################################

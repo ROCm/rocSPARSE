@@ -26,7 +26,7 @@
 #ifndef ROCSPARSE_TRAITS_HPP
 #define ROCSPARSE_TRAITS_HPP
 
-#include <rocsparse-complex-types.h>
+#include "rocsparse-complex-types.h"
 
 template <typename T>
 struct floating_traits

@@ -101,7 +101,6 @@ void testing_csrmv(const Arguments& arg)
     rocsparse_int         N           = arg.N;
     rocsparse_operation   trans       = arg.transA;
     rocsparse_index_base  base        = arg.baseA;
-    rocsparse_matrix_init matrix_init = arg.matrix;
     rocsparse_matrix_type matrix_type = arg.matrix_type;
     rocsparse_fill_mode   uplo        = arg.uplo;
     rocsparse_spmv_alg    alg         = arg.spmv_alg;
@@ -182,14 +181,13 @@ void testing_csrmv(const Arguments& arg)
 
     hipDeviceProp_t prop;
     hipGetDeviceProperties(&prop, dev);
+    const bool has_datafile = rocsparse_arguments_has_datafile(arg);
 
     bool to_int = false;
     to_int |= (prop.warpSize == 32);
     to_int |= (alg != rocsparse_spmv_alg_csr_stream);
-    to_int
-        |= (trans != rocsparse_operation_none && matrix_init == rocsparse_matrix_file_rocalution);
-    to_int |= (matrix_type == rocsparse_matrix_type_symmetric
-               && matrix_init == rocsparse_matrix_file_rocalution);
+    to_int |= (trans != rocsparse_operation_none && has_datafile);
+    to_int |= (matrix_type == rocsparse_matrix_type_symmetric && has_datafile);
 
     static constexpr bool       full_rank = false;
     rocsparse_matrix_factory<T> matrix_factory(arg, arg.unit_check ? to_int : false, full_rank);

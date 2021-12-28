@@ -39,8 +39,10 @@ public:
     rocsparse_int device_id{};
 
 private:
-    std::string   b_filename{};
+    std::string   b_matrixmarket{};
     std::string   b_rocalution{};
+    std::string   b_rocsparseio{};
+    std::string   b_file{};
     char          b_transA{};
     char          b_transB{};
     int           b_baseA{};
