@@ -104,7 +104,7 @@ rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo(I*          
                                                                     I*                    nnz,
                                                                     rocsparse_index_base* base)
 {
-    I           M, N;
+
     const char* env = getenv("GTEST_LISTENER");
     if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
     {
@@ -173,7 +173,7 @@ rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo(I*          
     }
 
     // Symmetric flag
-    m_symm = !strcmp(type, "symmetric");
+    this->m_symm = !strcmp(type, "symmetric");
 
     // Skip comments
     while(fgets(line, 1024, f))
@@ -193,15 +193,26 @@ rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo(I*          
 
     sscanf(line, "%d %d %d", &inrow, &incol, &innz);
 
-    M    = static_cast<I>(inrow);
-    N    = static_cast<I>(incol);
-    snnz = static_cast<I>(innz);
+    rocsparse_status status;
+    status = rocsparse_type_conversion(inrow, m[0]);
+    if(status != rocsparse_status_success)
+        return status;
 
-    nnz[0]  = m_symm ? (snnz - M) * 2 + M : snnz;
-    base[0] = rocsparse_index_base_one;
+    status = rocsparse_type_conversion(incol, n[0]);
+    if(status != rocsparse_status_success)
+        return status;
 
-    this->m_nnz  = static_cast<size_t>(nnz[0]);
-    this->m_base = base[0];
+    status = rocsparse_type_conversion(innz, snnz);
+    if(status != rocsparse_status_success)
+        return status;
+
+    snnz   = this->m_symm ? (snnz - m[0]) * 2 + m[0] : snnz;
+    status = rocsparse_type_conversion(snnz, nnz[0]);
+    if(status != rocsparse_status_success)
+        return status;
+
+    base[0]     = rocsparse_index_base_one;
+    this->m_nnz = snnz;
     return rocsparse_status_success;
 }
 
@@ -246,7 +257,7 @@ rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo(I* row_ind, 
 
         ++idx;
 
-        if(m_symm && irow != icol)
+        if(this->m_symm && irow != icol)
         {
             if(idx >= nnz)
             {

@@ -33,26 +33,66 @@
     }
 
 template <typename X, typename Y>
-inline rocsparse_status rocsparseio2rocsparse_convert(const X& x, Y& y);
+inline rocsparseio_status rocsparseio2rocsparse_convert(const X& x, Y& y);
 
 template <>
-inline rocsparse_status rocsparseio2rocsparse_convert(const rocsparseio_order& x,
-                                                      rocsparse_order&         y)
+inline rocsparseio_status rocsparseio2rocsparse_convert(const rocsparseio_direction& x,
+                                                        rocsparse_direction&         y)
+{
+    switch(x)
+    {
+    case rocsparseio_direction_row:
+    {
+        y = rocsparse_direction_row;
+        return rocsparseio_status_success;
+    }
+    case rocsparseio_direction_column:
+    {
+        y = rocsparse_direction_column;
+        return rocsparseio_status_success;
+    }
+    }
+    return rocsparseio_status_invalid_value;
+}
+
+template <>
+inline rocsparseio_status rocsparseio2rocsparse_convert(const rocsparseio_order& x,
+                                                        rocsparse_order&         y)
 {
     switch(x)
     {
     case rocsparseio_order_row:
     {
         y = rocsparse_order_row;
-        return rocsparse_status_success;
+        return rocsparseio_status_success;
     }
     case rocsparseio_order_column:
     {
         y = rocsparse_order_column;
-        return rocsparse_status_success;
+        return rocsparseio_status_success;
     }
     }
-    return rocsparse_status_invalid_value;
+    return rocsparseio_status_invalid_value;
+}
+
+template <>
+inline rocsparseio_status rocsparseio2rocsparse_convert(const rocsparseio_index_base& x,
+                                                        rocsparse_index_base&         y)
+{
+    switch(x)
+    {
+    case rocsparseio_index_base_zero:
+    {
+        y = rocsparse_index_base_zero;
+        return rocsparseio_status_success;
+    }
+    case rocsparseio_index_base_one:
+    {
+        y = rocsparse_index_base_one;
+        return rocsparseio_status_success;
+    }
+    }
+    return rocsparseio_status_invalid_value;
 }
 
 template <typename T>
@@ -135,24 +175,36 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_coo(I*           
                                                                    rocsparse_index_base* base)
 {
 #ifdef ROCSPARSEIO
-    size_t             iM;
-    size_t             iN;
-    size_t             innz;
-    rocsparseio_status istatus;
+    size_t                 iM;
+    size_t                 iN;
+    size_t                 innz;
+    rocsparseio_index_base ibase;
+    rocsparseio_status     istatus;
     istatus = rocsparseiox_read_metadata_sparse_coo(this->m_handle,
                                                     &iM,
                                                     &iN,
                                                     &innz,
                                                     &this->m_row_ind_type,
                                                     &this->m_col_ind_type,
-                                                    &this->m_val_type);
+                                                    &this->m_val_type,
+                                                    &ibase);
     ROCSPARSE_CHECK_ROCSPARSEIO(istatus);
+    rocsparse_status status;
 
-    m[0]        = static_cast<I>(iM);
-    n[0]        = static_cast<I>(iN);
-    nnz[0]      = static_cast<I>(innz);
-    base[0]     = rocsparse_index_base_zero;
-    this->m_nnz = static_cast<size_t>(innz);
+    status = rocsparse_type_conversion(iM, m[0]);
+    if(status != rocsparse_status_success)
+        return status;
+
+    status = rocsparse_type_conversion(iN, n[0]);
+    if(status != rocsparse_status_success)
+        return status;
+
+    status = rocsparse_type_conversion(innz, nnz[0]);
+    if(status != rocsparse_status_success)
+        return status;
+
+    this->m_nnz = innz;
+    ROCSPARSE_CHECK_ROCSPARSEIO(rocsparseio2rocsparse_convert(ibase, *base));
     return rocsparse_status_success;
 #else
     return rocsparse_status_not_implemented;
@@ -300,8 +352,9 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(rocsparse_d
                                                                      rocsparse_index_base* base)
 {
 #ifdef ROCSPARSEIO
-    rocsparseio_status    istatus;
-    rocsparseio_direction idir, idirb;
+    rocsparseio_status     istatus;
+    rocsparseio_direction  idir, idirb;
+    rocsparseio_index_base ibase;
     istatus = rocsparseio_open(&this->m_handle, rocsparseio_rwmode_read, this->m_filename.c_str());
     ROCSPARSE_CHECK_ROCSPARSEIO(istatus);
 
@@ -320,47 +373,36 @@ rocsparse_status rocsparse_importer_rocsparseio::import_sparse_gebsx(rocsparse_d
                                                       &icol_block_dim,
                                                       &this->m_ptr_type,
                                                       &this->m_ind_type,
-                                                      &this->m_val_type);
+                                                      &this->m_val_type,
+                                                      &ibase);
 
     ROCSPARSE_CHECK_ROCSPARSEIO(istatus);
-    switch(idir)
-    {
-    case rocsparseio_direction_row:
-    {
-        *dir = rocsparse_direction_row;
-        break;
-    }
-    case rocsparseio_direction_column:
-    {
-        *dir = rocsparse_direction_column;
-        break;
-    }
-    }
-    switch(idirb)
-    {
-    case rocsparseio_direction_row:
-    {
-        *dirb = rocsparse_direction_row;
-        break;
-    }
-    case rocsparseio_direction_column:
-    {
-        *dirb = rocsparse_direction_column;
-        break;
-    }
-    }
 
-    *mb               = static_cast<J>(iMb);
-    *nb               = static_cast<J>(iNb);
-    *nnzb             = static_cast<I>(innzb);
-    *block_dim_row    = static_cast<J>(irow_block_dim);
-    *block_dim_column = static_cast<J>(icol_block_dim);
-    *base             = rocsparse_index_base_zero;
+    ROCSPARSE_CHECK_ROCSPARSEIO(rocsparseio2rocsparse_convert(ibase, *base));
+    ROCSPARSE_CHECK_ROCSPARSEIO(rocsparseio2rocsparse_convert(idir, *dir));
+    ROCSPARSE_CHECK_ROCSPARSEIO(rocsparseio2rocsparse_convert(idirb, *dirb));
 
-    this->m_mb            = static_cast<size_t>(iMb);
-    this->m_nnzb          = static_cast<size_t>(innzb);
-    this->m_row_block_dim = static_cast<size_t>(irow_block_dim);
-    this->m_col_block_dim = static_cast<size_t>(icol_block_dim);
+    rocsparse_status status;
+    status = rocsparse_type_conversion(iMb, mb[0]);
+    if(status != rocsparse_status_success)
+        return status;
+    status = rocsparse_type_conversion(iNb, nb[0]);
+    if(status != rocsparse_status_success)
+        return status;
+    status = rocsparse_type_conversion(innzb, nnzb[0]);
+    if(status != rocsparse_status_success)
+        return status;
+    status = rocsparse_type_conversion(irow_block_dim, block_dim_row[0]);
+    if(status != rocsparse_status_success)
+        return status;
+    status = rocsparse_type_conversion(icol_block_dim, block_dim_column[0]);
+    if(status != rocsparse_status_success)
+        return status;
+
+    this->m_mb            = iMb;
+    this->m_nnzb          = innzb;
+    this->m_row_block_dim = irow_block_dim;
+    this->m_col_block_dim = icol_block_dim;
     return rocsparse_status_success;
 #else
     return rocsparse_status_not_implemented;
@@ -535,8 +577,9 @@ rocsparse_status
         rocsparse_direction* dir, J* m, J* n, I* nnz, rocsparse_index_base* base)
 {
 #ifdef ROCSPARSEIO
-    rocsparseio_status    istatus;
-    rocsparseio_direction io_dir;
+    rocsparseio_status     istatus;
+    rocsparseio_direction  io_dir;
+    rocsparseio_index_base ibase;
     istatus = rocsparseio_open(&this->m_handle, rocsparseio_rwmode_read, this->m_filename.c_str());
     ROCSPARSE_CHECK_ROCSPARSEIO(istatus);
     size_t iM;
@@ -550,29 +593,25 @@ rocsparse_status
                                                     &innz,
                                                     &this->m_ptr_type,
                                                     &this->m_ind_type,
-                                                    &this->m_val_type);
+                                                    &this->m_val_type,
+                                                    &ibase);
     ROCSPARSE_CHECK_ROCSPARSEIO(istatus);
 
-    switch(io_dir)
-    {
-    case rocsparseio_direction_row:
-    {
-        *dir = rocsparse_direction_row;
-        break;
-    }
-    case rocsparseio_direction_column:
-    {
-        *dir = rocsparse_direction_column;
-        break;
-    }
-    }
+    ROCSPARSE_CHECK_ROCSPARSEIO(rocsparseio2rocsparse_convert(ibase, *base));
+    ROCSPARSE_CHECK_ROCSPARSEIO(rocsparseio2rocsparse_convert(io_dir, *dir));
 
-    *m          = static_cast<J>(iM);
-    *n          = static_cast<J>(iN);
-    *nnz        = static_cast<I>(innz);
-    *base       = rocsparse_index_base_zero;
-    this->m_m   = static_cast<size_t>(iM);
-    this->m_nnz = static_cast<size_t>(innz);
+    rocsparse_status status;
+    status = rocsparse_type_conversion(iM, m[0]);
+    if(status != rocsparse_status_success)
+        return status;
+    status = rocsparse_type_conversion(iN, n[0]);
+    if(status != rocsparse_status_success)
+        return status;
+    status = rocsparse_type_conversion(innz, nnz[0]);
+    if(status != rocsparse_status_success)
+        return status;
+    this->m_m   = iM;
+    this->m_nnz = innz;
     return rocsparse_status_success;
 #else
     return rocsparse_status_not_implemented;

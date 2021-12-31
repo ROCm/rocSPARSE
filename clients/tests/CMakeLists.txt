@@ -22,7 +22,7 @@
 # ########################################################################
 
 find_package(GTest 1.11.0 REQUIRED)
-find_package(rocsparseio)
+find_package(rocsparseio QUIET)
 
 #
 # Client matrices.

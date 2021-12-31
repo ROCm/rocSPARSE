@@ -36,11 +36,10 @@ public:
     rocsparse_importer_matrixmarket(const std::string& filename_);
 
 private:
-    FILE*                f;
-    size_t               m_nnz;
-    rocsparse_index_base m_base;
-    char                 m_data[16];
-    int                  m_symm;
+    FILE*  f;
+    size_t m_nnz;
+    char   m_data[16];
+    int    m_symm;
 
 public:
     template <typename I = rocsparse_int, typename J = rocsparse_int>

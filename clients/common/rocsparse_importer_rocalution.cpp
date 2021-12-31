@@ -137,13 +137,24 @@ rocsparse_status rocsparse_importer_rocalution::import_sparse_csx(
     this->m_info_csx.in->read((char*)&iM, sizeof(int));
     this->m_info_csx.in->read((char*)&iN, sizeof(int));
     this->m_info_csx.in->read((char*)&innz, sizeof(int));
-    m[0]                 = static_cast<J>(iM);
-    n[0]                 = static_cast<J>(iN);
-    nnz[0]               = static_cast<I>(innz);
+
+    rocsparse_status status;
+    status = rocsparse_type_conversion(iM, m[0]);
+    if(status != rocsparse_status_success)
+        return status;
+
+    status = rocsparse_type_conversion(iN, n[0]);
+    if(status != rocsparse_status_success)
+        return status;
+
+    status = rocsparse_type_conversion(innz, nnz[0]);
+    if(status != rocsparse_status_success)
+        return status;
+
     dir[0]               = rocsparse_direction_row;
     base[0]              = rocsparse_index_base_zero;
-    this->m_info_csx.m   = static_cast<size_t>(iM);
-    this->m_info_csx.nnz = static_cast<size_t>(innz);
+    this->m_info_csx.m   = iM;
+    this->m_info_csx.nnz = innz;
 
     return rocsparse_status_success;
 }

@@ -24,6 +24,72 @@
 
 #include "rocsparse_importer.hpp"
 
+template <>
+rocsparse_status rocsparse_type_conversion(const int32_t& x, int32_t& y)
+{
+    y = x;
+    return rocsparse_status_success;
+}
+
+template <>
+rocsparse_status rocsparse_type_conversion(const int64_t& x, int64_t& y)
+{
+    y = x;
+    return rocsparse_status_success;
+}
+
+template <>
+rocsparse_status rocsparse_type_conversion(const int32_t& x, int64_t& y)
+{
+    y = x;
+    return rocsparse_status_success;
+}
+
+template <>
+rocsparse_status rocsparse_type_conversion(const int64_t& x, int32_t& y)
+{
+    static constexpr int32_t int32max = std::numeric_limits<int32_t>::max();
+    if(x > int32max)
+    {
+        std::cerr << "corrupted conversion from int64_t to int32_t." << std::endl;
+        return rocsparse_status_invalid_value;
+    }
+    static constexpr int32_t int32min = std::numeric_limits<int32_t>::min();
+    if(x < int32min)
+    {
+        std::cerr << "corrupted conversion from int64_t to int32_t." << std::endl;
+        return rocsparse_status_invalid_value;
+    }
+    y = static_cast<int32_t>(x);
+    return rocsparse_status_success;
+}
+
+template <>
+rocsparse_status rocsparse_type_conversion(const size_t& x, int32_t& y)
+{
+    static constexpr int32_t int32max = std::numeric_limits<int32_t>::max();
+    if(x > int32max)
+    {
+        std::cerr << "corrupted conversion from size_t to int32_t." << std::endl;
+        return rocsparse_status_invalid_value;
+    }
+    y = static_cast<int32_t>(x);
+    return rocsparse_status_success;
+}
+
+template <>
+rocsparse_status rocsparse_type_conversion(const size_t& x, int64_t& y)
+{
+    static constexpr int64_t int64max = std::numeric_limits<int64_t>::max();
+    if(x > int64max)
+    {
+        std::cerr << "corrupted conversion from size_t to int64_t." << std::endl;
+        return rocsparse_status_invalid_value;
+    }
+    y = static_cast<int64_t>(x);
+    return rocsparse_status_success;
+}
+
 template <typename IMPL>
 template <rocsparse_direction DIRECTION, typename T, typename I, typename J>
 rocsparse_status rocsparse_importer<IMPL>::import(host_csx_matrix<DIRECTION, T, I, J>& csx_)

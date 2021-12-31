@@ -186,7 +186,7 @@ protected:
     // Record initial command line.
     //
     int    m_initial_argc{};
-    char** m_initial_argv{};
+    char** m_initial_argv;
     //
     // Set of command lines.
     //

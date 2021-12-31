@@ -25,84 +25,85 @@
 #include "rocsparse_arguments.hpp"
 
 // clang-format off
-#define LIST_OF_ROUTINES			\
-  bellmm,					\
-    bsric0,					\
-    bsrilu0,					\
-    bsrmm,					\
-    bsrmv,					\
-    bsrsm,					\
-    bsrsv,					\
-    bsrxmv,					\
-    bsr2csr,					\
-    coomm,					\
-    coomv,					\
-    coosort,					\
-    coosv,					\
-    coomv_aos,					\
-    coosm,					\
-    coo2csr,					\
-    coo2dense,					\
-    cscsort,					\
-    csc2dense,					\
-    csrcolor,					\
-    csric0,					\
-    csrilu0,					\
-    csrgeam,					\
-    csrgemm,					\
-    csrgemm_reuse,				\
-    csrmv,					\
-    csrmv_managed,				\
-    csrmm,					\
-    csrsm,					\
-    csrsort,					\
-    csrsv,					\
-    csr2dense,					\
-    csr2bsr,					\
-    csr2coo,					\
-    csr2csc,					\
-    csr2csr_compress,				\
-    csr2ell,					\
-    csr2gebsr,					\
-    csr2hyb,					\
-    dense2coo,					\
-    dense2csc,					\
-    dense2csr,					\
-    dense_to_sparse_coo,			\
-    dense_to_sparse_csc,			\
-    dense_to_sparse_csr,			\
-    doti,					\
-    dotci,					\
-    ellmv,					\
-    ell2csr,					\
-    gebsr2csr,					\
-    gebsr2gebsr,				\
-    gthr,					\
-    gthrz,					\
-    gebsr2gebsc,				\
-    gebsrmv,					\
-    gebsrmm,					\
-    gemmi,					\
-    gemvi,					\
-    gpsv_interleaved_batch, \
-    gtsv,					\
-    gtsv_no_pivot,				\
-    gtsv_no_pivot_strided_batch,		\
-    gtsv_interleaved_batch,		\
-    hybmv,					\
-    hyb2csr,					\
-    identity,					\
-    nnz,					\
-    prune_csr2csr,				\
-    prune_csr2csr_by_percentage,		\
-    prune_dense2csr,				\
-    prune_dense2csr_by_percentage,		\
-    roti,					\
-    sctr,					\
-    sddmm,					\
-    sparse_to_dense_coo,			\
-    sparse_to_dense_csc,			\
-    sparse_to_dense_csr
+#define ROCSPARSE_FOREACH_ROUTINE			\
+ROCSPARSE_DO_ROUTINE(axpyi)						\
+ROCSPARSE_DO_ROUTINE(bellmm)						\
+ROCSPARSE_DO_ROUTINE(bsric0)					\
+ROCSPARSE_DO_ROUTINE(bsrilu0)					\
+ROCSPARSE_DO_ROUTINE(bsrmm)					\
+ROCSPARSE_DO_ROUTINE(bsrmv)					\
+ROCSPARSE_DO_ROUTINE(bsrsm)					\
+ROCSPARSE_DO_ROUTINE(bsrsv)					\
+ROCSPARSE_DO_ROUTINE(bsrxmv)					\
+ROCSPARSE_DO_ROUTINE(bsr2csr)					\
+ROCSPARSE_DO_ROUTINE(coomm)					\
+ROCSPARSE_DO_ROUTINE(coomv)					\
+ROCSPARSE_DO_ROUTINE(coosort)					\
+ROCSPARSE_DO_ROUTINE(coosv)					\
+ROCSPARSE_DO_ROUTINE(coomv_aos)					\
+ROCSPARSE_DO_ROUTINE(coosm)					\
+ROCSPARSE_DO_ROUTINE(coo2csr)					\
+ROCSPARSE_DO_ROUTINE(coo2dense)					\
+ROCSPARSE_DO_ROUTINE(cscsort)					\
+ROCSPARSE_DO_ROUTINE(csc2dense)					\
+ROCSPARSE_DO_ROUTINE(csrcolor)					\
+ROCSPARSE_DO_ROUTINE(csric0)					\
+ROCSPARSE_DO_ROUTINE(csrilu0)					\
+ROCSPARSE_DO_ROUTINE(csrgeam)					\
+ROCSPARSE_DO_ROUTINE(csrgemm)					\
+ROCSPARSE_DO_ROUTINE(csrgemm_reuse)				\
+ROCSPARSE_DO_ROUTINE(csrmv)					\
+ROCSPARSE_DO_ROUTINE(csrmv_managed)				\
+ROCSPARSE_DO_ROUTINE(csrmm)					\
+ROCSPARSE_DO_ROUTINE(csrsm)					\
+ROCSPARSE_DO_ROUTINE(csrsort)					\
+ROCSPARSE_DO_ROUTINE(csrsv)					\
+ROCSPARSE_DO_ROUTINE(csr2dense)					\
+ROCSPARSE_DO_ROUTINE(csr2bsr)					\
+ROCSPARSE_DO_ROUTINE(csr2coo)					\
+ROCSPARSE_DO_ROUTINE(csr2csc)					\
+ROCSPARSE_DO_ROUTINE(csr2csr_compress)				\
+ROCSPARSE_DO_ROUTINE(csr2ell)					\
+ROCSPARSE_DO_ROUTINE(csr2gebsr)					\
+ROCSPARSE_DO_ROUTINE(csr2hyb)					\
+ROCSPARSE_DO_ROUTINE(dense2coo)					\
+ROCSPARSE_DO_ROUTINE(dense2csc)					\
+ROCSPARSE_DO_ROUTINE(dense2csr)					\
+ROCSPARSE_DO_ROUTINE(dense_to_sparse_coo)			\
+ROCSPARSE_DO_ROUTINE(dense_to_sparse_csc)			\
+ROCSPARSE_DO_ROUTINE(dense_to_sparse_csr)			\
+ROCSPARSE_DO_ROUTINE(doti)					\
+ROCSPARSE_DO_ROUTINE(dotci)					\
+ROCSPARSE_DO_ROUTINE(ellmv)					\
+ROCSPARSE_DO_ROUTINE(ell2csr)					\
+ROCSPARSE_DO_ROUTINE(gebsr2csr)					\
+ROCSPARSE_DO_ROUTINE(gebsr2gebsr)				\
+ROCSPARSE_DO_ROUTINE(gthr)					\
+ROCSPARSE_DO_ROUTINE(gthrz)					\
+ROCSPARSE_DO_ROUTINE(gebsr2gebsc)				\
+ROCSPARSE_DO_ROUTINE(gebsrmv)					\
+ROCSPARSE_DO_ROUTINE(gebsrmm)					\
+ROCSPARSE_DO_ROUTINE(gemmi)					\
+ROCSPARSE_DO_ROUTINE(gemvi)					\
+ROCSPARSE_DO_ROUTINE(gpsv_interleaved_batch) \
+ROCSPARSE_DO_ROUTINE(gtsv)					\
+ROCSPARSE_DO_ROUTINE(gtsv_no_pivot)				\
+ROCSPARSE_DO_ROUTINE(gtsv_no_pivot_strided_batch)		\
+ROCSPARSE_DO_ROUTINE(gtsv_interleaved_batch)		\
+ROCSPARSE_DO_ROUTINE(hybmv)					\
+ROCSPARSE_DO_ROUTINE(hyb2csr)					\
+ROCSPARSE_DO_ROUTINE(identity)					\
+ROCSPARSE_DO_ROUTINE(nnz)					\
+ROCSPARSE_DO_ROUTINE(prune_csr2csr)				\
+ROCSPARSE_DO_ROUTINE(prune_csr2csr_by_percentage)		\
+ROCSPARSE_DO_ROUTINE(prune_dense2csr)				\
+ROCSPARSE_DO_ROUTINE(prune_dense2csr_by_percentage)		\
+ROCSPARSE_DO_ROUTINE(roti)					\
+ROCSPARSE_DO_ROUTINE(sctr)					\
+ROCSPARSE_DO_ROUTINE(sddmm)					\
+ROCSPARSE_DO_ROUTINE(sparse_to_dense_coo)			\
+ROCSPARSE_DO_ROUTINE(sparse_to_dense_csc)			\
+ROCSPARSE_DO_ROUTINE(sparse_to_dense_csr)
 // clang-format on
 
 template <std::size_t N, typename T>
@@ -115,94 +116,21 @@ struct rocsparse_routine
 {
 private:
 public:
+#define ROCSPARSE_DO_ROUTINE(x_) x_,
     typedef enum _ : rocsparse_int
     {
-        axpyi = 0,
-        LIST_OF_ROUTINES
+        ROCSPARSE_FOREACH_ROUTINE
     } value_type;
-    value_type                   value{};
-    static constexpr value_type  all_routines[] = {axpyi, LIST_OF_ROUTINES};
-    static constexpr std::size_t num_routines   = countof(all_routines);
+    value_type                  value{};
+    static constexpr value_type all_routines[] = {ROCSPARSE_FOREACH_ROUTINE};
+#undef ROCSPARSE_DO_ROUTINE
+
+    static constexpr std::size_t num_routines = countof(all_routines);
 
 private:
-    static constexpr const char* s_routine_names[num_routines]{"axpyi",
-                                                               "bellmm",
-                                                               "bsric0",
-                                                               "bsrilu0",
-                                                               "bsrmm",
-                                                               "bsrmv",
-                                                               "bsrsm",
-                                                               "bsrsv",
-                                                               "bsrxmv",
-                                                               "bsr2csr",
-                                                               "coomm",
-                                                               "coomv",
-                                                               "coosort",
-                                                               "coosv",
-                                                               "coomv_aos",
-                                                               "coosm",
-                                                               "coo2csr",
-                                                               "coo2dense",
-                                                               "cscsort",
-                                                               "csc2dense",
-                                                               "csrcolor",
-                                                               "csric0",
-                                                               "csrilu0",
-                                                               "csrgeam",
-                                                               "csrgemm",
-                                                               "csrgemm_reuse",
-                                                               "csrmv",
-                                                               "csrmv_managed",
-                                                               "csrmm",
-                                                               "csrsm",
-                                                               "csrsort",
-                                                               "csrsv",
-                                                               "csr2dense",
-                                                               "csr2bsr",
-                                                               "csr2coo",
-                                                               "csr2csc",
-                                                               "csr2csr_compress",
-                                                               "csr2ell",
-                                                               "csr2gebsr",
-                                                               "csr2hyb",
-                                                               "dense2coo",
-                                                               "dense2csc",
-                                                               "dense2csr",
-                                                               "dense_to_sparse_coo",
-                                                               "dense_to_sparse_csc",
-                                                               "dense_to_sparse_csr",
-                                                               "doti",
-                                                               "dotci",
-                                                               "ellmv",
-                                                               "ell2csr",
-                                                               "gebsr2csr",
-                                                               "gebsr2gebsr",
-                                                               "gthr",
-                                                               "gthrz",
-                                                               "gebsr2gebsc",
-                                                               "gebsrmv",
-                                                               "gebsrmm",
-                                                               "gemmi",
-                                                               "gemvi",
-                                                               "gtsv",
-                                                               "gtsv_no_pivot",
-                                                               "gtsv_no_pivot_strided_batch",
-                                                               "gtsv_interleaved_batch",
-                                                               "gpsv_interleaved_batch",
-                                                               "hybmv",
-                                                               "hyb2csr",
-                                                               "identity",
-                                                               "nnz",
-                                                               "prune_csr2csr",
-                                                               "prune_csr2csr_by_percentage",
-                                                               "prune_dense2csr",
-                                                               "prune_dense2csr_by_percentage",
-                                                               "roti",
-                                                               "sctr",
-                                                               "sddmm",
-                                                               "sparse_to_dense_coo",
-                                                               "sparse_to_dense_csc",
-                                                               "sparse_to_dense_csr"};
+#define ROCSPARSE_DO_ROUTINE(x_) #x_,
+    static constexpr const char* s_routine_names[num_routines]{ROCSPARSE_FOREACH_ROUTINE};
+#undef ROCSPARSE_DO_ROUTINE
 
 public:
     rocsparse_routine();
