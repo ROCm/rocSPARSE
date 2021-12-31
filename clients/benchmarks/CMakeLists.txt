@@ -21,7 +21,7 @@
 #
 # ########################################################################
 
-find_package(rocsparseio)
+find_package(rocsparseio QUIET)
 
 set(ROCSPARSE_BENCHMARK_SOURCES
   client.cpp

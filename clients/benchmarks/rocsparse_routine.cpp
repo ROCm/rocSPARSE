@@ -156,89 +156,11 @@ rocsparse_status rocsparse_routine::dispatch(const char       precision,
 {
     switch(this->value)
     {
-#define CASE(FNAME) \
-    case FNAME:     \
-        return dispatch_precision<FNAME>(precision, indextype, arg)
-
-        CASE(axpyi);
-        CASE(bellmm);
-        CASE(bsric0);
-        CASE(bsrilu0);
-        CASE(bsrmm);
-        CASE(bsrmv);
-        CASE(bsrsm);
-        CASE(bsrsv);
-        CASE(bsrxmv);
-        CASE(bsr2csr);
-        CASE(coomm);
-        CASE(coomv);
-        CASE(coosort);
-        CASE(coosv);
-        CASE(coomv_aos);
-        CASE(coosm);
-        CASE(coo2csr);
-        CASE(coo2dense);
-        CASE(cscsort);
-        CASE(csc2dense);
-        CASE(csrcolor);
-        CASE(csric0);
-        CASE(csrilu0);
-        CASE(csrgeam);
-        CASE(csrgemm);
-        CASE(csrgemm_reuse);
-        CASE(csrmv);
-        CASE(csrmv_managed);
-        CASE(csrmm);
-        CASE(csrsm);
-        CASE(csrsort);
-        CASE(csrsv);
-        CASE(csr2dense);
-        CASE(csr2bsr);
-        CASE(csr2coo);
-        CASE(csr2csc);
-        CASE(csr2csr_compress);
-        CASE(csr2ell);
-        CASE(csr2gebsr);
-        CASE(csr2hyb);
-        CASE(dense2coo);
-        CASE(dense2csc);
-        CASE(dense2csr);
-        CASE(dense_to_sparse_coo);
-        CASE(dense_to_sparse_csc);
-        CASE(dense_to_sparse_csr);
-        CASE(doti);
-        CASE(dotci);
-        CASE(ellmv);
-        CASE(ell2csr);
-        CASE(gebsr2csr);
-        CASE(gebsr2gebsr);
-        CASE(gthr);
-        CASE(gthrz);
-        CASE(gebsr2gebsc);
-        CASE(gebsrmv);
-        CASE(gebsrmm);
-        CASE(gemmi);
-        CASE(gemvi);
-        CASE(gtsv);
-        CASE(gtsv_no_pivot);
-        CASE(gtsv_no_pivot_strided_batch);
-        CASE(gtsv_interleaved_batch);
-        CASE(gpsv_interleaved_batch);
-        CASE(hybmv);
-        CASE(hyb2csr);
-        CASE(identity);
-        CASE(nnz);
-        CASE(prune_csr2csr);
-        CASE(prune_csr2csr_by_percentage);
-        CASE(prune_dense2csr);
-        CASE(prune_dense2csr_by_percentage);
-        CASE(roti);
-        CASE(sctr);
-        CASE(sddmm);
-        CASE(sparse_to_dense_coo);
-        CASE(sparse_to_dense_csc);
-        CASE(sparse_to_dense_csr);
-#undef CASE
+#define ROCSPARSE_DO_ROUTINE(FNAME) \
+    case FNAME:                     \
+        return dispatch_precision<FNAME>(precision, indextype, arg);
+        ROCSPARSE_FOREACH_ROUTINE;
+#undef ROCSPARSE_DO_ROUTINE
     }
     return rocsparse_status_invalid_value;
 }
@@ -248,98 +170,23 @@ rocsparse_status rocsparse_routine::dispatch(const char       precision,
 //
 constexpr const char* rocsparse_routine::to_string() const
 {
-
     //
     // switch for checking inconsistency.
     //
     switch(this->value)
     {
-#define CASE(NAME)                                      \
-    case NAME:                                          \
-        if(strcmp(#NAME, s_routine_names[this->value])) \
-            return nullptr;                             \
-        break;
-
-        CASE(axpyi);
-        CASE(bellmm);
-        CASE(bsric0);
-        CASE(bsrilu0);
-        CASE(bsrmm);
-        CASE(bsrmv);
-        CASE(bsrsm);
-        CASE(bsrsv);
-        CASE(bsrxmv);
-        CASE(bsr2csr);
-        CASE(coomm);
-        CASE(coomv);
-        CASE(coosort);
-        CASE(coosv);
-        CASE(coomv_aos);
-        CASE(coosm);
-        CASE(coo2csr);
-        CASE(coo2dense);
-        CASE(cscsort);
-        CASE(csc2dense);
-        CASE(csrcolor);
-        CASE(csric0);
-        CASE(csrilu0);
-        CASE(csrgeam);
-        CASE(csrgemm);
-        CASE(csrgemm_reuse);
-        CASE(csrmv);
-        CASE(csrmv_managed);
-        CASE(csrmm);
-        CASE(csrsm);
-        CASE(csrsort);
-        CASE(csrsv);
-        CASE(csr2dense);
-        CASE(csr2bsr);
-        CASE(csr2coo);
-        CASE(csr2csc);
-        CASE(csr2csr_compress);
-        CASE(csr2ell);
-        CASE(csr2gebsr);
-        CASE(csr2hyb);
-        CASE(dense2coo);
-        CASE(dense2csc);
-        CASE(dense2csr);
-        CASE(dense_to_sparse_coo);
-        CASE(dense_to_sparse_csc);
-        CASE(dense_to_sparse_csr);
-        CASE(doti);
-        CASE(dotci);
-        CASE(ellmv);
-        CASE(ell2csr);
-        CASE(gebsr2csr);
-        CASE(gebsr2gebsr);
-        CASE(gthr);
-        CASE(gthrz);
-        CASE(gebsr2gebsc);
-        CASE(gebsrmv);
-        CASE(gebsrmm);
-        CASE(gemmi);
-        CASE(gemvi);
-        CASE(gtsv);
-        CASE(gtsv_no_pivot);
-        CASE(gtsv_no_pivot_strided_batch);
-        CASE(gtsv_interleaved_batch);
-        CASE(gpsv_interleaved_batch);
-        CASE(hybmv);
-        CASE(hyb2csr);
-        CASE(identity);
-        CASE(nnz);
-        CASE(prune_csr2csr);
-        CASE(prune_csr2csr_by_percentage);
-        CASE(prune_dense2csr);
-        CASE(prune_dense2csr_by_percentage);
-        CASE(roti);
-        CASE(sctr);
-        CASE(sddmm);
-        CASE(sparse_to_dense_coo);
-        CASE(sparse_to_dense_csc);
-        CASE(sparse_to_dense_csr);
+#define ROCSPARSE_DO_ROUTINE(x_)                      \
+    case x_:                                          \
+    {                                                 \
+        if(strcmp(#x_, s_routine_names[this->value])) \
+            return nullptr;                           \
+        break;                                        \
     }
-#undef CASE
+
+        ROCSPARSE_FOREACH_ROUTINE;
+    }
+
+#undef ROCSPARSE_DO_ROUTINE
     return s_routine_names[this->value];
 }
 

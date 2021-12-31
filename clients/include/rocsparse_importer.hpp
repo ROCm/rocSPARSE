@@ -37,6 +37,9 @@
 #include "rocsparse_matrix_gebsx.hpp"
 
 template <typename X, typename Y>
+rocsparse_status rocsparse_type_conversion(const X& x, Y& y);
+
+template <typename X, typename Y>
 inline void
     rocsparse_importer_copy_mixed_arrays(size_t size, X* __restrict__ x, const Y* __restrict__ y)
 {
