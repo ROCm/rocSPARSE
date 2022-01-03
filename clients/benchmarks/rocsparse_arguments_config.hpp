@@ -54,6 +54,7 @@ private:
     int           b_matrix_type{};
     char          b_diag{};
     char          b_uplo{};
+    int           b_storage{};
     char          b_apol{};
     rocsparse_int b_dir{};
     rocsparse_int b_order{};

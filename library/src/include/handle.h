@@ -105,6 +105,8 @@ struct _rocsparse_mat_descr
     rocsparse_diag_type diag_type = rocsparse_diag_type_non_unit;
     // index base
     rocsparse_index_base base = rocsparse_index_base_zero;
+    // storage mode
+    rocsparse_storage_mode storage_mode = rocsparse_storage_mode_sorted;
 };
 
 /********************************************************************************

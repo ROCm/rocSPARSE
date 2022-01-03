@@ -61,6 +61,12 @@ module rocsparse_enums
         enumerator :: rocsparse_fill_mode_upper = 1
     end enum
 
+!   rocsparse_storage_mode
+    enum, bind(c)
+        enumerator :: rocsparse_storage_mode_sorted = 0
+        enumerator :: rocsparse_storage_mode_unsorted = 1
+    end enum
+
 !   rocsparse_action
     enum, bind(c)
         enumerator :: rocsparse_action_symbolic = 0

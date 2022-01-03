@@ -5704,6 +5704,11 @@ rocsparse_status rocsparse_zcsrgemm_buffer_size(rocsparse_handle                
 *  Please note, that for matrix products with more than 8192 intermediate products per
 *  row, additional temporary storage buffer is allocated by the algorithm.
 *  \note
+*  This function supports unsorted CSR matrices as input, while output will be sorted.
+*  Please note that matrices B and D can only be unsorted up to 8192 intermediate
+*  products per row. If this number is exceeded, \ref rocsparse_status_requires_sorted_storage
+*  will be returned.
+*  \note
 *  Currently, only \p trans_A == \p trans_B == \ref rocsparse_operation_none is
 *  supported.
 *  \note
@@ -5868,6 +5873,11 @@ rocsparse_status rocsparse_csrgemm_nnz(rocsparse_handle          handle,
 *        host. It may return before the actual computation has finished.
 *  \note Please note, that for matrix products with more than 4096 non-zero entries per
 *  row, additional temporary storage buffer is allocated by the algorithm.
+*  \note
+*  This function supports unsorted CSR matrices as input, while output will be sorted.
+*  Please note that matrices B and D can only be unsorted up to 4096 non-zero entries
+*  per row. If this number is exceeded, \ref rocsparse_status_requires_sorted_storage
+*  will be returned.
 *
 *  @param[in]
 *  handle          handle to the rocsparse library context queue.

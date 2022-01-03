@@ -229,10 +229,11 @@ rocsparse_status rocsparse_copy_mat_descr(rocsparse_mat_descr dest, const rocspa
         return rocsparse_status_invalid_pointer;
     }
 
-    dest->type      = src->type;
-    dest->fill_mode = src->fill_mode;
-    dest->diag_type = src->diag_type;
-    dest->base      = src->base;
+    dest->type         = src->type;
+    dest->fill_mode    = src->fill_mode;
+    dest->diag_type    = src->diag_type;
+    dest->base         = src->base;
+    dest->storage_mode = src->storage_mode;
 
     return rocsparse_status_success;
 }
@@ -373,6 +374,34 @@ rocsparse_diag_type rocsparse_get_mat_diag_type(const rocsparse_mat_descr descr)
         return rocsparse_diag_type_non_unit;
     }
     return descr->diag_type;
+}
+
+rocsparse_status rocsparse_set_mat_storage_mode(rocsparse_mat_descr    descr,
+                                                rocsparse_storage_mode storage_mode)
+{
+    // Check if descriptor is valid
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    if(rocsparse_enum_utils::is_invalid(storage_mode))
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    descr->storage_mode = storage_mode;
+    return rocsparse_status_success;
+}
+
+rocsparse_storage_mode rocsparse_get_mat_storage_mode(const rocsparse_mat_descr descr)
+{
+    // If descriptor is invalid, default fill mode is returned
+    if(descr == nullptr)
+    {
+        return rocsparse_storage_mode_sorted;
+    }
+    return descr->storage_mode;
 }
 
 /********************************************************************************
@@ -2663,6 +2692,16 @@ rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
         *matrix                       = rocsparse_get_mat_type(descr->descr);
         return rocsparse_status_success;
     }
+    case rocsparse_spmat_storage_mode:
+    {
+        if(data_size != sizeof(rocsparse_spmat_storage_mode))
+        {
+            return rocsparse_status_invalid_size;
+        }
+        rocsparse_storage_mode* storage = reinterpret_cast<rocsparse_storage_mode*>(data);
+        *storage                        = rocsparse_get_mat_storage_mode(descr->descr);
+        return rocsparse_status_success;
+    }
     }
 
     return rocsparse_status_invalid_value;
@@ -2710,6 +2749,15 @@ rocsparse_status rocsparse_spmat_set_attribute(rocsparse_spmat_descr     descr,
         }
         rocsparse_matrix_type matrix = *reinterpret_cast<const rocsparse_matrix_type*>(data);
         return rocsparse_set_mat_type(descr->descr, matrix);
+    }
+    case rocsparse_spmat_storage_mode:
+    {
+        if(data_size != sizeof(rocsparse_spmat_storage_mode))
+        {
+            return rocsparse_status_invalid_size;
+        }
+        rocsparse_storage_mode storage = *reinterpret_cast<const rocsparse_storage_mode*>(data);
+        return rocsparse_set_mat_storage_mode(descr->descr, storage);
     }
     }
 
