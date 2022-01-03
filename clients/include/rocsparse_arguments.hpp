@@ -77,6 +77,7 @@ struct Arguments
     rocsparse_matrix_type          matrix_type;
     rocsparse_diag_type            diag;
     rocsparse_fill_mode            uplo;
+    rocsparse_storage_mode         storage;
     rocsparse_analysis_policy      apol;
     rocsparse_solve_policy         spol;
     rocsparse_direction            direction;
@@ -187,6 +188,7 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(matrix_type);
         ROCSPARSE_FORMAT_CHECK(diag);
         ROCSPARSE_FORMAT_CHECK(uplo);
+        ROCSPARSE_FORMAT_CHECK(storage);
         ROCSPARSE_FORMAT_CHECK(apol);
         ROCSPARSE_FORMAT_CHECK(spol);
         ROCSPARSE_FORMAT_CHECK(direction);
@@ -376,6 +378,7 @@ private:
         print("matrix_type", rocsparse_matrixtype2string(arg.matrix_type));
         print("diag", rocsparse_diagtype2string(arg.diag));
         print("uplo", rocsparse_fillmode2string(arg.uplo));
+        print("storage", rocsparse_storagemode2string(arg.storage));
         print("analysis_policy", rocsparse_analysis2string(arg.apol));
         print("solve_policy", rocsparse_solve2string(arg.spol));
         print("direction", rocsparse_direction2string(arg.direction));

@@ -83,6 +83,11 @@ Datatypes:
       attr:
         rocsparse_fill_mode_lower: 0
         rocsparse_fill_mode_upper: 1
+  - rocsparse_storage_mode:
+      bases: [ c_int ]
+      attr:
+        rocsparse_storage_mode_sorted: 0
+        rocsparse_storage_mode_unsorted: 1
   - rocsparse_action:
       bases: [ c_int ]
       attr:
@@ -279,6 +284,7 @@ Arguments:
   - matrix_type: rocsparse_matrix_type
   - diag: rocsparse_diag_type
   - uplo: rocsparse_fill_mode
+  - storage: rocsparse_storage_mode
   - apol: rocsparse_analysis_policy
   - spol: rocsparse_solve_policy
   - direction: rocsparse_direction
@@ -384,6 +390,7 @@ Defaults:
   matrix_type: rocsparse_matrix_type_general
   diag: rocsparse_diag_type_non_unit
   uplo: rocsparse_fill_mode_lower
+  storage: rocsparse_storage_mode_sorted
   apol: rocsparse_analysis_policy_reuse
   spol: rocsparse_solve_policy_auto
   direction: rocsparse_direction_row

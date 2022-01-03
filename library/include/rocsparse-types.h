@@ -190,6 +190,21 @@ typedef enum rocsparse_fill_mode_
 } rocsparse_fill_mode;
 
 /*! \ingroup types_module
+ *  \brief Specify whether the matrix is stored sorted or not.
+ *
+ *  \details
+ *  The \ref rocsparse_storage_mode indicates whether the matrix is stored sorted or not.
+ *  For a given \ref rocsparse_mat_descr, the \ref rocsparse_storage_mode can be set
+ *  using rocsparse_set_storage_mode(). The current \ref rocsparse_storage_mode of a
+ *  matrix can be obtained by rocsparse_get_mat_storage_mode().
+ */
+typedef enum rocsparse_storage_mode_
+{
+    rocsparse_storage_mode_sorted   = 0, /**< matrix is sorted. */
+    rocsparse_storage_mode_unsorted = 1 /**< matrix is unsorted. */
+} rocsparse_storage_mode;
+
+/*! \ingroup types_module
  *  \brief Specify where the operation is performed on.
  *
  *  \details
@@ -292,18 +307,19 @@ typedef enum rocsparse_layer_mode
  */
 typedef enum rocsparse_status_
 {
-    rocsparse_status_success         = 0, /**< success. */
-    rocsparse_status_invalid_handle  = 1, /**< handle not initialized, invalid or null. */
-    rocsparse_status_not_implemented = 2, /**< function is not implemented. */
-    rocsparse_status_invalid_pointer = 3, /**< invalid pointer parameter. */
-    rocsparse_status_invalid_size    = 4, /**< invalid size parameter. */
-    rocsparse_status_memory_error    = 5, /**< failed memory allocation, copy, dealloc. */
-    rocsparse_status_internal_error  = 6, /**< other internal library failure. */
-    rocsparse_status_invalid_value   = 7, /**< invalid value parameter. */
-    rocsparse_status_arch_mismatch   = 8, /**< device arch is not supported. */
-    rocsparse_status_zero_pivot      = 9, /**< encountered zero pivot. */
-    rocsparse_status_not_initialized = 10, /**< descriptor has not been initialized. */
-    rocsparse_status_type_mismatch   = 11 /**< index types do not match. */
+    rocsparse_status_success                 = 0, /**< success. */
+    rocsparse_status_invalid_handle          = 1, /**< handle not initialized, invalid or null. */
+    rocsparse_status_not_implemented         = 2, /**< function is not implemented. */
+    rocsparse_status_invalid_pointer         = 3, /**< invalid pointer parameter. */
+    rocsparse_status_invalid_size            = 4, /**< invalid size parameter. */
+    rocsparse_status_memory_error            = 5, /**< failed memory allocation, copy, dealloc. */
+    rocsparse_status_internal_error          = 6, /**< other internal library failure. */
+    rocsparse_status_invalid_value           = 7, /**< invalid value parameter. */
+    rocsparse_status_arch_mismatch           = 8, /**< device arch is not supported. */
+    rocsparse_status_zero_pivot              = 9, /**< encountered zero pivot. */
+    rocsparse_status_not_initialized         = 10, /**< descriptor has not been initialized. */
+    rocsparse_status_type_mismatch           = 11, /**< index types do not match. */
+    rocsparse_status_requires_sorted_storage = 12 /**< sorted storage required. */
 } rocsparse_status;
 
 /*! \ingroup types_module
@@ -368,9 +384,10 @@ typedef enum rocsparse_order_
  */
 typedef enum rocsparse_spmat_attribute_
 {
-    rocsparse_spmat_fill_mode   = 0, /**< Fill mode attribute. */
-    rocsparse_spmat_diag_type   = 1, /**< Diag type attribute. */
-    rocsparse_spmat_matrix_type = 2 /**< Matrix type attribute. */
+    rocsparse_spmat_fill_mode    = 0, /**< Fill mode attribute. */
+    rocsparse_spmat_diag_type    = 1, /**< Diag type attribute. */
+    rocsparse_spmat_matrix_type  = 2, /**< Matrix type attribute. */
+    rocsparse_spmat_storage_mode = 3 /**< Matrix storage attribute. */
 } rocsparse_spmat_attribute;
 
 /*! \ingroup types_module

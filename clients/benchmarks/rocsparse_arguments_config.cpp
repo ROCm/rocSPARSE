@@ -62,6 +62,7 @@ rocsparse_arguments_config::rocsparse_arguments_config()
         this->matrix_type    = static_cast<rocsparse_matrix_type>(0);
         this->diag           = static_cast<rocsparse_diag_type>(0);
         this->uplo           = static_cast<rocsparse_fill_mode>(0);
+        this->storage        = static_cast<rocsparse_storage_mode>(0);
         this->apol           = static_cast<rocsparse_analysis_policy>(0);
         this->spol           = static_cast<rocsparse_solve_policy>(0);
         this->direction      = static_cast<rocsparse_direction>(0);
@@ -235,6 +236,10 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      value<char>(&this->b_uplo)->default_value('L'),
      "L = lower fill, U = upper fill, (default = L)")
 
+    ("storage",
+     value<int>(&this->b_storage)->default_value(0),
+     "0 = rocsparse_storage_mode_sorted, 1 = rocsparse_storage_mode_unsorted, (default = 0)")
+
     ("apolicy",
      value<char>(&this->b_apol)->default_value('R'),
      "R = reuse meta data, F = force re-build, (default = R)")
@@ -396,6 +401,7 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
     : rocsparse_matrix_type_triangular;
   this->diag        = (this->b_diag == 'N') ? rocsparse_diag_type_non_unit : rocsparse_diag_type_unit;
   this->uplo        = (this->b_uplo == 'L') ? rocsparse_fill_mode_lower : rocsparse_fill_mode_upper;
+  this->storage     = (this->b_storage == 0) ? rocsparse_storage_mode_sorted : rocsparse_storage_mode_unsorted;
   this->apol = (this->b_apol == 'R') ? rocsparse_analysis_policy_reuse : rocsparse_analysis_policy_force;
   this->spol = rocsparse_solve_policy_auto;
   this->direction
@@ -569,6 +575,7 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
     : rocsparse_hyb_partition_max;
   this->diag   = (b_diag == 'N') ? rocsparse_diag_type_non_unit : rocsparse_diag_type_unit;
   this->uplo   = (b_uplo == 'L') ? rocsparse_fill_mode_lower : rocsparse_fill_mode_upper;
+  this->storage= (b_storage == 0) ? rocsparse_storage_mode_sorted : rocsparse_storage_mode_unsorted;
   this->apol   = (b_apol == 'R') ? rocsparse_analysis_policy_reuse : rocsparse_analysis_policy_force;
   this->spol   = rocsparse_solve_policy_auto;
   this->direction

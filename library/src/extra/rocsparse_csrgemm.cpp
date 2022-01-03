@@ -1032,6 +1032,15 @@ static inline rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle 
         // Group 7: more than 4096 non-zeros per row
         if(h_group_size[7] > 0)
         {
+            // Matrices B and D must be sorted in order to run this path
+            if(descr_B->storage_mode == rocsparse_storage_mode_unsorted
+               || (info_C->csrgemm_info->add
+                       ? descr_D->storage_mode == rocsparse_storage_mode_unsorted
+                       : false))
+            {
+                return rocsparse_status_requires_sorted_storage;
+            }
+
 #define CSRGEMM_DIM 512
 #define CSRGEMM_SUB 16
 #define CSRGEMM_CHUNKSIZE 2048
@@ -1378,6 +1387,15 @@ static inline rocsparse_status rocsparse_csrgemm_calc_template(rocsparse_handle 
         // Group 7: more than 4096 non-zeros per row
         if(h_group_size[7] > 0)
         {
+            // Matrices B and D must be sorted in order to run this path
+            if(descr_B->storage_mode == rocsparse_storage_mode_unsorted
+               || (info_C->csrgemm_info->add
+                       ? descr_D->storage_mode == rocsparse_storage_mode_unsorted
+                       : false))
+            {
+                return rocsparse_status_requires_sorted_storage;
+            }
+
 #define CSRGEMM_DIM 512
 #define CSRGEMM_SUB 16
 #define CSRGEMM_CHUNKSIZE 2048

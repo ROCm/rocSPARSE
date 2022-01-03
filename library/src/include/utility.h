@@ -272,6 +272,20 @@ inline bool rocsparse_enum_utils::is_invalid(rocsparse_fill_mode value_)
 };
 
 template <>
+inline bool rocsparse_enum_utils::is_invalid(rocsparse_storage_mode value_)
+{
+    switch(value_)
+    {
+    case rocsparse_storage_mode_sorted:
+    case rocsparse_storage_mode_unsorted:
+    {
+        return false;
+    }
+    }
+    return true;
+};
+
+template <>
 inline bool rocsparse_enum_utils::is_invalid(rocsparse_index_base value_)
 {
     switch(value_)

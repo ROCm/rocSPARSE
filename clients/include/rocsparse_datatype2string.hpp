@@ -178,6 +178,18 @@ constexpr auto rocsparse_fillmode2string(rocsparse_fill_mode uplo)
     return "invalid";
 }
 
+constexpr auto rocsparse_storagemode2string(rocsparse_storage_mode storage)
+{
+    switch(storage)
+    {
+    case rocsparse_storage_mode_sorted:
+        return "sorted";
+    case rocsparse_storage_mode_unsorted:
+        return "unsorted";
+    }
+    return "invalid";
+}
+
 constexpr auto rocsparse_action2string(rocsparse_action action)
 {
     switch(action)

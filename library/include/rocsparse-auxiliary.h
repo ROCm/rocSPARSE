@@ -404,6 +404,42 @@ ROCSPARSE_EXPORT
 rocsparse_diag_type rocsparse_get_mat_diag_type(const rocsparse_mat_descr descr);
 
 /*! \ingroup aux_module
+ *  \brief Specify the matrix storage mode of a matrix descriptor
+ *
+ *  \details
+ *  \p rocsparse_set_mat_storage_mode sets the matrix storage mode of a matrix descriptor.
+ *  Valid fill modes are \ref rocsparse_storage_mode_sorted or
+ *  \ref rocsparse_storage_mode_unsorted.
+ *
+ *  @param[inout]
+ *  descr           the matrix descriptor.
+ *  @param[in]
+ *  storage_mode    \ref rocsparse_storage_mode_sorted or
+ *                  \ref rocsparse_storage_mode_unsorted.
+ *
+ *  \retval rocsparse_status_success the operation completed successfully.
+ *  \retval rocsparse_status_invalid_pointer \p descr pointer is invalid.
+ *  \retval rocsparse_status_invalid_value \p storage_mode is invalid.
+ */
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_set_mat_storage_mode(rocsparse_mat_descr    descr,
+                                                rocsparse_storage_mode storage_mode);
+
+/*! \ingroup aux_module
+ *  \brief Get the matrix storage mode of a matrix descriptor
+ *
+ *  \details
+ *  \p rocsparse_get_mat_storage_mode returns the matrix storage mode of a matrix descriptor.
+ *
+ *  @param[in]
+ *  descr   the matrix descriptor.
+ *
+ *  \returns    \ref rocsparse_storage_mode_sorted or \ref rocsparse_storage_mode_unsorted.
+ */
+ROCSPARSE_EXPORT
+rocsparse_storage_mode rocsparse_get_mat_storage_mode(const rocsparse_mat_descr descr);
+
+/*! \ingroup aux_module
  *  \brief Create a \p HYB matrix structure
  *
  *  \details
