@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -121,8 +121,8 @@ public:
     // In-place complex-complex operations
     __device__ __host__ auto& operator*=(const rocsparse_complex_num& rhs)
     {
-        T real = x * rhs.x - y * rhs.y;
-        T imag = y * rhs.x + x * rhs.y;
+        T real = fma(x, rhs.x, -y * rhs.y);
+        T imag = fma(y, rhs.x, x * rhs.y);
 
         return *this = {real, imag};
     }
@@ -139,10 +139,10 @@ public:
 
     __device__ __host__ auto& operator/=(const rocsparse_complex_num& rhs)
     {
-        T sqabs = static_cast<T>(1) / (rhs.x * rhs.x + rhs.y * rhs.y);
+        T sqabs = static_cast<T>(1) / fma(rhs.x, rhs.x, rhs.y * rhs.y);
 
-        T real = (x * rhs.x + y * rhs.y) * sqabs;
-        T imag = (y * rhs.x - x * rhs.y) * sqabs;
+        T real = fma(x, rhs.x, y * rhs.y) * sqabs;
+        T imag = fma(y, rhs.x, -x * rhs.y) * sqabs;
 
         return *this = {real, imag};
     }

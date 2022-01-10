@@ -221,27 +221,30 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
         T ck   = du[ind_k];
         T ck_1 = du[ind_k_1];
 
-        T radius = std::sqrt(std::abs(bk * rocsparse_conj(bk) + ak_1 * rocsparse_conj(ak_1)));
+        T radius
+            = rocsparse_sqrt(rocsparse_abs(bk * rocsparse_conj(bk) + ak_1 * rocsparse_conj(ak_1)));
 
         // Apply Givens rotation
         // | cos  sin | |bk    ck   0   |
         // |-sin  cos | |ak_1  bk_1 ck_1|
-        T cos_theta = bk / radius;
-        T sin_theta = ak_1 / radius;
+        T cos_theta = rocsparse_conj(bk) / radius;
+        T sin_theta = rocsparse_conj(ak_1) / radius;
 
-        d[ind_k]                  = bk * cos_theta + ak_1 * sin_theta;
-        d[ind_k_1]                = -ck * sin_theta + bk_1 * cos_theta;
-        du[ind_k]                 = ck * cos_theta + bk_1 * sin_theta;
-        du[ind_k_1]               = ck_1 * cos_theta;
+        d[ind_k] = rocsparse_fma(bk, cos_theta, ak_1 * sin_theta);
+        d[ind_k_1]
+            = rocsparse_fma(-ck, rocsparse_conj(sin_theta), bk_1 * rocsparse_conj(cos_theta));
+        du[ind_k]                 = rocsparse_fma(ck, cos_theta, bk_1 * sin_theta);
+        du[ind_k_1]               = ck_1 * rocsparse_conj(cos_theta);
         r2[batch_count * i + gid] = ck_1 * sin_theta;
 
         // Apply Givens rotation to rhs vector
         // | cos  sin | |xk  |
         // |-sin  cos | |xk_1|
-        T xk       = x[ind_k];
-        T xk_1     = x[ind_k_1];
-        x[ind_k]   = cos_theta * xk + sin_theta * xk_1;
-        x[ind_k_1] = -sin_theta * xk + cos_theta * xk_1;
+        T xk     = x[ind_k];
+        T xk_1   = x[ind_k_1];
+        x[ind_k] = rocsparse_fma(xk, cos_theta, xk_1 * sin_theta);
+        x[ind_k_1]
+            = rocsparse_fma(-xk, rocsparse_conj(sin_theta), xk_1 * rocsparse_conj(cos_theta));
     }
 
     x[batch_stride * (m - 1) + gid]

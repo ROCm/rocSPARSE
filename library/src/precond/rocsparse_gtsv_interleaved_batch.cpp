@@ -181,7 +181,8 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_lu_template(rocsparse_handle h
     rocsparse_int* p = reinterpret_cast<rocsparse_int*>(reinterpret_cast<void*>(ptr));
     // ptr += sizeof(rocsparse_int) * ((m * batch_count - 1) / 256 + 1) * 256;
 
-    hipMemsetAsync(u2, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream);
+    RETURN_IF_HIP_ERROR(
+        hipMemsetAsync(u2, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
 
     hipLaunchKernelGGL((gtsv_interleaved_batch_lu_kernel<128>),
                        dim3(((batch_count - 1) / 128 + 1), 1, 1),
@@ -216,7 +217,8 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_qr_template(rocsparse_handle h
     T*    r2  = reinterpret_cast<T*>(ptr);
     //   ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
 
-    hipMemsetAsync(r2, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream);
+    RETURN_IF_HIP_ERROR(
+        hipMemsetAsync(r2, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
 
     hipLaunchKernelGGL((gtsv_interleaved_batch_qr_kernel<128>),
                        dim3(((batch_count - 1) / 128 + 1), 1, 1),
@@ -263,12 +265,17 @@ rocsparse_status rocsparse_gtsv_interleaved_batch_template(rocsparse_handle     
               (const void*&)du,
               (const void*&)x,
               batch_count,
+              batch_stride,
               (const void*&)temp_buffer);
 
     log_bench(handle,
               "./rocsparse-bench -f gtsv_interleaved_batch -r",
               replaceX<T>("X"),
-              "--mtx <matrix.mtx> ");
+              "--mtx <matrix.mtx> ",
+              "--batch_count",
+              batch_count,
+              "--batch_stride",
+              batch_stride);
 
     // Check algorithm
     if(rocsparse_enum_utils::is_invalid(alg))

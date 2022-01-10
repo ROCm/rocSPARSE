@@ -82,7 +82,7 @@ rocsparse_status
     }
 
     // Check sizes
-    if(m < 3 || batch_count < 0 || batch_stride < batch_count)
+    if(m < 5 || batch_count < 0 || batch_stride < batch_count)
     {
         return rocsparse_status_invalid_size;
     }
@@ -109,9 +109,17 @@ rocsparse_status
 
     *buffer_size = 0;
 
-    *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dt1
-    *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dt2
-    *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dB
+    if(std::is_same<T, float>() || std::is_same<T, double>())
+    {
+        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dt1
+        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dt2
+        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // dB
+    }
+    else
+    {
+        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // r3
+        *buffer_size += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256; // r4
+    }
 
     return rocsparse_status_success;
 }
@@ -166,7 +174,7 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
     }
 
     // Check sizes
-    if(m < 3 || batch_count < 0 || batch_stride < batch_count)
+    if(m < 5 || batch_count < 0 || batch_stride < batch_count)
     {
         return rocsparse_status_invalid_size;
     }
@@ -190,53 +198,85 @@ rocsparse_status rocsparse_gpsv_interleaved_batch_template(rocsparse_handle     
     // Buffer
     char* ptr = reinterpret_cast<char*>(temp_buffer);
 
-    T* dt1 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+    if(std::is_same<T, float>() || std::is_same<T, double>())
+    {
+        T* dt1 = reinterpret_cast<T*>(ptr);
+        ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
 
-    T* dt2 = reinterpret_cast<T*>(ptr);
-    ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+        T* dt2 = reinterpret_cast<T*>(ptr);
+        ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
 
-    T* B = reinterpret_cast<T*>(ptr);
+        T* B = reinterpret_cast<T*>(ptr);
 
-    // Initialize buffers with zero
-    RETURN_IF_HIP_ERROR(hipMemsetAsync(dt1, 0, sizeof(T) * m * batch_count, stream));
-    RETURN_IF_HIP_ERROR(hipMemsetAsync(dt2, 0, sizeof(T) * m * batch_count, stream));
+        // Initialize buffers with zero
+        RETURN_IF_HIP_ERROR(hipMemsetAsync(dt1, 0, sizeof(T) * m * batch_count, stream));
+        RETURN_IF_HIP_ERROR(hipMemsetAsync(dt2, 0, sizeof(T) * m * batch_count, stream));
 
 #define GPSV_DIM 256
-    dim3 gpsv_blocks((batch_count - 1) / GPSV_DIM + 1);
-    dim3 gpsv_threads(GPSV_DIM);
+        dim3 gpsv_blocks((batch_count - 1) / GPSV_DIM + 1);
+        dim3 gpsv_threads(GPSV_DIM);
 
-    // Copy strided B into buffer
-    hipLaunchKernelGGL((gpsv_strided_gather<GPSV_DIM>),
-                       gpsv_blocks,
-                       gpsv_threads,
-                       0,
-                       stream,
-                       m,
-                       batch_count,
-                       batch_stride,
-                       x,
-                       B);
+        // Copy strided B into buffer
+        hipLaunchKernelGGL((gpsv_strided_gather<GPSV_DIM>),
+                           gpsv_blocks,
+                           gpsv_threads,
+                           0,
+                           stream,
+                           m,
+                           batch_count,
+                           batch_stride,
+                           x,
+                           B);
 
-    // Launch kernel
-    hipLaunchKernelGGL((gpsv_interleaved_batch_kernel<GPSV_DIM>),
-                       gpsv_blocks,
-                       gpsv_threads,
-                       0,
-                       stream,
-                       m,
-                       batch_count,
-                       batch_stride,
-                       ds,
-                       dl,
-                       d,
-                       du,
-                       dw,
-                       x,
-                       dt1,
-                       dt2,
-                       B);
+        // Launch kernel
+        hipLaunchKernelGGL((gpsv_interleaved_batch_householder_qr_kernel<GPSV_DIM>),
+                           gpsv_blocks,
+                           gpsv_threads,
+                           0,
+                           stream,
+                           m,
+                           batch_count,
+                           batch_stride,
+                           ds,
+                           dl,
+                           d,
+                           du,
+                           dw,
+                           x,
+                           dt1,
+                           dt2,
+                           B);
 #undef GPSV_DIM
+    }
+    else
+    {
+        T* r3 = reinterpret_cast<T*>(ptr);
+        ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+        T* r4 = reinterpret_cast<T*>(ptr);
+        ptr += sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256;
+
+        RETURN_IF_HIP_ERROR(hipMemsetAsync(
+            r3, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+        RETURN_IF_HIP_ERROR(hipMemsetAsync(
+            r4, 0, sizeof(T) * ((m * batch_count - 1) / 256 + 1) * 256, handle->stream));
+
+        hipLaunchKernelGGL((gpsv_interleaved_batch_givens_qr_kernel<128>),
+                           dim3(((batch_count - 1) / 128 + 1), 1, 1),
+                           dim3(128, 1, 1),
+                           0,
+                           handle->stream,
+                           m,
+                           batch_count,
+                           batch_stride,
+                           ds,
+                           dl,
+                           d,
+                           du,
+                           dw,
+                           r3,
+                           r4,
+                           x);
+    }
 
     return rocsparse_status_success;
 }

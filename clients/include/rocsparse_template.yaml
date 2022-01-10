@@ -256,14 +256,22 @@ Functions:
   rocsparse_dgtsv_no_pivot: { function: gtsv, <<: *double_precision }
   rocsparse_cgtsv_no_pivot: { function: gtsv, <<: *single_precision_complex }
   rocsparse_zgtsv_no_pivot: { function: gtsv, <<: *double_precision_complex }
-  rocsparse_sgtsv_no_pivot_strideed_batch_buffer_size: { function: gtsv, <<: *single_precision }
-  rocsparse_dgtsv_no_pivot_strideed_batch_buffer_size: { function: gtsv, <<: *double_precision }
-  rocsparse_cgtsv_no_pivot_strideed_batch_buffer_size: { function: gtsv, <<: *single_precision_complex }
-  rocsparse_zgtsv_no_pivot_strideed_batch_buffer_size: { function: gtsv, <<: *double_precision_complex }
-  rocsparse_sgtsv_no_pivot_strideed_batch: { function: gtsv, <<: *single_precision }
-  rocsparse_dgtsv_no_pivot_strideed_batch: { function: gtsv, <<: *double_precision }
-  rocsparse_cgtsv_no_pivot_strideed_batch: { function: gtsv, <<: *single_precision_complex }
-  rocsparse_zgtsv_no_pivot_strideed_batch: { function: gtsv, <<: *double_precision_complex }
+  rocsparse_sgtsv_no_pivot_strided_batch_buffer_size: { function: gtsv, <<: *single_precision }
+  rocsparse_dgtsv_no_pivot_strided_batch_buffer_size: { function: gtsv, <<: *double_precision }
+  rocsparse_cgtsv_no_pivot_strided_batch_buffer_size: { function: gtsv, <<: *single_precision_complex }
+  rocsparse_zgtsv_no_pivot_strided_batch_buffer_size: { function: gtsv, <<: *double_precision_complex }
+  rocsparse_sgtsv_no_pivot_strided_batch: { function: gtsv, <<: *single_precision }
+  rocsparse_dgtsv_no_pivot_strided_batch: { function: gtsv, <<: *double_precision }
+  rocsparse_cgtsv_no_pivot_strided_batch: { function: gtsv, <<: *single_precision_complex }
+  rocsparse_zgtsv_no_pivot_strided_batch: { function: gtsv, <<: *double_precision_complex }
+  rocsparse_sgtsv_interleaved_batch_buffer_size: { function: gtsv, <<: *single_precision }
+  rocsparse_dgtsv_interleaved_batch_buffer_size: { function: gtsv, <<: *double_precision }
+  rocsparse_cgtsv_interleaved_batch_buffer_size: { function: gtsv, <<: *single_precision_complex }
+  rocsparse_zgtsv_interleaved_batch_buffer_size: { function: gtsv, <<: *double_precision_complex }
+  rocsparse_sgtsv_interleaved_batch: { function: gtsv, <<: *single_precision }
+  rocsparse_dgtsv_interleaved_batch: { function: gtsv, <<: *double_precision }
+  rocsparse_cgtsv_interleaved_batch: { function: gtsv, <<: *single_precision_complex }
+  rocsparse_zgtsv_interleaved_batch: { function: gtsv, <<: *double_precision_complex }
   rocsparse_sgpsv_interleaved_batch_buffer_size: { function: gpsv, <<: *single_precision }
   rocsparse_dgpsv_interleaved_batch_buffer_size: { function: gpsv, <<: *double_precision }
   rocsparse_cgpsv_interleaved_batch_buffer_size: { function: gpsv, <<: *single_precision_complex }

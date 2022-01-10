@@ -77,7 +77,7 @@ void testing_gpsv_interleaved_batch(const Arguments& arg)
 #define PARAMS_SOLVE handle, alg, m, dds, ddl, dd, ddu, ddw, dx, batch_count, batch_stride, dbuffer
 
     // Argument sanity check before allocating invalid memory
-    if(m < 3 || batch_count < 0 || batch_stride < batch_count)
+    if(m < 5 || batch_count < 0 || batch_stride < batch_count)
     {
         size_t buffer_size;
         T*     dds     = nullptr;
@@ -89,12 +89,12 @@ void testing_gpsv_interleaved_batch(const Arguments& arg)
         void*  dbuffer = nullptr;
 
         EXPECT_ROCSPARSE_STATUS(rocsparse_gpsv_interleaved_batch_buffer_size<T>(PARAMS_BUFFER_SIZE),
-                                (m < 3 || batch_count < 0 || batch_stride < batch_count)
+                                (m < 5 || batch_count < 0 || batch_stride < batch_count)
                                     ? rocsparse_status_invalid_size
                                     : rocsparse_status_success);
 
         EXPECT_ROCSPARSE_STATUS(rocsparse_gpsv_interleaved_batch<T>(PARAMS_SOLVE),
-                                (m < 3 || batch_count < 0 || batch_stride < batch_count)
+                                (m < 5 || batch_count < 0 || batch_stride < batch_count)
                                     ? rocsparse_status_invalid_size
                                     : rocsparse_status_success);
 

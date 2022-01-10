@@ -175,7 +175,7 @@ Tests:
   category: pre_checkin
   function: spmm_coo
   indextype: *i32_i64
-  precision: *double_only_precisions_complex
+  precision: *single_double_precisions_complex
   M: 1
   N: [6]
   K: 1
@@ -184,10 +184,9 @@ Tests:
   transB: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_coo_segmented, rocsparse_spmm_alg_coo_atomic, rocsparse_spmm_alg_coo_segmented_atomic]
+  spmm_alg: [rocsparse_spmm_alg_coo_segmented]
   order: [rocsparse_order_column]
-  filename: [Chevron3,
-             mplate]
+  filename: [Chevron3]
 
 - name: spmm_coo_file
   category: nightly
