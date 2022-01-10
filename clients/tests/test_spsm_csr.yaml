@@ -195,7 +195,7 @@ Tests:
   category: quick
   function: spsm_csr
   indextype: *i32i32_i64i32_i64i64
-  precision: *single_double_precisions_complex
+  precision: *double_only_precisions_complex
   M: 1
   N: 1
   K: [89]

@@ -53,18 +53,18 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL void gpsv_strided_gather(rocsparse
 
 template <unsigned int BLOCKSIZE, typename T>
 __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
-    void gpsv_interleaved_batch_kernel(rocsparse_int m,
-                                       rocsparse_int batch_count,
-                                       rocsparse_int batch_stride,
-                                       T* __restrict__ ds,
-                                       T* __restrict__ dl,
-                                       T* __restrict__ d,
-                                       T* __restrict__ du,
-                                       T* __restrict__ dw,
-                                       T* __restrict__ X,
-                                       T* __restrict__ t1,
-                                       T* __restrict__ t2,
-                                       T* __restrict__ B)
+    void gpsv_interleaved_batch_householder_qr_kernel(rocsparse_int m,
+                                                      rocsparse_int batch_count,
+                                                      rocsparse_int batch_stride,
+                                                      T* __restrict__ ds,
+                                                      T* __restrict__ dl,
+                                                      T* __restrict__ d,
+                                                      T* __restrict__ du,
+                                                      T* __restrict__ dw,
+                                                      T* __restrict__ X,
+                                                      T* __restrict__ t1,
+                                                      T* __restrict__ t2,
+                                                      T* __restrict__ B)
 {
     // Current batch this thread works on
     rocsparse_int b = blockIdx.x * blockDim.x + threadIdx.x;
@@ -185,6 +185,197 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
             sum += t2[idp0c] * X[batch_stride * (row + 4) + b];
 
         X[idp0] = (B[idp0c] - sum) / d[idp0];
+    }
+}
+
+template <unsigned int BLOCKSIZE, typename T>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void gpsv_interleaved_batch_givens_qr_kernel(rocsparse_int m,
+                                                 rocsparse_int batch_count,
+                                                 rocsparse_int batch_stride,
+                                                 T* __restrict__ ds,
+                                                 T* __restrict__ dl,
+                                                 T* __restrict__ d,
+                                                 T* __restrict__ du,
+                                                 T* __restrict__ dw,
+                                                 T* __restrict__ r3,
+                                                 T* __restrict__ r4,
+                                                 T* __restrict__ x)
+{
+    rocsparse_int gid = hipThreadIdx_x + BLOCKSIZE * hipBlockIdx_x;
+
+    if(gid >= batch_count)
+    {
+        return;
+    }
+
+    for(rocsparse_int i = 0; i < m - 2; i++)
+    {
+        rocsparse_int ind_k   = batch_stride * i + gid;
+        rocsparse_int ind_k_1 = batch_stride * (i + 1) + gid;
+        rocsparse_int ind_k_2 = batch_stride * (i + 2) + gid;
+
+        // For penta diagonal matrices, need to apply two givens rotations to remove lower and lower - 1 entries
+        T radius    = static_cast<T>(0);
+        T cos_theta = static_cast<T>(0);
+        T sin_theta = static_cast<T>(0);
+
+        // Apply first Givens rotation
+        // | cos  sin | |lk_1 dk_1 uk_1 wk_1 0   |
+        // |-sin  cos | |sk_2 lk_2 dk_2 uk_2 wk_2|
+        T sk_2 = ds[ind_k_2];
+        T lk_1 = dl[ind_k_1];
+        T lk_2 = dl[ind_k_2];
+        T dk_1 = d[ind_k_1];
+        T dk_2 = d[ind_k_2];
+        T uk_1 = du[ind_k_1];
+        T uk_2 = du[ind_k_2];
+        T wk_1 = dw[ind_k_1];
+        T wk_2 = dw[ind_k_2];
+
+        radius = rocsparse_sqrt(
+            rocsparse_abs(rocsparse_fma(lk_1, rocsparse_conj(lk_1), sk_2 * rocsparse_conj(sk_2))));
+
+        cos_theta = rocsparse_conj(lk_1) / radius;
+        sin_theta = rocsparse_conj(sk_2) / radius;
+
+        T dlk_1_new = rocsparse_fma(lk_1, cos_theta, sk_2 * sin_theta);
+        T dk_1_new  = rocsparse_fma(dk_1, cos_theta, lk_2 * sin_theta);
+        T duk_1_new = rocsparse_fma(uk_1, cos_theta, dk_2 * sin_theta);
+        T dwk_1_new = rocsparse_fma(wk_1, cos_theta, uk_2 * sin_theta);
+
+        dl[ind_k_1] = dlk_1_new;
+        dl[ind_k_2]
+            = rocsparse_fma(-dk_1, rocsparse_conj(sin_theta), lk_2 * rocsparse_conj(cos_theta));
+        d[ind_k_1] = dk_1_new;
+        d[ind_k_2]
+            = rocsparse_fma(-uk_1, rocsparse_conj(sin_theta), dk_2 * rocsparse_conj(cos_theta));
+        du[ind_k_1] = duk_1_new;
+        du[ind_k_2]
+            = rocsparse_fma(-wk_1, rocsparse_conj(sin_theta), uk_2 * rocsparse_conj(cos_theta));
+        dw[ind_k_1]                     = dwk_1_new;
+        dw[ind_k_2]                     = wk_2 * rocsparse_conj(cos_theta);
+        r3[batch_count * (i + 1) + gid] = wk_2 * sin_theta;
+
+        // Apply first Givens rotation to rhs vector
+        // | cos  sin | |xk_1|
+        // |-sin  cos | |xk_2|
+        T xk_1     = x[ind_k_1];
+        T xk_2     = x[ind_k_2];
+        x[ind_k_1] = rocsparse_fma(xk_1, cos_theta, xk_2 * sin_theta);
+        x[ind_k_2]
+            = rocsparse_fma(-xk_1, rocsparse_conj(sin_theta), xk_2 * rocsparse_conj(cos_theta));
+
+        // Apply second Givens rotation
+        // | cos  sin | |dk   uk   wk   rk   0   |
+        // |-sin  cos | |lk_1 dk_1 uk_1 wk_1 rk_1|
+        lk_1   = dlk_1_new;
+        T dk   = d[ind_k];
+        dk_1   = dk_1_new;
+        T uk   = du[ind_k];
+        uk_1   = duk_1_new;
+        T wk   = dw[ind_k];
+        wk_1   = dwk_1_new;
+        T rk   = r3[batch_count * i + gid];
+        T rk_1 = r3[batch_count * (i + 1) + gid];
+
+        radius = rocsparse_sqrt(
+            rocsparse_abs(rocsparse_fma(dk, rocsparse_conj(dk), lk_1 * rocsparse_conj(lk_1))));
+        cos_theta = rocsparse_conj(dk) / radius;
+        sin_theta = rocsparse_conj(lk_1) / radius;
+
+        d[ind_k] = rocsparse_fma(dk, cos_theta, lk_1 * sin_theta);
+        d[ind_k_1]
+            = rocsparse_fma(-uk, rocsparse_conj(sin_theta), dk_1 * rocsparse_conj(cos_theta));
+        du[ind_k] = rocsparse_fma(uk, cos_theta, dk_1 * sin_theta);
+        du[ind_k_1]
+            = rocsparse_fma(-wk, rocsparse_conj(sin_theta), uk_1 * rocsparse_conj(cos_theta));
+        dw[ind_k] = rocsparse_fma(wk, cos_theta, uk_1 * sin_theta);
+        dw[ind_k_1]
+            = rocsparse_fma(-rk, rocsparse_conj(sin_theta), wk_1 * rocsparse_conj(cos_theta));
+        r3[batch_count * i + gid]       = rocsparse_fma(rk, cos_theta, wk_1 * sin_theta);
+        r3[batch_count * (i + 1) + gid] = rk_1 * rocsparse_conj(cos_theta);
+        r4[batch_count * i + gid]       = rk_1 * sin_theta;
+
+        // Apply second Givens rotation to rhs vector
+        // | cos  sin | |xk  |
+        // |-sin  cos | |xk_1|
+        T xk     = x[ind_k];
+        xk_1     = x[ind_k_1];
+        x[ind_k] = rocsparse_fma(xk, cos_theta, xk_1 * sin_theta);
+        x[ind_k_1]
+            = rocsparse_fma(-xk, rocsparse_conj(sin_theta), xk_1 * rocsparse_conj(cos_theta));
+    }
+
+    // Apply last Givens rotation
+    // | cos  sin | |dk   uk   wk   rk   0   |
+    // |-sin  cos | |lk_1 dk_1 uk_1 wk_1 rk_1|
+    T lk_1 = dl[batch_stride * (m - 1) + gid];
+    T dk   = d[batch_stride * (m - 2) + gid];
+    T dk_1 = d[batch_stride * (m - 1) + gid];
+    T uk   = du[batch_stride * (m - 2) + gid];
+    T uk_1 = du[batch_stride * (m - 1) + gid];
+    T wk   = dw[batch_stride * (m - 2) + gid];
+    T wk_1 = dw[batch_stride * (m - 1) + gid];
+    T rk   = r3[batch_count * (m - 2) + gid];
+    T rk_1 = r3[batch_count * (m - 1) + gid];
+
+    T radius = rocsparse_sqrt(
+        rocsparse_abs(rocsparse_fma(dk, rocsparse_conj(dk), lk_1 * rocsparse_conj(lk_1))));
+    T cos_theta = rocsparse_conj(dk) / radius;
+    T sin_theta = rocsparse_conj(lk_1) / radius;
+
+    d[batch_stride * (m - 2) + gid] = rocsparse_fma(dk, cos_theta, lk_1 * sin_theta);
+    d[batch_stride * (m - 1) + gid]
+        = rocsparse_fma(-uk, rocsparse_conj(sin_theta), dk_1 * rocsparse_conj(cos_theta));
+    du[batch_stride * (m - 2) + gid] = rocsparse_fma(uk, cos_theta, dk_1 * sin_theta);
+    du[batch_stride * (m - 1) + gid]
+        = rocsparse_fma(-wk, rocsparse_conj(sin_theta), uk_1 * rocsparse_conj(cos_theta));
+    dw[batch_stride * (m - 2) + gid] = rocsparse_fma(wk, cos_theta, uk_1 * sin_theta);
+    dw[batch_stride * (m - 1) + gid]
+        = rocsparse_fma(-rk, rocsparse_conj(sin_theta), wk_1 * rocsparse_conj(cos_theta));
+    r3[batch_count * (m - 2) + gid] = rocsparse_fma(rk, cos_theta, wk_1 * sin_theta);
+    r3[batch_count * (m - 1) + gid] = rk_1 * rocsparse_conj(cos_theta);
+    r4[batch_count * (m - 2) + gid] = rk_1 * sin_theta;
+
+    // Apply last Givens rotation to rhs vector
+    // | cos  sin | |xk  |
+    // |-sin  cos | |xk_1|
+    T xk                            = x[batch_stride * (m - 2) + gid];
+    T xk_1                          = x[batch_stride * (m - 1) + gid];
+    x[batch_stride * (m - 2) + gid] = rocsparse_fma(xk, cos_theta, xk_1 * sin_theta);
+    x[batch_stride * (m - 1) + gid]
+        = rocsparse_fma(-xk, rocsparse_conj(sin_theta), xk_1 * rocsparse_conj(cos_theta));
+
+    // Backward substitution on upper triangular R * x = x
+    x[batch_stride * (m - 1) + gid]
+        = x[batch_stride * (m - 1) + gid] / d[batch_stride * (m - 1) + gid];
+    x[batch_stride * (m - 2) + gid]
+        = (x[batch_stride * (m - 2) + gid]
+           - du[batch_stride * (m - 2) + gid] * x[batch_stride * (m - 1) + gid])
+          / d[batch_stride * (m - 2) + gid];
+
+    x[batch_stride * (m - 3) + gid]
+        = (x[batch_stride * (m - 3) + gid]
+           - du[batch_stride * (m - 3) + gid] * x[batch_stride * (m - 2) + gid]
+           - dw[batch_stride * (m - 3) + gid] * x[batch_stride * (m - 1) + gid])
+          / d[batch_stride * (m - 3) + gid];
+
+    x[batch_stride * (m - 4) + gid]
+        = (x[batch_stride * (m - 4) + gid]
+           - du[batch_stride * (m - 4) + gid] * x[batch_stride * (m - 3) + gid]
+           - dw[batch_stride * (m - 4) + gid] * x[batch_stride * (m - 2) + gid]
+           - r3[batch_count * (m - 4) + gid] * x[batch_stride * (m - 1) + gid])
+          / d[batch_stride * (m - 4) + gid];
+
+    for(rocsparse_int i = m - 5; i >= 0; i--)
+    {
+        x[batch_stride * i + gid] = (x[batch_stride * i + gid]
+                                     - du[batch_stride * i + gid] * x[batch_stride * (i + 1) + gid]
+                                     - dw[batch_stride * i + gid] * x[batch_stride * (i + 2) + gid]
+                                     - r3[batch_count * i + gid] * x[batch_stride * (i + 3) + gid]
+                                     - r4[batch_count * i + gid] * x[batch_stride * (i + 4) + gid])
+                                    / d[batch_stride * i + gid];
     }
 }
 

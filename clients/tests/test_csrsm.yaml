@@ -219,7 +219,7 @@ Tests:
 - name: csrsm_file
   category: quick
   function: csrsm
-  precision: *single_double_precisions_complex
+  precision: *double_only_precisions_complex
   M: 1
   N: 1
   K: [89]

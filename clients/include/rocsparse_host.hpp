@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -681,6 +681,18 @@ void host_gtsv_interleaved_batch(rocsparse_gtsv_interleaved_alg algo,
                                  const T*                       dl,
                                  const T*                       d,
                                  const T*                       du,
+                                 T*                             x,
+                                 rocsparse_int                  batch_count,
+                                 rocsparse_int                  batch_stride);
+
+template <typename T>
+void host_gpsv_interleaved_batch(rocsparse_gpsv_interleaved_alg algo,
+                                 rocsparse_int                  m,
+                                 T*                             ds,
+                                 T*                             dl,
+                                 T*                             d,
+                                 T*                             du,
+                                 T*                             dw,
                                  T*                             x,
                                  rocsparse_int                  batch_count,
                                  rocsparse_int                  batch_stride);
