@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -84,11 +84,7 @@ if(NOT CONVERT_SOURCE)
   set(CONVERT_SOURCE ${CMAKE_SOURCE_DIR}/deps/convert.cpp)
 endif()
 
-if(BUILD_ADDRESS_SANITIZER)
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -fsanitize=address -shared-libasan -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
-else()
-  execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
-endif()
+execute_process(COMMAND ${CMAKE_CXX_COMPILER} ${CONVERT_SOURCE} -O3 -o ${PROJECT_BINARY_DIR}/mtx2csr.exe)
 
 list(LENGTH TEST_MATRICES len)
 math(EXPR len1 "${len} - 1")
