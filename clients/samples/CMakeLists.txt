@@ -114,42 +114,44 @@ add_rocsparse_example(example_csrsv_managed.cpp)
 if(TARGET rocsparse)
   # Compile Fortran examples only if built directly with package
   # else the Fortran module file is not generated
-  if (NOT WIN32)
 
-function(add_rocsparse_fortran_example EXAMPLE_SOURCE)
-  get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SOURCE} NAME_WE)
-  add_executable(${EXAMPLE_TARGET} ${EXAMPLE_SOURCE})
+  # BUILD_ADDRESS_SANITIZER EXCLUDED, SEE NOTES IN THE ROOT CMakeLists.txt.
+  if (NOT WIN32 AND NOT BUILD_ADDRESS_SANITIZER)
 
-  # Target compile options
-  target_compile_options(${EXAMPLE_TARGET} PRIVATE -Wno-unused-command-line-argument)
+    function(add_rocsparse_fortran_example EXAMPLE_SOURCE)
+      get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SOURCE} NAME_WE)
+      add_executable(${EXAMPLE_TARGET} ${EXAMPLE_SOURCE})
 
-  # Include common client headers
-  target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
+      # Target compile options
+      target_compile_options(${EXAMPLE_TARGET} PRIVATE -Wno-unused-command-line-argument)
 
-  # Linker dependencies
-  target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host rocsparse_common_samples)
+      # Include common client headers
+      target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
-  if (BUILD_CODE_COVERAGE)
-    target_link_libraries(${EXAMPLE_TARGET} PRIVATE -lgcov)
-  endif()
+      # Linker dependencies
+      target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host rocsparse_common_samples)
 
-  # Target properties
-  set_target_properties(${EXAMPLE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
-endfunction()
+      if (BUILD_CODE_COVERAGE)
+	target_link_libraries(${EXAMPLE_TARGET} PRIVATE -lgcov)
+      endif()
 
-  add_rocsparse_fortran_example(example_fortran_gtsv.f90)
-  add_rocsparse_fortran_example(example_fortran_csric0.f90)
-  add_rocsparse_fortran_example(example_fortran_csrilu0.f90)
-  add_rocsparse_fortran_example(example_fortran_bsrmm.f90)
-  add_rocsparse_fortran_example(example_fortran_bsric0.f90)
-  add_rocsparse_fortran_example(example_fortran_bsrilu0.f90)
-  add_rocsparse_fortran_example(example_fortran_bsrsv.f90)
-  add_rocsparse_fortran_example(example_fortran_csrsv.f90)
-  add_rocsparse_fortran_example(example_fortran_spmv.f90)
-  add_rocsparse_fortran_example(example_fortran_csrsm.f90)
-  add_rocsparse_fortran_example(example_fortran_gemmi.f90)
-  add_rocsparse_fortran_example(example_fortran_auxiliary.f90)
-  add_rocsparse_fortran_example(example_fortran_dotci.f90)
-  add_rocsparse_fortran_example(example_fortran_roti.f90)
+      # Target properties
+      set_target_properties(${EXAMPLE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
+    endfunction()
+
+    add_rocsparse_fortran_example(example_fortran_gtsv.f90)
+    add_rocsparse_fortran_example(example_fortran_csric0.f90)
+    add_rocsparse_fortran_example(example_fortran_csrilu0.f90)
+    add_rocsparse_fortran_example(example_fortran_bsrmm.f90)
+    add_rocsparse_fortran_example(example_fortran_bsric0.f90)
+    add_rocsparse_fortran_example(example_fortran_bsrilu0.f90)
+    add_rocsparse_fortran_example(example_fortran_bsrsv.f90)
+    add_rocsparse_fortran_example(example_fortran_csrsv.f90)
+    add_rocsparse_fortran_example(example_fortran_spmv.f90)
+    add_rocsparse_fortran_example(example_fortran_csrsm.f90)
+    add_rocsparse_fortran_example(example_fortran_gemmi.f90)
+    add_rocsparse_fortran_example(example_fortran_auxiliary.f90)
+    add_rocsparse_fortran_example(example_fortran_dotci.f90)
+    add_rocsparse_fortran_example(example_fortran_roti.f90)
   endif()
 endif()

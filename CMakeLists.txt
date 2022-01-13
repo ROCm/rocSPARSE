@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -84,9 +84,31 @@ if(BUILD_CODE_COVERAGE)
 endif()
 
 if(BUILD_ADDRESS_SANITIZER)
+
+  # CXX
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -shared-libasan")
+  set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -fuse-ld=lld")
+
+  # C
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address -shared-libasan")
-  add_link_options(-fuse-ld=lld)
+  set(CMAKE_C_LINK_EXECUTABLE "${CMAKE_C_LINK_EXECUTABLE} -fuse-ld=lld")
+
+  # Fortran excluded (see NOTES below)
+  # set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fsanitize=address")
+  # set(CMAKE_Fortran_LINK_EXECUTABLE "${CMAKE_Fortran_LINK_EXECUTABLE} -fuse-ld=bfd")
+
+  #
+  # NOTES ON FORTRAN:
+  # Fortran samples can compile with the options above:
+  # > -shared-libasan and -fuse-ld=lld is not always recognized from gfortran
+  # > -fuse-ld=bfd is here to mimic the required -fuse-ld=lld, but it compiles without too.
+  # However, error from asan is popping up from running a Fortran sample:
+  # ==14708==AddressSanitizer CHECK failed: /src/external/llvm-project/compiler-rt/lib/asan/../sanitizer_common/sanitizer_common_interceptors.inc:10057 "((__interception::real_memcpy)) != (0)" (0x0, 0x0)
+  #
+  # !!!!
+  # For this reason, and to be consistent with other libraries, Fortran is excluded from the address sanitizer build.
+  # !!!!
+  #
 endif()
 
 # Dependencies
