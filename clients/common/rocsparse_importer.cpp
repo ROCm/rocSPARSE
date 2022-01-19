@@ -25,6 +25,13 @@
 #include "rocsparse_importer.hpp"
 
 template <>
+rocsparse_status rocsparse_type_conversion(const size_t& x, size_t& y)
+{
+    y = x;
+    return rocsparse_status_success;
+}
+
+template <>
 rocsparse_status rocsparse_type_conversion(const int32_t& x, int32_t& y)
 {
     y = x;
@@ -43,6 +50,36 @@ rocsparse_status rocsparse_type_conversion(const int32_t& x, int64_t& y)
 {
     y = x;
     return rocsparse_status_success;
+}
+
+template <>
+rocsparse_status rocsparse_type_conversion(const int64_t& x, size_t& y)
+{
+    if(x < 0)
+    {
+        std::cerr << "corrupted conversion from int64_t to size_t." << std::endl;
+        return rocsparse_status_invalid_value;
+    }
+    else
+    {
+        y = static_cast<size_t>(x);
+        return rocsparse_status_success;
+    }
+}
+
+template <>
+rocsparse_status rocsparse_type_conversion(const int32_t& x, size_t& y)
+{
+    if(x < 0)
+    {
+        std::cerr << "corrupted conversion from int32_t to size_t." << std::endl;
+        return rocsparse_status_invalid_value;
+    }
+    else
+    {
+        y = static_cast<size_t>(x);
+        return rocsparse_status_success;
+    }
 }
 
 template <>
@@ -90,180 +127,9 @@ rocsparse_status rocsparse_type_conversion(const size_t& x, int64_t& y)
     return rocsparse_status_success;
 }
 
-template <typename IMPL>
-template <rocsparse_direction DIRECTION, typename T, typename I, typename J>
-rocsparse_status rocsparse_importer<IMPL>::import(host_csx_matrix<DIRECTION, T, I, J>& csx_)
+template <>
+rocsparse_status rocsparse_type_conversion(const float& x, double& y)
 {
-
-    //
-    // Define
-    //
-    {
-        J                    M;
-        J                    N;
-        I                    nnz;
-        rocsparse_index_base base;
-        rocsparse_direction  dir;
-        rocsparse_status     status = this->import_sparse_csx(&dir, &M, &N, &nnz, &base);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-        csx_.define(M, N, nnz, base);
-    }
-
-    //
-    // Import
-    //
-    {
-        rocsparse_status status = this->import_sparse_csx<T, I, J>(csx_.ptr, csx_.ind, csx_.val);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-    }
-    return rocsparse_status_success;
-}
-
-template <typename IMPL>
-template <typename T, typename I>
-rocsparse_status rocsparse_importer<IMPL>::import(host_coo_matrix<T, I>& matrix_)
-{
-    //
-    // Define.
-    //
-    {
-        I                    M, N, nnz;
-        rocsparse_index_base base;
-        rocsparse_status     status = this->import_sparse_coo(&M, &N, &nnz, &base);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-
-        matrix_.define(M, N, nnz, base);
-    }
-
-    //
-    // Import.
-    //
-    {
-        rocsparse_status status
-            = this->import_sparse_coo(matrix_.ptr, matrix_.ind, matrix_.val, matrix_.base);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-    }
-
-    return rocsparse_status_success;
-}
-
-template <typename IMPL>
-template <rocsparse_direction DIRECTION, typename T, typename I, typename J>
-rocsparse_status rocsparse_importer<IMPL>::import(host_gebsx_matrix<DIRECTION, T, I, J>& that_)
-{
-
-    //
-    // Define
-    //
-    {
-        J                    Mb;
-        J                    Nb;
-        I                    nnzb;
-        rocsparse_index_base base;
-        rocsparse_direction  dir;
-        rocsparse_direction  dirb;
-        J                    block_dim_row, block_dim_column;
-        rocsparse_status     status = this->import_sparse_gebsx(
-            &dir, &dirb, &Mb, &Nb, &nnzb, &block_dim_row, &block_dim_column, &base);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-        if(dir != DIRECTION)
-        {
-            std::cerr << "dir != DIRECTION" << std::endl;
-            return rocsparse_status_invalid_value;
-        }
-
-        that_.define(dirb, Mb, Nb, nnzb, block_dim_row, block_dim_column, base);
-    }
-
-    //
-    // Import
-    //
-    {
-        rocsparse_status status = this->import_sparse_csx<T, I, J>(that_.ptr, that_.ind, that_.val);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-    }
-    return rocsparse_status_success;
-}
-
-template <typename IMPL>
-template <typename T, typename I>
-rocsparse_status rocsparse_importer<IMPL>::import(host_dense_matrix<T, I>& that_)
-{
-
-    //
-    // Define
-    //
-    {
-        rocsparse_order  order;
-        I                M;
-        I                N;
-        rocsparse_status status = this->import_dense_matrix(&order, &M, &N);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-        that_.define(M, N, order);
-    }
-
-    //
-    // Import
-    //
-    {
-        rocsparse_status status = this->import_dense_matrix<T, I>(that_.val, that_.ld);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-    }
-    return rocsparse_status_success;
-}
-
-template <typename IMPL>
-template <typename T>
-rocsparse_status rocsparse_importer<IMPL>::import(host_dense_vector<T>& that_)
-{
-
-    //
-    // Define
-    //
-    {
-        size_t           M;
-        rocsparse_status status = this->import_dense_vector(&M);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-        that_.resize(M);
-    }
-
-    //
-    // Import
-    //
-    {
-        static constexpr size_t ld     = 1;
-        rocsparse_status        status = this->import_dense_vector<T>(that_.data(), ld);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-    }
+    y = static_cast<double>(x);
     return rocsparse_status_success;
 }
