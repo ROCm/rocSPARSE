@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,20 +21,7 @@
  *
  * ************************************************************************ */
 
-#include "common.h"
-#include "definitions.h"
-#include "handle.h"
-#include "rocsparse.h"
-#include "rocsparse_sddmm.hpp"
-#include "utility.h"
-
-template <typename I, typename J>
-rocsparse_status rocsparse_csr2coo_template(rocsparse_handle     handle,
-                                            const I*             csr_row_ptr,
-                                            I                    nnz,
-                                            J                    m,
-                                            J*                   coo_row_ind,
-                                            rocsparse_index_base idx_base);
+#include "rocsparse_sddmm_csx_kernel.hpp"
 
 template <typename I, typename J, typename T>
 struct rocsparse_sddmm_st<rocsparse_format_csr, rocsparse_sddmm_alg_default, I, J, T>
@@ -61,36 +48,7 @@ struct rocsparse_sddmm_st<rocsparse_format_csr, rocsparse_sddmm_alg_default, I, 
                                         rocsparse_sddmm_alg  alg,
                                         size_t*              buffer_size)
     {
-        rocsparse_status status
-            = rocsparse_sddmm_st<rocsparse_format_coo, rocsparse_sddmm_alg_default, J, J, T>::
-                buffer_size(handle,
-                            trans_A,
-                            trans_B,
-                            order_A,
-                            order_B,
-                            m,
-                            n,
-                            k,
-                            nnz,
-                            alpha,
-                            A_val,
-                            A_ld,
-                            B_val,
-                            B_ld,
-                            beta,
-                            (J*)nullptr,
-                            C_col_data,
-                            C_val_data,
-                            C_base,
-                            alg,
-                            buffer_size);
-
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-
-        buffer_size[0] += nnz * sizeof(J);
+        *buffer_size = 0;
         return rocsparse_status_success;
     }
 
@@ -116,41 +74,7 @@ struct rocsparse_sddmm_st<rocsparse_format_csr, rocsparse_sddmm_alg_default, I, 
                                        rocsparse_sddmm_alg  alg,
                                        void*                buffer)
     {
-        //
-        // Compute
-        //
-        J*    row_data   = (J*)buffer;
-        void* coo_buffer = row_data + nnz;
-
-        rocsparse_status status
-            = rocsparse_csr2coo_template(handle, C_row_data, nnz, m, row_data, C_base);
-        if(status != rocsparse_status_success)
-        {
-            return status;
-        }
-
-        return rocsparse_sddmm_st<rocsparse_format_coo, rocsparse_sddmm_alg_default, J, J, T>::
-            preprocess(handle,
-                       trans_A,
-                       trans_B,
-                       order_A,
-                       order_B,
-                       m,
-                       n,
-                       k,
-                       nnz,
-                       alpha,
-                       A_val,
-                       A_ld,
-                       B_val,
-                       B_ld,
-                       beta,
-                       row_data,
-                       C_col_data,
-                       C_val_data,
-                       C_base,
-                       alg,
-                       coo_buffer);
+        return rocsparse_status_success;
     }
 
     static rocsparse_status compute(rocsparse_handle     handle,
@@ -175,30 +99,109 @@ struct rocsparse_sddmm_st<rocsparse_format_csr, rocsparse_sddmm_alg_default, I, 
                                     rocsparse_sddmm_alg  alg,
                                     void*                buffer)
     {
-        J*    row_data   = (J*)buffer;
-        void* coo_buffer = row_data + nnz;
-        return rocsparse_sddmm_st<rocsparse_format_coo, rocsparse_sddmm_alg_default, J, J, T>::
-            compute(handle,
-                    trans_A,
-                    trans_B,
-                    order_A,
-                    order_B,
-                    m,
-                    n,
-                    k,
-                    (J)nnz,
-                    alpha,
-                    A_val,
-                    A_ld,
-                    B_val,
-                    B_ld,
-                    beta,
-                    row_data,
-                    C_col_data,
-                    C_val_data,
-                    C_base,
-                    alg,
-                    coo_buffer);
+        static constexpr int NB = 512;
+
+#define HLAUNCH(NT_)                                                                  \
+    int64_t num_blocks_x = (m - 1) / (NB / NT_) + 1;                                  \
+    dim3    blocks(num_blocks_x);                                                     \
+    dim3    threads(NB);                                                              \
+    hipLaunchKernelGGL((sddmm_csx_kernel<NB, NT_, rocsparse_direction_row, I, J, T>), \
+                       blocks,                                                        \
+                       threads,                                                       \
+                       0,                                                             \
+                       handle->stream,                                                \
+                       trans_A,                                                       \
+                       trans_B,                                                       \
+                       order_A,                                                       \
+                       order_B,                                                       \
+                       m,                                                             \
+                       n,                                                             \
+                       k,                                                             \
+                       nnz,                                                           \
+                       *(const T*)alpha,                                              \
+                       A_val,                                                         \
+                       A_ld,                                                          \
+                       B_val,                                                         \
+                       B_ld,                                                          \
+                       *(const T*)beta,                                               \
+                       (T*)C_val_data,                                                \
+                       (const I*)C_row_data,                                          \
+                       (const J*)C_col_data,                                          \
+                       C_base,                                                        \
+                       (T*)buffer)
+
+#define DLAUNCH(NT_)                                                                  \
+    int64_t num_blocks_x = (m - 1) / (NB / NT_) + 1;                                  \
+    dim3    blocks(num_blocks_x);                                                     \
+    dim3    threads(NB);                                                              \
+    hipLaunchKernelGGL((sddmm_csx_kernel<NB, NT_, rocsparse_direction_row, I, J, T>), \
+                       blocks,                                                        \
+                       threads,                                                       \
+                       0,                                                             \
+                       handle->stream,                                                \
+                       trans_A,                                                       \
+                       trans_B,                                                       \
+                       order_A,                                                       \
+                       order_B,                                                       \
+                       m,                                                             \
+                       n,                                                             \
+                       k,                                                             \
+                       nnz,                                                           \
+                       alpha,                                                         \
+                       A_val,                                                         \
+                       A_ld,                                                          \
+                       B_val,                                                         \
+                       B_ld,                                                          \
+                       beta,                                                          \
+                       (T*)C_val_data,                                                \
+                       (const I*)C_row_data,                                          \
+                       (const J*)C_col_data,                                          \
+                       C_base,                                                        \
+                       (T*)buffer)
+
+        if(handle->pointer_mode == rocsparse_pointer_mode_host)
+        {
+            if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
+            {
+                return rocsparse_status_success;
+            }
+            if(k > 4)
+            {
+                HLAUNCH(8);
+            }
+            else if(k > 2)
+            {
+                HLAUNCH(4);
+            }
+            else if(k > 1)
+            {
+                HLAUNCH(2);
+            }
+            else
+            {
+                HLAUNCH(1);
+            }
+        }
+        else
+        {
+            if(k > 4)
+            {
+                DLAUNCH(8);
+            }
+            else if(k > 2)
+            {
+                DLAUNCH(4);
+            }
+            else if(k > 1)
+            {
+                DLAUNCH(2);
+            }
+            else
+            {
+                DLAUNCH(1);
+            }
+        }
+        return rocsparse_status_success;
     }
 };
 

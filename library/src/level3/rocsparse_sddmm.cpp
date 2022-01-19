@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -422,7 +422,6 @@ extern "C" rocsparse_status rocsparse_sddmm_preprocess(rocsparse_handle         
     // Check for valid pointers
     RETURN_IF_NULLPTR(alpha);
     RETURN_IF_NULLPTR(beta);
-    RETURN_IF_NULLPTR(temp_buffer);
 
     // Check if descriptors are initialized
     if(mat_A->init == false || mat_B->init == false || mat_C->init == false)
@@ -639,7 +638,6 @@ extern "C" rocsparse_status rocsparse_sddmm(rocsparse_handle            handle,
     // Check for valid pointers
     RETURN_IF_NULLPTR(alpha);
     RETURN_IF_NULLPTR(beta);
-    RETURN_IF_NULLPTR(temp_buffer);
 
     // Check if descriptors are initialized
     if(mat_A->init == false || mat_B->init == false || mat_C->init == false)

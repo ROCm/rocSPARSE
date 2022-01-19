@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 #include "utility.h"
 
 template <rocsparse_int BLOCKSIZE,
-          rocsparse_int WIN,
+          rocsparse_int NTHREADS_PER_DOTPRODUCT,
           typename I,
           typename J,
           typename T,
@@ -50,90 +50,75 @@ ROCSPARSE_KERNEL __launch_bounds__(BLOCKSIZE, 1) void sddmm_ell_kernel(rocsparse
                                                                        J ldb,
                                                                        U beta_device_host,
                                                                        T* __restrict__ val,
-
                                                                        const J* __restrict__ ind,
                                                                        rocsparse_index_base base,
                                                                        T* __restrict__ workspace)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
     auto beta  = load_scalar_device_host(beta_device_host);
+    if(alpha == static_cast<T>(0) && beta == static_cast<T>(1))
+    {
+        return;
+    }
+    //
+    // Each group treats one row.
+    //
+    static constexpr rocsparse_int NUM_COEFF          = (BLOCKSIZE / NTHREADS_PER_DOTPRODUCT);
+    const I                        local_coeff_index  = hipThreadIdx_x / NTHREADS_PER_DOTPRODUCT;
+    const I                        local_thread_index = hipThreadIdx_x % NTHREADS_PER_DOTPRODUCT;
+    const J                        incx               = (orderA == rocsparse_order_column)
+                                                            ? ((transA == rocsparse_operation_none) ? lda : 1)
+                                                            : ((transA == rocsparse_operation_none) ? 1 : lda);
 
-    I at = hipBlockIdx_y;
-    I i  = at % M;
-    I j  = ind[at] - base;
+    const J incy = (orderB == rocsparse_order_column)
+                       ? ((transB == rocsparse_operation_none) ? 1 : ldb)
+                       : ((transB == rocsparse_operation_none) ? ldb : 1);
 
+    __shared__ T s[NUM_COEFF][NTHREADS_PER_DOTPRODUCT];
+
+    const I innz = hipBlockIdx_x * NUM_COEFF + local_coeff_index;
+    if(innz >= nnz)
+    {
+        return;
+    }
+
+    const J i = innz % M;
+    const J j = ind[innz] - base;
+    if(j < 0)
+    {
+        return;
+    }
     const T* x = (orderA == rocsparse_order_column)
                      ? ((transA == rocsparse_operation_none) ? (A + i) : (A + lda * i))
                      : ((transA == rocsparse_operation_none) ? (A + lda * i) : (A + i));
-    J incx = (orderA == rocsparse_order_column) ? ((transA == rocsparse_operation_none) ? lda : 1)
-                                                : ((transA == rocsparse_operation_none) ? 1 : lda);
 
     const T* y = (orderB == rocsparse_order_column)
                      ? ((transB == rocsparse_operation_none) ? (B + ldb * j) : (B + j))
                      : ((transB == rocsparse_operation_none) ? (B + j) : (B + ldb * j));
-    J incy = (orderB == rocsparse_order_column) ? ((transB == rocsparse_operation_none) ? 1 : ldb)
-                                                : ((transB == rocsparse_operation_none) ? ldb : 1);
-
-    size_t gid = hipBlockIdx_x * hipBlockDim_x + hipThreadIdx_x;
-    T      sum = static_cast<T>(0);
-
-    // sum WIN elements per thread
-    size_t inc = hipBlockDim_x * hipGridDim_x;
-    if(j >= 0 && j < N)
-    {
-        for(J l = 0; l < WIN && gid < K; l++, gid += inc)
-        {
-            sum += y[gid * incy] * x[gid * incx];
-        }
-    }
-
-    sum = rocsparse_reduce_block<BLOCKSIZE>(sum);
-    if(hipThreadIdx_x == 0)
-    {
-        workspace[hipBlockIdx_x + hipBlockIdx_y * hipGridDim_x] = sum;
-        if(hipGridDim_x == 1) // small N avoid second kernel
-        {
-            if(j >= 0 && j < N)
-            {
-                val[at] = val[at] * beta + alpha * sum;
-            }
-        }
-    }
-}
-
-template <rocsparse_int NB, rocsparse_int WIN, typename T, typename U>
-ROCSPARSE_KERNEL __launch_bounds__(NB) void ell_finalize_kernel(rocsparse_int n_sums,
-                                                                U             alpha_device_host,
-                                                                U             beta_device_host,
-                                                                T* __restrict__ in,
-                                                                T* __restrict__ out)
-{
-    auto alpha = load_scalar_device_host(alpha_device_host);
-    auto beta  = load_scalar_device_host(beta_device_host);
 
     T sum = static_cast<T>(0);
-
-    int offset = hipBlockIdx_y * n_sums;
-    in += offset;
-
-    int inc = hipBlockDim_x * hipGridDim_x * WIN;
-
-    int i         = hipThreadIdx_x * WIN;
-    int remainder = n_sums % WIN;
-    int end       = n_sums - remainder;
-    for(; i < end; i += inc) // cover all sums as 1 block
+    for(J k = local_thread_index; k < K; k += NTHREADS_PER_DOTPRODUCT)
     {
-        for(int j = 0; j < WIN; j++)
-            sum += in[i + j];
+        sum += x[k * incx] * y[k * incy];
     }
-    if(hipThreadIdx_x < remainder)
+    s[local_coeff_index][local_thread_index] = sum;
+    __syncthreads();
+
+#pragma unroll
+    for(int ipow2_ = 2; ipow2_ <= NTHREADS_PER_DOTPRODUCT; ipow2_ *= 2)
     {
-        sum += in[n_sums - 1 - hipThreadIdx_x];
+        if(local_thread_index < NTHREADS_PER_DOTPRODUCT / ipow2_)
+        {
+            s[local_coeff_index][local_thread_index]
+                += s[local_coeff_index][local_thread_index + NTHREADS_PER_DOTPRODUCT / ipow2_];
+        }
+        __syncthreads();
     }
 
-    sum = rocsparse_reduce_block<NB>(sum);
-    if(hipThreadIdx_x == 0)
-        out[hipBlockIdx_y] = out[hipBlockIdx_y] * beta + alpha * sum;
+    if(local_thread_index == 0)
+    {
+        val[innz] = val[innz] * beta + alpha * s[local_coeff_index][0];
+    }
 }
 
 template <typename I, typename J, typename T>
@@ -162,8 +147,7 @@ struct rocsparse_sddmm_st<rocsparse_format_ell, rocsparse_sddmm_alg_default, I, 
                                         rocsparse_sddmm_alg  alg,
                                         size_t*              buffer_size)
     {
-        static constexpr int NB = 512;
-        buffer_size[0]          = nnz * ((k - 1) / NB + 1) * sizeof(T);
+        buffer_size[0] = 0;
         return rocsparse_status_success;
     }
 
@@ -214,92 +198,104 @@ struct rocsparse_sddmm_st<rocsparse_format_ell, rocsparse_sddmm_alg_default, I, 
                                     rocsparse_sddmm_alg  alg,
                                     void*                buffer)
     {
-        static constexpr int WIN          = rocsparse_reduce_WIN<T>();
-        int64_t              num_blocks_y = nnz;
-        static constexpr int NB           = 512;
-        int64_t              num_blocks_x = (k - 1) / NB + 1;
-        dim3                 blocks(num_blocks_x, num_blocks_y);
-        dim3                 threads(NB);
+
+        static constexpr int NB = 512;
+#define HLAUNCH(K_)                                         \
+    int64_t num_blocks_x = (nnz - 1) / (NB / K_) + 1;       \
+    dim3    blocks(num_blocks_x);                           \
+    dim3    threads(NB);                                    \
+    hipLaunchKernelGGL((sddmm_ell_kernel<NB, K_, I, J, T>), \
+                       blocks,                              \
+                       threads,                             \
+                       0,                                   \
+                       handle->stream,                      \
+                       trans_A,                             \
+                       trans_B,                             \
+                       order_A,                             \
+                       order_B,                             \
+                       m,                                   \
+                       n,                                   \
+                       k,                                   \
+                       nnz,                                 \
+                       *(const T*)alpha,                    \
+                       A_val,                               \
+                       A_ld,                                \
+                       B_val,                               \
+                       B_ld,                                \
+                       *(const T*)beta,                     \
+                       (T*)C_val_data,                      \
+                       (const J*)C_col_data,                \
+                       C_base,                              \
+                       (T*)buffer)
+
+#define DLAUNCH(K_)                                         \
+    int64_t num_blocks_x = (nnz - 1) / (NB / K_) + 1;       \
+    dim3    blocks(num_blocks_x);                           \
+    dim3    threads(NB);                                    \
+    hipLaunchKernelGGL((sddmm_ell_kernel<NB, K_, I, J, T>), \
+                       blocks,                              \
+                       threads,                             \
+                       0,                                   \
+                       handle->stream,                      \
+                       trans_A,                             \
+                       trans_B,                             \
+                       order_A,                             \
+                       order_B,                             \
+                       m,                                   \
+                       n,                                   \
+                       k,                                   \
+                       nnz,                                 \
+                       alpha,                               \
+                       A_val,                               \
+                       A_ld,                                \
+                       B_val,                               \
+                       B_ld,                                \
+                       beta,                                \
+                       (T*)C_val_data,                      \
+                       (const J*)C_col_data,                \
+                       C_base,                              \
+                       (T*)buffer)
 
         if(handle->pointer_mode == rocsparse_pointer_mode_host)
         {
-            hipLaunchKernelGGL((sddmm_ell_kernel<NB, WIN, I, J, T>),
-                               blocks,
-                               threads,
-                               0,
-                               handle->stream,
-                               trans_A,
-                               trans_B,
-                               order_A,
-                               order_B,
-                               m,
-                               n,
-                               k,
-                               nnz,
-                               *(const T*)alpha,
-                               A_val,
-                               A_ld,
-                               B_val,
-                               B_ld,
-                               *(const T*)beta,
-                               (T*)C_val_data,
-                               (const J*)C_col_data,
-                               C_base,
-                               (T*)buffer);
-
-            if(num_blocks_x > 1) // if single block first kernel did all work
+            if(*alpha == static_cast<T>(0) && *beta == static_cast<T>(1))
             {
-                hipLaunchKernelGGL((ell_finalize_kernel<NB, WIN, T>),
-                                   dim3(1, nnz),
-                                   threads,
-                                   0,
-                                   handle->stream,
-                                   num_blocks_x,
-                                   *(const T*)alpha,
-                                   *(const T*)beta,
-                                   (T*)buffer,
-                                   (T*)C_val_data);
+                return rocsparse_status_success;
+            }
+            if(k > 4)
+            {
+                HLAUNCH(8);
+            }
+            else if(k > 2)
+            {
+                HLAUNCH(4);
+            }
+            else if(k > 1)
+            {
+                HLAUNCH(2);
+            }
+            else
+            {
+                HLAUNCH(1);
             }
         }
         else
         {
-
-            hipLaunchKernelGGL((sddmm_ell_kernel<NB, WIN, I, J, T>),
-                               blocks,
-                               threads,
-                               0,
-                               handle->stream,
-                               trans_A,
-                               trans_B,
-                               order_A,
-                               order_B,
-                               m,
-                               n,
-                               k,
-                               nnz,
-                               alpha,
-                               A_val,
-                               A_ld,
-                               B_val,
-                               B_ld,
-                               beta,
-                               (T*)C_val_data,
-                               (const J*)C_col_data,
-                               C_base,
-                               (T*)buffer);
-
-            if(num_blocks_x > 1) // if single block first kernel did all work
+            if(k > 4)
             {
-                hipLaunchKernelGGL((ell_finalize_kernel<NB, WIN, T>),
-                                   dim3(1, nnz),
-                                   threads,
-                                   0,
-                                   handle->stream,
-                                   num_blocks_x,
-                                   alpha,
-                                   beta,
-                                   (T*)buffer,
-                                   (T*)C_val_data);
+                DLAUNCH(8);
+            }
+            else if(k > 2)
+            {
+                DLAUNCH(4);
+            }
+            else if(k > 1)
+            {
+                DLAUNCH(2);
+            }
+            else
+            {
+                DLAUNCH(1);
             }
         }
         return rocsparse_status_success;
