@@ -267,6 +267,10 @@ set(ROCSPARSE_CLIENTS_COMMON
   ../common/rocsparse_matrix_factory_zero.cpp
   ../common/rocsparse_matrix_factory_random.cpp
   ../common/rocsparse_matrix_factory_file.cpp
+  ../common/rocsparse_exporter_rocsparseio.cpp
+  ../common/rocsparse_exporter_rocalution.cpp
+  ../common/rocsparse_exporter_matrixmarket.cpp
+  ../common/rocsparse_exporter_ascii.cpp
   ../common/rocsparse_importer.cpp
   ../common/rocsparse_importer_rocalution.cpp
   ../common/rocsparse_importer_rocsparseio.cpp

@@ -104,16 +104,14 @@ rocsparse_status rocsparse_importer_matrixmarket::import_sparse_coo(I*          
                                                                     I*                    nnz,
                                                                     rocsparse_index_base* base)
 {
-
-    const char* env = getenv("GTEST_LISTENER");
-    if(!env || strcmp(env, "NO_PASS_LINE_IN_LOG"))
-    {
-        std::cout << "Reading matrix " << this->m_filename << " ... ";
-    }
-
     char line[1024];
     f = fopen(this->m_filename.c_str(), "r");
-
+    if(!f)
+    {
+        std::cerr << "rocsparse_importer_matrixmarket::import_sparse_coo: cannot open file '"
+                  << this->m_filename << "' " << std::endl;
+        return rocsparse_status_internal_error;
+    }
     // Check for banner
     if(!fgets(line, 1024, f))
     {
