@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -135,15 +135,23 @@ struct rocsparse_gflop_count
 };
 
 template <>
+struct rocsparse_gflop_count<rocsparse_format_coo>
+{
+    template <typename I, typename J>
+    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
+    {
+        size_t innz = (size_t)nnz;
+        return (innz * ((size_t(K) + (size_t(K) - 1)) + 1 + ((beta) ? 2 : 0))) / 1e9;
+    }
+};
+
+template <>
 struct rocsparse_gflop_count<rocsparse_format_csr>
 {
     template <typename I, typename J>
     static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
     {
-        if(beta)
-            return (nnz + nnz * (2 * K - 1)) / 1e9;
-        else
-            return (3.0 * nnz + nnz * (2 * K - 1)) / 1e9;
+        return rocsparse_gflop_count<rocsparse_format_coo>::sddmm(M, N, nnz, K, beta);
     }
 };
 
@@ -153,20 +161,7 @@ struct rocsparse_gflop_count<rocsparse_format_csc>
     template <typename I, typename J>
     static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
     {
-        if(beta)
-            return (nnz + nnz * (2 * K - 1)) / 1e9;
-        else
-            return (3.0 * nnz + nnz * (2 * K - 1)) / 1e9;
-    }
-};
-
-template <>
-struct rocsparse_gflop_count<rocsparse_format_coo>
-{
-    template <typename I, typename J>
-    static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
-    {
-        return (nnz * (K + 1 + (beta ? 1 : 0))) / 1e9;
+        return rocsparse_gflop_count<rocsparse_format_coo>::sddmm(M, N, nnz, K, beta);
     }
 };
 
@@ -176,7 +171,7 @@ struct rocsparse_gflop_count<rocsparse_format_coo_aos>
     template <typename I, typename J>
     static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
     {
-        return (nnz * (K + 1 + (beta ? 1 : 0))) / 1e9;
+        return rocsparse_gflop_count<rocsparse_format_coo>::sddmm(M, N, nnz, K, beta);
     }
 };
 
@@ -186,7 +181,7 @@ struct rocsparse_gflop_count<rocsparse_format_ell>
     template <typename I, typename J>
     static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
     {
-        return (nnz * (K + 1 + (beta ? 1 : 0))) / 1e9;
+        return rocsparse_gflop_count<rocsparse_format_coo>::sddmm(M, N, nnz, K, beta);
     }
 };
 

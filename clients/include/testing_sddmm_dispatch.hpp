@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -389,9 +389,11 @@ public:
             device_sparse_matrix<T> dC;
             rocsparse_local_spmat   C(dC);
 
+            static constexpr int num_to_exclude             = 1;
+            static constexpr int to_exclude[num_to_exclude] = {10};
             auto_testing_bad_arg(rocsparse_sddmm_buffer_size, PARAMS_BUFFER_SIZE);
-            auto_testing_bad_arg(rocsparse_sddmm_preprocess, PARAMS);
-            auto_testing_bad_arg(rocsparse_sddmm, PARAMS);
+            auto_testing_bad_arg(rocsparse_sddmm_preprocess, num_to_exclude, to_exclude, PARAMS);
+            auto_testing_bad_arg(rocsparse_sddmm, num_to_exclude, to_exclude, PARAMS);
         }
 
 #undef PARAMS

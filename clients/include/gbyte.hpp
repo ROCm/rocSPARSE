@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -223,7 +223,9 @@ struct rocsparse_gbyte_count<rocsparse_format_csr>
     template <typename T, typename I, typename J>
     static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
     {
-        return ((M + 1 + nnz) * sizeof(I) + ((M + N) * K + nnz + (beta ? nnz : 0)) * sizeof(T))
+        size_t l = ((size_t)nnz);
+        return ((size_t(M) + 1) * sizeof(I) + l * sizeof(J)
+                + (l * (K * 2 + ((beta) ? 1 : 0)) * sizeof(T)))
                / 1e9;
     }
 };
@@ -234,7 +236,9 @@ struct rocsparse_gbyte_count<rocsparse_format_csc>
     template <typename T, typename I, typename J>
     static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
     {
-        return ((N + 1 + nnz) * sizeof(I) + ((M + N) * K + nnz + (beta ? nnz : 0)) * sizeof(T))
+        size_t l = ((size_t)nnz);
+        return ((size_t(N) + 1) * sizeof(I) + l * sizeof(J)
+                + (l * (K * 2 + ((beta) ? 1 : 0)) * sizeof(T)))
                / 1e9;
     }
 };
@@ -245,7 +249,8 @@ struct rocsparse_gbyte_count<rocsparse_format_coo>
     template <typename T, typename I, typename J>
     static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
     {
-        return ((2.0 * nnz) * sizeof(I) + ((M + N) * K + nnz + (beta ? nnz : 0)) * sizeof(T)) / 1e9;
+        size_t l = ((size_t)nnz);
+        return (l * 2 * sizeof(I) + l * (K * 2 + ((beta) ? 1 : 0)) * sizeof(T)) / 1e9;
     }
 };
 
@@ -255,7 +260,8 @@ struct rocsparse_gbyte_count<rocsparse_format_coo_aos>
     template <typename T, typename I, typename J>
     static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
     {
-        return ((2.0 * nnz) * sizeof(I) + ((M + N) * K + nnz + (beta ? nnz : 0)) * sizeof(T)) / 1e9;
+        size_t l = ((size_t)nnz);
+        return (l * 2 * sizeof(I) + (l * (K * 2 + ((beta) ? 1 : 0)) * sizeof(T))) / 1e9;
     }
 };
 
@@ -265,7 +271,9 @@ struct rocsparse_gbyte_count<rocsparse_format_ell>
     template <typename T, typename I, typename J>
     static constexpr double sddmm(J M, J N, I nnz, J K, bool beta = false)
     {
-        return ((2.0 * nnz) * sizeof(I) + ((M + N) * K + nnz + (beta ? nnz : 0)) * sizeof(T)) / 1e9;
+        size_t l = ((size_t)nnz);
+        return (l * sizeof(J) + (l * (K * 2 + ((beta) ? 1 : 0)) * sizeof(T)))
+               / static_cast<size_t>(1e9);
     }
 };
 
