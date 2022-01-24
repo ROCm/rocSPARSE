@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -360,7 +360,7 @@ Tests:
 - name: gebsrmv
   category: nightly
   function: gebsrmv
-  precision: *single_double_precisions_complex_real
+  precision: *double_only_precisions_complex
   M: [39385, 193482]
   N: [29348, 340123]
   row_block_dimA: [1, 4, 11, 20]
