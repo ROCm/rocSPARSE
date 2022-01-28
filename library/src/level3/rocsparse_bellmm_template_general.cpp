@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,9 +101,8 @@ rocsparse_status rocsparse_bellmm_template_general(rocsparse_handle          han
                                                    I                         ldc)
 {
     hipStream_t stream = handle->stream;
-    assert(block_dim > 32);
-    dim3 bellmm_blocks((mb - 1) / 1 + 1, (n - 1) / 32 + 1);
-    dim3 bellmm_threads(32, 32, 1);
+    dim3        bellmm_blocks((mb - 1) / 1 + 1, (n - 1) / 32 + 1);
+    dim3        bellmm_threads(32, 32, 1);
     assert(trans_A == rocsparse_operation_none);
     //
     // What happends if A needs to be transposed?
