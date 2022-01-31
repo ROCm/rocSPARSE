@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -25,6 +25,8 @@
 #pragma once
 #ifndef TESTING_GTSV_HPP
 #define TESTING_GTSV_HPP
+
+#include "rocsparse_arguments.hpp"
 
 template <typename T>
 void testing_gtsv_bad_arg(const Arguments& arg);

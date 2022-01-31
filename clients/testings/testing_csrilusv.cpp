@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,10 @@
  * ************************************************************************ */
 
 #include "testing.hpp"
+template <typename T>
+void testing_csrilusv_bad_arg(const Arguments& arg)
+{
+}
 
 template <typename T>
 void testing_csrilusv(const Arguments& arg)
@@ -480,7 +484,9 @@ void testing_csrilusv(const Arguments& arg)
     CHECK_HIP_ERROR(hipFree(dbuffer));
 }
 
-#define INSTANTIATE(TYPE) template void testing_csrilusv<TYPE>(const Arguments& arg)
+#define INSTANTIATE(TYPE)                                       \
+    template void testing_csrilusv<TYPE>(const Arguments& arg); \
+    template void testing_csrilusv_bad_arg<TYPE>(const Arguments& arg)
 
 INSTANTIATE(float);
 INSTANTIATE(double);

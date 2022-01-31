@@ -30,7 +30,6 @@
 
 #include <hip/hip_runtime_api.h>
 #include <limits>
-#include <vector>
 
 #ifdef _OPENMP
 #include <omp.h>

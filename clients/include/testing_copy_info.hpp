@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -24,6 +24,8 @@
 #pragma once
 #ifndef TESTING_COPY_INFO_HPP
 #define TESTING_COPY_INFO_HPP
+
+#include "rocsparse_arguments.hpp"
 
 template <typename T>
 void testing_copy_info_bad_arg(const Arguments& arg);

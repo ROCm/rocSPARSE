@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,73 +21,8 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_data.hpp"
-#include "rocsparse_test.hpp"
+#include "test.hpp"
+
 #include "testing_spmat_descr.hpp"
-#include "type_dispatch.hpp"
 
-#include <cstring>
-
-namespace
-{
-    // By default, this test does not apply to any types.
-    // The unnamed second parameter is used for enable_if below.
-    template <typename T, typename I = int32_t, typename J = int32_t, typename = void>
-    struct spmat_descr_testing : rocsparse_test_invalid
-    {
-    };
-
-    template <typename I, typename J, typename T>
-    struct spmat_descr_testing<
-        I,
-        J,
-        T,
-        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
-                                || std::is_same<T, rocsparse_float_complex>()
-                                || std::is_same<T, rocsparse_double_complex>()>::type>
-    {
-        explicit operator bool()
-        {
-            return true;
-        }
-        void operator()(const Arguments& arg)
-        {
-            if(!strcmp(arg.function, "spmat_descr_bad_arg"))
-                testing_spmat_descr_bad_arg<I, J, T>(arg);
-            else
-                FAIL() << "Internal error: Test called with unknown function: " << arg.function;
-        }
-    };
-
-    struct spmat_descr : RocSPARSE_Test<spmat_descr, spmat_descr_testing>
-    {
-        // Filter for which types apply to this suite
-        static bool type_filter(const Arguments& arg)
-        {
-            return rocsparse_ijt_dispatch<type_filter_functor>(arg);
-        }
-
-        // Filter for which functions apply to this suite
-        static bool function_filter(const Arguments& arg)
-        {
-            return !strcmp(arg.function, "spmat_descr")
-                   || !strcmp(arg.function, "spmat_descr_bad_arg");
-        }
-
-        // Google Test name suffix based on parameters
-        static std::string name_suffix(const Arguments& arg)
-        {
-            return RocSPARSE_TestName<spmat_descr>()
-                   << rocsparse_indextype2string(arg.index_type_I) << '_'
-                   << rocsparse_indextype2string(arg.index_type_J) << '_'
-                   << rocsparse_datatype2string(arg.compute_type);
-        }
-    };
-
-    TEST_P(spmat_descr, auxiliary)
-    {
-        rocsparse_ijt_dispatch<spmat_descr_testing>(GetParam());
-    }
-    INSTANTIATE_TEST_CATEGORIES(spmat_descr);
-
-} // namespace
+TEST_ROUTINE_WITH_CONFIG(spmat_descr, auxiliary, rocsparse_test_config_ijt, "");

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,7 @@
 #define ROCSPARSE_VECTOR_HPP
 
 #include "rocsparse_allocator.hpp"
-
 #include "rocsparse_init.hpp"
-
-#include <cinttypes>
-#include <locale.h>
 
 template <memory_mode::value_t MODE, typename T>
 struct dense_vector;

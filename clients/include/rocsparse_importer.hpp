@@ -27,9 +27,6 @@
 #define ROCSPARSE_IMPORTER_HPP
 
 #include "rocsparse_check.hpp"
-#include "rocsparse_traits.hpp"
-
-#include "rocsparse_vector.hpp"
 
 #include "rocsparse_matrix_coo.hpp"
 #include "rocsparse_matrix_csx.hpp"

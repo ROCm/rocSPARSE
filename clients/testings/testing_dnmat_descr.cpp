@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,7 +82,14 @@ void testing_dnmat_descr_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(A), rocsparse_status_success);
 }
 
-#define INSTANTIATE(TTYPE) template void testing_dnmat_descr_bad_arg<TTYPE>(const Arguments& arg);
+template <typename T>
+void testing_dnmat_descr(const Arguments& arg)
+{
+}
+
+#define INSTANTIATE(TTYPE)                                                  \
+    template void testing_dnmat_descr_bad_arg<TTYPE>(const Arguments& arg); \
+    template void testing_dnmat_descr<TTYPE>(const Arguments& arg)
 
 INSTANTIATE(float);
 INSTANTIATE(double);

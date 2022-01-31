@@ -29,8 +29,6 @@
 #ifndef _ROCSPARSE_AUXILIARY_H_
 #define _ROCSPARSE_AUXILIARY_H_
 
-#include <stdint.h>
-
 #include "rocsparse-export.h"
 #include "rocsparse-types.h"
 

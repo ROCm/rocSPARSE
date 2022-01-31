@@ -23,6 +23,7 @@
  * ************************************************************************ */
 #include "rocsparse_init.hpp"
 #include "rocsparse_import.hpp"
+#include "rocsparse_importer_impls.hpp"
 #include "rocsparse_matrix.hpp"
 
 template <typename I, typename J>

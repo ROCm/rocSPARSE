@@ -26,9 +26,7 @@
 #ifndef ROCSPARSE_MATRIX_FACTORY_HPP
 #define ROCSPARSE_MATRIX_FACTORY_HPP
 
-#include "rocsparse.hpp"
 #include "rocsparse_import.hpp"
-#include "rocsparse_matrix.hpp"
 #include "rocsparse_matrix_utils.hpp"
 
 std::string rocsparse_exepath();

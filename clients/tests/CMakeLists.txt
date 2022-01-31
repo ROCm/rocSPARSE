@@ -321,9 +321,9 @@ add_custom_command(OUTPUT "${ROCSPARSE_TEST_DATA}"
                    DEPENDS ../common/rocsparse_gentest.py rocsparse_test.yaml ../include/rocsparse_common.yaml known_bugs.yaml ${ROCSPARSE_TEST_YAMLS}
                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 add_custom_target(rocsparse-test-data
-                  DEPENDS "${ROCSPARSE_TEST_DATA}" )
-add_dependencies(rocsparse-test rocsparse-test-data rocsparse-common)
+  DEPENDS "${ROCSPARSE_TEST_DATA}" )
 
+add_dependencies(rocsparse-test  rocsparse-test-data rocsparse-common)
 
 if (WIN32)
   # for now adding in all .dll as dependency chain is not cmake based on win32

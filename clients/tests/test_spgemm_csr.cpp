@@ -22,110 +22,25 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_data.hpp"
-#include "rocsparse_datatype2string.hpp"
-#include "rocsparse_test.hpp"
+#include "test.hpp"
+
 #include "testing_spgemm_csr.hpp"
-#include "type_dispatch.hpp"
 
-#include <cctype>
-#include <cstring>
-#include <type_traits>
-
-namespace
-{
-    // By default, this test does not apply to any types.
-    // The unnamed second parameter is used for enable_if below.
-    template <typename T, typename I = int32_t, typename J = int32_t, typename = void>
-    struct spgemm_csr_testing : rocsparse_test_invalid
-    {
-    };
-
-    // When the condition in the second argument is satisfied, the type combination
-    // is valid. When the condition is false, this specialization does not apply.
-    template <typename I, typename J, typename T>
-    struct spgemm_csr_testing<
-        I,
-        J,
-        T,
-        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
-                                || std::is_same<T, rocsparse_float_complex>()
-                                || std::is_same<T, rocsparse_double_complex>()>::type>
-    {
-        explicit operator bool()
-        {
-            return true;
-        }
-        void operator()(const Arguments& arg)
-        {
-            if(!strcmp(arg.function, "spgemm_csr"))
-                testing_spgemm_csr<I, J, T>(arg);
-            else if(!strcmp(arg.function, "spgemm_csr_bad_arg"))
-                testing_spgemm_csr_bad_arg<I, J, T>(arg);
-            else
-                FAIL() << "Internal error: Test called with unknown function: " << arg.function;
-        }
-    };
-
-    struct spgemm_csr : RocSPARSE_Test<spgemm_csr, spgemm_csr_testing>
-    {
-        // Filter for which types apply to this suite
-        static bool type_filter(const Arguments& arg)
-        {
-            return rocsparse_ijt_dispatch<type_filter_functor>(arg);
-        }
-
-        // Filter for which functions apply to this suite
-        static bool function_filter(const Arguments& arg)
-        {
-            return !strcmp(arg.function, "spgemm_csr")
-                   || !strcmp(arg.function, "spgemm_csr_bad_arg");
-        }
-
-        // Google Test name suffix based on parameters
-        static std::string name_suffix(const Arguments& arg)
-        {
-            if(rocsparse_arguments_has_datafile(arg))
-            {
-                return RocSPARSE_TestName<spgemm_csr>()
-                       << rocsparse_indextype2string(arg.index_type_I) << '_'
-                       << rocsparse_indextype2string(arg.index_type_J) << '_'
-                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.N << '_'
-                       << arg.alpha << '_' << arg.alphai << '_' << arg.beta << '_' << arg.betai
-                       << '_' << rocsparse_operation2string(arg.transA) << '_'
-                       << rocsparse_operation2string(arg.transB) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_indexbase2string(arg.baseB) << '_'
-                       << rocsparse_indexbase2string(arg.baseC) << '_'
-                       << rocsparse_indexbase2string(arg.baseD) << '_'
-                       << rocsparse_spgemmalg2string(arg.spgemm_alg) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_'
-                       << rocsparse_filename2string(arg.filename);
-            }
-            else
-            {
-                return RocSPARSE_TestName<spgemm_csr>()
-                       << rocsparse_indextype2string(arg.index_type_I) << '_'
-                       << rocsparse_indextype2string(arg.index_type_J) << '_'
-                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
-                       << arg.N << '_' << arg.K << '_' << arg.alpha << '_' << arg.alphai << '_'
-                       << arg.beta << '_' << arg.betai << '_'
-                       << rocsparse_operation2string(arg.transA) << '_'
-                       << rocsparse_operation2string(arg.transB) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_indexbase2string(arg.baseB) << '_'
-                       << rocsparse_indexbase2string(arg.baseC) << '_'
-                       << rocsparse_indexbase2string(arg.baseD) << '_'
-                       << rocsparse_spgemmalg2string(arg.spgemm_alg) << '_'
-                       << rocsparse_matrix2string(arg.matrix);
-            }
-        }
-    };
-
-    TEST_P(spgemm_csr, extra)
-    {
-        rocsparse_ijt_dispatch<spgemm_csr_testing>(GetParam());
-    }
-    INSTANTIATE_TEST_CATEGORIES(spgemm_csr);
-
-} // namespace
+TEST_ROUTINE_WITH_CONFIG(spgemm_csr,
+                         extra,
+                         rocsparse_test_config_ijt,
+                         arg.M,
+                         arg.N,
+                         arg.K,
+                         arg.alpha,
+                         arg.alphai,
+                         arg.beta,
+                         arg.betai,
+                         arg.transA,
+                         arg.transB,
+                         arg.baseA,
+                         arg.baseB,
+                         arg.baseC,
+                         arg.baseD,
+                         arg.spgemm_alg,
+                         arg.matrix);
