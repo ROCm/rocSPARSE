@@ -22,13 +22,10 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_import.hpp"
-#include "rocsparse_importer_matrixmarket.hpp"
-#include "rocsparse_importer_rocalution.hpp"
-#include "rocsparse_importer_rocsparseio.hpp"
-#include "rocsparse_matrix_utils.hpp"
-
 #include "rocsparse_matrix_factory_file.hpp"
+#include "rocsparse_import.hpp"
+#include "rocsparse_importer_impls.hpp"
+#include "rocsparse_matrix_utils.hpp"
 
 template <typename T, template <typename...> class VECTOR>
 static void apply_toint(VECTOR<T>& data)

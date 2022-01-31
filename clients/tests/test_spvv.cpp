@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,79 +21,8 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_data.hpp"
-#include "rocsparse_datatype2string.hpp"
-#include "rocsparse_test.hpp"
+#include "test.hpp"
+
 #include "testing_spvv.hpp"
-#include "type_dispatch.hpp"
 
-#include <cctype>
-#include <cstring>
-#include <type_traits>
-
-namespace
-{
-    // By default, this test does not apply to any types.
-    // The unnamed second parameter is used for enable_if below.
-    template <typename T, typename I = int32_t, typename = void>
-    struct spvv_testing : rocsparse_test_invalid
-    {
-    };
-
-    // When the condition in the second argument is satisfied, the type combination
-    // is valid. When the condition is false, this specialization does not apply.
-    template <typename I, typename T>
-    struct spvv_testing<
-        I,
-        T,
-        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
-                                || std::is_same<T, rocsparse_float_complex>()
-                                || std::is_same<T, rocsparse_double_complex>()>::type>
-    {
-        explicit operator bool()
-        {
-            return true;
-        }
-        void operator()(const Arguments& arg)
-        {
-            if(!strcmp(arg.function, "spvv"))
-                testing_spvv<I, T>(arg);
-            else if(!strcmp(arg.function, "spvv_bad_arg"))
-                testing_spvv_bad_arg<I, T>(arg);
-            else
-                FAIL() << "Internal error: Test called with unknown function: " << arg.function;
-        }
-    };
-
-    struct spvv : RocSPARSE_Test<spvv, spvv_testing>
-    {
-        // Filter for which types apply to this suite
-        static bool type_filter(const Arguments& arg)
-        {
-            return rocsparse_it_dispatch<type_filter_functor>(arg);
-        }
-
-        // Filter for which functions apply to this suite
-        static bool function_filter(const Arguments& arg)
-        {
-            return !strcmp(arg.function, "spvv") || !strcmp(arg.function, "spvv_bad_arg");
-        }
-
-        // Google Test name suffix based on parameters
-        static std::string name_suffix(const Arguments& arg)
-        {
-            return RocSPARSE_TestName<spvv>()
-                   << rocsparse_indextype2string(arg.index_type_I) << '_'
-                   << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_' << arg.nnz
-                   << '_' << rocsparse_indexbase2string(arg.baseA) << '_'
-                   << rocsparse_operation2string(arg.transA);
-        }
-    };
-
-    TEST_P(spvv, level1)
-    {
-        rocsparse_it_dispatch<spvv_testing>(GetParam());
-    }
-    INSTANTIATE_TEST_CATEGORIES(spvv);
-
-} // namespace
+TEST_ROUTINE_WITH_CONFIG(spvv, level1, rocsparse_test_config_it, arg.M, arg.nnz, arg.baseA);

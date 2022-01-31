@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,8 +91,14 @@ void testing_spvec_descr_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spvec_descr(x), rocsparse_status_success);
 }
 
-#define INSTANTIATE(ITYPE, TTYPE) \
-    template void testing_spvec_descr_bad_arg<ITYPE, TTYPE>(const Arguments& arg);
+template <typename I, typename T>
+void testing_spvec_descr(const Arguments& arg)
+{
+}
+
+#define INSTANTIATE(ITYPE, TTYPE)                                                  \
+    template void testing_spvec_descr_bad_arg<ITYPE, TTYPE>(const Arguments& arg); \
+    template void testing_spvec_descr<ITYPE, TTYPE>(const Arguments& arg)
 
 INSTANTIATE(int32_t, float);
 INSTANTIATE(int32_t, double);

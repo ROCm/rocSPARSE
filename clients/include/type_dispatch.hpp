@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,7 +62,6 @@ template <template <typename...> class TEST>
 auto rocsparse_it_dispatch(const Arguments& arg)
 {
     const auto I = arg.index_type_I;
-
     if(I == rocsparse_indextype_i32)
     {
         switch(arg.compute_type)

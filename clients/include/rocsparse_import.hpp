@@ -192,7 +192,3 @@ rocsparse_status rocsparse_import_sparse_coo(rocsparse_importer<IMPORTER>& impor
 
     return rocsparse_status_success;
 }
-
-#include "rocsparse_importer_matrixmarket.hpp"
-#include "rocsparse_importer_rocalution.hpp"
-#include "rocsparse_importer_rocsparseio.hpp"

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the Software), to deal
@@ -25,6 +25,8 @@
 #pragma once
 #ifndef TESTING_SPSM_COO_HPP
 #define TESTING_SPSM_COO_HPP
+
+#include "rocsparse_arguments.hpp"
 
 template <typename I, typename T>
 void testing_spsm_coo_bad_arg(const Arguments& arg);

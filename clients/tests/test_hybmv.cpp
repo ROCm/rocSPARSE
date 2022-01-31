@@ -22,91 +22,20 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_data.hpp"
-#include "rocsparse_test.hpp"
+#include "test.hpp"
+
 #include "testing_hybmv.hpp"
-#include "type_dispatch.hpp"
 
-#include <cctype>
-
-namespace
-{
-    // By default, this test does not apply to any types.
-    // The unnamed second parameter is used for enable_if below.
-    template <typename, typename = void>
-    struct hybmv_testing : rocsparse_test_invalid
-    {
-    };
-
-    // When the condition in the second argument is satisfied, the type combination
-    // is valid. When the condition is false, this specialization does not apply.
-    template <typename T>
-    struct hybmv_testing<
-        T,
-        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
-                                || std::is_same<T, rocsparse_float_complex>()
-                                || std::is_same<T, rocsparse_double_complex>()>::type>
-    {
-        explicit operator bool()
-        {
-            return true;
-        }
-        void operator()(const Arguments& arg)
-        {
-            if(!strcmp(arg.function, "hybmv"))
-                testing_hybmv<T>(arg);
-            else if(!strcmp(arg.function, "hybmv_bad_arg"))
-                testing_hybmv_bad_arg<T>(arg);
-            else
-                FAIL() << "Internal error: Test called with unknown function: " << arg.function;
-        }
-    };
-
-    struct hybmv : RocSPARSE_Test<hybmv, hybmv_testing>
-    {
-        // Filter for which types apply to this suite
-        static bool type_filter(const Arguments& arg)
-        {
-            return rocsparse_simple_dispatch<type_filter_functor>(arg);
-        }
-
-        // Filter for which functions apply to this suite
-        static bool function_filter(const Arguments& arg)
-        {
-            return !strcmp(arg.function, "hybmv") || !strcmp(arg.function, "hybmv_bad_arg");
-        }
-
-        // Google Test name suffix based on parameters
-        static std::string name_suffix(const Arguments& arg)
-        {
-            if(rocsparse_arguments_has_datafile(arg))
-            {
-                return RocSPARSE_TestName<hybmv>()
-                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.alpha << '_'
-                       << arg.alphai << '_' << arg.beta << '_' << arg.betai << '_'
-                       << rocsparse_operation2string(arg.transA) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_partition2string(arg.part) << '_' << arg.algo << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_'
-                       << rocsparse_filename2string(arg.filename);
-            }
-            else
-            {
-                return RocSPARSE_TestName<hybmv>()
-                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
-                       << arg.N << '_' << arg.alpha << '_' << arg.alphai << '_' << arg.beta << '_'
-                       << arg.betai << '_' << rocsparse_operation2string(arg.transA) << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_partition2string(arg.part) << '_' << arg.algo << '_'
-                       << rocsparse_matrix2string(arg.matrix);
-            }
-        }
-    };
-
-    TEST_P(hybmv, level2)
-    {
-        rocsparse_simple_dispatch<hybmv_testing>(GetParam());
-    }
-    INSTANTIATE_TEST_CATEGORIES(hybmv);
-
-} // namespace
+TEST_ROUTINE(hybmv,
+             level2,
+             arg.M,
+             arg.N,
+             arg.alpha,
+             arg.alphai,
+             arg.beta,
+             arg.betai,
+             arg.transA,
+             arg.baseA,
+             arg.part,
+             arg.algo,
+             arg.matrix);

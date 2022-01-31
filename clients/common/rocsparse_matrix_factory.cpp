@@ -24,7 +24,6 @@
 
 #include "rocsparse_matrix_factory.hpp"
 #include "rocsparse_init.hpp"
-#include "rocsparse_matrix_utils.hpp"
 
 template <typename T, typename I, typename J>
 rocsparse_matrix_factory<T, I, J>::~rocsparse_matrix_factory()

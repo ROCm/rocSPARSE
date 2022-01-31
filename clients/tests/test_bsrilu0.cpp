@@ -22,96 +22,21 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_data.hpp"
-#include "rocsparse_test.hpp"
+#include "test.hpp"
+
 #include "testing_bsrilu0.hpp"
-#include "type_dispatch.hpp"
 
-#include <cctype>
-#include <complex>
-
-namespace
-{
-    // By default, this test does not apply to any types.
-    // The unnamed second parameter is used for enable_if below.
-    template <typename, typename = void>
-    struct bsrilu0_testing : rocsparse_test_invalid
-    {
-    };
-
-    // When the condition in the second argument is satisfied, the type combination
-    // is valid. When the condition is false, this specialization does not apply.
-    template <typename T>
-    struct bsrilu0_testing<
-        T,
-        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
-                                || std::is_same<T, rocsparse_float_complex>()
-                                || std::is_same<T, rocsparse_double_complex>()>::type>
-    {
-        explicit operator bool()
-        {
-            return true;
-        }
-        void operator()(const Arguments& arg)
-        {
-            if(!strcmp(arg.function, "bsrilu0"))
-                testing_bsrilu0<T>(arg);
-            else if(!strcmp(arg.function, "bsrilu0_bad_arg"))
-                testing_bsrilu0_bad_arg<T>(arg);
-            else
-                FAIL() << "Internal error: Test called with unknown function: " << arg.function;
-        }
-    };
-
-    struct bsrilu0 : RocSPARSE_Test<bsrilu0, bsrilu0_testing>
-    {
-        // Filter for which types apply to this suite
-        static bool type_filter(const Arguments& arg)
-        {
-            return rocsparse_simple_dispatch<type_filter_functor>(arg);
-        }
-
-        // Filter for which functions apply to this suite
-        static bool function_filter(const Arguments& arg)
-        {
-            return !strcmp(arg.function, "bsrilu0") || !strcmp(arg.function, "bsrilu0_bad_arg");
-        }
-
-        // Google Test name suffix based on parameters
-        static std::string name_suffix(const Arguments& arg)
-        {
-            if(rocsparse_arguments_has_datafile(arg))
-            {
-                return RocSPARSE_TestName<bsrilu0>()
-                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.block_dim << '_'
-                       << rocsparse_direction2string(arg.direction) << '_'
-                       << rocsparse_operation2string(arg.transA) << '_' << arg.numericboost << '_'
-                       << arg.boosttol << '_' << arg.boostval << '_' << arg.boostvali << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_analysis2string(arg.apol) << '_'
-                       << rocsparse_solve2string(arg.spol) << '_'
-                       << rocsparse_matrix2string(arg.matrix) << '_'
-                       << rocsparse_filename2string(arg.filename);
-            }
-            else
-            {
-                return RocSPARSE_TestName<bsrilu0>()
-                       << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_'
-                       << arg.block_dim << '_' << rocsparse_direction2string(arg.direction) << '_'
-                       << rocsparse_operation2string(arg.transA) << '_' << arg.numericboost << '_'
-                       << arg.boosttol << '_' << arg.boostval << '_' << arg.boostvali << '_'
-                       << rocsparse_indexbase2string(arg.baseA) << '_'
-                       << rocsparse_analysis2string(arg.apol) << '_'
-                       << rocsparse_solve2string(arg.spol) << '_'
-                       << rocsparse_matrix2string(arg.matrix);
-            }
-        }
-    };
-
-    TEST_P(bsrilu0, precond)
-    {
-        rocsparse_simple_dispatch<bsrilu0_testing>(GetParam());
-    }
-    INSTANTIATE_TEST_CATEGORIES(bsrilu0);
-
-} // namespace
+TEST_ROUTINE(bsrilu0,
+             precond,
+             arg.M,
+             arg.block_dim,
+             arg.direction,
+             arg.transA,
+             arg.numericboost,
+             arg.boosttol,
+             arg.boostval,
+             arg.boostvali,
+             arg.baseA,
+             arg.apol,
+             arg.spol,
+             arg.matrix);

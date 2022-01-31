@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,76 +22,16 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_data.hpp"
-#include "rocsparse_test.hpp"
+#include "test.hpp"
 #include "testing_axpby.hpp"
-#include "type_dispatch.hpp"
 
-#include <cctype>
-
-namespace
-{
-    // By default, this test does not apply to any types.
-    // The unnamed second parameter is used for enable_if below.
-    template <typename T, typename I = int32_t, typename = void>
-    struct axpby_testing : rocsparse_test_invalid
-    {
-    };
-
-    // When the condition in the second argument is satisfied, the type combination
-    // is valid. When the condition is false, this specialization does not apply.
-    template <typename I, typename T>
-    struct axpby_testing<
-        I,
-        T,
-        typename std::enable_if<std::is_same<T, float>() || std::is_same<T, double>()
-                                || std::is_same<T, rocsparse_float_complex>()
-                                || std::is_same<T, rocsparse_double_complex>()>::type>
-    {
-        explicit operator bool()
-        {
-            return true;
-        }
-        void operator()(const Arguments& arg)
-        {
-            if(!strcmp(arg.function, "axpby"))
-                testing_axpby<I, T>(arg);
-            else if(!strcmp(arg.function, "axpby_bad_arg"))
-                testing_axpby_bad_arg<I, T>(arg);
-            else
-                FAIL() << "Internal error: Test called with unknown function: " << arg.function;
-        }
-    };
-
-    struct axpby : RocSPARSE_Test<axpby, axpby_testing>
-    {
-        // Filter for which types apply to this suite
-        static bool type_filter(const Arguments& arg)
-        {
-            return rocsparse_it_dispatch<type_filter_functor>(arg);
-        }
-
-        // Filter for which functions apply to this suite
-        static bool function_filter(const Arguments& arg)
-        {
-            return !strcmp(arg.function, "axpby") || !strcmp(arg.function, "axpby_bad_arg");
-        }
-
-        // Google Test name suffix based on parameters
-        static std::string name_suffix(const Arguments& arg)
-        {
-            return RocSPARSE_TestName<axpby>()
-                   << rocsparse_indextype2string(arg.index_type_I) << '_'
-                   << rocsparse_datatype2string(arg.compute_type) << '_' << arg.M << '_' << arg.nnz
-                   << '_' << arg.alpha << '_' << arg.alphai << '_' << arg.beta << '_' << arg.betai
-                   << '_' << rocsparse_indexbase2string(arg.baseA);
-        }
-    };
-
-    TEST_P(axpby, level1)
-    {
-        rocsparse_it_dispatch<axpby_testing>(GetParam());
-    };
-    INSTANTIATE_TEST_CATEGORIES(axpby);
-
-} // namespace
+TEST_ROUTINE_WITH_CONFIG(axpby,
+                         level1,
+                         rocsparse_test_config_it,
+                         arg.M,
+                         arg.nnz,
+                         arg.alpha,
+                         arg.alphai,
+                         arg.beta,
+                         arg.betai,
+                         arg.baseA);

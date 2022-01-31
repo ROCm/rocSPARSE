@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -245,9 +245,14 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(csc), rocsparse_status_success);
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(ell), rocsparse_status_success);
 }
+template <typename I, typename J, typename T>
+void testing_spmat_descr(const Arguments& arg)
+{
+}
 
-#define INSTANTIATE(ITYPE, JTYPE, TTYPE) \
-    template void testing_spmat_descr_bad_arg<ITYPE, JTYPE, TTYPE>(const Arguments& arg);
+#define INSTANTIATE(ITYPE, JTYPE, TTYPE)                                                  \
+    template void testing_spmat_descr_bad_arg<ITYPE, JTYPE, TTYPE>(const Arguments& arg); \
+    template void testing_spmat_descr<ITYPE, JTYPE, TTYPE>(const Arguments& arg)
 
 INSTANTIATE(int32_t, int32_t, float);
 INSTANTIATE(int32_t, int32_t, double);
