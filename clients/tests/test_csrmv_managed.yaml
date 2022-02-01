@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -128,9 +128,9 @@ Tests:
   matrix: [rocsparse_matrix_file_rocalution]
   spmv_alg: [rocsparse_spmv_alg_csr_adaptive, rocsparse_spmv_alg_csr_stream]
   filename: [bibd_22_8,
-             ASIC_320k,
+             bmwcra_1,
              amazon0312,
-             Chebyshev4,
+             ASIC_320k,
              sme3Dc,
              shipsec1]
 
