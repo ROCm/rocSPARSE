@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2021 Advanced Micro Devices, Inc.
+* Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "rocsparse_bench.hpp"
+#include "rocsparse_bench_cmdlines.hpp"
 
 // Return version.
 std::string rocsparse_get_version()
@@ -64,7 +65,19 @@ void rocsparse_bench::parse(int& argc, char**& argv, rocsparse_arguments_config&
     config.dense_to_sparse_alg = rocsparse_dense_to_sparse_alg_default;
     config.precision           = 's';
     config.indextype           = 's';
-    config.parse(argc, argv, this->desc);
+    int i                      = config.parse(argc, argv, this->desc);
+    if(i == -1)
+    {
+        throw rocsparse_status_internal_error;
+    }
+    else if(i == -2)
+    {
+        //
+        // Help.
+        //
+        rocsparse_bench_cmdlines::help(std::cout);
+        exit(0);
+    }
 }
 
 rocsparse_bench::rocsparse_bench()

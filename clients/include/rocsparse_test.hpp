@@ -41,6 +41,8 @@ static constexpr const char* s_timing_info_bandwidth = "GB/s";
 static constexpr const char* s_timing_info_time      = "msec";
 
 rocsparse_status rocsparse_record_timing(double msec, double gflops, double gbs);
+rocsparse_status rocsparse_record_output(const std::string&);
+rocsparse_status rocsparse_record_output_legend(const std::string&);
 
 #ifdef GOOGLE_TEST
 #include <gtest/gtest.h>

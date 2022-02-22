@@ -44,6 +44,10 @@ bool rocsparse_bench_cmdlines::is_stdout_disabled() const
 {
     return this->m_cmd.is_stdout_disabled();
 };
+bool rocsparse_bench_cmdlines::no_rawdata() const
+{
+    return this->m_cmd.no_rawdata();
+};
 
 //
 // @brief Get the number of runs per sample.
@@ -97,8 +101,7 @@ bool rocsparse_bench_cmdlines::applies(int argc, char** argv)
 {
     for(int i = 1; i < argc; ++i)
     {
-        if(!strcmp(argv[i], "--bench-x") || !strcmp(argv[i], "--bench-o")
-           || !strcmp(argv[i], "--bench-n") || !strcmp(argv[i], "--bench-std"))
+        if(!strcmp(argv[i], "--bench-x"))
         {
             return true;
         }

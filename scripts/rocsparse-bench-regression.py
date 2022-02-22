@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -53,21 +53,6 @@ def main():
     for file_index in range(num_files):
         with open(unknown_args[file_index],"r") as f:
             data.append(json.load(f))
-
-
-#    mytree = ET.parse('rocsparse-bench-csrmv.xml')
-#    myroot = mytree.getroot()
-#    print(len(myroot))
-#    for i in range(len(myroot)):
-#        for j in range(len(myroot[i])):
-#            print(myroot[i][j].attrib['cmd'])
-#            proc=subprocess.Popen(['bash', '-c', myroot[i][j].attrib['cmd']])
-#            proc.wait()
-#            rc = proc.returncode
-#            if rc != 0:
-#                print('//rocsparse-bench-regression.error running cmd')
-#                exit(1)
-#    return
 
     cmd = [d['cmdline'] for d in data]
     xargs = [d['xargs'] for d in data]

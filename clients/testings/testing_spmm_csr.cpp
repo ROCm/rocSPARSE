@@ -1,5 +1,5 @@
 /* ************************************************************************
-* Copyright (c) 2021 Advanced Micro Devices, Inc.
+* Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -488,9 +488,6 @@ void testing_spmm_csr(const Arguments& arg)
             A_m, nnz_A, (I)B_m * (I)B_n, (I)C_m * (I)C_n, hbeta != static_cast<T>(0));
         double gpu_gbyte = get_gpu_gbyte(gpu_time_used, gbyte_count);
 
-        CHECK_ROCSPARSE_ERROR(
-            rocsparse_record_timing(get_gpu_time_msec(gpu_time_used), gpu_gflops, gpu_gbyte));
-
         display_timing_info("M",
                             M,
                             "N",
@@ -510,11 +507,7 @@ void testing_spmm_csr(const Arguments& arg)
                             s_timing_info_bandwidth,
                             gpu_gbyte,
                             s_timing_info_time,
-                            get_gpu_time_msec(gpu_time_used),
-                            "iter",
-                            number_hot_calls,
-                            "verified",
-                            (arg.unit_check ? "yes" : "no"));
+                            get_gpu_time_msec(gpu_time_used));
     }
 
     CHECK_HIP_ERROR(hipFree(dbuffer));

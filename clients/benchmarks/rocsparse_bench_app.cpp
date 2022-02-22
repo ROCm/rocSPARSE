@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2021 Advanced Micro Devices, Inc.
+* Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -49,10 +49,8 @@ rocsparse_status rocsparse_bench_app_base::run_cases()
     //
     // Loop over cases.
     //
-    int nruns                  = this->m_bench_cmdlines.get_nruns();
-    int nsamples               = this->m_bench_cmdlines.get_nsamples();
-    this->m_stdout_skip_legend = false;
-
+    int nruns    = this->m_bench_cmdlines.get_nruns();
+    int nsamples = this->m_bench_cmdlines.get_nsamples();
     if(is_stdout_disabled())
     {
         printf("// start benchmarking ... (nsamples = %d, nruns = %d)\n", nsamples, nruns);
@@ -67,11 +65,6 @@ rocsparse_status rocsparse_bench_app_base::run_cases()
         for(int irun = 0; irun < nruns; ++irun)
         {
             this->m_irun = irun;
-
-            if(false == this->m_stdout_skip_legend)
-            {
-                this->m_stdout_skip_legend = (irun > 0 && isample == 0);
-            }
 
             //
             // Get command line arguments, copy each time since it is mutable afterwards.
@@ -185,6 +178,14 @@ void rocsparse_bench_app::export_item(std::ostream& out, rocsparse_bench_timing_
             << interval_gflops[1] << "\"]," << std::endl;
         out << "    \"bandwidth\": [\"" << gbs << "\", \"" << interval_gbs[0] << "\", \""
             << interval_gbs[1] << "\"]";
+
+        if(!no_rawdata())
+        {
+            out << ",";
+            out << std::endl << "    \"raw_legend\": \"" << item.outputs_legend << "\"";
+            out << ",";
+            out << std::endl << "    \"raw_data\": \"" << item.outputs[0] << "\"";
+        }
     }
     else
     {
@@ -195,6 +196,15 @@ void rocsparse_bench_app::export_item(std::ostream& out, rocsparse_bench_timing_
             << item.gflops[0] << "\"]," << std::endl;
         out << "\"bandwidth\": [\"" << item.gbs[0] << "\", \"" << item.gbs[0] << "\", \""
             << item.gbs[0] << "\"]";
+        if(!no_rawdata())
+        {
+            out << ",";
+            out << std::endl << "    \"raw_legend\": \"" << item.outputs_legend << "\"";
+            out << ",";
+            out << std::endl << "    \"raw_data\": ";
+            out << "\"" << item.outputs[0] << "\"";
+            out << "" << std::endl;
+        }
     }
 }
 
@@ -380,7 +390,14 @@ rocsparse_status rocsparse_bench_app::define_results_json(std::ostream& out)
             {
                 int  jref = iplot % p;
                 auto arg0 = this->m_bench_cmdlines.get_option_arg(y_options_index[0], jref);
-                title += std::string(argname0 + 1) + std::string("=") + arg0;
+                if(argname0[1] == '-')
+                {
+                    title += std::string(argname0 + 2) + std::string("=") + arg0;
+                }
+                else
+                {
+                    title += std::string(argname0 + 1) + std::string("=") + arg0;
+                }
             }
 
             for(int k = 1; k < num_y_options; ++k)
@@ -389,7 +406,14 @@ rocsparse_status rocsparse_bench_app::define_results_json(std::ostream& out)
                 p *= this->m_bench_cmdlines.get_option_nargs(y_options_index[k]);
                 auto arg     = this->m_bench_cmdlines.get_option_arg(y_options_index[k], kref);
                 auto argname = this->m_bench_cmdlines.get_option_name(y_options_index[k]);
-                title += std::string(",") + std::string(argname + 1) + std::string("=") + arg;
+                if(argname[1] == '-')
+                {
+                    title += std::string(",") + std::string(argname + 2) + std::string("=") + arg;
+                }
+                else
+                {
+                    title += std::string(",") + std::string(argname + 1) + std::string("=") + arg;
+                }
             }
             plot_titles[iplot] = title;
         }
