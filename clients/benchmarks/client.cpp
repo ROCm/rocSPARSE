@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,38 @@
 //
 // REQUIRED ROUTINES:
 // - rocsparse_record_timing
-// - display_timing_info_stdout_skip_legend
+// - rocsparse_record_output
+// - rocsparse_record_output_legend
 // - display_timing_info_is_stdout_disabled
 //
+rocsparse_status rocsparse_record_output_legend(const std::string& s)
+{
+    auto* s_bench_app = rocsparse_bench_app::instance();
+    if(s_bench_app)
+    {
+        auto status = s_bench_app->record_output_legend(s);
+        return status;
+    }
+    else
+    {
+        return rocsparse_status_success;
+    }
+}
+
+rocsparse_status rocsparse_record_output(const std::string& s)
+{
+    auto* s_bench_app = rocsparse_bench_app::instance();
+    if(s_bench_app)
+    {
+        auto status = s_bench_app->record_output(s);
+        return status;
+    }
+    else
+    {
+        return rocsparse_status_success;
+    }
+}
+
 rocsparse_status rocsparse_record_timing(double msec, double gflops, double gbs)
 {
     auto* s_bench_app = rocsparse_bench_app::instance();
@@ -47,19 +76,6 @@ rocsparse_status rocsparse_record_timing(double msec, double gflops, double gbs)
     else
     {
         return rocsparse_status_success;
-    }
-}
-
-bool display_timing_info_stdout_skip_legend()
-{
-    auto* s_bench_app = rocsparse_bench_app::instance();
-    if(s_bench_app)
-    {
-        return s_bench_app->stdout_skip_legend();
-    }
-    else
-    {
-        return false;
     }
 }
 

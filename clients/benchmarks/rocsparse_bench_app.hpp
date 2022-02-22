@@ -111,22 +111,24 @@ public:
 struct rocsparse_bench_timing_t
 {
     //
-    // Local item.
+    // Local item
     //
     struct item_t
     {
-        int                 m_nruns{};
-        std::vector<double> msec{};
-        std::vector<double> gflops{};
-        std::vector<double> gbs{};
-
+        int                      m_nruns{};
+        std::vector<double>      msec{};
+        std::vector<double>      gflops{};
+        std::vector<double>      gbs{};
+        std::vector<std::string> outputs{};
+        std::string              outputs_legend{};
         item_t(){};
 
         explicit item_t(int nruns_)
             : m_nruns(nruns_)
             , msec(nruns_)
             , gflops(nruns_)
-            , gbs(nruns_){};
+            , gbs(nruns_)
+            , outputs(nruns_){};
 
         item_t& operator()(int nruns_)
         {
@@ -134,6 +136,7 @@ struct rocsparse_bench_timing_t
             this->msec.resize(nruns_);
             this->gflops.resize(nruns_);
             this->gbs.resize(nruns_);
+            this->outputs.resize(nruns_);
             return *this;
         };
 
@@ -150,6 +153,24 @@ struct rocsparse_bench_timing_t
             {
                 return rocsparse_status_internal_error;
             }
+        }
+
+        rocsparse_status record(int irun, const std::string& s)
+        {
+            if(irun >= 0 && irun < m_nruns)
+            {
+                this->outputs[irun] = s;
+                return rocsparse_status_success;
+            }
+            else
+            {
+                return rocsparse_status_internal_error;
+            }
+        }
+        rocsparse_status record_output_legend(const std::string& s)
+        {
+            this->outputs_legend = s;
+            return rocsparse_status_success;
         }
     };
 
@@ -196,7 +217,6 @@ protected:
     //
     rocsparse_bench_timing_t m_bench_timing;
 
-    bool m_stdout_skip_legend{};
     bool m_stdout_disabled{true};
 
     static int save_initial_cmdline(int argc, char** argv, char*** argv_)
@@ -237,10 +257,9 @@ public:
     {
         return m_bench_cmdlines.is_stdout_disabled();
     }
-
-    bool stdout_skip_legend() const
+    bool no_rawdata() const
     {
-        return this->m_stdout_skip_legend;
+        return m_bench_cmdlines.no_rawdata();
     }
 
     //
@@ -280,6 +299,14 @@ public:
     rocsparse_status record_timing(double msec, double gflops, double bandwidth)
     {
         return this->m_bench_timing[this->m_isample].record(this->m_irun, msec, gflops, bandwidth);
+    }
+    rocsparse_status record_output(const std::string& s)
+    {
+        return this->m_bench_timing[this->m_isample].record(this->m_irun, s);
+    }
+    rocsparse_status record_output_legend(const std::string& s)
+    {
+        return this->m_bench_timing[this->m_isample].record_output_legend(s);
     }
 
 protected:

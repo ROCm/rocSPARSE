@@ -114,7 +114,7 @@ struct Arguments
 
     double tolm;
 
-    char filename[64];
+    char filename[128];
     char function[64];
     char name[64];
     char category[32];

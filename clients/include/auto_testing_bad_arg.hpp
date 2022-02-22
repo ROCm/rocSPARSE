@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,10 @@
 #define AUTO_TESTING_BAD_ARG_HPP
 
 #include "rocsparse_test.hpp"
+#include <fstream>
 #include <hip/hip_runtime_api.h>
+#include <sstream>
 #include <vector>
-
 //
 // PROVIDE TEMPLATE FOR AUTO TESTING BAD ARGUMENTS
 //
@@ -582,6 +583,50 @@ inline void display_timing_info_values(std::ostream& out, int n, const char* nam
     display_timing_info_values(out, n, ts...);
 }
 
+template <typename T, typename... Ts>
+inline void display_timing_info_legend_noresults(std::ostream& out, int n, const char* name, T t)
+{
+    if(strcmp(name, s_timing_info_perf) && strcmp(name, s_timing_info_bandwidth)
+       && strcmp(name, s_timing_info_time))
+    {
+        out << " " << name;
+    }
+}
+
+template <typename T, typename... Ts>
+inline void
+    display_timing_info_legend_noresults(std::ostream& out, int n, const char* name, T t, Ts... ts)
+{
+    if(strcmp(name, s_timing_info_perf) && strcmp(name, s_timing_info_bandwidth)
+       && strcmp(name, s_timing_info_time))
+    {
+        out << " " << name;
+    }
+    display_timing_info_legend_noresults(out, n, ts...);
+}
+
+template <typename T, typename... Ts>
+inline void display_timing_info_values_noresults(std::ostream& out, int n, const char* name, T t)
+{
+    if(strcmp(name, s_timing_info_perf) && strcmp(name, s_timing_info_bandwidth)
+       && strcmp(name, s_timing_info_time))
+    {
+        out << " " << t;
+    }
+}
+
+template <typename T, typename... Ts>
+inline void
+    display_timing_info_values_noresults(std::ostream& out, int n, const char* name, T t, Ts... ts)
+{
+    if(strcmp(name, s_timing_info_perf) && strcmp(name, s_timing_info_bandwidth)
+       && strcmp(name, s_timing_info_time))
+    {
+        out << " " << t;
+    }
+    display_timing_info_values_noresults(out, n, ts...);
+}
+
 template <typename T>
 inline void grab_results(double values[3], const char* name, T t)
 {
@@ -617,31 +662,25 @@ inline void display_timing_info_grab_results(double values[3], const char* name,
     display_timing_info_grab_results(values, ts...);
 }
 
-bool display_timing_info_stdout_skip_legend();
 bool display_timing_info_is_stdout_disabled();
 
 template <typename T, typename... Ts>
-inline void display_timing_info(std::ostream& out, int n, const char* name, T t, Ts... ts)
+inline void display_timing_info_generate(std::ostream& out, int n, const char* name, T t, Ts... ts)
 {
-    if(!display_timing_info_is_stdout_disabled())
-    {
-        out.precision(2);
-        out.setf(std::ios::fixed);
-        out.setf(std::ios::left);
-        if(!display_timing_info_stdout_skip_legend())
-        {
-            display_timing_info_legend(out, n, name, t, ts...);
-            out << std::endl;
-        }
-    }
     double values[3]{};
     display_timing_info_grab_results(values, name, t, ts...);
     rocsparse_record_timing(values[0], values[1], values[2]);
-    if(!display_timing_info_is_stdout_disabled())
-    {
-        display_timing_info_values(out, n, name, t, ts...);
-        out << std::endl;
-    }
+    display_timing_info_values(out, n, name, t, ts...);
+}
+
+template <typename T, typename... Ts>
+inline void
+    display_timing_info_generate_params(std::ostream& out, int n, const char* name, T t, Ts... ts)
+{
+    double values[3]{};
+    display_timing_info_grab_results(values, name, t, ts...);
+    rocsparse_record_timing(values[0], values[1], values[2]);
+    display_timing_info_values_noresults(out, n, name, t, ts...);
 }
 
 template <typename T, typename... Ts>
@@ -659,9 +698,8 @@ inline void display_timing_info_max_size_strings(int mx[1], const char* name, T 
     display_timing_info_max_size_strings(mx, ts...);
 }
 
-#include <fstream>
 template <typename... Ts>
-inline void display_timing_info(const char* name, Ts... ts)
+inline void display_timing_info_main(const char* name, Ts... ts)
 {
     //
     // To configure the size of std::setw.
@@ -673,11 +711,98 @@ inline void display_timing_info(const char* name, Ts... ts)
     //
     //
     n += 4;
+
     //
-    // Call info.
+    // Legend
     //
-    display_timing_info(std::cout, n, name, ts...);
+    {
+        std::ostringstream out_legend;
+        out_legend.precision(2);
+        out_legend.setf(std::ios::fixed);
+        out_legend.setf(std::ios::left);
+        if(!display_timing_info_is_stdout_disabled())
+        {
+            display_timing_info_legend(out_legend, n, name, ts...);
+            std::cout << out_legend.str() << std::endl;
+        }
+        else
+        {
+            // store the string.
+            display_timing_info_legend_noresults(out_legend, n, name, ts...);
+            rocsparse_record_output_legend(out_legend.str());
+        }
+    }
+
+    std::ostringstream out;
+    out.precision(2);
+    out.setf(std::ios::fixed);
+    out.setf(std::ios::left);
+    if(!display_timing_info_is_stdout_disabled())
+    {
+        display_timing_info_generate(out, n, name, ts...);
+        std::cout << out.str() << std::endl;
+    }
+    else
+    {
+        display_timing_info_generate_params(out, n, name, ts...);
+        // store the string.
+        rocsparse_record_output(out.str());
+    }
 }
+
+inline void rocsparse_get_matrixname(const char* f, char* name)
+{
+    int n = 0;
+    while(f[n] != '\0')
+        ++n;
+    int cdir = 0;
+    for(int i = 0; i < n; ++i)
+    {
+        if(f[i] == '/' || f[i] == '\\')
+        {
+            cdir = i + 1;
+        }
+    }
+    int ddir = cdir;
+    for(int i = cdir; i < n; ++i)
+    {
+        if(f[i] == '.')
+        {
+            ddir = i;
+        }
+    }
+
+    if(ddir == cdir)
+    {
+        ddir = n;
+    }
+
+    for(int i = cdir; i < ddir; ++i)
+    {
+        name[i - cdir] = f[i];
+    }
+    name[ddir - cdir] = '\0';
+}
+
+#define display_timing_info(...)                                                             \
+    do                                                                                       \
+    {                                                                                        \
+        char matrixname[64];                                                                 \
+        if(rocsparse_arguments_has_datafile(arg))                                            \
+            rocsparse_get_matrixname(&arg.filename[0], &matrixname[0]);                      \
+        const char* importname                                                               \
+            = (rocsparse_arguments_has_datafile(arg) ? &matrixname[0]                        \
+                                                     : rocsparse_matrix2string(arg.matrix)); \
+        display_timing_info_main(__VA_ARGS__,                                                \
+                                 "iter",                                                     \
+                                 arg.iters,                                                  \
+                                 "verified",                                                 \
+                                 (arg.unit_check ? "yes" : "no"),                            \
+                                 "function",                                                 \
+                                 &arg.function[0],                                           \
+                                 "import",                                                   \
+                                 importname);                                                \
+    } while(false)
 
 //
 // Compute gflops

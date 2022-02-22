@@ -94,10 +94,10 @@ rocsparse_arguments_config::rocsparse_arguments_config()
         this->boostval             = static_cast<double>(0);
         this->boostvali            = static_cast<double>(0);
         this->tolm                 = static_cast<double>(0);
-        this->filename[0]          = '\n';
-        this->function[0]          = '\n';
-        this->name[0]              = '\n';
-        this->category[0]          = '\n';
+        this->filename[0]          = '\0';
+        this->function[0]          = '\0';
+        this->name[0]              = '\0';
+        this->category[0]          = '\0';
     }
 
     this->precision = 's';
@@ -316,7 +316,7 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   if(vm.count("help"))
   {
     std::cout << desc << std::endl;
-    return 0;
+    return -2;
   }
 
   if(this->b_dir != rocsparse_direction_row && this->b_dir != rocsparse_direction_column)
@@ -385,7 +385,7 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
   {
     this->transB = rocsparse_operation_conjugate_transpose;
   }
-
+  sprintf(this->function,"%s",this->function_name.c_str());
   this->baseA = (this->b_baseA == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
   this->baseB = (this->b_baseB == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
   this->baseC = (this->b_baseC == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
@@ -494,7 +494,7 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
   if(vm.count("help"))
   {
     std::cout << desc << std::endl;
-    return 0;
+    return -2;
   }
 
   if(this->b_dir != rocsparse_direction_row && this->b_dir != rocsparse_direction_column)
@@ -564,6 +564,7 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
     this->transB = rocsparse_operation_conjugate_transpose;
   }
 
+  sprintf(this->function,"%s",this->function_name.c_str());
   this->baseA = (b_baseA == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
   this->baseB = (b_baseB == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;
   this->baseC = (b_baseC == 0) ? rocsparse_index_base_zero : rocsparse_index_base_one;

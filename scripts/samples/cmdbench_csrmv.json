@@ -1,0 +1,4 @@
+{
+    "cmdlines":["-f csrmv --bench-x --rocalution ${ROCSPARSE_BENCH_DATA_DIR}/nos* --bench-o csrmv.json",
+		"-f csrmm -n 4 --bench-x --rocalution ${ROCSPARSE_BENCH_DATA_DIR}/* --bench-o csrmm.json" ]
+}

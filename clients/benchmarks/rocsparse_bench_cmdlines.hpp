@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2021 Advanced Micro Devices, Inc.
+* Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -198,6 +198,11 @@ private:
             return this->m_is_stdout_disabled;
         }
 
+        bool no_rawdata() const
+        {
+            return this->m_no_rawdata;
+        }
+
         //
         // Constructor.
         //
@@ -244,6 +249,8 @@ private:
             this->m_name = argv[0];
             this->m_has_bench_option
                 = (detected_option_bench_x || detected_option_bench_o || detected_option_bench_n);
+
+            this->m_no_rawdata = detect_flag(argc, argv, "--bench-no-rawdata");
 
             this->m_is_stdout_disabled = (false == detect_flag(argc, argv, "--bench-std"));
 
@@ -555,6 +562,7 @@ private:
         int                      m_option_index_x;
         int                      m_nsamples;
         bool                     m_is_stdout_disabled{true};
+        bool                     m_no_rawdata{};
         const char*              m_ofilename{};
     };
 
@@ -563,6 +571,18 @@ private:
     val*    m_cmdset{};
 
 public:
+    static void help(std::ostream& out)
+    {
+        out << "Benchmarks options:" << std::endl;
+        out << "--bench-x          flag to preceed the main option " << std::endl;
+        out << "--bench-o          output JSON file, (default = a.json)" << std::endl;
+        out << "--bench-n          number of runs, (default = 1)" << std::endl;
+        out << "--bench-no-rawdata do not export raw data." << std::endl;
+        out << "" << std::endl;
+        out << "Example:" << std::endl;
+        out << "rocsparse-bench -f csrmv --bench-x -M 10 20 30 40" << std::endl;
+    }
+
     //
     // @brief Get the output filename.
     //
@@ -579,6 +599,7 @@ public:
     int         get_noptions_x() const;
     int         get_noptions() const;
     bool        is_stdout_disabled() const;
+    bool        no_rawdata() const;
 
     //
     // @brief Get the number of runs per sample.

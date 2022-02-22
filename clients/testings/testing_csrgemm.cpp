@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -756,11 +756,7 @@ void testing_csrgemm(const Arguments& arg)
                             s_timing_info_bandwidth,
                             gpu_gbyte,
                             s_timing_info_time,
-                            get_gpu_time_msec(gpu_solve_time_used),
-                            "iter",
-                            number_hot_calls,
-                            "verified",
-                            (arg.unit_check ? "yes" : "no"));
+                            get_gpu_time_msec(gpu_solve_time_used));
     }
 
     // Free buffer

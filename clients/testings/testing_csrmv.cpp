@@ -295,11 +295,7 @@ void testing_csrmv(const Arguments& arg)
                             s_timing_info_bandwidth,
                             gpu_gbyte,
                             s_timing_info_time,
-                            get_gpu_time_msec(gpu_time_used),
-                            "iter",
-                            number_hot_calls,
-                            "verified",
-                            (arg.unit_check ? "yes" : "no"));
+                            get_gpu_time_msec(gpu_time_used));
     }
 
     // If adaptive, clear analysis data

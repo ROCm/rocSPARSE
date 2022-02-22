@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -515,11 +515,7 @@ void testing_csrsm(const Arguments& arg)
                             "analysis msec",
                             get_gpu_time_msec(gpu_analysis_time_used),
                             s_timing_info_time,
-                            get_gpu_time_msec(gpu_solve_time_used),
-                            "iter",
-                            number_hot_calls,
-                            "verified",
-                            (arg.unit_check ? "yes" : "no"));
+                            get_gpu_time_msec(gpu_solve_time_used));
     }
 
     // Clear csrsm meta data
