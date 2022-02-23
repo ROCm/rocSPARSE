@@ -215,7 +215,7 @@ __device__ __forceinline__ void rocsparse_blockreduce_min(int i, T* data)
     if(BLOCKSIZE >   1) { if(i <   1 && i +   1 < BLOCKSIZE) { data[i] = min(data[i], data[i +   1]); } __syncthreads(); }
 }
 
-#ifndef __gfx1030__
+#if (!defined(__gfx1030__)) && (!defined(__gfx1011__))
 // DPP-based wavefront reduction maximum
 template <unsigned int WFSIZE>
 __device__ __forceinline__ void rocsparse_wfreduce_max(int* maximum)
