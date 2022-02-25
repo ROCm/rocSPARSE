@@ -175,10 +175,10 @@ void testing_bsrxmv(const Arguments& arg)
 
     // Wavefront size
     int dev;
-    hipGetDevice(&dev);
+    CHECK_HIP_ERROR(hipGetDevice(&dev));
 
     hipDeviceProp_t prop;
-    hipGetDeviceProperties(&prop, dev);
+    CHECK_HIP_ERROR(hipGetDeviceProperties(&prop, dev));
 
     bool                  type      = (prop.warpSize == 32) ? (arg.timing ? false : true) : false;
     static constexpr bool full_rank = false;

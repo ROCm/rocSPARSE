@@ -151,10 +151,10 @@ void testing_bsrmv(const Arguments& arg)
 
     // Wavefront size
     int dev;
-    hipGetDevice(&dev);
+    CHECK_HIP_ERROR(hipGetDevice(&dev));
 
     hipDeviceProp_t prop;
-    hipGetDeviceProperties(&prop, dev);
+    CHECK_HIP_ERROR(hipGetDeviceProperties(&prop, dev));
 
     bool                        type = (prop.warpSize == 32) ? (arg.timing ? false : true) : false;
     static constexpr bool       full_rank = false;
@@ -165,6 +165,7 @@ void testing_bsrmv(const Arguments& arg)
     //
     host_gebsr_matrix<T>   hA;
     device_gebsr_matrix<T> dA;
+
     matrix_factory.init_bsr(hA, dA, mb, nb);
 
     M = dA.mb * dA.row_block_dim;

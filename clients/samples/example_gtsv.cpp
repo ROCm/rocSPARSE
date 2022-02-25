@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,13 +76,13 @@ int main(int argc, char* argv[])
 
     // rocSPARSE handle
     rocsparse_handle handle;
-    rocsparse_create_handle(&handle);
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     hipDeviceProp_t devProp;
     int             device_id = 0;
 
-    hipGetDevice(&device_id);
-    hipGetDeviceProperties(&devProp, device_id);
+    HIP_CHECK(hipGetDevice(&device_id));
+    HIP_CHECK(hipGetDeviceProperties(&devProp, device_id));
     std::cout << "Device: " << devProp.name << std::endl;
 
     rocsparse_int m   = ndim;
@@ -100,10 +100,10 @@ int main(int argc, char* argv[])
     double* ddu = NULL;
     double* dB  = NULL;
 
-    hipMalloc((void**)&ddl, sizeof(double) * m);
-    hipMalloc((void**)&dd, sizeof(double) * m);
-    hipMalloc((void**)&ddu, sizeof(double) * m);
-    hipMalloc((void**)&dB, sizeof(double) * ldb * n);
+    HIP_CHECK(hipMalloc((void**)&ddl, sizeof(double) * m));
+    HIP_CHECK(hipMalloc((void**)&dd, sizeof(double) * m));
+    HIP_CHECK(hipMalloc((void**)&ddu, sizeof(double) * m));
+    HIP_CHECK(hipMalloc((void**)&dB, sizeof(double) * ldb * n));
 
     // Copy data to device
     HIP_CHECK(hipMemcpy(ddl, hdl.data(), sizeof(double) * m, hipMemcpyHostToDevice));
@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
     }
 
     // Device synchronization
-    hipDeviceSynchronize();
+    HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
     double time = get_time_us();
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
             ROCSPARSE_CHECK(rocsparse_dgtsv(handle, m, n, ddl, dd, ddu, dB, ldb, temp_buffer));
 
             // Device synchronization
-            hipDeviceSynchronize();
+            HIP_CHECK(hipDeviceSynchronize());
         }
     }
 

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -241,10 +241,10 @@ struct csx_matrix
     template <memory_mode::value_t THAT_MODE>
     void transfer_from(const csx_matrix<THAT_MODE, DIRECTION, T, I, J>& that)
     {
-        CHECK_HIP_ERROR((this->m == that.m && this->n == that.n && this->nnz == that.nnz
-                         && this->dir == that.dir && this->base == that.base)
-                            ? hipSuccess
-                            : hipErrorInvalidValue);
+        CHECK_HIP_THROW_ERROR((this->m == that.m && this->n == that.n && this->nnz == that.nnz
+                               && this->dir == that.dir && this->base == that.base)
+                                  ? hipSuccess
+                                  : hipErrorInvalidValue);
         switch(DIRECTION)
         {
         case rocsparse_direction_row:

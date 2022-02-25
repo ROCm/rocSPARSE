@@ -150,12 +150,12 @@ public:
     template <memory_mode::value_t THAT_MODE>
     void transfer_from(const dense_vector_t<THAT_MODE, T>& that)
     {
-        CHECK_HIP_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
+        CHECK_HIP_THROW_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
         auto err = hipMemcpy(this->data(),
                              that.data(),
                              sizeof(T) * that.size(),
                              memory_mode::get_hipMemcpyKind(MODE, THAT_MODE));
-        CHECK_HIP_ERROR(err);
+        CHECK_HIP_THROW_ERROR(err);
     }
 
     void transfer_to(std::vector<T>& that) const;
@@ -183,16 +183,17 @@ struct host_vector : std::vector<T>
     template <memory_mode::value_t THAT_MODE>
     void transfer_from(const dense_vector_t<THAT_MODE, T>& that)
     {
-        CHECK_HIP_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
-        CHECK_HIP_ERROR(hipMemcpy(this->data(),
-                                  that.data(),
-                                  sizeof(T) * that.size(),
-                                  memory_mode::get_hipMemcpyKind(memory_mode::host, THAT_MODE)));
+        CHECK_HIP_THROW_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
+        CHECK_HIP_THROW_ERROR(
+            hipMemcpy(this->data(),
+                      that.data(),
+                      sizeof(T) * that.size(),
+                      memory_mode::get_hipMemcpyKind(memory_mode::host, THAT_MODE)));
     }
     void transfer_from(const host_vector<T>& that)
     {
-        CHECK_HIP_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
-        CHECK_HIP_ERROR(
+        CHECK_HIP_THROW_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
+        CHECK_HIP_THROW_ERROR(
             hipMemcpy(this->data(),
                       that.data(),
                       sizeof(T) * that.size(),
@@ -228,10 +229,11 @@ struct host_vector : std::vector<T>
     template <memory_mode::value_t THAT_MODE>
     void transfer_from(const T* that)
     {
-        CHECK_HIP_ERROR(hipMemcpy(this->data(),
-                                  that,
-                                  sizeof(T) * this->size(),
-                                  memory_mode::get_hipMemcpyKind(memory_mode::host, THAT_MODE)));
+        CHECK_HIP_THROW_ERROR(
+            hipMemcpy(this->data(),
+                      that,
+                      sizeof(T) * this->size(),
+                      memory_mode::get_hipMemcpyKind(memory_mode::host, THAT_MODE)));
     };
 
     void print(std::ostream& out) const
@@ -425,22 +427,22 @@ void dense_vector_t<MODE, T>::near_check(const host_vector<T>& that_, floating_d
 template <memory_mode::value_t MODE, typename T>
 void dense_vector_t<MODE, T>::transfer_from(const host_vector<T>& that)
 {
-    CHECK_HIP_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
+    CHECK_HIP_THROW_ERROR(this->size() == that.size() ? hipSuccess : hipErrorInvalidValue);
     auto err = hipMemcpy(this->data(),
                          that.data(),
                          sizeof(T) * that.size(),
                          memory_mode::get_hipMemcpyKind(MODE, memory_mode::host));
-    CHECK_HIP_ERROR(err);
+    CHECK_HIP_THROW_ERROR(err);
 }
 
 template <memory_mode::value_t MODE, typename T>
 void dense_vector_t<MODE, T>::transfer_to(std::vector<T>& that) const
 {
     that.resize(this->m_size);
-    CHECK_HIP_ERROR(hipMemcpy(that.data(),
-                              this->data(),
-                              sizeof(T) * this->size(),
-                              memory_mode::get_hipMemcpyKind(memory_mode::host, MODE)));
+    CHECK_HIP_THROW_ERROR(hipMemcpy(that.data(),
+                                    this->data(),
+                                    sizeof(T) * this->size(),
+                                    memory_mode::get_hipMemcpyKind(memory_mode::host, MODE)));
 }
 
 template <memory_mode::value_t MODE, typename T>

@@ -61,7 +61,7 @@ void testing_coo2dense(const Arguments& arg)
     rocsparse_local_handle    handle;
     rocsparse_local_mat_descr descr;
 
-    rocsparse_set_mat_index_base(descr, arg.baseA);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, arg.baseA));
 
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0 || LD < M)

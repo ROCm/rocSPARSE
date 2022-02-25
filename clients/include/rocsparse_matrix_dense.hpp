@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -199,32 +199,32 @@ public:
     template <memory_mode::value_t THAT_MODE>
     void transfer_from(const dense_matrix_t<THAT_MODE, T, I>& that_)
     {
-        CHECK_HIP_ERROR((this->m == that_.m && this->n == that_.n) ? hipSuccess
-                                                                   : hipErrorInvalidValue);
-        CHECK_HIP_ERROR((this->order == that_.order) ? hipSuccess : hipErrorInvalidValue);
+        CHECK_HIP_THROW_ERROR((this->m == that_.m && this->n == that_.n) ? hipSuccess
+                                                                         : hipErrorInvalidValue);
+        CHECK_HIP_THROW_ERROR((this->order == that_.order) ? hipSuccess : hipErrorInvalidValue);
         if(((this->order == rocsparse_order_column) && (that_.m == that_.ld)
             && (this->m == this->ld))
            || ((this->order == rocsparse_order_row) && (that_.n == that_.ld)
                && (this->n == this->ld)))
         {
-            CHECK_HIP_ERROR(hipMemcpy(((T*)(*this)),
-                                      ((const T*)that_),
-                                      sizeof(T) * this->m * this->n,
-                                      memory_mode::get_hipMemcpyKind(MODE, THAT_MODE)));
+            CHECK_HIP_THROW_ERROR(hipMemcpy(((T*)(*this)),
+                                            ((const T*)that_),
+                                            sizeof(T) * this->m * this->n,
+                                            memory_mode::get_hipMemcpyKind(MODE, THAT_MODE)));
         }
         else
         {
             const I num_sequences = (this->order == rocsparse_order_column) ? this->n : this->m;
             const I size_sequence = (this->order == rocsparse_order_column) ? this->m : this->n;
-            CHECK_HIP_ERROR((this->ld >= size_sequence && that_.ld >= size_sequence)
-                                ? hipSuccess
-                                : hipErrorInvalidValue);
+            CHECK_HIP_THROW_ERROR((this->ld >= size_sequence && that_.ld >= size_sequence)
+                                      ? hipSuccess
+                                      : hipErrorInvalidValue);
             for(int j = 0; j < num_sequences; ++j)
             {
-                CHECK_HIP_ERROR(hipMemcpy(((T*)*this) + j * this->ld,
-                                          ((const T*)that_) + j * that_.ld,
-                                          sizeof(T) * size_sequence,
-                                          memory_mode::get_hipMemcpyKind(MODE, THAT_MODE)));
+                CHECK_HIP_THROW_ERROR(hipMemcpy(((T*)*this) + j * this->ld,
+                                                ((const T*)that_) + j * that_.ld,
+                                                sizeof(T) * size_sequence,
+                                                memory_mode::get_hipMemcpyKind(MODE, THAT_MODE)));
             }
         }
     }

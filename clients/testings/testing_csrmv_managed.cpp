@@ -195,10 +195,10 @@ void testing_csrmv_managed(const Arguments& arg)
 
     // Wavefront size
     int dev;
-    hipGetDevice(&dev);
+    CHECK_HIP_ERROR(hipGetDevice(&dev));
 
     hipDeviceProp_t prop;
-    hipGetDeviceProperties(&prop, dev);
+    CHECK_HIP_ERROR(hipGetDeviceProperties(&prop, dev));
 
     bool to_int = false;
     to_int |= (prop.warpSize == 32);

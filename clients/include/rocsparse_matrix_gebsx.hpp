@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -262,12 +262,13 @@ struct gebsx_matrix
     template <memory_mode::value_t THAT_MODE>
     void transfer_from(const gebsx_matrix<THAT_MODE, direction_, T, I, J>& that)
     {
-        CHECK_HIP_ERROR((this->mb == that.mb && this->nb == that.nb && this->nnzb == that.nnzb
-                         && this->block_direction == that.block_direction
-                         && this->row_block_dim == that.row_block_dim
-                         && this->col_block_dim == that.col_block_dim && this->base == that.base)
-                            ? hipSuccess
-                            : hipErrorInvalidValue);
+        CHECK_HIP_THROW_ERROR((this->mb == that.mb && this->nb == that.nb && this->nnzb == that.nnzb
+                               && this->block_direction == that.block_direction
+                               && this->row_block_dim == that.row_block_dim
+                               && this->col_block_dim == that.col_block_dim
+                               && this->base == that.base)
+                                  ? hipSuccess
+                                  : hipErrorInvalidValue);
 
         if(this->mb > 0)
         {

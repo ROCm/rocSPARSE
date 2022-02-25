@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,10 +76,10 @@ struct ell_matrix
     template <memory_mode::value_t THAT_MODE>
     void transfer_from(const ell_matrix<THAT_MODE, T, I>& that)
     {
-        CHECK_HIP_ERROR((this->m == that.m && this->n == that.n && this->nnz == that.nnz
-                         && this->base == that.base)
-                            ? hipSuccess
-                            : hipErrorInvalidValue);
+        CHECK_HIP_THROW_ERROR((this->m == that.m && this->n == that.n && this->nnz == that.nnz
+                               && this->base == that.base)
+                                  ? hipSuccess
+                                  : hipErrorInvalidValue);
 
         this->ind.transfer_from(that.ind);
         this->val.transfer_from(that.val);

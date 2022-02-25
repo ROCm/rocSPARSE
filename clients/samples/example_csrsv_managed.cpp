@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 
     // rocSPARSE handle
     rocsparse_handle handle;
-    rocsparse_create_handle(&handle);
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     // Transposition of the matrix
     rocsparse_operation trans = rocsparse_operation_none;
@@ -90,8 +90,8 @@ int main(int argc, char* argv[])
     hipDeviceProp_t devProp;
     int             device_id = 0;
 
-    hipGetDevice(&device_id);
-    hipGetDeviceProperties(&devProp, device_id);
+    HIP_CHECK(hipGetDevice(&device_id));
+    HIP_CHECK(hipGetDeviceProperties(&devProp, device_id));
     std::cout << "Device: " << devProp.name << std::endl;
 
     // Generate problem
@@ -122,11 +122,11 @@ int main(int argc, char* argv[])
     double*        x           = NULL;
     double*        y           = NULL;
 
-    hipMallocManaged((void**)&csr_row_ptr, sizeof(rocsparse_int) * (m + 1));
-    hipMallocManaged((void**)&csr_col_ind, sizeof(rocsparse_int) * nnz);
-    hipMallocManaged((void**)&csr_val, sizeof(double) * nnz);
-    hipMallocManaged((void**)&x, sizeof(double) * m);
-    hipMallocManaged((void**)&y, sizeof(double) * m);
+    HIP_CHECK(hipMallocManaged((void**)&csr_row_ptr, sizeof(rocsparse_int) * (m + 1)));
+    HIP_CHECK(hipMallocManaged((void**)&csr_col_ind, sizeof(rocsparse_int) * nnz));
+    HIP_CHECK(hipMallocManaged((void**)&csr_val, sizeof(double) * nnz));
+    HIP_CHECK(hipMallocManaged((void**)&x, sizeof(double) * m));
+    HIP_CHECK(hipMallocManaged((void**)&y, sizeof(double) * m));
 
     // Copy data
     for(int i = 0; i < m + 1; i++)
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 
     // Matrix descriptor
     rocsparse_mat_descr descr;
-    rocsparse_create_mat_descr(&descr);
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descr));
 
     // Matrix fill mode
     ROCSPARSE_CHECK(rocsparse_set_mat_fill_mode(descr, rocsparse_fill_mode_lower));
@@ -204,7 +204,7 @@ int main(int argc, char* argv[])
     }
 
     // Device synchronization
-    hipDeviceSynchronize();
+    HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
     double time = get_time_us();
@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
                                                    temp_buffer));
 
             // Device synchronization
-            hipDeviceSynchronize();
+            HIP_CHECK(hipDeviceSynchronize());
         }
     }
 
@@ -248,7 +248,7 @@ int main(int argc, char* argv[])
     }
 
     // Device synchronization
-    hipDeviceSynchronize();
+    HIP_CHECK(hipDeviceSynchronize());
 
     std::cout.precision(2);
     std::cout.setf(std::ios::fixed);

@@ -106,8 +106,8 @@ void testing_prune_csr2csr_by_percentage(const Arguments& arg)
     // Create matrix info
     rocsparse_local_mat_info info;
 
-    rocsparse_set_mat_index_base(csr_descr_A, csr_base_A);
-    rocsparse_set_mat_index_base(csr_descr_C, csr_base_C);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr_A, csr_base_A));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr_C, csr_base_C));
 
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0 || percentage < static_cast<T>(0) || percentage > static_cast<T>(100))

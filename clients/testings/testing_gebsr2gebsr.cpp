@@ -97,8 +97,8 @@ void testing_gebsr2gebsr(const Arguments& arg)
     rocsparse_local_mat_descr descr_A;
     rocsparse_local_mat_descr descr_C;
 
-    rocsparse_set_mat_index_base(descr_A, base_A);
-    rocsparse_set_mat_index_base(descr_C, base_C);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_A, base_A));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_C, base_C));
 
     // Argument sanity check before allocating invalid memory
     if(Mb <= 0 || Nb <= 0 || row_block_dim_A <= 0 || col_block_dim_A <= 0 || row_block_dim_C <= 0

@@ -251,7 +251,8 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_gebsr(std::vector
                                                              row_block_dim,
                                                              col_block_dim,
                                                              base);
-        CHECK_ROCSPARSE_ERROR(status);
+        CHECK_ROCSPARSE_THROW_ERROR(status);
+
         if(import_dirb != dirb)
         {
             std::cerr << "TODO, reorder ?" << std::endl;
@@ -279,7 +280,6 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_csr(
     rocsparse_matrix_type matrix_type,
     rocsparse_fill_mode   uplo)
 {
-
     std::vector<I> row_ptr;
     std::vector<J> col_ind;
     std::vector<T> val;
@@ -289,15 +289,18 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_csr(
     {
     case rocsparse_matrix_file_rocalution:
     {
-        rocsparse_init_file<rocsparse_matrix_file_rocalution>::import_csr(
+        rocsparse_status status = rocsparse_init_file<rocsparse_matrix_file_rocalution>::import_csr(
             this->m_filename.c_str(), VEC(row_ptr), VEC(col_ind), VEC(val), M, N, nnz, base);
+        CHECK_ROCSPARSE_THROW_ERROR(status);
         break;
     }
 
     case rocsparse_matrix_file_rocsparseio:
     {
-        rocsparse_init_file<rocsparse_matrix_file_rocsparseio>::import_csr(
-            this->m_filename.c_str(), VEC(row_ptr), VEC(col_ind), VEC(val), M, N, nnz, base);
+        rocsparse_status status
+            = rocsparse_init_file<rocsparse_matrix_file_rocsparseio>::import_csr(
+                this->m_filename.c_str(), VEC(row_ptr), VEC(col_ind), VEC(val), M, N, nnz, base);
+        CHECK_ROCSPARSE_THROW_ERROR(status);
         break;
     }
 #undef VEC
@@ -377,7 +380,7 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_coo(std::vector<I
         std::vector<I>   row_ptr(M + 1);
         rocsparse_status status = rocsparse_init_file<rocsparse_matrix_file_rocalution>::import_csr(
             this->m_filename.c_str(), row_ptr, coo_col_ind, coo_val, M, N, nnz, base);
-        CHECK_ROCSPARSE_ERROR(status);
+        CHECK_ROCSPARSE_THROW_ERROR(status);
 
         //
         // Convert to COO
@@ -390,7 +393,7 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_coo(std::vector<I
     {
         rocsparse_status status = rocsparse_init_file<rocsparse_matrix_file_mtx>::import_coo(
             this->m_filename.c_str(), coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base);
-        CHECK_ROCSPARSE_ERROR(status);
+        CHECK_ROCSPARSE_THROW_ERROR(status);
         break;
     }
 
@@ -399,7 +402,7 @@ void rocsparse_matrix_factory_file<MATRIX_INIT, T, I, J>::init_coo(std::vector<I
         rocsparse_status status
             = rocsparse_init_file<rocsparse_matrix_file_rocsparseio>::import_coo(
                 this->m_filename.c_str(), coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base);
-        CHECK_ROCSPARSE_ERROR(status);
+        CHECK_ROCSPARSE_THROW_ERROR(status);
         break;
     }
     }

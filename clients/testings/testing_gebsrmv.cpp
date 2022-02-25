@@ -180,10 +180,10 @@ void testing_gebsrmv(const Arguments& arg)
 
     // Wavefront size
     int dev;
-    hipGetDevice(&dev);
+    CHECK_HIP_ERROR(hipGetDevice(&dev));
 
     hipDeviceProp_t prop;
-    hipGetDeviceProperties(&prop, dev);
+    CHECK_HIP_ERROR(hipGetDeviceProperties(&prop, dev));
 
     host_gebsr_matrix<T> hA;
 
@@ -214,10 +214,10 @@ void testing_gebsrmv(const Arguments& arg)
         // Navi21 on Windows requires weaker tolerance due to different rounding behaviour
 #if defined(WIN32)
         int dev;
-        hipGetDevice(&dev);
+        CHECK_HIP_ERROR(hipGetDevice(&dev));
 
         hipDeviceProp_t prop;
-        hipGetDeviceProperties(&prop, dev);
+        CHECK_HIP_ERROR(hipGetDeviceProperties(&prop, dev));
 
         if(prop.major == 10 && prop.minor == 3)
         {

@@ -113,7 +113,7 @@ void testing_csrcolor(const Arguments& arg)
     rocsparse_local_handle    handle;
     rocsparse_local_mat_descr csr_descr;
     rocsparse_local_mat_info  mat_info;
-    rocsparse_set_mat_index_base(csr_descr, csr_base);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr, csr_base));
 
     rocsparse_int ncolor;
 

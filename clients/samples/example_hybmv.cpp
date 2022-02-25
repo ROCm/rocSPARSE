@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,24 @@
 #include <stdlib.h>
 #include <vector>
 
+#define HIP_CHECK(stat)                                                        \
+    {                                                                          \
+        if(stat != hipSuccess)                                                 \
+        {                                                                      \
+            std::cerr << "Error: hip error in line " << __LINE__ << std::endl; \
+            return -1;                                                         \
+        }                                                                      \
+    }
+
+#define ROCSPARSE_CHECK(stat)                                                        \
+    {                                                                                \
+        if(stat != rocsparse_status_success)                                         \
+        {                                                                            \
+            std::cerr << "Error: rocsparse error in line " << __LINE__ << std::endl; \
+            return -1;                                                               \
+        }                                                                            \
+    }
+
 int main(int argc, char* argv[])
 {
     // Parse command line
@@ -58,13 +76,13 @@ int main(int argc, char* argv[])
 
     // rocSPARSE handle
     rocsparse_handle handle;
-    rocsparse_create_handle(&handle);
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     hipDeviceProp_t devProp;
     int             device_id = 0;
 
-    hipGetDevice(&device_id);
-    hipGetDeviceProperties(&devProp, device_id);
+    HIP_CHECK(hipGetDevice(&device_id));
+    HIP_CHECK(hipGetDeviceProperties(&devProp, device_id));
     std::cout << "Device: " << devProp.name << std::endl;
 
     // Generate problem in CSR format
@@ -90,7 +108,7 @@ int main(int argc, char* argv[])
 
     // Matrix descriptor
     rocsparse_mat_descr descrA;
-    rocsparse_create_mat_descr(&descrA);
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Offload data to device
     rocsparse_int* dAptr = NULL;
@@ -99,38 +117,40 @@ int main(int argc, char* argv[])
     double*        dx    = NULL;
     double*        dy    = NULL;
 
-    hipMalloc((void**)&dAptr, sizeof(rocsparse_int) * (m + 1));
-    hipMalloc((void**)&dAcol, sizeof(rocsparse_int) * nnz);
-    hipMalloc((void**)&dAval, sizeof(double) * nnz);
-    hipMalloc((void**)&dx, sizeof(double) * n);
-    hipMalloc((void**)&dy, sizeof(double) * m);
+    HIP_CHECK(hipMalloc((void**)&dAptr, sizeof(rocsparse_int) * (m + 1)));
+    HIP_CHECK(hipMalloc((void**)&dAcol, sizeof(rocsparse_int) * nnz));
+    HIP_CHECK(hipMalloc((void**)&dAval, sizeof(double) * nnz));
+    HIP_CHECK(hipMalloc((void**)&dx, sizeof(double) * n));
+    HIP_CHECK(hipMalloc((void**)&dy, sizeof(double) * m));
 
-    hipMemcpy(dAptr, hAptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice);
-    hipMemcpy(dAcol, hAcol.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice);
-    hipMemcpy(dAval, hAval.data(), sizeof(double) * nnz, hipMemcpyHostToDevice);
-    hipMemcpy(dx, hx.data(), sizeof(double) * n, hipMemcpyHostToDevice);
+    HIP_CHECK(
+        hipMemcpy(dAptr, hAptr.data(), sizeof(rocsparse_int) * (m + 1), hipMemcpyHostToDevice));
+    HIP_CHECK(hipMemcpy(dAcol, hAcol.data(), sizeof(rocsparse_int) * nnz, hipMemcpyHostToDevice));
+    HIP_CHECK(hipMemcpy(dAval, hAval.data(), sizeof(double) * nnz, hipMemcpyHostToDevice));
+    HIP_CHECK(hipMemcpy(dx, hx.data(), sizeof(double) * n, hipMemcpyHostToDevice));
 
     // Convert CSR matrix to HYB format
     rocsparse_hyb_mat hybA;
-    rocsparse_create_hyb_mat(&hybA);
+    ROCSPARSE_CHECK(rocsparse_create_hyb_mat(&hybA));
 
-    rocsparse_dcsr2hyb(
-        handle, m, n, descrA, dAval, dAptr, dAcol, hybA, 0, rocsparse_hyb_partition_auto);
+    ROCSPARSE_CHECK(rocsparse_dcsr2hyb(
+        handle, m, n, descrA, dAval, dAptr, dAcol, hybA, 0, rocsparse_hyb_partition_auto));
 
     // Clean up CSR structures
-    hipFree(dAptr);
-    hipFree(dAcol);
-    hipFree(dAval);
+    HIP_CHECK(hipFree(dAptr));
+    HIP_CHECK(hipFree(dAcol));
+    HIP_CHECK(hipFree(dAval));
 
     // Warm up
     for(int i = 0; i < 10; ++i)
     {
         // Call rocsparse hybmv
-        rocsparse_dhybmv(handle, rocsparse_operation_none, &halpha, descrA, hybA, dx, &hbeta, dy);
+        ROCSPARSE_CHECK(rocsparse_dhybmv(
+            handle, rocsparse_operation_none, &halpha, descrA, hybA, dx, &hbeta, dy));
     }
 
     // Device synchronization
-    hipDeviceSynchronize();
+    HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
     double time = get_time_us();
@@ -141,12 +161,12 @@ int main(int argc, char* argv[])
         for(int j = 0; j < batch_size; ++j)
         {
             // Call rocsparse hybmv
-            rocsparse_dhybmv(
-                handle, rocsparse_operation_none, &halpha, descrA, hybA, dx, &hbeta, dy);
+            ROCSPARSE_CHECK(rocsparse_dhybmv(
+                handle, rocsparse_operation_none, &halpha, descrA, hybA, dx, &hbeta, dy));
         }
 
         // Device synchronization
-        hipDeviceSynchronize();
+        HIP_CHECK(hipDeviceSynchronize());
     }
 
     time = (get_time_us() - time) / (trials * batch_size * 1e3);
@@ -166,12 +186,12 @@ int main(int argc, char* argv[])
               << bandwidth << std::setw(12) << time << std::endl;
 
     // Clear up on device
-    rocsparse_destroy_hyb_mat(hybA);
-    rocsparse_destroy_mat_descr(descrA);
-    rocsparse_destroy_handle(handle);
+    ROCSPARSE_CHECK(rocsparse_destroy_hyb_mat(hybA));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 
-    hipFree(dx);
-    hipFree(dy);
+    HIP_CHECK(hipFree(dx));
+    HIP_CHECK(hipFree(dy));
 
     return 0;
 }

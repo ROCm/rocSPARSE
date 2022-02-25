@@ -114,6 +114,18 @@ inline void rocsparse_expect_status(rocsparse_status status, rocsparse_status ex
 #define CHECK_ROCSPARSE_ERROR2(STATUS) EXPECT_ROCSPARSE_STATUS(STATUS, rocsparse_status_success)
 #define CHECK_ROCSPARSE_ERROR(STATUS) CHECK_ROCSPARSE_ERROR2(STATUS)
 
+#define CHECK_ROCSPARSE_THROW_ERROR(STATUS) \
+    if(STATUS != rocsparse_status_success)  \
+    {                                       \
+        throw STATUS;                       \
+    }
+
+#define CHECK_HIP_THROW_ERROR(ERROR) \
+    if(ERROR != hipSuccess)          \
+    {                                \
+        throw ERROR;                 \
+    }
+
 #ifdef GOOGLE_TEST
 
 // The tests are instantiated by filtering through the RocSPARSE_Data stream

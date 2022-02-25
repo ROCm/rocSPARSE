@@ -820,7 +820,7 @@ void rocsparse_init_coo_mtx(const char*          filename,
     rocsparse_importer_matrixmarket importer(filename);
     rocsparse_status                status
         = rocsparse_import_sparse_coo(importer, coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base);
-    CHECK_ROCSPARSE_ERROR(status);
+    CHECK_ROCSPARSE_THROW_ERROR(status);
 }
 
 /* ============================================================================================ */
@@ -862,6 +862,7 @@ void rocsparse_init_csr_rocalution(const char*          filename,
     rocsparse_importer_rocalution importer(filename);
     rocsparse_status              status
         = rocsparse_import_sparse_csr(importer, row_ptr, col_ind, val, M, N, nnz, base);
+    CHECK_ROCSPARSE_THROW_ERROR(status);
 
     if(toint)
     {
@@ -872,7 +873,6 @@ void rocsparse_init_csr_rocalution(const char*          filename,
         for(size_t i = 0; i < bound; ++i)
             val[i] = std::abs(val[i]);
     }
-    CHECK_ROCSPARSE_ERROR(status);
 }
 
 /* ==================================================================================== */
