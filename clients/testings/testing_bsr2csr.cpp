@@ -52,8 +52,8 @@ inline void rocsparse_init_csr_and_bsr_matrix(const Arguments&            arg,
     rocsparse_local_mat_descr csr_descr;
     rocsparse_local_mat_descr bsr_descr;
 
-    rocsparse_set_mat_index_base(csr_descr, csr_base);
-    rocsparse_set_mat_index_base(bsr_descr, bsr_base);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr, csr_base));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(bsr_descr, bsr_base));
 
     // Uncompressed CSR matrix on host
     host_vector<rocsparse_int> hcsr_row_ptr_A;
@@ -236,8 +236,8 @@ void testing_bsr2csr(const Arguments& arg)
     rocsparse_local_mat_descr bsr_descr;
     rocsparse_local_mat_descr csr_descr;
 
-    rocsparse_set_mat_index_base(bsr_descr, bsr_base);
-    rocsparse_set_mat_index_base(csr_descr, csr_base);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(bsr_descr, bsr_base));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr, csr_base));
 
     // Argument sanity check before allocating invalid memory
     if(Mb <= 0 || Nb <= 0 || block_dim <= 0)

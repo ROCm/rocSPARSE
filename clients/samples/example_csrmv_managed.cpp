@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,24 @@
 #include <stdlib.h>
 #include <vector>
 
+#define HIP_CHECK(stat)                                                        \
+    {                                                                          \
+        if(stat != hipSuccess)                                                 \
+        {                                                                      \
+            std::cerr << "Error: hip error in line " << __LINE__ << std::endl; \
+            return -1;                                                         \
+        }                                                                      \
+    }
+
+#define ROCSPARSE_CHECK(stat)                                                        \
+    {                                                                                \
+        if(stat != rocsparse_status_success)                                         \
+        {                                                                            \
+            std::cerr << "Error: rocsparse error in line " << __LINE__ << std::endl; \
+            return -1;                                                               \
+        }                                                                            \
+    }
+
 int main(int argc, char* argv[])
 {
     // Parse command line
@@ -58,13 +76,13 @@ int main(int argc, char* argv[])
 
     // rocSPARSE handle
     rocsparse_handle handle;
-    rocsparse_create_handle(&handle);
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     hipDeviceProp_t devProp;
     int             device_id = 0;
 
-    hipGetDevice(&device_id);
-    hipGetDeviceProperties(&devProp, device_id);
+    HIP_CHECK(hipGetDevice(&device_id));
+    HIP_CHECK(hipGetDeviceProperties(&devProp, device_id));
     std::cout << "Device: " << devProp.name << std::endl;
 
     // Generate problem
@@ -88,11 +106,11 @@ int main(int argc, char* argv[])
     double*        x    = NULL;
     double*        y    = NULL;
 
-    hipMallocManaged((void**)&Aptr, sizeof(rocsparse_int) * (m + 1));
-    hipMallocManaged((void**)&Acol, sizeof(rocsparse_int) * nnz);
-    hipMallocManaged((void**)&Aval, sizeof(double) * nnz);
-    hipMallocManaged((void**)&x, sizeof(double) * n);
-    hipMallocManaged((void**)&y, sizeof(double) * m);
+    HIP_CHECK(hipMallocManaged((void**)&Aptr, sizeof(rocsparse_int) * (m + 1)));
+    HIP_CHECK(hipMallocManaged((void**)&Acol, sizeof(rocsparse_int) * nnz));
+    HIP_CHECK(hipMallocManaged((void**)&Aval, sizeof(double) * nnz));
+    HIP_CHECK(hipMallocManaged((void**)&x, sizeof(double) * n));
+    HIP_CHECK(hipMallocManaged((void**)&y, sizeof(double) * m));
 
     // Copy data
     for(int i = 0; i < m + 1; i++)
@@ -116,30 +134,30 @@ int main(int argc, char* argv[])
 
     // Matrix descriptor
     rocsparse_mat_descr descrA;
-    rocsparse_create_mat_descr(&descrA);
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descrA));
 
     // Warm up
     for(int i = 0; i < 10; ++i)
     {
         // Call rocsparse csrmv
-        rocsparse_dcsrmv(handle,
-                         rocsparse_operation_none,
-                         m,
-                         n,
-                         nnz,
-                         &alpha,
-                         descrA,
-                         Aval,
-                         Aptr,
-                         Acol,
-                         nullptr,
-                         x,
-                         &beta,
-                         y);
+        ROCSPARSE_CHECK(rocsparse_dcsrmv(handle,
+                                         rocsparse_operation_none,
+                                         m,
+                                         n,
+                                         nnz,
+                                         &alpha,
+                                         descrA,
+                                         Aval,
+                                         Aptr,
+                                         Acol,
+                                         nullptr,
+                                         x,
+                                         &beta,
+                                         y));
     }
 
     // Device synchronization
-    hipDeviceSynchronize();
+    HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
     double time = get_time_us();
@@ -150,24 +168,24 @@ int main(int argc, char* argv[])
         for(int j = 0; j < batch_size; ++j)
         {
             // Call rocsparse csrmv
-            rocsparse_dcsrmv(handle,
-                             rocsparse_operation_none,
-                             m,
-                             n,
-                             nnz,
-                             &alpha,
-                             descrA,
-                             Aval,
-                             Aptr,
-                             Acol,
-                             nullptr,
-                             x,
-                             &beta,
-                             y);
+            ROCSPARSE_CHECK(rocsparse_dcsrmv(handle,
+                                             rocsparse_operation_none,
+                                             m,
+                                             n,
+                                             nnz,
+                                             &alpha,
+                                             descrA,
+                                             Aval,
+                                             Aptr,
+                                             Acol,
+                                             nullptr,
+                                             x,
+                                             &beta,
+                                             y));
         }
 
         // Device synchronization
-        hipDeviceSynchronize();
+        HIP_CHECK(hipDeviceSynchronize());
     }
 
     time             = (get_time_us() - time) / (trials * batch_size * 1e3);
@@ -189,34 +207,34 @@ int main(int argc, char* argv[])
 
     // Create meta data
     rocsparse_mat_info info;
-    rocsparse_create_mat_info(&info);
+    ROCSPARSE_CHECK(rocsparse_create_mat_info(&info));
 
     // Analyse CSR matrix
-    rocsparse_dcsrmv_analysis(
-        handle, rocsparse_operation_none, m, n, nnz, descrA, Aval, Aptr, Acol, info);
+    ROCSPARSE_CHECK(rocsparse_dcsrmv_analysis(
+        handle, rocsparse_operation_none, m, n, nnz, descrA, Aval, Aptr, Acol, info));
 
     // Warm up
     for(int i = 0; i < 10; ++i)
     {
         // Call rocsparse csrmv
-        rocsparse_dcsrmv(handle,
-                         rocsparse_operation_none,
-                         m,
-                         n,
-                         nnz,
-                         &alpha,
-                         descrA,
-                         Aval,
-                         Aptr,
-                         Acol,
-                         info,
-                         x,
-                         &beta,
-                         y);
+        ROCSPARSE_CHECK(rocsparse_dcsrmv(handle,
+                                         rocsparse_operation_none,
+                                         m,
+                                         n,
+                                         nnz,
+                                         &alpha,
+                                         descrA,
+                                         Aval,
+                                         Aptr,
+                                         Acol,
+                                         info,
+                                         x,
+                                         &beta,
+                                         y));
     }
 
     // Device synchronization
-    hipDeviceSynchronize();
+    HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
     time = get_time_us();
@@ -227,24 +245,24 @@ int main(int argc, char* argv[])
         for(int j = 0; j < batch_size; ++j)
         {
             // Call rocsparse csrmv
-            rocsparse_dcsrmv(handle,
-                             rocsparse_operation_none,
-                             m,
-                             n,
-                             nnz,
-                             &alpha,
-                             descrA,
-                             Aval,
-                             Aptr,
-                             Acol,
-                             info,
-                             x,
-                             &beta,
-                             y);
+            ROCSPARSE_CHECK(rocsparse_dcsrmv(handle,
+                                             rocsparse_operation_none,
+                                             m,
+                                             n,
+                                             nnz,
+                                             &alpha,
+                                             descrA,
+                                             Aval,
+                                             Aptr,
+                                             Acol,
+                                             info,
+                                             x,
+                                             &beta,
+                                             y));
         }
 
         // Device synchronization
-        hipDeviceSynchronize();
+        HIP_CHECK(hipDeviceSynchronize());
     }
 
     time      = (get_time_us() - time) / (trials * batch_size * 1e3);
@@ -272,15 +290,15 @@ int main(int argc, char* argv[])
               << bandwidth << std::setw(12) << time << std::endl;
 
     // Clear up on device
-    hipFree(Aptr);
-    hipFree(Acol);
-    hipFree(Aval);
-    hipFree(x);
-    hipFree(y);
+    HIP_CHECK(hipFree(Aptr));
+    HIP_CHECK(hipFree(Acol));
+    HIP_CHECK(hipFree(Aval));
+    HIP_CHECK(hipFree(x));
+    HIP_CHECK(hipFree(y));
 
-    rocsparse_destroy_mat_info(info);
-    rocsparse_destroy_mat_descr(descrA);
-    rocsparse_destroy_handle(handle);
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_info(info));
+    ROCSPARSE_CHECK(rocsparse_destroy_mat_descr(descrA));
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 
     return 0;
 }

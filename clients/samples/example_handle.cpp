@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,29 @@
  *
  * ************************************************************************ */
 
+#include <iostream>
 #include <rocsparse.h>
 #include <stdio.h>
+
+#define ROCSPARSE_CHECK(stat)                                                        \
+    {                                                                                \
+        if(stat != rocsparse_status_success)                                         \
+        {                                                                            \
+            std::cerr << "Error: rocsparse error in line " << __LINE__ << std::endl; \
+            return -1;                                                               \
+        }                                                                            \
+    }
 
 int main(int argc, char* argv[])
 {
     rocsparse_handle handle;
-    rocsparse_create_handle(&handle);
+    ROCSPARSE_CHECK(rocsparse_create_handle(&handle));
 
     int version;
-    rocsparse_get_version(handle, &version);
+    ROCSPARSE_CHECK(rocsparse_get_version(handle, &version));
 
     char rev[64];
-    rocsparse_get_git_rev(handle, rev);
+    ROCSPARSE_CHECK(rocsparse_get_git_rev(handle, rev));
 
     printf("rocSPARSE version %d.%d.%d-%s\n",
            version / 100000,
@@ -42,7 +52,7 @@ int main(int argc, char* argv[])
            version % 100,
            rev);
 
-    rocsparse_destroy_handle(handle);
+    ROCSPARSE_CHECK(rocsparse_destroy_handle(handle));
 
     return 0;
 }

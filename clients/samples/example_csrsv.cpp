@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -90,8 +90,8 @@ int main(int argc, char* argv[])
     hipDeviceProp_t devProp;
     int             device_id = 0;
 
-    hipGetDevice(&device_id);
-    hipGetDeviceProperties(&devProp, device_id);
+    HIP_CHECK(hipGetDevice(&device_id));
+    HIP_CHECK(hipGetDeviceProperties(&devProp, device_id));
     std::cout << "Device: " << devProp.name << std::endl;
 
     // Generate problem
@@ -116,11 +116,11 @@ int main(int argc, char* argv[])
     double*        dx           = NULL;
     double*        dy           = NULL;
 
-    hipMalloc((void**)&dcsr_row_ptr, sizeof(rocsparse_int) * (m + 1));
-    hipMalloc((void**)&dcsr_col_ind, sizeof(rocsparse_int) * nnz);
-    hipMalloc((void**)&dcsr_val, sizeof(double) * nnz);
-    hipMalloc((void**)&dx, sizeof(double) * m);
-    hipMalloc((void**)&dy, sizeof(double) * m);
+    HIP_CHECK(hipMalloc((void**)&dcsr_row_ptr, sizeof(rocsparse_int) * (m + 1)));
+    HIP_CHECK(hipMalloc((void**)&dcsr_col_ind, sizeof(rocsparse_int) * nnz));
+    HIP_CHECK(hipMalloc((void**)&dcsr_val, sizeof(double) * nnz));
+    HIP_CHECK(hipMalloc((void**)&dx, sizeof(double) * m));
+    HIP_CHECK(hipMalloc((void**)&dy, sizeof(double) * m));
 
     // Copy data to device
     HIP_CHECK(hipMemcpy(
@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
 
     // Matrix descriptor
     rocsparse_mat_descr descr;
-    rocsparse_create_mat_descr(&descr);
+    ROCSPARSE_CHECK(rocsparse_create_mat_descr(&descr));
 
     // Matrix fill mode
     ROCSPARSE_CHECK(rocsparse_set_mat_fill_mode(descr, rocsparse_fill_mode_lower));
@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
     }
 
     // Device synchronization
-    hipDeviceSynchronize();
+    HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
     double time = get_time_us();
@@ -216,7 +216,7 @@ int main(int argc, char* argv[])
                                                    temp_buffer));
 
             // Device synchronization
-            hipDeviceSynchronize();
+            HIP_CHECK(hipDeviceSynchronize());
         }
     }
 

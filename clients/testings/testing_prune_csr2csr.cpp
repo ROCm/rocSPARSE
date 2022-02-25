@@ -97,8 +97,8 @@ void testing_prune_csr2csr(const Arguments& arg)
     rocsparse_local_mat_descr csr_descr_A;
     rocsparse_local_mat_descr csr_descr_C;
 
-    rocsparse_set_mat_index_base(csr_descr_A, csr_base_A);
-    rocsparse_set_mat_index_base(csr_descr_C, csr_base_C);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr_A, csr_base_A));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(csr_descr_C, csr_base_C));
 
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0)

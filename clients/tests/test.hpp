@@ -40,7 +40,21 @@
         /**/                                                                                 \
         /**/ template <typename... P> /**/ static void testing(const Arguments& arg)         \
         /**/ {                                                                               \
-            /**/ testing_##ROUTINE<P...>(arg);                                               \
+            /**/ try                                                                         \
+            {                                                                                \
+                testing_##ROUTINE<P...>(arg);                                                \
+            }                                                                                \
+            /**/ catch(rocsparse_status & status)                                            \
+            {                                                                                \
+                CHECK_ROCSPARSE_ERROR(status);                                               \
+            }                                                                                \
+            /**/ catch(hipError_t & error)                                                   \
+            {                                                                                \
+                CHECK_HIP_ERROR(error);                                                      \
+            }                                                                                \
+            /**/ catch(std::exception & error)                                               \
+            {                                                                                \
+            }                                                                                \
       /**/       }                                                                           \
     /**/   }
 

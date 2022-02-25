@@ -155,7 +155,7 @@ void testing_csx2dense(const Arguments& arg, FUNC1& csx2dense, FUNC2& dense2csx)
     rocsparse_int             DIMDIR = (rocsparse_direction_row == DIRA) ? M : N;
     rocsparse_local_handle    handle;
     rocsparse_local_mat_descr descr;
-    rocsparse_set_mat_index_base(descr, arg.baseA);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, arg.baseA));
 
     //
     // Argument sanity check before allocating invalid memory

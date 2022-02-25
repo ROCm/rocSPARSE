@@ -121,32 +121,33 @@ struct rocsparse_matrix_utils
     {
         result.define(that.m, that.n, 0, base);
         rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
         rocsparse_mat_descr descr;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&descr));
-        rocsparse_set_mat_index_base(descr, that.base);
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_mat_descr(&descr));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_set_mat_index_base(descr, that.base));
         T                            tol   = static_cast<T>(0);
         rocsparse_int                nnz_c = 0;
         device_vector<rocsparse_int> dnnz_per_row(that.m);
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_nnz_compress<T>(
+        CHECK_ROCSPARSE_THROW_ERROR(
+            rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_nnz_compress<T>(
             handle, that.m, descr, that.val, that.ptr, dnnz_per_row, &nnz_c, tol));
         result.define(that.m, that.n, nnz_c, base);
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2csr_compress<T>(handle,
-                                                            that.m,
-                                                            that.n,
-                                                            descr,
-                                                            that.val,
-                                                            that.ptr,
-                                                            that.ind,
-                                                            that.nnz,
-                                                            dnnz_per_row,
-                                                            result.val,
-                                                            result.ptr,
-                                                            result.ind,
-                                                            tol));
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_mat_descr(descr));
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csr2csr_compress<T>(handle,
+                                                                  that.m,
+                                                                  that.n,
+                                                                  descr,
+                                                                  that.val,
+                                                                  that.ptr,
+                                                                  that.ind,
+                                                                  that.nnz,
+                                                                  dnnz_per_row,
+                                                                  result.val,
+                                                                  result.ptr,
+                                                                  result.ind,
+                                                                  tol));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_mat_descr(descr));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
     }
 
     //
@@ -170,71 +171,72 @@ struct rocsparse_matrix_utils
         result.define(dirb, mb, nb, nnzb, row_block_dim, col_block_dim, base);
 
         rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
 
         rocsparse_mat_descr that_descr;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&that_descr));
-        rocsparse_set_mat_index_base(that_descr, that.base);
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_mat_descr(&that_descr));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_set_mat_index_base(that_descr, that.base));
 
         rocsparse_mat_descr result_descr;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&result_descr));
-        rocsparse_set_mat_index_base(result_descr, base);
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_mat_descr(&result_descr));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_set_mat_index_base(result_descr, base));
 
         // Convert CSR to GEBSR
         size_t buffer_size = 0;
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_buffer_size<T>(handle,
-                                                                 result.block_direction,
-                                                                 that.m,
-                                                                 that.n,
-                                                                 that_descr,
-                                                                 that.val,
-                                                                 that.ptr,
-                                                                 that.ind,
-                                                                 result.row_block_dim,
-                                                                 result.col_block_dim,
-                                                                 &buffer_size));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csr2gebsr_buffer_size<T>(handle,
+                                                                       result.block_direction,
+                                                                       that.m,
+                                                                       that.n,
+                                                                       that_descr,
+                                                                       that.val,
+                                                                       that.ptr,
+                                                                       that.ind,
+                                                                       result.row_block_dim,
+                                                                       result.col_block_dim,
+                                                                       &buffer_size));
 
         int* buffer = NULL;
-        hipMalloc(&buffer, buffer_size);
+        CHECK_HIP_THROW_ERROR(hipMalloc(&buffer, buffer_size));
 
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr_nnz(handle,
-                                                      result.block_direction,
-                                                      that.m,
-                                                      that.n,
-                                                      that_descr,
-                                                      that.ptr,
-                                                      that.ind,
-                                                      result_descr,
-                                                      result.ptr,
-                                                      result.row_block_dim,
-                                                      result.col_block_dim,
-                                                      &nnzb,
-                                                      buffer));
+        CHECK_ROCSPARSE_THROW_ERROR(
+            rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csr2gebsr_nnz(handle,
+                                                            result.block_direction,
+                                                            that.m,
+                                                            that.n,
+                                                            that_descr,
+                                                            that.ptr,
+                                                            that.ind,
+                                                            result_descr,
+                                                            result.ptr,
+                                                            result.row_block_dim,
+                                                            result.col_block_dim,
+                                                            &nnzb,
+                                                            buffer));
 
         result.define(dirb, mb, nb, nnzb, row_block_dim, col_block_dim, base);
 
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2gebsr<T>(handle,
-                                                     result.block_direction,
-                                                     that.m,
-                                                     that.n,
-                                                     that_descr,
-                                                     that.val,
-                                                     that.ptr,
-                                                     that.ind,
-                                                     result_descr,
-                                                     result.val,
-                                                     result.ptr,
-                                                     result.ind,
-                                                     result.row_block_dim,
-                                                     result.col_block_dim,
-                                                     buffer));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csr2gebsr<T>(handle,
+                                                           result.block_direction,
+                                                           that.m,
+                                                           that.n,
+                                                           that_descr,
+                                                           that.val,
+                                                           that.ptr,
+                                                           that.ind,
+                                                           result_descr,
+                                                           result.val,
+                                                           result.ptr,
+                                                           result.ind,
+                                                           result.row_block_dim,
+                                                           result.col_block_dim,
+                                                           buffer));
 
         hipFree(buffer);
 
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_mat_descr(result_descr));
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_mat_descr(that_descr));
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_mat_descr(result_descr));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_mat_descr(that_descr));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
     }
 
     //
@@ -258,46 +260,46 @@ struct rocsparse_matrix_utils
         {
 
             rocsparse_handle handle;
-            CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
 
             rocsparse_mat_descr that_descr;
-            CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&that_descr));
-            rocsparse_set_mat_index_base(that_descr, that.base);
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_mat_descr(&that_descr));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_set_mat_index_base(that_descr, that.base));
 
             rocsparse_mat_descr c_descr;
-            CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&c_descr));
-            rocsparse_set_mat_index_base(c_descr, base);
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_mat_descr(&c_descr));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_set_mat_index_base(c_descr, base));
             // Convert sample CSR matrix to bsr
-            CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr_nnz(handle,
-                                                        dirb,
-                                                        that.m,
-                                                        that.n,
-                                                        that_descr,
-                                                        that.ptr,
-                                                        that.ind,
-                                                        block_dim,
-                                                        c_descr,
-                                                        c.ptr,
-                                                        &nnzb));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csr2bsr_nnz(handle,
+                                                              dirb,
+                                                              that.m,
+                                                              that.n,
+                                                              that_descr,
+                                                              that.ptr,
+                                                              that.ind,
+                                                              block_dim,
+                                                              c_descr,
+                                                              c.ptr,
+                                                              &nnzb));
 
             c.define(dirb, mb, nb, nnzb, block_dim, block_dim, base);
 
-            CHECK_ROCSPARSE_ERROR(rocsparse_csr2bsr<T>(handle,
-                                                       dirb,
-                                                       that.m,
-                                                       that.n,
-                                                       that_descr,
-                                                       that.val,
-                                                       that.ptr,
-                                                       that.ind,
-                                                       block_dim,
-                                                       c_descr,
-                                                       c.val,
-                                                       c.ptr,
-                                                       c.ind));
-            CHECK_ROCSPARSE_ERROR(rocsparse_destroy_mat_descr(c_descr));
-            CHECK_ROCSPARSE_ERROR(rocsparse_destroy_mat_descr(that_descr));
-            CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csr2bsr<T>(handle,
+                                                             dirb,
+                                                             that.m,
+                                                             that.n,
+                                                             that_descr,
+                                                             that.val,
+                                                             that.ptr,
+                                                             that.ind,
+                                                             block_dim,
+                                                             c_descr,
+                                                             c.val,
+                                                             c.ptr,
+                                                             c.ind));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_mat_descr(c_descr));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_mat_descr(that_descr));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
         }
     }
 
@@ -325,46 +327,48 @@ struct rocsparse_matrix_utils
         if(!buffer)
         {
             rocsparse_handle handle;
-            CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsrilu0_buffer_size<T>(handle,
-                                                                   that.block_direction,
-                                                                   that.mb,
-                                                                   that.nnzb,
-                                                                   that_descr,
-                                                                   that.val,
-                                                                   that.ptr,
-                                                                   that.ind,
-                                                                   that.row_block_dim,
-                                                                   info,
-                                                                   p_buffer_size));
-            CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
+            CHECK_ROCSPARSE_THROW_ERROR(
+                rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_bsrilu0_buffer_size<T>(handle,
+                                                                         that.block_direction,
+                                                                         that.mb,
+                                                                         that.nnzb,
+                                                                         that_descr,
+                                                                         that.val,
+                                                                         that.ptr,
+                                                                         that.ind,
+                                                                         that.row_block_dim,
+                                                                         info,
+                                                                         p_buffer_size));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
 
             return;
         }
 
         rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
+        CHECK_ROCSPARSE_THROW_ERROR(
+            rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
         switch(step)
         {
         case bsrilu0_all:
         case bsrilu0_analysis:
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsrilu0_analysis<T>(handle,
-                                                                that.block_direction,
-                                                                that.mb,
-                                                                that.nnzb,
-                                                                that_descr,
-                                                                that.val,
-                                                                that.ptr,
-                                                                that.ind,
-                                                                that.row_block_dim,
-                                                                info,
-                                                                analysis,
-                                                                solve,
-                                                                buffer));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_bsrilu0_analysis<T>(handle,
+                                                                      that.block_direction,
+                                                                      that.mb,
+                                                                      that.nnzb,
+                                                                      that_descr,
+                                                                      that.val,
+                                                                      that.ptr,
+                                                                      that.ind,
+                                                                      that.row_block_dim,
+                                                                      info,
+                                                                      analysis,
+                                                                      solve,
+                                                                      buffer));
             if(step != bsrilu0_all)
             {
                 break;
@@ -373,20 +377,20 @@ struct rocsparse_matrix_utils
 
         case bsrilu0_solve:
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsrilu0_numeric_boost<T>(
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_bsrilu0_numeric_boost<T>(
                 handle, info, boost, get_boost_tol(&h_boost_tol), &h_boost_val));
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsrilu0<T>(handle,
-                                                       that.block_direction,
-                                                       that.mb,
-                                                       that.nnzb,
-                                                       that_descr,
-                                                       that.val,
-                                                       that.ptr,
-                                                       that.ind,
-                                                       that.row_block_dim,
-                                                       info,
-                                                       solve,
-                                                       buffer));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_bsrilu0<T>(handle,
+                                                             that.block_direction,
+                                                             that.mb,
+                                                             that.nnzb,
+                                                             that_descr,
+                                                             that.val,
+                                                             that.ptr,
+                                                             that.ind,
+                                                             that.row_block_dim,
+                                                             info,
+                                                             solve,
+                                                             buffer));
 
             rocsparse_int hsolve_pivot_1[1];
             EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_zero_pivot(handle, info, hsolve_pivot_1),
@@ -396,7 +400,7 @@ struct rocsparse_matrix_utils
             break;
         }
         }
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
     }
 
     typedef enum
@@ -419,45 +423,47 @@ struct rocsparse_matrix_utils
         if(!buffer)
         {
             rocsparse_handle handle;
-            CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsric0_buffer_size<T>(handle,
-                                                                  that.block_direction,
-                                                                  that.mb,
-                                                                  that.nnzb,
-                                                                  that_descr,
-                                                                  that.val,
-                                                                  that.ptr,
-                                                                  that.ind,
-                                                                  that.row_block_dim,
-                                                                  info,
-                                                                  p_buffer_size));
-            CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
+            CHECK_ROCSPARSE_THROW_ERROR(
+                rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_bsric0_buffer_size<T>(handle,
+                                                                        that.block_direction,
+                                                                        that.mb,
+                                                                        that.nnzb,
+                                                                        that_descr,
+                                                                        that.val,
+                                                                        that.ptr,
+                                                                        that.ind,
+                                                                        that.row_block_dim,
+                                                                        info,
+                                                                        p_buffer_size));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
             return;
         }
 
         rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
+        CHECK_ROCSPARSE_THROW_ERROR(
+            rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
         switch(step)
         {
         case bsric0_all:
         case bsric0_analysis:
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsric0_analysis<T>(handle,
-                                                               that.block_direction,
-                                                               that.mb,
-                                                               that.nnzb,
-                                                               that_descr,
-                                                               that.val,
-                                                               that.ptr,
-                                                               that.ind,
-                                                               that.row_block_dim,
-                                                               info,
-                                                               analysis,
-                                                               solve,
-                                                               buffer));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_bsric0_analysis<T>(handle,
+                                                                     that.block_direction,
+                                                                     that.mb,
+                                                                     that.nnzb,
+                                                                     that_descr,
+                                                                     that.val,
+                                                                     that.ptr,
+                                                                     that.ind,
+                                                                     that.row_block_dim,
+                                                                     info,
+                                                                     analysis,
+                                                                     solve,
+                                                                     buffer));
             if(step != bsric0_all)
             {
                 break;
@@ -466,18 +472,18 @@ struct rocsparse_matrix_utils
 
         case bsric0_solve:
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_bsric0<T>(handle,
-                                                      that.block_direction,
-                                                      that.mb,
-                                                      that.nnzb,
-                                                      that_descr,
-                                                      that.val,
-                                                      that.ptr,
-                                                      that.ind,
-                                                      that.row_block_dim,
-                                                      info,
-                                                      solve,
-                                                      buffer));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_bsric0<T>(handle,
+                                                            that.block_direction,
+                                                            that.mb,
+                                                            that.nnzb,
+                                                            that_descr,
+                                                            that.val,
+                                                            that.ptr,
+                                                            that.ind,
+                                                            that.row_block_dim,
+                                                            info,
+                                                            solve,
+                                                            buffer));
 
             rocsparse_int hsolve_pivot_1[1];
             EXPECT_ROCSPARSE_STATUS(rocsparse_bsric0_zero_pivot(handle, info, hsolve_pivot_1),
@@ -487,7 +493,7 @@ struct rocsparse_matrix_utils
             break;
         }
         }
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
     }
 
     typedef enum
@@ -510,41 +516,43 @@ struct rocsparse_matrix_utils
         if(!buffer)
         {
             rocsparse_handle handle;
-            CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-            CHECK_ROCSPARSE_ERROR(rocsparse_csric0_buffer_size<T>(handle,
-                                                                  that.m,
-                                                                  that.nnz,
-                                                                  that_descr,
-                                                                  that.val,
-                                                                  that.ptr,
-                                                                  that.ind,
-                                                                  info,
-                                                                  p_buffer_size));
-            CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
+            CHECK_ROCSPARSE_THROW_ERROR(
+                rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csric0_buffer_size<T>(handle,
+                                                                        that.m,
+                                                                        that.nnz,
+                                                                        that_descr,
+                                                                        that.val,
+                                                                        that.ptr,
+                                                                        that.ind,
+                                                                        info,
+                                                                        p_buffer_size));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
             return;
         }
 
         rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
+        CHECK_ROCSPARSE_THROW_ERROR(
+            rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
         switch(step)
         {
         case csric0_all:
         case csric0_analysis:
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_csric0_analysis<T>(handle,
-                                                               that.m,
-                                                               that.nnz,
-                                                               that_descr,
-                                                               that.val,
-                                                               that.ptr,
-                                                               that.ind,
-                                                               info,
-                                                               analysis,
-                                                               solve,
-                                                               buffer));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csric0_analysis<T>(handle,
+                                                                     that.m,
+                                                                     that.nnz,
+                                                                     that_descr,
+                                                                     that.val,
+                                                                     that.ptr,
+                                                                     that.ind,
+                                                                     info,
+                                                                     analysis,
+                                                                     solve,
+                                                                     buffer));
             if(step != csric0_all)
             {
                 break;
@@ -553,16 +561,16 @@ struct rocsparse_matrix_utils
 
         case csric0_solve:
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_csric0<T>(handle,
-                                                      that.m,
-                                                      that.nnz,
-                                                      that_descr,
-                                                      that.val,
-                                                      that.ptr,
-                                                      that.ind,
-                                                      info,
-                                                      solve,
-                                                      buffer));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csric0<T>(handle,
+                                                            that.m,
+                                                            that.nnz,
+                                                            that_descr,
+                                                            that.val,
+                                                            that.ptr,
+                                                            that.ind,
+                                                            info,
+                                                            solve,
+                                                            buffer));
 
             rocsparse_int hsolve_pivot_1[1];
             EXPECT_ROCSPARSE_STATUS(rocsparse_csric0_zero_pivot(handle, info, hsolve_pivot_1),
@@ -572,7 +580,7 @@ struct rocsparse_matrix_utils
             break;
         }
         }
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
     }
 
     typedef enum
@@ -598,41 +606,43 @@ struct rocsparse_matrix_utils
         if(!buffer)
         {
             rocsparse_handle handle;
-            CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-            CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-            CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_buffer_size<T>(handle,
-                                                                   that.m,
-                                                                   that.nnz,
-                                                                   that_descr,
-                                                                   that.val,
-                                                                   that.ptr,
-                                                                   that.ind,
-                                                                   info,
-                                                                   p_buffer_size));
-            CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
+            CHECK_ROCSPARSE_THROW_ERROR(
+                rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csrilu0_buffer_size<T>(handle,
+                                                                         that.m,
+                                                                         that.nnz,
+                                                                         that_descr,
+                                                                         that.val,
+                                                                         that.ptr,
+                                                                         that.ind,
+                                                                         info,
+                                                                         p_buffer_size));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
             return;
         }
 
         rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
+        CHECK_ROCSPARSE_THROW_ERROR(
+            rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
 
         switch(step)
         {
         case csrilu0_all:
         case csrilu0_analysis:
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_analysis<T>(handle,
-                                                                that.m,
-                                                                that.nnz,
-                                                                that_descr,
-                                                                that.val,
-                                                                that.ptr,
-                                                                that.ind,
-                                                                info,
-                                                                analysis,
-                                                                solve,
-                                                                buffer));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csrilu0_analysis<T>(handle,
+                                                                      that.m,
+                                                                      that.nnz,
+                                                                      that_descr,
+                                                                      that.val,
+                                                                      that.ptr,
+                                                                      that.ind,
+                                                                      info,
+                                                                      analysis,
+                                                                      solve,
+                                                                      buffer));
             if(step != csrilu0_all)
             {
                 break;
@@ -641,18 +651,18 @@ struct rocsparse_matrix_utils
 
         case csrilu0_solve:
         {
-            CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0_numeric_boost<T>(
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csrilu0_numeric_boost<T>(
                 handle, info, boost, get_boost_tol(&h_boost_tol), &h_boost_val));
-            CHECK_ROCSPARSE_ERROR(rocsparse_csrilu0<T>(handle,
-                                                       that.m,
-                                                       that.nnz,
-                                                       that_descr,
-                                                       that.val,
-                                                       that.ptr,
-                                                       that.ind,
-                                                       info,
-                                                       solve,
-                                                       buffer));
+            CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csrilu0<T>(handle,
+                                                             that.m,
+                                                             that.nnz,
+                                                             that_descr,
+                                                             that.val,
+                                                             that.ptr,
+                                                             that.ind,
+                                                             info,
+                                                             solve,
+                                                             buffer));
 
             rocsparse_int hsolve_pivot_1[1];
             EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_zero_pivot(handle, info, hsolve_pivot_1),
@@ -662,7 +672,7 @@ struct rocsparse_matrix_utils
             break;
         }
         }
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
     }
 
     // Extract lower or upper part of input matrix to form new triangular output matrix

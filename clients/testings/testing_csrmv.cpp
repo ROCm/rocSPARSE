@@ -177,10 +177,10 @@ void testing_csrmv(const Arguments& arg)
     // Allocate host memory for matrix
     // Wavefront size
     int dev;
-    hipGetDevice(&dev);
+    CHECK_HIP_ERROR(hipGetDevice(&dev));
 
     hipDeviceProp_t prop;
-    hipGetDeviceProperties(&prop, dev);
+    CHECK_HIP_ERROR(hipGetDeviceProperties(&prop, dev));
     const bool has_datafile = rocsparse_arguments_has_datafile(arg);
 
     bool to_int = false;

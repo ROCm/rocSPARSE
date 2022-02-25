@@ -655,18 +655,18 @@ struct traits_init_hyb<T,
         device_csr_matrix<T, I, I> dA(hA);
 
         rocsparse_handle handle;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_handle(&handle));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_handle(&handle));
         rocsparse_mat_descr descr;
-        CHECK_ROCSPARSE_ERROR(rocsparse_create_mat_descr(&descr));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_create_mat_descr(&descr));
         // Set matrix index base
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_set_mat_index_base(descr, base));
 
         // Convert CSR matrix to HYB
-        CHECK_ROCSPARSE_ERROR(rocsparse_csr2hyb<T>(
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_csr2hyb<T>(
             handle, M, N, descr, dA.val, dA.ptr, dA.ind, that, user_ell_width, part));
 
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_mat_descr(descr));
-        CHECK_ROCSPARSE_ERROR(rocsparse_destroy_handle(handle));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_mat_descr(descr));
+        CHECK_ROCSPARSE_THROW_ERROR(rocsparse_destroy_handle(handle));
     };
 };
 

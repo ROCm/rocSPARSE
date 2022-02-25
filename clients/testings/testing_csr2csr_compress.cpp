@@ -85,7 +85,7 @@ void testing_csr2csr_compress(const Arguments& arg)
 
     rocsparse_local_mat_descr descr_A;
 
-    rocsparse_set_mat_index_base(descr_A, base);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr_A, base));
 
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0 || std::real(tol) < std::real(static_cast<T>(0)))
