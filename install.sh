@@ -25,6 +25,7 @@ function display_help()
   echo "    [--codecoverage] build with code coverage profiling enabled"
   echo "    [--matrices-dir] existing client matrices directory"
   echo "    [--matrices-dir-install] install client matrices directory"
+  echo "    [--freorg-bkwdcomp] Build with backward compatibility for Package file/folder reorg enabled."
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
@@ -256,6 +257,7 @@ build_address_sanitizer=false
 matrices_dir=
 matrices_dir_install=
 gpu_architecture=all
+build_freorg_bkwdcomp=false
 
 # #################################################
 # Parameter parsing
@@ -264,7 +266,7 @@ gpu_architecture=all
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture: --options hicdgrka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,freorg-bkwdcomp --options hicdgrka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -313,6 +315,9 @@ while true; do
             shift ;;
         --codecoverage)
             build_codecoverage=true
+            shift ;;
+        --freorg-bkwdcomp)
+            build_freorg_bkwdcomp=true
             shift ;;
         -a|--architecture)
             gpu_architecture=${2}
@@ -455,6 +460,11 @@ pushd .
     cmake_common_options="${cmake_common_options} -DBUILD_ADDRESS_SANITIZER=ON"
   fi
 
+  # freorg backward compatible support enable
+  if [[ "${build_freorg_bkwdcomp}" == true ]]; then
+    cmake_common_options+="${cmake_common_options} -DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=ON"
+  fi
+
   # code coverage
   if [[ "${build_codecoverage}" == true ]]; then
       if [[ "${build_release}" == true ]]; then
@@ -497,7 +507,7 @@ pushd .
       -DCPACK_PACKAGING_INSTALL_PREFIX=${rocm_path} \
       -DCMAKE_SHARED_LINKER_FLAGS="${rocm_rpath}" \
       -DCMAKE_PREFIX_PATH="${rocm_path} ${rocm_path}/hcc ${rocm_path}/hip" \
-      -DCMAKE_MODULE_PATH="${rocm_path}/hip/cmake" \
+      -DCMAKE_MODULE_PATH="${rocm_path}/lib/cmake/hip ${rocm_path}/hip/cmake" \
       -DROCM_DISABLE_LDCONFIG=ON \
       -DROCM_PATH="${rocm_path}" ../..
   else
