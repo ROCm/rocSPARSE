@@ -119,7 +119,7 @@ rocm_install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse.f90"
         DESTINATION "include/rocsparse"
 )
 
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/library/include ${PROJECT_BINARY_DIR}/include/rocblas)
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/library/include ${PROJECT_BINARY_DIR}/include/rocsparse)
 # Install targets
 rocm_install_targets(TARGETS rocsparse
                      INCLUDE
