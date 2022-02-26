@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,7 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_init.hpp"
-#include "rocsparse_random.hpp"
-#include "utility.hpp"
-
+#include "utils.hpp"
 #include <hip/hip_runtime_api.h>
 #include <iomanip>
 #include <iostream>
@@ -32,7 +29,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-
 #define HIP_CHECK(stat)                                                        \
     {                                                                          \
         if(stat != hipSuccess)                                                 \
@@ -63,13 +59,13 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     I k;
     I nnz_A;
 
-    rocsparse_init_coo_laplace2d(
+    utils_init_coo_laplace2d(
         hArow, hAcol, hAval, ndim, ndim, m, k, nnz_A, rocsparse_index_base_zero);
 
     // Sample some random data
-    rocsparse_seedrand();
+    utils_seedrand();
 
-    T halpha = random_generator<T>();
+    T halpha = utils_random<T>();
     T hbeta  = (T)0;
 
     I n      = 16;
@@ -80,8 +76,8 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
 
     std::vector<T> hB(k * ncol_B);
     std::vector<T> hC(m * n);
-    rocsparse_init<T>(hB, k, ncol_B, k);
-    rocsparse_init<T>(hC, m, n, m);
+    utils_init<T>(hB, k, ncol_B, k);
+    utils_init<T>(hC, m, n, m);
 
     // Offload data to device
     I* dArow = NULL;
@@ -103,8 +99,8 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     HIP_CHECK(hipMemcpy(dC, hC.data(), sizeof(T) * m * n, hipMemcpyHostToDevice));
 
     // Types
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_datatype  ttype = get_datatype<T>();
+    rocsparse_indextype itype = utils_indextype<I>();
+    rocsparse_datatype  ttype = utils_datatype<T>();
 
     // Create descriptors
     rocsparse_spmat_descr A;
@@ -173,7 +169,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
-    double time = get_time_us();
+    double time = utils_time_us();
 
     // COO matrix matrix multiplication
     for(int i = 0; i < trials; ++i)
@@ -200,7 +196,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
         HIP_CHECK(hipDeviceSynchronize());
     }
 
-    time = (get_time_us() - time) / (trials * batch_size * 1e3);
+    time = (utils_time_us() - time) / (trials * batch_size * 1e3);
     double bandwidth
         = static_cast<double>(sizeof(T) * (nnz_A + nnz_B + nnz_C) + sizeof(I) * (2.0 * nnz_A))
           / time / 1e6;

@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,7 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_init.hpp"
-#include "rocsparse_random.hpp"
-#include "utility.hpp"
-
+#include "utils.hpp"
 #include <hip/hip_runtime_api.h>
 #include <iomanip>
 #include <iostream>
@@ -63,17 +60,16 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     J n;
     I nnz;
 
-    rocsparse_init_csr_laplace2d(
-        hAptr, hAcol, hAval, ndim, ndim, m, n, nnz, rocsparse_index_base_zero);
+    utils_init_csr_laplace2d(hAptr, hAcol, hAval, ndim, ndim, m, n, nnz, rocsparse_index_base_zero);
 
     // Sample some random data
-    rocsparse_seedrand();
+    utils_seedrand();
 
-    T halpha = random_generator<T>();
+    T halpha = utils_random<T>();
     T hbeta  = (T)0;
 
     std::vector<T> hx(n);
-    rocsparse_init<T>(hx, 1, n, 1);
+    utils_init<T>(hx, 1, n, 1);
 
     // Offload data to device
     I* dAptr = NULL;
@@ -94,9 +90,9 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     HIP_CHECK(hipMemcpy(dx, hx.data(), sizeof(T) * n, hipMemcpyHostToDevice));
 
     // Types
-    rocsparse_indextype itype = get_indextype<I>();
-    rocsparse_indextype jtype = get_indextype<J>();
-    rocsparse_datatype  ttype = get_datatype<T>();
+    rocsparse_indextype itype = utils_indextype<I>();
+    rocsparse_indextype jtype = utils_indextype<J>();
+    rocsparse_datatype  ttype = utils_datatype<T>();
 
     // Create descriptors
     rocsparse_spmat_descr A;
@@ -146,7 +142,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
     HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
-    double time = get_time_us();
+    double time = utils_time_us();
 
     // CSR matrix vector multiplication
     for(int i = 0; i < trials; ++i)
@@ -171,7 +167,7 @@ void run_example(rocsparse_handle handle, int ndim, int trials, int batch_size)
         HIP_CHECK(hipDeviceSynchronize());
     }
 
-    time = (get_time_us() - time) / (trials * batch_size * 1e3);
+    time = (utils_time_us() - time) / (trials * batch_size * 1e3);
     double bandwidth
         = static_cast<double>(sizeof(T) * (2 * m + nnz) + sizeof(I) * (m + 1) + sizeof(J) * nnz)
           / time / 1e6;

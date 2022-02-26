@@ -22,9 +22,7 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_init.hpp"
-#include "rocsparse_random.hpp"
-#include "utility.hpp"
+#include "utils.hpp"
 
 #include <hip/hip_runtime_api.h>
 #include <iomanip>
@@ -131,7 +129,7 @@ int main(int argc, char* argv[])
     HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
-    double time = get_time_us();
+    double time = utils_time_us();
 
     // Call dgtsv to peform tri-diagonal solve
     for(int i = 0; i < trials; ++i)
@@ -145,7 +143,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    double solve_time = (get_time_us() - time) / (trials * batch_size * 1e3);
+    double solve_time = (utils_time_us() - time) / (trials * batch_size * 1e3);
     double bandwidth  = ((3 * m + 2 * m * n) * sizeof(double)) / solve_time / 1e6;
 
     // Print result

@@ -21,27 +21,6 @@
 #
 # ########################################################################
 
-set(ROCSPARSE_CLIENTS_COMMON
-  ../common/rocsparse_init.cpp
-  ../common/utility.cpp
-  ../common/rocsparse_matrix_factory.cpp
-  ../common/rocsparse_matrix_factory_laplace2d.cpp
-  ../common/rocsparse_matrix_factory_laplace3d.cpp
-  ../common/rocsparse_matrix_factory_zero.cpp
-  ../common/rocsparse_matrix_factory_random.cpp
-  ../common/rocsparse_matrix_factory_file.cpp
-  ../common/rocsparse_importer.cpp
-  ../common/rocsparse_importer_matrixmarket.cpp
-  ../common/rocsparse_importer_rocsparseio.cpp
-  ../common/rocsparse_importer_rocalution.cpp)
-
-
-add_library(rocsparse_common_samples ${ROCSPARSE_CLIENTS_COMMON})
-target_compile_options(rocsparse_common_samples PRIVATE -Wno-unused-command-line-argument)
-target_include_directories(rocsparse_common_samples PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
-target_link_libraries(rocsparse_common_samples PRIVATE roc::rocsparse hip::host hip::device)
-set_target_properties(rocsparse_common_samples PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
-
 # Function to add rocsparse examples
 function(add_rocsparse_example EXAMPLE_SOURCE)
   get_filename_component(EXAMPLE_TARGET ${EXAMPLE_SOURCE} NAME_WE)
@@ -54,8 +33,7 @@ function(add_rocsparse_example EXAMPLE_SOURCE)
   target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
   # Linker dependencies
-  target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host hip::device rocsparse_common_samples)
-
+  target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host hip::device)
   # Target properties
   set_target_properties(${EXAMPLE_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 endfunction()
@@ -129,8 +107,7 @@ if(TARGET rocsparse)
       target_include_directories(${EXAMPLE_TARGET} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>)
 
       # Linker dependencies
-      target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host rocsparse_common_samples)
-
+      target_link_libraries(${EXAMPLE_TARGET} PRIVATE roc::rocsparse hip::host)
       if (BUILD_CODE_COVERAGE)
 	target_link_libraries(${EXAMPLE_TARGET} PRIVATE -lgcov)
       endif()

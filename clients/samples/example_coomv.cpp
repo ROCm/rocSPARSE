@@ -22,9 +22,7 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_init.hpp"
-#include "rocsparse_random.hpp"
-#include "utility.hpp"
+#include "utils.hpp"
 
 #include <hip/hip_runtime_api.h>
 #include <iomanip>
@@ -94,17 +92,16 @@ int main(int argc, char* argv[])
     rocsparse_int n;
     rocsparse_int nnz;
 
-    rocsparse_init_coo_laplace2d(
-        hArow, hAcol, hAval, ndim, ndim, m, n, nnz, rocsparse_index_base_zero);
+    utils_init_coo_laplace2d(hArow, hAcol, hAval, ndim, ndim, m, n, nnz, rocsparse_index_base_zero);
 
     // Sample some random data
-    rocsparse_seedrand();
+    utils_seedrand();
 
-    double halpha = random_generator<double>();
+    double halpha = utils_random<double>();
     double hbeta  = 0.0;
 
     std::vector<double> hx(n);
-    rocsparse_init<double>(hx, 1, n, 1);
+    utils_init<double>(hx, 1, n, 1);
 
     // Matrix descriptor
     rocsparse_mat_descr descrA;
@@ -151,7 +148,7 @@ int main(int argc, char* argv[])
     HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
-    double time = get_time_us();
+    double time = utils_time_us();
 
     // COO matrix vector multiplication
     for(int i = 0; i < trials; ++i)
@@ -178,7 +175,7 @@ int main(int argc, char* argv[])
         HIP_CHECK(hipDeviceSynchronize());
     }
 
-    time = (get_time_us() - time) / (trials * batch_size * 1e3);
+    time = (utils_time_us() - time) / (trials * batch_size * 1e3);
     double bandwidth
         = static_cast<double>(sizeof(double) * (4 * m + nnz) + sizeof(rocsparse_int) * (2 * nnz))
           / time / 1e6;
