@@ -12,7 +12,7 @@
         <run name="custom_filter">{COMMAND}:output_custom.xml --gtest_filter={GTEST_FILTER}</run>
     </test>
     <test sets="hmm">
-        <!-- * This test suite should be run with the command: -->
+        <!-- * This test suite should be run with the command : -->
         <!-- HSA_XNACK=1 ROCSPARSE_MALLOC_MANAGED=1 rtest.py -t hmm [...] -->
         <run name="managed_memory">{COMMAND}:output_hmm.xml --gtest_filter=*csrmv_managed*</run>
     </test>

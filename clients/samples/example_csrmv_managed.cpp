@@ -22,10 +22,7 @@
  *
  * ************************************************************************ */
 
-#include "rocsparse_init.hpp"
-#include "rocsparse_random.hpp"
-#include "utility.hpp"
-
+#include "utils.hpp"
 #include <hip/hip_runtime_api.h>
 #include <iomanip>
 #include <iostream>
@@ -94,11 +91,11 @@ int main(int argc, char* argv[])
     rocsparse_int n;
     rocsparse_int nnz;
 
-    rocsparse_init_csr_laplace2d(
+    utils_init_csr_laplace2d(
         Aptr_temp, Acol_temp, Aval_temp, ndim, ndim, m, n, nnz, rocsparse_index_base_zero);
 
     std::vector<double> x_temp(n);
-    rocsparse_init<double>(x_temp, 1, n, 1);
+    utils_init<double>(x_temp, 1, n, 1);
 
     rocsparse_int* Aptr = NULL;
     rocsparse_int* Acol = NULL;
@@ -160,7 +157,7 @@ int main(int argc, char* argv[])
     HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
-    double time = get_time_us();
+    double time = utils_time_us();
 
     // CSR matrix vector multiplication
     for(int i = 0; i < trials; ++i)
@@ -188,7 +185,7 @@ int main(int argc, char* argv[])
         HIP_CHECK(hipDeviceSynchronize());
     }
 
-    time             = (get_time_us() - time) / (trials * batch_size * 1e3);
+    time             = (utils_time_us() - time) / (trials * batch_size * 1e3);
     double bandwidth = static_cast<double>(sizeof(double) * (2 * m + nnz)
                                            + sizeof(rocsparse_int) * (m + 1 + nnz))
                        / time / 1e6;
@@ -237,7 +234,7 @@ int main(int argc, char* argv[])
     HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
-    time = get_time_us();
+    time = utils_time_us();
 
     // CSR matrix vector multiplication
     for(int i = 0; i < trials; ++i)
@@ -265,7 +262,7 @@ int main(int argc, char* argv[])
         HIP_CHECK(hipDeviceSynchronize());
     }
 
-    time      = (get_time_us() - time) / (trials * batch_size * 1e3);
+    time      = (utils_time_us() - time) / (trials * batch_size * 1e3);
     bandwidth = static_cast<double>(sizeof(double) * (2 * m + nnz)
                                     + sizeof(rocsparse_int) * (m + 1 + nnz))
                 / time / 1e6;

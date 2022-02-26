@@ -21,11 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
-#include "rocsparse_init.hpp"
-#include "rocsparse_random.hpp"
-#include "utility.hpp"
-
+#include "utils.hpp"
 #include <hip/hip_runtime_api.h>
 #include <iomanip>
 #include <iostream>
@@ -33,7 +29,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
-
 #define HIP_CHECK(stat)                                                        \
     {                                                                          \
         if(stat != hipSuccess)                                                 \
@@ -103,12 +98,12 @@ int main(int argc, char* argv[])
     rocsparse_int nnz;
     double        alpha = 1.0f;
 
-    rocsparse_init_csr_laplace2d(
+    utils_init_csr_laplace2d(
         hcsr_row_ptr, hcsr_col_ind, hcsr_val, ndim, ndim, m, m, nnz, rocsparse_index_base_zero);
 
     std::vector<double> hx(m);
     std::vector<double> hy(m);
-    rocsparse_init<double>(hx, 1, m, 1);
+    utils_init<double>(hx, 1, m, 1);
 
     rocsparse_int* dcsr_row_ptr = NULL;
     rocsparse_int* dcsr_col_ind = NULL;
@@ -193,7 +188,7 @@ int main(int argc, char* argv[])
     HIP_CHECK(hipDeviceSynchronize());
 
     // Start time measurement
-    double time = get_time_us();
+    double time = utils_time_us();
 
     // Call dcsrsv to perform lower triangular solve Ly = x
     for(int i = 0; i < trials; ++i)
@@ -220,7 +215,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    double solve_time = (get_time_us() - time) / (trials * batch_size * 1e3);
+    double solve_time = (utils_time_us() - time) / (trials * batch_size * 1e3);
     double bandwidth  = ((m + 1 + nnz) * sizeof(rocsparse_int) + (m + m + nnz) * sizeof(double))
                        / solve_time / 1e6;
 
