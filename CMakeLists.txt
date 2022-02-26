@@ -36,7 +36,7 @@ endif()
 list( APPEND CMAKE_PREFIX_PATH /opt/rocm/llvm /opt/rocm )
 
 # CMake modules
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake /opt/rocm/lib/cmake/hip /opt/rocm/hip/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${ROCM_PATH}/lib/cmake/hip /opt/rocm/lib/cmake/hip /opt/rocm/hip/cmake)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -111,17 +111,21 @@ if(BUILD_ADDRESS_SANITIZER)
   #
 endif()
 
+# Dependencies
+include(cmake/Dependencies.cmake)
+
 # FOR HANDLING ENABLE/DISABLE OPTIONAL BACKWARD COMPATIBILITY for FILE/FOLDER REORG
 option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" OFF)
 if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
-  include(cmake/rocsparse-backward-compat.cmake)
-  package_gen_bkwdcomp_hdrs()
-  message (STATUS "Completed package_gen_bkwdcomp_hdrs() Configuration")
+  rocm_wrap_header_dir(
+    ${CMAKE_SOURCE_DIR}/library/include
+    PATTERNS "*.h"
+    GUARDS SYMLINK WRAPPER
+    WRAPPER_LOCATIONS include
+  )
 endif()
 
 
-# Dependencies
-include(cmake/Dependencies.cmake)
 
 # Detect compiler support for target ID
 if(CMAKE_CXX_COMPILER MATCHES ".*/hipcc$")

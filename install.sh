@@ -25,7 +25,7 @@ function display_help()
   echo "    [--codecoverage] build with code coverage profiling enabled"
   echo "    [--matrices-dir] existing client matrices directory"
   echo "    [--matrices-dir-install] install client matrices directory"
-  echo "    [--freorg-bkwdcomp] Build with backward compatibility for Package file/folder reorg enabled."
+  echo "    [--rm-legacy-include-dir] Remove legacy include dir Packaging added for file/folder reorg backward compatibility."
 }
 
 # This function is helpful for dockerfiles that do not have sudo installed, but the default user is root
@@ -257,7 +257,7 @@ build_address_sanitizer=false
 matrices_dir=
 matrices_dir_install=
 gpu_architecture=all
-build_freorg_bkwdcomp=false
+build_freorg_bkwdcomp=true
 
 # #################################################
 # Parameter parsing
@@ -266,7 +266,7 @@ build_freorg_bkwdcomp=false
 # check if we have a modern version of getopt that can handle whitespace and long parameters
 getopt -T
 if [[ $? -eq 4 ]]; then
-  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,freorg-bkwdcomp --options hicdgrka: -- "$@")
+  GETOPT_PARSE=$(getopt --name "${0}" --longoptions help,install,clients,dependencies,debug,hip-clang,static,relocatable,codecoverage,relwithdebinfo,address-sanitizer,matrices-dir:,matrices-dir-install:,architecture:,rm-legacy-include-dir --options hicdgrka: -- "$@")
 else
   echo "Need a new version of getopt"
   exit 1
@@ -316,8 +316,8 @@ while true; do
         --codecoverage)
             build_codecoverage=true
             shift ;;
-        --freorg-bkwdcomp)
-            build_freorg_bkwdcomp=true
+        --rm-legacy-include-dir)
+            build_freorg_bkwdcomp=false
             shift ;;
         -a|--architecture)
             gpu_architecture=${2}
@@ -462,7 +462,9 @@ pushd .
 
   # freorg backward compatible support enable
   if [[ "${build_freorg_bkwdcomp}" == true ]]; then
-    cmake_common_options+="${cmake_common_options} -DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=ON"
+    cmake_common_options="${cmake_common_options} -DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=ON"
+  else
+    cmake_common_options="${cmake_common_options} -DBUILD_FILE_REORG_BACKWARD_COMPATIBILITY=OFF"
   fi
 
   # code coverage
