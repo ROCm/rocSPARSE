@@ -115,7 +115,7 @@ endif()
 include(cmake/Dependencies.cmake)
 
 # FOR HANDLING ENABLE/DISABLE OPTIONAL BACKWARD COMPATIBILITY for FILE/FOLDER REORG
-option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" OFF)
+option(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY "Build with file/folder reorg with backward compatibility enabled" ON)
 if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
   rocm_wrap_header_dir(
     ${CMAKE_SOURCE_DIR}/library/include
