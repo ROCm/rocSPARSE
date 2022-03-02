@@ -103,6 +103,9 @@ struct Arguments
 
     rocsparse_int denseld;
     rocsparse_int batch_count;
+    rocsparse_int batch_count_A;
+    rocsparse_int batch_count_B;
+    rocsparse_int batch_count_C;
     rocsparse_int batch_stride;
 
     uint32_t algo;
@@ -211,6 +214,9 @@ struct Arguments
         ROCSPARSE_FORMAT_CHECK(iters);
         ROCSPARSE_FORMAT_CHECK(denseld);
         ROCSPARSE_FORMAT_CHECK(batch_count);
+        ROCSPARSE_FORMAT_CHECK(batch_count_A);
+        ROCSPARSE_FORMAT_CHECK(batch_count_B);
+        ROCSPARSE_FORMAT_CHECK(batch_count_C);
         ROCSPARSE_FORMAT_CHECK(batch_stride);
         ROCSPARSE_FORMAT_CHECK(algo);
         ROCSPARSE_FORMAT_CHECK(numericboost);
@@ -411,6 +417,9 @@ private:
         print("iters", arg.iters);
         print("denseld", arg.denseld);
         print("batch_count", arg.batch_count);
+        print("batch_count_A", arg.batch_count_A);
+        print("batch_count_B", arg.batch_count_B);
+        print("batch_count_C", arg.batch_count_C);
         print("batch_stride", arg.batch_stride);
         return str << " }\n";
     }

@@ -1545,6 +1545,11 @@ rocsparse_status rocsparse_create_coo_descr(rocsparse_spmat_descr* descr,
 
         // Initialize descriptor
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base((*descr)->descr, idx_base));
+
+        (*descr)->batch_count                 = 1;
+        (*descr)->batch_stride                = 0;
+        (*descr)->offsets_batch_stride        = 0;
+        (*descr)->columns_values_batch_stride = 0;
     }
     catch(const rocsparse_status& status)
     {
@@ -1631,6 +1636,11 @@ rocsparse_status rocsparse_create_coo_aos_descr(rocsparse_spmat_descr* descr,
 
         // Initialize descriptor
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base((*descr)->descr, idx_base));
+
+        (*descr)->batch_count                 = 1;
+        (*descr)->batch_stride                = 0;
+        (*descr)->offsets_batch_stride        = 0;
+        (*descr)->columns_values_batch_stride = 0;
     }
     catch(const rocsparse_status& status)
     {
@@ -1729,6 +1739,11 @@ rocsparse_status rocsparse_create_csr_descr(rocsparse_spmat_descr* descr,
 
         // Initialize descriptor
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base((*descr)->descr, idx_base));
+
+        (*descr)->batch_count                 = 1;
+        (*descr)->batch_stride                = 0;
+        (*descr)->offsets_batch_stride        = 0;
+        (*descr)->columns_values_batch_stride = 0;
     }
     catch(const rocsparse_status& status)
     {
@@ -1827,6 +1842,11 @@ rocsparse_status rocsparse_create_csc_descr(rocsparse_spmat_descr* descr,
 
         // Initialize descriptor
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base((*descr)->descr, idx_base));
+
+        (*descr)->batch_count                 = 1;
+        (*descr)->batch_stride                = 0;
+        (*descr)->offsets_batch_stride        = 0;
+        (*descr)->columns_values_batch_stride = 0;
     }
     catch(const rocsparse_status& status)
     {
@@ -1918,6 +1938,11 @@ rocsparse_status rocsparse_create_ell_descr(rocsparse_spmat_descr* descr,
 
         // Initialize descriptor
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base((*descr)->descr, idx_base));
+
+        (*descr)->batch_count                 = 1;
+        (*descr)->batch_stride                = 0;
+        (*descr)->offsets_batch_stride        = 0;
+        (*descr)->columns_values_batch_stride = 0;
     }
     catch(const rocsparse_status& status)
     {
@@ -2014,6 +2039,11 @@ rocsparse_status rocsparse_create_bell_descr(rocsparse_spmat_descr* descr,
 
         // Initialize descriptor
         RETURN_IF_ROCSPARSE_ERROR(rocsparse_set_mat_index_base((*descr)->descr, idx_base));
+
+        (*descr)->batch_count                 = 1;
+        (*descr)->batch_stride                = 0;
+        (*descr)->offsets_batch_stride        = 0;
+        (*descr)->columns_values_batch_stride = 0;
     }
     catch(const rocsparse_status& status)
     {
@@ -2648,6 +2678,119 @@ rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* v
 }
 
 /********************************************************************************
+ * \brief rocsparse_spmat_get_strided_batch gets the sparse matrix batch count.
+ *******************************************************************************/
+rocsparse_status rocsparse_spmat_get_strided_batch(rocsparse_spmat_descr descr, int* batch_count)
+{
+    // Check for valid pointers
+    if(descr == nullptr || batch_count == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *batch_count = descr->batch_count;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief rocsparse_spmat_get_strided_batch sets the sparse matrix batch count.
+ *******************************************************************************/
+rocsparse_status rocsparse_spmat_set_strided_batch(rocsparse_spmat_descr descr, int batch_count)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    if(batch_count <= 0)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    descr->batch_count = batch_count;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief rocsparse_coo_set_strided_batch sets the COO sparse matrix batch count
+ * and batch stride.
+ *******************************************************************************/
+rocsparse_status rocsparse_coo_set_strided_batch(rocsparse_spmat_descr descr,
+                                                 int                   batch_count,
+                                                 int64_t               batch_stride)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    if(batch_count <= 0 || batch_stride < 0)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    descr->batch_count  = batch_count;
+    descr->batch_stride = batch_stride;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief rocsparse_coo_set_strided_batch sets the CSR sparse matrix batch count
+ * and batch stride.
+ *******************************************************************************/
+rocsparse_status rocsparse_csr_set_strided_batch(rocsparse_spmat_descr descr,
+                                                 int                   batch_count,
+                                                 int64_t               offsets_batch_stride,
+                                                 int64_t               columns_values_batch_stride)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    if(batch_count <= 0 || offsets_batch_stride < 0 || columns_values_batch_stride < 0)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    descr->batch_count                 = batch_count;
+    descr->offsets_batch_stride        = offsets_batch_stride;
+    descr->columns_values_batch_stride = columns_values_batch_stride;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
  * \brief rocsparse_spmat_get_attribute gets the sparse matrix attribute.
  *******************************************************************************/
 rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
@@ -2970,6 +3113,9 @@ rocsparse_status rocsparse_create_dnmat_descr(rocsparse_dnmat_descr* descr,
         (*descr)->values    = values;
         (*descr)->data_type = data_type;
         (*descr)->order     = order;
+
+        (*descr)->batch_count  = 1;
+        (*descr)->batch_stride = 0;
     }
     catch(const rocsparse_status& status)
     {
@@ -3076,6 +3222,78 @@ rocsparse_status rocsparse_dnmat_set_values(rocsparse_dnmat_descr descr, void* v
     }
 
     descr->values = values;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief rocsparse_dnmat_get_strided_batch gets the dense matrix batch count
+ * and batch stride.
+ *******************************************************************************/
+rocsparse_status rocsparse_dnmat_get_strided_batch(rocsparse_dnmat_descr descr,
+                                                   int*                  batch_count,
+                                                   int64_t*              batch_stride)
+{
+    // Check for valid pointers
+    if(descr == nullptr || batch_count == nullptr || batch_stride == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    *batch_count  = descr->batch_count;
+    *batch_stride = descr->batch_stride;
+
+    return rocsparse_status_success;
+}
+
+/********************************************************************************
+ * \brief rocsparse_dnmat_set_strided_batch sets the dense matrix batch count
+ * and batch stride.
+ *******************************************************************************/
+rocsparse_status rocsparse_dnmat_set_strided_batch(rocsparse_dnmat_descr descr,
+                                                   int                   batch_count,
+                                                   int64_t               batch_stride)
+{
+    // Check for valid pointers
+    if(descr == nullptr)
+    {
+        return rocsparse_status_invalid_pointer;
+    }
+
+    // Check if descriptor has been initialized
+    if(descr->init == false)
+    {
+        return rocsparse_status_not_initialized;
+    }
+
+    if(batch_count <= 0 || batch_stride < 0)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
+    if(descr->order == rocsparse_order_column)
+    {
+        if(batch_count > 1 && batch_stride < descr->ld * descr->cols)
+        {
+            return rocsparse_status_invalid_value;
+        }
+    }
+    else if(descr->order == rocsparse_order_row)
+    {
+        if(batch_count > 1 && batch_stride < descr->ld * descr->rows)
+        {
+            return rocsparse_status_invalid_value;
+        }
+    }
+
+    descr->batch_count  = batch_count;
+    descr->batch_stride = batch_stride;
 
     return rocsparse_status_success;
 }

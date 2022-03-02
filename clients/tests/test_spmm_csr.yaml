@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -260,23 +260,6 @@ Tests:
   filename: [bmwcra_1]
 
 - name: spmm_csr_file
-  category: nightly
-  function: spmm_csr
-  indextype: *i32_i64
-  precision: *double_only_precisions
-  M: 1
-  N: [52]
-  K: 1
-  alpha_beta: *alpha_beta_range_nightly
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr_row_split]
-  order: [rocsparse_order_row]
-  filename: [shipsec1]
-
-- name: spmm_csr_file
   category: pre_checkin
   function: spmm_csr
   indextype: *i64i32
@@ -294,21 +277,55 @@ Tests:
   filename: [Chevron3]
 
 - name: spmm_csr_file
-  category: nightly
+  category: pre_checkin
   function: spmm_csr
-  indextype: *i32_i64
-  precision: *single_double_precisions_complex
+  indextype: *i32i32_i64i32_i64i64
+  precision: *double_only_precisions
   M: 1
-  N: [5]
+  N: [6]
   K: 1
-  alpha_beta: *alpha_beta_range_nightly
+  alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr]
+  spmm_alg: [rocsparse_spmm_alg_csr_merge]
+  order: [rocsparse_order_row]
+  filename: [scircuit]
+
+- name: spmm_csr_file
+  category: pre_checkin
+  function: spmm_csr
+  indextype: *i64i32
+  precision: *double_only_precisions
+  M: 1
+  N: [21]
+  K: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_csr_merge]
   order: [rocsparse_order_column]
-  filename: [Chevron4]
+  filename: [bibd_22_8]
+
+- name: spmm_csr_file
+  category: pre_checkin
+  function: spmm_csr
+  indextype: *i64i32
+  precision: *double_only_precisions_complex
+  M: 1
+  N: [17]
+  K: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_csr_merge]
+  order: [rocsparse_order_row]
+  filename: [Chebyshev4]
 
 
 ##############################
@@ -366,40 +383,6 @@ Tests:
   filename: [shipsec1]
 
 - name: spmm_csr_file
-  category: pre_checkin
-  function: spmm_csr
-  indextype: *i32i32_i64i32_i64i64
-  precision: *double_only_precisions
-  M: 1
-  N: [6]
-  K: 1
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr_merge]
-  order: [rocsparse_order_row]
-  filename: [scircuit]
-
-- name: spmm_csr_file
-  category: pre_checkin
-  function: spmm_csr
-  indextype: *i64i32
-  precision: *double_only_precisions
-  M: 1
-  N: [21]
-  K: 1
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr_merge]
-  order: [rocsparse_order_column]
-  filename: [bibd_22_8]
-
-- name: spmm_csr_file
   category: nightly
   function: spmm_csr
   indextype: *i32_i64
@@ -417,23 +400,6 @@ Tests:
   filename: [ASIC_320k]
 
 - name: spmm_csr_file
-  category: pre_checkin
-  function: spmm_csr
-  indextype: *i64i32
-  precision: *double_only_precisions_complex
-  M: 1
-  N: [17]
-  K: 1
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_none]
-  transB: [rocsparse_operation_none]
-  baseA: [rocsparse_index_base_one]
-  matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr_merge]
-  order: [rocsparse_order_row]
-  filename: [Chebyshev4]
-
-- name: spmm_csr_file
   category: nightly
   function: spmm_csr
   indextype: *i32_i64
@@ -449,3 +415,37 @@ Tests:
   spmm_alg: [rocsparse_spmm_alg_csr]
   order: [rocsparse_order_column]
   filename: [Chevron3, Chevron4]
+
+- name: spmm_csr_file
+  category: nightly
+  function: spmm_csr
+  indextype: *i32_i64
+  precision: *single_double_precisions_complex
+  M: 1
+  N: [5]
+  K: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_transpose]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_csr]
+  order: [rocsparse_order_column]
+  filename: [Chevron4]
+
+- name: spmm_csr_file
+  category: nightly
+  function: spmm_csr
+  indextype: *i32_i64
+  precision: *double_only_precisions
+  M: 1
+  N: [52]
+  K: 1
+  alpha_beta: *alpha_beta_range_nightly
+  transA: [rocsparse_operation_none]
+  transB: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  spmm_alg: [rocsparse_spmm_alg_csr_row_split]
+  order: [rocsparse_order_row]
+  filename: [shipsec1]

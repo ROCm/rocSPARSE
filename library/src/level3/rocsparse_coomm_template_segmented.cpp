@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2021 Advanced Micro Devices, Inc.
+* Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -287,6 +287,8 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
                                                     I                         n,
                                                     I                         k,
                                                     I                         nnz,
+                                                    I                         batch_count_A,
+                                                    I                         batch_stride_A,
                                                     U                         alpha_device_host,
                                                     const rocsparse_mat_descr descr,
                                                     const T*                  coo_val,
@@ -294,10 +296,19 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
                                                     const I*                  coo_col_ind,
                                                     const T*                  B,
                                                     I                         ldb,
+                                                    I                         batch_count_B,
+                                                    I                         batch_stride_B,
                                                     U                         beta_device_host,
                                                     T*                        C,
-                                                    I                         ldc)
+                                                    I                         ldc,
+                                                    I                         batch_count_C,
+                                                    I                         batch_stride_C)
 {
+    if(batch_count_A != 1 || batch_count_B != 1 || batch_count_C != 1)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     // Stream
     hipStream_t stream = handle->stream;
 
@@ -479,6 +490,8 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
         ITYPE                     n,                                                   \
         ITYPE                     k,                                                   \
         ITYPE                     nnz,                                                 \
+        ITYPE                     batch_count_A,                                       \
+        ITYPE                     batch_stride_A,                                      \
         UTYPE                     alpha_device_host,                                   \
         const rocsparse_mat_descr descr,                                               \
         const TTYPE*              coo_val,                                             \
@@ -486,9 +499,13 @@ rocsparse_status rocsparse_coomm_template_segmented(rocsparse_handle          ha
         const ITYPE*              coo_col_ind,                                         \
         const TTYPE*              B,                                                   \
         ITYPE                     ldb,                                                 \
+        ITYPE                     batch_count_B,                                       \
+        ITYPE                     batch_stride_B,                                      \
         UTYPE                     beta_device_host,                                    \
         TTYPE*                    C,                                                   \
-        ITYPE                     ldc);
+        ITYPE                     ldc,                                                 \
+        ITYPE                     batch_count_C,                                       \
+        ITYPE                     batch_stride_C);
 
 INSTANTIATE(int32_t, float, float);
 INSTANTIATE(int32_t, double, double);

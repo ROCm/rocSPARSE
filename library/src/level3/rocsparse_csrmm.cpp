@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+* Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -278,24 +278,31 @@ rocsparse_status rocsparse_csrmm_analysis_template(rocsparse_handle          han
 }
 
 template <typename I, typename J, typename T, typename U>
-rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle          handle,
-                                                  rocsparse_operation       trans_A,
-                                                  rocsparse_operation       trans_B,
-                                                  rocsparse_order           order,
-                                                  J                         m,
-                                                  J                         n,
-                                                  J                         k,
-                                                  I                         nnz,
-                                                  U                         alpha_device_host,
+rocsparse_status rocsparse_csrmm_template_general(rocsparse_handle    handle,
+                                                  rocsparse_operation trans_A,
+                                                  rocsparse_operation trans_B,
+                                                  rocsparse_order     order,
+                                                  J                   m,
+                                                  J                   n,
+                                                  J                   k,
+                                                  I                   nnz,
+                                                  J                   batch_count_A,
+                                                  J                   offsets_batch_stride_A,
+                                                  I                   columns_values_batch_stride_A,
+                                                  U                   alpha_device_host,
                                                   const rocsparse_mat_descr descr,
                                                   const T*                  csr_val,
                                                   const I*                  csr_row_ptr,
                                                   const J*                  csr_col_ind,
                                                   const T*                  B,
                                                   J                         ldb,
+                                                  J                         batch_count_B,
+                                                  I                         batch_stride_B,
                                                   U                         beta_device_host,
                                                   T*                        C,
-                                                  J                         ldc);
+                                                  J                         ldc,
+                                                  J                         batch_count_C,
+                                                  I                         batch_stride_C);
 
 template <typename I, typename J, typename T, typename U>
 rocsparse_status rocsparse_csrmm_template_row_split(rocsparse_handle          handle,
@@ -339,25 +346,32 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                                 void*                     temp_buffer);
 
 template <typename I, typename J, typename T, typename U>
-rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          handle,
-                                                   rocsparse_operation       trans_A,
-                                                   rocsparse_operation       trans_B,
-                                                   rocsparse_order           order,
-                                                   rocsparse_csrmm_alg       alg,
-                                                   J                         m,
-                                                   J                         n,
-                                                   J                         k,
-                                                   I                         nnz,
-                                                   U                         alpha_device_host,
+rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle    handle,
+                                                   rocsparse_operation trans_A,
+                                                   rocsparse_operation trans_B,
+                                                   rocsparse_order     order,
+                                                   rocsparse_csrmm_alg alg,
+                                                   J                   m,
+                                                   J                   n,
+                                                   J                   k,
+                                                   I                   nnz,
+                                                   J                   batch_count_A,
+                                                   J                   offsets_batch_stride_A,
+                                                   I columns_values_batch_stride_A,
+                                                   U alpha_device_host,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  csr_val,
                                                    const I*                  csr_row_ptr,
                                                    const J*                  csr_col_ind,
                                                    const T*                  B,
                                                    J                         ldb,
+                                                   J                         batch_count_B,
+                                                   I                         batch_stride_B,
                                                    U                         beta_device_host,
                                                    T*                        C,
                                                    J                         ldc,
+                                                   J                         batch_count_C,
+                                                   I                         batch_stride_C,
                                                    void*                     temp_buffer)
 {
     switch(alg)
@@ -373,6 +387,9 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                 n,
                                                 k,
                                                 nnz,
+                                                batch_count_A,
+                                                offsets_batch_stride_A,
+                                                columns_values_batch_stride_A,
                                                 alpha_device_host,
                                                 descr,
                                                 csr_val,
@@ -380,9 +397,13 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                 csr_col_ind,
                                                 B,
                                                 ldb,
+                                                batch_count_B,
+                                                batch_stride_B,
                                                 beta_device_host,
                                                 C,
-                                                ldc);
+                                                ldc,
+                                                batch_count_C,
+                                                batch_stride_C);
     }
 
     case rocsparse_csrmm_alg_merge:
@@ -422,6 +443,9 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                     n,
                                                     k,
                                                     nnz,
+                                                    batch_count_A,
+                                                    offsets_batch_stride_A,
+                                                    columns_values_batch_stride_A,
                                                     alpha_device_host,
                                                     descr,
                                                     csr_val,
@@ -429,9 +453,13 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                     csr_col_ind,
                                                     B,
                                                     ldb,
+                                                    batch_count_B,
+                                                    batch_stride_B,
                                                     beta_device_host,
                                                     C,
-                                                    ldc);
+                                                    ldc,
+                                                    batch_count_C,
+                                                    batch_stride_C);
         }
         }
     }
@@ -472,6 +500,9 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                     n,
                                                     k,
                                                     nnz,
+                                                    batch_count_A,
+                                                    offsets_batch_stride_A,
+                                                    columns_values_batch_stride_A,
                                                     alpha_device_host,
                                                     descr,
                                                     csr_val,
@@ -479,9 +510,13 @@ rocsparse_status rocsparse_csrmm_template_dispatch(rocsparse_handle          han
                                                     csr_col_ind,
                                                     B,
                                                     ldb,
+                                                    batch_count_B,
+                                                    batch_stride_B,
                                                     beta_device_host,
                                                     C,
-                                                    ldc);
+                                                    ldc,
+                                                    batch_count_C,
+                                                    batch_stride_C);
         }
         }
     }
@@ -500,6 +535,9 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           J                         n,
                                           J                         k,
                                           I                         nnz,
+                                          J                         batch_count_A,
+                                          J                         offsets_batch_stride_A,
+                                          I                         columns_values_batch_stride_A,
                                           const T*                  alpha_device_host,
                                           const rocsparse_mat_descr descr,
                                           const T*                  csr_val,
@@ -507,9 +545,13 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                           const J*                  csr_col_ind,
                                           const T*                  B,
                                           J                         ldb,
+                                          J                         batch_count_B,
+                                          I                         batch_stride_B,
                                           const T*                  beta_device_host,
                                           T*                        C,
                                           J                         ldc,
+                                          J                         batch_count_C,
+                                          I                         batch_stride_C,
                                           void*                     temp_buffer)
 {
     // Check for valid handle and matrix descriptor
@@ -531,6 +573,9 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
               n,
               k,
               nnz,
+              batch_count_A,
+              offsets_batch_stride_A,
+              columns_values_batch_stride_A,
               LOG_TRACE_SCALAR_VALUE(handle, alpha_device_host),
               (const void*&)descr,
               (const void*&)csr_val,
@@ -538,9 +583,13 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
               (const void*&)csr_col_ind,
               (const void*&)B,
               ldb,
+              batch_count_B,
+              batch_stride_B,
               LOG_TRACE_SCALAR_VALUE(handle, beta_device_host),
               (const void*&)C,
-              ldc);
+              ldc,
+              batch_count_C,
+              batch_stride_C);
 
     if(rocsparse_enum_utils::is_invalid(trans_A))
     {
@@ -590,9 +639,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
         return rocsparse_status_success;
     }
 
-    //
     // Check the rest of pointer arguments
-    //
     if(alpha_device_host == nullptr || beta_device_host == nullptr)
     {
         return rocsparse_status_invalid_pointer;
@@ -604,9 +651,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
         return rocsparse_status_success;
     }
 
-    //
     // Check the rest of pointer arguments
-    //
     if(csr_row_ptr == nullptr || B == nullptr || C == nullptr)
     {
         return rocsparse_status_invalid_pointer;
@@ -624,6 +669,7 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_pointer;
     }
 
+    // Check leading dimension of matrices
     static constexpr J s_one = static_cast<J>(1);
     switch(trans_A)
     {
@@ -691,6 +737,16 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
     }
     }
 
+    // Check batch parameters of matrices
+    bool Ci_A_Bi  = (batch_count_A == 1 && batch_count_B == batch_count_C);
+    bool Ci_Ai_B  = (batch_count_B == 1 && batch_count_A == batch_count_C);
+    bool Ci_Ai_Bi = (batch_count_A == batch_count_C && batch_count_A == batch_count_B);
+
+    if(!Ci_A_Bi && !Ci_Ai_B && !Ci_Ai_Bi)
+    {
+        return rocsparse_status_invalid_value;
+    }
+
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
     {
         return rocsparse_csrmm_template_dispatch(handle,
@@ -702,6 +758,9 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                                  n,
                                                  k,
                                                  nnz,
+                                                 batch_count_A,
+                                                 offsets_batch_stride_A,
+                                                 columns_values_batch_stride_A,
                                                  alpha_device_host,
                                                  descr,
                                                  csr_val,
@@ -709,9 +768,13 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                                  csr_col_ind,
                                                  B,
                                                  ldb,
+                                                 batch_count_B,
+                                                 batch_stride_B,
                                                  beta_device_host,
                                                  C,
                                                  ldc,
+                                                 batch_count_C,
+                                                 batch_stride_C,
                                                  temp_buffer);
     }
     else
@@ -725,6 +788,9 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                                  n,
                                                  k,
                                                  nnz,
+                                                 batch_count_A,
+                                                 offsets_batch_stride_A,
+                                                 columns_values_batch_stride_A,
                                                  *alpha_device_host,
                                                  descr,
                                                  csr_val,
@@ -732,9 +798,13 @@ rocsparse_status rocsparse_csrmm_template(rocsparse_handle          handle,
                                                  csr_col_ind,
                                                  B,
                                                  ldb,
+                                                 batch_count_B,
+                                                 batch_stride_B,
                                                  *beta_device_host,
                                                  C,
                                                  ldc,
+                                                 batch_count_C,
+                                                 batch_stride_C,
                                                  temp_buffer);
     }
 
@@ -811,6 +881,9 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
         JTYPE                     n,                                         \
         JTYPE                     k,                                         \
         ITYPE                     nnz,                                       \
+        JTYPE                     batch_count_A,                             \
+        JTYPE                     offsets_batch_stride_A,                    \
+        ITYPE                     columns_values_batch_stride_A,             \
         const TTYPE*              alpha_device_host,                         \
         const rocsparse_mat_descr descr,                                     \
         const TTYPE*              csr_val,                                   \
@@ -818,9 +891,13 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
         const JTYPE*              csr_col_ind,                               \
         const TTYPE*              B,                                         \
         JTYPE                     ldb,                                       \
+        JTYPE                     batch_count_B,                             \
+        ITYPE                     batch_stride_B,                            \
         const TTYPE*              beta_device_host,                          \
         TTYPE*                    C,                                         \
         JTYPE                     ldc,                                       \
+        JTYPE                     batch_count_C,                             \
+        ITYPE                     batch_stride_C,                            \
         void*                     temp_buffer);
 
 INSTANTIATE(int32_t, int32_t, float);
@@ -872,6 +949,9 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                         n,                                  \
                                         k,                                  \
                                         nnz,                                \
+                                        1,                                  \
+                                        0,                                  \
+                                        0,                                  \
                                         alpha,                              \
                                         descr,                              \
                                         csr_val,                            \
@@ -879,9 +959,13 @@ INSTANTIATE(int64_t, int64_t, rocsparse_double_complex);
                                         csr_col_ind,                        \
                                         B,                                  \
                                         ldb,                                \
+                                        1,                                  \
+                                        0,                                  \
                                         beta,                               \
                                         C,                                  \
                                         ldc,                                \
+                                        1,                                  \
+                                        0,                                  \
                                         nullptr);                           \
     }
 

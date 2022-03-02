@@ -138,6 +138,9 @@ set(ROCSPARSE_TEST_SOURCES
   test_spmm_csr.cpp
   test_spmm_coo.cpp
   test_spmm_bell.cpp
+  test_spmm_batched_csr.cpp
+  test_spmm_batched_coo.cpp
+  test_spmm_batched_bell.cpp
   test_spvv.cpp
   test_sparse_to_dense_coo.cpp
   test_sparse_to_dense_csr.cpp
@@ -238,6 +241,9 @@ set(ROCSPARSE_CLIENTS_TESTINGS
 ../testings/testing_spmm_csr.cpp
 ../testings/testing_spmm_coo.cpp
 ../testings/testing_spmm_bell.cpp
+../testings/testing_spmm_batched_csr.cpp
+../testings/testing_spmm_batched_coo.cpp
+../testings/testing_spmm_batched_bell.cpp
 ../testings/testing_spvv.cpp
 ../testings/testing_sparse_to_dense_coo.cpp
 ../testings/testing_sparse_to_dense_csr.cpp

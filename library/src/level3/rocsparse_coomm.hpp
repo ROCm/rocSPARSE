@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,8 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                    I                         n,
                                                    I                         k,
                                                    I                         nnz,
+                                                   I                         batch_count_A,
+                                                   I                         batch_stride_A,
                                                    U                         alpha_device_host,
                                                    const rocsparse_mat_descr descr,
                                                    const T*                  coo_val,
@@ -53,9 +55,13 @@ rocsparse_status rocsparse_coomm_template_dispatch(rocsparse_handle          han
                                                    const I*                  coo_col_ind,
                                                    const T*                  B,
                                                    I                         ldb,
+                                                   I                         batch_count_B,
+                                                   I                         batch_stride_B,
                                                    U                         beta_device_host,
                                                    T*                        C,
-                                                   I                         ldc);
+                                                   I                         ldc,
+                                                   I                         batch_count_C,
+                                                   I                         batch_stride_C);
 
 template <typename I, typename T>
 rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
@@ -68,6 +74,8 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                           I                         n,
                                           I                         k,
                                           I                         nnz,
+                                          I                         batch_count_A,
+                                          I                         batch_stride_A,
                                           const T*                  alpha,
                                           const rocsparse_mat_descr descr,
                                           const T*                  coo_val,
@@ -75,8 +83,12 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
                                           const I*                  coo_col_ind,
                                           const T*                  B,
                                           I                         ldb,
+                                          I                         batch_count_B,
+                                          I                         batch_stride_B,
                                           const T*                  beta,
                                           T*                        C,
-                                          I                         ldc);
+                                          I                         ldc,
+                                          I                         batch_count_C,
+                                          I                         batch_stride_C);
 
 #endif // ROCSPARSE_COOMM_HPP

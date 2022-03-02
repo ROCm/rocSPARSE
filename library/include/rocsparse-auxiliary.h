@@ -808,6 +808,23 @@ ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spmat_set_values(rocsparse_spmat_descr descr, void* values);
 
 ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmat_get_strided_batch(rocsparse_spmat_descr descr, int* batch_count);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_spmat_set_strided_batch(rocsparse_spmat_descr descr, int batch_count);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_coo_set_strided_batch(rocsparse_spmat_descr descr,
+                                                 int                   batch_count,
+                                                 int64_t               batch_stride);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_csr_set_strided_batch(rocsparse_spmat_descr descr,
+                                                 int                   batch_count,
+                                                 int64_t               offsets_batch_stride,
+                                                 int64_t               columns_values_batch_stride);
+
+ROCSPARSE_EXPORT
 rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
                                                rocsparse_spmat_attribute attribute,
                                                void*                     data,
@@ -868,6 +885,16 @@ rocsparse_status rocsparse_dnmat_get_values(const rocsparse_dnmat_descr descr, v
 
 ROCSPARSE_EXPORT
 rocsparse_status rocsparse_dnmat_set_values(rocsparse_dnmat_descr descr, void* values);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dnmat_get_strided_batch(rocsparse_dnmat_descr descr,
+                                                   int*                  batch_count,
+                                                   int64_t*              batch_stride);
+
+ROCSPARSE_EXPORT
+rocsparse_status rocsparse_dnmat_set_strided_batch(rocsparse_dnmat_descr descr,
+                                                   int                   batch_count,
+                                                   int64_t               batch_stride);
 
 #ifdef __cplusplus
 }

@@ -16250,6 +16250,289 @@ rocsparse_status rocsparse_spsm(rocsparse_handle            handle,
 *               \p buffer_size pointer is invalid.
 *  \retval      rocsparse_status_not_implemented \p trans_A, \p trans_B, \p compute_type or \p alg is
 *               currently not supported.
+*  \par Example
+*  This example performs sparse matrix-dense matrix multiplication, C = alpha * A * B + beta * C
+*  \code{.c}
+*      //     1 4 0 0 0 0
+*      // A = 0 2 3 0 0 0
+*      //     5 0 0 7 8 0
+*      //     0 0 9 0 6 0
+*
+*      //     1 4 2
+*      //     1 2 3
+*      // B = 5 4 0
+*      //     3 1 9
+*      //     1 2 2
+*      //     0 3 0
+*
+*      //     1 1 5
+*      // C = 1 2 1
+*      //     1 3 1
+*      //     6 2 4
+*
+*      rocsparse_int m   = 4;
+*      rocsparse_int k   = 6;
+*      rocsparse_int n   = 3;
+*
+*      csr_row_ptr[m + 1] = {0, 1, 3};                                              // device memory
+*      csr_col_ind[nnz]   = {0, 0, 1};                                              // device memory
+*      csr_val[nnz]       = {1, 0, 4, 2, 0, 3, 5, 0, 0, 0, 0, 9, 7, 0, 8, 6, 0, 0}; // device memory
+*
+*      B[k * n]       = {1, 1, 5, 3, 1, 0, 4, 2, 4, 1, 2, 3, 2, 3, 0, 9, 2, 0};     // device memory
+*      C[m * n]       = {1, 1, 1, 6, 1, 2, 3, 2, 5, 1, 1, 4};                       // device memory
+*
+*      rocsparse_int nnz = csr_row_ptr[m] - csr_row_ptr[0];
+*
+*      float alpha = 1.0f;
+*      float beta  = 0.0f;
+*
+*      // Create CSR arrays on device
+*      rocsparse_int* csr_row_ptr;
+*      rocsparse_int* csr_col_ind;
+*      float* csr_val;
+*      float* B;
+*      float* C;
+*      hipMalloc((void**)&csr_row_ptr, sizeof(rocsparse_int) * (m + 1));
+*      hipMalloc((void**)&csr_col_ind, sizeof(rocsparse_int) * nnz);
+*      hipMalloc((void**)&csr_val, sizeof(float) * nnz);
+*      hipMalloc((void**)&B, sizeof(float) * k * n);
+*      hipMalloc((void**)&C, sizeof(float) * m * n);
+*
+*      // Create rocsparse handle
+*      rocsparse_local_handle handle;
+*
+*      // Types
+*      rocsparse_indextype itype = rocsparse_indextype_i32;
+*      rocsparse_indextype jtype = rocsparse_indextype_i32;
+*      rocsparse_datatype  ttype = rocsparse_datatype_f32_r;
+*
+*      // Create descriptors
+*      rocsparse_spmat_descr mat_A;
+*      rocsparse_dnmat_descr mat_B;
+*      rocsparse_dnmat_descr mat_C;
+*
+*      rocsparse_create_csr_descr(&mat_A, m, k, nnz, csr_row_ptr, csr_col_ind, csr_val, itype, jtype, rocsparse_index_base_zero, ttype);
+*      rocsparse_create_dnmat_descr(&mat_B, k, n, k, B, ttype, rocsparse_order_column);
+*      rocsparse_create_dnmat_descr(&mat_C, m, n, m, C, ttype, rocsparse_order_column);
+*
+*      // Query SpMM buffer
+*      size_t buffer_size;
+*      rocsparse_spmm(handle,
+*                     rocsparse_operation_none,
+*                     rocsparse_operation_none,
+*                     &alpha,
+*                     mat_A,
+*                     mat_B,
+*                     &beta,
+*                     mat_C,
+*                     ttype,
+*                     rocsparse_spmm_alg_default,
+*                     rocsparse_spmm_stage_buffer_size,
+*                     &buffer_size,
+*                     nullptr));
+*
+*      // Allocate buffer
+*      void* buffer;
+*      hipMalloc(&buffer, buffer_size);
+*
+*      rocsparse_spmm(handle,
+*                     rocsparse_operation_none,
+*                     rocsparse_operation_none,
+*                     &alpha,
+*                     mat_A,
+*                     mat_B,
+*                     &beta,
+*                     mat_C,
+*                     ttype,
+*                     rocsparse_spmm_alg_default,
+*                     rocsparse_spmm_stage_preprocess,
+*                     &buffer_size,
+*                     buffer));
+*
+*      // Pointer mode host
+*      rocsparse_spmm(handle,
+*                     rocsparse_operation_none,
+*                     rocsparse_operation_none,
+*                     &alpha,
+*                     mat_A,
+*                     mat_B,
+*                     &beta,
+*                     mat_C,
+*                     ttype,
+*                     rocsparse_spmm_alg_default,
+*                     rocsparse_spmm_stage_compute,
+*                     &buffer_size,
+*                     buffer));
+*
+*      // Clear up on device
+*      hipFree(csr_row_ptr);
+*      hipFree(csr_col_ind);
+*      hipFree(csr_val);
+*      hipFree(B);
+*      hipFree(C);
+*      hipFree(temp_buffer);
+*
+*      rocsparse_destroy_spmat_descr(mat_A);
+*      rocsparse_destroy_dnmat_descr(mat_B);
+*      rocsparse_destroy_dnmat_descr(mat_C);
+*  \endcode
+*
+*  \par Example
+*  SpMM also supports batched computation for CSR and COO matrices. There are three supported batch modes:
+*      C_i = A * B_i
+*      C_i = A_i * B
+*      C_i = A_i * B_i
+*  The batch mode is determined by the batch count and stride passed for each matrix. For example
+*  to use the first batch mode (C_i = A * B_i) with 100 batches for non-transposed A, B, and C, one passes:
+*      batch_count_A = 1
+*      batch_count_B = 100
+*      batch_count_C = 100
+*      offsets_batch_stride_A        = 0
+*      columns_values_batch_stride_A = 0
+*      batch_stride_B                = k * n
+*      batch_stride_C                = m * n
+*  To use the second batch mode (C_i = A_i * B) one could use:
+*      batch_count_A = 100
+*      batch_count_B = 1
+*      batch_count_C = 100
+*      offsets_batch_stride_A        = m + 1
+*      columns_values_batch_stride_A = nnz
+*      batch_stride_B                = 0
+*      batch_stride_C                = m * n
+*  And to use the third batch mode (C_i = A_i * B_i) one could use:
+*      batch_count_A = 100
+*      batch_count_B = 100
+*      batch_count_C = 100
+*      offsets_batch_stride_A        = m + 1
+*      columns_values_batch_stride_A = nnz
+*      batch_stride_B                = k * n
+*      batch_stride_C                = m * n
+*  An example of the first batch mode (C_i = A * B_i) is provided below.
+*  \code{.c}
+*      //     1 4 0 0 0 0
+*      // A = 0 2 3 0 0 0
+*      //     5 0 0 7 8 0
+*      //     0 0 9 0 6 0
+*
+*      rocsparse_int m   = 4;
+*      rocsparse_int k   = 6;
+*      rocsparse_int n   = 3;
+*
+*      csr_row_ptr[m + 1] = {0, 1, 3};                                              // device memory
+*      csr_col_ind[nnz]   = {0, 0, 1};                                              // device memory
+*      csr_val[nnz]       = {1, 0, 4, 2, 0, 3, 5, 0, 0, 0, 0, 9, 7, 0, 8, 6, 0, 0}; // device memory
+*
+*      B[batch_count_B * k * n]       = {...};     // device memory
+*      C[batch_count_C * m * n]       = {...};     // device memory
+*
+*      rocsparse_int nnz = csr_row_ptr[m] - csr_row_ptr[0];
+*
+*      rocsparse_int batch_count_A = 1;
+*      rocsparse_int batch_count_B = 100;
+*      rocsparse_int batch_count_C = 100;
+*
+*      rocsparse_int offsets_batch_stride_A        = 0;
+*      rocsparse_int columns_values_batch_stride_A = 0;
+*      rocsparse_int batch_stride_B                = k * n;
+*      rocsparse_int batch_stride_C                = m * n;
+*
+*      float alpha = 1.0f;
+*      float beta  = 0.0f;
+*
+*      // Create CSR arrays on device
+*      rocsparse_int* csr_row_ptr;
+*      rocsparse_int* csr_col_ind;
+*      float* csr_val;
+*      float* B;
+*      float* C;
+*      hipMalloc((void**)&csr_row_ptr, sizeof(rocsparse_int) * (m + 1));
+*      hipMalloc((void**)&csr_col_ind, sizeof(rocsparse_int) * nnz);
+*      hipMalloc((void**)&csr_val, sizeof(float) * nnz);
+*      hipMalloc((void**)&B, sizeof(float) * batch_count_B * k * n);
+*      hipMalloc((void**)&C, sizeof(float) * batch_count_C * m * n);
+*
+*      // Create rocsparse handle
+*      rocsparse_local_handle handle;
+*
+*      // Types
+*      rocsparse_indextype itype = rocsparse_indextype_i32;
+*      rocsparse_indextype jtype = rocsparse_indextype_i32;
+*      rocsparse_datatype  ttype = rocsparse_datatype_f32_r;
+*
+*      // Create descriptors
+*      rocsparse_spmat_descr mat_A;
+*      rocsparse_dnmat_descr mat_B;
+*      rocsparse_dnmat_descr mat_C;
+*
+*      rocsparse_create_csr_descr(&mat_A, m, k, nnz, csr_row_ptr, csr_col_ind, csr_val, itype, jtype, rocsparse_index_base_zero, ttype);
+*      rocsparse_create_dnmat_descr(&mat_B, k, n, k, B, ttype, rocsparse_order_column);
+*      rocsparse_create_dnmat_descr(&mat_C, m, n, m, C, ttype, rocsparse_order_column);
+*
+*      rocsparse_csr_set_strided_batch(mat_A, batch_count_A, offsets_batch_stride_A, columns_values_batch_stride_A);
+*      rocsparse_dnmat_set_strided_batch(B, batch_count_B, batch_stride_B);
+*      rocsparse_dnmat_set_strided_batch(C, batch_count_C, batch_stride_C);
+*
+*      // Query SpMM buffer
+*      size_t buffer_size;
+*      rocsparse_spmm(handle,
+*                     rocsparse_operation_none,
+*                     rocsparse_operation_none,
+*                     &alpha,
+*                     mat_A,
+*                     mat_B,
+*                     &beta,
+*                     mat_C,
+*                     ttype,
+*                     rocsparse_spmm_alg_default,
+*                     rocsparse_spmm_stage_buffer_size,
+*                     &buffer_size,
+*                     nullptr));
+*
+*      // Allocate buffer
+*      void* buffer;
+*      hipMalloc(&buffer, buffer_size);
+*
+*      rocsparse_spmm(handle,
+*                     rocsparse_operation_none,
+*                     rocsparse_operation_none,
+*                     &alpha,
+*                     mat_A,
+*                     mat_B,
+*                     &beta,
+*                     mat_C,
+*                     ttype,
+*                     rocsparse_spmm_alg_default,
+*                     rocsparse_spmm_stage_preprocess,
+*                     &buffer_size,
+*                     buffer));
+*
+*      // Pointer mode host
+*      rocsparse_spmm(handle,
+*                     rocsparse_operation_none,
+*                     rocsparse_operation_none,
+*                     &alpha,
+*                     mat_A,
+*                     mat_B,
+*                     &beta,
+*                     mat_C,
+*                     ttype,
+*                     rocsparse_spmm_alg_default,
+*                     rocsparse_spmm_stage_compute,
+*                     &buffer_size,
+*                     buffer));
+*
+*      // Clear up on device
+*      hipFree(csr_row_ptr);
+*      hipFree(csr_col_ind);
+*      hipFree(csr_val);
+*      hipFree(B);
+*      hipFree(C);
+*      hipFree(temp_buffer);
+*
+*      rocsparse_destroy_spmat_descr(mat_A);
+*      rocsparse_destroy_dnmat_descr(mat_B);
+*      rocsparse_destroy_dnmat_descr(mat_C);
+*  \endcode
 */
 [[deprecated("This function is deprecated and will be removed in a future release. Use "
              "rocsparse_spmm instead.")]] ROCSPARSE_EXPORT rocsparse_status

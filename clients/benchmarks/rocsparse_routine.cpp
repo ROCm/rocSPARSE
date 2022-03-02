@@ -223,6 +223,9 @@ constexpr const char* rocsparse_routine::to_string() const
 #include "testing_gebsrmm.hpp"
 #include "testing_gemmi.hpp"
 #include "testing_sddmm.hpp"
+#include "testing_spmm_batched_bell.hpp"
+#include "testing_spmm_batched_coo.hpp"
+#include "testing_spmm_batched_csr.hpp"
 #include "testing_spmm_bell.hpp"
 #include "testing_spmm_coo.hpp"
 #include "testing_spmm_csr.hpp"
@@ -408,6 +411,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
     {
         DEFINE_CASE_T(axpyi);
         DEFINE_CASE_IT_X(bellmm, testing_spmm_bell);
+        DEFINE_CASE_IT_X(bellmm_batched, testing_spmm_batched_bell);
         DEFINE_CASE_T(bsric0);
         DEFINE_CASE_T(bsrilu0);
         DEFINE_CASE_T(bsrmm);
@@ -417,6 +421,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_T(bsrxmv);
         DEFINE_CASE_T(bsr2csr);
         DEFINE_CASE_IT_X(coomm, testing_spmm_coo);
+        DEFINE_CASE_IT_X(coomm_batched, testing_spmm_batched_coo);
         DEFINE_CASE_IT_X(coomv, testing_spmv_coo);
         DEFINE_CASE_T_FLOAT_ONLY(coosort);
         DEFINE_CASE_IT_X(coosv, testing_spsv_coo);
@@ -435,6 +440,7 @@ rocsparse_status rocsparse_routine::dispatch_call(const Arguments& arg)
         DEFINE_CASE_IJT_X(csrmv, testing_spmv_csr);
         DEFINE_CASE_T(csrmv_managed);
         DEFINE_CASE_IJT_X(csrmm, testing_spmm_csr);
+        DEFINE_CASE_IJT_X(csrmm_batched, testing_spmm_batched_csr);
         DEFINE_CASE_IJT_X(csrsm, testing_spsm_csr);
         DEFINE_CASE_T_FLOAT_ONLY(csrsort);
         DEFINE_CASE_IJT_X(csrsv, testing_spsv_csr);

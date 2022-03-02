@@ -1,5 +1,5 @@
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -157,7 +157,6 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
                                          size_t*                     buffer_size,
                                          void*                       temp_buffer)
 {
-
     rocsparse_status status;
 
     auto mat_A_format = mat_A->format;
@@ -235,6 +234,9 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
                                             n,
                                             k,
                                             (I)mat_A->nnz,
+                                            (J)mat_A->batch_count,
+                                            (J)mat_A->offsets_batch_stride,
+                                            (I)mat_A->columns_values_batch_stride,
                                             (const T*)alpha,
                                             mat_A->descr,
                                             (const T*)mat_A->val_data,
@@ -242,9 +244,13 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
                                             (const J*)mat_A->col_data,
                                             (const T*)mat_B->values,
                                             (J)mat_B->ld,
+                                            (J)mat_B->batch_count,
+                                            (I)mat_B->batch_stride,
                                             (const T*)beta,
                                             (T*)mat_C->values,
                                             (J)mat_C->ld,
+                                            (J)mat_C->batch_count,
+                                            (I)mat_C->batch_stride,
                                             temp_buffer);
         }
 
@@ -310,6 +316,8 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
                                             (I)mat_C->cols,
                                             (I)mat_A->cols,
                                             (I)mat_A->nnz,
+                                            (I)mat_A->batch_count,
+                                            (I)mat_A->batch_stride,
                                             (const T*)alpha,
                                             mat_A->descr,
                                             (const T*)mat_A->val_data,
@@ -317,9 +325,13 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
                                             (const I*)mat_A->col_data,
                                             (const T*)mat_B->values,
                                             (I)mat_B->ld,
+                                            (I)mat_B->batch_count,
+                                            (I)mat_B->batch_stride,
                                             (const T*)beta,
                                             (T*)mat_C->values,
-                                            (I)mat_C->ld);
+                                            (I)mat_C->ld,
+                                            (I)mat_C->batch_count,
+                                            (I)mat_C->batch_stride);
         }
 
         case rocsparse_spmm_stage_auto:
@@ -435,15 +447,21 @@ rocsparse_status rocsparse_spmm_template(rocsparse_handle            handle,
 
                                                    (I)mat_A->ell_cols,
                                                    (I)mat_A->block_dim,
+                                                   (I)mat_A->batch_count,
+                                                   (I)mat_A->batch_stride,
                                                    (const T*)alpha,
                                                    mat_A->descr,
                                                    (const I*)mat_A->col_data,
                                                    (const T*)mat_A->val_data,
                                                    (const T*)mat_B->values,
                                                    (I)mat_B->ld,
+                                                   (I)mat_B->batch_count,
+                                                   (I)mat_B->batch_stride,
                                                    (const T*)beta,
                                                    (T*)mat_C->values,
                                                    (I)mat_C->ld,
+                                                   (I)mat_C->batch_count,
+                                                   (I)mat_C->batch_stride,
                                                    temp_buffer);
         }
 

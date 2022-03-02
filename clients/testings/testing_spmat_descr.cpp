@@ -214,11 +214,35 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
                             rocsparse_status_invalid_pointer);
     EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(coo, &rows, &cols, nullptr),
                             rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csr, nullptr, &cols, &nnz),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csr, &rows, nullptr, &nnz),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csr, &rows, &cols, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csc, nullptr, &cols, &nnz),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csc, &rows, nullptr, &nnz),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(csc, &rows, &cols, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(ell, nullptr, &cols, &nnz),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(ell, &rows, nullptr, &nnz),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_size(ell, &rows, &cols, nullptr),
+                            rocsparse_status_invalid_pointer);
 
     // rocsparse_spmat_get_format
     EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_format(nullptr, &format),
                             rocsparse_status_invalid_pointer);
     EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_format(coo, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_format(csr, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_format(csc, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_format(ell, nullptr),
                             rocsparse_status_invalid_pointer);
 
     // rocsparse_spmat_get_index_base
@@ -226,11 +250,23 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
                             rocsparse_status_invalid_pointer);
     EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_index_base(coo, nullptr),
                             rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_index_base(csr, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_index_base(csc, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_index_base(ell, nullptr),
+                            rocsparse_status_invalid_pointer);
 
     // rocsparse_spmat_get_values
     EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_values(nullptr, (void**)&val_data),
                             rocsparse_status_invalid_pointer);
     EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_values(coo, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_values(csr, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_values(csc, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_values(ell, nullptr),
                             rocsparse_status_invalid_pointer);
 
     // rocsparse_spmat_set_values
@@ -238,6 +274,75 @@ void testing_spmat_descr_bad_arg(const Arguments& arg)
                             rocsparse_status_invalid_pointer);
     EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_values(coo, nullptr),
                             rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_values(csr, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_values(csc, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_values(ell, nullptr),
+                            rocsparse_status_invalid_pointer);
+
+    int     batch_count                 = safe_size;
+    int64_t batch_stride                = safe_size;
+    int64_t offsets_batch_stride        = safe_size;
+    int64_t columns_values_batch_stride = safe_size;
+
+    // rocsparse_spmat_get_strided_batch
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_strided_batch(nullptr, &batch_count),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_strided_batch(coo, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_strided_batch(csr, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_strided_batch(csc, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_get_strided_batch(ell, nullptr),
+                            rocsparse_status_invalid_pointer);
+
+    // rocsparse_spmat_set_strided_batch
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_strided_batch(nullptr, batch_count),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_strided_batch(coo, -1),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_strided_batch(csr, -1),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_strided_batch(csc, -1),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_strided_batch(ell, -1),
+                            rocsparse_status_invalid_value);
+
+    // rocsparse_coo_set_strided_batch
+    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_strided_batch(nullptr, batch_count, batch_stride),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_strided_batch(coo, -1, batch_stride),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_strided_batch(coo, batch_count, -1),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_coo_set_strided_batch(coo, -1, -1),
+                            rocsparse_status_invalid_value);
+
+    // rocsparse_csr_set_strided_batch
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csr_set_strided_batch(
+            nullptr, batch_count, offsets_batch_stride, columns_values_batch_stride),
+        rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csr_set_strided_batch(csr, -1, offsets_batch_stride, columns_values_batch_stride),
+        rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csr_set_strided_batch(csr, batch_count, -1, columns_values_batch_stride),
+        rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csr_set_strided_batch(csr, batch_count, offsets_batch_stride, -1),
+        rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_csr_set_strided_batch(csr, -1, -1, columns_values_batch_stride),
+        rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_strided_batch(csr, batch_count, -1, -1),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_strided_batch(csr, -1, offsets_batch_stride, -1),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr_set_strided_batch(csr, -1, -1, -1),
+                            rocsparse_status_invalid_value);
 
     // Destroy valid descriptors
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_spmat_descr(coo), rocsparse_status_success);

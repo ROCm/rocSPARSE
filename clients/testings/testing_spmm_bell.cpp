@@ -346,8 +346,7 @@ void testing_spmm_bell(const Arguments& arg)
                 }
             }
 
-            host_coomm<T, I>(rocsparse_spmm_alg_coo_atomic,
-                             M,
+            host_coomm<T, I>(M,
                              N,
                              nnzb * block_dim * block_dim,
                              trans_B,

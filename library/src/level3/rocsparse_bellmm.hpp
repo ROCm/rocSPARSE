@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,15 +91,21 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                            I                         kb,
                                            I                         bell_cols,
                                            I                         bell_block_dim,
+                                           I                         batch_count_A,
+                                           I                         batch_stride_A,
                                            const T*                  alpha,
                                            const rocsparse_mat_descr descr,
                                            const I*                  bell_col_ind,
                                            const T*                  bell_val,
                                            const T*                  B,
                                            I                         ldb,
+                                           I                         batch_count_B,
+                                           I                         batch_stride_B,
                                            const T*                  beta,
                                            T*                        C,
                                            I                         ldc,
+                                           I                         batch_count_C,
+                                           I                         batch_stride_C,
                                            void*                     temp_buffer);
 
 #endif // ROCSPARSE_BELLMM_HPP
