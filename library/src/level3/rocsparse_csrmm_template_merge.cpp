@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,6 +61,8 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                              n,
                                              k,
                                              (J)nnz,
+                                             (J)1,
+                                             (J)0,
                                              alpha_device_host,
                                              descr,
                                              csr_val,
@@ -68,9 +70,13 @@ rocsparse_status rocsparse_csrmm_template_merge(rocsparse_handle          handle
                                              csr_col_ind,
                                              B,
                                              ldb,
+                                             (J)1,
+                                             (J)0,
                                              beta_device_host,
                                              C,
-                                             ldc);
+                                             ldc,
+                                             (J)1,
+                                             (J)0);
 }
 
 #define INSTANTIATE(ITYPE, JTYPE, TTYPE, UTYPE)                                                     \

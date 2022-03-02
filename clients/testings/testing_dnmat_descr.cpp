@@ -78,6 +78,29 @@ void testing_dnmat_descr_bad_arg(const Arguments& arg)
     EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_values(A, nullptr),
                             rocsparse_status_invalid_pointer);
 
+    int     batch_count  = safe_size;
+    int64_t batch_stride = safe_size;
+
+    // rocsparse_dnmat_get_strided_batch
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_get_strided_batch(nullptr, &batch_count, &batch_stride),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_get_strided_batch(A, nullptr, &batch_stride),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_get_strided_batch(A, &batch_count, nullptr),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_get_strided_batch(A, nullptr, nullptr),
+                            rocsparse_status_invalid_pointer);
+
+    // rocsparse_dnmat_set_strided_batch
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(nullptr, batch_count, batch_stride),
+                            rocsparse_status_invalid_pointer);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(A, -1, batch_stride),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(A, batch_count, -1),
+                            rocsparse_status_invalid_value);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dnmat_set_strided_batch(A, -1, -1),
+                            rocsparse_status_invalid_value);
+
     // Destroy valid descriptor
     EXPECT_ROCSPARSE_STATUS(rocsparse_destroy_dnmat_descr(A), rocsparse_status_success);
 }

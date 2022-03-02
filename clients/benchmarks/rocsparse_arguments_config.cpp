@@ -87,6 +87,9 @@ rocsparse_arguments_config::rocsparse_arguments_config()
         this->iters                = static_cast<rocsparse_int>(0);
         this->denseld              = static_cast<rocsparse_int>(0);
         this->batch_count          = static_cast<rocsparse_int>(0);
+        this->batch_count_A        = static_cast<rocsparse_int>(0);
+        this->batch_count_B        = static_cast<rocsparse_int>(0);
+        this->batch_count_C        = static_cast<rocsparse_int>(0);
         this->batch_stride         = static_cast<rocsparse_int>(0);
         this->algo                 = static_cast<uint32_t>(0);
         this->numericboost         = static_cast<int>(0);
@@ -249,7 +252,7 @@ void rocsparse_arguments_config::set_description(options_description& desc)
      "SPARSE function to test. Options:\n"
      "  Level1: axpyi, doti, dotci, gthr, gthrz, roti, sctr\n"
      "  Level2: bsrmv, bsrxmv, bsrsv, coomv, coomv_aos, csrmv, csrmv_managed, csrsv, coosv, ellmv, hybmv, gebsrmv, gemvi\n"
-     "  Level3: bsrmm, bsrsm, gebsrmm, csrmm, coomm, csrsm, coosm, gemmi, sddmm\n"
+     "  Level3: bsrmm, bsrsm, gebsrmm, csrmm, csrmm_batched, coomm, coomm_batched, csrsm, coosm, gemmi, sddmm\n"
      "  Extra: csrgeam, csrgemm, csrgemm_reuse\n"
      "  Preconditioner: bsric0, bsrilu0, csric0, csrilu0, gtsv, gtsv_no_pivot, gtsv_no_pivot_strided_batch, gtsv_interleaved_batch, gpsv_interleaved_batch\n"
      "  Conversion: csr2coo, csr2csc, gebsr2gebsc, csr2ell, csr2hyb, csr2bsr, csr2gebsr\n"
@@ -297,6 +300,18 @@ void rocsparse_arguments_config::set_description(options_description& desc)
     ("batch_count",
      value<rocsparse_int>(&this->batch_count)->default_value(128),
      "Indicates the batch count for batched routines.")
+
+    ("batch_count_A",
+     value<rocsparse_int>(&this->batch_count_A)->default_value(128),
+     "Indicates the batch count for the sparse A matrix in spmm batched routines.")
+
+    ("batch_count_B",
+     value<rocsparse_int>(&this->batch_count_B)->default_value(128),
+     "Indicates the batch count for the dense B matrix in spmm batched routines.")
+
+    ("batch_count_C",
+     value<rocsparse_int>(&this->batch_count_C)->default_value(128),
+     "Indicates the batch count for the dense C matrix in spmm batched routines.")
 
     ("batch_stride",
      value<rocsparse_int>(&this->batch_stride)->default_value(128),

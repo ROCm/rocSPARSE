@@ -28,6 +28,7 @@
 #define ROCSPARSE_FOREACH_ROUTINE			\
 ROCSPARSE_DO_ROUTINE(axpyi)						\
 ROCSPARSE_DO_ROUTINE(bellmm)						\
+ROCSPARSE_DO_ROUTINE(bellmm_batched)					\
 ROCSPARSE_DO_ROUTINE(bsric0)					\
 ROCSPARSE_DO_ROUTINE(bsrilu0)					\
 ROCSPARSE_DO_ROUTINE(bsrmm)					\
@@ -37,6 +38,7 @@ ROCSPARSE_DO_ROUTINE(bsrsv)					\
 ROCSPARSE_DO_ROUTINE(bsrxmv)					\
 ROCSPARSE_DO_ROUTINE(bsr2csr)					\
 ROCSPARSE_DO_ROUTINE(coomm)					\
+ROCSPARSE_DO_ROUTINE(coomm_batched)					\
 ROCSPARSE_DO_ROUTINE(coomv)					\
 ROCSPARSE_DO_ROUTINE(coosort)					\
 ROCSPARSE_DO_ROUTINE(coosv)					\
@@ -55,6 +57,7 @@ ROCSPARSE_DO_ROUTINE(csrgemm_reuse)				\
 ROCSPARSE_DO_ROUTINE(csrmv)					\
 ROCSPARSE_DO_ROUTINE(csrmv_managed)				\
 ROCSPARSE_DO_ROUTINE(csrmm)					\
+ROCSPARSE_DO_ROUTINE(csrmm_batched)					\
 ROCSPARSE_DO_ROUTINE(csrsm)					\
 ROCSPARSE_DO_ROUTINE(csrsort)					\
 ROCSPARSE_DO_ROUTINE(csrsv)					\

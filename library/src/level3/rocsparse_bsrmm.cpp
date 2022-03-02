@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -155,6 +155,9 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                  n,
                                                  k,
                                                  nnz,
+                                                 1,
+                                                 0,
+                                                 0,
                                                  alpha,
                                                  descr,
                                                  bsr_val,
@@ -162,9 +165,13 @@ rocsparse_status rocsparse_bsrmm_template_dispatch(rocsparse_handle          han
                                                  bsr_col_ind,
                                                  B,
                                                  ldb,
+                                                 1,
+                                                 0,
                                                  beta,
                                                  C,
                                                  ldc,
+                                                 1,
+                                                 0,
                                                  nullptr);
     }
 

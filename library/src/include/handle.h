@@ -378,6 +378,11 @@ struct _rocsparse_spmat_descr
     int64_t             block_dim;
     int64_t             ell_cols;
     int64_t             ell_width;
+
+    int64_t batch_count;
+    int64_t batch_stride;
+    int64_t offsets_batch_stride;
+    int64_t columns_values_batch_stride;
 };
 
 struct _rocsparse_dnvec_descr
@@ -401,6 +406,9 @@ struct _rocsparse_dnmat_descr
 
     rocsparse_datatype data_type;
     rocsparse_order    order;
+
+    int64_t batch_count;
+    int64_t batch_stride;
 };
 
 #endif // HANDLE_H

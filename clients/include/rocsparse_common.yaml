@@ -307,6 +307,9 @@ Arguments:
   - iters: rocsparse_int
   - denseld: rocsparse_int
   - batch_count: rocsparse_int
+  - batch_count_A: rocsparse_int
+  - batch_count_B: rocsparse_int
+  - batch_count_C: rocsparse_int
   - batch_stride: rocsparse_int
   - algo: c_uint
   - numericboost: c_int
@@ -413,6 +416,9 @@ Defaults:
   iters: 10
   denseld: -1
   batch_count: -1
+  batch_count_A: -1
+  batch_count_B: -1
+  batch_count_C: -1
   batch_stride: -1
   algo: 0
   numericboost: 0

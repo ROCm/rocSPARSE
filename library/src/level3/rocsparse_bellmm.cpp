@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -158,15 +158,21 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                            I                         kb,
                                            I                         bell_cols,
                                            I                         block_dim,
+                                           I                         batch_count_A,
+                                           I                         batch_stride_A,
                                            const T*                  alpha,
                                            const rocsparse_mat_descr descr,
                                            const I*                  bell_col_ind,
                                            const T*                  bell_val,
                                            const T*                  B,
                                            I                         ldb,
+                                           I                         batch_count_B,
+                                           I                         batch_stride_B,
                                            const T*                  beta,
                                            T*                        C,
                                            I                         ldc,
+                                           I                         batch_count_C,
+                                           I                         batch_stride_C,
                                            void*                     temp_buffer)
 {
     // Check for valid handle and matrix descriptor
@@ -192,15 +198,21 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
               kb,
               bell_cols,
               block_dim,
+              batch_count_A,
+              batch_stride_A,
               LOG_TRACE_SCALAR_VALUE(handle, alpha),
               (const void*&)descr,
               (const void*&)bell_col_ind,
               (const void*&)bell_val,
               (const void*&)B,
               ldb,
+              batch_count_B,
+              batch_stride_B,
               LOG_TRACE_SCALAR_VALUE(handle, beta),
               (const void*&)C,
-              ldc);
+              ldc,
+              batch_count_C,
+              batch_stride_C);
 
     if(rocsparse_enum_utils::is_invalid(trans_A))
     {
@@ -282,6 +294,12 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
     else if(ldc < n && order_C == rocsparse_order_row)
     {
         return rocsparse_status_invalid_size;
+    }
+
+    // Check batch parameters of matrices
+    if(batch_count_A != 1 || batch_count_B != 1 || batch_count_C != 1)
+    {
+        return rocsparse_status_invalid_value;
     }
 
     if(handle->pointer_mode == rocsparse_pointer_mode_device)
@@ -388,15 +406,21 @@ rocsparse_status rocsparse_bellmm_template(rocsparse_handle          handle,
                                                         ITYPE                     kb,             \
                                                         ITYPE                     bell_cols,      \
                                                         ITYPE                     bell_block_dim, \
+                                                        ITYPE                     batch_count_A,  \
+                                                        ITYPE                     batch_stride_A, \
                                                         const TTYPE*              alpha,          \
                                                         const rocsparse_mat_descr descr,          \
                                                         const ITYPE*              bell_col_ind,   \
                                                         const TTYPE*              bell_val,       \
                                                         const TTYPE*              B,              \
                                                         ITYPE                     ldb,            \
+                                                        ITYPE                     batch_count_B,  \
+                                                        ITYPE                     batch_stride_B, \
                                                         const TTYPE*              beta,           \
                                                         TTYPE*                    C,              \
                                                         ITYPE                     ldc,            \
+                                                        ITYPE                     batch_count_C,  \
+                                                        ITYPE                     batch_stride_C, \
                                                         void*                     temp_buffer)
 
 INSTANTIATE(float, int32_t);

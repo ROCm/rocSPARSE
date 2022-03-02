@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2021 Advanced Micro Devices, Inc.
+* Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -33,22 +33,27 @@ template <unsigned int WF_SIZE,
           bool         NT,
           typename I,
           typename T>
-static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation  transB,
-                                                                 I                    nnz,
-                                                                 I                    nstart,
-                                                                 T                    alpha,
-                                                                 const I*             coo_row_ind,
-                                                                 const I*             coo_col_ind,
-                                                                 const T*             coo_val,
-                                                                 const T*             B,
-                                                                 I                    ldb,
-                                                                 T*                   C,
-                                                                 I                    ldc,
-                                                                 rocsparse_order      order,
+static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_operation transB,
+                                                                 I                   nnz,
+                                                                 I                   nstart,
+                                                                 I                   batch_stride_A,
+                                                                 T                   alpha,
+                                                                 const I*            coo_row_ind,
+                                                                 const I*            coo_col_ind,
+                                                                 const T*            coo_val,
+                                                                 const T*            B,
+                                                                 I                   ldb,
+                                                                 I                   batch_stride_B,
+                                                                 T*                  C,
+                                                                 I                   ldc,
+                                                                 I                   batch_stride_C,
+                                                                 rocsparse_order     order,
                                                                  rocsparse_index_base idx_base)
 {
     int tid = hipThreadIdx_x;
     int lid = tid & (WF_SIZE - 1);
+
+    int batch = hipBlockIdx_z;
 
     // Shared memory to hold row indices and values for segmented reduction
     __shared__ I shared_row[WF_SIZE];
@@ -72,9 +77,15 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
     while(idx < offset + LOOPS * WF_SIZE)
     {
         // Get corresponding COO entry
-        I r = (idx < nnz) ? rocsparse_nontemporal_load(coo_row_ind + idx) - idx_base : -1;
-        I c = (idx < nnz) ? rocsparse_nontemporal_load(coo_col_ind + idx) - idx_base : 0;
-        T v = (idx < nnz) ? alpha * rocsparse_nontemporal_load(coo_val + idx) : static_cast<T>(0);
+        I r = (idx < nnz) ? rocsparse_nontemporal_load(coo_row_ind + idx + batch_stride_A * batch)
+                                - idx_base
+                          : -1;
+        I c = (idx < nnz) ? rocsparse_nontemporal_load(coo_col_ind + idx + batch_stride_A * batch)
+                                - idx_base
+                          : 0;
+        T v = (idx < nnz)
+                  ? alpha * rocsparse_nontemporal_load(coo_val + idx + batch_stride_A * batch)
+                  : static_cast<T>(0);
 
         row = r;
 
@@ -84,14 +95,16 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
             {
                 for(I p = 0; p < COLS; p++)
                 {
-                    val[p] = v * rocsparse_conj(B[c * ldb + (col_offset + p)]);
+                    val[p]
+                        = v
+                          * rocsparse_conj(B[c * ldb + (col_offset + p) + batch_stride_B * batch]);
                 }
             }
             else
             {
                 for(I p = 0; p < COLS; p++)
                 {
-                    val[p] = v * B[c * ldb + (col_offset + p)];
+                    val[p] = v * B[c * ldb + (col_offset + p) + batch_stride_B * batch];
                 }
             }
         }
@@ -101,14 +114,16 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
             {
                 for(I p = 0; p < COLS; p++)
                 {
-                    val[p] = v * rocsparse_conj(B[(col_offset + p) * ldb + c]);
+                    val[p]
+                        = v
+                          * rocsparse_conj(B[(col_offset + p) * ldb + c + batch_stride_B * batch]);
                 }
             }
             else
             {
                 for(I p = 0; p < COLS; p++)
                 {
-                    val[p] = v * B[(col_offset + p) * ldb + c];
+                    val[p] = v * B[(col_offset + p) * ldb + c + batch_stride_B * batch];
                 }
             }
         }
@@ -132,14 +147,16 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(&C[prevrow + (col_offset + p) * ldc], shared_val[p][WF_SIZE - 1]);
+                        atomicAdd(&C[prevrow + (col_offset + p) * ldc + batch_stride_C * batch],
+                                  shared_val[p][WF_SIZE - 1]);
                     }
                 }
                 else
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(&C[(col_offset + p) + prevrow * ldc], shared_val[p][WF_SIZE - 1]);
+                        atomicAdd(&C[(col_offset + p) + prevrow * ldc + batch_stride_C * batch],
+                                  shared_val[p][WF_SIZE - 1]);
                     }
                 }
             }
@@ -189,14 +206,16 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(&C[row + (col_offset + p) * ldc], val[p]);
+                        atomicAdd(&C[row + (col_offset + p) * ldc + batch_stride_C * batch],
+                                  val[p]);
                     }
                 }
                 else
                 {
                     for(I p = 0; p < COLS; p++)
                     {
-                        atomicAdd(&C[(col_offset + p) + row * ldc], val[p]);
+                        atomicAdd(&C[(col_offset + p) + row * ldc + batch_stride_C * batch],
+                                  val[p]);
                     }
                 }
             }
@@ -212,14 +231,14 @@ static ROCSPARSE_DEVICE_ILF void coommnn_segmented_atomic_device(rocsparse_opera
         {
             for(I p = 0; p < COLS; p++)
             {
-                atomicAdd(&C[row + (col_offset + p) * ldc], val[p]);
+                atomicAdd(&C[row + (col_offset + p) * ldc + batch_stride_C * batch], val[p]);
             }
         }
         else
         {
             for(I p = 0; p < COLS; p++)
             {
-                atomicAdd(&C[(col_offset + p) + row * ldc], val[p]);
+                atomicAdd(&C[(col_offset + p) + row * ldc + batch_stride_C * batch], val[p]);
             }
         }
     }
@@ -236,59 +255,82 @@ __launch_bounds__(WF_SIZE) ROCSPARSE_KERNEL
     void coommnn_segmented_atomic(rocsparse_operation trans_B,
                                   I                   nnz,
                                   I                   n,
+                                  I                   batch_stride_A,
                                   U                   alpha_device_host,
                                   const I* __restrict__ coo_row_ind,
                                   const I* __restrict__ coo_col_ind,
                                   const T* __restrict__ coo_val,
                                   const T* __restrict__ B,
                                   I ldb,
+                                  I batch_stride_B,
                                   T* __restrict__ C,
                                   I                    ldc,
+                                  I                    batch_stride_C,
                                   rocsparse_order      order,
                                   rocsparse_index_base idx_base)
 {
     auto alpha = load_scalar_device_host(alpha_device_host);
-    coommnn_segmented_atomic_device<WF_SIZE, LOOPS, COLS, NT>(
-        trans_B, nnz, n, alpha, coo_row_ind, coo_col_ind, coo_val, B, ldb, C, ldc, order, idx_base);
+    coommnn_segmented_atomic_device<WF_SIZE, LOOPS, COLS, NT>(trans_B,
+                                                              nnz,
+                                                              n,
+                                                              batch_stride_A,
+                                                              alpha,
+                                                              coo_row_ind,
+                                                              coo_col_ind,
+                                                              coo_val,
+                                                              B,
+                                                              ldb,
+                                                              batch_stride_B,
+                                                              C,
+                                                              ldc,
+                                                              batch_stride_C,
+                                                              order,
+                                                              idx_base);
 }
 
 #define LAUNCH_COOMMNN_SEGMENTED_ATOMIC_MAIN_KERNEL(WF_SIZE, LOOPS, COLS, NT) \
     hipLaunchKernelGGL((coommnn_segmented_atomic<WF_SIZE, LOOPS, COLS, NT>),  \
-                       dim3(nblocks, (main - 1) / COLS + 1),                  \
+                       dim3(nblocks, (main - 1) / COLS + 1, batch_count_C),   \
                        dim3(WF_SIZE),                                         \
                        0,                                                     \
                        stream,                                                \
                        trans_B,                                               \
                        nnz,                                                   \
                        (I)0,                                                  \
+                       batch_stride_A,                                        \
                        alpha_device_host,                                     \
                        coo_row_ind,                                           \
                        coo_col_ind,                                           \
                        coo_val,                                               \
                        B,                                                     \
                        ldb,                                                   \
+                       batch_stride_B,                                        \
                        C,                                                     \
                        ldc,                                                   \
+                       batch_stride_C,                                        \
                        order,                                                 \
                        descr->base);
 
 #define LAUNCH_COOMMNN_SEGMENTED_ATOMIC_REMAINDER_KERNEL(WF_SIZE, LOOPS, COLS, NT) \
     hipLaunchKernelGGL((coommnn_segmented_atomic<WF_SIZE, LOOPS, COLS, NT>),       \
-                       dim3(nblocks),                                              \
+                       dim3(nblocks, 1, batch_count_C),                            \
                        dim3(WF_SIZE),                                              \
                        0,                                                          \
                        stream,                                                     \
                        trans_B,                                                    \
                        nnz,                                                        \
                        main,                                                       \
+                       batch_stride_A,                                             \
                        alpha_device_host,                                          \
                        coo_row_ind,                                                \
                        coo_col_ind,                                                \
                        coo_val,                                                    \
                        B,                                                          \
                        ldb,                                                        \
+                       batch_stride_B,                                             \
                        C,                                                          \
                        ldc,                                                        \
+                       batch_stride_C,                                             \
                        order,                                                      \
                        descr->base);
 
@@ -301,6 +343,8 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
                                                            I                   n,
                                                            I                   k,
                                                            I                   nnz,
+                                                           I                   batch_count_A,
+                                                           I                   batch_stride_A,
                                                            U                   alpha_device_host,
                                                            const rocsparse_mat_descr descr,
                                                            const T*                  coo_val,
@@ -308,9 +352,13 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
                                                            const I*                  coo_col_ind,
                                                            const T*                  B,
                                                            I                         ldb,
+                                                           I                         batch_count_B,
+                                                           I                         batch_stride_B,
                                                            U  beta_device_host,
                                                            T* C,
-                                                           I  ldc)
+                                                           I  ldc,
+                                                           I  batch_count_C,
+                                                           I  batch_stride_C)
 {
     // Stream
     hipStream_t stream = handle->stream;
@@ -578,6 +626,8 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
         ITYPE                     n,                                                          \
         ITYPE                     k,                                                          \
         ITYPE                     nnz,                                                        \
+        ITYPE                     batch_count_A,                                              \
+        ITYPE                     batch_stride_A,                                             \
         UTYPE                     alpha_device_host,                                          \
         const rocsparse_mat_descr descr,                                                      \
         const TTYPE*              coo_val,                                                    \
@@ -585,9 +635,13 @@ rocsparse_status rocsparse_coomm_template_segmented_atomic(rocsparse_handle    h
         const ITYPE*              coo_col_ind,                                                \
         const TTYPE*              B,                                                          \
         ITYPE                     ldb,                                                        \
+        ITYPE                     batch_count_B,                                              \
+        ITYPE                     batch_stride_B,                                             \
         UTYPE                     beta_device_host,                                           \
         TTYPE*                    C,                                                          \
-        ITYPE                     ldc);
+        ITYPE                     ldc,                                                        \
+        ITYPE                     batch_count_C,                                              \
+        ITYPE                     batch_stride_C);
 
 INSTANTIATE(int32_t, float, float);
 INSTANTIATE(int32_t, double, double);
