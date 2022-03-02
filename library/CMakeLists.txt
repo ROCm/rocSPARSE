@@ -129,6 +129,7 @@ rocm_install_symlink_subdir(rocsparse)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip-rocclr (>= 3.5.0)")
 set(CPACK_RPM_PACKAGE_REQUIRES "hip-rocclr >= 3.5.0")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.md")
+set(CPACK_RPM_PACKAGE_LICENSE "MIT")
 
 if(WIN32)
   set(CPACK_SOURCE_GENERATOR "ZIP")

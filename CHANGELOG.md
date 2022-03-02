@@ -2,7 +2,7 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
-## (Unreleased) rocSPARSE 2.0.0
+## rocSPARSE 2.0.0 for ROCm 5.0.0
 ### Added
 - csrmv, coomv, ellmv, hybmv for (conjugate) transposed matrices
 - csrmv for symmetric matrices
