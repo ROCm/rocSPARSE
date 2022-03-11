@@ -2,6 +2,18 @@
 
 Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](https://rocsparse.readthedocs.io/en/latest/).
 
+## rocSPARSE 2.1.0 for ROCm 5.1.0
+### Added
+- gtsv_interleaved_batch 
+- gpsv_interleaved_batch
+- SpGEMM_reuse
+- Allow copying of mat info struct
+### Improved
+- Optimization for SDDMM
+- Allow unsorted matrices in csrgemm multipass algorithm
+### Known Issues
+- none
+
 ## rocSPARSE 2.0.0 for ROCm 5.0.0
 ### Added
 - csrmv, coomv, ellmv, hybmv for (conjugate) transposed matrices
