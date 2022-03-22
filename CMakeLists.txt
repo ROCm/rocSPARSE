@@ -174,6 +174,32 @@ set(rocsparse_SOVERSION 0.1)
 
 if( BUILD_CLIENTS_SAMPLES OR BUILD_CLIENTS_TESTS OR BUILD_CLIENTS_BENCHMARKS )
   set( BUILD_CLIENTS ON )
+  if(NOT CLIENTS_OS)
+    rocm_set_os_id(CLIENTS_OS)
+    string(TOLOWER "${CLIENTS_OS}" CLIENTS_OS)
+    rocm_read_os_release(CLIENTS_OS_VERSION VERSION_ID)
+  endif()
+  set(GFORTRAN_PKG "gcc-gfortran")
+  if(CLIENTS_OS STREQUAL "sles")
+    set(GFORTRAN_PKG "gcc-fortran")
+  elseif(CLIENTS_OS STREQUAL "centos" AND CLIENTS_OS_VERSION EQUAL 7)
+    set(GFORTRAN_PKG "devtoolset-7-gcc-gfortran")
+  endif()
+
+  rocm_package_setup_component(clients)
+  rocm_package_setup_client_component(clients-common)
+  if( BUILD_CLIENTS_TESTS )
+    rocm_package_setup_client_component(tests)
+  endif()
+  if( BUILD_CLIENTS_BENCHMARKS )
+    rocm_package_setup_client_component(benchmarks)
+  endif()
+  if(BUILD_FORTRAN_CLIENTS)
+    rocm_package_add_rpm_dependencies(COMPONENT tests DEPENDS "${GFORTRAN_PKG}")
+    rocm_package_add_deb_dependencies(COMPONENT tests DEPENDS "gfortran")
+    rocm_package_add_rpm_dependencies(COMPONENT benchmarks DEPENDS "${GFORTRAN_PKG}")
+    rocm_package_add_deb_dependencies(COMPONENT benchmarks DEPENDS "gfortran")
+  endif()
 endif()
 
 # rocSPARSE library
@@ -183,6 +209,40 @@ add_subdirectory(library)
 if(BUILD_CLIENTS)
   add_subdirectory(clients)
 endif()
+
+# Package specific CPACK vars
+rocm_package_add_dependencies(DEPENDS "hip-rocclr >= 3.5.0")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
+set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+
+if(WIN32)
+  set(CPACK_SOURCE_GENERATOR "ZIP")
+  set(CPACK_GENERATOR "ZIP")
+  set(CMAKE_INSTALL_PREFIX "C:/hipSDK" CACHE PATH "Install path" FORCE)
+  set(INSTALL_PREFIX "C:/hipSDK")
+  set(CPACK_SET_DESTDIR OFF)
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "C:/hipSDK")
+  set(CPACK_PACKAGING_INSTALL_PREFIX "")
+  set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
+else()
+  if(NOT CPACK_PACKAGING_INSTALL_PREFIX)
+    set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+  endif()
+endif()
+set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include")
+
+# Package name
+set(package_name rocsparse)
+
+set(ROCSPARSE_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file")
+
+rocm_create_package(
+  NAME ${package_name}
+  DESCRIPTION "Radeon Open Compute SPARSE library"
+  MAINTAINER "rocSPARSE Maintainer <rocsparse-maintainer@amd.com>"
+  LDCONFIG
+  LDCONFIG_DIR ${ROCSPARSE_CONFIG_DIR}
+)
 
 #
 # ADDITIONAL TARGETS FOR CODE COVERAGE

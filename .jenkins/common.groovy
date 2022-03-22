@@ -105,39 +105,29 @@ def runPackageCommand(platform, project, String dirmode = "release")
 {
     def command
 
+    String pkgType
+    String pkgInfoCommand
     if(platform.jenkinsLabel.contains('centos') || platform.jenkinsLabel.contains('sles'))
     {
-        command = """
-                set -x
-                cd ${project.paths.project_build_prefix}/build/${dirmode}
-                make package
-                mkdir -p package
-                mv *.rpm package/
-                rpm -qlp package/*.rpm
-            """
-
-        platform.runCommand(this, command)
-        platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/${dirmode}/package/*.rpm""")
-    }
-    else if(platform.jenkinsLabel.contains('hip-clang'))
-    {
-        packageCommand = null
+        pkgType = "rpm"
+        pkgInfoCommand = "rpm -qlp package/*.rpm"
     }
     else
     {
-        command = """
-                set -x
-                cd ${project.paths.project_build_prefix}/build/${dirmode}
-                make package
-                make package_clients
-                mkdir -p package
-                mv *.deb package/
-                mv clients/*.deb package/
-            """
+        pkgType = "deb"
+        pkgInfoCommand = "for pkg in package/*.deb; do dpkg -I \$pkg; dpkg -c \$pkg; done"
+    }
+    command = """
+            set -x
+            cd ${project.paths.project_build_prefix}/build/${dirmode}
+            make package
+            mkdir -p package
+            mv *.${pkgType} package/
+            ${pkgInfoCommand}
+        """
 
         platform.runCommand(this, command)
-        platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/${dirmode}/package/*.deb""")
-    }
+        platform.archiveArtifacts(this, """${project.paths.project_build_prefix}/build/${dirmode}/package/*.${pkgType}""")
 }
 
 return this

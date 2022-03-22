@@ -18,6 +18,7 @@ Full documentation for rocSPARSE is available at [rocsparse.readthedocs.io](http
 ### Added
 - csrmv, coomv, ellmv, hybmv for (conjugate) transposed matrices
 - csrmv for symmetric matrices
+- Packages for test and benchmark executables on all supported OSes using CPack.
 ### Changed
 - spmm\_ex is now deprecated and will be removed in the next major release
 ### Improved

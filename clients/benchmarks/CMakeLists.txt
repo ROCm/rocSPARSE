@@ -177,3 +177,5 @@ endif()
 
 # Set benchmark output directory
 set_target_properties(rocsparse-bench PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
+
+rocm_install(TARGETS rocsparse-bench COMPONENT benchmarks)
