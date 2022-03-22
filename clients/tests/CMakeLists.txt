@@ -317,6 +317,7 @@ endif()
 # Set test output directory
 set_target_properties(rocsparse-test PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging")
 
+rocm_install(TARGETS rocsparse-test COMPONENT tests)
 
 string(REGEX REPLACE ".cpp" ".yaml" ROCSPARSE_TEST_YAMLS "${ROCSPARSE_TEST_SOURCES}")
 
@@ -330,6 +331,8 @@ add_custom_target(rocsparse-test-data
   DEPENDS "${ROCSPARSE_TEST_DATA}" )
 
 add_dependencies(rocsparse-test  rocsparse-test-data rocsparse-common)
+
+rocm_install(FILES ${ROCSPARSE_TEST_DATA} DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT tests)
 
 if (WIN32)
   # for now adding in all .dll as dependency chain is not cmake based on win32
