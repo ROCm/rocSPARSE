@@ -32,7 +32,7 @@ endif()
 
 # Configure a header file to pass the rocSPARSE version
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/rocsparse-version.h.in"
-               "${PROJECT_BINARY_DIR}/include/rocsparse-version.h"
+               "${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-version.h"
 )
 
 # Public rocSPARSE headers
@@ -42,7 +42,7 @@ set(rocsparse_headers_public
   include/rocsparse-types.h
   include/rocsparse-complex-types.h
   include/rocsparse.h
-  ${PROJECT_BINARY_DIR}/include/rocsparse-version.h
+  ${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-version.h
 )
 
 source_group("Header Files\\Public" FILES ${rocsparse_headers_public})
@@ -58,7 +58,7 @@ include(src/CMakeLists.txt)
 
 if (NOT WIN32)
 # Set Fortran module output directory
-set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
+set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include/rocsparse)
 
 # Create rocSPARSE Fortran module
 add_library(rocsparse_fortran OBJECT ${rocsparse_fortran_source})
@@ -79,6 +79,7 @@ target_include_directories(rocsparse
                            PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/include>
                                    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/library/include>
                            PUBLIC  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+			   	   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/rocsparse>
                                    $<INSTALL_INTERFACE:include>
 )
 
@@ -99,28 +100,61 @@ endif()
 
 # Generate export header
 include(GenerateExportHeader)
-generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse-export.h)
+generate_export_header(rocsparse EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/include/rocsparse/rocsparse-export.h)
+
+
+if (BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
+  rocm_wrap_header_file(
+    rocsparse-version.h rocsparse-export.h
+    GUARDS SYMLINK WRAPPER
+    WRAPPER_LOCATIONS include rocsparse/include
+  )
+endif( )
+
+
 
 # Force installation of .f module file
 rocm_install(FILES "${CMAKE_SOURCE_DIR}/library/src/rocsparse.f90"
               "${CMAKE_SOURCE_DIR}/library/src/rocsparse_enums.f90"
-        DESTINATION "rocsparse/include"
+        DESTINATION "include/rocsparse"
 )
 
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/library/include ${PROJECT_BINARY_DIR}/include/rocsparse)
 # Install targets
 rocm_install_targets(TARGETS rocsparse
                      INCLUDE
-                       ${CMAKE_SOURCE_DIR}/library/include
                        ${CMAKE_BINARY_DIR}/include
-                     PREFIX rocsparse
 )
+
+if(BUILD_FILE_REORG_BACKWARD_COMPATIBILITY)
+  rocm_install(
+    DIRECTORY
+       "${PROJECT_BINARY_DIR}/rocsparse"
+        DESTINATION "." )
+  if ( NOT WIN32 )
+
+    #Create SymLink for Fortran Object Module for backward compatibility
+    rocm_install(
+      CODE "
+        set(PREFIX \$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX})
+	set(INPUT_FILES \${PREFIX}/include/rocsparse/rocsparse.f90 \${PREFIX}/include/rocsparse/rocsparse_enums.f90)
+        set(SYMLINK_LOCATIONS \${PREFIX}/rocsparse/include \${PREFIX}/include)
+	foreach(INPUT_FILE IN LISTS INPUT_FILES)
+          foreach(LOCATION IN LISTS SYMLINK_LOCATIONS)
+            file(MAKE_DIRECTORY \${LOCATION})
+            execute_process(COMMAND ln -sfr \${INPUT_FILE} \${LOCATION})
+            message(STATUS \"Created symlink in \${LOCATION} to \${INPUT_FILE}.\")
+          endforeach()
+        endforeach()
+        "
+    )
+  endif() #NOT WIN32
+
+  message( STATUS "Backward Compatible Sym Link Created for include directories" )
+endif()
 
 # Export targets
 rocm_export_targets(TARGETS roc::rocsparse
-                    PREFIX rocsparse
                     DEPENDS PACKAGE hip
                     NAMESPACE roc::
 )
-
-# Symbolic links
-rocm_install_symlink_subdir(rocsparse)
