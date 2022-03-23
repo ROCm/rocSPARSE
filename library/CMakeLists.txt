@@ -158,39 +158,3 @@ rocm_export_targets(TARGETS roc::rocsparse
                     DEPENDS PACKAGE hip
                     NAMESPACE roc::
 )
-
-
-# Package specific CPACK vars
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "hip-rocclr (>= 3.5.0)")
-set(CPACK_RPM_PACKAGE_REQUIRES "hip-rocclr >= 3.5.0")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE.md")
-set(CPACK_RPM_PACKAGE_LICENSE "MIT")
-
-if(WIN32)
-  set(CPACK_SOURCE_GENERATOR "ZIP")
-  set(CPACK_GENERATOR "ZIP")
-  set(CMAKE_INSTALL_PREFIX "C:/hipSDK" CACHE PATH "Install path" FORCE)
-  set(INSTALL_PREFIX "C:/hipSDK")
-  set(CPACK_SET_DESTDIR OFF)
-  set(CPACK_PACKAGE_INSTALL_DIRECTORY "C:/hipSDK")
-  set(CPACK_PACKAGING_INSTALL_PREFIX "")
-  set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
-else()
-  if(NOT CPACK_PACKAGING_INSTALL_PREFIX)
-    set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
-  endif()
-endif()
-set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "\${CPACK_PACKAGING_INSTALL_PREFIX}" "\${CPACK_PACKAGING_INSTALL_PREFIX}/include")
-
-# Package name
-set(package_name rocsparse)
-
-set(ROCSPARSE_CONFIG_DIR "\${CPACK_PACKAGING_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" CACHE PATH "Path placed into ldconfig file")
-
-rocm_create_package(
-  NAME ${package_name}
-  DESCRIPTION "Radeon Open Compute SPARSE library"
-  MAINTAINER "rocSPARSE Maintainer <rocsparse-maintainer@amd.com>"
-  LDCONFIG
-  LDCONFIG_DIR ${ROCSPARSE_CONFIG_DIR}
-)
