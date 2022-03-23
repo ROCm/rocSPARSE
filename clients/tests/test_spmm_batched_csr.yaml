@@ -112,7 +112,7 @@ Tests:
   category: pre_checkin
   function: spmm_batched_csr
   indextype: *i32_i64
-  precision: *double_only_precisions_complex
+  precision: *double_only_precisions
   M: 1
   N: [16]
   K: 1
