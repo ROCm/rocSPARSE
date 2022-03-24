@@ -111,26 +111,6 @@ Tests:
 - name: spmm_batched_csr_file
   category: pre_checkin
   function: spmm_batched_csr
-  indextype: *i32_i64
-  precision: *double_only_precisions
-  M: 1
-  N: [16]
-  K: 1
-  batch_count_A: [1]
-  batch_count_B: [28]
-  batch_count_C: [28]
-  alpha_beta: *alpha_beta_range_checkin
-  transA: [rocsparse_operation_transpose]
-  transB: [rocsparse_operation_transpose]
-  baseA: [rocsparse_index_base_zero]
-  matrix: [rocsparse_matrix_file_rocalution]
-  spmm_alg: [rocsparse_spmm_alg_csr]
-  order: [rocsparse_order_row]
-  filename: [mplate]
-
-- name: spmm_batched_csr_file
-  category: pre_checkin
-  function: spmm_batched_csr
   indextype: *i32i32_i64i32_i64i64
   precision: *double_only_precisions
   M: 1
