@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -72,6 +72,40 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
+
+#
+# For testing float specializations.
+#
+- name: bsrmv
+  category: pre_checkin
+  function: bsrmv
+  precision: *single_precision
+  M: [256, 1024]
+  N: [256]
+  block_dim: [5, 8]
+  alpha_beta: *alpha_beta_range_checkin
+  direction: [rocsparse_direction_row, rocsparse_direction_column]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_random]
+
+- name: bsrmv_file
+  category: pre_checkin
+  function: bsrmv
+  precision: *single_precision
+  M: 1
+  N: 1
+  block_dim: [5, 8]
+  alpha_beta: *alpha_beta_range_checkin
+  direction: [rocsparse_direction_column]
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  filename: [scircuit,
+             nos3,
+             nos5,
+             nos7]
+
 
 #
 # For code coverage
