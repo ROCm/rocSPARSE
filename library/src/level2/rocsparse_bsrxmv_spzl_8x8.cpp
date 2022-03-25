@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,114 @@
  * ************************************************************************ */
 
 #include "rocsparse_bsrxmv_spzl.hpp"
+
+template <unsigned int BLOCKSIZE, rocsparse_direction DIR>
+__device__ void sbsrxmvn_8x8_device(rocsparse_int mb,
+                                    float         alpha,
+                                    rocsparse_int size_of_mask,
+                                    const rocsparse_int* __restrict__ bsr_mask_ptr,
+                                    const rocsparse_int* __restrict__ bsr_row_ptr,
+                                    const rocsparse_int* __restrict__ bsr_end_ptr,
+                                    const rocsparse_int* __restrict__ bsr_col_ind,
+                                    const float* __restrict__ bsr_val,
+                                    const float* __restrict__ x,
+                                    float beta,
+                                    float* __restrict__ y,
+                                    rocsparse_index_base idx_base)
+
+{
+    static constexpr int block_size = 8;
+
+#define A_OFFROW(i, j, k) bsr_val[(j) + ((i)*block_size) + ((uint64_t)(k)*block_size * block_size)]
+#define A_OFFCOL(i, j, k) bsr_val[(i) + ((j)*block_size) + ((uint64_t)(k)*block_size * block_size)]
+
+    int const local_i = threadIdx.x % block_size;
+    int const local_j = threadIdx.x / block_size;
+
+    int row = blockIdx.x * blockDim.y + threadIdx.y;
+    if(bsr_mask_ptr != nullptr)
+    {
+        row = bsr_mask_ptr[row] - idx_base;
+    }
+
+    if((row < mb) && (local_j < block_size))
+    {
+        const int global_row = local_i + row * block_size;
+
+        const rocsparse_int offset_begin = bsr_row_ptr[row] - idx_base;
+        const rocsparse_int offset_end   = (bsr_end_ptr == nullptr)
+                                               ? (bsr_row_ptr[row + 1] - idx_base)
+                                               : (bsr_end_ptr[row] - idx_base);
+
+        float fk = static_cast<float>(0);
+        if(DIR == rocsparse_direction_row)
+        {
+#pragma unroll 4
+            for(rocsparse_int offset = offset_begin; offset < offset_end; offset++)
+            {
+                const rocsparse_int jam0 = bsr_col_ind[offset] - idx_base;
+                fk                       = rocsparse_fma(
+                    A_OFFROW(local_i, local_j, offset), x[local_j + jam0 * block_size], fk);
+            }
+        }
+        else
+        {
+#pragma unroll 4
+            for(rocsparse_int offset = offset_begin; offset < offset_end; offset++)
+            {
+                const rocsparse_int jam0 = bsr_col_ind[offset] - idx_base;
+                fk                       = rocsparse_fma(
+                    A_OFFCOL(local_i, local_j, offset), x[local_j + jam0 * block_size], fk);
+            }
+        }
+
+        // Reduction along the subcolumns, threads with l=0 hold the complete sum
+        float f1 = fk;
+#pragma unroll 7
+        for(int s = 1; s < 8; ++s)
+            f1 = f1 + __shfl(fk, local_i + s * block_size, 64);
+
+        f1 = beta * y[global_row] + alpha * f1;
+        if(local_j == 0)
+        {
+            y[global_row] = f1;
+        }
+    }
+}
+
+template <unsigned int BLOCKSIZE, rocsparse_direction DIR, typename U>
+__launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
+    void sbsrxmvn_8x8_kernel(rocsparse_int mb,
+                             U             alpha_device_host,
+                             rocsparse_int size_of_mask,
+                             const rocsparse_int* __restrict__ bsr_mask_ptr,
+                             const rocsparse_int* __restrict__ bsr_row_ptr,
+                             const rocsparse_int* __restrict__ bsr_end_ptr,
+                             const rocsparse_int* __restrict__ bsr_col_ind,
+                             const float* __restrict__ bsr_val,
+                             const float* __restrict__ x,
+                             U beta_device_host,
+                             float* __restrict__ y,
+                             rocsparse_index_base idx_base)
+{
+    auto alpha = load_scalar_device_host(alpha_device_host);
+    auto beta  = load_scalar_device_host(beta_device_host);
+    if(alpha != static_cast<float>(0) || beta != static_cast<float>(1))
+    {
+        sbsrxmvn_8x8_device<BLOCKSIZE, DIR>(mb,
+                                            alpha,
+                                            size_of_mask,
+                                            bsr_mask_ptr,
+                                            bsr_row_ptr,
+                                            bsr_end_ptr,
+                                            bsr_col_ind,
+                                            bsr_val,
+                                            x,
+                                            beta,
+                                            y,
+                                            idx_base);
+    }
+}
 
 // BSRXMV kernel for BSR block dimension of 8
 template <unsigned int BLOCKSIZE, typename T>
@@ -187,6 +295,147 @@ __launch_bounds__(BLOCKSIZE) ROCSPARSE_KERNEL
     }
 }
 
+template <typename T>
+struct kernels_type_dispatch
+{
+    template <typename U>
+    static void bsrxmvn_8x8(rocsparse_handle     handle,
+                            rocsparse_direction  dir,
+                            rocsparse_int        mb,
+                            rocsparse_int        nnzb,
+                            U                    alpha_device_host,
+                            rocsparse_int        size_of_mask,
+                            const rocsparse_int* bsr_mask_ptr,
+                            const rocsparse_int* bsr_row_ptr,
+                            const rocsparse_int* bsr_end_ptr,
+                            const rocsparse_int* bsr_col_ind,
+                            const T*             bsr_val,
+                            const T*             x,
+                            U                    beta_device_host,
+                            T*                   y,
+                            rocsparse_index_base base)
+    {
+        const rocsparse_int size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
+        hipLaunchKernelGGL((bsrxmvn_8x8_kernel<128>),
+                           dim3(size),
+                           dim3(128),
+                           0,
+                           handle->stream,
+                           mb,
+                           dir,
+                           alpha_device_host,
+                           size_of_mask,
+                           bsr_mask_ptr,
+                           bsr_row_ptr,
+                           bsr_end_ptr,
+                           bsr_col_ind,
+                           bsr_val,
+                           x,
+                           beta_device_host,
+                           y,
+                           base);
+    }
+};
+
+template <>
+struct kernels_type_dispatch<float>
+{
+    template <typename U>
+    static void bsrxmvn_8x8(rocsparse_handle     handle,
+                            rocsparse_direction  dir,
+                            rocsparse_int        mb,
+                            rocsparse_int        nnzb,
+                            U                    alpha_device_host,
+                            rocsparse_int        size_of_mask,
+                            const rocsparse_int* bsr_mask_ptr,
+                            const rocsparse_int* bsr_row_ptr,
+                            const rocsparse_int* bsr_end_ptr,
+                            const rocsparse_int* bsr_col_ind,
+                            const float*         bsr_val,
+                            const float*         x,
+                            U                    beta_device_host,
+                            float*               y,
+                            rocsparse_index_base base)
+    {
+
+        const int wsize = handle->wavefront_size;
+        if(wsize == 32)
+        {
+            const rocsparse_int size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
+            hipLaunchKernelGGL((bsrxmvn_8x8_kernel<128>),
+                               dim3(size),
+                               dim3(128),
+                               0,
+                               handle->stream,
+                               mb,
+                               dir,
+                               alpha_device_host,
+                               size_of_mask,
+                               bsr_mask_ptr,
+                               bsr_row_ptr,
+                               bsr_end_ptr,
+                               bsr_col_ind,
+                               bsr_val,
+                               x,
+                               beta_device_host,
+                               y,
+                               base);
+        }
+        else
+        {
+            static constexpr int nthreads_per_warp = 64;
+            static constexpr int nwarps_per_block  = 4;
+            const rocsparse_int  size              = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
+
+            dim3 const block2d_dim(nthreads_per_warp, nwarps_per_block);
+            dim3 const grid1d_dim((size - 1) / nwarps_per_block + 1);
+
+            if(rocsparse_direction_row == dir)
+            {
+                hipLaunchKernelGGL((sbsrxmvn_8x8_kernel<nthreads_per_warp * nwarps_per_block,
+                                                        rocsparse_direction_row>),
+                                   grid1d_dim,
+                                   block2d_dim,
+                                   0,
+                                   handle->stream,
+                                   mb,
+                                   alpha_device_host,
+                                   size_of_mask,
+                                   bsr_mask_ptr,
+                                   bsr_row_ptr,
+                                   bsr_end_ptr,
+                                   bsr_col_ind,
+                                   bsr_val,
+                                   x,
+                                   beta_device_host,
+                                   y,
+                                   base);
+            }
+            else
+            {
+                hipLaunchKernelGGL((sbsrxmvn_8x8_kernel<nthreads_per_warp * nwarps_per_block,
+                                                        rocsparse_direction_column>),
+                                   grid1d_dim,
+                                   block2d_dim,
+                                   0,
+                                   handle->stream,
+                                   mb,
+                                   alpha_device_host,
+                                   size_of_mask,
+                                   bsr_mask_ptr,
+                                   bsr_row_ptr,
+                                   bsr_end_ptr,
+                                   bsr_col_ind,
+                                   bsr_val,
+                                   x,
+                                   beta_device_host,
+                                   y,
+                                   base);
+            }
+        }
+    }
+};
+
 template <typename T, typename U>
 void bsrxmvn_8x8(rocsparse_handle     handle,
                  rocsparse_direction  dir,
@@ -204,25 +453,21 @@ void bsrxmvn_8x8(rocsparse_handle     handle,
                  T*                   y,
                  rocsparse_index_base base)
 {
-    const rocsparse_int size = (bsr_mask_ptr == nullptr) ? mb : size_of_mask;
-    hipLaunchKernelGGL((bsrxmvn_8x8_kernel<128>),
-                       dim3(size),
-                       dim3(128),
-                       0,
-                       handle->stream,
-                       mb,
-                       dir,
-                       alpha_device_host,
-                       size_of_mask,
-                       bsr_mask_ptr,
-                       bsr_row_ptr,
-                       bsr_end_ptr,
-                       bsr_col_ind,
-                       bsr_val,
-                       x,
-                       beta_device_host,
-                       y,
-                       base);
+    kernels_type_dispatch<T>::template bsrxmvn_8x8<U>(handle,
+                                                      dir,
+                                                      mb,
+                                                      nnzb,
+                                                      alpha_device_host,
+                                                      size_of_mask,
+                                                      bsr_mask_ptr,
+                                                      bsr_row_ptr,
+                                                      bsr_end_ptr,
+                                                      bsr_col_ind,
+                                                      bsr_val,
+                                                      x,
+                                                      beta_device_host,
+                                                      y,
+                                                      base);
 }
 
 //

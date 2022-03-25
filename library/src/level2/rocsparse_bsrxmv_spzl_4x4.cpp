@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -99,6 +99,7 @@ __device__ void bsrxmvn_4x4_device(rocsparse_int       mb,
     // processes a BSR block
     if(dir == rocsparse_direction_column)
     {
+#pragma unroll 4
         for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
         {
             // Do not exceed the row
@@ -130,6 +131,7 @@ __device__ void bsrxmvn_4x4_device(rocsparse_int       mb,
     }
     else
     {
+#pragma unroll 4
         for(rocsparse_int j = row_begin + lid; j < row_end; j += WFSIZE)
         {
             // Do not exceed the row

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 import argparse
 import subprocess
 import os
-import re # regexp package
+import re # regexp package.
 import sys
 import tempfile
 import json
@@ -43,16 +43,21 @@ def export_gnuplot(obasename,xargs, yargs, case_results,case_titles,verbose = Fa
             for ixarg  in range(len_xargs):
                 isample = iplot * len_xargs + ixarg
                 tg = samples[isample]["timing"]
+                tg0 = case_results[0][isample]["timing"]
                 datafile.write(os.path.basename(os.path.splitext(xargs[ixarg])[0]) + " " +
                                tg["time"][0] + " " +
                                tg["time"][1] + " " +
                                tg["time"][2] + " " +
+                               str(float(tg0["time"][0]) / float(tg["time"][0]))  + " " +
                                tg["flops"][0] + " " +
                                tg["flops"][1] + " " +
                                tg["flops"][2] + " " +
+                               str(float(tg["flops"][0]) / float(tg0["flops"][0]))  + " " +
                                tg["bandwidth"][0] + " " +
                                tg["bandwidth"][1] + " "+
-                               tg["bandwidth"][2] + "\n")
+                               tg["bandwidth"][2] + " " +
+                               str(float(tg["bandwidth"][0]) / float(tg0["bandwidth"][0]))  + " " +
+                               "\n")
             datafile.write("\n")
             datafile.write("\n")
     datafile.close();
@@ -63,11 +68,14 @@ def export_gnuplot(obasename,xargs, yargs, case_results,case_titles,verbose = Fa
     cmdfile = open(obasename + ".gnuplot", "w+")
     # for each plot
     num_plots=len(yargs)
-    if num_plots==1:
-        filename_extension= ".pdf"
-    else:
-        filename_extension= "."+str(iplot)+".pdf"
     for iplot in range(len(yargs)):
+        fyarg = yargs[iplot]
+        fyarg = fyarg.replace("=","")
+        fyarg = fyarg.replace(",","_")
+        if num_plots==1:
+            filename_extension= ".pdf"
+        else:
+            filename_extension= "."+fyarg+".pdf"
         #
         # Reminder, files is what we want to compare.
         #
@@ -82,6 +90,37 @@ def export_gnuplot(obasename,xargs, yargs, case_results,case_titles,verbose = Fa
 #                                             "milliseconds",
 #                                             2,
 #                                             case_titles)
+
+
+        rocsparse_bench_gnuplot_helper.simple_histogram(cmdfile,
+                                                 obasename + "_msec_ratio"+ filename_extension,
+                                                 'Time ratio',
+                                                 range(plot_index,plot_index + num_cases),
+                                                 obasename + ".dat",
+                                                 [-0.5,len_xargs + 0.5],
+                                                 "",
+                                                 5,
+                                                 case_titles)
+
+        rocsparse_bench_gnuplot_helper.simple_histogram(cmdfile,
+                                                 obasename + "_gflops_ratio"+ filename_extension,
+                                                 'Performance ratio',
+                                                 range(plot_index,plot_index + num_cases),
+                                                 obasename + ".dat",
+                                                 [-0.5,len_xargs + 0.5],
+                                                 "",
+                                                 9,
+                                                 case_titles)
+
+        rocsparse_bench_gnuplot_helper.simple_histogram(cmdfile,
+                                                 obasename + "_bandwitdh_ratio"+ filename_extension,
+                                                 'Bandwidth ratio',
+                                                 range(plot_index,plot_index + num_cases),
+                                                 obasename + ".dat",
+                                                 [-0.5,len_xargs + 0.5],
+                                                 "",
+                                                 13,
+                                                 case_titles)
 
         rocsparse_bench_gnuplot_helper.histogram(cmdfile,
                                                  obasename + "_msec"+ filename_extension,
@@ -100,7 +139,7 @@ def export_gnuplot(obasename,xargs, yargs, case_results,case_titles,verbose = Fa
                                                  obasename + ".dat",
                                                  [-0.5,len_xargs + 0.5],
                                                  "GFlops",
-                                                 5,6,7,
+                                                 6,7,8,
                                                  case_titles)
 
         rocsparse_bench_gnuplot_helper.histogram(cmdfile,
@@ -110,7 +149,7 @@ def export_gnuplot(obasename,xargs, yargs, case_results,case_titles,verbose = Fa
                                                  obasename + ".dat",
                                                  [-0.5,len_xargs + 0.5],
                                                  "GBytes/s",
-                                                 8,9,10,
+                                                 10,11,12,
                                                  case_titles)
     cmdfile.close();
 

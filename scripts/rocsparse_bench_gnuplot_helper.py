@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # ########################################################################
-# Copyright (c) 2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,32 @@ import xml.etree.ElementTree as ET
 # GNUPLOT COMMANDS FOR HISTOGRAM
 #
 #
+def simple_histogram(out,ofilename,title,indices,ifilename,x_range,y_label,col_index, titles):
+    nplots = len(indices)
+    out.write("reset\n")
+    out.write("set grid\n")
+    out.write("set style fill solid 0.2\n")
+    out.write("set style data histograms\n")
+    out.write("set term pdfcairo enhanced color font 'Helvetica,9'\n")
+    out.write("set output \"" + ofilename + "\"\n")
+    out.write("set termoption noenhanced\n")
+    out.write("set tmargin 0\n")
+    out.write("set bmargin 0\n")
+    out.write("set ylabel \"" + y_label + "\"\n")
+    out.write("set xrange [" + str(x_range[0]) + ":" + str(x_range[1]) + "]\n")
+    out.write("set offsets 0.25, 0.25, 0, 0\n")
+    out.write("set xtics rotate by -45\n")
+    out.write("set boxwidth 0.5\n")
+    out.write("set size ratio 0.35\n")
+    out.write("set style fill noborder\n")
+    out.write("set title '" + title +"'\n")
+    out.write("plot '"+ifilename+"' index "+str(indices[0])+" using "+str(col_index)+ ":xtic(1) title '"+ titles[0] +"' with histogram")
+    for i in range(1,nplots):
+        out.write(",\\\n '' index "+str(indices[i])+" using "+str(col_index)+":xtic(1) title '"+titles[i]+"' with histogram")
+    out.write("\n")
+
+
+
 def histogram(out,ofilename,title,indices,ifilename,x_range,y_label,col_index,col_index_low,col_index_high, titles):
     nplots = len(indices)
     out.write("reset\n")
