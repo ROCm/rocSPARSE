@@ -28,31 +28,31 @@
 #include "rocsparse_vector.hpp"
 
 template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
-struct dense_matrix_t;
+struct dense_matrix_view;
 
 template <typename T, typename I = rocsparse_int>
-using host_dense_matrix_t = dense_matrix_t<memory_mode::host, T, I>;
+using host_dense_matrix_view = dense_matrix_view<memory_mode::host, T, I>;
 
 template <typename T, typename I = rocsparse_int>
-using device_dense_matrix_t = dense_matrix_t<memory_mode::device, T, I>;
+using device_dense_matrix_view = dense_matrix_view<memory_mode::device, T, I>;
 
 template <typename T, typename I = rocsparse_int>
-using managed_dense_matrix_t = dense_matrix_t<memory_mode::managed, T, I>;
+using managed_dense_matrix_view = dense_matrix_view<memory_mode::managed, T, I>;
 
 template <typename T>
-using host_dense_matrix32_t = host_dense_matrix_t<T, int32_t>;
+using host_dense_matrix32_t = host_dense_matrix_view<T, int32_t>;
 template <typename T>
-using host_dense_matrix64_t = host_dense_matrix_t<T, int64_t>;
+using host_dense_matrix64_t = host_dense_matrix_view<T, int64_t>;
 
 template <typename T>
-using device_dense_matrix32_t = device_dense_matrix_t<T, int32_t>;
+using device_dense_matrix32_t = device_dense_matrix_view<T, int32_t>;
 template <typename T>
-using device_dense_matrix64_t = device_dense_matrix_t<T, int64_t>;
+using device_dense_matrix64_t = device_dense_matrix_view<T, int64_t>;
 
 template <typename T>
-using managed_dense_matrix32_t = managed_dense_matrix_t<T, int32_t>;
+using managed_dense_matrix32_t = managed_dense_matrix_view<T, int32_t>;
 template <typename T>
-using managed_dense_matrix64_t = managed_dense_matrix_t<T, int64_t>;
+using managed_dense_matrix64_t = managed_dense_matrix_view<T, int64_t>;
 
 template <memory_mode::value_t MODE, typename T, typename I = rocsparse_int>
 struct dense_matrix;
@@ -89,7 +89,7 @@ using managed_dense_matrix64 = managed_dense_matrix<T, int64_t>;
  *  \p The transfer method takes care of the leading dimension being greater than its allowed minimum.
  */
 template <memory_mode::value_t MODE, typename T, typename I>
-struct dense_matrix_t
+struct dense_matrix_view
 {
 private:
     T* val{};
@@ -99,21 +99,21 @@ public:
     I               n{};
     I               ld{};
     rocsparse_order order{rocsparse_order_column};
-    dense_matrix_t(){};
-    ~dense_matrix_t(){};
+    dense_matrix_view(){};
+    ~dense_matrix_view(){};
 
     template <memory_mode::value_t THAT_MODE>
-    dense_matrix_t<MODE, T, I>(const dense_matrix_t<THAT_MODE, T, I>& that) = delete;
-    dense_matrix_t<MODE, T, I>(const dense_matrix_t<MODE, T, I>& that)      = delete;
+    dense_matrix_view<MODE, T, I>(const dense_matrix_view<THAT_MODE, T, I>& that) = delete;
+    dense_matrix_view<MODE, T, I>(const dense_matrix_view<MODE, T, I>& that)      = delete;
 
     template <memory_mode::value_t THAT_MODE>
-    inline dense_matrix_t& operator=(const dense_matrix_t<THAT_MODE, T, I>& that)
+    inline dense_matrix_view& operator=(const dense_matrix_view<THAT_MODE, T, I>& that)
     {
         this->transfer_from(that);
         return *this;
     }
 
-    inline dense_matrix_t& operator=(const dense_matrix_t& that)
+    inline dense_matrix_view& operator=(const dense_matrix_view& that)
     {
         this->transfer_from(that);
         return *this;
@@ -129,7 +129,7 @@ public:
         return this->val;
     }
 
-    dense_matrix_t&
+    dense_matrix_view&
         operator()(I m_, I n_, T* val_, I ld_, rocsparse_order order_ = rocsparse_order_column)
     {
         m     = m_;
@@ -139,7 +139,7 @@ public:
         order = order_;
         return *this;
     }
-    dense_matrix_t(I m_, I n_, T* val_, I ld_, rocsparse_order order_ = rocsparse_order_column)
+    dense_matrix_view(I m_, I n_, T* val_, I ld_, rocsparse_order order_ = rocsparse_order_column)
         : val(val_)
         , m(m_)
         , n(n_)
@@ -197,7 +197,7 @@ public:
     }
 
     template <memory_mode::value_t THAT_MODE>
-    void transfer_from(const dense_matrix_t<THAT_MODE, T, I>& that_)
+    void transfer_from(const dense_matrix_view<THAT_MODE, T, I>& that_)
     {
         CHECK_HIP_THROW_ERROR((this->m == that_.m && this->n == that_.n) ? hipSuccess
                                                                          : hipErrorInvalidValue);
@@ -231,7 +231,7 @@ public:
 
     void print() const;
     template <memory_mode::value_t THAT_MODE>
-    void unit_check(const dense_matrix_t<THAT_MODE, T, I>& that_) const
+    void unit_check(const dense_matrix_view<THAT_MODE, T, I>& that_) const
     {
         switch(MODE)
         {
@@ -283,8 +283,8 @@ public:
     }
 
     template <memory_mode::value_t THAT_MODE>
-    void near_check(const dense_matrix_t<THAT_MODE, T, I>& that_,
-                    floating_data_t<T>                     tol = default_tolerance<T>::value) const
+    void near_check(const dense_matrix_view<THAT_MODE, T, I>& that_,
+                    floating_data_t<T> tol = default_tolerance<T>::value) const
     {
         switch(MODE)
         {
@@ -345,7 +345,7 @@ public:
 /*! \brief Implementation of a dense matrix responsible of the memory allocation.
  */
 template <memory_mode::value_t MODE, typename T, typename I>
-struct dense_matrix : public dense_matrix_t<MODE, T, I>
+struct dense_matrix : public dense_matrix_view<MODE, T, I>
 {
 private:
     using allocator = rocsparse_allocator<MODE, T>;
@@ -364,7 +364,7 @@ public:
     };
 
     template <memory_mode::value_t THAT_MODE>
-    inline dense_matrix& operator=(const dense_matrix_t<THAT_MODE, T, I>& that)
+    inline dense_matrix& operator=(const dense_matrix_view<THAT_MODE, T, I>& that)
     {
         this->transfer_from(that);
         return *this;
@@ -372,11 +372,11 @@ public:
 
     /*! \brief Copy constructor */
     dense_matrix(const dense_matrix<MODE, T, I>& that, bool transfer = true)
-        : dense_matrix_t<MODE, T, I>(that.m,
-                                     that.n,
-                                     allocator::malloc(size_t(that.m) * size_t(that.n)),
-                                     (that.order == rocsparse_order_column) ? that.m : that.n,
-                                     that.order)
+        : dense_matrix_view<MODE, T, I>(that.m,
+                                        that.n,
+                                        allocator::malloc(size_t(that.m) * size_t(that.n)),
+                                        (that.order == rocsparse_order_column) ? that.m : that.n,
+                                        that.order)
     {
         if(transfer)
         {
@@ -385,19 +385,19 @@ public:
     }
 
     dense_matrix(I m_, I n_, rocsparse_order order_ = rocsparse_order_column)
-        : dense_matrix_t<MODE, T, I>(m_,
-                                     n_,
-                                     allocator::malloc(m_ * n_),
-                                     (order_ == rocsparse_order_column) ? m_ : n_,
-                                     order_){};
+        : dense_matrix_view<MODE, T, I>(m_,
+                                        n_,
+                                        allocator::malloc(m_ * n_),
+                                        (order_ == rocsparse_order_column) ? m_ : n_,
+                                        order_){};
 
-    /*! \brief Copy constructor from a dense_matrix_t with the same memory mode. */
-    explicit dense_matrix(const dense_matrix_t<MODE, T, I>& that, bool transfer = true)
-        : dense_matrix_t<MODE, T, I>(that.m,
-                                     that.n,
-                                     allocator::malloc(size_t(that.m) * size_t(that.n)),
-                                     (that.order == rocsparse_order_column) ? that.m : that.n,
-                                     that.order)
+    /*! \brief Copy constructor from a dense_matrix_view with the same memory mode. */
+    explicit dense_matrix(const dense_matrix_view<MODE, T, I>& that, bool transfer = true)
+        : dense_matrix_view<MODE, T, I>(that.m,
+                                        that.n,
+                                        allocator::malloc(size_t(that.m) * size_t(that.n)),
+                                        (that.order == rocsparse_order_column) ? that.m : that.n,
+                                        that.order)
     {
         if(transfer)
         {
@@ -405,14 +405,14 @@ public:
         }
     }
 
-    /*! \brief Copy constructor from a dense_matrix_t with a different memory mode*/
+    /*! \brief Copy constructor from a dense_matrix_view with a different memory mode*/
     template <memory_mode::value_t THAT_MODE>
-    explicit dense_matrix(const dense_matrix_t<THAT_MODE, T, I>& that, bool transfer = true)
-        : dense_matrix_t<MODE, T, I>(that.m,
-                                     that.n,
-                                     allocator::malloc(size_t(that.m) * size_t(that.n)),
-                                     (that.order == rocsparse_order_column) ? that.m : that.n,
-                                     that.order)
+    explicit dense_matrix(const dense_matrix_view<THAT_MODE, T, I>& that, bool transfer = true)
+        : dense_matrix_view<MODE, T, I>(that.m,
+                                        that.n,
+                                        allocator::malloc(size_t(that.m) * size_t(that.n)),
+                                        (that.order == rocsparse_order_column) ? that.m : that.n,
+                                        that.order)
     {
 
         if(transfer)
@@ -423,7 +423,7 @@ public:
 };
 
 template <memory_mode::value_t MODE, typename T, typename I>
-void dense_matrix_t<MODE, T, I>::print() const
+void dense_matrix_view<MODE, T, I>::print() const
 {
     switch(MODE)
     {

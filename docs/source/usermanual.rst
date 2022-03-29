@@ -544,6 +544,13 @@ rocsparse_action
 
 .. doxygenenum:: rocsparse_action
 
+.. _rocsparse_direction_:
+
+rocsparse_direction
+-------------------
+
+.. doxygenenum:: rocsparse_direction
+
 .. _rocsparse_hyb_partition_:
 
 rocsparse_hyb_partition
@@ -558,6 +565,8 @@ rocsparse_index_base
 
 .. doxygenenum:: rocsparse_index_base
 
+.. _rocsparse_matrix_type_:
+
 rocsparse_matrix_type
 ---------------------
 
@@ -569,6 +578,13 @@ rocsparse_fill_mode
 -------------------
 
 .. doxygenenum:: rocsparse_fill_mode
+
+.. _rocsparse_storage_mode_:
+
+rocsparse_storage_mode
+----------------------
+
+.. doxygenenum:: rocsparse_storage_mode
 
 .. _rocsparse_diag_type_:
 
@@ -584,6 +600,8 @@ rocsparse_operation
 
 .. doxygenenum:: rocsparse_operation
 
+.. _rocsparse_pointer_mode_:
+
 rocsparse_pointer_mode
 ----------------------
 
@@ -595,6 +613,8 @@ rocsparse_analysis_policy
 -------------------------
 
 .. doxygenenum:: rocsparse_analysis_policy
+
+.. _rocsparse_solve_policy_:
 
 rocsparse_solve_policy
 ----------------------
@@ -629,6 +649,11 @@ rocsparse_format
 ----------------
 
 .. doxygenenum:: rocsparse_format
+
+rocsparse_order
+---------------
+
+.. doxygenenum:: rocsparse_order
 
 rocsparse_spmv_alg
 ------------------
@@ -727,111 +752,161 @@ Exported Sparse Functions
 Auxiliary Functions
 -------------------
 
-+------------------------------------------+
-|Function name                             |
-+------------------------------------------+
-|:cpp:func:`rocsparse_create_handle`       |
-+------------------------------------------+
-|:cpp:func:`rocsparse_destroy_handle`      |
-+------------------------------------------+
-|:cpp:func:`rocsparse_set_stream`          |
-+------------------------------------------+
-|:cpp:func:`rocsparse_get_stream`          |
-+------------------------------------------+
-|:cpp:func:`rocsparse_set_pointer_mode`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_get_pointer_mode`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_get_version`         |
-+------------------------------------------+
-|:cpp:func:`rocsparse_get_git_rev`         |
-+------------------------------------------+
-|:cpp:func:`rocsparse_create_mat_descr`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_destroy_mat_descr`   |
-+------------------------------------------+
-|:cpp:func:`rocsparse_copy_mat_descr`      |
-+------------------------------------------+
-|:cpp:func:`rocsparse_set_mat_index_base`  |
-+------------------------------------------+
-|:cpp:func:`rocsparse_get_mat_index_base`  |
-+------------------------------------------+
-|:cpp:func:`rocsparse_set_mat_type`        |
-+------------------------------------------+
-|:cpp:func:`rocsparse_get_mat_type`        |
-+------------------------------------------+
-|:cpp:func:`rocsparse_set_mat_fill_mode`   |
-+------------------------------------------+
-|:cpp:func:`rocsparse_get_mat_fill_mode`   |
-+------------------------------------------+
-|:cpp:func:`rocsparse_set_mat_diag_type`   |
-+------------------------------------------+
-|:cpp:func:`rocsparse_get_mat_diag_type`   |
-+------------------------------------------+
-|:cpp:func:`rocsparse_create_hyb_mat`      |
-+------------------------------------------+
-|:cpp:func:`rocsparse_destroy_hyb_mat`     |
-+------------------------------------------+
-|:cpp:func:`rocsparse_create_mat_info`     |
-+------------------------------------------+
-|:cpp:func:`rocsparse_copy_mat_info`       |
-+------------------------------------------+
-|:cpp:func:`rocsparse_destroy_mat_info`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_create_spvec_descr`  |
-+------------------------------------------+
-|:cpp:func:`rocsparse_destroy_spvec_descr` |
-+------------------------------------------+
-|:cpp:func:`rocsparse_spvec_get`           |
-+------------------------------------------+
-|:cpp:func:`rocsparse_spvec_get_index_base`|
-+------------------------------------------+
-|:cpp:func:`rocsparse_spvec_get_values`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_spvec_set_values`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_create_coo_descr`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_create_csr_descr`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_create_csc_descr`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_create_ell_descr`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_destroy_spmat_descr` |
-+------------------------------------------+
-|:cpp:func:`rocsparse_coo_get`             |
-+------------------------------------------+
-|:cpp:func:`rocsparse_csr_get`             |
-+------------------------------------------+
-|:cpp:func:`rocsparse_ell_get`             |
-+------------------------------------------+
-|:cpp:func:`rocsparse_coo_set_pointers`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_csr_set_pointers`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_csc_set_pointers`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_ell_set_pointers`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_spmat_get_size`      |
-+------------------------------------------+
-|:cpp:func:`rocsparse_spmat_get_index_base`|
-+------------------------------------------+
-|:cpp:func:`rocsparse_spmat_get_values`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_spmat_set_values`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_create_dnvec_descr`  |
-+------------------------------------------+
-|:cpp:func:`rocsparse_destroy_dnvec_descr` |
-+------------------------------------------+
-|:cpp:func:`rocsparse_dnvec_get`           |
-+------------------------------------------+
-|:cpp:func:`rocsparse_dnvec_get_values`    |
-+------------------------------------------+
-|:cpp:func:`rocsparse_dnvec_set_values`    |
-+------------------------------------------+
++---------------------------------------------+
+|Function name                                |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_handle`          |
++---------------------------------------------+
+|:cpp:func:`rocsparse_destroy_handle`         |
++---------------------------------------------+
+|:cpp:func:`rocsparse_set_stream`             |
++---------------------------------------------+
+|:cpp:func:`rocsparse_get_stream`             |
++---------------------------------------------+
+|:cpp:func:`rocsparse_set_pointer_mode`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_get_pointer_mode`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_get_version`            |
++---------------------------------------------+
+|:cpp:func:`rocsparse_get_git_rev`            |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_mat_descr`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_destroy_mat_descr`      |
++---------------------------------------------+
+|:cpp:func:`rocsparse_copy_mat_descr`         |
++---------------------------------------------+
+|:cpp:func:`rocsparse_set_mat_index_base`     |
++---------------------------------------------+
+|:cpp:func:`rocsparse_get_mat_index_base`     |
++---------------------------------------------+
+|:cpp:func:`rocsparse_set_mat_type`           |
++---------------------------------------------+
+|:cpp:func:`rocsparse_get_mat_type`           |
++---------------------------------------------+
+|:cpp:func:`rocsparse_set_mat_fill_mode`      |
++---------------------------------------------+
+|:cpp:func:`rocsparse_get_mat_fill_mode`      |
++---------------------------------------------+
+|:cpp:func:`rocsparse_set_mat_diag_type`      |
++---------------------------------------------+
+|:cpp:func:`rocsparse_get_mat_diag_type`      |
++---------------------------------------------+
+|:cpp:func:`rocsparse_set_mat_storage_mode`   |
++---------------------------------------------+
+|:cpp:func:`rocsparse_get_mat_storage_mode`   |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_hyb_mat`         |
++---------------------------------------------+
+|:cpp:func:`rocsparse_destroy_hyb_mat`        |
++---------------------------------------------+
+|:cpp:func:`rocsparse_copy_hyb_mat`           |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_mat_info`        |
++---------------------------------------------+
+|:cpp:func:`rocsparse_copy_mat_info`          |
++---------------------------------------------+
+|:cpp:func:`rocsparse_destroy_mat_info`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_color_info`      |
++---------------------------------------------+
+|:cpp:func:`rocsparse_destroy_color_info`     |
++---------------------------------------------+
+|:cpp:func:`rocsparse_copy_color_info`        |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_spvec_descr`     |
++---------------------------------------------+
+|:cpp:func:`rocsparse_destroy_spvec_descr`    |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spvec_get`              |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spvec_get_index_base`   |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spvec_get_values`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spvec_set_values`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_coo_descr`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_coo_aos_descr`   |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_csr_descr`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_csc_descr`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_ell_descr`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_bell_descr`      |
++---------------------------------------------+
+|:cpp:func:`rocsparse_destroy_spmat_descr`    |
++---------------------------------------------+
+|:cpp:func:`rocsparse_coo_get`                |
++---------------------------------------------+
+|:cpp:func:`rocsparse_coo_aos_get`            |
++---------------------------------------------+
+|:cpp:func:`rocsparse_csr_get`                |
++---------------------------------------------+
+|:cpp:func:`rocsparse_ell_get`                |
++---------------------------------------------+
+|:cpp:func:`rocsparse_bell_get`               |
++---------------------------------------------+
+|:cpp:func:`rocsparse_coo_set_pointers`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_coo_aos_set_pointers`   |
++---------------------------------------------+
+|:cpp:func:`rocsparse_csr_set_pointers`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_csc_set_pointers`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_ell_set_pointers`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spmat_get_size`         |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spmat_get_format`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spmat_get_index_base`   |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spmat_get_values`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spmat_set_values`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spmat_get_strided_batch`|
++---------------------------------------------+
+|:cpp:func:`rocsparse_spmat_set_strided_batch`|
++---------------------------------------------+
+|:cpp:func:`rocsparse_coo_set_strided_batch`  |
++---------------------------------------------+
+|:cpp:func:`rocsparse_csr_set_strided_batch`  |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spmat_get_attribute`    |
++---------------------------------------------+
+|:cpp:func:`rocsparse_spmat_set_attribute`    |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_dnvec_descr`     |
++---------------------------------------------+
+|:cpp:func:`rocsparse_destroy_dnvec_descr`    |
++---------------------------------------------+
+|:cpp:func:`rocsparse_dnvec_get`              |
++---------------------------------------------+
+|:cpp:func:`rocsparse_dnvec_get_values`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_dnvec_set_values`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_create_dnmat_descr`     |
++---------------------------------------------+
+|:cpp:func:`rocsparse_destroy_dnmat_descr`    |
++---------------------------------------------+
+|:cpp:func:`rocsparse_dnmat_get`              |
++---------------------------------------------+
+|:cpp:func:`rocsparse_dnmat_get_values`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_dnmat_set_values`       |
++---------------------------------------------+
+|:cpp:func:`rocsparse_dnmat_get_strided_batch`|
++---------------------------------------------+
+|:cpp:func:`rocsparse_dnmat_set_strided_batch`|
++---------------------------------------------+
 
 Sparse Level 1 Functions
 ------------------------
@@ -952,6 +1027,7 @@ Function name                                                                   
 :cpp:func:`rocsparse_Xgtsv_interleaved_batch() <rocsparse_sgtsv_interleaved_batch>`                                   x      x      x              x
 :cpp:func:`rocsparse_Xgpsv_interleaved_batch_buffer_size() <rocsparse_sgpsv_interleaved_batch_buffer_size>`           x      x      x              x
 :cpp:func:`rocsparse_Xgpsv_interleaved_batch() <rocsparse_sgpsv_interleaved_batch>`                                   x      x      x              x
+===================================================================================================================== ====== ====== ============== ==============
 
 Conversion Functions
 --------------------
@@ -1195,6 +1271,16 @@ rocsparse_get_mat_diag_type()
 
 .. doxygenfunction:: rocsparse_get_mat_diag_type
 
+rocsparse_set_mat_storage_mode()
+--------------------------------
+
+.. doxygenfunction:: rocsparse_set_mat_storage_mode
+
+rocsparse_get_mat_storage_mode()
+--------------------------------
+
+.. doxygenfunction:: rocsparse_get_mat_storage_mode
+
 .. _rocsparse_create_hyb_mat_:
 
 rocsparse_create_hyb_mat()
@@ -1206,6 +1292,11 @@ rocsparse_destroy_hyb_mat()
 ---------------------------
 
 .. doxygenfunction:: rocsparse_destroy_hyb_mat
+
+rocsparse_copy_hyb_mat()
+------------------------
+
+.. doxygenfunction:: rocsparse_copy_hyb_mat
 
 rocsparse_create_mat_info()
 ---------------------------
@@ -1223,6 +1314,21 @@ rocsparse_destroy_mat_info()
 ----------------------------
 
 .. doxygenfunction:: rocsparse_destroy_mat_info
+
+rocsparse_create_color_info()
+-----------------------------
+
+.. doxygenfunction:: rocsparse_create_color_info
+
+rocsparse_destroy_color_info()
+------------------------------
+
+.. doxygenfunction:: rocsparse_destroy_color_info
+
+rocsparse_copy_color_info()
+---------------------------
+
+.. doxygenfunction:: rocsparse_copy_color_info
 
 rocsparse_create_spvec_descr()
 ------------------------------
@@ -1259,6 +1365,11 @@ rocsparse_create_coo_descr
 
 .. doxygenfunction:: rocsparse_create_coo_descr
 
+rocsparse_create_coo_aos_descr
+------------------------------
+
+.. doxygenfunction:: rocsparse_create_coo_aos_descr
+
 rocsparse_create_csr_descr
 --------------------------
 
@@ -1274,6 +1385,11 @@ rocsparse_create_ell_descr
 
 .. doxygenfunction:: rocsparse_create_ell_descr
 
+rocsparse_create_bell_descr
+---------------------------
+
+.. doxygenfunction:: rocsparse_create_bell_descr
+
 rocsparse_destroy_spmat_descr
 -----------------------------
 
@@ -1283,6 +1399,11 @@ rocsparse_coo_get
 -----------------
 
 .. doxygenfunction:: rocsparse_coo_get
+
+rocsparse_coo_aos_get
+---------------------
+
+.. doxygenfunction:: rocsparse_coo_aos_get
 
 rocsparse_csr_get
 -----------------
@@ -1294,10 +1415,20 @@ rocsparse_ell_get
 
 .. doxygenfunction:: rocsparse_ell_get
 
+rocsparse_bell_get
+------------------
+
+.. doxygenfunction:: rocsparse_bell_get
+
 rocsparse_coo_set_pointers
 --------------------------
 
 .. doxygenfunction:: rocsparse_coo_set_pointers
+
+rocsparse_coo_aos_set_pointers
+------------------------------
+
+.. doxygenfunction:: rocsparse_coo_aos_set_pointers
 
 rocsparse_csr_set_pointers
 --------------------------
@@ -1319,6 +1450,11 @@ rocsparse_spmat_get_size
 
 .. doxygenfunction:: rocsparse_spmat_get_size
 
+rocsparse_spmat_get_format
+--------------------------
+
+.. doxygenfunction:: rocsparse_spmat_get_format
+
 rocsparse_spmat_get_index_base
 ------------------------------
 
@@ -1333,6 +1469,36 @@ rocsparse_spmat_set_values
 --------------------------
 
 .. doxygenfunction:: rocsparse_spmat_set_values
+
+rocsparse_spmat_get_strided_batch
+---------------------------------
+
+.. doxygenfunction:: rocsparse_spmat_get_strided_batch
+
+rocsparse_spmat_set_strided_batch
+---------------------------------
+
+.. doxygenfunction:: rocsparse_spmat_set_strided_batch
+
+rocsparse_coo_set_strided_batch
+-------------------------------
+
+.. doxygenfunction:: rocsparse_coo_set_strided_batch
+
+rocsparse_csr_set_strided_batch
+-------------------------------
+
+.. doxygenfunction:: rocsparse_csr_set_strided_batch
+
+rocsparse_spmat_get_attribute
+-----------------------------
+
+.. doxygenfunction:: rocsparse_spmat_get_attribute
+
+rocsparse_spmat_set_attribute
+-----------------------------
+
+.. doxygenfunction:: rocsparse_spmat_set_attribute
 
 rocsparse_create_dnvec_descr
 ----------------------------
@@ -1358,6 +1524,41 @@ rocsparse_dnvec_set_values
 --------------------------
 
 .. doxygenfunction:: rocsparse_dnvec_set_values
+
+rocsparse_create_dnmat_descr
+----------------------------
+
+.. doxygenfunction:: rocsparse_create_dnmat_descr
+
+rocsparse_destroy_dnmat_descr
+-----------------------------
+
+.. doxygenfunction:: rocsparse_destroy_dnmat_descr
+
+rocsparse_dnmat_get
+-------------------
+
+.. doxygenfunction:: rocsparse_dnmat_get
+
+rocsparse_dnmat_get_values
+--------------------------
+
+.. doxygenfunction:: rocsparse_dnmat_get_values
+
+rocsparse_dnmat_set_values
+--------------------------
+
+.. doxygenfunction:: rocsparse_dnmat_set_values
+
+rocsparse_dnmat_get_strided_batch
+---------------------------------
+
+.. doxygenfunction:: rocsparse_dnmat_get_strided_batch
+
+rocsparse_dnmat_set_strided_batch
+---------------------------------
+
+.. doxygenfunction:: rocsparse_dnmat_set_strided_batch
 
 .. _rocsparse_level1_functions_:
 

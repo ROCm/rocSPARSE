@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -252,7 +252,7 @@ static __device__ void bsrmmnt_small_blockdim_device(rocsparse_direction directi
             rocsparse_int k = j + lid;
 
             shared_col[wid][lid]
-                = (k < block_row_end) ? N * BSR_BLOCK_DIM * (bsr_col_ind[k] - idx_base) : 0;
+                = (k < block_row_end) ? BSR_BLOCK_DIM * (bsr_col_ind[k] - idx_base) : 0;
 
             if(direction == rocsparse_direction_row)
             {
@@ -337,27 +337,27 @@ static __device__ void bsrmmnt_small_blockdim_device(rocsparse_direction directi
                     // Perform:
                     // for(rocsparse_int p = 0; p < BSR_BLOCK_DIM; p++)
                     // {
-                    //     T val_B = rocsparse_ldg(B + col + N * p + shared_col[wid][i]);
+                    //     T val_B = rocsparse_ldg(B + col + ldb * (p + shared_col[wid][i]));
                     //     sum = rocsparse_fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i + p], val_B, sum);
                     // }
                     // as unrolled loop.
-                    T val_B = rocsparse_ldg(B + col + shared_col[wid][i]);
+                    T val_B = rocsparse_ldg(B + col + ldb * shared_col[wid][i]);
                     sum     = rocsparse_fma(shared_val[wid][PADDED_BSR_BLOCK_DIM * i], val_B, sum);
                     if(BSR_BLOCK_DIM >= 2)
                     {
-                        val_B = rocsparse_ldg(B + col + N * 1 + shared_col[wid][i]);
+                        val_B = rocsparse_ldg(B + col + ldb * (1 + shared_col[wid][i]));
                         sum   = rocsparse_fma(
                             shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 1], val_B, sum);
                     }
                     if(BSR_BLOCK_DIM >= 3)
                     {
-                        val_B = rocsparse_ldg(B + col + N * 2 + shared_col[wid][i]);
+                        val_B = rocsparse_ldg(B + col + ldb * (2 + shared_col[wid][i]));
                         sum   = rocsparse_fma(
                             shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 2], val_B, sum);
                     }
                     if(BSR_BLOCK_DIM >= 4)
                     {
-                        val_B = rocsparse_ldg(B + col + N * 3 + shared_col[wid][i]);
+                        val_B = rocsparse_ldg(B + col + ldb * (3 + shared_col[wid][i]));
                         sum   = rocsparse_fma(
                             shared_val[wid][PADDED_BSR_BLOCK_DIM * i + 3], val_B, sum);
                     }

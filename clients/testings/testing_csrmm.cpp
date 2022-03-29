@@ -304,8 +304,8 @@ void testing_csrmm(const Arguments& arg)
     //
     // Memory layout of matrix B and C on device.
     //
-    device_dense_matrix_t<T> dB, dC;
-    device_dense_vector<T>   layout(hB.m * hB.n + hC.m * hC.n);
+    device_dense_matrix_view<T> dB, dC;
+    device_dense_vector<T>      layout(hB.m * hB.n + hC.m * hC.n);
     if((hB.n == hC.n) && (order == rocsparse_order_column))
     {
         //
