@@ -358,8 +358,6 @@ void testing_bsrmm(const Arguments& arg)
         return;
     }
 
-    // Allocate host memory for original CSR matrix
-
     // Allocate host memory for output BSR matrix
     rocsparse_matrix_factory<T> matrix_factory(arg);
 
@@ -371,22 +369,34 @@ void testing_bsrmm(const Arguments& arg)
     M = Mb * dA.row_block_dim;
     K = Kb * dA.col_block_dim;
 
-    //
-    // B
-    //
+    // Allocate B matrix
+    host_dense_matrix<T> hB_temp((transB == rocsparse_operation_none) ? 2 * K : 2 * N,
+                                 (transB == rocsparse_operation_none) ? N : K);
+    device_dense_matrix<T> dB_temp((transB == rocsparse_operation_none) ? 2 * K : 2 * N,
+                                   (transB == rocsparse_operation_none) ? N : K);
+    rocsparse_matrix_utils::init(hB_temp);
+    dB_temp.transfer_from(hB_temp);
 
-    host_dense_matrix<T> hB((transB == rocsparse_operation_none) ? K : N,
-                            (transB == rocsparse_operation_none) ? N : K);
-    rocsparse_matrix_utils::init(hB);
+    // Layout of B matrix
+    host_dense_matrix_view<T> hB((transB == rocsparse_operation_none) ? K : N,
+                                 (transB == rocsparse_operation_none) ? N : K,
+                                 hB_temp.data(),
+                                 (transB == rocsparse_operation_none) ? 2 * K : 2 * N);
 
-    device_dense_matrix<T> dB(hB);
+    device_dense_matrix_view<T> dB((transB == rocsparse_operation_none) ? K : N,
+                                   (transB == rocsparse_operation_none) ? N : K,
+                                   dB_temp.data(),
+                                   (transB == rocsparse_operation_none) ? 2 * K : 2 * N);
 
-    //
-    // C
-    //
-    host_dense_matrix<T> hC(M, N);
-    rocsparse_matrix_utils::init(hC);
-    device_dense_matrix<T> dC(hC);
+    // Allocate C matrix
+    host_dense_matrix<T>   hC_temp(2 * M, N);
+    device_dense_matrix<T> dC_temp(2 * M, N);
+    rocsparse_matrix_utils::init(hC_temp);
+    dC_temp.transfer_from(hC_temp);
+
+    // Layout of C matrix
+    host_dense_matrix_view<T>   hC(M, N, hC_temp.data(), 2 * M);
+    device_dense_matrix_view<T> dC(M, N, dC_temp.data(), 2 * M);
 
 #define PARAMS(alpha_, dA_, dB_, beta_, dC_)                                                 \
     handle, direction, transA, transB, Mb, N, Kb, dA_.nnzb, alpha_, descr, dA_.val, dA_.ptr, \
@@ -417,6 +427,7 @@ void testing_bsrmm(const Arguments& arg)
         device_scalar<T> d_beta(h_beta);
         CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_device));
         CHECK_ROCSPARSE_ERROR(rocsparse_bsrmm<T>(PARAMS(d_alpha, dA, dB, d_beta, dC)));
+
         hC.near_check(dC);
     }
 
