@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -382,7 +382,7 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
         return rocsparse_status_invalid_value;
     }
 
-    // Check index base
+    // Check matrix type
     if(descr->type != rocsparse_matrix_type_general
        && descr->type != rocsparse_matrix_type_triangular
        && descr->type != rocsparse_matrix_type_symmetric)
@@ -406,9 +406,24 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
         return rocsparse_status_invalid_size;
     }
 
-    // Quick return if possible
     if(m == 0 || n == 0)
     {
+        if(nnz != 0)
+        {
+            return rocsparse_status_invalid_size;
+        }
+    }
+
+    // Quick return if possible
+    if(m == 0 && n == 0 && nnz == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    // Another quick return.
+    if(m == 0 || n == 0 || nnz == 0)
+    {
+        // No matrix analysis required as matrix never accessed
         return rocsparse_status_success;
     }
 
@@ -1150,9 +1165,56 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_size;
     }
 
-    // Quick return if possible
     if(m == 0 || n == 0)
     {
+        if(nnz != 0)
+        {
+            return rocsparse_status_invalid_size;
+        }
+    }
+
+    // Quick return if possible
+    if(m == 0 && n == 0 && nnz == 0)
+    {
+        return rocsparse_status_success;
+    }
+
+    // Another quick return.
+    if(m == 0 || n == 0 || nnz == 0)
+    {
+        // matrix never accessed however still need to update y vector
+        rocsparse_int ysize = (trans == rocsparse_operation_none) ? m : n;
+        if(ysize > 0)
+        {
+            if(y == nullptr && beta_device_host == nullptr)
+            {
+                return rocsparse_status_invalid_pointer;
+            }
+
+            if(handle->pointer_mode == rocsparse_pointer_mode_device)
+            {
+                hipLaunchKernelGGL((scale_array<256>),
+                                   dim3((ysize - 1) / 256 + 1),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   ysize,
+                                   y,
+                                   beta_device_host);
+            }
+            else
+            {
+                hipLaunchKernelGGL((scale_array<256>),
+                                   dim3((ysize - 1) / 256 + 1),
+                                   dim3(256),
+                                   0,
+                                   handle->stream,
+                                   ysize,
+                                   y,
+                                   *beta_device_host);
+            }
+        }
+
         return rocsparse_status_success;
     }
 
@@ -1185,36 +1247,6 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
     if(nnz != 0 && (csr_col_ind == nullptr && csr_val == nullptr))
     {
         return rocsparse_status_invalid_pointer;
-    }
-
-    if(nnz == 0)
-    {
-        rocsparse_int size = (trans == rocsparse_operation_none) ? m : n;
-
-        if(handle->pointer_mode == rocsparse_pointer_mode_device)
-        {
-            hipLaunchKernelGGL((scale_array<256>),
-                               dim3((size - 1) / 256 + 1),
-                               dim3(256),
-                               0,
-                               handle->stream,
-                               size,
-                               y,
-                               beta_device_host);
-        }
-        else
-        {
-            hipLaunchKernelGGL((scale_array<256>),
-                               dim3((size - 1) / 256 + 1),
-                               dim3(256),
-                               0,
-                               handle->stream,
-                               size,
-                               y,
-                               *beta_device_host);
-        }
-
-        return rocsparse_status_success;
     }
 
     if(info == nullptr || info->csrmv_info == nullptr || trans != rocsparse_operation_none)

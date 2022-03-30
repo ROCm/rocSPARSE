@@ -1414,7 +1414,7 @@ static void host_csrmv_general(rocsparse_operation  trans,
             hipGetDeviceProperties(&prop, dev);
 
             int WF_SIZE;
-            J   nnz_per_row = nnz / M;
+            J   nnz_per_row = (M == 0) ? 0 : (nnz / M);
 
             if(nnz_per_row < 4)
                 WF_SIZE = 2;
@@ -1554,7 +1554,7 @@ static void host_csrmv_symmetric(rocsparse_operation  trans,
         hipGetDeviceProperties(&prop, dev);
 
         int WF_SIZE;
-        J   nnz_per_row = nnz / M;
+        J   nnz_per_row = (M == 0) ? 0 : (nnz / M);
 
         if(nnz_per_row < 4)
             WF_SIZE = 2;

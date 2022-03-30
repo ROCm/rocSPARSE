@@ -132,48 +132,6 @@ void testing_csrmv(const Arguments& arg)
 #define PARAMS(alpha_, A_, x_, beta_, y_) \
     handle, trans, A_.m, A_.n, A_.nnz, alpha_, descr, A_.val, A_.ptr, A_.ind, info, x_, beta_, y_
 
-    // Argument sanity check before allocating invalid memory
-    if(M <= 0 || N <= 0 || (matrix_type == rocsparse_matrix_type_symmetric && M != N)
-       || (matrix_type == rocsparse_matrix_type_triangular && M != N))
-    {
-        static const size_t safe_size = 100;
-
-        device_csr_matrix<T> dA;
-        device_vector<T>     dx, dy;
-
-        dA.m   = trans == rocsparse_operation_none ? M : N;
-        dA.n   = trans == rocsparse_operation_none ? N : M;
-        dA.nnz = safe_size;
-
-        CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-
-        // If adaptive, perform analysis step
-        if(alg == rocsparse_spmv_alg_csr_adaptive)
-        {
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(PARAMS_ANALYSIS(dA)),
-                                    (M < 0 || N < 0
-                                     || (matrix_type == rocsparse_matrix_type_symmetric && M != N)
-                                     || (matrix_type == rocsparse_matrix_type_triangular && M != N))
-                                        ? rocsparse_status_invalid_size
-                                        : rocsparse_status_success);
-        }
-
-        EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(PARAMS(h_alpha, dA, dx, h_beta, dy)),
-                                (M < 0 || N < 0
-                                 || (matrix_type == rocsparse_matrix_type_symmetric && M != N)
-                                 || (matrix_type == rocsparse_matrix_type_triangular && M != N))
-                                    ? rocsparse_status_invalid_size
-                                    : rocsparse_status_success);
-
-        // If adaptive, clear data
-        if(alg == rocsparse_spmv_alg_csr_adaptive)
-        {
-            EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_clear(handle, info), rocsparse_status_success);
-        }
-
-        return;
-    }
-
     // Allocate host memory for matrix
     // Wavefront size
     int dev;
