@@ -38,13 +38,13 @@ def runTestCommand (platform, project, gfilter, String dirmode = "release")
     String centos7Workaround = platform.jenkinsLabel.contains('centos7') ? 'export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:/opt/rocm/lib64/' : ''
 
     def hmmTestCommand= ''
-    if (platform.jenkinsLabel.contains('gfx90a'))
-    {
-        hmmTestCommand = """
-                            ROCSPARSE_MALLOC_MANAGED=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test --gtest_output=xml:test_detail_hmm_xnack_off.xml --gtest_color=yes --gtest_filter=*csrmv_managed*
-                            HSA_XNACK=1 ROCSPARSE_MALLOC_MANAGED=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test --gtest_output=xml:test_detail_hmm_xnack_on.xml --gtest_color=yes --gtest_filter=*csrmv_managed*
-                         """
-    }
+    // if (platform.jenkinsLabel.contains('gfx90a'))
+    // {
+    //     hmmTestCommand = """
+    //                         ROCSPARSE_MALLOC_MANAGED=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test --gtest_output=xml:test_detail_hmm_xnack_off.xml --gtest_color=yes --gtest_filter=*csrmv_managed*
+    //                         HSA_XNACK=1 ROCSPARSE_MALLOC_MANAGED=1 GTEST_LISTENER=NO_PASS_LINE_IN_LOG  ./rocsparse-test --gtest_output=xml:test_detail_hmm_xnack_on.xml --gtest_color=yes --gtest_filter=*csrmv_managed*
+    //                      """
+    // }
 
     def command = """#!/usr/bin/env bash
                 set -ex
