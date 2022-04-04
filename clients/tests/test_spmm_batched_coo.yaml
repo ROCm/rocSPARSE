@@ -54,11 +54,11 @@ Tests:
   indextype: *i64i32
   precision: *double_only_precisions
   M: [15, 32]
-  N: [2, 3, 4, 5]
+  N: [2, 3, 5]
   K: [7, 11, 27]
-  batch_count_A: [1, 2, 3]
-  batch_count_B: [2, 3, 7]
-  batch_count_C: [2, 3, 7]
+  batch_count_A: [1, 3]
+  batch_count_B: [2, 7]
+  batch_count_C: [2, 7]
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
@@ -73,11 +73,11 @@ Tests:
   indextype: *i32i32_i64i32_i64i64
   precision: *double_only_precisions
   M: [155, 326]
-  N: [22, 39, 43, 57]
+  N: [22, 39, 43]
   K: [72, 117, 279]
-  batch_count_A: [15, 23, 39]
-  batch_count_B: [24, 31, 78]
-  batch_count_C: [23, 36, 75]
+  batch_count_A: [15, 39]
+  batch_count_B: [24, 78]
+  batch_count_C: [23, 75]
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
@@ -92,11 +92,11 @@ Tests:
   indextype: *i32i32_i64i32_i64i64
   precision: *double_only_precisions
   M: [1552, 3263]
-  N: [222, 393, 443, 557]
+  N: [222, 393, 557]
   K: [728, 1177, 2796]
-  batch_count_A: [155, 234, 393]
-  batch_count_B: [243, 312, 782]
-  batch_count_C: [235, 364, 752]
+  batch_count_A: [155, 393]
+  batch_count_B: [312, 782]
+  batch_count_C: [235, 752]
   alpha_beta: *alpha_beta_range_quick
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
@@ -113,12 +113,12 @@ Tests:
   function: spmm_batched_coo
   indextype: *i32i32_i64i32_i64i64
   precision: *double_only_precisions
-  M: [701, 2002, 3467]
-  N: [248, 232, 398, 543, 577]
-  K: [409, 758, 1277, 1797]
-  batch_count_A: [135, 234, 413]
-  batch_count_B: [253, 372, 682]
-  batch_count_C: [135, 364, 552]
+  M: [701, 3467]
+  N: [248, 577]
+  K: [409, 1797]
+  batch_count_A: [135, 234]
+  batch_count_B: [253, 682]
+  batch_count_C: [364, 552]
   alpha_beta: *alpha_beta_range_checkin
   transA: [rocsparse_operation_none]
   transB: [rocsparse_operation_none, rocsparse_operation_transpose]
