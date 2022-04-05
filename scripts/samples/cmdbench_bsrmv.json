@@ -1,3 +1,0 @@
-{
-    "cmdlines":["-f bsrmv --bench-x --rocalution ${ROCSPARSE_BENCH_DATA_DIR}/* --blockdim 2 3 4 5 6 8 16 --iters 100 --bench-o bsrmv.json --bench-n 40" ]
-}
