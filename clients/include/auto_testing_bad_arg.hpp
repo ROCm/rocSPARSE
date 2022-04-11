@@ -793,6 +793,10 @@ inline void rocsparse_get_matrixname(const char* f, char* name)
         const char* importname                                                               \
             = (rocsparse_arguments_has_datafile(arg) ? &matrixname[0]                        \
                                                      : rocsparse_matrix2string(arg.matrix)); \
+        const char* ctypename = rocsparse_datatype2string(arg.compute_type);                 \
+        const char* itypename = rocsparse_indextype2string(arg.index_type_I);                \
+        const char* jtypename = rocsparse_indextype2string(arg.index_type_J);                \
+                                                                                             \
         display_timing_info_main(__VA_ARGS__,                                                \
                                  "iter",                                                     \
                                  arg.iters,                                                  \
@@ -801,7 +805,13 @@ inline void rocsparse_get_matrixname(const char* f, char* name)
                                  "function",                                                 \
                                  &arg.function[0],                                           \
                                  "import",                                                   \
-                                 importname);                                                \
+                                 importname,                                                 \
+                                 "ctype",                                                    \
+                                 ctypename,                                                  \
+                                 "itype",                                                    \
+                                 itypename,                                                  \
+                                 "jtype",                                                    \
+                                 jtypename);                                                 \
     } while(false)
 
 //
