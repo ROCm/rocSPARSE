@@ -354,18 +354,6 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
     return -1;
   }
 
-  if(this->indextype != 's' && this->indextype != 'd' && this->indextype != 'm')
-  {
-    std::cerr << "Invalid value for --indextype" << std::endl;
-    return -1;
-  }
-
-  if(this->precision != 's' && this->precision != 'd' && this->precision != 'c' && this->precision != 'z')
-  {
-    std::cerr << "Invalid value for --precision" << std::endl;
-    return -1;
-  }
-
   if(this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_default
        && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_thomas
        && this->b_gtsv_interleaved_alg != rocsparse_gtsv_interleaved_alg_lu
@@ -497,6 +485,66 @@ int rocsparse_arguments_config::parse(int&argc,char**&argv, options_description&
     std::cerr << "Invalid value for --col-blockdimB" << std::endl;
     return -1;
   }
+
+
+  switch(this->indextype)
+    {
+    case 's':
+      {
+	this->index_type_I   = rocsparse_indextype_i32;
+	this->index_type_J   = rocsparse_indextype_i32;
+	break;
+      }
+    case 'd':
+      {
+	this->index_type_I   = rocsparse_indextype_i64;
+	this->index_type_J   = rocsparse_indextype_i64;
+	break;
+      }
+
+    case 'm':
+      {
+	this->index_type_I   = rocsparse_indextype_i64;
+	this->index_type_J   = rocsparse_indextype_i32;
+	break;
+      }
+    default:
+      {
+	std::cerr << "Invalid value for --indextype" << std::endl;
+	return -1;
+      }
+    }
+
+  switch(this->precision)
+    {
+    case 's':
+      {
+	this->compute_type = rocsparse_datatype_f32_r;
+  break;
+      }
+    case 'd':
+      {
+	this->compute_type = rocsparse_datatype_f64_r;
+	break;
+      }
+
+    case 'c':
+      {
+	this->compute_type = rocsparse_datatype_f32_c;
+	break;
+      }
+    case 'z':
+      {
+	this->compute_type = rocsparse_datatype_f64_c;
+	break;
+      }
+    default:
+      {
+	std::cerr << "Invalid value for --precision" << std::endl;
+	return -1;
+      }
+    }
+
   return 0;
 }
 
@@ -529,18 +577,6 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
      && this->b_format != rocsparse_format_csc)
   {
     std::cerr << "Invalid value for --format" << std::endl;
-    return -1;
-  }
-
-  if(this->indextype != 's' && this->indextype != 'd' && this->indextype != 'm')
-  {
-    std::cerr << "Invalid value for --indextype" << std::endl;
-    return -1;
-  }
-
-  if(this->precision != 's' && this->precision != 'd' && this->precision != 'c' && this->precision != 'z')
-  {
-    std::cerr << "Invalid value for --precision" << std::endl;
     return -1;
   }
 
@@ -691,6 +727,68 @@ int rocsparse_arguments_config::parse_no_default(int&argc,char**&argv, options_d
     std::cerr << "Invalid value for --col-blockdimB" << std::endl;
     return -1;
   }
+
+
+
+  switch(this->indextype)
+    {
+    case 's':
+      {
+	this->index_type_I   = rocsparse_indextype_i32;
+	this->index_type_J   = rocsparse_indextype_i32;
+	break;
+      }
+    case 'd':
+      {
+	this->index_type_I   = rocsparse_indextype_i64;
+	this->index_type_J   = rocsparse_indextype_i64;
+	break;
+      }
+
+    case 'm':
+      {
+	this->index_type_I   = rocsparse_indextype_i64;
+	this->index_type_J   = rocsparse_indextype_i32;
+	break;
+      }
+    default:
+      {
+	std::cerr << "Invalid value for --indextype" << std::endl;
+	return -1;
+      }
+    }
+
+  switch(this->precision)
+    {
+    case 's':
+      {
+	this->compute_type = rocsparse_datatype_f32_r;
+  break;
+      }
+    case 'd':
+      {
+	this->compute_type = rocsparse_datatype_f64_r;
+	break;
+      }
+
+    case 'c':
+      {
+	this->compute_type = rocsparse_datatype_f32_c;
+	break;
+      }
+    case 'z':
+      {
+	this->compute_type = rocsparse_datatype_f64_c;
+	break;
+      }
+    default:
+      {
+	std::cerr << "Invalid value for --precision" << std::endl;
+	return -1;
+      }
+    }
+
+
   return 0;
 }
 
