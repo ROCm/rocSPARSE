@@ -315,7 +315,12 @@ rocsparse_status rocsparse_bsrmm_template(rocsparse_handle          handle,
     // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
-        // TODO
+        return rocsparse_status_not_implemented;
+    }
+
+    // Check matrix sorting mode
+    if(descr->storage_mode != rocsparse_storage_mode_sorted)
+    {
         return rocsparse_status_not_implemented;
     }
 

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -106,6 +106,12 @@ rocsparse_status rocsparse_csr2csr_compress_template(rocsparse_handle          h
     if(descr_A == nullptr)
     {
         return rocsparse_status_invalid_pointer;
+    }
+
+    // Check matrix sorting mode
+    if(descr_A->storage_mode != rocsparse_storage_mode_sorted)
+    {
+        return rocsparse_status_not_implemented;
     }
 
     // Check sizes

@@ -59,6 +59,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: bsrmv
   category: pre_checkin
@@ -72,6 +73,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 #
 # For testing float specializations.
@@ -123,6 +125,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: bsrmv
   category: pre_checkin
@@ -136,6 +139,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: bsrmv_file
   category: pre_checkin
@@ -149,6 +153,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [scircuit,
              nos3,
              nos5,
@@ -166,6 +171,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [Chevron2]
 
 - name: bsrmv
@@ -180,6 +186,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: bsrmv
   category: quick
@@ -193,6 +200,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_zero]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: bsrmv_file
   category: quick
@@ -206,6 +214,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [nos1,
              nos2,
              nos3,
@@ -224,6 +233,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [qc2534]
 
 
@@ -239,6 +249,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: bsrmv_file
   category: nightly
@@ -252,6 +263,7 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [amazon0312,
              Chebyshev4,
              sme3Dc,
@@ -270,4 +282,5 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [Chevron3]

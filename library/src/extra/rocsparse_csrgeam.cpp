@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -236,6 +236,14 @@ rocsparse_status rocsparse_csrgeam_template(rocsparse_handle          handle,
         return rocsparse_status_not_implemented;
     }
 
+    // Check matrix sorting mode
+    if(descr_A->storage_mode != rocsparse_storage_mode_sorted
+       || descr_B->storage_mode != rocsparse_storage_mode_sorted
+       || descr_C->storage_mode != rocsparse_storage_mode_sorted)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     // Check valid sizes
     if(m < 0 || n < 0 || nnz_A < 0 || nnz_B < 0)
     {
@@ -401,15 +409,17 @@ extern "C" rocsparse_status rocsparse_csrgeam_nnz(rocsparse_handle          hand
               (const void*&)nnz_C);
 
     // Check matrix type
-    if(descr_A->type != rocsparse_matrix_type_general)
+    if(descr_A->type != rocsparse_matrix_type_general
+       || descr_B->type != rocsparse_matrix_type_general
+       || descr_C->type != rocsparse_matrix_type_general)
     {
         return rocsparse_status_not_implemented;
     }
-    if(descr_B->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    if(descr_C->type != rocsparse_matrix_type_general)
+
+    // Check matrix sorting mode
+    if(descr_A->storage_mode != rocsparse_storage_mode_sorted
+       || descr_B->storage_mode != rocsparse_storage_mode_sorted
+       || descr_C->storage_mode != rocsparse_storage_mode_sorted)
     {
         return rocsparse_status_not_implemented;
     }

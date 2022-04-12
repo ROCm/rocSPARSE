@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2018-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +75,7 @@ rocsparse_status rocsparse_roti_template(rocsparse_handle     handle,
               idx_base);
 
     // Check index base
-    if(idx_base != rocsparse_index_base_zero && idx_base != rocsparse_index_base_one)
+    if(rocsparse_enum_utils::is_invalid(idx_base))
     {
         return rocsparse_status_invalid_value;
     }

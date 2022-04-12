@@ -21,8 +21,8 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "auto_testing_bad_arg.hpp"
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 template <typename T>

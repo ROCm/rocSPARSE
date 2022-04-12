@@ -76,10 +76,12 @@ void testing_coomv_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_coomv(const Arguments& arg)
 {
-    rocsparse_int        M     = arg.M;
-    rocsparse_int        N     = arg.N;
-    rocsparse_operation  trans = arg.transA;
-    rocsparse_index_base base  = arg.baseA;
+    rocsparse_int          M           = arg.M;
+    rocsparse_int          N           = arg.N;
+    rocsparse_operation    trans       = arg.transA;
+    rocsparse_index_base   base        = arg.baseA;
+    rocsparse_matrix_type  matrix_type = arg.matrix_type;
+    rocsparse_storage_mode storage     = arg.storage;
 
     host_scalar<T> h_alpha(arg.get_alpha<T>());
     host_scalar<T> h_beta(arg.get_beta<T>());
@@ -92,6 +94,12 @@ void testing_coomv(const Arguments& arg)
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
+
+    // Set matrix type
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, matrix_type));
+
+    // Set storage mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, storage));
 
 #define PARAMS(alpha_, A_, x_, beta_, y_) \
     handle, trans, A_.m, A_.n, A_.nnz, alpha_, descr, A_.val, A_.row_ind, A_.col_ind, x_, beta_, y_
@@ -119,7 +127,7 @@ void testing_coomv(const Arguments& arg)
 
     host_coo_matrix<T> hA;
 
-    matrix_factory.init_coo(hA, M, N, base);
+    matrix_factory.init_coo(hA, M, N);
 
     host_dense_matrix<T> hx((trans == rocsparse_operation_none) ? N : M, 1);
     host_dense_matrix<T> hy((trans == rocsparse_operation_none) ? M : N, 1);

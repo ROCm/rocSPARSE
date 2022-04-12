@@ -1567,19 +1567,10 @@ static inline rocsparse_status rocsparse_csrgemm_multadd_template(rocsparse_hand
     }
 
     // Check matrix type
-    if(descr_A->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    if(descr_B->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    if(descr_D->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    if(descr_C->type != rocsparse_matrix_type_general)
+    if(descr_A->type != rocsparse_matrix_type_general
+       || descr_B->type != rocsparse_matrix_type_general
+       || descr_D->type != rocsparse_matrix_type_general
+       || descr_C->type != rocsparse_matrix_type_general)
     {
         return rocsparse_status_not_implemented;
     }
@@ -1772,15 +1763,9 @@ static inline rocsparse_status rocsparse_csrgemm_mult_template(rocsparse_handle 
     }
 
     // Check matrix type
-    if(descr_A->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    if(descr_B->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    if(descr_C->type != rocsparse_matrix_type_general)
+    if(descr_A->type != rocsparse_matrix_type_general
+       || descr_B->type != rocsparse_matrix_type_general
+       || descr_C->type != rocsparse_matrix_type_general)
     {
         return rocsparse_status_not_implemented;
     }
@@ -1916,11 +1901,8 @@ static inline rocsparse_status rocsparse_csrgemm_scal_template(rocsparse_handle 
     }
 
     // Check matrix type
-    if(descr_C->type != rocsparse_matrix_type_general)
-    {
-        return rocsparse_status_not_implemented;
-    }
-    if(descr_D->type != rocsparse_matrix_type_general)
+    if(descr_C->type != rocsparse_matrix_type_general
+       || descr_D->type != rocsparse_matrix_type_general)
     {
         return rocsparse_status_not_implemented;
     }

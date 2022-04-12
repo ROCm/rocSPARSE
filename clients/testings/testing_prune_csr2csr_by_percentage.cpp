@@ -21,8 +21,8 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "auto_testing_bad_arg.hpp"
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 template <typename T>
@@ -82,6 +82,18 @@ void testing_prune_csr2csr_by_percentage_bad_arg(const Arguments& arg)
                          PARAMS_NNZ);
     auto_testing_bad_arg(
         rocsparse_prune_csr2csr_by_percentage<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_set_mat_storage_mode(csr_descr_A, rocsparse_storage_mode_unsorted));
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_set_mat_storage_mode(csr_descr_C, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(
+        rocsparse_prune_csr2csr_by_percentage_buffer_size<T>(PARAMS_BUFFER_SIZE),
+        rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_nnz_by_percentage<T>(PARAMS_NNZ),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_prune_csr2csr_by_percentage<T>(PARAMS),
+                            rocsparse_status_not_implemented);
 #undef PARAMS
 #undef PARAMS_NNZ
 #undef PARAMS_BUFFER_SIZE

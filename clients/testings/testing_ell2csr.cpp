@@ -21,8 +21,8 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "auto_testing_bad_arg.hpp"
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 template <typename T>
@@ -56,6 +56,13 @@ void testing_ell2csr_bad_arg(const Arguments& arg)
         csr_col_ind
     auto_testing_bad_arg(rocsparse_ell2csr_nnz, PARAMS_NNZ);
     auto_testing_bad_arg(rocsparse_ell2csr<T>, PARAMS);
+
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_set_mat_storage_mode(ell_descr, rocsparse_storage_mode_unsorted));
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_set_mat_storage_mode(csr_descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_ell2csr_nnz(PARAMS_NNZ), rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_ell2csr<T>(PARAMS), rocsparse_status_not_implemented);
 #undef PARAMS
 #undef PARAMS_NNZ
 }

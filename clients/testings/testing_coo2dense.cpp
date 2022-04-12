@@ -61,7 +61,11 @@ void testing_coo2dense(const Arguments& arg)
     rocsparse_local_handle    handle;
     rocsparse_local_mat_descr descr;
 
+    // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, arg.baseA));
+
+    // Set matrix storage mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, arg.storage));
 
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0 || LD < M)
@@ -77,21 +81,35 @@ void testing_coo2dense(const Arguments& arg)
         return;
     }
 
-    // Allocate memory.
-    host_vector<T>   h_dense_val(LD * N);
-    device_vector<T> d_dense_val(LD * N);
+    rocsparse_matrix_factory<T> matrix_factory(arg);
 
-    host_vector<rocsparse_int>   h_nnzPerRow(M);
-    device_vector<rocsparse_int> d_nnzPerRow(M);
-    if(!d_nnzPerRow || !d_dense_val || !h_nnzPerRow || !h_dense_val)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
+    host_vector<rocsparse_int> h_coo_row_ind;
+    host_vector<rocsparse_int> h_coo_col_ind;
+    host_vector<T>             h_coo_val;
 
-    rocsparse_seedrand();
+    rocsparse_int nnz = 0;
+    matrix_factory.init_coo(h_coo_row_ind, h_coo_col_ind, h_coo_val, M, N, nnz, arg.baseA);
 
-    // Random initialization of the matrix.
+    device_vector<rocsparse_int> d_coo_row_ind(nnz);
+    device_vector<rocsparse_int> d_coo_col_ind(nnz);
+    device_vector<T>             d_coo_val(nnz);
+
+    // Copy on host.
+    CHECK_HIP_ERROR(hipMemcpy(
+        d_coo_val, h_coo_val.data(), sizeof(T) * h_coo_val.size(), hipMemcpyHostToDevice));
+
+    CHECK_HIP_ERROR(hipMemcpy(d_coo_row_ind,
+                              h_coo_row_ind.data(),
+                              sizeof(rocsparse_int) * h_coo_row_ind.size(),
+                              hipMemcpyHostToDevice));
+
+    CHECK_HIP_ERROR(hipMemcpy(d_coo_col_ind,
+                              h_coo_col_ind.data(),
+                              sizeof(rocsparse_int) * h_coo_col_ind.size(),
+                              hipMemcpyHostToDevice));
+
+    // // Random initialization of the matrix.
+    host_vector<T> h_dense_val(LD * N);
     for(rocsparse_int i = 0; i < LD; ++i)
     {
         for(rocsparse_int j = 0; j < N; ++j)
@@ -100,69 +118,9 @@ void testing_coo2dense(const Arguments& arg)
         }
     }
 
-    for(rocsparse_int i = 0; i < M; ++i)
-    {
-        for(rocsparse_int j = 0; j < N; ++j)
-        {
-            h_dense_val[j * LD + i] = random_generator<T>(0, 9);
-        }
-    }
-
-    // Transfer.
-    CHECK_HIP_ERROR(hipMemcpy(d_dense_val, h_dense_val, sizeof(T) * LD * N, hipMemcpyHostToDevice));
-
-    rocsparse_int nnz;
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_pointer_mode(handle, rocsparse_pointer_mode_host));
-    CHECK_ROCSPARSE_ERROR(rocsparse_nnz<T>(
-        handle, rocsparse_direction_row, M, N, descr, d_dense_val, LD, d_nnzPerRow, &nnz));
-
-    // Transfer.
+    device_vector<T> d_dense_val(LD * N);
     CHECK_HIP_ERROR(
-        hipMemcpy(h_nnzPerRow, d_nnzPerRow, sizeof(rocsparse_int) * M, hipMemcpyDeviceToHost));
-
-    host_vector<rocsparse_int> h_coo_row_ind(std::max(nnz, 1));
-    host_vector<T>             h_coo_val(std::max(nnz, 1));
-    host_vector<rocsparse_int> h_coo_col_ind(std::max(nnz, 1));
-    if(!h_coo_row_ind || !h_coo_val || !h_coo_col_ind)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    device_vector<rocsparse_int> d_coo_row_ind(nnz);
-    device_vector<T>             d_coo_val(nnz);
-    device_vector<rocsparse_int> d_coo_col_ind(nnz);
-    if(!d_coo_row_ind || !d_coo_val || !d_coo_col_ind)
-    {
-        CHECK_HIP_ERROR(hipErrorOutOfMemory);
-        return;
-    }
-
-    // Convert the dense matrix to a compressed sparse matrix.
-    CHECK_ROCSPARSE_ERROR(rocsparse_dense2coo<T>(handle,
-                                                 M,
-                                                 N,
-                                                 descr,
-                                                 d_dense_val,
-                                                 LD,
-                                                 d_nnzPerRow,
-                                                 d_coo_val,
-                                                 d_coo_row_ind,
-                                                 d_coo_col_ind));
-
-    // Copy on host.
-    CHECK_HIP_ERROR(
-        hipMemcpy(h_coo_val, d_coo_val, sizeof(T) * std::max(nnz, 1), hipMemcpyDeviceToHost));
-
-    CHECK_HIP_ERROR(hipMemcpy(h_coo_row_ind,
-                              d_coo_row_ind,
-                              sizeof(rocsparse_int) * std::max(nnz, 1),
-                              hipMemcpyDeviceToHost));
-
-    CHECK_HIP_ERROR(hipMemcpy(h_coo_col_ind,
-                              d_coo_col_ind,
-                              sizeof(rocsparse_int) * std::max(nnz, 1),
-                              hipMemcpyDeviceToHost));
+        hipMemcpy(d_dense_val, h_dense_val.data(), sizeof(T) * LD * N, hipMemcpyHostToDevice));
 
     if(arg.unit_check)
     {
@@ -181,7 +139,7 @@ void testing_coo2dense(const Arguments& arg)
         CHECK_HIP_ERROR(
             hipMemcpy(gpu_dense_val, d_dense_val, sizeof(T) * LD * N, hipMemcpyDeviceToHost));
 
-        host_vector<T> cpu_dense_val = h_dense_val;
+        host_vector<T> cpu_dense_val(LD * N, -2);
         host_coo_to_dense(M,
                           N,
                           nnz,
@@ -193,8 +151,7 @@ void testing_coo2dense(const Arguments& arg)
                           LD,
                           rocsparse_order_column);
 
-        h_dense_val.unit_check(cpu_dense_val);
-        h_dense_val.unit_check(gpu_dense_val);
+        cpu_dense_val.unit_check(gpu_dense_val);
     }
 
     if(arg.timing)

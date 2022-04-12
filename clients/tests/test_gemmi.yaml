@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -62,6 +62,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: gemmi_file
   category: pre_checkin
@@ -75,10 +76,10 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [nos1,
              nos5,
              nos7]
-
 
 - name: gemmi
   category: quick
@@ -92,6 +93,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: gemmi_file
   category: quick
@@ -105,13 +107,13 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [mac_econ_fwd500,
              nos2,
              ASIC_320k,
              nos4,
              nos6,
              scircuit]
-
 
 - name: gemmi_file
   category: quick
@@ -125,6 +127,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [Chevron2,
              qc2534]
 
@@ -140,6 +143,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: gemmi_file
   category: nightly
@@ -153,6 +157,7 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [bibd_22_8,
              bmwcra_1,
              amazon0312,
@@ -173,4 +178,5 @@ Tests:
   transB: [rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [Chevron4]

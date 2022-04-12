@@ -29,15 +29,16 @@ template <typename T, typename I, typename J>
 rocsparse_matrix_factory_zero<T, I, J>::rocsparse_matrix_factory_zero(){};
 
 template <typename T, typename I, typename J>
-void rocsparse_matrix_factory_zero<T, I, J>::init_csr(std::vector<I>&       csr_row_ptr,
-                                                      std::vector<J>&       csr_col_ind,
-                                                      std::vector<T>&       csr_val,
-                                                      J&                    M,
-                                                      J&                    N,
-                                                      I&                    nnz,
-                                                      rocsparse_index_base  base,
-                                                      rocsparse_matrix_type matrix_type,
-                                                      rocsparse_fill_mode   uplo)
+void rocsparse_matrix_factory_zero<T, I, J>::init_csr(std::vector<I>&        csr_row_ptr,
+                                                      std::vector<J>&        csr_col_ind,
+                                                      std::vector<T>&        csr_val,
+                                                      J&                     M,
+                                                      J&                     N,
+                                                      I&                     nnz,
+                                                      rocsparse_index_base   base,
+                                                      rocsparse_matrix_type  matrix_type,
+                                                      rocsparse_fill_mode    uplo,
+                                                      rocsparse_storage_mode storage)
 {
     csr_row_ptr.resize((M > 0) ? (M + 1) : 0, static_cast<I>(base));
     csr_col_ind.resize(0);
@@ -47,16 +48,19 @@ void rocsparse_matrix_factory_zero<T, I, J>::init_csr(std::vector<I>&       csr_
 }
 
 template <typename T, typename I, typename J>
-void rocsparse_matrix_factory_zero<T, I, J>::init_gebsr(std::vector<I>&      bsr_row_ptr,
-                                                        std::vector<J>&      bsr_col_ind,
-                                                        std::vector<T>&      bsr_val,
-                                                        rocsparse_direction  dirb,
-                                                        J&                   Mb,
-                                                        J&                   Nb,
-                                                        I&                   nnzb,
-                                                        J&                   row_block_dim,
-                                                        J&                   col_block_dim,
-                                                        rocsparse_index_base base)
+void rocsparse_matrix_factory_zero<T, I, J>::init_gebsr(std::vector<I>&        bsr_row_ptr,
+                                                        std::vector<J>&        bsr_col_ind,
+                                                        std::vector<T>&        bsr_val,
+                                                        rocsparse_direction    dirb,
+                                                        J&                     Mb,
+                                                        J&                     Nb,
+                                                        I&                     nnzb,
+                                                        J&                     row_block_dim,
+                                                        J&                     col_block_dim,
+                                                        rocsparse_index_base   base,
+                                                        rocsparse_matrix_type  matrix_type,
+                                                        rocsparse_fill_mode    uplo,
+                                                        rocsparse_storage_mode storage)
 {
     bsr_row_ptr.resize((Mb > 0) ? (Mb + 1) : 0, static_cast<I>(base));
     bsr_col_ind.resize(0);
@@ -66,13 +70,16 @@ void rocsparse_matrix_factory_zero<T, I, J>::init_gebsr(std::vector<I>&      bsr
 }
 
 template <typename T, typename I, typename J>
-void rocsparse_matrix_factory_zero<T, I, J>::init_coo(std::vector<I>&      coo_row_ind,
-                                                      std::vector<I>&      coo_col_ind,
-                                                      std::vector<T>&      coo_val,
-                                                      I&                   M,
-                                                      I&                   N,
-                                                      I&                   nnz,
-                                                      rocsparse_index_base base)
+void rocsparse_matrix_factory_zero<T, I, J>::init_coo(std::vector<I>&        coo_row_ind,
+                                                      std::vector<I>&        coo_col_ind,
+                                                      std::vector<T>&        coo_val,
+                                                      I&                     M,
+                                                      I&                     N,
+                                                      I&                     nnz,
+                                                      rocsparse_index_base   base,
+                                                      rocsparse_matrix_type  matrix_type,
+                                                      rocsparse_fill_mode    uplo,
+                                                      rocsparse_storage_mode storage)
 {
     coo_row_ind.resize(0);
     coo_col_ind.resize(0);

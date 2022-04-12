@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 #include "auto_testing_bad_arg.hpp"
@@ -71,6 +71,25 @@ void testing_csrgeam_bad_arg(const Arguments& arg)
 
     auto_testing_bad_arg(rocsparse_csrgeam_nnz, PARAMS_NNZ);
     auto_testing_bad_arg(rocsparse_csrgeam<T>, PARAMS);
+
+    for(auto val : rocsparse_matrix_type_t::values)
+    {
+        if(val != rocsparse_matrix_type_general)
+        {
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_A, val));
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_B, val));
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr_C, val));
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgeam_nnz(PARAMS_NNZ),
+                                    rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrgeam<T>(PARAMS), rocsparse_status_not_implemented);
+        }
+    }
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_A, rocsparse_storage_mode_unsorted));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_B, rocsparse_storage_mode_unsorted));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_C, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrgeam_nnz(PARAMS_NNZ), rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrgeam<T>(PARAMS), rocsparse_status_not_implemented);
 
 #undef PARAMS
 #undef PARAMS_NNZ
@@ -185,7 +204,16 @@ void testing_csrgeam(const Arguments& arg)
     matrix_factory.init_csr(hcsr_row_ptr_A, hcsr_col_ind_A, hcsr_val_A, M, N, nnz_A, baseA);
 
     // Sample B
-    matrix_factory_random.init_csr(hcsr_row_ptr_B, hcsr_col_ind_B, hcsr_val_B, M, N, nnz_B, baseB);
+    matrix_factory_random.init_csr(hcsr_row_ptr_B,
+                                   hcsr_col_ind_B,
+                                   hcsr_val_B,
+                                   M,
+                                   N,
+                                   nnz_B,
+                                   baseB,
+                                   rocsparse_matrix_type_general,
+                                   rocsparse_fill_mode_lower,
+                                   rocsparse_storage_mode_sorted);
 
     // Allocate device memory
     device_vector<rocsparse_int> dcsr_row_ptr_A(M + 1);

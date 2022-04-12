@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 #include "testing_csrilu0.hpp"
@@ -67,6 +67,28 @@ void testing_csrilu0_bad_arg(const Arguments& arg)
     auto_testing_bad_arg(rocsparse_csrilu0_buffer_size<T>, PARAMS_BUFFER_SIZE);
     auto_testing_bad_arg(rocsparse_csrilu0_analysis<T>, PARAMS_ANALYSIS);
     auto_testing_bad_arg(rocsparse_csrilu0<T>, PARAMS);
+
+    for(auto val : rocsparse_matrix_type_t::values)
+    {
+        if(val != rocsparse_matrix_type_general)
+        {
+            CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, val));
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                                    rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_analysis<T>(PARAMS_ANALYSIS),
+                                    rocsparse_status_not_implemented);
+            EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0<T>(PARAMS), rocsparse_status_not_implemented);
+        }
+    }
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0_analysis<T>(PARAMS_ANALYSIS),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrilu0<T>(PARAMS), rocsparse_status_not_implemented);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_ANALYSIS

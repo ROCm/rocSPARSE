@@ -35,15 +35,16 @@ rocsparse_matrix_factory_random<T, I, J>::rocsparse_matrix_factory_random(
     , m_matrix_init_kind(matrix_init_kind){};
 
 template <typename T, typename I, typename J>
-void rocsparse_matrix_factory_random<T, I, J>::init_csr(std::vector<I>&       csr_row_ptr,
-                                                        std::vector<J>&       csr_col_ind,
-                                                        std::vector<T>&       csr_val,
-                                                        J&                    M,
-                                                        J&                    N,
-                                                        I&                    nnz,
-                                                        rocsparse_index_base  base,
-                                                        rocsparse_matrix_type matrix_type,
-                                                        rocsparse_fill_mode   uplo)
+void rocsparse_matrix_factory_random<T, I, J>::init_csr(std::vector<I>&        csr_row_ptr,
+                                                        std::vector<J>&        csr_col_ind,
+                                                        std::vector<T>&        csr_val,
+                                                        J&                     M,
+                                                        J&                     N,
+                                                        I&                     nnz,
+                                                        rocsparse_index_base   base,
+                                                        rocsparse_matrix_type  matrix_type,
+                                                        rocsparse_fill_mode    uplo,
+                                                        rocsparse_storage_mode storage)
 {
     switch(matrix_type)
     {
@@ -94,19 +95,31 @@ void rocsparse_matrix_factory_random<T, I, J>::init_csr(std::vector<I>&       cs
         break;
     }
     }
+
+    switch(storage)
+    {
+    case rocsparse_storage_mode_unsorted:
+    {
+        rocsparse_matrix_utils::host_csrunsort<T, I, J>(
+            csr_row_ptr.data(), csr_col_ind.data(), M, base);
+    }
+    }
 }
 
 template <typename T, typename I, typename J>
-void rocsparse_matrix_factory_random<T, I, J>::init_gebsr(std::vector<I>&      bsr_row_ptr,
-                                                          std::vector<J>&      bsr_col_ind,
-                                                          std::vector<T>&      bsr_val,
-                                                          rocsparse_direction  dirb,
-                                                          J&                   Mb,
-                                                          J&                   Nb,
-                                                          I&                   nnzb,
-                                                          J&                   row_block_dim,
-                                                          J&                   col_block_dim,
-                                                          rocsparse_index_base base)
+void rocsparse_matrix_factory_random<T, I, J>::init_gebsr(std::vector<I>&        bsr_row_ptr,
+                                                          std::vector<J>&        bsr_col_ind,
+                                                          std::vector<T>&        bsr_val,
+                                                          rocsparse_direction    dirb,
+                                                          J&                     Mb,
+                                                          J&                     Nb,
+                                                          I&                     nnzb,
+                                                          J&                     row_block_dim,
+                                                          J&                     col_block_dim,
+                                                          rocsparse_index_base   base,
+                                                          rocsparse_matrix_type  matrix_type,
+                                                          rocsparse_fill_mode    uplo,
+                                                          rocsparse_storage_mode storage)
 {
     rocsparse_init_gebsr_random(bsr_row_ptr,
                                 bsr_col_ind,
@@ -120,19 +133,71 @@ void rocsparse_matrix_factory_random<T, I, J>::init_gebsr(std::vector<I>&      b
                                 this->m_matrix_init_kind,
                                 this->m_fullrank,
                                 this->m_to_int);
+
+    switch(storage)
+    {
+    case rocsparse_storage_mode_unsorted:
+    {
+        rocsparse_matrix_utils::host_gebsrunsort<T, I, J>(
+            bsr_row_ptr.data(), bsr_col_ind.data(), Mb, base);
+    }
+    }
 }
 
 template <typename T, typename I, typename J>
-void rocsparse_matrix_factory_random<T, I, J>::init_coo(std::vector<I>&      coo_row_ind,
-                                                        std::vector<I>&      coo_col_ind,
-                                                        std::vector<T>&      coo_val,
-                                                        I&                   M,
-                                                        I&                   N,
-                                                        I&                   nnz,
-                                                        rocsparse_index_base base)
+void rocsparse_matrix_factory_random<T, I, J>::init_coo(std::vector<I>&        coo_row_ind,
+                                                        std::vector<I>&        coo_col_ind,
+                                                        std::vector<T>&        coo_val,
+                                                        I&                     M,
+                                                        I&                     N,
+                                                        I&                     nnz,
+                                                        rocsparse_index_base   base,
+                                                        rocsparse_matrix_type  matrix_type,
+                                                        rocsparse_fill_mode    uplo,
+                                                        rocsparse_storage_mode storage)
 {
-    rocsparse_init_coo_random(
-        coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base, this->m_fullrank, this->m_to_int);
+    switch(matrix_type)
+    {
+    case rocsparse_matrix_type_symmetric:
+    case rocsparse_matrix_type_hermitian:
+    case rocsparse_matrix_type_triangular:
+    {
+        std::vector<I> row_ind;
+        std::vector<I> col_ind;
+        std::vector<T> val;
+
+        rocsparse_init_coo_random(
+            row_ind, col_ind, val, M, N, nnz, base, this->m_fullrank, this->m_to_int);
+
+        rocsparse_matrix_utils::host_cootri(row_ind.data(),
+                                            col_ind.data(),
+                                            val.data(),
+                                            coo_row_ind,
+                                            coo_col_ind,
+                                            coo_val,
+                                            M,
+                                            N,
+                                            nnz,
+                                            base,
+                                            uplo);
+        break;
+    }
+    case rocsparse_matrix_type_general:
+    {
+        rocsparse_init_coo_random(
+            coo_row_ind, coo_col_ind, coo_val, M, N, nnz, base, this->m_fullrank, this->m_to_int);
+        break;
+    }
+    }
+
+    switch(storage)
+    {
+    case rocsparse_storage_mode_unsorted:
+    {
+        rocsparse_matrix_utils::host_coounsort<T, I>(
+            coo_row_ind.data(), coo_col_ind.data(), M, nnz, base);
+    }
+    }
 };
 
 template struct rocsparse_matrix_factory_random<float, int32_t, int32_t>;

@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 #include "auto_testing_bad_arg.hpp"
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 template <typename T>
@@ -65,6 +66,12 @@ void testing_gebsr2gebsr_bad_arg(const Arguments& arg)
         col_block_dim_C, temp_buffer
     auto_testing_bad_arg(rocsparse_gebsr2gebsr_buffer_size<T>, PARAMS_BUFFER_SIZE);
     auto_testing_bad_arg(rocsparse_gebsr2gebsr<T>, PARAMS);
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_A, rocsparse_storage_mode_unsorted));
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_C, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsr2gebsr<T>(PARAMS), rocsparse_status_not_implemented);
 #undef PARAMS
 #undef PARAMS_BUFFER_SIZE
 }

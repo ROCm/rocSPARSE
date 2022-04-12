@@ -89,8 +89,16 @@ void testing_csrsm_bad_arg(const Arguments& arg)
                                     rocsparse_status_not_implemented);
         }
     }
-
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_analysis<T>(PARAMS_ANALYSIS),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrsm_solve<T>(PARAMS_SOLVE),
+                            rocsparse_status_not_implemented);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
 
     // Test rocsparse_csrsm_zero_pivot()
     rocsparse_int position;

@@ -69,6 +69,9 @@ void testing_ellmv_bad_arg(const Arguments& arg)
         }
     }
 
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_ellmv<T>(PARAMS), rocsparse_status_not_implemented);
+
 #undef PARAMS
 }
 

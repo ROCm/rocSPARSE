@@ -79,12 +79,13 @@ void testing_gemmi_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_gemmi(const Arguments& arg)
 {
-    rocsparse_int               M      = arg.M;
-    rocsparse_int               N      = arg.N;
-    rocsparse_int               K      = arg.K;
-    rocsparse_operation         transA = arg.transA;
-    rocsparse_operation         transB = arg.transB;
-    rocsparse_index_base        base   = arg.baseA;
+    rocsparse_int               M       = arg.M;
+    rocsparse_int               N       = arg.N;
+    rocsparse_int               K       = arg.K;
+    rocsparse_operation         transA  = arg.transA;
+    rocsparse_operation         transB  = arg.transB;
+    rocsparse_index_base        base    = arg.baseA;
+    rocsparse_storage_mode      storage = arg.storage;
     rocsparse_matrix_factory<T> matrix_factory(arg);
 
     host_scalar<T> h_alpha;
@@ -100,6 +101,9 @@ void testing_gemmi(const Arguments& arg)
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
+
+    // Set matrix storage mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, storage));
 
     // Argument sanity check before allocating invalid memory
     if(M <= 0 || N <= 0 || K < 0)

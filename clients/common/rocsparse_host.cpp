@@ -5982,6 +5982,27 @@ void host_coo_to_dense(I                     m,
 
     A.resize(ld * nm);
 
+    if(order == rocsparse_order_column)
+    {
+        for(I i = 0; i < n; i++)
+        {
+            for(I j = 0; j < m; j++)
+            {
+                A[ld * i + j] = static_cast<T>(0);
+            }
+        }
+    }
+    else
+    {
+        for(I j = 0; j < m; j++)
+        {
+            for(I i = 0; i < n; i++)
+            {
+                A[ld * j + i] = static_cast<T>(0);
+            }
+        }
+    }
+
     for(I i = 0; i < nnz; i++)
     {
         I row = coo_row_ind[i] - base;

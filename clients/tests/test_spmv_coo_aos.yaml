@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,7 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: spmv_coo_aos
   category: pre_checkin
@@ -68,6 +69,7 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: spmv_coo_aos
   category: nightly
@@ -80,6 +82,7 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_random]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: spmv_coo_aos_file
   category: quick
@@ -92,6 +95,7 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [mac_econ_fwd500,
              nos2,
              nos4,
@@ -109,6 +113,7 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [rma10,
              mc2depi,
              ASIC_320k,
@@ -128,6 +133,7 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [bibd_22_8,
              bmwcra_1,
              amazon0312,
@@ -147,8 +153,22 @@ Tests:
   transA: [rocsparse_operation_none]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [Chevron2,
-             qc2534]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
+  filename: [Chevron2]
+
+- name: spmv_coo_aos_file
+  category: quick
+  function: spmv_coo_aos
+  indextype: *i32_i64
+  precision: *single_double_precisions_complex
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_quick
+  transA: [rocsparse_operation_none]
+  baseA: [rocsparse_index_base_zero]
+  matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted]
+  filename: [qc2534]
 
 - name: spmv_coo_aos_file
   category: pre_checkin
@@ -161,8 +181,22 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_one]
   matrix: [rocsparse_matrix_file_rocalution]
-  filename: [mplate,
-             Chevron3]
+  storage: [rocsparse_storage_mode_sorted]
+  filename: [Chevron3]
+
+- name: spmv_coo_aos_file
+  category: pre_checkin
+  function: spmv_coo_aos
+  indextype: *i32_i64
+  precision: *double_only_precisions
+  M: 1
+  N: 1
+  alpha_beta: *alpha_beta_range_checkin
+  transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
+  baseA: [rocsparse_index_base_one]
+  matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_unsorted]
+  filename: [mplate]
 
 - name: spmv_coo_aos_file
   category: nightly
@@ -175,4 +209,5 @@ Tests:
   transA: [rocsparse_operation_none, rocsparse_operation_conjugate_transpose]
   baseA: [rocsparse_index_base_zero]
   matrix: [rocsparse_matrix_file_rocalution]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
   filename: [Chevron4]

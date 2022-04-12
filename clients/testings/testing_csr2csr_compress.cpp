@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 #include "auto_testing_bad_arg.hpp"
@@ -66,6 +66,13 @@ void testing_csr2csr_compress_bad_arg(const Arguments& arg)
     auto_testing_bad_arg(
         rocsparse_nnz_compress<T>, nargs_to_exclude_nnz, args_to_exclude_nnz, PARAMS_NNZ);
     auto_testing_bad_arg(rocsparse_csr2csr_compress<T>, nargs_to_exclude, args_to_exclude, PARAMS);
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr_A, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz_compress<T>(PARAMS_NNZ),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2csr_compress<T>(PARAMS),
+                            rocsparse_status_not_implemented);
+
 #undef PARAMS
 #undef PARAMS_NNZ
 }

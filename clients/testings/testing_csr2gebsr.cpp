@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 #include "auto_testing_bad_arg.hpp"
@@ -71,6 +71,15 @@ void testing_csr2gebsr_bad_arg(const Arguments& arg)
     auto_testing_bad_arg(rocsparse_csr2gebsr_buffer_size<T>, PARAMS_BUFFER_SIZE);
     auto_testing_bad_arg(rocsparse_csr2gebsr_nnz, nargs_to_exclude, args_to_exclude, PARAMS_NNZ);
     auto_testing_bad_arg(rocsparse_csr2gebsr<T>, PARAMS);
+
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_set_mat_storage_mode(csr_descr, rocsparse_storage_mode_unsorted));
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_set_mat_storage_mode(bsr_descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr_nnz(PARAMS_NNZ), rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csr2gebsr<T>(PARAMS), rocsparse_status_not_implemented);
 #undef PARAMS
 #undef PARAMS_NNZ
 #undef PARAMS_BUFFER_SIZE

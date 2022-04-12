@@ -575,7 +575,16 @@ void testing_csrgemm_reuse(const Arguments& arg)
                 h_B.base = baseB;
                 h_B.m    = K;
                 h_B.n    = N;
-                rf.init_csr(h_B.ptr, h_B.ind, h_B.val, h_B.m, h_B.n, h_B.nnz, h_B.base);
+                rf.init_csr(h_B.ptr,
+                            h_B.ind,
+                            h_B.val,
+                            h_B.m,
+                            h_B.n,
+                            h_B.nnz,
+                            h_B.base,
+                            rocsparse_matrix_type_general,
+                            rocsparse_fill_mode_lower,
+                            rocsparse_storage_mode_sorted);
             }
 
             break;
@@ -592,14 +601,32 @@ void testing_csrgemm_reuse(const Arguments& arg)
                 h_B.base = baseB;
                 h_B.m    = K;
                 h_B.n    = N;
-                rf.init_csr(h_B.ptr, h_B.ind, h_B.val, h_B.m, h_B.n, h_B.nnz, h_B.base);
+                rf.init_csr(h_B.ptr,
+                            h_B.ind,
+                            h_B.val,
+                            h_B.m,
+                            h_B.n,
+                            h_B.nnz,
+                            h_B.base,
+                            rocsparse_matrix_type_general,
+                            rocsparse_fill_mode_lower,
+                            rocsparse_storage_mode_sorted);
             }
 
             {
                 h_D.base = baseD;
                 h_D.m    = M;
                 h_D.n    = N;
-                rf.init_csr(h_D.ptr, h_D.ind, h_D.val, h_D.m, h_D.n, h_D.nnz, h_D.base);
+                rf.init_csr(h_D.ptr,
+                            h_D.ind,
+                            h_D.val,
+                            h_D.m,
+                            h_D.n,
+                            h_D.nnz,
+                            h_D.base,
+                            rocsparse_matrix_type_general,
+                            rocsparse_fill_mode_lower,
+                            rocsparse_storage_mode_sorted);
             }
 
             break;

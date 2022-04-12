@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2021-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,6 +51,14 @@ struct rocsparse_operation_t
     static constexpr value_t      values[nvalues] = {rocsparse_operation_none,
                                                 rocsparse_operation_transpose,
                                                 rocsparse_operation_conjugate_transpose};
+};
+
+struct rocsparse_storage_mode_t
+{
+    using value_t                         = rocsparse_storage_mode;
+    static constexpr unsigned int nvalues = 2;
+    static constexpr value_t      values[nvalues]
+        = {rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted};
 };
 
 std::ostream& operator<<(std::ostream& out, const rocsparse_operation& v);

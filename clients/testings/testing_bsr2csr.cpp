@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 #include "auto_testing_bad_arg.hpp"
@@ -204,6 +204,12 @@ void testing_bsr2csr_bad_arg(const Arguments& arg)
         csr_val, csr_row_ptr, csr_col_ind
 
     auto_testing_bad_arg(rocsparse_bsr2csr<T>, PARAMS);
+
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_set_mat_storage_mode(bsr_descr, rocsparse_storage_mode_unsorted));
+    CHECK_ROCSPARSE_ERROR(
+        rocsparse_set_mat_storage_mode(csr_descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsr2csr<T>(PARAMS), rocsparse_status_not_implemented);
 
 #undef PARAMS
 }

@@ -21,6 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 #include "auto_testing_bad_arg.hpp"
@@ -49,6 +50,9 @@ void testing_dense2coo_bad_arg(const Arguments& arg)
 
 #define PARAMS handle, m, n, descr, A, ld, nnz_per_rows, coo_val, coo_row_ind, coo_col_ind
     auto_testing_bad_arg(rocsparse_dense2coo<T>, PARAMS);
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_dense2coo<T>(PARAMS), rocsparse_status_not_implemented);
 #undef PARAMS
 }
 
