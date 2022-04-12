@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 #include "testing_csrilu0.hpp"
 
@@ -72,6 +72,14 @@ void testing_bsrilu0_bad_arg(const Arguments& arg)
     auto_testing_bad_arg(rocsparse_bsrilu0_buffer_size<T>, PARAMS_BUFFER_SIZE);
     auto_testing_bad_arg(rocsparse_bsrilu0_analysis<T>, PARAMS_ANALYSIS);
     auto_testing_bad_arg(rocsparse_bsrilu0<T>, PARAMS);
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_buffer_size<T>(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0_analysis<T>(PARAMS_ANALYSIS),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_bsrilu0<T>(PARAMS), rocsparse_status_not_implemented);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
 
 #undef PARAMS_BUFFER_SIZE
 #undef PARAMS_ANALYSIS

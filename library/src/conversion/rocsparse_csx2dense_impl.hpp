@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,6 +87,12 @@ rocsparse_status rocsparse_csx2dense_impl(rocsparse_handle          handle,
     if(rocsparse_enum_utils::is_invalid(order))
     {
         return rocsparse_status_invalid_value;
+    }
+
+    // Check matrix sorting mode
+    if(descr->storage_mode != rocsparse_storage_mode_sorted)
+    {
+        return rocsparse_status_not_implemented;
     }
 
     //

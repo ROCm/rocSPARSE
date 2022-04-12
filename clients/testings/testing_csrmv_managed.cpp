@@ -94,6 +94,11 @@ void testing_csrmv_managed_bad_arg(const Arguments& arg)
         }
     }
 
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv_analysis<T>(PARAMS_ANALYSIS),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_csrmv<T>(PARAMS), rocsparse_status_not_implemented);
+
 #undef PARAMS_ANALYSIS
 #undef PARAMS
 }

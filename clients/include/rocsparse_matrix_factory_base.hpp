@@ -47,15 +47,16 @@ public:
     // @param[in] base base of indices.
     // @param[in] matrix_type what type of matrix to generate.
     // @param[in] uplo fill mode of matrix.
-    virtual void init_csr(std::vector<I>&       csr_row_ptr,
-                          std::vector<J>&       csr_col_ind,
-                          std::vector<T>&       csr_val,
-                          J&                    M,
-                          J&                    N,
-                          I&                    nnz,
-                          rocsparse_index_base  base,
-                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
-                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower)
+    virtual void init_csr(std::vector<I>&        csr_row_ptr,
+                          std::vector<J>&        csr_col_ind,
+                          std::vector<T>&        csr_val,
+                          J&                     M,
+                          J&                     N,
+                          I&                     nnz,
+                          rocsparse_index_base   base,
+                          rocsparse_matrix_type  matrix_type,
+                          rocsparse_fill_mode    uplo,
+                          rocsparse_storage_mode storage)
         = 0;
 
     // @brief Initialize a gebsr-sparse matrix.
@@ -69,16 +70,19 @@ public:
     // @param[inout] row_block_dim row dimension of the blocks.
     // @param[inout] col_block_dim column dimension of the blocks.
     // @param[in] base base of indices.
-    virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
-                            std::vector<J>&      bsr_col_ind,
-                            std::vector<T>&      bsr_val,
-                            rocsparse_direction  dirb,
-                            J&                   Mb,
-                            J&                   Nb,
-                            I&                   nnzb,
-                            J&                   row_block_dim,
-                            J&                   col_block_dim,
-                            rocsparse_index_base base)
+    virtual void init_gebsr(std::vector<I>&        bsr_row_ptr,
+                            std::vector<J>&        bsr_col_ind,
+                            std::vector<T>&        bsr_val,
+                            rocsparse_direction    dirb,
+                            J&                     Mb,
+                            J&                     Nb,
+                            I&                     nnzb,
+                            J&                     row_block_dim,
+                            J&                     col_block_dim,
+                            rocsparse_index_base   base,
+                            rocsparse_matrix_type  matrix_type,
+                            rocsparse_fill_mode    uplo,
+                            rocsparse_storage_mode storage)
         = 0;
 
     // @brief Initialize a coo-sparse matrix.
@@ -89,13 +93,16 @@ public:
     // @param[inout] N number of columns.
     // @param[inout] nnz number of non-zeros.
     // @param[in] base base of indices.
-    virtual void init_coo(std::vector<I>&      coo_row_ind,
-                          std::vector<I>&      coo_col_ind,
-                          std::vector<T>&      coo_val,
-                          I&                   M,
-                          I&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base)
+    virtual void init_coo(std::vector<I>&        coo_row_ind,
+                          std::vector<I>&        coo_col_ind,
+                          std::vector<T>&        coo_val,
+                          I&                     M,
+                          I&                     N,
+                          I&                     nnz,
+                          rocsparse_index_base   base,
+                          rocsparse_matrix_type  matrix_type,
+                          rocsparse_fill_mode    uplo,
+                          rocsparse_storage_mode storage)
         = 0;
 };
 

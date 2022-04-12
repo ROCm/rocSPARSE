@@ -1,5 +1,5 @@
 # ########################################################################
-# Copyright (c) 2019-2021 Advanced Micro Devices, Inc.
+# Copyright (c) 2019-2022 Advanced Micro Devices, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@ Tests:
   N: [0, 3, 8, 13, 64, 256]
   denseld: [-8, 64, 512]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: coo2dense
   category: pre_checkin
@@ -48,6 +49,7 @@ Tests:
   N: [-3, 0, 241, 1000]
   denseld: [100, 1000, 2000]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]
 
 - name: coo2dense
   category: nightly
@@ -57,3 +59,4 @@ Tests:
   N: [2000, 4000]
   denseld: [ 8000 ]
   baseA: [rocsparse_index_base_zero, rocsparse_index_base_one]
+  storage: [rocsparse_storage_mode_sorted, rocsparse_storage_mode_unsorted]

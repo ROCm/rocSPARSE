@@ -21,8 +21,8 @@
  * THE SOFTWARE.
  *
  * ************************************************************************ */
-
 #include "auto_testing_bad_arg.hpp"
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 template <typename T>
@@ -48,6 +48,9 @@ void testing_nnz_bad_arg(const Arguments& arg)
 
 #define PARAMS handle, dir, m, n, descr, A, ld, nnz_per_row_columns, nnz_total_dev_host_ptr
     auto_testing_bad_arg(rocsparse_nnz<T>, PARAMS);
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_nnz<T>(PARAMS), rocsparse_status_not_implemented);
 #undef PARAMS
 }
 

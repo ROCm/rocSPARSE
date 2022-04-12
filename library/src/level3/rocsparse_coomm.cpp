@@ -437,6 +437,18 @@ rocsparse_status rocsparse_coomm_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_value;
     }
 
+    // Check matrix type
+    if(descr->type != rocsparse_matrix_type_general)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
+    // Check matrix sorting mode
+    if(descr->storage_mode != rocsparse_storage_mode_sorted)
+    {
+        return rocsparse_status_not_implemented;
+    }
+
     if(order_B != order_C)
     {
         return rocsparse_status_invalid_value;

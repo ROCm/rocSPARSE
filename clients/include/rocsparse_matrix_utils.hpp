@@ -676,13 +676,21 @@ struct rocsparse_matrix_utils
     }
 
     // Extract lower or upper part of input matrix to form new triangular output matrix
-    template <typename T, typename I, typename J>
+    template <typename T,
+              typename I,
+              typename J,
+              template <typename...>
+              class VEC1,
+              template <typename...>
+              class VEC2,
+              template <typename...>
+              class VEC3>
     static void host_csrtri(const I*             ptr,
                             const J*             ind,
                             const T*             val,
-                            std::vector<I>&      csr_row_ptr,
-                            std::vector<J>&      csr_col_ind,
-                            std::vector<T>&      csr_val,
+                            VEC1<I>&             csr_row_ptr,
+                            VEC2<J>&             csr_col_ind,
+                            VEC3<T>&             csr_val,
                             J                    M,
                             J                    N,
                             I&                   nnz,
@@ -775,6 +783,157 @@ struct rocsparse_matrix_utils
                 csr_row_ptr[i + 1] = index + base;
             }
         }
+    }
+
+    template <typename T,
+              typename I,
+              template <typename...>
+              class VEC1,
+              template <typename...>
+              class VEC2,
+              template <typename...>
+              class VEC3>
+    static void host_cootri(const I*             row_ind,
+                            const I*             col_ind,
+                            const T*             val,
+                            VEC1<I>&             coo_row_ind,
+                            VEC2<I>&             coo_col_ind,
+                            VEC3<T>&             coo_val,
+                            I                    M,
+                            I                    N,
+                            I&                   nnz,
+                            rocsparse_index_base base,
+                            rocsparse_fill_mode  uplo)
+    {
+        if(M != N)
+        {
+            return;
+        }
+
+        nnz = 0;
+        if(uplo == rocsparse_fill_mode_lower)
+        {
+            I index = 0;
+            for(I i = 0; i < M; i++)
+            {
+                while(row_ind[index] - base == i)
+                {
+                    if(col_ind[index] - base <= i)
+                    {
+                        nnz++;
+                    }
+
+                    index++;
+                }
+            }
+        }
+        else
+        {
+            I index = 0;
+            for(I i = 0; i < M; i++)
+            {
+                while(row_ind[index] - base == i)
+                {
+                    if(col_ind[index] - base >= i)
+                    {
+                        nnz++;
+                    }
+
+                    index++;
+                }
+            }
+        }
+
+        coo_row_ind.resize(nnz, 0);
+        coo_col_ind.resize(nnz, 0);
+        coo_val.resize(nnz, static_cast<T>(0));
+
+        nnz = 0;
+        if(uplo == rocsparse_fill_mode_lower)
+        {
+            I index = 0;
+            for(I i = 0; i < M; i++)
+            {
+                while(row_ind[index] - base == i)
+                {
+                    if(col_ind[index] - base <= i)
+                    {
+                        coo_row_ind[nnz] = row_ind[index];
+                        coo_col_ind[nnz] = col_ind[index];
+                        coo_val[nnz]     = val[index];
+                        nnz++;
+                    }
+
+                    index++;
+                }
+            }
+        }
+        else
+        {
+            I index = 0;
+            for(I i = 0; i < M; i++)
+            {
+                while(row_ind[index] - base == i)
+                {
+                    if(col_ind[index] - base >= i)
+                    {
+                        coo_row_ind[nnz] = row_ind[index];
+                        coo_col_ind[nnz] = col_ind[index];
+                        coo_val[nnz]     = val[index];
+                        nnz++;
+                    }
+
+                    index++;
+                }
+            }
+        }
+    }
+
+    // Shuffle matrix columns so that the matrix is unsorted
+    template <typename T, typename I, typename J>
+    static void host_csrunsort(const I* csr_row_ptr, J* csr_col_ind, J M, rocsparse_index_base base)
+    {
+        for(J i = 0; i < M; i++)
+        {
+            I start = csr_row_ptr[i] - base;
+            I end   = csr_row_ptr[i + 1] - base;
+
+            if(start < end)
+            {
+                std::random_shuffle(&csr_col_ind[start], &csr_col_ind[end]);
+            }
+        }
+    }
+
+    // Shuffle matrix columns so that the matrix is unsorted
+    template <typename T, typename I>
+    static void
+        host_coounsort(const I* coo_row_ind, I* coo_col_ind, I M, I nnz, rocsparse_index_base base)
+    {
+        I index = 0;
+
+        for(I i = 0; i < M; i++)
+        {
+            I start = index;
+            while(index < nnz && coo_row_ind[index] - base == i)
+            {
+                index++;
+            }
+            I end = index;
+
+            if(start < end)
+            {
+                std::random_shuffle(&coo_col_ind[start], &coo_col_ind[end]);
+            }
+        }
+    }
+
+    // Shuffle matrix columns so that the matrix is unsorted
+    template <typename T, typename I, typename J>
+    static void
+        host_gebsrunsort(const I* bsr_row_ptr, J* bsr_col_ind, J Mb, rocsparse_index_base base)
+    {
+        host_csrunsort<T, I, J>(bsr_row_ptr, bsr_col_ind, Mb, base);
     }
 
     template <typename T, typename I, typename J>

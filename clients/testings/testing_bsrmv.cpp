@@ -76,11 +76,11 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
             EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv<T>(PARAMS), rocsparse_status_not_implemented);
         }
     }
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
 
 #undef PARAMS
 
     // Additional tests for invalid zero matrices
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
     EXPECT_ROCSPARSE_STATUS(rocsparse_bsrmv<T>(handle,
                                                dir,
                                                trans,
@@ -102,12 +102,13 @@ void testing_bsrmv_bad_arg(const Arguments& arg)
 template <typename T>
 void testing_bsrmv(const Arguments& arg)
 {
-    rocsparse_int        M         = arg.M;
-    rocsparse_int        N         = arg.N;
-    rocsparse_direction  dir       = arg.direction;
-    rocsparse_operation  trans     = arg.transA;
-    rocsparse_index_base base      = arg.baseA;
-    rocsparse_int        block_dim = arg.block_dim;
+    rocsparse_int          M         = arg.M;
+    rocsparse_int          N         = arg.N;
+    rocsparse_direction    dir       = arg.direction;
+    rocsparse_operation    trans     = arg.transA;
+    rocsparse_index_base   base      = arg.baseA;
+    rocsparse_int          block_dim = arg.block_dim;
+    rocsparse_storage_mode storage   = arg.storage;
 
     host_scalar<T> h_alpha(arg.get_alpha<T>()), h_beta(arg.get_beta<T>());
 
@@ -119,6 +120,9 @@ void testing_bsrmv(const Arguments& arg)
 
     // Set matrix index base
     CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_index_base(descr, base));
+
+    // Set storage mode
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, storage));
 
     // BSR dimensions
 

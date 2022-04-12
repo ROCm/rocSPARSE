@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -180,14 +180,15 @@ rocsparse_status rocsparse_bsric0_analysis_template(rocsparse_handle          ha
         return rocsparse_status_invalid_value;
     }
 
-    // Check index base
-    if(descr->base != rocsparse_index_base_zero && descr->base != rocsparse_index_base_one)
-    {
-        return rocsparse_status_invalid_value;
-    }
+    // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
-        // TODO
+        return rocsparse_status_not_implemented;
+    }
+
+    // Check matrix sorting mode
+    if(descr->storage_mode != rocsparse_storage_mode_sorted)
+    {
         return rocsparse_status_not_implemented;
     }
 
@@ -468,9 +469,15 @@ rocsparse_status rocsparse_bsric0_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_value;
     }
 
+    // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
-        // TODO
+        return rocsparse_status_not_implemented;
+    }
+
+    // Check matrix sorting mode
+    if(descr->storage_mode != rocsparse_storage_mode_sorted)
+    {
         return rocsparse_status_not_implemented;
     }
 

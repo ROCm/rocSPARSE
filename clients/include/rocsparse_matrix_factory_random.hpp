@@ -42,34 +42,41 @@ public:
                                              rocsparse_matrix_init_kind matrix_init_kind
                                              = rocsparse_matrix_init_kind_default);
 
-    virtual void init_csr(std::vector<I>&       csr_row_ptr,
-                          std::vector<J>&       csr_col_ind,
-                          std::vector<T>&       csr_val,
-                          J&                    M,
-                          J&                    N,
-                          I&                    nnz,
-                          rocsparse_index_base  base,
-                          rocsparse_matrix_type matrix_type = rocsparse_matrix_type_general,
-                          rocsparse_fill_mode   uplo        = rocsparse_fill_mode_lower) override;
+    virtual void init_csr(std::vector<I>&        csr_row_ptr,
+                          std::vector<J>&        csr_col_ind,
+                          std::vector<T>&        csr_val,
+                          J&                     M,
+                          J&                     N,
+                          I&                     nnz,
+                          rocsparse_index_base   base,
+                          rocsparse_matrix_type  matrix_type,
+                          rocsparse_fill_mode    uplo,
+                          rocsparse_storage_mode storage) override;
 
-    virtual void init_gebsr(std::vector<I>&      bsr_row_ptr,
-                            std::vector<J>&      bsr_col_ind,
-                            std::vector<T>&      bsr_val,
-                            rocsparse_direction  dirb,
-                            J&                   Mb,
-                            J&                   Nb,
-                            I&                   nnzb,
-                            J&                   row_block_dim,
-                            J&                   col_block_dim,
-                            rocsparse_index_base base) override;
+    virtual void init_gebsr(std::vector<I>&        bsr_row_ptr,
+                            std::vector<J>&        bsr_col_ind,
+                            std::vector<T>&        bsr_val,
+                            rocsparse_direction    dirb,
+                            J&                     Mb,
+                            J&                     Nb,
+                            I&                     nnzb,
+                            J&                     row_block_dim,
+                            J&                     col_block_dim,
+                            rocsparse_index_base   base,
+                            rocsparse_matrix_type  matrix_type,
+                            rocsparse_fill_mode    uplo,
+                            rocsparse_storage_mode storage) override;
 
-    virtual void init_coo(std::vector<I>&      coo_row_ind,
-                          std::vector<I>&      coo_col_ind,
-                          std::vector<T>&      coo_val,
-                          I&                   M,
-                          I&                   N,
-                          I&                   nnz,
-                          rocsparse_index_base base) override;
+    virtual void init_coo(std::vector<I>&        coo_row_ind,
+                          std::vector<I>&        coo_col_ind,
+                          std::vector<T>&        coo_val,
+                          I&                     M,
+                          I&                     N,
+                          I&                     nnz,
+                          rocsparse_index_base   base,
+                          rocsparse_matrix_type  matrix_type,
+                          rocsparse_fill_mode    uplo,
+                          rocsparse_storage_mode storage) override;
 };
 
 #endif // ROCSPARSE_MATRIX_FACTORY_BASE_HPP

@@ -391,13 +391,14 @@ public:
 
     static void testing_spmv(const Arguments& arg)
     {
-        J                     M           = arg.M;
-        J                     N           = arg.N;
-        rocsparse_operation   trans       = arg.transA;
-        rocsparse_index_base  base        = arg.baseA;
-        rocsparse_spmv_alg    alg         = arg.spmv_alg;
-        rocsparse_matrix_type matrix_type = arg.matrix_type;
-        rocsparse_fill_mode   uplo        = arg.uplo;
+        J                      M           = arg.M;
+        J                      N           = arg.N;
+        rocsparse_operation    trans       = arg.transA;
+        rocsparse_index_base   base        = arg.baseA;
+        rocsparse_spmv_alg     alg         = arg.spmv_alg;
+        rocsparse_matrix_type  matrix_type = arg.matrix_type;
+        rocsparse_fill_mode    uplo        = arg.uplo;
+        rocsparse_storage_mode storage     = arg.storage;
 
         rocsparse_datatype ttype = get_datatype<T>();
 
@@ -440,6 +441,11 @@ public:
                                             A, rocsparse_spmat_fill_mode, &uplo, sizeof(uplo)),
                                         rocsparse_status_success);
 
+                EXPECT_ROCSPARSE_STATUS(
+                    rocsparse_spmat_set_attribute(
+                        A, rocsparse_spmat_storage_mode, &storage, sizeof(storage)),
+                    rocsparse_status_success);
+
                 size_t buffer_size;
                 void*  dbuffer = nullptr;
                 EXPECT_ROCSPARSE_STATUS(rocsparse_spmv(PARAMS(h_alpha, A, x, h_beta, y)),
@@ -473,7 +479,7 @@ public:
             static constexpr bool             full_rank = false;
             rocsparse_matrix_factory<T, I, J> matrix_factory(
                 arg, arg.unit_check ? to_int : false, full_rank);
-            traits::sparse_initialization(matrix_factory, hA, M, N, base, matrix_type, uplo);
+            traits::sparse_initialization(matrix_factory, hA, M, N, base);
         }
 
         if((matrix_type == rocsparse_matrix_type_symmetric && M != N)
@@ -505,6 +511,10 @@ public:
         EXPECT_ROCSPARSE_STATUS(
             rocsparse_spmat_set_attribute(A, rocsparse_spmat_fill_mode, &uplo, sizeof(uplo)),
             rocsparse_status_success);
+
+        EXPECT_ROCSPARSE_STATUS(rocsparse_spmat_set_attribute(
+                                    A, rocsparse_spmat_storage_mode, &storage, sizeof(storage)),
+                                rocsparse_status_success);
 
         void*  dbuffer = nullptr;
         size_t buffer_size;

@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
-* Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+* Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -109,26 +109,29 @@ rocsparse_status rocsparse_coo2dense_template(rocsparse_handle          handle,
     // Set memory to zero.
     hipMemset2DAsync(A, lda * sizeof(T), 0, mn * sizeof(T), nm, handle->stream);
 
+    if(nnz > 0)
+    {
 #define COO2DENSE_DIM 512
-    dim3 blocks((nnz - 1) / COO2DENSE_DIM + 1);
-    dim3 threads(COO2DENSE_DIM);
+        dim3 blocks((nnz - 1) / COO2DENSE_DIM + 1);
+        dim3 threads(COO2DENSE_DIM);
 
-    hipLaunchKernelGGL((coo2dense_kernel<COO2DENSE_DIM>),
-                       blocks,
-                       threads,
-                       0,
-                       stream,
-                       m,
-                       n,
-                       nnz,
-                       lda,
-                       descr->base,
-                       coo_val,
-                       coo_row_ind,
-                       coo_col_ind,
-                       A,
-                       order);
+        hipLaunchKernelGGL((coo2dense_kernel<COO2DENSE_DIM>),
+                           blocks,
+                           threads,
+                           0,
+                           stream,
+                           m,
+                           n,
+                           nnz,
+                           lda,
+                           descr->base,
+                           coo_val,
+                           coo_row_ind,
+                           coo_col_ind,
+                           A,
+                           order);
 #undef COO2DENSE_DIM
+    }
 
     return rocsparse_status_success;
 }

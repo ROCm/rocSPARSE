@@ -387,7 +387,6 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
        && descr->type != rocsparse_matrix_type_triangular
        && descr->type != rocsparse_matrix_type_symmetric)
     {
-        // TODO
         return rocsparse_status_not_implemented;
     }
 
@@ -398,6 +397,12 @@ rocsparse_status rocsparse_csrmv_analysis_template(rocsparse_handle          han
         {
             return rocsparse_status_invalid_size;
         }
+    }
+
+    // Check matrix sorting mode
+    if(descr->storage_mode != rocsparse_storage_mode_sorted)
+    {
+        return rocsparse_status_not_implemented;
     }
 
     // Check sizes
@@ -1146,7 +1151,6 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
        && descr->type != rocsparse_matrix_type_triangular
        && descr->type != rocsparse_matrix_type_symmetric)
     {
-        // TODO
         return rocsparse_status_not_implemented;
     }
 
@@ -1157,6 +1161,12 @@ rocsparse_status rocsparse_csrmv_template(rocsparse_handle          handle,
         {
             return rocsparse_status_invalid_size;
         }
+    }
+
+    // Check matrix sorting mode
+    if(descr->storage_mode != rocsparse_storage_mode_sorted)
+    {
+        return rocsparse_status_not_implemented;
     }
 
     // Check sizes

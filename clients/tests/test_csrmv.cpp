@@ -37,4 +37,5 @@ TEST_ROUTINE(csrmv,
              arg.transA,
              arg.baseA,
              arg.matrix,
+             arg.uplo,
              arg.spmv_alg);

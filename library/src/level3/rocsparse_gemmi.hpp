@@ -1,6 +1,6 @@
 /*! \file */
 /* ************************************************************************
- * Copyright (c) 2020-2021 Advanced Micro Devices, Inc.
+ * Copyright (c) 2020-2022 Advanced Micro Devices, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -117,7 +117,7 @@ rocsparse_status rocsparse_gemmi_template(rocsparse_handle          handle,
         return rocsparse_status_invalid_value;
     }
 
-    // Check index base
+    // Check matrix type
     if(descr->type != rocsparse_matrix_type_general)
     {
         return rocsparse_status_not_implemented;

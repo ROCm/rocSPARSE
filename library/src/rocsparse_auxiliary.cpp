@@ -2700,7 +2700,7 @@ rocsparse_status rocsparse_spmat_get_strided_batch(rocsparse_spmat_descr descr, 
 }
 
 /********************************************************************************
- * \brief rocsparse_spmat_get_strided_batch sets the sparse matrix batch count.
+ * \brief rocsparse_spmat_set_strided_batch sets the sparse matrix batch count.
  *******************************************************************************/
 rocsparse_status rocsparse_spmat_set_strided_batch(rocsparse_spmat_descr descr, int batch_count)
 {
@@ -2758,7 +2758,7 @@ rocsparse_status rocsparse_coo_set_strided_batch(rocsparse_spmat_descr descr,
 }
 
 /********************************************************************************
- * \brief rocsparse_coo_set_strided_batch sets the CSR sparse matrix batch count
+ * \brief rocsparse_csr_set_strided_batch sets the CSR sparse matrix batch count
  * and batch stride.
  *******************************************************************************/
 rocsparse_status rocsparse_csr_set_strided_batch(rocsparse_spmat_descr descr,
@@ -2851,7 +2851,7 @@ rocsparse_status rocsparse_spmat_get_attribute(rocsparse_spmat_descr     descr,
 }
 
 /********************************************************************************
- * \brief rocsparse_spmat_get_attribute sets the sparse matrix attribute.
+ * \brief rocsparse_spmat_set_attribute sets the sparse matrix attribute.
  *******************************************************************************/
 rocsparse_status rocsparse_spmat_set_attribute(rocsparse_spmat_descr     descr,
                                                rocsparse_spmat_attribute attribute,

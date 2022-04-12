@@ -22,6 +22,7 @@
  *
  * ************************************************************************ */
 #include "auto_testing_bad_arg.hpp"
+#include "rocsparse_enum.hpp"
 #include "testing.hpp"
 
 template <typename T>
@@ -58,6 +59,11 @@ void testing_hyb2csr_bad_arg(const Arguments& arg)
 #define PARAMS handle, descr, hyb, csr_val, csr_row_ptr, csr_col_ind, temp_buffer
     auto_testing_bad_arg(rocsparse_hyb2csr_buffer_size, PARAMS_BUFFER_SIZE);
     auto_testing_bad_arg(rocsparse_hyb2csr<T>, PARAMS);
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_hyb2csr_buffer_size(PARAMS_BUFFER_SIZE),
+                            rocsparse_status_not_implemented);
+    EXPECT_ROCSPARSE_STATUS(rocsparse_hyb2csr<T>(PARAMS), rocsparse_status_not_implemented);
 #undef PARAMS
 #undef PARAMS_BUFFER_SIZE
 }

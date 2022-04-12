@@ -97,11 +97,15 @@ void testing_gebsrmv_bad_arg(const Arguments& arg)
             EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmv<T>(PARAMS), rocsparse_status_not_implemented);
         }
     }
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
+
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_unsorted));
+    EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmv<T>(PARAMS), rocsparse_status_not_implemented);
+    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_storage_mode(descr, rocsparse_storage_mode_sorted));
 
 #undef PARAMS
 
     // Additional tests for invalid zero matrices
-    CHECK_ROCSPARSE_ERROR(rocsparse_set_mat_type(descr, rocsparse_matrix_type_general));
     EXPECT_ROCSPARSE_STATUS(rocsparse_gebsrmv<T>(handle,
                                                  dir,
                                                  trans,
