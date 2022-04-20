@@ -137,7 +137,7 @@ Tests:
   matrix: rocsparse_matrix_file_rocalution
   filename: [nos1,
              nos2,
-	     nos3]
+             nos3]
 
 # ########################################################################
 # # QUICK
